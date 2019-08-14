@@ -10,6 +10,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
@@ -88,7 +89,7 @@ public class StockDataUpdateRequestHandler
 		newDataRecord.setAD_Org_ID(identifier.getOrgId().getRepoId());
 		newDataRecord.setM_Product_ID(identifier.getProductDescriptor().getProductId());
 		newDataRecord.setAttributesKey(identifier.getProductDescriptor().getStorageAttributesKey().getAsString());
-		newDataRecord.setM_Warehouse_ID(identifier.getWarehouseId());
+		newDataRecord.setM_Warehouse_ID(identifier.getWarehouseId().getRepoId());
 
 		return newDataRecord;
 	}
@@ -148,7 +149,7 @@ public class StockDataUpdateRequestHandler
 				.builder()
 				.eventDescriptor(eventDescriptor)
 				.productDescriptor(productDescriptor)
-				.warehouseId(dataRecord.getM_Warehouse_ID())
+				.warehouseId(WarehouseId.ofRepoId(dataRecord.getM_Warehouse_ID()))
 				.qtyOnHand(qtyOnHandNew)
 				.qtyOnHandOld(qtyOnHandOld)
 				.stockChangeDetails(details)

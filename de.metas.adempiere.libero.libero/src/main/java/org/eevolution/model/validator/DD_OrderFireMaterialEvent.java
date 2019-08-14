@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
@@ -84,8 +85,8 @@ public class DD_OrderFireMaterialEvent
 			final DDOrderCreatedEvent event = DDOrderCreatedEvent.builder()
 					.eventDescriptor(EventDescriptor.ofClientAndOrg(ddOrder.getAD_Client_ID(), ddOrder.getAD_Org_ID()))
 					.ddOrder(ddOrderPojoBuilder.build())
-					.fromWarehouseId(ddOrderLine.getM_Locator().getM_Warehouse_ID())
-					.toWarehouseId(ddOrderLine.getM_LocatorTo().getM_Warehouse_ID())
+					.fromWarehouseId(WarehouseId.ofRepoId(ddOrderLine.getM_Locator().getM_Warehouse_ID()))
+					.toWarehouseId(WarehouseId.ofRepoId(ddOrderLine.getM_LocatorTo().getM_Warehouse_ID()))
 					.build();
 
 			events.add(event);

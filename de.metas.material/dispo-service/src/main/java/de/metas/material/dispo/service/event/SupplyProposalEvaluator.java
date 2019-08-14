@@ -1,5 +1,6 @@
 package de.metas.material.dispo.service.event;
 
+import org.adempiere.warehouse.WarehouseId;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -108,12 +109,12 @@ public class SupplyProposalEvaluator
 		DemandDetail demandDetail;
 
 		@NonNull
-		Integer supplyWarehouseId;
+		WarehouseId supplyWarehouseId;
 
 		/**
 		 * The source warehouse; this instance proposes to take something for this warehouse i.e. create a new demand in this warehouse.
 		 */
 		@NonNull
-		Integer demandWarehouseId;
+		WarehouseId demandWarehouseId;
 	}
 }

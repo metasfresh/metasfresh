@@ -6,6 +6,7 @@ import java.time.temporal.ChronoUnit;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
 
 import de.metas.bpartner.BPartnerId;
@@ -56,7 +57,7 @@ public class EventTestHelper
 
 	public static final int TRANSACTION_ID = 60;
 
-	public static final int WAREHOUSE_ID = 51;
+	public static final WarehouseId WAREHOUSE_ID = WarehouseId.ofRepoId(51);
 
 	public static final int SHIPMENT_SCHEDULE_ID = 21;
 

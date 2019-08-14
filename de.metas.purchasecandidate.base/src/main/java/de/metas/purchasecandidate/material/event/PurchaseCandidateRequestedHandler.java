@@ -6,7 +6,6 @@ import java.util.Collection;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Profile;
@@ -122,7 +121,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.qtyToPurchase(Quantity.of(materialDescriptor.getQuantity(), uomRecord))
 				.salesOrderAndLineIdOrNull(orderandLineIdOrNull)
 
-				.warehouseId(WarehouseId.ofRepoId(materialDescriptor.getWarehouseId()))
+				.warehouseId(materialDescriptor.getWarehouseId())
 				.build();
 
 		saveCandidateAndPostCreatedEvent(event, newPurchaseCandidate);

@@ -11,6 +11,7 @@ import java.time.temporal.ChronoUnit;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.WarehouseId;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -70,9 +71,8 @@ public class SupplyProposalEvaluatorTests
 	private final Instant t2 = t1.plus(10, ChronoUnit.MINUTES);
 	private final Instant t3 = t1.plus(20, ChronoUnit.MINUTES);
 
-	private static final int SUPPLY_WAREHOUSE_ID = 4;
-
-	private static final int DEMAND_WAREHOUSE_ID = 6;
+	private static final WarehouseId SUPPLY_WAREHOUSE_ID = WarehouseId.ofRepoId(4);
+	private static final WarehouseId DEMAND_WAREHOUSE_ID = WarehouseId.ofRepoId(6);
 
 	private DDOrderAdvisedHandler ddOrderAdvisedHandler;
 

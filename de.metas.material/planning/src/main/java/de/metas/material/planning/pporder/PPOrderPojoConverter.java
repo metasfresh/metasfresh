@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -69,7 +70,7 @@ public class PPOrderPojoConverter
 				.productPlanningId(ppOrderRecord.getPP_Product_Planning_ID())
 				.qtyRequired(ppOrderRecord.getQtyOrdered())
 				.qtyDelivered(ppOrderRecord.getQtyDelivered())
-				.warehouseId(ppOrderRecord.getM_Warehouse_ID())
+				.warehouseId(WarehouseId.ofRepoId(ppOrderRecord.getM_Warehouse_ID()))
 				.bPartnerId(ppOrderRecord.getC_BPartner_ID())
 				.orderLineId(ppOrderRecord.getC_OrderLine_ID())
 				.materialDispoGroupId(getMaterialDispoGroupIdOrZero(ppOrderRecord))

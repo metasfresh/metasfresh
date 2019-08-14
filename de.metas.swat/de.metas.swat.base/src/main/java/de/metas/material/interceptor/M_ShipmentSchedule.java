@@ -185,7 +185,7 @@ public class M_ShipmentSchedule
 		final MaterialDescriptor orderedMaterial = MaterialDescriptor.builder()
 				.date(TimeUtil.asInstant(preparationDate))
 				.productDescriptor(productDescriptor)
-				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule).getRepoId())
+				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
 				.customerId(shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule))
 				.quantity(orderedQuantity)
 				.build();

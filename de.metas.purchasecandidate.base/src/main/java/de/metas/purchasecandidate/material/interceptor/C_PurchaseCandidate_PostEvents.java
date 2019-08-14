@@ -4,6 +4,7 @@ import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Lazy;
@@ -150,7 +151,7 @@ public class C_PurchaseCandidate_PostEvents
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.date(TimeUtil.asInstant(purchaseCandidateRecord.getPurchaseDatePromised()))
-				.warehouseId(purchaseCandidateRecord.getM_WarehousePO_ID())
+				.warehouseId(WarehouseId.ofRepoId(purchaseCandidateRecord.getM_WarehousePO_ID()))
 				.productDescriptor(productDescriptor)
 				// .customerId() we don't have a customer
 				.quantity(purchaseQty.getAsBigDecimal())

@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -333,7 +334,7 @@ public class CandidateRepositoryWriteService
 
 		candidateRecord.setAD_Org_ID(candidate.getOrgId().getRepoId());
 		candidateRecord.setMD_Candidate_Type(candidate.getType().toString());
-		candidateRecord.setM_Warehouse_ID(materialDescriptor.getWarehouseId());
+		candidateRecord.setM_Warehouse_ID(WarehouseId.toRepoId(materialDescriptor.getWarehouseId()));
 
 		candidateRecord.setC_BPartner_Customer_ID(BPartnerId.toRepoId(materialDescriptor.getCustomerId()));
 

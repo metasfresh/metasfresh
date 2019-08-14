@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.List;
 
 import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
@@ -117,7 +118,7 @@ public class Candidate
 		return withMaterialDescriptor(materialDescriptor.withDate(date));
 	}
 
-	public Candidate withWarehouseId(final int warehouseId)
+	public Candidate withWarehouseId(final WarehouseId warehouseId)
 	{
 		return withMaterialDescriptor(materialDescriptor.withWarehouseId(warehouseId));
 	}
@@ -149,7 +150,7 @@ public class Candidate
 		return materialDescriptor.getProductId();
 	}
 
-	public int getWarehouseId()
+	public WarehouseId getWarehouseId()
 	{
 		return materialDescriptor.getWarehouseId();
 	}

@@ -19,6 +19,7 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.WarehouseId;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -81,7 +82,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 
 	public static final int rawProduct2Id = 55;
 
-	public static final int intermediateWarehouseId = 20;
+	public static final WarehouseId intermediateWarehouseId = WarehouseId.ofRepoId(20);
 
 	private static final BigDecimal NINE = TEN.subtract(ONE);
 

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
@@ -135,7 +136,7 @@ public class PPOrderPojoSupplier
 
 				// Planning dimension
 				.plantId(mrpContext.getPlant_ID())
-				.warehouseId(mrpContext.getM_Warehouse_ID())
+				.warehouseId(WarehouseId.ofRepoId(mrpContext.getM_Warehouse_ID()))
 				.productPlanningId(productPlanningData.getPP_Product_Planning_ID())
 
 				// Product, UOM, ASI

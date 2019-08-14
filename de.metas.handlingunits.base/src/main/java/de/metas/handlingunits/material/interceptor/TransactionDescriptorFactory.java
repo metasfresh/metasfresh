@@ -52,7 +52,7 @@ public class TransactionDescriptorFactory
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
 				.productId(record.getM_Product_ID())
 				.transactionId(record.getM_Transaction_ID())
-				.warehouseId(warehouseId.getRepoId())
+				.warehouseId(warehouseId)
 				.transactionDate(extractTransactionDate(record))
 				.movementQty(record.getMovementQty())
 				.costCollectorId(record.getPP_Cost_Collector_ID())

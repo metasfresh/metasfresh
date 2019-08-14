@@ -5,6 +5,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -239,7 +240,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 //		return candidateStatus;
 //	}
 
-	protected final int computeWarehouseId(
+	protected final WarehouseId computeWarehouseId(
 			@NonNull final AbstractDDOrderEvent ddOrderEvent,
 			@NonNull final CandidateType candidateType)
 	{

@@ -12,6 +12,7 @@ import java.util.TreeMap;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_MovementLine;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -308,9 +309,14 @@ public class M_Transaction_TransactionEventCreator
 		return events.build();
 	}
 
-	private static boolean isDirectMovementWarehouse(final int warehouseId)
+	private static boolean isDirectMovementWarehouse(final WarehouseId warehouseId)
 	{
+		if(warehouseId == null)
+		{
+			return false;
+		}
+		
 		final int intValue = Services.get(ISysConfigBL.class).getIntValue(IHUMovementBL.SYSCONFIG_DirectMove_Warehouse_ID, -1);
-		return intValue == warehouseId;
+		return intValue == warehouseId.getRepoId();
 	}
 }

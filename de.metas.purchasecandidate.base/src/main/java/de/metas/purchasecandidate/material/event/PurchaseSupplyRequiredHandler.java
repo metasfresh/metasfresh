@@ -6,7 +6,6 @@ import java.util.Collection;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -117,7 +116,7 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 
 		final ProductPlanningQuery productPlanningQuery = ProductPlanningQuery.builder()
 				.orgId(eventDescr.getOrgId())
-				.warehouseId(WarehouseId.ofRepoId(materialDescr.getWarehouseId()))
+				.warehouseId(materialDescr.getWarehouseId())
 				.plantId(ResourceId.ofRepoId(plant.getS_Resource_ID()))
 				.productId(ProductId.ofRepoId(materialDescr.getProductId()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(materialDescr.getAttributeSetInstanceId()))

@@ -23,6 +23,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
@@ -111,7 +112,7 @@ public class CandiateRepositoryRetrievalTests
 		final Timestamp dateProjected = SystemTime.asTimestamp();
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
 		candidateRecord.setDateProjected(dateProjected);
-		candidateRecord.setM_Warehouse_ID(WAREHOUSE_ID);
+		candidateRecord.setM_Warehouse_ID(WAREHOUSE_ID.getRepoId());
 		candidateRecord.setM_Product_ID(PRODUCT_ID);
 		candidateRecord.setC_BPartner_Customer_ID(BPARTNER_ID.getRepoId());
 		candidateRecord.setM_AttributeSetInstance_ID(ATTRIBUTE_SET_INSTANCE_ID);
@@ -575,9 +576,9 @@ public class CandiateRepositoryRetrievalTests
 	@Test
 	public void retrieveMatchesOrderByDateAndSeqNo_only_by_warehouse_id()
 	{
-		final int warehouseId = 20;
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(20);
 		final I_MD_Candidate candidateRecord = createCandidateRecordWithWarehouseId(warehouseId);
-		createCandidateRecordWithWarehouseId(30);
+		createCandidateRecordWithWarehouseId(WarehouseId.ofRepoId(30));
 
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.materialDescriptorQuery(MaterialDescriptorQuery.builder().warehouseId(warehouseId).build())
@@ -652,7 +653,7 @@ public class CandiateRepositoryRetrievalTests
 		return candidateRecord;
 	}
 
-	private static I_MD_Candidate createCandidateRecordWithWarehouseId(final int warehouseId)
+	private static I_MD_Candidate createCandidateRecordWithWarehouseId(final WarehouseId warehouseId)
 	{
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
 		candidateRecord.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
@@ -660,7 +661,7 @@ public class CandiateRepositoryRetrievalTests
 		candidateRecord.setM_Product_ID(PRODUCT_ID);
 		candidateRecord.setM_AttributeSetInstance_ID(ATTRIBUTE_SET_INSTANCE_ID);
 		candidateRecord.setStorageAttributesKey(STORAGE_ATTRIBUTES_KEY.getAsString());
-		candidateRecord.setM_Warehouse_ID(warehouseId);
+		candidateRecord.setM_Warehouse_ID(warehouseId.getRepoId());
 		save(candidateRecord);
 
 		return candidateRecord;

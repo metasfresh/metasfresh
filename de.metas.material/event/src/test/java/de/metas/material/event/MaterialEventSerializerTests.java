@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
+import org.adempiere.warehouse.WarehouseId;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableSet;
@@ -116,9 +117,9 @@ public class MaterialEventSerializerTests
 				.advisedToCreateDDrder(true)
 				.pickIfFeasible(false)
 				.ddOrder(createDdOrder(0))
-				.fromWarehouseId(30)
+				.fromWarehouseId(WarehouseId.ofRepoId(30))
+				.toWarehouseId(WarehouseId.ofRepoId(40))
 				.eventDescriptor(createEventDescriptor())
-				.toWarehouseId(40)
 				.build();
 		event.validate();
 		assertEventEqualAfterSerializeDeserialize(event);
@@ -130,9 +131,9 @@ public class MaterialEventSerializerTests
 		final DDOrderCreatedEvent event = DDOrderCreatedEvent.builder()
 				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
 				.ddOrder(createDdOrder(20))
-				.fromWarehouseId(30)
+				.fromWarehouseId(WarehouseId.ofRepoId(30))
+				.toWarehouseId(WarehouseId.ofRepoId(40))
 				.eventDescriptor(createEventDescriptor())
-				.toWarehouseId(40)
 				.build();
 		event.validate();
 		assertEventEqualAfterSerializeDeserialize(event);
@@ -308,7 +309,7 @@ public class MaterialEventSerializerTests
 				.productPlanningId(130)
 				.qtyRequired(TEN)
 				.qtyDelivered(ONE)
-				.warehouseId(150)
+				.warehouseId(WarehouseId.ofRepoId(150))
 				.line(createPPOrderLine())
 				.line(PPOrderLine.builder()
 						.productDescriptor(createProductDescriptorWithOffSet(20))

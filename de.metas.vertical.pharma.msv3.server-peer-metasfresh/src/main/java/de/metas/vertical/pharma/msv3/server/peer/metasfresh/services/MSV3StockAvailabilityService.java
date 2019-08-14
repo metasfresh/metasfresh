@@ -247,7 +247,7 @@ public class MSV3StockAvailabilityService
 
 	private boolean isEligible(final MSV3ServerConfig serverConfig, final StockChangedEvent event)
 	{
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(event.getWarehouseId());
+		final WarehouseId warehouseId = event.getWarehouseId();
 		if (!serverConfig.getWarehouseIds().contains(warehouseId))
 		{
 			return false;

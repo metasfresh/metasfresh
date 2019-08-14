@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.WarehouseId;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -103,7 +104,7 @@ public class CandidateChangeHandlerTests
 	private final Instant t3 = t1.plus(20, ChronoUnit.MINUTES);
 	private final Instant t4 = t1.plus(30, ChronoUnit.MINUTES);
 
-	private final int OTHER_WAREHOUSE_ID = WAREHOUSE_ID + 10;
+	private final WarehouseId OTHER_WAREHOUSE_ID = WarehouseId.ofRepoId(WAREHOUSE_ID.getRepoId() + 10);
 
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
@@ -303,7 +304,7 @@ public class CandidateChangeHandlerTests
 		final I_MD_Candidate stockRecord = newInstance(I_MD_Candidate.class);
 		stockRecord.setAD_Org_ID(ORG_ID.getRepoId());
 		stockRecord.setMD_Candidate_Type(CandidateType.STOCK.toString());
-		stockRecord.setM_Warehouse_ID(materialDescriptor.getWarehouseId());
+		stockRecord.setM_Warehouse_ID(materialDescriptor.getWarehouseId().getRepoId());
 		stockRecord.setQty(materialDescriptor.getQuantity());
 		stockRecord.setDateProjected(asTimestamp(dateProjected));
 		stockRecord.setM_Product_ID(materialDescriptor.getProductId());
@@ -319,7 +320,7 @@ public class CandidateChangeHandlerTests
 
 	private CandidatesQuery mkQueryForStockUntilDate(
 			@NonNull final Instant date,
-			final int warehouseId)
+			final WarehouseId warehouseId)
 	{
 		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
 				.productId(PRODUCT_ID)

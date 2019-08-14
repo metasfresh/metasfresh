@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
@@ -197,7 +198,7 @@ public class PPOrderRequestedEventHandlerTests
 				.productPlanningId(productPlanning.getPP_Product_Planning_ID())
 				.qtyRequired(TEN)
 				.qtyDelivered(ONE)
-				.warehouseId(warehouse.getM_Warehouse_ID())
+				.warehouseId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()))
 				.build();
 
 		ppOrderRequestedEventHandler = new PPOrderRequestedEventHandler(new PPOrderProducer());

@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 
 import de.metas.material.cockpit.model.I_MD_Stock;
@@ -131,7 +132,7 @@ public class MD_Stock_Update_From_M_HUs extends JavaProcess
 				.clientId(ClientId.ofRepoId(huBasedDataRecord.getAD_Client_ID()))
 				.orgId(OrgId.ofRepoId(huBasedDataRecord.getAD_Org_ID()))
 				.productDescriptor(productDescriptor)
-				.warehouseId(huBasedDataRecord.getM_Warehouse_ID())
+				.warehouseId(WarehouseId.ofRepoId(huBasedDataRecord.getM_Warehouse_ID()))
 				.build();
 		return recordIdentifier;
 	}

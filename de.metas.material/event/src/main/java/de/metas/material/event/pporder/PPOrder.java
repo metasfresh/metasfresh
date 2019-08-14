@@ -9,6 +9,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_S_Resource;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -56,7 +57,7 @@ public class PPOrder
 	 */
 	int plantId;
 
-	int warehouseId;
+	WarehouseId warehouseId;
 
 	int bPartnerId;
 
@@ -107,7 +108,7 @@ public class PPOrder
 	public PPOrder(
 			@JsonProperty("orgId") @NonNull final OrgId orgId,
 			@JsonProperty("plantId") final int plantId,
-			@JsonProperty("warehouseId") final int warehouseId,
+			@JsonProperty("warehouseId") @NonNull final WarehouseId warehouseId,
 			@JsonProperty("bPartnerId") final int bPartnerId,
 			@JsonProperty("productPlanningId") final int productPlanningId,
 			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
@@ -123,7 +124,7 @@ public class PPOrder
 	{
 		this.orgId = orgId;
 		this.plantId = checkIdGreaterThanZero("plantId", plantId);
-		this.warehouseId = checkIdGreaterThanZero("warehouseId", warehouseId);
+		this.warehouseId = warehouseId;
 
 		this.bPartnerId = bPartnerId;
 		this.productPlanningId = productPlanningId; // ok to be not set

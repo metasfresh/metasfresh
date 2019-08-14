@@ -158,7 +158,7 @@ public class RepositoryCommons
 			return atLeastOneFilterAdded;
 		}
 
-		if (materialDescriptorQuery.getWarehouseId() > 0)
+		if (materialDescriptorQuery.getWarehouseId() != null)
 		{
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, materialDescriptorQuery.getWarehouseId());
 			atLeastOneFilterAdded = true;

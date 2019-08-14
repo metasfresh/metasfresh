@@ -13,6 +13,7 @@ import java.util.List;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.WarehouseId;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -71,7 +72,7 @@ public class ShipmentScheduleCreatedHandlerTests
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
-	private static final int toWarehouseId = 30;
+	private static final WarehouseId toWarehouseId = WarehouseId.ofRepoId(30);
 
 	@Mocked
 	private PostMaterialEventService postMaterialEventService;

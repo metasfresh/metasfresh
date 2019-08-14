@@ -3,11 +3,11 @@ package de.metas.material.interceptor;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.DocTimingType;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 
 import com.google.common.base.Preconditions;
 
@@ -20,6 +20,7 @@ import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.Forecast.ForecastBuilder;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -81,13 +82,13 @@ public class M_ForecastEventCreator
 		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(forecastLine);
 
-		final BPartnerId customerId = BPartnerId.ofRepoIdOrNull(Util.firstGreaterThanZero(forecastLine.getC_BPartner_ID(), forecast.getC_BPartner_ID()));
+		final BPartnerId customerId = BPartnerId.ofRepoIdOrNull(CoalesceUtil.firstGreaterThanZero(forecastLine.getC_BPartner_ID(), forecast.getC_BPartner_ID()));
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.date(TimeUtil.asInstant(forecastLine.getDatePromised()))
 				.productDescriptor(productDescriptor)
 				.customerId(customerId)
-				.warehouseId(forecastLine.getM_Warehouse_ID())
+				.warehouseId(WarehouseId.ofRepoId(forecastLine.getM_Warehouse_ID()))
 				.quantity(forecastLine.getQty())
 				.build();
 

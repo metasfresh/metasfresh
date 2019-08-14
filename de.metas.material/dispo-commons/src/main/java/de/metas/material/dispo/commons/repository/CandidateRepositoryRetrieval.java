@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -189,7 +190,7 @@ public class CandidateRepositoryRetrieval
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.productDescriptor(productDescriptor)
 				.quantity(candidateRecord.getQty())
-				.warehouseId(candidateRecord.getM_Warehouse_ID())
+				.warehouseId(WarehouseId.ofRepoId(candidateRecord.getM_Warehouse_ID()))
 				.customerId(BPartnerId.ofRepoIdOrNull(candidateRecord.getC_BPartner_Customer_ID()))
 
 				// make sure to add a Date and not a Timestamp to avoid confusing Candidate's equals() and hashCode() methods
