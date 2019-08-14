@@ -495,7 +495,7 @@ declare namespace Cypress {
      * @modal - boolean, set to true is the date field is in a modal
      * from cypress/support/commands/form.js
      */
-    selectDateViaPicker(fieldName, modal): Chainable<any>
+    selectDateViaPicker(fieldName: string, modal: boolean): Chainable<any>
 
 
     /**
@@ -660,7 +660,7 @@ declare namespace Cypress {
      *
      * @param numberOfRows - the number of rows
      */
-    expectNumberOfRowsToBeGreaterThan(numberOfRows): Chainable<any>
+    expectNumberOfRowsToBeGreaterThan(numberOfRows: number): Chainable<any>
   }
 
 }

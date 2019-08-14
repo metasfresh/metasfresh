@@ -14,7 +14,7 @@ import {
   toggleFrequentFilters,
 } from '../../support/functions';
 
-describe('Create Sales order', function() {
+describe('Create Sales order and open Picking Terminal and filter for Date, Product and BPartner', function() {
   const date = humanReadableNow();
   const customer1 = `CustomerTest1 ${date}`;
   const productName1 = `ProductTest1 ${date}`;
@@ -45,7 +45,7 @@ describe('Create Sales order', function() {
       bpartner.apply();
     });
   });
-  it('Create the first sales order', function() {
+  it('Create the sales order', function() {
     new SalesOrder()
       .setBPartner(customer1)
       .setPriceSystem(priceSystemName)
@@ -61,9 +61,9 @@ describe('Create Sales order', function() {
       .find('li')
       .first()
       .should('contain', 'Today')
-      .click({ force: true });
+      .click();
     applyFilters();
-    /**Even though the date selected is today, the filter label will show yesterday's date due to: https://github.com/metasfresh/me03/issues/2381 
+    /**Even though the date selected is today, the filter label will show yesterday's date due to: https://github.com/metasfresh/me03/issues/2381
      * that's the reason why the test is failing currently
      */
 
@@ -73,6 +73,6 @@ describe('Create Sales order', function() {
     cy.writeIntoLookupListField('C_BPartner_Customer_ID', customer1, customer1, false, false, null, true);
     applyFilters();
 
-    cy.expectNumberOfRowsToBeGreaterThan(0);
+    cy.expectNumberOfRows(2);
   });
 });
