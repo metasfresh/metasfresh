@@ -1,3 +1,6 @@
+/**The test is done but is failing due to https://github.com/metasfresh/me03/issues/2381.
+ * After this issue will be fixed, the test will pass.
+ *  It will need to be moved from integration/defunct dir. */
 import { BPartner } from '../../support/utils/bpartner';
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { Builder } from '../../support/utils/builder';
@@ -15,7 +18,6 @@ describe('Create Sales order', function() {
   const date = humanReadableNow();
   const customer1 = `CustomerTest1 ${date}`;
   const productName1 = `ProductTest1 ${date}`;
-  const productName2 = `ProductTest2 ${date}`;
   const productCategoryName = `ProductCategoryName ${date}`;
   const discountSchemaName = `DiscountSchemaTest ${date}`;
   const priceSystemName = `PriceSystem ${date}`;
@@ -42,10 +44,6 @@ describe('Create Sales order', function() {
       const bpartner = new BPartner({ ...customerJson, name: customer1 }).setCustomerDiscountSchema(discountSchemaName);
       bpartner.apply();
     });
-    // cy.fixture('sales/simple_customer.json').then(customerJson => {
-    //   const bpartner = new BPartner({ ...customerJson, name: customer2 }).setCustomerDiscountSchema(discountSchemaName);
-    //   bpartner.apply();
-    // });
   });
   it('Create the first sales order', function() {
     new SalesOrder()
@@ -55,14 +53,6 @@ describe('Create Sales order', function() {
       .apply();
     cy.completeDocument();
   });
-  //   it('Create the second sales order', function() {
-  //     new SalesOrder()
-  //       .setBPartner(customer2)
-  //       .setPriceSystem(priceSystemName)
-  //       .addLine(new SalesOrderLine().setProduct(productName2).setQuantity(1))
-  //       .apply();
-  //     cy.completeDocument();
-  //   });
   it('Open Picking terminal', function() {
     cy.visitWindow('540345');
     toggleFrequentFilters();
@@ -73,7 +63,9 @@ describe('Create Sales order', function() {
       .should('contain', 'Today')
       .click({ force: true });
     applyFilters();
-    /**Even though the date selected is today, the filter label will show yesterday's date due to: https://github.com/metasfresh/me03/issues/2381 */
+    /**Even though the date selected is today, the filter label will show yesterday's date due to: https://github.com/metasfresh/me03/issues/2381 
+     * that's the reason why the test is failing currently
+     */
 
     toggleNotFrequentFilters();
     selectNotFrequentFilterWidget('default');
@@ -81,6 +73,6 @@ describe('Create Sales order', function() {
     cy.writeIntoLookupListField('C_BPartner_Customer_ID', customer1, customer1, false, false, null, true);
     applyFilters();
 
-    cy.expectNumberOfRows(1);
+    cy.expectNumberOfRowsToBeGreaterThan(0);
   });
 });

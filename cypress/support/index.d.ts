@@ -655,7 +655,12 @@ declare namespace Cypress {
      * @param destinationWindowID - the expected window where the notification redirects
      */
     openNotificationContaining(expectedValue: string | RegExp, destinationWindowID: string | number): Chainable<any>
-
+   /**
+     * Expect the table rows to be greater than a given number
+     *
+     * @param numberOfRows - the number of rows
+     */
+    expectNumberOfRowsToBeGreaterThan(numberOfRows): Chainable<any>
   }
 
 }
