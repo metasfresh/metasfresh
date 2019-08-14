@@ -28,6 +28,7 @@ import org.compiere.model.X_AD_Workflow;
 import org.compiere.model.X_C_DocType;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -236,7 +237,8 @@ public class PPOrderRequestedEventHandlerTests
 		final PPOrderRequestedEvent ppOrderRequestedEvent = PPOrderRequestedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(0, 10))
 				.dateOrdered(SystemTime.asInstant())
-				.ppOrder(ppOrderPojo).build();
+				.ppOrder(ppOrderPojo)
+				.build();
 
 		final I_PP_Order ppOrder = ppOrderRequestedEventHandler.createProductionOrder(ppOrderRequestedEvent);
 		verifyPPOrder(ppOrder);
@@ -249,7 +251,7 @@ public class PPOrderRequestedEventHandlerTests
 		assertThat(ppOrder.getPP_Product_BOM_ID()).isEqualTo(productPlanning.getPP_Product_BOM_ID());
 
 		final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
-		final I_PP_Product_BOM productBOM = productBOMsRepo.getById(ppOrder.getPP_Product_BOM_ID());
+		final I_PP_Product_BOM productBOM = productBOMsRepo.getById(ProductBOMId.ofRepoId(ppOrder.getPP_Product_BOM_ID()));
 		assertThat(ppOrder.getM_Product_ID()).isEqualTo(productBOM.getM_Product_ID());
 
 		assertThat(ppOrder.getPP_Product_Planning_ID()).isEqualTo(productPlanning.getPP_Product_Planning_ID());
@@ -266,7 +268,7 @@ public class PPOrderRequestedEventHandlerTests
 			assertThat(ppOrder.getDocStatus()).isEqualTo(STATUS_Completed);
 		}
 
-		final Integer groupId = PPOrderPojoConverter.ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.getValue(ppOrder);
+		final int groupId = PPOrderPojoConverter.getMaterialDispoGroupIdOrZero(ppOrder);
 		assertThat(groupId).isEqualTo(PPORDER_POJO_GROUPID);
 	}
 
@@ -278,11 +280,10 @@ public class PPOrderRequestedEventHandlerTests
 		final PPOrderRequestedEvent ppOrderRequestedEvent = PPOrderRequestedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(0, 10))
 				.dateOrdered(SystemTime.asInstant())
-				.ppOrder(ppOrderPojo).build();
+				.ppOrder(ppOrderPojo)
+				.build();
 
-		final I_PP_Order ppOrder = ppOrderRequestedEventHandler
-				.createProductionOrder(ppOrderRequestedEvent);
-
+		final I_PP_Order ppOrder = ppOrderRequestedEventHandler.createProductionOrder(ppOrderRequestedEvent);
 		verifyPPOrder(ppOrder);
 
 		final List<I_PP_Order_BOMLine> orderBOMLines = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(ppOrder);

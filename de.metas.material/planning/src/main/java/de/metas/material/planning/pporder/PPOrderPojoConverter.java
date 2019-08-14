@@ -10,6 +10,8 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
@@ -41,10 +43,10 @@ import lombok.NonNull;
 @Service
 public class PPOrderPojoConverter
 {
-	public static final ModelDynAttributeAccessor<I_PP_Order, Integer> ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID = //
-			new ModelDynAttributeAccessor<>(I_PP_Order.class.getName(), "PPOrderRequestedEvent_GroupId", Integer.class);
-
 	private final ModelProductDescriptorExtractor productDescriptorFactory;
+
+	private static final ModelDynAttributeAccessor<I_PP_Order, Integer> //
+	ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID = new ModelDynAttributeAccessor<>(I_PP_Order.class.getName(), "PPOrderRequestedEvent_GroupId", Integer.class);
 
 	public PPOrderPojoConverter(@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
 	{
@@ -79,9 +81,7 @@ public class PPOrderPojoConverter
 
 	private PPOrderBuilder createPPorderPojoBuilder(@NonNull final I_PP_Order ppOrderRecord)
 	{
-		final int groupIdFromPPOrderRequestedEvent = ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.getValue(ppOrderRecord, 0);
-
-		final PPOrderBuilder ppOrderPojoBuilder = PPOrder.builder()
+		return PPOrder.builder()
 				.datePromised(asInstant(ppOrderRecord.getDatePromised()))
 				.dateStartSchedule(asInstant(ppOrderRecord.getDateStartSchedule()))
 				.docStatus(ppOrderRecord.getDocStatus())
@@ -95,7 +95,17 @@ public class PPOrderPojoConverter
 				.warehouseId(ppOrderRecord.getM_Warehouse_ID())
 				.bPartnerId(ppOrderRecord.getC_BPartner_ID())
 				.orderLineId(ppOrderRecord.getC_OrderLine_ID())
-				.materialDispoGroupId(groupIdFromPPOrderRequestedEvent);
-		return ppOrderPojoBuilder;
+				.materialDispoGroupId(getMaterialDispoGroupIdOrZero(ppOrderRecord));
+	}
+
+	@VisibleForTesting
+	public static int getMaterialDispoGroupIdOrZero(@NonNull final I_PP_Order ppOrderRecord)
+	{
+		return ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.getValue(ppOrderRecord, 0);
+	}
+
+	public static void setMaterialDispoGroupId(@NonNull final I_PP_Order ppOrderRecord, final int materialDispoGroupId)
+	{
+		ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.setValue(ppOrderRecord, materialDispoGroupId);
 	}
 }
