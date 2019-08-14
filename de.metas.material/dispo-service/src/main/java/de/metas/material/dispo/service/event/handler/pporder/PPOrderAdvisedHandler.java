@@ -162,7 +162,7 @@ public final class PPOrderAdvisedHandler
 		return Flag.of(ppOrderAdvisedEvent.isDirectlyPickSupply());
 	}
 
-	private PPOrderAdvisedEvent cast(@NonNull final AbstractPPOrderEvent ppOrderEvent)
+	private static PPOrderAdvisedEvent cast(@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
 		final PPOrderAdvisedEvent ppOrderAdvisedEvent = (PPOrderAdvisedEvent)ppOrderEvent;
 		return ppOrderAdvisedEvent;
