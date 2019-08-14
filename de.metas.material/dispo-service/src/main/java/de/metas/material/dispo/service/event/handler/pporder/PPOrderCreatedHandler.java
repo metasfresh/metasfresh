@@ -83,14 +83,13 @@ public final class PPOrderCreatedHandler
 	@Override
 	protected CandidatesQuery createPreExistingCandidatesQuery(@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
-		final PPOrderCreatedEvent ppOrderCreatedEvent = (PPOrderCreatedEvent)ppOrderEvent;
+		final PPOrderCreatedEvent ppOrderCreatedEvent = PPOrderCreatedEvent.cast(ppOrderEvent);
 		final PPOrder ppOrder = ppOrderCreatedEvent.getPpOrder();
 
 		final int groupId = ppOrder.getMaterialDispoGroupId();
 		if (groupId <= 0)
 		{
-			Loggables.get().addLog(
-					"The given ppOrderCreatedEvent has no groupId, so it was created by a user and not via material-dispo. Going to create new candidate records.");
+			Loggables.get().addLog("The given ppOrderCreatedEvent has no groupId, so it was created by a user and not via material-dispo. Going to create new candidate records.");
 			return CandidatesQuery.FALSE;
 		}
 
@@ -113,7 +112,7 @@ public final class PPOrderCreatedHandler
 			@NonNull final PPOrderLine ppOrderLine,
 			@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
-		final PPOrderCreatedEvent ppOrderCreatedEvent = (PPOrderCreatedEvent)ppOrderEvent;
+		final PPOrderCreatedEvent ppOrderCreatedEvent = PPOrderCreatedEvent.cast(ppOrderEvent);
 
 		final PPOrder ppOrder = ppOrderCreatedEvent.getPpOrder();
 		final int groupId = ppOrder.getMaterialDispoGroupId();
@@ -135,8 +134,7 @@ public final class PPOrderCreatedHandler
 		return query;
 	}
 
-	private static MaterialDescriptorQuery createMaterialDescriptorQuery(
-			@NonNull final ProductDescriptor productDescriptor)
+	private static MaterialDescriptorQuery createMaterialDescriptorQuery(@NonNull final ProductDescriptor productDescriptor)
 	{
 		return MaterialDescriptorQuery.builder()
 				.productId(productDescriptor.getProductId())

@@ -1,5 +1,7 @@
 package de.metas.material.event.pporder;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -37,6 +39,11 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class PPOrderAdvisedEvent extends AbstractPPOrderEvent
 {
+	public static PPOrderAdvisedEvent cast(@Nullable final AbstractPPOrderEvent ppOrderEvent)
+	{
+		return (PPOrderAdvisedEvent)ppOrderEvent;
+	}
+
 	public static final String TYPE = "PPOrderAdvisedEvent";
 
 	/**

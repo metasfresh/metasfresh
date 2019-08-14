@@ -94,18 +94,16 @@ public final class PPOrderAdvisedHandler
 	}
 
 	@Override
-	protected CandidatesQuery createPreExistingCandidatesQuery(
-			@NonNull final AbstractPPOrderEvent ppOrderEvent)
+	protected CandidatesQuery createPreExistingCandidatesQuery(@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
-		final PPOrderAdvisedEvent ppOrderAdvisedEvent = cast(ppOrderEvent);
+		final PPOrderAdvisedEvent ppOrderAdvisedEvent = PPOrderAdvisedEvent.cast(ppOrderEvent);
+		final PPOrder ppOrder = ppOrderAdvisedEvent.getPpOrder();
 
-		final DemandDetail demandDetail = //
-				DemandDetail.forSupplyRequiredDescriptorOrNull(ppOrderEvent.getSupplyRequiredDescriptor());
+		final DemandDetail demandDetail = DemandDetail.forSupplyRequiredDescriptorOrNull(ppOrderEvent.getSupplyRequiredDescriptor());
 		Check.errorIf(demandDetail == null, "Missing demandDetail for ppOrderAdvisedEvent={}", ppOrderAdvisedEvent);
 
 		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.ofDemandDetailOrNull(demandDetail);
 
-		final PPOrder ppOrder = ppOrderAdvisedEvent.getPpOrder();
 		final ProductionDetailsQuery productionDetailsQuery = ProductionDetailsQuery.builder()
 				.productPlanningId(ppOrder.getProductPlanningId())
 				.build();
@@ -125,10 +123,9 @@ public final class PPOrderAdvisedHandler
 			@NonNull final PPOrderLine ppOrderLine,
 			@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
-		final PPOrderAdvisedEvent ppOrderAdvisedEvent = cast(ppOrderEvent);
+		final PPOrderAdvisedEvent ppOrderAdvisedEvent = PPOrderAdvisedEvent.cast(ppOrderEvent);
 
-		final DemandDetail demandDetail = //
-				DemandDetail.forSupplyRequiredDescriptorOrNull(ppOrderEvent.getSupplyRequiredDescriptor());
+		final DemandDetail demandDetail = DemandDetail.forSupplyRequiredDescriptorOrNull(ppOrderAdvisedEvent.getSupplyRequiredDescriptor());
 		Check.errorIf(demandDetail == null, "Missing demandDetail for ppOrderAdvisedEvent={}", ppOrderAdvisedEvent);
 
 		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.ofDemandDetailOrNull(demandDetail);
@@ -158,13 +155,7 @@ public final class PPOrderAdvisedHandler
 	@Override
 	protected Flag extractIsDirectlyPickSupply(@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
-		final PPOrderAdvisedEvent ppOrderAdvisedEvent = cast(ppOrderEvent);
+		final PPOrderAdvisedEvent ppOrderAdvisedEvent = PPOrderAdvisedEvent.cast(ppOrderEvent);
 		return Flag.of(ppOrderAdvisedEvent.isDirectlyPickSupply());
-	}
-
-	private static PPOrderAdvisedEvent cast(@NonNull final AbstractPPOrderEvent ppOrderEvent)
-	{
-		final PPOrderAdvisedEvent ppOrderAdvisedEvent = (PPOrderAdvisedEvent)ppOrderEvent;
-		return ppOrderAdvisedEvent;
 	}
 }

@@ -65,13 +65,33 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
 	}
 
+	/**
+	 * @return candidateGroupId
+	 */
 	protected final int handleAbstractPPOrderEvent(@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
+		final Candidate headerCandidate = createHeaderCandidate(ppOrderEvent);
+
 		final PPOrder ppOrder = ppOrderEvent.getPpOrder();
+		for (final PPOrderLine ppOrderLine : ppOrder.getLines())
+		{
+			final Candidate lineCandidate = createLineCandidate(
+					ppOrderEvent,
+					ppOrderLine,
+					headerCandidate.getGroupId(),
+					headerCandidate.getSeqNo());
+			candidateChangeHandler.onCandidateNewOrChange(lineCandidate);
+		}
 
-		//final CandidateStatus candidateStatus = getCandidateStatus(ppOrder);
+		return headerCandidate.getGroupId();
+	}
 
+	private Candidate createHeaderCandidate(@NonNull final AbstractPPOrderEvent ppOrderEvent)
+	{
+		final PPOrder ppOrder = ppOrderEvent.getPpOrder();
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = ppOrderEvent.getSupplyRequiredDescriptor();
+
+		// final CandidateStatus candidateStatus = getCandidateStatus(ppOrder);
 
 		final CandidatesQuery preExistingSupplyQuery = createPreExistingCandidatesQuery(ppOrderEvent);
 		final Candidate existingCandidateOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(preExistingSupplyQuery);
@@ -83,8 +103,7 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 		final ProductionDetail headerCandidateProductionDetail = createProductionDetailForPPOrder(
 				ppOrderEvent,
 				existingCandidateOrNull);
-		final MaterialDescriptor headerCandidateMaterialDescriptor = createMaterialDescriptorForPpOrder(
-				ppOrder);
+		final MaterialDescriptor headerCandidateMaterialDescriptor = createMaterialDescriptorForPpOrder(ppOrder);
 		final DemandDetail headerCandidateDemandDetail = computeDemandDetailOrNull(
 				CandidateType.SUPPLY,
 				supplyRequiredDescriptor,
@@ -93,51 +112,54 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 		final Candidate headerCandidate = builder
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
-				//.status(candidateStatus)
+				// .status(candidateStatus)
 				.businessCaseDetail(headerCandidateProductionDetail)
 				.additionalDemandDetail(headerCandidateDemandDetail)
 				.materialDescriptor(headerCandidateMaterialDescriptor)
 				.build();
 
-		final Candidate candidateWithGroupId = candidateChangeHandler.onCandidateNewOrChange(headerCandidate);
+		final Candidate headerCandidateWithGroupId = candidateChangeHandler.onCandidateNewOrChange(headerCandidate);
+		return headerCandidateWithGroupId;
+	}
 
-		for (final PPOrderLine ppOrderLine : ppOrder.getLines())
-		{
-			final CandidatesQuery lineQuery = createPreExistingCandidatesQuery(ppOrderLine, ppOrderEvent);
-			final Candidate existingLineCandidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(lineQuery);
+	private Candidate createLineCandidate(
+			@NonNull final AbstractPPOrderEvent ppOrderEvent,
+			@NonNull final PPOrderLine ppOrderLine,
+			final int candidateGroupId,
+			final int headerCandidateSeqNo)
+	{
+		final PPOrder ppOrder = ppOrderEvent.getPpOrder();
+		final SupplyRequiredDescriptor supplyRequiredDescriptor = ppOrderEvent.getSupplyRequiredDescriptor();
 
-			final CandidateBuilder lineCandidateBuilder = existingLineCandidate != null
-					? existingLineCandidate.toBuilder()
-					: Candidate.builderForEventDescr(ppOrderEvent.getEventDescriptor());
+		final CandidatesQuery lineQuery = createPreExistingCandidatesQuery(ppOrderLine, ppOrderEvent);
+		final Candidate existingLineCandidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(lineQuery);
 
-			final CandidateType lineCandidateType = extractCandidateType(
-					ppOrderLine);
-			final MaterialDescriptor lineCandidateMaterialDescriptor = createMaterialDescriptorForPpOrderAndLine(
-					ppOrder,
-					ppOrderLine);
-			final DemandDetail lineCandidateDemandDetail = computeDemandDetailOrNull(
-					lineCandidateType,
-					supplyRequiredDescriptor,
-					lineCandidateMaterialDescriptor);
-			final ProductionDetail lineCandidateProductionDetail = createProductionDetailForPPOrderAndLine(
-					ppOrderEvent,
-					ppOrderLine);
+		final CandidateBuilder lineCandidateBuilder = existingLineCandidate != null
+				? existingLineCandidate.toBuilder()
+				: Candidate.builderForEventDescr(ppOrderEvent.getEventDescriptor());
 
-			lineCandidateBuilder
-					.type(lineCandidateType)
-					.businessCase(CandidateBusinessCase.PRODUCTION)
-					//.status(candidateStatus)
-					.groupId(candidateWithGroupId.getGroupId())
-					.seqNo(candidateWithGroupId.getSeqNo() + 1)
-					.businessCaseDetail(lineCandidateProductionDetail)
-					.additionalDemandDetail(lineCandidateDemandDetail)
-					.materialDescriptor(lineCandidateMaterialDescriptor);
+		final CandidateType lineCandidateType = extractCandidateType(ppOrderLine);
+		final MaterialDescriptor lineCandidateMaterialDescriptor = createMaterialDescriptorForPpOrderAndLine(ppOrder, ppOrderLine);
+		final DemandDetail lineCandidateDemandDetail = computeDemandDetailOrNull(
+				lineCandidateType,
+				supplyRequiredDescriptor,
+				lineCandidateMaterialDescriptor);
+		final ProductionDetail lineCandidateProductionDetail = createProductionDetailForPPOrderAndLine(ppOrderEvent, ppOrderLine);
 
-			// in case of CandidateType.DEMAND this might trigger further demand events
-			candidateChangeHandler.onCandidateNewOrChange(lineCandidateBuilder.build());
-		}
+		lineCandidateBuilder
+				.type(lineCandidateType)
+				.businessCase(CandidateBusinessCase.PRODUCTION)
+				// .status(candidateStatus)
+				.groupId(candidateGroupId)
+				.seqNo(headerCandidateSeqNo + 1)
+				.businessCaseDetail(lineCandidateProductionDetail)
+				.additionalDemandDetail(lineCandidateDemandDetail)
+				.materialDescriptor(lineCandidateMaterialDescriptor);
 
-		return candidateWithGroupId.getGroupId();
+		// in case of CandidateType.DEMAND this might trigger further demand events
+
+		//
+		return lineCandidateBuilder.build();
 	}
 
 	/**
@@ -146,7 +168,7 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 	 * Supply candidates that are about *another* product that the required one (i.e. co- and by-products) may not have that demand detail.
 	 * (Otherwise, their stock candidate would be connected to the resp. demand record)
 	 */
-	private DemandDetail computeDemandDetailOrNull(
+	private static DemandDetail computeDemandDetailOrNull(
 			final CandidateType lineCandidateType,
 			final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			final MaterialDescriptor materialDescriptor)
@@ -174,14 +196,10 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 		return null;
 	}
 
-	protected abstract CandidatesQuery createPreExistingCandidatesQuery(
-			AbstractPPOrderEvent ppOrderEvent);
+	protected abstract CandidatesQuery createPreExistingCandidatesQuery(AbstractPPOrderEvent ppOrderEvent);
+	protected abstract CandidatesQuery createPreExistingCandidatesQuery(PPOrderLine ppOrderLine, AbstractPPOrderEvent ppOrderEvent);
 
-	protected abstract CandidatesQuery createPreExistingCandidatesQuery(
-			PPOrderLine ppOrderLine,
-			AbstractPPOrderEvent ppOrderEvent);
-
-	protected final CandidateType extractCandidateType(final PPOrderLine ppOrderLine)
+	protected static final CandidateType extractCandidateType(final PPOrderLine ppOrderLine)
 	{
 		return ppOrderLine.isReceipt() ? CandidateType.SUPPLY : CandidateType.DEMAND;
 	}
@@ -190,14 +208,13 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 	{
 		final BigDecimal qtyOpen = ppOrder.getQtyRequired().subtract(ppOrder.getQtyDelivered());
 
-		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
+		return MaterialDescriptor.builder()
 				.date(ppOrder.getDatePromised())
 				.productDescriptor(ppOrder.getProductDescriptor())
 				.quantity(qtyOpen)
 				.warehouseId(ppOrder.getWarehouseId())
-				//.customerId(ppOrder.getBPartnerId()) not 100% sure if the ppOrder's bPartner is the customer this is made for
+				// .customerId(ppOrder.getBPartnerId()) not 100% sure if the ppOrder's bPartner is the customer this is made for
 				.build();
-		return materialDescriptor;
 	}
 
 	private static MaterialDescriptor createMaterialDescriptorForPpOrderAndLine(
@@ -217,31 +234,30 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 			qtyDelivered = ppOrder.getQtyDelivered();
 		}
 
-		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
+		return MaterialDescriptor.builder()
 				.date(ppOrderLine.getIssueOrReceiveDate())
 				.productDescriptor(ppOrderLine.getProductDescriptor())
 				.quantity(qtyRequired.subtract(qtyDelivered))
 				.warehouseId(ppOrder.getWarehouseId())
-				//.customerId(ppOrder.getBPartnerId()) not 100% sure if the ppOrder's bPartner is the customer this is made for
+				// .customerId(ppOrder.getBPartnerId()) not 100% sure if the ppOrder's bPartner is the customer this is made for
 				.build();
-		return materialDescriptor;
 	}
 
-//	private static CandidateStatus getCandidateStatus(@NonNull final PPOrder ppOrder)
-//	{
-//		final CandidateStatus candidateStatus;
-//		final String docStatus = ppOrder.getDocStatus();
-//
-//		if (ppOrder.getPpOrderId() <= 0)
-//		{
-//			candidateStatus = CandidateStatus.doc_planned;
-//		}
-//		else
-//		{
-//			candidateStatus = EventUtil.getCandidateStatus(docStatus);
-//		}
-//		return candidateStatus;
-//	}
+	// private static CandidateStatus getCandidateStatus(@NonNull final PPOrder ppOrder)
+	// {
+	// final CandidateStatus candidateStatus;
+	// final String docStatus = ppOrder.getDocStatus();
+	//
+	// if (ppOrder.getPpOrderId() <= 0)
+	// {
+	// candidateStatus = CandidateStatus.doc_planned;
+	// }
+	// else
+	// {
+	// candidateStatus = EventUtil.getCandidateStatus(docStatus);
+	// }
+	// return candidateStatus;
+	// }
 
 	private ProductionDetail createProductionDetailForPPOrder(
 			@NonNull final AbstractPPOrderEvent ppOrderEvent,

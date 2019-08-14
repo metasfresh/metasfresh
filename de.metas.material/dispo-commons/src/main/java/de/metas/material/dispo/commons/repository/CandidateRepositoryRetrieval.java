@@ -11,7 +11,6 @@ import java.util.stream.Stream;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -31,6 +30,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.commons.repository.repohelpers.DemandDetailRepoHelper;
 import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
@@ -45,6 +45,7 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /*
@@ -147,7 +148,7 @@ public class CandidateRepositoryRetrieval
 
 		final DemandDetail demandDetailOrNull = createDemandDetailOrNull(candidateRecordOrNull);
 
-		final BusinessCaseDetail businessCaseDetail = Util.coalesce(productionDetailOrNull, distributionDetailOrNull, purchaseDetailOrNull, demandDetailOrNull);
+		final BusinessCaseDetail businessCaseDetail = CoalesceUtil.coalesce(productionDetailOrNull, distributionDetailOrNull, purchaseDetailOrNull, demandDetailOrNull);
 		builder.businessCaseDetail(businessCaseDetail);
 		if (hasProductionDetail > 0 || hasDistributionDetail > 0 || hasPurchaseDetail > 0)
 		{
@@ -331,4 +332,12 @@ public class CandidateRepositoryRetrieval
 				.endOrderBy();
 	}
 
+	public List<Candidate> retrieveCandidatesForPPOrderId(final int ppOrderId)
+	{
+		final CandidatesQuery query = CandidatesQuery.builder()
+				.productionDetailsQuery(ProductionDetailsQuery.builder()
+						.ppOrderId(ppOrderId).build())
+				.build();
+		return retrieveOrderedByDateAndSeqNo(query);
+	}
 }

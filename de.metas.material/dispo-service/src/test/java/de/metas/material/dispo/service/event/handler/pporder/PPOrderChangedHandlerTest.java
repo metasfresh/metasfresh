@@ -15,7 +15,6 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.commons.EventDescriptor;
@@ -63,8 +62,8 @@ public class PPOrderChangedHandlerTest
 		final MaterialDescriptor materialDescriptor = EventTestHelper.createMaterialDescriptor();
 
 		// setup a candidate to be updated
-		final Candidate candidatetoUpdate = Candidate.builder()
-				//.status(CandidateStatus.doc_closed)
+		final Candidate candidateToUpdate = Candidate.builder()
+				// .status(CandidateStatus.doc_closed)
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(materialDescriptor)
 				.businessCaseDetail(ProductionDetail.builder()
@@ -74,11 +73,13 @@ public class PPOrderChangedHandlerTest
 						.build())
 				.build();
 
+		final int ppOrderId = 30;
+
 		// @formatter:off
 		new Expectations()
 		{{
-			candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo((CandidatesQuery)any);
-			result = ImmutableList.of(candidatetoUpdate);
+			candidateRepositoryRetrieval.retrieveCandidatesForPPOrderId(ppOrderId);
+			result = ImmutableList.of(candidateToUpdate);
 		}};	// @formatter:on
 
 		final PPOrderChangedEvent ppOrderChangedEvent = PPOrderChangedEvent.builder()
@@ -92,7 +93,7 @@ public class PPOrderChangedHandlerTest
 				.oldQtyDelivered(ONE)
 				.oldQtyRequired(TEN)
 				.productDescriptor(materialDescriptor)
-				.ppOrderId(30)
+				.ppOrderId(ppOrderId)
 				.build();
 
 		final PPOrderChangedHandler ppOrderDocStatusChangedHandler = new PPOrderChangedHandler(

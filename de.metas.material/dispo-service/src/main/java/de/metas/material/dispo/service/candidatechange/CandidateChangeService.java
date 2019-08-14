@@ -50,9 +50,6 @@ public class CandidateChangeService
 
 	/**
 	 * Persists the given candidate and decides if further events shall be fired.
-	 *
-	 * @param candidate
-	 * @return
 	 */
 	public Candidate onCandidateNewOrChange(@NonNull final Candidate candidate)
 	{
