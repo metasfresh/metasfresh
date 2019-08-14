@@ -21,7 +21,9 @@ import com.paypal.payments.AuthorizationsCaptureRequest;
 import com.paypal.payments.Capture;
 import com.paypal.payments.CaptureRequest;
 
+import de.metas.JsonObjectMapperHolder;
 import de.metas.currency.Amount;
+import de.metas.payment.paypal.PayPalClientResponse;
 import de.metas.payment.paypal.config.PayPalConfig;
 import de.metas.payment.paypal.config.PayPalConfigProvider;
 import de.metas.payment.paypal.logs.PayPalCreateLogRequest;
@@ -68,21 +70,20 @@ public class PayPalClientService
 		this.logsRepo = logsRepo;
 	}
 
-	public Order getAPIOrderById(@NonNull final PayPalOrderExternalId apiOrderId, @NonNull final PayPalClientExecutionContext context)
+	public PayPalClientResponse<Order, PayPalErrorResponse> getAPIOrderById(@NonNull final PayPalOrderExternalId apiOrderId, @NonNull final PayPalClientExecutionContext context)
 	{
 		final OrdersGetRequest request = new OrdersGetRequest(apiOrderId.getAsString());
-		final HttpResponse<Order> response = executeRequest(request, context);
-		return response.result();
+		return executeRequest(request, context);
 	}
 
 	public Order createOrder(@NonNull final OrderRequest apiRequest, @NonNull PayPalClientExecutionContext context)
 	{
-		final OrdersCreateRequest httpCreateRequest = new OrdersCreateRequest();
-		httpCreateRequest.header("prefer", "return=representation");
-		httpCreateRequest.requestBody(apiRequest);
+		final OrdersCreateRequest request = new OrdersCreateRequest();
+		request.header("prefer", "return=representation");
+		request.requestBody(apiRequest);
 
-		final HttpResponse<Order> response = executeRequest(httpCreateRequest, context);
-		return response.result();
+		return executeRequest(request, context)
+				.getResult();
 	}
 
 	public Order authorizeOrder(
@@ -90,8 +91,8 @@ public class PayPalClientService
 			@NonNull final PayPalClientExecutionContext context)
 	{
 		final OrdersAuthorizeRequest request = new OrdersAuthorizeRequest(apiOrderId.getAsString());
-		final HttpResponse<Order> response = executeRequest(request, context);
-		return response.result();
+		return executeRequest(request, context)
+				.getResult();
 	}
 
 	public PayPalHttpClient createPayPalHttpClient(@NonNull final PayPalConfig config)
@@ -123,13 +124,18 @@ public class PayPalClientService
 		return payPalConfigProvider.getConfig();
 	}
 
-	private <T> HttpResponse<T> executeRequest(
+	private <T> PayPalClientResponse<T, PayPalErrorResponse> executeRequest(
 			@NonNull final HttpRequest<T> request,
 			@NonNull final PayPalClientExecutionContext context)
 	{
 		final PayPalCreateLogRequestBuilder log = PayPalCreateLogRequest.builder()
-				.salesOrderId(context.getSalesOrderId())
 				.paymentReservationId(context.getPaymentReservationId())
+				.paymentReservationCaptureId(context.getPaymentReservationCaptureId())
+				//
+				.salesOrderId(context.getSalesOrderId())
+				.salesInvoiceId(context.getSalesInvoiceId())
+				.paymentId(context.getPaymentId())
+				//
 				.internalPayPalOrderId(context.getInternalPayPalOrderId());
 
 		try
@@ -139,12 +145,24 @@ public class PayPalClientService
 			final PayPalHttpClient httpClient = createPayPalHttpClient(getConfig());
 			final HttpResponse<T> response = httpClient.execute(request);
 			log.response(response);
-			return response;
+
+			return PayPalClientResponse.ofResult(response.result());
 		}
-		catch (final HttpException ex)
+		catch (final HttpException httpException)
 		{
-			log.response(ex);
-			throw AdempiereException.wrapIfNeeded(ex);
+			log.response(httpException);
+
+			final String errorAsJson = httpException.getMessage();
+			try
+			{
+				final PayPalErrorResponse error = JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(errorAsJson, PayPalErrorResponse.class);
+				return PayPalClientResponse.ofError(error, httpException);
+			}
+			catch (final Exception jsonException)
+			{
+				throw AdempiereException.wrapIfNeeded(httpException)
+						.suppressing(jsonException);
+			}
 		}
 		catch (final IOException ex)
 		{
@@ -170,7 +188,7 @@ public class PayPalClientService
 								.value(amount.getAsBigDecimal().toPlainString()))
 						.finalCapture(finalCapture));
 
-		final HttpResponse<Capture> response = executeRequest(request, context);
-		return response.result();
+		return executeRequest(request, context)
+				.getResult();
 	}
 }

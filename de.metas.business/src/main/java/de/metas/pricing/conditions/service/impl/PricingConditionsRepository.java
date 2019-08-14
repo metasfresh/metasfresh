@@ -547,7 +547,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		final ICompositeQueryFilter<I_M_DiscountSchemaBreak> breaksFromOtherPricingConditions = queryBL.createCompositeQueryFilter(I_M_DiscountSchemaBreak.class)
 				.setJoinAnd()
 				.addFilter(queryFilter)
-				.addNotEqualsFilter(I_M_DiscountSchemaBreak.COLUMNNAME_M_DiscountSchema_ID, pricingConditionsId);
+				.addNotEqualsFilter(I_M_DiscountSchemaBreak.COLUMNNAME_M_DiscountSchema_ID, pricingConditionsId.getDiscountSchemaId());
 
 		final List<I_M_DiscountSchemaBreak> discountSchemaBreakRecords = retrieveDiscountSchemaBreakRecords(breaksFromOtherPricingConditions);
 
@@ -571,9 +571,11 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 			@NonNull final PricingConditionsId toPricingConditionsId)
 	{
 		final I_M_DiscountSchemaBreak newBreak = copy()
+				.setSkipCalculatedColumns(true)
 				.setFrom(from)
 				.copyToNew(I_M_DiscountSchemaBreak.class);
 
+		newBreak.setSeqNo(retrieveNextSeqNo(toPricingConditionsId.getDiscountSchemaId()));
 		newBreak.setM_DiscountSchema_ID(toPricingConditionsId.getDiscountSchemaId());
 
 		saveRecord(newBreak);

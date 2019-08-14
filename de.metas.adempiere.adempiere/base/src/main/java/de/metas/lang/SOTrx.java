@@ -1,5 +1,9 @@
 package de.metas.lang;
 
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -26,13 +30,20 @@ public enum SOTrx
 {
 	SALES, PURCHASE;
 
-	public static SOTrx ofBoolean(final Boolean isSOTrx)
+	public static SOTrx ofBoolean(@Nullable final Boolean isSOTrx)
 	{
 		if (isSOTrx == null)
 		{
 			return null;
 		}
 		return isSOTrx ? SALES : PURCHASE;
+	}
+
+	public static Optional<SOTrx> optionalOfBoolean(@Nullable final Boolean isSOTrx)
+	{
+		return isSOTrx != null
+				? Optional.of(ofBoolean(isSOTrx))
+				: Optional.empty();
 	}
 
 	public boolean toBoolean()
@@ -42,7 +53,7 @@ public enum SOTrx
 
 	public static boolean toBoolean(final SOTrx soTrx)
 	{
-		if(soTrx == null)
+		if (soTrx == null)
 		{
 			return false;
 		}

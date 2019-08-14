@@ -3,7 +3,6 @@ package de.metas.inoutcandidate.modelvalidator;
 import java.util.Collection;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyRegistry;
@@ -21,7 +20,6 @@ import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
-import de.metas.inoutcandidate.housekeeping.sqi.impl.Reset_M_ShipmentSchedule_Recompute;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.impl.DefaultCandidateProcessor;
 import de.metas.inoutcandidate.spi.impl.OnlyOneOpenInvoiceCandProcessor;
@@ -53,7 +51,7 @@ public final class InOutCandidateValidator implements ModelValidator
 	}
 
 	@Override
-	public final void initialize(final ModelValidationEngine engine, final MClient client)
+	public void initialize(final ModelValidationEngine engine, final MClient client)
 	{
 		if (client != null)
 		{
@@ -77,9 +75,6 @@ public final class InOutCandidateValidator implements ModelValidator
 		engine.addModelValidator(new M_ShipmentSchedule_QtyPicked(), client); // task 08123
 
 		engine.addModelChange(org.compiere.model.I_M_Product.Table_Name, this);
-
-		// FRESH-342: clean up stale M_ShipmentSchedule_Recompute records.
-		Services.get(IHouseKeepingBL.class).registerStartupHouseKeepingTask(new Reset_M_ShipmentSchedule_Recompute());
 
 		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 

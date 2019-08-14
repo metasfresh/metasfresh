@@ -1,6 +1,11 @@
 package de.metas.payment.reservation;
 
+import java.time.LocalDate;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.invoice.InvoiceId;
 import de.metas.money.Money;
+import de.metas.order.OrderId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -32,7 +37,16 @@ import lombok.Value;
 public class PaymentReservationCaptureRequest
 {
 	@NonNull
-	PaymentReservationId paymentReservationId;
+	OrderId salesOrderId;
+
+	@NonNull
+	InvoiceId salesInvoiceId;
+	
+	@NonNull
+	BPartnerId customerId;
+	
+	@NonNull
+	LocalDate dateTrx;
 
 	@NonNull
 	Money amount;

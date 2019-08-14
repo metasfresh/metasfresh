@@ -23,6 +23,7 @@ package de.metas.lock.housekeeping.spi.impl;
  */
 
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
+import org.springframework.stereotype.Component;
 
 import de.metas.lock.api.ILockManager;
 import de.metas.util.Loggables;
@@ -35,6 +36,7 @@ import de.metas.util.Services;
  * @author tsa
  * @task 06295
  */
+@Component
 public class ClearLocks implements IStartupHouseKeepingTask
 {
 	@Override

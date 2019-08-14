@@ -69,9 +69,9 @@ public class UserDAO implements IUserDAO
 				.addEqualsFilter(I_AD_User.COLUMNNAME_IsSystemUser, true);
 
 		queryBuilder.addCompositeQueryFilter()
-				.setJoinOr()
-				.addEqualsFilter(I_AD_User.COLUMNNAME_Login, userId)
-				.addEqualsFilter(I_AD_User.COLUMNNAME_EMail, userId);
+		.setJoinOr()
+		.addEqualsFilter(I_AD_User.COLUMNNAME_Login, userId)
+		.addEqualsFilter(I_AD_User.COLUMNNAME_EMail, userId);
 
 		final List<I_AD_User> users = queryBuilder.create().list();
 		if (users.size() > 1)
@@ -242,7 +242,7 @@ public class UserDAO implements IUserDAO
 		{
 			return new InternetAddress(email).getAddress();
 		}
-		catch (AddressException e)
+		catch (final AddressException e)
 		{
 			logger.warn("Invalid email address `{}`. Returning null.", email, e);
 			return null;
@@ -286,5 +286,4 @@ public class UserDAO implements IUserDAO
 				.create()
 				.listIds(UserId::ofRepoId);
 	}
-
 }

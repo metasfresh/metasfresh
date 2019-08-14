@@ -1,17 +1,12 @@
 package de.metas.payment.reservation;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.service.ClientId;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerContactId;
-import de.metas.currency.Amount;
 import de.metas.email.EMailAddress;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
@@ -73,9 +68,6 @@ public class PaymentReservation
 	@Setter(AccessLevel.PACKAGE)
 	PaymentReservationId id;
 
-	@NonNull
-	ArrayList<PaymentReservationCapture> captures;
-
 	@Builder
 	private PaymentReservation(
 			@NonNull final ClientId clientId,
@@ -87,8 +79,7 @@ public class PaymentReservation
 			@NonNull final LocalDate dateTrx,
 			@NonNull final PaymentRule paymentRule,
 			@NonNull final PaymentReservationStatus status,
-			@Nullable final PaymentReservationId id,
-			@Nullable final Collection<PaymentReservationCapture> captures)
+			@Nullable final PaymentReservationId id)
 	{
 		this.clientId = clientId;
 		this.orgId = orgId;
@@ -100,24 +91,10 @@ public class PaymentReservation
 		this.paymentRule = paymentRule;
 		this.status = status;
 		this.id = id;
-
-		this.captures = captures != null
-				? new ArrayList<>(captures)
-				: new ArrayList<>();
 	}
 
 	public void changeStatusTo(@NonNull final PaymentReservationStatus status)
 	{
 		this.status = status;
-	}
-
-	public ImmutableList<PaymentReservationCapture> getCaptures()
-	{
-		return ImmutableList.copyOf(captures);
-	}
-	
-	public void captureAmount(final Amount amount)
-	{
-		// TODO
 	}
 }

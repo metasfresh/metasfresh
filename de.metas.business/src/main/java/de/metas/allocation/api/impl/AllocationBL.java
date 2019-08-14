@@ -155,7 +155,10 @@ public class AllocationBL implements IAllocationBL
 	}
 
 	@Override
-	public I_C_AllocationHdr autoAllocateSpecificPayment(org.compiere.model.I_C_Invoice invoice, org.compiere.model.I_C_Payment payment, boolean ignoreIsAutoAllocateAvailableAmt)
+	public I_C_AllocationHdr autoAllocateSpecificPayment(
+			org.compiere.model.I_C_Invoice invoice,
+			org.compiere.model.I_C_Payment payment,
+			boolean ignoreIsAutoAllocateAvailableAmt)
 	{
 		if (invoice.isPaid())
 		{

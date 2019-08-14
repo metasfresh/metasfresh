@@ -69,7 +69,6 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
-import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.invoice.InvoiceUtil;
 import de.metas.invoicecandidate.api.IAggregationEngine;
@@ -87,6 +86,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.OrderLineId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -126,7 +126,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	/**
 	 * Implementations of this interface are responsible for converting a given {@link IInvoiceHeader} to an {@link I_C_Invoice} with lines and process it.
 	 */
-	protected static interface IInvoiceGeneratorRunnable extends TrxRunnable
+	protected interface IInvoiceGeneratorRunnable extends TrxRunnable
 	{
 		/**
 		 * Initialize this processor. This method will be called by framework, don't call it directly.
@@ -522,22 +522,22 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 				invoiceLine.setIsPrinted(ilVO.isPrinted()); // 07371
 
-				final int orderLineId = ilVO.getC_OrderLine_ID();
-				if (orderLineId > 0)
+				final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(ilVO.getC_OrderLine_ID());
+				if (orderLineId != null)
 				{
 					//
 					// Special case: we can retain the 1:n relation between C_OrderLine and C_InvoiceLine
-					final I_C_OrderLine orderLine = create(ilCtx, orderLineId, I_C_OrderLine.class, ilTrxName);
 
 					//
 					// Note that this also sets the order line's C_Tax_ID
-					invoiceLine.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
+					invoiceLine.setC_OrderLine_ID(orderLineId.getRepoId());
 
 					// // 07242
 					// // Also set the tax from the orderLine
 					// ts: don't set it here; in MInvoiceLine.beforeSave() we call MInvoiceLine.setTax() to set it on the fly. Don't just take the order line's rate, because it might have changed
 					// since the order was created.
-					// invoiceLine.setC_Tax(orderLine.getC_Tax());
+					// final I_C_OrderLine orderLine = create(ilCtx, orderLineId, I_C_OrderLine.class, ilTrxName);
+					// invoiceLine.setC_Tax_ID(orderLine.getC_Tax_ID());
 				}
 
 				final BigDecimal qtyToInvoice = ilVO.getQtyToInvoice();

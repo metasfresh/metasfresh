@@ -38,6 +38,8 @@ import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -77,7 +79,8 @@ import de.metas.util.Services;
 	@Override
 	public I_C_UOM getC_UOM()
 	{
-		return ppOrder.getC_UOM();
+		final UomId uomId = UomId.ofRepoId(ppOrder.getC_UOM_ID());
+		return Services.get(IUOMDAO.class).getById(uomId);
 	}
 
 	@Override

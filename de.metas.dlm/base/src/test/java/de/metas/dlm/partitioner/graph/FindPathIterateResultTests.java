@@ -62,7 +62,7 @@ public class FindPathIterateResultTests
 		InterfaceWrapperHelper.save(order);
 
 		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
-		invoice.setC_Order(order);
+		invoice.setC_Order_ID(order.getC_Order_ID());
 		InterfaceWrapperHelper.save(invoice);
 
 		final I_C_Payment payment = InterfaceWrapperHelper.newInstance(I_C_Payment.class);

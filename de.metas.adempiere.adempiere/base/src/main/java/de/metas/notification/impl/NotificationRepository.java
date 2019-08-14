@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -131,7 +132,7 @@ public class NotificationRepository implements INotificationRepository
 			final ITableRecordReference targetRecord = targetRecordAction.getRecord();
 			notificationPO.setAD_Table_ID(targetRecord.getAD_Table_ID());
 			notificationPO.setRecord_ID(targetRecord.getRecord_ID());
-			notificationPO.setAD_Window_ID(targetRecordAction.getAdWindowId());
+			notificationPO.setAD_Window_ID(targetRecordAction.getAdWindowId().map(AdWindowId::getRepoId).orElse(-1));
 		}
 		else if (targetAction instanceof TargetViewAction)
 		{

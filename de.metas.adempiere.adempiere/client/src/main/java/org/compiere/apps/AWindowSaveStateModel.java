@@ -26,6 +26,7 @@ import java.time.LocalDate;
 
 import java.util.Properties;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -86,8 +87,8 @@ public class AWindowSaveStateModel
 
 	private boolean retrieveEnabled(final UserId loggedUserId)
 	{
-		final int windowId = MTable.get(Env.getCtx(), I_AD_Field.Table_Name).getAD_Window_ID();
-		if (windowId <= 0)
+		final AdWindowId windowId = AdWindowId.ofRepoIdOrNull(MTable.get(Env.getCtx(), I_AD_Field.Table_Name).getAD_Window_ID());
+		if (windowId == null)
 		{
 			return false;
 		}
@@ -107,15 +108,7 @@ public class AWindowSaveStateModel
 
 	public void save(final GridTab gridTab)
 	{
-		Services.get(ITrxManager.class).run(new TrxRunnable()
-		{
-
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				save0(gridTab, localTrxName);
-			}
-		});
+		Services.get(ITrxManager.class).run((TrxRunnable)localTrxName -> save0(gridTab, localTrxName));
 	}
 
 	private void save0(final GridTab gridTab, final String trxName)

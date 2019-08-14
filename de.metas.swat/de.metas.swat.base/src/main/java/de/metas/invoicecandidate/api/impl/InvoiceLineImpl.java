@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_Tax;
 
 import com.google.common.collect.ImmutableSet;
@@ -40,6 +39,7 @@ import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Default (bean) implementation for {@link IInvoiceLineRW}.
@@ -57,6 +57,7 @@ import lombok.NonNull;
 
 // The excludes are here because they were this way in the former code. I'm not really sure that we really "must" include e.g. "C_PaymentTerm_ID"..
 @EqualsAndHashCode(exclude = { "activityID", "tax", "lineNo", "invoiceLineAttributes", "iciolsToUpdate", "C_PaymentTerm_ID" })
+@ToString(doNotUseGetters = true)
 /* package */ class InvoiceLineImpl implements IInvoiceLineRW
 {
 	private int M_Product_ID;
@@ -76,12 +77,6 @@ import lombok.NonNull;
 	private Set<IInvoiceLineAttribute> invoiceLineAttributes = Collections.emptySet();
 	private List<IInvoiceCandidateInOutLineToUpdate> iciolsToUpdate = new ArrayList<>();
 	private int C_PaymentTerm_ID;
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
-	}
 
 	@Override
 	public int getM_Product_ID()

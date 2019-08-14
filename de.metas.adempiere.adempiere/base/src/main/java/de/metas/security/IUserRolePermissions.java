@@ -3,6 +3,7 @@ package de.metas.security;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -61,10 +62,10 @@ public interface IUserRolePermissions
 	Permission PERMISSION_InfoWindow_Asset = InfoWindowPermission.ofInfoWindowKey("InfoAsset");
 
 	/** Access SQL Not Fully Qualified */
-	public static final boolean SQL_NOTQUALIFIED = false;
+	boolean SQL_NOTQUALIFIED = false;
 
 	/** Access SQL Fully Qualified */
-	public static final boolean SQL_FULLYQUALIFIED = true;
+	boolean SQL_FULLYQUALIFIED = true;
 
 	/**
 	 * @return user friendly extended string representation
@@ -110,9 +111,9 @@ public interface IUserRolePermissions
 	String addAccessSQL(String sql, String tableNameIn, boolean fullyQualified, Access access);
 
 	/** @return window permissions; never return null */
-	ElementPermission checkWindowPermission(int AD_Window_ID);
+	ElementPermission checkWindowPermission(AdWindowId AD_Window_ID);
 
-	Boolean getWindowAccess(int AD_Window_ID);
+	Boolean getWindowAccess(AdWindowId AD_Window_ID);
 
 	Boolean checkWorkflowAccess(int AD_Workflow_ID);
 

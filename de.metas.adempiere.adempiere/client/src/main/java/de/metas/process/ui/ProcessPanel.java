@@ -17,6 +17,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
@@ -74,7 +75,7 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 	private final I_AD_Process _adProcessTrl;
 	private final int m_WindowNo;
 	private final int m_TabNo;
-	private final int adWindowId;
+	private final AdWindowId adWindowId;
 	private final String whereClause;
 	private final int adTableId;
 	private final int recordId;
@@ -119,7 +120,7 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 		adTableId = builder.getAD_Table_ID();
 		recordId = builder.getRecord_ID();
 
-		adWindowId = builder.getAD_Window_ID();
+		adWindowId = builder.getAdWindowId();
 
 		skipResultsPanel = builder.isSkipResultsPanel();
 		printPreview = builder.isPrintPreview();
@@ -491,7 +492,7 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 				.setWhereClause(whereClause)
 				.setRecord(adTableId, recordId)
 				.setWindowNo(m_WindowNo).setTabNo(m_TabNo)
-				.setAD_Window_ID(adWindowId)
+				.setAdWindowId(adWindowId)
 				.addParameters(parameterPanel == null ? ImmutableList.of() : parameterPanel.createParameters())
 				.setPrintPreview(printPreview)
 				.build();
@@ -689,7 +690,9 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 					return d1;
 				}
 				else
+				{
 					return d;
+				}
 			}
 		};
 
@@ -712,13 +715,13 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 			message.setCaretPosition(message.getDocument().getLength());	// scroll down
 		}
 
-		public final void setText(final String text)
+		public void setText(final String text)
 		{
 			messageBuf.setLength(0);
 			appendText(text);
 		}
 
-		public final void appendText(final String text)
+		public void appendText(final String text)
 		{
 			messageBuf.append(text);
 			message.setText(messageBuf.toString());

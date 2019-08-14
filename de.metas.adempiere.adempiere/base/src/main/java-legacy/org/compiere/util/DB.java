@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
@@ -77,6 +78,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.cache.CacheMgt;
 import de.metas.i18n.ILanguageDAO;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.IADPInstanceDAO;
@@ -287,7 +289,9 @@ public final class DB
 			s_connectionLock.unlock();
 		}
 		if (closed)
+		{
 			log.debug("Target database closed");
+		}
 	}	// closeTarget
 
 	/**
@@ -510,7 +514,9 @@ public final class DB
 	{
 		final CConnection s_cc = getCConnection();
 		if (s_cc != null)
+		{
 			return s_cc.getDBInfo();
+		}
 		return "No Database";
 	}	// getDatabaseInfo
 // @formatter:off
@@ -644,7 +650,9 @@ public final class DB
 	public static CallableStatement prepareCall(String SQL, int resultSetConcurrency, String trxName)
 	{
 		if (SQL == null || SQL.length() == 0)
+		{
 			throw new IllegalArgumentException("Required parameter missing - " + SQL);
+		}
 		return statementsFactory.newCCallableStatement(ResultSet.TYPE_FORWARD_ONLY, resultSetConcurrency, SQL, trxName);
 	}	// prepareCall
 
@@ -661,7 +669,9 @@ public final class DB
 		int concurrency = ResultSet.CONCUR_READ_ONLY;
 		String upper = sql.toUpperCase();
 		if (upper.startsWith("UPDATE ") || upper.startsWith("DELETE "))
+		{
 			concurrency = ResultSet.CONCUR_UPDATABLE;
+		}
 		return prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, concurrency, null);
 	}	// prepareStatement
 
@@ -670,7 +680,9 @@ public final class DB
 		int concurrency = ResultSet.CONCUR_READ_ONLY;
 		String upper = sql.toUpperCase();
 		if (upper.startsWith("UPDATE ") || upper.startsWith("DELETE "))
+		{
 			concurrency = ResultSet.CONCUR_UPDATABLE;
+		}
 		return prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, concurrency, trxName);
 	}	// prepareStatement
 
@@ -705,7 +717,9 @@ public final class DB
 			String trxName)
 	{
 		if (sql == null || sql.length() == 0)
+		{
 			throw new IllegalArgumentException("No SQL");
+		}
 		//
 		return statementsFactory.newCPreparedStatement(resultSetType, resultSetConcurrency, sql, trxName);
 	}	// prepareStatement
@@ -780,37 +794,62 @@ public final class DB
 			@Nullable final Object param) throws SQLException
 	{
 		if (param == null)
+		{
 			pstmt.setObject(index, null);
+		}
 		else if (param instanceof String)
+		{
 			pstmt.setString(index, (String)param);
+		}
 		else if (param instanceof Integer)
+		{
 			pstmt.setInt(index, ((Integer)param).intValue());
+		}
 		else if (param instanceof BigDecimal)
+		{
 			pstmt.setBigDecimal(index, (BigDecimal)param);
-		//
+		}
 		else if (param instanceof Timestamp)
+		{
 			pstmt.setTimestamp(index, (Timestamp)param);
+		}
 		else if (param instanceof Instant)
+		{
 			pstmt.setTimestamp(index, TimeUtil.asTimestamp(param));
-		else if (param instanceof java.util.Date) // metas: support for java.util.Date
+		}
+		else if (param instanceof java.util.Date)
+		{
 			pstmt.setTimestamp(index, new Timestamp(((java.util.Date)param).getTime()));
+		}
 		else if (param instanceof LocalDateTime)
+		{
 			pstmt.setTimestamp(index, TimeUtil.asTimestamp((LocalDateTime)param));
+		}
 		else if (param instanceof LocalDate)
+		{
 			pstmt.setTimestamp(index, TimeUtil.asTimestamp((LocalDate)param));
+		}
 		else if (param instanceof ZonedDateTime)
+		{
 			pstmt.setTimestamp(index, TimeUtil.asTimestamp(param));
-		//
+		}
 		else if (param instanceof Boolean)
+		{
 			pstmt.setString(index, ((Boolean)param).booleanValue() ? "Y" : "N");
-		//
+		}
 		else if (param instanceof RepoIdAware)
+		{
 			pstmt.setInt(index, ((RepoIdAware)param).getRepoId());
+		}
 		else if (param instanceof ReferenceListAwareEnum)
+		{
 			pstmt.setString(index, ((ReferenceListAwareEnum)param).getCode());
 		//
+		}
 		else
+		{
 			throw new DBException("Unknown parameter type " + index + " - " + param + " (" + param.getClass() + ")");
+		}
 	}
 
 	/**
@@ -1146,7 +1185,9 @@ public final class DB
 		{
 			Trx trx = Trx.get(trxName, false);
 			if (trx != null)
+			{
 				return trx.commit(true);
+			}
 
 			if (throwException)
 			{
@@ -1161,7 +1202,9 @@ public final class DB
 		{
 			log.error("[" + trxName + "]", e);
 			if (throwException)
+			{
 				throw e;
+			}
 			return false;
 		}
 	}	// commit
@@ -1181,17 +1224,25 @@ public final class DB
 			Connection conn = null;
 			Trx trx = trxName == null ? null : Trx.get(trxName, true);
 			if (trx != null)
+			{
 				return trx.rollback(true);
+			}
 			else
+			{
 				conn = DB.getConnectionRW();
+			}
 			if (conn != null && !conn.getAutoCommit())
+			{
 				conn.rollback();
+			}
 		}
 		catch (SQLException e)
 		{
 			log.error("[" + trxName + "]", e);
 			if (throwException)
+			{
 				throw e;
+			}
 			return false;
 		}
 		return true;
@@ -1247,9 +1298,13 @@ public final class DB
 			setParameters(pstmt, params);
 			rs = pstmt.executeQuery();
 			if (rs.next())
+			{
 				retValue = rs.getInt(1);
+			}
 			else
+			{
 				log.debug("Got no integer value for {}", sql);
+			}
 		}
 		catch (SQLException e)
 		{
@@ -1339,9 +1394,13 @@ public final class DB
 			setParameters(pstmt, params);
 			rs = pstmt.executeQuery();
 			if (rs.next())
+			{
 				retValue = rs.getString(1);
+			}
 			else
+			{
 				log.debug("Got no string value for {}", sql);
+			}
 		}
 		catch (SQLException e)
 		{
@@ -1431,9 +1490,13 @@ public final class DB
 			setParameters(pstmt, params);
 			rs = pstmt.executeQuery();
 			if (rs.next())
+			{
 				retValue = rs.getBigDecimal(1);
+			}
 			else
+			{
 				log.debug("Got no BigDecimal value for {}", sql);
+			}
 		}
 		catch (SQLException e)
 		{
@@ -1523,9 +1586,13 @@ public final class DB
 			setParameters(pstmt, params);
 			rs = pstmt.executeQuery();
 			if (rs.next())
+			{
 				retValue = rs.getTimestamp(1);
+			}
 			else
+			{
 				log.debug("Got no Timestamp value for {}", sql);
+			}
 		}
 		catch (SQLException e)
 		{
@@ -1724,20 +1791,18 @@ public final class DB
 	 * @param whereClause where clause
 	 * @return true (default) or false if tested that not SO
 	 */
-	public static boolean isSOTrx(final String tableName, final String whereClause)
+	public static Optional<SOTrx> retrieveRecordSOTrx(final String tableName, final String whereClause)
 	{
-		final boolean defaultIsSOTrx = true;
-
 		if (Check.isEmpty(tableName, true))
 		{
 			log.error("No TableName");
-			return defaultIsSOTrx;
+			return Optional.empty();
 		}
 
 		if (Check.isEmpty(whereClause, true))
 		{
 			log.error("No Where Clause");
-			return defaultIsSOTrx;
+			return Optional.empty();
 		}
 
 		//
@@ -1769,7 +1834,7 @@ public final class DB
 		// Fallback: no IsSOTrx
 		else
 		{
-			return defaultIsSOTrx;
+			return Optional.empty();
 		}
 
 		//
@@ -1784,12 +1849,12 @@ public final class DB
 			if (rs.next())
 			{
 				final boolean isSOTrx = DisplayType.toBoolean(rs.getString(1));
-				return isSOTrx;
+				return SOTrx.optionalOfBoolean(isSOTrx);
 			}
 			else
 			{
 				log.trace("No records were found to fetch the IsSOTrx from SQL: {}", sqlSelectIsSOTrx);
-				return defaultIsSOTrx;
+				return Optional.empty();
 			}
 		}
 		catch (final Exception ex)
@@ -1797,7 +1862,7 @@ public final class DB
 			final SQLException sqlEx = DBException.extractSQLExceptionOrNull(ex);
 			log.trace("Error while checking isSOTrx (SQL: {})", sqlSelectIsSOTrx, sqlEx);
 
-			return defaultIsSOTrx;
+			return Optional.empty();
 		}
 		finally
 		{
@@ -1817,9 +1882,13 @@ public final class DB
 	public static int getNextID(Properties ctx, String TableName, String trxName)
 	{
 		if (ctx == null)
+		{
 			throw new IllegalArgumentException("Context missing");
+		}
 		if (TableName == null || TableName.length() == 0)
+		{
 			throw new IllegalArgumentException("TableName missing");
+		}
 		return getNextID(Env.getAD_Client_ID(ctx), TableName, trxName);
 	}	// getNextID
 
@@ -1993,7 +2062,9 @@ public final class DB
 	public static String TO_CHAR(String columnName, int displayType, @Nullable String AD_Language_NOTUSED, final String formatPattern)
 	{
 		if (columnName == null || columnName.length() == 0)
+		{
 			throw new IllegalArgumentException("Required parameter missing");
+		}
 		return Database.TO_CHAR(columnName, displayType, formatPattern);
 	}   // TO_CHAR
 
@@ -2043,7 +2114,9 @@ public final class DB
 		// Length
 		String text = txt;
 		if (maxLength != 0 && text.length() > maxLength)
+		{
 			text = txt.substring(0, maxLength);
+		}
 
 		// copy characters (we need to look through anyway)
 		final StringBuilder out = new StringBuilder();
@@ -2097,7 +2170,9 @@ public final class DB
 		try
 		{
 			if (rs != null)
+			{
 				rs.close();
+			}
 		}
 		catch (SQLException e)
 		{
@@ -2115,7 +2190,9 @@ public final class DB
 		try
 		{
 			if (st != null)
+			{
 				st.close();
+			}
 		}
 		catch (SQLException e)
 		{
@@ -2146,7 +2223,9 @@ public final class DB
 	public static void close(POResultSet<?> rs)
 	{
 		if (rs != null)
+		{
 			rs.close();
+		}
 	}
 
 	/**
@@ -2227,7 +2306,9 @@ public final class DB
 		{
 			counter++;
 			if (counter > 1)
+			{
 				insert.append(" UNION ");
+			}
 			insert.append("SELECT ");
 			insert.append(pinstanceRepoId);
 			insert.append(", ");

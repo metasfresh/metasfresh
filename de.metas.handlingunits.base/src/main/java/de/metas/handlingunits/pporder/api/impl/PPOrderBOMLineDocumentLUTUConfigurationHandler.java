@@ -28,6 +28,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.impl.AbstractDocumentLUTUConfigurationHandler;
@@ -62,7 +64,10 @@ import lombok.NonNull;
 		PPOrderUtil.assertReceipt(ppOrderBOMLine);
 
 		final org.eevolution.model.I_PP_Order ppOrder = ppOrderBOMLine.getPP_Order();
-		final I_C_BPartner bpartner = ppOrder.getC_BPartner();
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(ppOrder.getC_BPartner_ID());
+		final I_C_BPartner bpartner = bpartnerId != null
+				? Services.get(IBPartnerDAO.class).getById(bpartnerId)
+				: null;
 		final I_M_HU_PI_Item_Product tuPIItemProduct = getM_HU_PI_Item_Product(ppOrderBOMLine);
 		final ProductId cuProductId = ProductId.ofRepoId(ppOrderBOMLine.getM_Product_ID());
 		final I_C_UOM cuUOM = Services.get(IUOMDAO.class).getById(ppOrderBOMLine.getC_UOM_ID());
