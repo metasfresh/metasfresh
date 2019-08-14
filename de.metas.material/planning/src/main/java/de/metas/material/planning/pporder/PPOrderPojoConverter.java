@@ -74,7 +74,7 @@ public class PPOrderPojoConverter
 				.qtyRequired(ppOrderRecord.getQtyOrdered())
 				.qtyDelivered(ppOrderRecord.getQtyDelivered())
 				.warehouseId(WarehouseId.ofRepoId(ppOrderRecord.getM_Warehouse_ID()))
-				.bpartnerId(BPartnerId.ofRepoId(ppOrderRecord.getC_BPartner_ID()))
+				.bpartnerId(BPartnerId.ofRepoIdOrNull(ppOrderRecord.getC_BPartner_ID()))
 				.orderLineId(ppOrderRecord.getC_OrderLine_ID())
 				.materialDispoGroupId(getMaterialDispoGroupIdOrNull(ppOrderRecord))
 				//
