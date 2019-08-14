@@ -34,20 +34,20 @@ public class PP_Order_PostMaterialEvent
 	@ModelChange(//
 			timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void postMaterialEvent_newPPOrder(
-			@NonNull final I_PP_Order ppOrder,
+			@NonNull final I_PP_Order ppOrderRecord,
 			@NonNull final ModelChangeType type)
 	{
-		final boolean newPPOrder = type.isNew() || ModelChangeUtil.isJustActivated(ppOrder);
+		final boolean newPPOrder = type.isNew() || ModelChangeUtil.isJustActivated(ppOrderRecord);
 		if (!newPPOrder)
 		{
 			return;
 		}
 
-		final PPOrderPojoConverter pojoSupplier = Adempiere.getBean(PPOrderPojoConverter.class);
-		final PPOrder ppOrderPojo = pojoSupplier.asPPOrderPojo(ppOrder);
+		final PPOrderPojoConverter ppOrderConverter = Adempiere.getBean(PPOrderPojoConverter.class);
+		final PPOrder ppOrderPojo = ppOrderConverter.toPPOrder(ppOrderRecord);
 
 		final PPOrderCreatedEvent ppOrderCreatedEvent = PPOrderCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(ppOrder))
+				.eventDescriptor(EventDescriptor.createNew(ppOrderRecord))
 				.ppOrder(ppOrderPojo)
 				.build();
 

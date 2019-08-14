@@ -2,6 +2,8 @@ package de.metas.material.planning.pporder;
 
 import static org.compiere.util.TimeUtil.asInstant;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
@@ -14,7 +16,6 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -43,6 +44,7 @@ import lombok.NonNull;
 @Service
 public class PPOrderPojoConverter
 {
+	private final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
 	private final ModelProductDescriptorExtractor productDescriptorFactory;
 
 	private static final ModelDynAttributeAccessor<I_PP_Order, Integer> //
@@ -53,33 +55,7 @@ public class PPOrderPojoConverter
 		this.productDescriptorFactory = productDescriptorFactory;
 	}
 
-	public PPOrder asPPOrderPojo(@NonNull final I_PP_Order ppOrderRecord)
-	{
-		final PPOrderBuilder ppOrderPojoBuilder = createPPorderPojoBuilder(ppOrderRecord);
-
-		final List<I_PP_Order_BOMLine> orderBOMLines = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(ppOrderRecord);
-		for (final I_PP_Order_BOMLine ppOrderLineRecord : orderBOMLines)
-		{
-			final BOMComponentType componentType = BOMComponentType.ofCode(ppOrderLineRecord.getComponentType());
-			final boolean receipt = PPOrderUtil.isReceipt(componentType);
-
-			final PPOrderLine ppOrderLinePojo = PPOrderLine.builder()
-					.productDescriptor(productDescriptorFactory.createProductDescriptor(ppOrderLineRecord))
-					.description(ppOrderLineRecord.getDescription())
-					.ppOrderLineId(ppOrderLineRecord.getPP_Order_BOMLine_ID())
-					.productBomLineId(ppOrderLineRecord.getPP_Product_BOMLine_ID())
-					.qtyRequired(ppOrderLineRecord.getQtyRequiered())
-					.qtyDelivered(ppOrderLineRecord.getQtyDelivered())
-					.issueOrReceiveDate(asInstant(receipt ? ppOrderRecord.getDatePromised() : ppOrderRecord.getDateStartSchedule()))
-					.receipt(receipt)
-					.build();
-
-			ppOrderPojoBuilder.line(ppOrderLinePojo);
-		}
-		return ppOrderPojoBuilder.build();
-	}
-
-	private PPOrderBuilder createPPorderPojoBuilder(@NonNull final I_PP_Order ppOrderRecord)
+	public PPOrder toPPOrder(@NonNull final I_PP_Order ppOrderRecord)
 	{
 		return PPOrder.builder()
 				.datePromised(asInstant(ppOrderRecord.getDatePromised()))
@@ -95,7 +71,41 @@ public class PPOrderPojoConverter
 				.warehouseId(ppOrderRecord.getM_Warehouse_ID())
 				.bPartnerId(ppOrderRecord.getC_BPartner_ID())
 				.orderLineId(ppOrderRecord.getC_OrderLine_ID())
-				.materialDispoGroupId(getMaterialDispoGroupIdOrZero(ppOrderRecord));
+				.materialDispoGroupId(getMaterialDispoGroupIdOrZero(ppOrderRecord))
+				//
+				.lines(toPPOrderLinesList(ppOrderRecord))
+				//
+				.build();
+	}
+
+	private List<PPOrderLine> toPPOrderLinesList(final I_PP_Order ppOrderRecord)
+	{
+		final List<PPOrderLine> lines = new ArrayList<>();
+		for (final I_PP_Order_BOMLine ppOrderLineRecord : ppOrderBOMsRepo.retrieveOrderBOMLines(ppOrderRecord))
+		{
+			final PPOrderLine ppOrderLinePojo = toPPOrderLine(ppOrderLineRecord, ppOrderRecord);
+			lines.add(ppOrderLinePojo);
+		}
+
+		return lines;
+	}
+
+	private PPOrderLine toPPOrderLine(final I_PP_Order_BOMLine ppOrderLineRecord, final I_PP_Order ppOrderRecord)
+	{
+		final BOMComponentType componentType = BOMComponentType.ofCode(ppOrderLineRecord.getComponentType());
+		final boolean receipt = PPOrderUtil.isReceipt(componentType);
+		final Instant issueOrReceiveDate = asInstant(receipt ? ppOrderRecord.getDatePromised() : ppOrderRecord.getDateStartSchedule());
+
+		return PPOrderLine.builder()
+				.productDescriptor(productDescriptorFactory.createProductDescriptor(ppOrderLineRecord))
+				.description(ppOrderLineRecord.getDescription())
+				.ppOrderLineId(ppOrderLineRecord.getPP_Order_BOMLine_ID())
+				.productBomLineId(ppOrderLineRecord.getPP_Product_BOMLine_ID())
+				.qtyRequired(ppOrderLineRecord.getQtyRequiered())
+				.qtyDelivered(ppOrderLineRecord.getQtyDelivered())
+				.issueOrReceiveDate(issueOrReceiveDate)
+				.receipt(receipt)
+				.build();
 	}
 
 	@VisibleForTesting
