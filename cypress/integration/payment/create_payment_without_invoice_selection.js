@@ -7,6 +7,8 @@ describe('Create a new payment without invoice selection', function() {
   const paymentDocumentType = 'Zahlungseingang';
   const bPartnerName = `BPartner ${date}`;
   const discountSchemaName = `DiscountSchemaTest ${date}`;
+  const accountNo1060 = '1060';
+  const accountNo1106 = '1106';
 
   it('Create discount schema and customer', function() {
     cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
@@ -35,9 +37,9 @@ describe('Create a new payment without invoice selection', function() {
     cy.openReferencedDocuments('AD_RelationType_ID-540201');
     cy.expectNumberOfRows(2);
     cy.selectNthRow(0).dblclick();
-    cy.getStringFieldValue('Account_ID', false).should('contain', '1060');
+    cy.getStringFieldValue('Account_ID', false).should('contain', accountNo1060);
     cy.go('back');
     cy.selectNthRow(1).dblclick();
-    cy.getStringFieldValue('Account_ID', false).should('contain', '1106');
+    cy.getStringFieldValue('Account_ID', false).should('contain', accountNo1106);
   });
 });
