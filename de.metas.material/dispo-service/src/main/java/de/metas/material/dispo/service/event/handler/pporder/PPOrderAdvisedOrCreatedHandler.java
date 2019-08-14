@@ -20,6 +20,7 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.AbstractPPOrderEvent;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
 import lombok.NonNull;
@@ -67,7 +68,7 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 	/**
 	 * @return candidateGroupId
 	 */
-	protected final int handleAbstractPPOrderEvent(@NonNull final AbstractPPOrderEvent ppOrderEvent)
+	protected final MaterialDispoGroupId handleAbstractPPOrderEvent(@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
 		final Candidate headerCandidate = createHeaderCandidate(ppOrderEvent);
 
@@ -124,7 +125,7 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 	private Candidate createLineCandidate(
 			@NonNull final AbstractPPOrderEvent ppOrderEvent,
 			@NonNull final PPOrderLine ppOrderLine,
-			final int candidateGroupId,
+			final MaterialDispoGroupId candidateGroupId,
 			final int headerCandidateSeqNo)
 	{
 		final PPOrder ppOrder = ppOrderEvent.getPpOrder();

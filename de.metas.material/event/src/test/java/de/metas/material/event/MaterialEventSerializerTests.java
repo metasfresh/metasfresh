@@ -34,6 +34,7 @@ import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
 import de.metas.material.event.picking.PickingRequestedEvent;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
@@ -158,7 +159,7 @@ public class MaterialEventSerializerTests
 				.datePromised(SystemTime.asInstant())
 				.ddOrderId(ddOrderId)
 				.docStatus("IP")
-				.materialDispoGroupId(35)
+				.materialDispoGroupId(MaterialDispoGroupId.ofInt(35))
 				.line(DDOrderLine.builder()
 						.productDescriptor(createProductDescriptor())
 						.ddOrderLineId(21)
@@ -197,7 +198,7 @@ public class MaterialEventSerializerTests
 				.ppOrder(PPOrder.builder()
 						.datePromised(NOW)
 						.dateStartSchedule(NOW)
-						.materialDispoGroupId(30)
+						.materialDispoGroupId(MaterialDispoGroupId.ofInt(30))
 						.orgId(OrgId.ofRepoId(100))
 						.plantId(110)
 						.productDescriptor(createProductDescriptor())

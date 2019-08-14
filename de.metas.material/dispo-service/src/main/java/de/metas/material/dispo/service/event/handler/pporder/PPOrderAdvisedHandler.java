@@ -19,6 +19,7 @@ import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.pporder.AbstractPPOrderEvent;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -85,7 +86,7 @@ public final class PPOrderAdvisedHandler
 	@Override
 	public void handleEvent(@NonNull final PPOrderAdvisedEvent event)
 	{
-		final int groupId = handleAbstractPPOrderEvent(event);
+		final MaterialDispoGroupId groupId = handleAbstractPPOrderEvent(event);
 
 		if (event.isDirectlyCreatePPOrder())
 		{

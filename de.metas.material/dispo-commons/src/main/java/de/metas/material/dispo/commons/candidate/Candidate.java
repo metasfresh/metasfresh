@@ -11,6 +11,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.lang.CoalesceUtil;
@@ -77,7 +78,7 @@ public class Candidate
 	/**
 	 * A supply candidate and its corresponding demand candidate are associated by a common group id.
 	 */
-	int groupId;
+	MaterialDispoGroupId groupId;
 
 	int seqNo;
 
@@ -123,21 +124,21 @@ public class Candidate
 		return withMaterialDescriptor(materialDescriptor.withWarehouseId(warehouseId));
 	}
 
-	public int getEffectiveGroupId()
+	public MaterialDispoGroupId getEffectiveGroupId()
 	{
 		if (type == CandidateType.STOCK)
 		{
-			return 0;
+			return null;
 		}
-		if (groupId > 0)
+		if (groupId != null)
 		{
 			return groupId;
 		}
 		if (id == null)
 		{
-			return 0;
+			return null;
 		}
-		return id.getRepoId();
+		return MaterialDispoGroupId.ofIntOrNull(id.getRepoId());
 	}
 
 	public Instant getDate()
@@ -186,7 +187,7 @@ public class Candidate
 			//final CandidateStatus status,
 			final CandidateId id,
 			final CandidateId parentId,
-			final int groupId,
+			final MaterialDispoGroupId groupId,
 			final int seqNo,
 			@NonNull final MaterialDescriptor materialDescriptor,
 			final BusinessCaseDetail businessCaseDetail,

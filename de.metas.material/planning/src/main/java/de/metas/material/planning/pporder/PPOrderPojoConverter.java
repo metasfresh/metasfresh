@@ -18,6 +18,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.organization.OrgId;
@@ -51,8 +52,8 @@ public class PPOrderPojoConverter
 	private final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
 	private final ModelProductDescriptorExtractor productDescriptorFactory;
 
-	private static final ModelDynAttributeAccessor<I_PP_Order, Integer> //
-	ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID = new ModelDynAttributeAccessor<>(I_PP_Order.class.getName(), "PPOrderRequestedEvent_GroupId", Integer.class);
+	private static final ModelDynAttributeAccessor<I_PP_Order, MaterialDispoGroupId> //
+	ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID = new ModelDynAttributeAccessor<>(I_PP_Order.class.getName(), "PPOrderRequestedEvent_GroupId", MaterialDispoGroupId.class);
 
 	public PPOrderPojoConverter(@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
 	{
@@ -75,7 +76,7 @@ public class PPOrderPojoConverter
 				.warehouseId(WarehouseId.ofRepoId(ppOrderRecord.getM_Warehouse_ID()))
 				.bpartnerId(BPartnerId.ofRepoId(ppOrderRecord.getC_BPartner_ID()))
 				.orderLineId(ppOrderRecord.getC_OrderLine_ID())
-				.materialDispoGroupId(getMaterialDispoGroupIdOrZero(ppOrderRecord))
+				.materialDispoGroupId(getMaterialDispoGroupIdOrNull(ppOrderRecord))
 				//
 				.lines(toPPOrderLinesList(ppOrderRecord))
 				//
@@ -113,12 +114,12 @@ public class PPOrderPojoConverter
 	}
 
 	@VisibleForTesting
-	public static int getMaterialDispoGroupIdOrZero(@NonNull final I_PP_Order ppOrderRecord)
+	public static MaterialDispoGroupId getMaterialDispoGroupIdOrNull(@NonNull final I_PP_Order ppOrderRecord)
 	{
-		return ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.getValue(ppOrderRecord, 0);
+		return ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.getValue(ppOrderRecord);
 	}
 
-	public static void setMaterialDispoGroupId(@NonNull final I_PP_Order ppOrderRecord, final int materialDispoGroupId)
+	public static void setMaterialDispoGroupId(@NonNull final I_PP_Order ppOrderRecord, final MaterialDispoGroupId materialDispoGroupId)
 	{
 		ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.setValue(ppOrderRecord, materialDispoGroupId);
 	}

@@ -14,6 +14,7 @@ import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.util.time.SystemTime;
 
@@ -49,7 +50,7 @@ public class SupplyRequiredEventCreatorTest
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				//.status(CandidateStatus.doc_closed)
-				.groupId(40)
+				.groupId(MaterialDispoGroupId.ofInt(40))
 				.seqNo(50)
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())

@@ -45,6 +45,7 @@ import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -105,7 +106,7 @@ public class CandidateRepositoryRetrieval
 	 * @param groupId
 	 * @return
 	 */
-	public List<Candidate> retrieveGroup(final Integer groupId)
+	public List<Candidate> retrieveGroup(final MaterialDispoGroupId groupId)
 	{
 		if (groupId == null)
 		{
@@ -116,7 +117,7 @@ public class CandidateRepositoryRetrieval
 
 		return queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_GroupId, groupId)
+				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_GroupId, groupId.toInt())
 				.addNotEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK)
 				.orderBy(I_MD_Candidate.COLUMN_MD_Candidate_ID)
 				.create()
@@ -205,7 +206,7 @@ public class CandidateRepositoryRetrieval
 				.type(CandidateType.valueOf(md_candidate_type))
 
 				// if the record has a group id, then set it.
-				.groupId(candidateRecord.getMD_Candidate_GroupId())
+				.groupId(MaterialDispoGroupId.ofIntOrNull(candidateRecord.getMD_Candidate_GroupId()))
 				.materialDescriptor(materialDescriptor);
 
 		if (candidateRecord.getMD_Candidate_Parent_ID() > 0)

@@ -8,6 +8,7 @@ import org.compiere.model.I_S_Resource;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -69,7 +70,7 @@ final public class DDOrder
 	 * when material-dispo posts {@link DDOrderRequestedEvent}, it contains a group-ID,
 	 * and the respective {@link DDOrderCreatedEvent} contains the same group-ID.
 	 */
-	int materialDispoGroupId;
+	MaterialDispoGroupId materialDispoGroupId;
 
 	@JsonCreator
 	public DDOrder(
@@ -81,7 +82,7 @@ final public class DDOrder
 			@JsonProperty("lines") final List<DDOrderLine> lines,
 			@JsonProperty("ddOrderId") final int ddOrderId,
 			@JsonProperty("docStatus") final String docStatus,
-			@JsonProperty("materialDispoGroupId") final int materialDispoGroupId)
+			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId)
 	{
 		this.orgId = orgId;
 		

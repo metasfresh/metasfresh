@@ -28,6 +28,7 @@ import de.metas.material.event.ddorder.AbstractDDOrderEvent;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.util.Check;
 import lombok.NonNull;
 
@@ -104,14 +105,14 @@ public class DDOrderAdvisedHandler
 			return;
 		}
 
-		final Set<Integer> groupIds = handleAbstractDDOrderEvent(event);
+		final Set<MaterialDispoGroupId> groupIds = handleAbstractDDOrderEvent(event);
 
 		if (!event.isAdvisedToCreateDDrder())
 		{
 			return;
 		}
 
-		for (final int groupId : groupIds)
+		for (final MaterialDispoGroupId groupId : groupIds)
 		{
 			requestMaterialOrderService.requestMaterialOrder(groupId);
 		}

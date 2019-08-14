@@ -70,7 +70,7 @@ public class PPOrder
 	 * When the material-dispo posts a {@link PPOrderRequestedEvent}, it contains a group-ID,
 	 * and the respective {@link PPOrderCreatedEvent} contains the same group-ID.
 	 */
-	int materialDispoGroupId;
+	MaterialDispoGroupId materialDispoGroupId;
 
 	ProductDescriptor productDescriptor;
 
@@ -122,7 +122,7 @@ public class PPOrder
 			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired,
 			@JsonProperty("qtyDelivered") @Nullable final BigDecimal qtyDelivered,
 			@JsonProperty("lines") @Singular final List<PPOrderLine> lines,
-			@JsonProperty("materialDispoGroupId") final int materialDispoGroupId)
+			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId)
 	{
 		this.orgId = orgId;
 		this.plantId = checkIdGreaterThanZero("plantId", plantId);

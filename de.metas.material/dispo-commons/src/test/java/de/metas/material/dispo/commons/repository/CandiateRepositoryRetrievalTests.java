@@ -30,6 +30,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateId;
@@ -209,7 +210,7 @@ public class CandiateRepositoryRetrievalTests
 		assertThat(productionDetail.getProductPlanningId()).isEqualTo(81);
 		assertThat(productionDetail.getPpOrderId()).isEqualTo(101);
 		assertThat(productionDetail.getPpOrderLineId()).isEqualTo(111);
-		assertThat(productionDetail.getPpOrderDocStatus()).isEqualTo("ppOrderDocStatus1");
+		assertThat(productionDetail.getPpOrderDocStatus()).isEqualTo(DocStatus.Completed);
 
 		return ImmutablePair.of(cand, productionDetailRecord.getMD_Candidate());
 	}
@@ -229,7 +230,7 @@ public class CandiateRepositoryRetrievalTests
 		productionDetailRecord.setMD_Candidate(record);
 		productionDetailRecord.setPP_Order_ID(ppOrderId);
 		productionDetailRecord.setPP_Order_BOMLine_ID(ppOrderLineId);
-		productionDetailRecord.setPP_Order_DocStatus("ppOrderDocStatus1");
+		productionDetailRecord.setPP_Order_DocStatus(DocStatus.Completed.getCode());
 		save(productionDetailRecord);
 
 		return productionDetailRecord;
@@ -359,7 +360,7 @@ public class CandiateRepositoryRetrievalTests
 		distributionDetailRecord.setMD_Candidate(record);
 		distributionDetailRecord.setDD_Order_ID(101);
 		distributionDetailRecord.setDD_OrderLine_ID(111);
-		distributionDetailRecord.setDD_Order_DocStatus("ddOrderDocStatus1");
+		distributionDetailRecord.setDD_Order_DocStatus(DocStatus.Completed.getCode());
 		distributionDetailRecord.setM_Shipper_ID(121);
 		save(distributionDetailRecord);
 
@@ -379,7 +380,7 @@ public class CandiateRepositoryRetrievalTests
 		assertThat(distributionDetail.getDdOrderId()).isEqualTo(101);
 		assertThat(distributionDetail.getDdOrderLineId()).isEqualTo(111);
 		assertThat(distributionDetail.getShipperId()).isEqualTo(121);
-		assertThat(distributionDetail.getDdOrderDocStatus()).isEqualTo("ddOrderDocStatus1");
+		assertThat(distributionDetail.getDdOrderDocStatus()).isEqualTo(DocStatus.Completed.getCode());
 
 		return ImmutablePair.of(cand, record);
 	}

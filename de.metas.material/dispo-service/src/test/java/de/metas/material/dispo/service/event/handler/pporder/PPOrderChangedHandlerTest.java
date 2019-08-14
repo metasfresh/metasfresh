@@ -122,7 +122,7 @@ public class PPOrderChangedHandlerTest
 
 			final ProductionDetail productionDetail = ProductionDetail.castOrNull(updatedCandidate.getBusinessCaseDetail());
 			assertThat(productionDetail).isNotNull();
-			assertThat(productionDetail.getPpOrderDocStatus()).isEqualTo("CO");
+			assertThat(productionDetail.getPpOrderDocStatus()).isEqualTo(DocStatus.Completed);
 		}};	// @formatter:on
 	}
 

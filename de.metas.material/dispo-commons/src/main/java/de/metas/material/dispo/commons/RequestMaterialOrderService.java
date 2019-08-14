@@ -24,6 +24,7 @@ import de.metas.material.event.ddorder.DDOrder.DDOrderBuilder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.ddorder.DDOrderLine.DDOrderLineBuilder;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -68,7 +69,7 @@ public class RequestMaterialOrderService
 		this.candidateRepository = candidateRepository;
 	}
 
-	public void requestMaterialOrder(@NonNull final Integer groupId)
+	public void requestMaterialOrder(@NonNull final MaterialDispoGroupId groupId)
 	{
 		final List<Candidate> group = candidateRepository.retrieveGroup(groupId);
 		if (group.isEmpty())
@@ -182,9 +183,8 @@ public class RequestMaterialOrderService
 	{
 		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' is an empty list");
 
-		final DDOrderBuilder ddOrderBuilder = DDOrder
-				.builder()
-				.materialDispoGroupId(10);
+		final DDOrderBuilder ddOrderBuilder = DDOrder.builder()
+				.materialDispoGroupId(MaterialDispoGroupId.ofInt(10));
 
 		final DDOrderLineBuilder ddOrderLineBuilder = DDOrderLine.builder();
 

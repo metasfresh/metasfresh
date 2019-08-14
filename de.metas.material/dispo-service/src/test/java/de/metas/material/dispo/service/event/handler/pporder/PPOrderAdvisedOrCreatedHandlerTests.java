@@ -44,6 +44,7 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.AbstractPPOrderEvent;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
@@ -152,7 +153,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		ppOrderAdvisedHandler.validateEvent(ppOrderAdvisedEvent);
 		ppOrderAdvisedHandler.handleEvent(ppOrderAdvisedEvent);
 
-		final int createdGroupId = assert_data_after_ppOrderEvent(ppOrderAdvisedEvent);
+		final MaterialDispoGroupId createdGroupId = assert_data_after_ppOrderEvent(ppOrderAdvisedEvent);
 
 		final PPOrderCreatedEvent ppOrderCreatedEvent = createPPOrderCreatedEvent(30/*ppOrderId*/, createdGroupId);
 		ppOrderCreatedHandler.validateEvent(ppOrderCreatedEvent);
@@ -161,7 +162,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		assert_data_after_ppOrderEvent(ppOrderCreatedEvent);
 	}
 
-	private int assert_data_after_ppOrderEvent(
+	private MaterialDispoGroupId assert_data_after_ppOrderEvent(
 			@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
 		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY)).hasSize(1); //
@@ -180,13 +181,13 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		assertThat(t2Supply.getMD_Candidate_Parent_ID()).isEqualTo(t2Stock.getMD_Candidate_ID());
 		assertThat(t2Supply.getMD_Candidate_GroupId()).isNotEqualTo(t2Stock.getMD_Candidate_GroupId()); // stock candidates' groupIds are different from supply/demand groups' groupIds
 
-		final int supplyDemandGroupId = t2Supply.getMD_Candidate_GroupId();
-		assertThat(supplyDemandGroupId).isGreaterThan(0);
+		final MaterialDispoGroupId supplyDemandGroupId = MaterialDispoGroupId.ofInt(t2Supply.getMD_Candidate_GroupId());
+		//assertThat(supplyDemandGroupId).isGreaterThan(0);
 
 		final I_MD_Candidate t1Product1Demand = DispoTestUtils.filter(CandidateType.DEMAND, NOW, rawProduct1Id).get(0);
 		assertThat(t1Product1Demand.getQty()).isEqualByComparingTo(NINE);
 		assertThat(t1Product1Demand.getM_Product_ID()).isEqualTo(rawProduct1Id);
-		assertThat(t1Product1Demand.getMD_Candidate_GroupId()).isEqualTo(supplyDemandGroupId);
+		assertThat(t1Product1Demand.getMD_Candidate_GroupId()).isEqualTo(supplyDemandGroupId.toInt());
 		// no parent relationship between production supply and demand because it can be m:n
 		// assertThat(t1Product1Demand.getMD_Candidate_Parent_ID()).isEqualTo(t2Supply.getMD_Candidate_ID());
 
@@ -202,7 +203,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		final I_MD_Candidate t1Product2Demand = DispoTestUtils.filter(CandidateType.DEMAND, NOW, rawProduct2Id).get(0);
 		assertThat(t1Product2Demand.getQty()).isEqualByComparingTo(TEN);
 		assertThat(t1Product2Demand.getM_Product_ID()).isEqualTo(rawProduct2Id);
-		assertThat(t1Product2Demand.getMD_Candidate_GroupId()).isEqualTo(supplyDemandGroupId);
+		assertThat(t1Product2Demand.getMD_Candidate_GroupId()).isEqualTo(supplyDemandGroupId.toInt());
 		// no parent relationship between production supply and demand because it can be m:n
 		// assertThat(t1Product2Demand.getMD_Candidate_Parent_ID()).isEqualTo(t2Supply.getMD_Candidate_ID());
 
@@ -248,7 +249,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 
 		assert_data_after_ppOrderEvent(ppOrderAdvisedEvent); // guard
 
-		final PPOrderCreatedEvent ppOrderCreatedEvent = createPPOrderCreatedEvent(30, 0);
+		final PPOrderCreatedEvent ppOrderCreatedEvent = createPPOrderCreatedEvent(30, (MaterialDispoGroupId)null);
 		ppOrderCreatedHandler.validateEvent(ppOrderCreatedEvent);
 		ppOrderCreatedHandler.handleEvent(ppOrderCreatedEvent);
 
@@ -260,7 +261,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 
 	private PPOrderAdvisedEvent createPPOrderAdvisedEvent(final boolean directlyPickSupply)
 	{
-		final PPOrder ppOrder = createPpOrderWithPpOrderId(0, 0);
+		final PPOrder ppOrder = createPpOrderWithPpOrderId(0, (MaterialDispoGroupId)null);
 
 		final PPOrderAdvisedEvent event = PPOrderAdvisedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
@@ -272,7 +273,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		return event;
 	}
 
-	private PPOrderCreatedEvent createPPOrderCreatedEvent(final int ppOrderId, final int groupId)
+	private PPOrderCreatedEvent createPPOrderCreatedEvent(final int ppOrderId, final MaterialDispoGroupId groupId)
 	{
 		final PPOrder ppOrder = createPpOrderWithPpOrderId(ppOrderId, groupId);
 
@@ -287,7 +288,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 
 	private PPOrder createPpOrderWithPpOrderId(
 			final int ppOrderId,
-			final int groupId)
+			final MaterialDispoGroupId groupId)
 	{
 		final ProductDescriptor rawProductDescriptor1 = ProductDescriptor.completeForProductIdAndEmptyAttribute(rawProduct1Id);
 		final ProductDescriptor rawProductDescriptor2 = ProductDescriptor.completeForProductIdAndEmptyAttribute(rawProduct2Id);

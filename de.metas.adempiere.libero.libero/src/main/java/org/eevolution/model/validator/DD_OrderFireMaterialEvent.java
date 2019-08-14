@@ -23,6 +23,7 @@ import de.metas.material.event.ddorder.DDOrderCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.ddorder.DDOrderUtil;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
@@ -71,7 +72,7 @@ public class DD_OrderFireMaterialEvent
 
 		final List<DDOrderCreatedEvent> events = new ArrayList<>();
 
-		final int groupIdFromDDOrderRequestedEvent = DDOrderProducer.ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID.getValue(ddOrder, 0);
+		final MaterialDispoGroupId groupIdFromDDOrderRequestedEvent = DDOrderProducer.ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID.getValue(ddOrder);
 		ddOrderPojoBuilder.materialDispoGroupId(groupIdFromDDOrderRequestedEvent);
 
 		final List<I_DD_OrderLine> ddOrderLines = Services.get(IDDOrderDAO.class).retrieveLines(ddOrder);

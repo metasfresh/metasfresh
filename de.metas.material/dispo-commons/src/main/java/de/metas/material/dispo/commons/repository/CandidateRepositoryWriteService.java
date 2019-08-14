@@ -45,6 +45,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -368,9 +369,9 @@ public class CandidateRepositoryWriteService
 			candidateRecord.setSeqNo(candidate.getSeqNo());
 		}
 
-		if (candidate.getGroupId() > 0)
+		if (candidate.getGroupId() != null)
 		{
-			candidateRecord.setMD_Candidate_GroupId(candidate.getGroupId());
+			candidateRecord.setMD_Candidate_GroupId(candidate.getGroupId().toInt());
 		}
 
 		final BigDecimal fulfilledQty = candidate
@@ -647,7 +648,7 @@ public class CandidateRepositoryWriteService
 		return candidate
 				.withId(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID()))
 				.withParentId(CandidateId.ofRepoIdOrNull(candidateRecord.getMD_Candidate_Parent_ID()))
-				.withGroupId(candidateRecord.getMD_Candidate_GroupId())
+				.withGroupId(MaterialDispoGroupId.ofIntOrNull(candidateRecord.getMD_Candidate_GroupId()))
 				.withSeqNo(candidateRecord.getSeqNo());
 	}
 

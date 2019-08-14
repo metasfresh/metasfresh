@@ -24,6 +24,7 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor.MaterialDescriptorBuilder;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.material.event.stock.StockChangedEvent.StockChangeDetails;
 import de.metas.util.Loggables;
@@ -120,7 +121,7 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 				return;
 			}
 
-			final int groupId = retrieveGroupIdOrZero(
+			final MaterialDispoGroupId groupId = retrieveGroupIdOrNull(
 					materialDescriptorQuery,
 					type,
 					stockChangeDetail.getTransactionId());
@@ -177,12 +178,12 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 		return candidateBuilder;
 	}
 
-	private int retrieveGroupIdOrZero(
+	private MaterialDispoGroupId retrieveGroupIdOrNull(
 			@NonNull final MaterialDescriptorQuery materialDescriptorQuery,
 			@NonNull final CandidateType type,
 			final int transactionId)
 	{
-		int groupId = 0;
+		MaterialDispoGroupId groupId = null;
 		if (CandidateType.INVENTORY_UP.equals(type) && transactionId > 0)
 		{
 			// see if there is a preceeding "down" record to connect with

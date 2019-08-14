@@ -45,6 +45,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ddorder.DDOrderUtil;
 import de.metas.organization.IOrgDAO;
@@ -84,8 +85,8 @@ public class DDOrderProducer
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 
-	public static final ModelDynAttributeAccessor<I_DD_Order, Integer> ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID = //
-			new ModelDynAttributeAccessor<>(I_DD_Order.class.getName(), "DDOrderRequestedEvent_GroupId", Integer.class);
+	public static final ModelDynAttributeAccessor<I_DD_Order, MaterialDispoGroupId> ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID = //
+			new ModelDynAttributeAccessor<>(I_DD_Order.class.getName(), "DDOrderRequestedEvent_GroupId", MaterialDispoGroupId.class);
 
 	public I_DD_Order createDDOrder(
 			@NonNull final DDOrder pojo,

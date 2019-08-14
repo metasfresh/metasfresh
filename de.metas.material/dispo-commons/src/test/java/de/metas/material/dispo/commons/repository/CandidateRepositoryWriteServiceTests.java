@@ -265,7 +265,7 @@ public class CandidateRepositoryWriteServiceTests
 		assertThat(productionDetailRecord.getPP_Product_Planning_ID()).isEqualTo(80);
 		assertThat(productionDetailRecord.getPP_Order_ID()).isEqualTo(100);
 		assertThat(productionDetailRecord.getPP_Order_BOMLine_ID()).isEqualTo(110);
-		assertThat(productionDetailRecord.getPP_Order_DocStatus()).isEqualTo("ppOrderDocStatus");
+		assertThat(productionDetailRecord.getPP_Order_DocStatus()).isEqualTo(DocStatus.Completed.getCode());
 	}
 
 	/**
@@ -278,14 +278,14 @@ public class CandidateRepositoryWriteServiceTests
 		final Candidate candidateWithOutGroupId = repositoryTestHelper.stockCandidate
 				.withType(CandidateType.DEMAND)
 				.withDate(AFTER_NOW.plus(1, ChronoUnit.MINUTES)) // pick a different time from the other candidates
-				.withGroupId(-1);
+				.withGroupId(null);
 
 		final Candidate result1 = candidateRepositoryWriteService
 				.addOrUpdateOverwriteStoredSeqNo(candidateWithOutGroupId)
 				.getCandidate();
 		// result1 was assigned an id and a groupId
 		assertThat(result1.getId().getRepoId()).isGreaterThan(0);
-		assertThat(result1.getGroupId()).isEqualTo(result1.getId().getRepoId());
+		assertThat(result1.getGroupId().toInt()).isEqualTo(result1.getId().getRepoId());
 
 		final Candidate candidateWithGroupId = candidateWithOutGroupId
 				.withId(null)
@@ -302,11 +302,11 @@ public class CandidateRepositoryWriteServiceTests
 
 		final I_MD_Candidate result1Record = load(result1.getId().getRepoId(), I_MD_Candidate.class);
 		assertThat(result1Record.getMD_Candidate_ID()).isEqualTo(result1.getId().getRepoId());
-		assertThat(result1Record.getMD_Candidate_GroupId()).isEqualTo(result1.getGroupId());
+		assertThat(result1Record.getMD_Candidate_GroupId()).isEqualTo(result1.getGroupId().toInt());
 
 		final I_MD_Candidate result2Record = load(result2.getId().getRepoId(), I_MD_Candidate.class);
 		assertThat(result2Record.getMD_Candidate_ID()).isEqualTo(result2.getId().getRepoId());
-		assertThat(result2Record.getMD_Candidate_GroupId()).isEqualTo(result2.getGroupId());
+		assertThat(result2Record.getMD_Candidate_GroupId()).isEqualTo(result2.getGroupId().toInt());
 	}
 
 	/**
@@ -317,17 +317,17 @@ public class CandidateRepositoryWriteServiceTests
 	{
 		final Candidate candidateWithOutGroupId = repositoryTestHelper.stockCandidate
 				.withDate(AFTER_NOW.plus(1, ChronoUnit.MINUTES)) // pick a different time from the other candidates
-				.withGroupId(-1);
+				.withGroupId(null);
 
 		final Candidate result1 = candidateRepositoryWriteService
 				.addOrUpdateOverwriteStoredSeqNo(candidateWithOutGroupId)
 				.getCandidate();
 		assertThat(result1.getId().getRepoId()).isGreaterThan(0);
-		assertThat(result1.getGroupId()).isGreaterThan(0);
+		assertThat(result1.getGroupId()).isNotNull();
 
 		final I_MD_Candidate result1Record = load(result1.getId().getRepoId(), I_MD_Candidate.class);
 		assertThat(result1Record.getMD_Candidate_ID()).isEqualTo(result1.getId().getRepoId());
-		assertThat(result1Record.getMD_Candidate_GroupId()).isEqualTo(result1.getGroupId());
+		assertThat(result1Record.getMD_Candidate_GroupId()).isEqualTo(result1.getGroupId().toInt());
 	}
 
 	/**

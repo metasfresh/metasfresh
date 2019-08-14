@@ -17,6 +17,7 @@ import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.AbstractPPOrderEvent;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -90,8 +91,8 @@ public final class PPOrderCreatedHandler
 
 	private static CandidatesQuery createPreExistingCandidatesQuery(@NonNull final PPOrder ppOrder)
 	{
-		final int groupId = ppOrder.getMaterialDispoGroupId();
-		if (groupId <= 0)
+		final MaterialDispoGroupId groupId = ppOrder.getMaterialDispoGroupId();
+		if (groupId == null)
 		{
 			Loggables.addLog("The given ppOrderCreatedEvent has no groupId, so it was created by a user and not via material-dispo. Going to create new candidate records.");
 			return CandidatesQuery.FALSE;
@@ -125,8 +126,8 @@ public final class PPOrderCreatedHandler
 			@NonNull final PPOrder ppOrder,
 			@NonNull final PPOrderLine ppOrderLine)
 	{
-		final int groupId = ppOrder.getMaterialDispoGroupId();
-		if (groupId <= 0)
+		final MaterialDispoGroupId groupId = ppOrder.getMaterialDispoGroupId();
+		if (groupId == null)
 		{
 			// returned false, but don't write another log message; we already logged in the other createQuery() method
 			return CandidatesQuery.FALSE;

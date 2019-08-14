@@ -46,6 +46,7 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
@@ -83,7 +84,7 @@ public class PPOrderRequestedEventHandlerTests
 	@Rule
 	public final AdempiereTestWatcher watcher = new AdempiereTestWatcher();
 
-	private static final int PPORDER_POJO_GROUPID = 33;
+	private static final MaterialDispoGroupId PPORDER_POJO_GROUPID = MaterialDispoGroupId.ofInt(33);
 
 	private I_PP_Product_Planning productPlanning;
 
@@ -271,7 +272,7 @@ public class PPOrderRequestedEventHandlerTests
 			assertThat(ppOrder.getDocStatus()).isEqualTo(STATUS_Completed);
 		}
 
-		final int groupId = PPOrderPojoConverter.getMaterialDispoGroupIdOrZero(ppOrder);
+		final MaterialDispoGroupId groupId = PPOrderPojoConverter.getMaterialDispoGroupIdOrNull(ppOrder);
 		assertThat(groupId).isEqualTo(PPORDER_POJO_GROUPID);
 	}
 
