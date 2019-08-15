@@ -26,6 +26,7 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteServic
 
 public enum Flag
 {
+	/** Means that at least originally there was no corresponding document (for example, production order), but that the system had proposed a receipt. */
 	TRUE,
 
 	FALSE,
@@ -42,7 +43,7 @@ public enum Flag
 	{
 		return value ? TRUE : FALSE;
 	}
-	
+
 	public boolean isTrue()
 	{
 		return this.equals(TRUE);
