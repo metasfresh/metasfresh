@@ -130,15 +130,14 @@ public class Candidate
 		{
 			return null;
 		}
-		if (groupId != null)
+		else if (groupId != null)
 		{
 			return groupId;
 		}
-		if (id == null)
+		else
 		{
-			return null;
+			return MaterialDispoGroupId.ofIdOrNull(id);
 		}
-		return MaterialDispoGroupId.ofIntOrNull(id.getRepoId());
 	}
 
 	public Instant getDate()
@@ -184,7 +183,7 @@ public class Candidate
 			@NonNull final OrgId orgId,
 			@NonNull final CandidateType type,
 			final CandidateBusinessCase businessCase,
-			//final CandidateStatus status,
+			// final CandidateStatus status,
 			final CandidateId id,
 			final CandidateId parentId,
 			final MaterialDispoGroupId groupId,
@@ -198,7 +197,7 @@ public class Candidate
 		this.orgId = orgId;
 		this.type = type;
 		this.businessCase = businessCase;
-		//this.status = status;
+		// this.status = status;
 
 		this.id = CoalesceUtil.coalesce(id, CandidateId.NULL);
 		Check.errorIf(this.id.isUnspecified(), "The given id may be null or CandidateId.NULL, but not unspecified");

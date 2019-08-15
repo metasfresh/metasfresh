@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 
 /*
@@ -40,6 +41,11 @@ public class MaterialDispoGroupId
 	public static MaterialDispoGroupId ofIntOrNull(final int value)
 	{
 		return value > 0 ? ofInt(value) : null;
+	}
+
+	public static MaterialDispoGroupId ofIdOrNull(final RepoIdAware id)
+	{
+		return id != null ? ofIntOrNull(id.getRepoId()) : null;
 	}
 
 	private final int value;
