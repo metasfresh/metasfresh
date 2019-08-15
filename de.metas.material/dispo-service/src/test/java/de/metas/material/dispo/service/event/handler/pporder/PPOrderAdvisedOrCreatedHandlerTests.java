@@ -224,9 +224,9 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 //			assertThat(t1Product2Stock.getMD_Candidate_Parent_ID()).isEqualTo(t1Product2Demand.getMD_Candidate_ID());
 //			assertThat(t1Product2Stock.getMD_Candidate_GroupId()).isNotEqualTo(t1Product1Stock.getMD_Candidate_GroupId());  // stock candidates' groupIds are different if they are about different products or warehouses
 //		}
-//
-//		final int ppOrderId = ppOrderEvent.getPpOrder().getPpOrderId();
-//		assertThat(DispoTestUtils.filterExclStock()).allSatisfy(r -> assertCandidateRecordHasPpOrderId(r, ppOrderId));
+
+		final int ppOrderId = ppOrderEvent.getPpOrder().getPpOrderId();
+		assertThat(DispoTestUtils.filterExclStock()).allSatisfy(r -> assertCandidateRecordHasPpOrderId(r, ppOrderId));
 
 		//
 		// verify the production details' isPickDirectlyIfFeasible flag
