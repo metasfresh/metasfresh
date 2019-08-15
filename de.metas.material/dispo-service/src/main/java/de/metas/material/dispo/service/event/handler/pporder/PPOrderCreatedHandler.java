@@ -2,6 +2,8 @@ package de.metas.material.dispo.service.event.handler.pporder;
 
 import java.util.Collection;
 
+import javax.annotation.Nullable;
+
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +18,7 @@ import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.AbstractPPOrderEvent;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
@@ -82,10 +85,10 @@ public final class PPOrderCreatedHandler
 	}
 
 	@Override
-	protected CandidatesQuery createPreExistingCandidatesQuery(@NonNull final AbstractPPOrderEvent ppOrderEvent)
+	protected CandidatesQuery createPreExistingCandidatesQuery(
+			@NonNull final PPOrder ppOrder,
+			@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor_NOTUSED)
 	{
-		final PPOrderCreatedEvent ppOrderCreatedEvent = PPOrderCreatedEvent.cast(ppOrderEvent);
-		final PPOrder ppOrder = ppOrderCreatedEvent.getPpOrder();
 		return createPreExistingCandidatesQuery(ppOrder);
 	}
 
@@ -114,11 +117,10 @@ public final class PPOrderCreatedHandler
 
 	@Override
 	protected CandidatesQuery createPreExistingCandidatesQuery(
+			@NonNull final PPOrder ppOrder,
 			@NonNull final PPOrderLine ppOrderLine,
-			@NonNull final AbstractPPOrderEvent ppOrderEvent)
+			@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor_NOTUSED)
 	{
-		final PPOrderCreatedEvent ppOrderCreatedEvent = PPOrderCreatedEvent.cast(ppOrderEvent);
-		final PPOrder ppOrder = ppOrderCreatedEvent.getPpOrder();
 		return createPreExistingCandidatesQuery(ppOrder, ppOrderLine);
 	}
 

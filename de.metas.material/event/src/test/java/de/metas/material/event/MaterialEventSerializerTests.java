@@ -65,6 +65,7 @@ import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.JSONObjectMapper;
@@ -197,10 +198,10 @@ public class MaterialEventSerializerTests
 				.eventDescriptor(createEventDescriptor())
 				.dateOrdered(NOW)
 				.ppOrder(PPOrder.builder()
+						.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(100, 100))
 						.datePromised(NOW)
 						.dateStartSchedule(NOW)
 						.materialDispoGroupId(MaterialDispoGroupId.ofInt(30))
-						.orgId(OrgId.ofRepoId(100))
 						.plantId(ResourceId.ofRepoId(110))
 						.productDescriptor(createProductDescriptor())
 						.productPlanningId(130)
@@ -304,9 +305,9 @@ public class MaterialEventSerializerTests
 	private PPOrder createPPOrder()
 	{
 		return PPOrder.builder()
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(100, 100))
 				.datePromised(NOW)
 				.dateStartSchedule(NOW)
-				.orgId(OrgId.ofRepoId(100))
 				.plantId(ResourceId.ofRepoId(110))
 				.productDescriptor(createProductDescriptor())
 				.productPlanningId(130)

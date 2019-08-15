@@ -15,6 +15,7 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_Planning;
@@ -35,7 +36,7 @@ import de.metas.material.planning.ProductPlanningBL;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.material.planning.exception.MrpException;
-import de.metas.organization.OrgId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
@@ -132,7 +133,7 @@ public class PPOrderPojoSupplier
 		final Quantity ppOrderQuantity = Services.get(IUOMConversionBL.class).convertToProductUOM(qtyToSupply, productId);
 
 		return PPOrder.builder()
-				.orgId(OrgId.ofRepoId(mrpContext.getAD_Org_ID()))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(mrpContext.getAD_Client_ID(), mrpContext.getAD_Org_ID()))
 
 				// Planning dimension
 				.plantId(ResourceId.ofRepoIdOrNull(mrpContext.getPlant_ID()))
@@ -252,7 +253,8 @@ public class PPOrderPojoSupplier
 		final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(ppOrder.getProductPlanningId());
 
 		final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
-		final I_PP_Product_BOM productBOM = productBOMsRepo.getById(productPlanning.getPP_Product_BOM_ID());
+		final ProductBOMId productBOMId = ProductBOMId.ofRepoId(productPlanning.getPP_Product_BOM_ID());
+		final I_PP_Product_BOM productBOM = productBOMsRepo.getById(productBOMId);
 
 		return PPOrderUtil.verifyProductBOMAndReturnIt(ppOrderProductId, asDate(dateStartSchedule), productBOM);
 	}

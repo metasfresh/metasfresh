@@ -19,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.lang.CoalesceUtil;
@@ -52,7 +53,7 @@ import lombok.Value;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class PPOrder
 {
-	OrgId orgId;
+	ClientAndOrgId clientAndOrgId;
 
 	/**
 	 * The {@link I_S_Resource#getS_Resource_ID()} of the plant, as specified by the respective product planning record.
@@ -108,7 +109,7 @@ public class PPOrder
 	@JsonCreator
 	@Builder(toBuilder = true)
 	public PPOrder(
-			@JsonProperty("orgId") @NonNull final OrgId orgId,
+			@JsonProperty("clientAndOrgId") @NonNull final ClientAndOrgId clientAndOrgId,
 			@JsonProperty("plantId") @NonNull final ResourceId plantId,
 			@JsonProperty("warehouseId") @NonNull final WarehouseId warehouseId,
 			@JsonProperty("bpartnerId") @Nullable final BPartnerId bpartnerId,
@@ -124,7 +125,7 @@ public class PPOrder
 			@JsonProperty("lines") @Singular final List<PPOrderLine> lines,
 			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId)
 	{
-		this.orgId = orgId;
+		this.clientAndOrgId = clientAndOrgId;
 		this.plantId = plantId;
 		this.warehouseId = warehouseId;
 
@@ -144,5 +145,15 @@ public class PPOrder
 		this.lines = lines;
 
 		this.materialDispoGroupId = materialDispoGroupId;
+	}
+
+	public OrgId getOrgId()
+	{
+		return getClientAndOrgId().getOrgId();
+	}
+
+	public BigDecimal getQtyOpen()
+	{
+		return getQtyRequired().subtract(getQtyDelivered());
 	}
 }

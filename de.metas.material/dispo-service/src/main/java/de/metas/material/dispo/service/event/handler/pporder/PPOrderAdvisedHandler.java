@@ -18,12 +18,12 @@ import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.AbstractPPOrderEvent;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.util.Check;
 import lombok.NonNull;
 
 /*
@@ -95,43 +95,34 @@ public final class PPOrderAdvisedHandler
 	}
 
 	@Override
-	protected CandidatesQuery createPreExistingCandidatesQuery(@NonNull final AbstractPPOrderEvent ppOrderEvent)
+	protected CandidatesQuery createPreExistingCandidatesQuery(
+			@NonNull final PPOrder ppOrder,
+			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
-		final PPOrderAdvisedEvent ppOrderAdvisedEvent = PPOrderAdvisedEvent.cast(ppOrderEvent);
-		final PPOrder ppOrder = ppOrderAdvisedEvent.getPpOrder();
-
-		final DemandDetail demandDetail = DemandDetail.forSupplyRequiredDescriptorOrNull(ppOrderEvent.getSupplyRequiredDescriptor());
-		Check.errorIf(demandDetail == null, "Missing demandDetail for ppOrderAdvisedEvent={}", ppOrderAdvisedEvent);
-
-		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.ofDemandDetailOrNull(demandDetail);
+		final DemandDetail demandDetail = DemandDetail.forSupplyRequiredDescriptor(supplyRequiredDescriptor);
+		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.ofDemandDetail(demandDetail);
 
 		final ProductionDetailsQuery productionDetailsQuery = ProductionDetailsQuery.builder()
 				.productPlanningId(ppOrder.getProductPlanningId())
 				.build();
 
-		final CandidatesQuery query = CandidatesQuery.builder()
+		return CandidatesQuery.builder()
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.demandDetailsQuery(demandDetailsQuery)
 				.productionDetailsQuery(productionDetailsQuery)
 				.build();
-
-		return query;
 	}
 
 	@Override
 	protected CandidatesQuery createPreExistingCandidatesQuery(
+			@NonNull final PPOrder ppOrder,
 			@NonNull final PPOrderLine ppOrderLine,
-			@NonNull final AbstractPPOrderEvent ppOrderEvent)
+			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
-		PPOrderAdvisedEvent.cast(ppOrderEvent);
+		final DemandDetail demandDetail = DemandDetail.forSupplyRequiredDescriptor(supplyRequiredDescriptor);
+		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.ofDemandDetail(demandDetail);
 
-		final DemandDetail demandDetail = DemandDetail.forSupplyRequiredDescriptorOrNull(ppOrderEvent.getSupplyRequiredDescriptor());
-		Check.errorIf(demandDetail == null, "Missing demandDetail for ppOrderAdvisedEvent={}", ppOrderEvent);
-
-		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.ofDemandDetailOrNull(demandDetail);
-
-		final PPOrder ppOrder = ppOrderEvent.getPpOrder();
 		final ProductionDetailsQuery productionDetailsQuery = ProductionDetailsQuery.builder()
 				.productPlanningId(ppOrder.getProductPlanningId())
 				.productBomLineId(ppOrderLine.getProductBomLineId())

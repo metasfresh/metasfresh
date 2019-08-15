@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
@@ -52,6 +53,7 @@ import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
@@ -112,7 +114,7 @@ public class PPOrderRequestedEventHandlerTests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		
+
 		final I_C_Order order = newInstance(I_C_Order.class);
 		save(order);
 
@@ -189,10 +191,10 @@ public class PPOrderRequestedEventHandlerTests
 				bomMainProduct.getM_AttributeSetInstance_ID());
 
 		ppOrderPojo = PPOrder.builder()
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.ofRepoId(123), orgId))
 				.materialDispoGroupId(PPORDER_POJO_GROUPID)
 				.datePromised(SystemTime.asInstant())
 				.dateStartSchedule(SystemTime.asInstant())
-				.orgId(orgId)
 				.plantId(ResourceId.ofRepoId(110))
 				.orderLineId(orderLine.getC_OrderLine_ID())
 				.productDescriptor(productDescriptor)

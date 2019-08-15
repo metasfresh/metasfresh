@@ -1,6 +1,5 @@
 package de.metas.material.dispo.service.event.handler.pporder;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
@@ -93,17 +92,17 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 
 		// final CandidateStatus candidateStatus = getCandidateStatus(ppOrder);
 
-		final CandidatesQuery preExistingSupplyQuery = createPreExistingCandidatesQuery(ppOrderEvent);
+		final CandidatesQuery preExistingSupplyQuery = createPreExistingCandidatesQuery(ppOrder, supplyRequiredDescriptor);
 		final Candidate existingCandidateOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(preExistingSupplyQuery);
 
 		final CandidateBuilder builder = existingCandidateOrNull != null
 				? existingCandidateOrNull.toBuilder()
-				: Candidate.builderForEventDescr(ppOrderEvent.getEventDescriptor());
+				: Candidate.builderForClientAndOrgId(ppOrder.getClientAndOrgId());
 
 		final ProductionDetail headerCandidateProductionDetail = createProductionDetailForPPOrder(
 				ppOrderEvent,
 				existingCandidateOrNull);
-		final MaterialDescriptor headerCandidateMaterialDescriptor = createMaterialDescriptorForPpOrder(ppOrder);
+		final MaterialDescriptor headerCandidateMaterialDescriptor = createMaterialDescriptorForPPOrder(ppOrder);
 		final DemandDetail headerCandidateDemandDetail = computeDemandDetailOrNull(
 				CandidateType.SUPPLY,
 				supplyRequiredDescriptor,
@@ -131,15 +130,15 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 		final PPOrder ppOrder = ppOrderEvent.getPpOrder();
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = ppOrderEvent.getSupplyRequiredDescriptor();
 
-		final CandidatesQuery candidatesQuery = createPreExistingCandidatesQuery(ppOrderLine, ppOrderEvent);
+		final CandidatesQuery candidatesQuery = createPreExistingCandidatesQuery(ppOrder, ppOrderLine, supplyRequiredDescriptor);
 		final Candidate existingLineCandidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(candidatesQuery);
 
 		final CandidateBuilder candidateBuilder = existingLineCandidate != null
 				? existingLineCandidate.toBuilder()
-				: Candidate.builderForEventDescr(ppOrderEvent.getEventDescriptor());
+				: Candidate.builderForClientAndOrgId(ppOrder.getClientAndOrgId());
 
 		final CandidateType candidateType = PPOrderHandlerUtils.extractCandidateType(ppOrderLine);
-		final MaterialDescriptor materialDescriptor = createMaterialDescriptorForPpOrderAndLine(ppOrder, ppOrderLine);
+		final MaterialDescriptor materialDescriptor = createMaterialDescriptorForPPOrderLine(ppOrderLine, ppOrder);
 		final DemandDetail lineCandidateDemandDetail = computeDemandDetailOrNull(
 				candidateType,
 				supplyRequiredDescriptor,
@@ -169,20 +168,18 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 	 * (Otherwise, their stock candidate would be connected to the resp. demand record)
 	 */
 	private static DemandDetail computeDemandDetailOrNull(
-			final CandidateType lineCandidateType,
-			final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			final MaterialDescriptor materialDescriptor)
+			@NonNull final CandidateType lineCandidateType,
+			@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor,
+			@NonNull final MaterialDescriptor materialDescriptor)
 	{
-		final DemandDetail demandDetail = //
-				DemandDetail.forSupplyRequiredDescriptorOrNull(supplyRequiredDescriptor);
-		if (demandDetail == null)
+		if (supplyRequiredDescriptor == null)
 		{
 			return null;
 		}
 
 		if (lineCandidateType == CandidateType.DEMAND)
 		{
-			return demandDetail;
+			return DemandDetail.forSupplyRequiredDescriptor(supplyRequiredDescriptor);
 		}
 
 		final MaterialDescriptor requiredMaterialDescriptor = supplyRequiredDescriptor.getMaterialDescriptor();
@@ -190,50 +187,40 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 				&& requiredMaterialDescriptor.getProductId() == materialDescriptor.getProductId()
 				&& requiredMaterialDescriptor.getStorageAttributesKey().equals(materialDescriptor.getStorageAttributesKey()))
 		{
-			return demandDetail;
+			return DemandDetail.forSupplyRequiredDescriptor(supplyRequiredDescriptor);
 		}
 
 		return null;
 	}
 
-	protected abstract CandidatesQuery createPreExistingCandidatesQuery(AbstractPPOrderEvent ppOrderEvent);
+	protected abstract CandidatesQuery createPreExistingCandidatesQuery(
+			PPOrder ppOrder,
+			@Nullable SupplyRequiredDescriptor supplyRequiredDescriptor);
 
-	protected abstract CandidatesQuery createPreExistingCandidatesQuery(PPOrderLine ppOrderLine, AbstractPPOrderEvent ppOrderEvent);
+	protected abstract CandidatesQuery createPreExistingCandidatesQuery(
+			PPOrder ppOrder,
+			PPOrderLine ppOrderLine,
+			@Nullable SupplyRequiredDescriptor supplyRequiredDescriptor);
 
-	private static MaterialDescriptor createMaterialDescriptorForPpOrder(final PPOrder ppOrder)
+	private static MaterialDescriptor createMaterialDescriptorForPPOrder(final PPOrder ppOrder)
 	{
-		final BigDecimal qtyOpen = ppOrder.getQtyRequired().subtract(ppOrder.getQtyDelivered());
-
 		return MaterialDescriptor.builder()
 				.date(ppOrder.getDatePromised())
 				.productDescriptor(ppOrder.getProductDescriptor())
-				.quantity(qtyOpen)
+				.quantity(ppOrder.getQtyOpen())
 				.warehouseId(ppOrder.getWarehouseId())
 				// .customerId(ppOrder.getBPartnerId()) not 100% sure if the ppOrder's bPartner is the customer this is made for
 				.build();
 	}
 
-	private static MaterialDescriptor createMaterialDescriptorForPpOrderAndLine(
-			@NonNull final PPOrder ppOrder,
-			@NonNull final PPOrderLine ppOrderLine)
+	private static MaterialDescriptor createMaterialDescriptorForPPOrderLine(
+			@NonNull final PPOrderLine ppOrderLine,
+			@NonNull final PPOrder ppOrder)
 	{
-		final BigDecimal qtyRequired;
-		final BigDecimal qtyDelivered;
-		if (ppOrderLine.isReceipt())
-		{
-			qtyRequired = ppOrderLine.getQtyRequired().negate(); // supply-ppOrderLines have negative qtyRequired
-			qtyDelivered = ppOrder.getQtyDelivered().negate();
-		}
-		else
-		{
-			qtyRequired = ppOrderLine.getQtyRequired();
-			qtyDelivered = ppOrder.getQtyDelivered();
-		}
-
 		return MaterialDescriptor.builder()
 				.date(ppOrderLine.getIssueOrReceiveDate())
 				.productDescriptor(ppOrderLine.getProductDescriptor())
-				.quantity(qtyRequired.subtract(qtyDelivered))
+				.quantity(ppOrderLine.getQtyOpenNegateIfReceipt())
 				.warehouseId(ppOrder.getWarehouseId())
 				// .customerId(ppOrder.getBPartnerId()) not 100% sure if the ppOrder's bPartner is the customer this is made for
 				.build();

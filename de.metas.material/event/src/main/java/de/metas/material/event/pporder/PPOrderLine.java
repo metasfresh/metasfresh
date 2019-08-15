@@ -104,4 +104,21 @@ public class PPOrderLine
 	{
 		return toBuilder().qtyRequired(qtyRequired).build();
 	}
+
+	public BigDecimal getQtyOpen()
+	{
+		return getQtyRequired().subtract(getQtyDelivered());
+	}
+
+	public BigDecimal getQtyOpenNegateIfReceipt()
+	{
+		if (isReceipt())
+		{
+			return getQtyOpen().negate();
+		}
+		else
+		{
+			return getQtyOpen();
+		}
+	}
 }

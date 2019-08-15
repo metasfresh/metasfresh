@@ -12,6 +12,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.lang.CoalesceUtil;
@@ -54,6 +55,13 @@ public class Candidate
 		return Candidate.builder()
 				.clientId(eventDescr.getClientId())
 				.orgId(eventDescr.getOrgId());
+	}
+
+	public static CandidateBuilder builderForClientAndOrgId(@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		return Candidate.builder()
+				.clientId(clientAndOrgId.getClientId())
+				.orgId(clientAndOrgId.getOrgId());
 	}
 
 	ClientId clientId;

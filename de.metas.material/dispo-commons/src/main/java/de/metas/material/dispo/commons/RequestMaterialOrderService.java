@@ -30,6 +30,7 @@ import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
@@ -127,9 +128,9 @@ public class RequestMaterialOrderService
 			{
 				// we talk about a ppOrder (header)
 				ppOrderBuilder
+						.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(groupMember.getClientId(), groupMember.getOrgId()))
 						.productPlanningId(prodDetail.getProductPlanningId())
 						.datePromised(groupMember.getDate())
-						.orgId(groupMember.getOrgId())
 						.plantId(prodDetail.getPlantId())
 						.productDescriptor(materialDescriptor)
 						.bpartnerId(materialDescriptor.getCustomerId())

@@ -49,6 +49,7 @@ import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -296,7 +297,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 
 		final PPOrder ppOrder = PPOrder.builder()
 				.ppOrderId(ppOrderId)
-				.orgId(ORG_ID)
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(CLIENT_ID, ORG_ID))
 				.datePromised(AFTER_NOW)
 				.dateStartSchedule(NOW)
 				.productDescriptor(createProductDescriptor())

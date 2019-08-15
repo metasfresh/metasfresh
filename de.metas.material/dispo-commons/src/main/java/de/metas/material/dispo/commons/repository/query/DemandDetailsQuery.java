@@ -60,10 +60,11 @@ public class DemandDetailsQuery
 
 	public static DemandDetailsQuery ofDemandDetailOrNull(@Nullable final DemandDetail demandDetail)
 	{
-		if (demandDetail == null)
-		{
-			return null;
-		}
+		return demandDetail != null ? ofDemandDetail(demandDetail) : null;
+	}
+
+	public static DemandDetailsQuery ofDemandDetail(@NonNull final DemandDetail demandDetail)
+	{
 		return new DemandDetailsQuery(
 				demandDetail.getShipmentScheduleId() == 0 ? UNSPECIFIED_REPO_ID : demandDetail.getShipmentScheduleId(),
 				demandDetail.getOrderLineId() == 0 ? UNSPECIFIED_REPO_ID : demandDetail.getOrderLineId(),

@@ -21,7 +21,7 @@ import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.organization.OrgId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -64,10 +64,10 @@ public class PPOrderPojoConverter
 	public PPOrder toPPOrder(@NonNull final I_PP_Order ppOrderRecord)
 	{
 		return PPOrder.builder()
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ppOrderRecord.getAD_Client_ID(), ppOrderRecord.getAD_Org_ID()))
 				.datePromised(asInstant(ppOrderRecord.getDatePromised()))
 				.dateStartSchedule(asInstant(ppOrderRecord.getDateStartSchedule()))
 				.docStatus(DocStatus.ofCode(ppOrderRecord.getDocStatus()))
-				.orgId(OrgId.ofRepoId(ppOrderRecord.getAD_Org_ID()))
 				.plantId(ResourceId.ofRepoId(ppOrderRecord.getS_Resource_ID()))
 				.ppOrderId(ppOrderRecord.getPP_Order_ID())
 				.productDescriptor(productDescriptorFactory.createProductDescriptor(ppOrderRecord))
