@@ -1,7 +1,6 @@
 package de.metas.material.dispo.service.event;
 
-import static de.metas.material.event.EventTestHelper.CLIENT_ID;
-import static de.metas.material.event.EventTestHelper.ORG_ID;
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -186,8 +185,7 @@ public class SupplyProposalEvaluatorTests
 				.build();
 
 		final Candidate supplyCandidate = Candidate.builder()
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.additionalDemandDetail(createDemandDetail())
 				.type(CandidateType.SUPPLY)
 				.materialDescriptor(supplyMaterialDescriptor)
@@ -205,8 +203,7 @@ public class SupplyProposalEvaluatorTests
 				.build();
 
 		final Candidate demandCandidate = Candidate.builder()
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.parentId(supplyCandidateWithId.getId())
 				.type(CandidateType.DEMAND)
 				.additionalDemandDetail(createDemandDetail())

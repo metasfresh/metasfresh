@@ -11,7 +11,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
-import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.junit.Test;
 
@@ -29,7 +28,6 @@ import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.time.SystemTime;
 import mockit.Expectations;
@@ -72,8 +70,7 @@ public class PPOrderChangedHandlerTest
 	{
 		// setup a candidate to be updated
 		final Candidate candidateToUpdate = Candidate.builder()
-				.clientId(ClientId.ofRepoId(1))
-				.orgId(OrgId.ofRepoId(1))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 1))
 				// .status(CandidateStatus.doc_closed)
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(createMaterialDescriptor())

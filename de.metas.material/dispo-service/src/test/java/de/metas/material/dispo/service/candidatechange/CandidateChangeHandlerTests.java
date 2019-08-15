@@ -3,7 +3,7 @@ package de.metas.material.dispo.service.candidatechange;
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
 import static de.metas.material.event.EventTestHelper.BEFORE_BEFORE_NOW;
 import static de.metas.material.event.EventTestHelper.BEFORE_NOW;
-import static de.metas.material.event.EventTestHelper.CLIENT_ID;
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
@@ -206,8 +206,7 @@ public class CandidateChangeHandlerTests
 			earlierCandidate = candidateRepositoryCommands
 					.addOrUpdateOverwriteStoredSeqNo(Candidate.builder()
 							.type(CandidateType.STOCK)
-							.clientId(CLIENT_ID)
-							.orgId(ORG_ID)
+							.clientAndOrgId(CLIENT_AND_ORG_ID)
 							.materialDescriptor(earlierMaterialDescriptor)
 							.build())
 					.getCandidate();
@@ -216,8 +215,7 @@ public class CandidateChangeHandlerTests
 
 			final Candidate laterCandidate = Candidate.builder()
 					.type(CandidateType.STOCK)
-					.clientId(CLIENT_ID)
-					.orgId(ORG_ID)
+					.clientAndOrgId(CLIENT_AND_ORG_ID)
 					.materialDescriptor(laterMaterialDescriptor)
 					.build();
 			candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(laterCandidate);
@@ -228,8 +226,7 @@ public class CandidateChangeHandlerTests
 
 			evenLaterCandidate = Candidate.builder()
 					.type(CandidateType.STOCK)
-					.clientId(CLIENT_ID)
-					.orgId(ORG_ID)
+					.clientAndOrgId(CLIENT_AND_ORG_ID)
 					.materialDescriptor(evenLatermaterialDescriptor)
 					.build();
 			candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(evenLaterCandidate);
@@ -239,8 +236,7 @@ public class CandidateChangeHandlerTests
 
 			evenLaterCandidateWithDifferentWarehouse = Candidate.builder()
 					.type(CandidateType.STOCK)
-					.clientId(CLIENT_ID)
-					.orgId(ORG_ID)
+					.clientAndOrgId(CLIENT_AND_ORG_ID)
 					.materialDescriptor(evenLatermaterialDescrWithDifferentWarehouse)
 					.build();
 			candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(evenLaterCandidateWithDifferentWarehouse);
@@ -255,8 +251,7 @@ public class CandidateChangeHandlerTests
 				.build();
 		final Candidate candidateWithDelta = Candidate.builder()
 				.type(CandidateType.STOCK)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescriptor)
 				.groupId(earlierCandidate.getGroupId()).build();
 		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(SaveResult.builder().candidate(candidateWithDelta).build());
@@ -689,8 +684,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescr)
 
 				.businessCase(CandidateBusinessCase.SHIPMENT)
@@ -732,8 +726,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate supplyCandidate = Candidate.builder()
 				.type(CandidateType.SUPPLY)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(supplyMaterialDescriptor)
 
 				.businessCase(CandidateBusinessCase.PURCHASE)

@@ -1,7 +1,6 @@
 package de.metas.material.dispo.service.event.handler;
 
-import static de.metas.material.event.EventTestHelper.CLIENT_ID;
-import static de.metas.material.event.EventTestHelper.ORG_ID;
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
@@ -124,8 +123,7 @@ public class StockChangedEventHandlerTest
 		{{
 			final Candidate existingStockCandidate = Candidate.builder()
 					.type(CandidateType.STOCK)
-					.clientId(CLIENT_ID)
-					.orgId(ORG_ID)
+					.clientAndOrgId(CLIENT_AND_ORG_ID)
 					.materialDescriptor(createMaterialDescriptor().withQuantity(FIFTEEN))
 					.build();
 			candidateRepositoryRetrieval.retrieveLatestMatchOrNull((CandidatesQuery)any); result = existingStockCandidate;
@@ -169,7 +167,7 @@ public class StockChangedEventHandlerTest
 	private void assertInvocationCandidateCommons(final Candidate candidate)
 	{
 		assertThat(candidate).isNotNull();
-		assertThat(candidate.getClientId().getRepoId()).isEqualTo(10);
+		assertThat(candidate.getClientAndOrgId().getClientId().getRepoId()).isEqualTo(10);
 		assertThat(candidate.getOrgId().getRepoId()).isEqualTo(20);
 		assertThat(candidate.getTransactionDetails()).hasSize(1);
 		assertThat(candidate.getTransactionDetails().get(0).getStockId()).isEqualTo(30);

@@ -77,8 +77,7 @@ public abstract class PurchaseCandidateCreatedOrUpdatedHandler<T extends Purchas
 		else
 		{
 			candidateBuilder = createInitialBuilder()
-					.clientId(event.getEventDescriptor().getClientId())
-					.orgId(event.getEventDescriptor().getOrgId());
+					.clientAndOrgId(event.getEventDescriptor().getClientAndOrgId());
 			purchaseDetailBuilder = PurchaseDetail.builder();
 		}
 

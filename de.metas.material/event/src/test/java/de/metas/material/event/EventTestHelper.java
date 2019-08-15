@@ -15,6 +15,7 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.time.SystemTime;
 
@@ -52,8 +53,8 @@ public class EventTestHelper
 	 * It could be done with {@link Env}, but it would add complexity..
 	 */
 	public static final ClientId CLIENT_ID = ClientId.SYSTEM;
-
 	public static final OrgId ORG_ID = OrgId.ofRepoId(20);
+	public static final ClientAndOrgId CLIENT_AND_ORG_ID = ClientAndOrgId.ofClientAndOrg(CLIENT_ID, ORG_ID);
 
 	public static final int TRANSACTION_ID = 60;
 
@@ -79,7 +80,7 @@ public class EventTestHelper
 		return SupplyRequiredDescriptor.builder()
 				.shipmentScheduleId(SHIPMENT_SCHEDULE_ID)
 				.demandCandidateId(41)
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.materialDescriptor(createMaterialDescriptorWithProductId(productId))
 				.build();
 	}

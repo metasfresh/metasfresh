@@ -30,7 +30,6 @@ import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
@@ -128,7 +127,7 @@ public class RequestMaterialOrderService
 			{
 				// we talk about a ppOrder (header)
 				ppOrderBuilder
-						.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(groupMember.getClientId(), groupMember.getOrgId()))
+						.clientAndOrgId(groupMember.getClientAndOrgId())
 						.productPlanningId(prodDetail.getProductPlanningId())
 						.datePromised(groupMember.getDate())
 						.plantId(prodDetail.getPlantId())
@@ -167,7 +166,7 @@ public class RequestMaterialOrderService
 		ppOrderBuilder.materialDispoGroupId(firstGroupMember.getEffectiveGroupId());
 
 		return PPOrderRequestedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(firstGroupMember.getClientAndOrgId()))
 				.dateOrdered(SystemTime.asInstant())
 				.ppOrder(ppOrderBuilder.build())
 				.build();
@@ -231,7 +230,7 @@ public class RequestMaterialOrderService
 		final Candidate firstGroupMember = group.get(0);
 
 		return DDOrderRequestedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(firstGroupMember.getClientAndOrgId()))
 				.dateOrdered(SystemTime.asInstant())
 				.ddOrder(ddOrderBuilder
 						.line(ddOrderLineBuilder
@@ -252,7 +251,7 @@ public class RequestMaterialOrderService
 		final Candidate createdCandidate = CollectionUtils.singleElement(group);
 
 		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = PurchaseCandidateRequestedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(createdCandidate.getClientId(), createdCandidate.getOrgId()))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(createdCandidate.getClientAndOrgId()))
 				.purchaseMaterialDescriptor(createdCandidate.getMaterialDescriptor())
 				.supplyCandidateRepoId(createdCandidate.getId().getRepoId())
 				.salesOrderLineRepoId(createdCandidate.getAdditionalDemandDetail().getOrderLineId())

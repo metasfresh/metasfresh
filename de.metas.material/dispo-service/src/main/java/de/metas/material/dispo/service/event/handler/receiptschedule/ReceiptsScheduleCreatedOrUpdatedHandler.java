@@ -11,7 +11,6 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
-import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
 import lombok.NonNull;
@@ -91,11 +90,8 @@ public abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends Abstract
 
 	private final CandidateBuilder createInitialBuilder(@NonNull final AbstractReceiptScheduleEvent event)
 	{
-		final EventDescriptor eventDescriptor = event.getEventDescriptor();
-
 		return Candidate.builder()
-				.clientId(eventDescriptor.getClientId())
-				.orgId(eventDescriptor.getOrgId())
+				.clientAndOrgId(event.getEventDescriptor().getClientAndOrgId())
 				.type(CandidateType.SUPPLY)
 				.materialDescriptor(event.getMaterialDescriptor())
 				.businessCase(CandidateBusinessCase.PURCHASE);

@@ -108,8 +108,7 @@ public class StockCandidateService
 
 		final Candidate stockCandidate = Candidate.builder()
 				.type(CandidateType.STOCK)
-				.orgId(candidate.getOrgId())
-				.clientId(candidate.getClientId())
+				.clientAndOrgId(candidate.getClientAndOrgId())
 				.materialDescriptor(materialDescriptor)
 				.parentId(candidate.getParentId())
 				.seqNo(candidate.getSeqNo())

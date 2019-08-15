@@ -2,9 +2,8 @@ package de.metas.material.dispo.service.event.handler.pporder;
 
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
 import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
-import static de.metas.material.event.EventTestHelper.CLIENT_ID;
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.SHIPMENT_SCHEDULE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
@@ -49,7 +48,6 @@ import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -283,7 +281,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		final PPOrder ppOrder = createPpOrderWithPpOrderId(0, (MaterialDispoGroupId)null);
 
 		final PPOrderAdvisedEvent event = PPOrderAdvisedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.directlyPickSupply(directlyPickSupply)
 				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
 				.ppOrder(ppOrder)
@@ -297,7 +295,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		final PPOrder ppOrder = createPpOrderWithPpOrderId(ppOrderId, groupId);
 
 		final PPOrderCreatedEvent event = PPOrderCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.ppOrder(ppOrder)
 				.build();
 
@@ -314,7 +312,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 
 		final PPOrder ppOrder = PPOrder.builder()
 				.ppOrderId(ppOrderId)
-				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(CLIENT_ID, ORG_ID))
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.datePromised(AFTER_NOW)
 				.dateStartSchedule(NOW)
 				.productDescriptor(createProductDescriptor())

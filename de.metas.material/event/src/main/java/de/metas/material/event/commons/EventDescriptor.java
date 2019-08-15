@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,27 +39,36 @@ public final class EventDescriptor
 {
 	public static EventDescriptor ofClientAndOrg(final int adClientId, final int adOrgId)
 	{
-		return new EventDescriptor(
-				ClientId.ofRepoId(adClientId),
-				OrgId.ofRepoId(adOrgId));
+		return ofClientAndOrg(ClientAndOrgId.ofClientAndOrg(adClientId, adOrgId));
 	}
 
 	public static EventDescriptor ofClientAndOrg(@NonNull final ClientId adClientId, @NonNull final OrgId adOrgId)
 	{
-		return new EventDescriptor(adClientId, adOrgId);
+		return ofClientAndOrg(ClientAndOrgId.ofClientAndOrg(adClientId, adOrgId));
 	}
 
-	@JsonProperty("clientId")
-	ClientId clientId;
-	@JsonProperty("orgId")
-	OrgId orgId;
+	public static EventDescriptor ofClientAndOrg(@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		return new EventDescriptor(clientAndOrgId);
+	}
+
+	@JsonProperty("clientAndOrgId")
+	ClientAndOrgId clientAndOrgId;
 
 	@JsonCreator
 	private EventDescriptor(
-			@JsonProperty("clientId") @NonNull final ClientId clientId,
-			@JsonProperty("orgId") @NonNull final OrgId orgId)
+			@JsonProperty("clientAndOrgId") @NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		this.clientId = clientId;
-		this.orgId = orgId;
+		this.clientAndOrgId = clientAndOrgId;
+	}
+
+	public ClientId getClientId()
+	{
+		return getClientAndOrgId().getClientId();
+	}
+
+	public OrgId getOrgId()
+	{
+		return getClientAndOrgId().getOrgId();
 	}
 }

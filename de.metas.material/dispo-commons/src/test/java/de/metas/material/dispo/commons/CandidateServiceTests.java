@@ -7,7 +7,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
-import org.adempiere.service.ClientId;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -26,7 +25,7 @@ import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
-import de.metas.organization.OrgId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
 import mockit.Mocked;
 
@@ -71,8 +70,7 @@ public class CandidateServiceTests
 	public void testcreatePPOrderRequestEvent()
 	{
 		final Candidate candidate = Candidate.builder()
-				.clientId(ClientId.ofRepoId(20))
-				.orgId(OrgId.ofRepoId(30))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(20, 30))
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.materialDescriptor(createMaterialDescriptor())
@@ -135,8 +133,7 @@ public class CandidateServiceTests
 	public void testcreateDDOrderRequestEvent()
 	{
 		final Candidate candidate = Candidate.builder()
-				.clientId(ClientId.ofRepoId(20))
-				.orgId(OrgId.ofRepoId(30))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(20, 30))
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
 				.materialDescriptor(createMaterialDescriptor())

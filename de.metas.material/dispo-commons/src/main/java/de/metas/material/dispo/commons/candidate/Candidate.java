@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
-import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
@@ -53,20 +52,16 @@ public class Candidate
 	public static CandidateBuilder builderForEventDescr(@NonNull final EventDescriptor eventDescr)
 	{
 		return Candidate.builder()
-				.clientId(eventDescr.getClientId())
-				.orgId(eventDescr.getOrgId());
+				.clientAndOrgId(eventDescr.getClientAndOrgId());
 	}
 
 	public static CandidateBuilder builderForClientAndOrgId(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		return Candidate.builder()
-				.clientId(clientAndOrgId.getClientId())
-				.orgId(clientAndOrgId.getOrgId());
+				.clientAndOrgId(clientAndOrgId);
 	}
 
-	ClientId clientId;
-
-	OrgId orgId;
+	ClientAndOrgId clientAndOrgId;
 
 	@NonNull
 	CandidateType type;
@@ -187,8 +182,7 @@ public class Candidate
 
 	@Builder(toBuilder = true)
 	private Candidate(
-			@NonNull final ClientId clientId,
-			@NonNull final OrgId orgId,
+			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final CandidateType type,
 			final CandidateBusinessCase businessCase,
 			// final CandidateStatus status,
@@ -201,8 +195,7 @@ public class Candidate
 			final DemandDetail additionalDemandDetail,
 			@Singular final List<TransactionDetail> transactionDetails)
 	{
-		this.clientId = clientId;
-		this.orgId = orgId;
+		this.clientAndOrgId = clientAndOrgId;
 		this.type = type;
 		this.businessCase = businessCase;
 		// this.status = status;
@@ -268,5 +261,10 @@ public class Candidate
 				businessCase, businessCaseDetail, this);
 
 		return this;
+	}
+
+	public OrgId getOrgId()
+	{
+		return getClientAndOrgId().getOrgId();
 	}
 }

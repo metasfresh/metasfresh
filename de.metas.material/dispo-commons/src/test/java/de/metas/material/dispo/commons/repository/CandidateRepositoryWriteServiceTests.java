@@ -3,9 +3,8 @@ package de.metas.material.dispo.commons.repository;
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
 import static de.metas.material.event.EventTestHelper.ATTRIBUTE_SET_INSTANCE_ID;
 import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
-import static de.metas.material.event.EventTestHelper.CLIENT_ID;
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
@@ -23,7 +22,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.junit.Before;
@@ -50,7 +48,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.organization.OrgId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 
@@ -105,8 +103,7 @@ public class CandidateRepositoryWriteServiceTests
 				.withQuantity(new BigDecimal("0.00000000000000"));
 
 		final Candidate candidate = Candidate.builder()
-				.clientId(ClientId.ofRepoId(1))
-				.orgId(OrgId.ofRepoId(1))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 1))
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(materialDescriptorWithAlotOfDigits)
 				.businessCaseDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(shipmentScheduleId, 30, orderId, TEN))
@@ -129,8 +126,7 @@ public class CandidateRepositoryWriteServiceTests
 	public void addOrRecplaceDemandDetail()
 	{
 		final Candidate candidate = Candidate.builder()
-				.clientId(ClientId.ofRepoId(1))
-				.orgId(OrgId.ofRepoId(1))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 1))
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(createMaterialDescriptor())
 				.businessCaseDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(20, -1, -1, TEN))
@@ -152,8 +148,7 @@ public class CandidateRepositoryWriteServiceTests
 	public void addOrRecplaceTransactionDetails()
 	{
 		final Candidate candidate = Candidate.builder()
-				.clientId(ClientId.ofRepoId(1))
-				.orgId(OrgId.ofRepoId(1))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 1))
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(createMaterialDescriptor())
 				.transactionDetail(TransactionDetail.builder().quantity(ONE).storageAttributesKey(AttributesKey.ALL).transactionId(15).transactionDate(NOW).complete(true).build())
@@ -231,8 +226,7 @@ public class CandidateRepositoryWriteServiceTests
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.materialDescriptor(createMaterialDescriptor())
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.businessCaseDetail(ProductionDetail.builder()
 						.description("description")
 						.plantId(ResourceId.ofRepoId(60))
@@ -340,8 +334,7 @@ public class CandidateRepositoryWriteServiceTests
 		final Candidate distributionCandidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(createMaterialDescriptor())
 				.businessCaseDetail(DistributionDetail.builder()
 						.productPlanningId(80)
@@ -383,8 +376,7 @@ public class CandidateRepositoryWriteServiceTests
 		final Candidate productionCandidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.SHIPMENT)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(createMaterialDescriptor())
 				.businessCaseDetail(DemandDetail.forForecastLineId(61, 71, TEN))
 				.build();
@@ -413,8 +405,7 @@ public class CandidateRepositoryWriteServiceTests
 		final Candidate productionCandidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.SHIPMENT)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(createMaterialDescriptor()
 						.withProductDescriptor(createProductDescriptorWithOffSet(productIdOffSet)))
 				.businessCaseDetail(DemandDetail.forForecastLineId(61, 62, TEN))
