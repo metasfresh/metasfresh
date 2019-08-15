@@ -1,5 +1,6 @@
 package de.metas.material.planning.pporder;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.compiere.util.TimeUtil.asInstant;
 
 import java.time.Instant;
@@ -23,6 +24,7 @@ import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -59,6 +61,15 @@ public class PPOrderPojoConverter
 	public PPOrderPojoConverter(@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
 	{
 		this.productDescriptorFactory = productDescriptorFactory;
+	}
+
+	public PPOrder getById(final int ppOrderId)
+	{
+		Check.assumeGreaterThanZero(ppOrderId, "ppOrderId");
+
+		// FIXME: use IPPOrderDAO.... but now we cannot because the interface is not visible in this project
+		final I_PP_Order ppOrderRecord = load(ppOrderId, I_PP_Order.class);
+		return toPPOrder(ppOrderRecord);
 	}
 
 	public PPOrder toPPOrder(@NonNull final I_PP_Order ppOrderRecord)

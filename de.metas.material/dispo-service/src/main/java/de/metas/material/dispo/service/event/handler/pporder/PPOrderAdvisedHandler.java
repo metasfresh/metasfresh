@@ -23,7 +23,6 @@ import de.metas.material.event.pporder.AbstractPPOrderEvent;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
-import de.metas.material.event.pporder.PPOrderLine;
 import lombok.NonNull;
 
 /*
@@ -108,28 +107,6 @@ public final class PPOrderAdvisedHandler
 
 		return CandidatesQuery.builder()
 				.type(CandidateType.SUPPLY)
-				.businessCase(CandidateBusinessCase.PRODUCTION)
-				.demandDetailsQuery(demandDetailsQuery)
-				.productionDetailsQuery(productionDetailsQuery)
-				.build();
-	}
-
-	@Override
-	protected CandidatesQuery createPreExistingCandidatesQuery(
-			@NonNull final PPOrder ppOrder,
-			@NonNull final PPOrderLine ppOrderLine,
-			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
-	{
-		final DemandDetail demandDetail = DemandDetail.forSupplyRequiredDescriptor(supplyRequiredDescriptor);
-		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.ofDemandDetail(demandDetail);
-
-		final ProductionDetailsQuery productionDetailsQuery = ProductionDetailsQuery.builder()
-				.productPlanningId(ppOrder.getProductPlanningId())
-				.productBomLineId(ppOrderLine.getProductBomLineId())
-				.build();
-
-		return CandidatesQuery.builder()
-				.type(PPOrderHandlerUtils.extractCandidateType(ppOrderLine))
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.demandDetailsQuery(demandDetailsQuery)
 				.productionDetailsQuery(productionDetailsQuery)

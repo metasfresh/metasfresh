@@ -63,32 +63,28 @@ public class PPOrderChangedEventFactory
 	{
 		this.ppOrderConverter = ppOrderConverter;
 		this.ppOrderRecord = ppOrderRecord;
-		
+
 		this.eventBuilder = createAndInitEventBuilderWithOldValues(ppOrderRecord, ppOrderConverter);
 
-		final PPOrder ppOrderPojo = ppOrderConverter.toPPOrder(ppOrderRecord);
-
-		final Map<Boolean, List<PPOrderLine>> linesWithAndWithoutProductBomLineId = //
-				collectLinesWithAndWithoutProductBomLineId(ppOrderPojo);
+		final PPOrder ppOrder = ppOrderConverter.toPPOrder(ppOrderRecord);
+		final Map<Boolean, List<PPOrderLine>> linesWithAndWithoutProductBomLineId = collectLinesWithAndWithoutProductBomLineId(ppOrder);
 
 		final List<PPOrderLine> linesWithoutProductBomLine = linesWithAndWithoutProductBomLineId.get(false);
-		linesWithoutProductBomLine
-				.forEach(line -> {
-					eventBuilder.deletedPPOrderLine(DeletedPPOrderLineDescriptor.ofPPOrderLine(line));
-				});
+		linesWithoutProductBomLine.forEach(line -> {
+			eventBuilder.deletedPPOrderLine(DeletedPPOrderLineDescriptor.ofPPOrderLine(line));
+		});
 
 		final List<PPOrderLine> linesWithProductBomLine = linesWithAndWithoutProductBomLineId.get(true);
-		linesWithProductBomLine
-				.forEach(line -> {
-					final ChangedPPOrderLineDescriptorBuilder builder = ChangedPPOrderLineDescriptor.builder()
-							.issueOrReceiveDate(line.getIssueOrReceiveDate())
-							.productDescriptor(line.getProductDescriptor())
-							.oldPPOrderLineId(line.getPpOrderLineId())
-							.oldQtyRequired(line.getQtyRequired())
-							.oldQtyDelivered(line.getQtyDelivered());
+		linesWithProductBomLine.forEach(line -> {
+			final ChangedPPOrderLineDescriptorBuilder builder = ChangedPPOrderLineDescriptor.builder()
+					.issueOrReceiveDate(line.getIssueOrReceiveDate())
+					.productDescriptor(line.getProductDescriptor())
+					.oldPPOrderLineId(line.getPpOrderLineId())
+					.oldQtyRequired(line.getQtyRequired())
+					.oldQtyDelivered(line.getQtyDelivered());
 
-					productBomLineId2ChangeBuilder.put(line.getProductBomLineId(), builder);
-				});
+			productBomLineId2ChangeBuilder.put(line.getProductBomLineId(), builder);
+		});
 	}
 
 	private static PPOrderChangedEventBuilder createAndInitEventBuilderWithOldValues(
@@ -96,16 +92,16 @@ public class PPOrderChangedEventFactory
 			@NonNull final PPOrderPojoConverter ppOrderConverter)
 	{
 		final I_PP_Order oldPPOrderRecord = createOld(ppOrderRecord, I_PP_Order.class);
-		final PPOrder oldPPOrderPojo = ppOrderConverter.toPPOrder(oldPPOrderRecord);
+		final PPOrder oldPPOrder = ppOrderConverter.toPPOrder(oldPPOrderRecord);
 
 		return PPOrderChangedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(ppOrderRecord.getAD_Client_ID(), ppOrderRecord.getAD_Org_ID()))
-				.productDescriptor(oldPPOrderPojo.getProductDescriptor())
-				.ppOrderId(oldPPOrderPojo.getPpOrderId())
-				.oldDatePromised(oldPPOrderPojo.getDatePromised())
-				.oldDocStatus(oldPPOrderPojo.getDocStatus())
-				.oldQtyRequired(oldPPOrderPojo.getQtyRequired())
-				.oldQtyDelivered(oldPPOrderPojo.getQtyDelivered());
+				// .productDescriptor(oldPPOrder.getProductDescriptor())
+				// .ppOrderId(oldPPOrder.getPpOrderId())
+				.oldDatePromised(oldPPOrder.getDatePromised())
+				.oldDocStatus(oldPPOrder.getDocStatus())
+				.oldQtyRequired(oldPPOrder.getQtyRequired())
+				.oldQtyDelivered(oldPPOrder.getQtyDelivered());
 	}
 
 	private Map<Boolean, List<PPOrderLine>> collectLinesWithAndWithoutProductBomLineId(@NonNull final PPOrder ppOrder)
@@ -118,6 +114,7 @@ public class PPOrderChangedEventFactory
 	public PPOrderChangedEvent inspectPPOrderAfterChange()
 	{
 		final PPOrder updatedPPOrder = ppOrderConverter.toPPOrder(ppOrderRecord);
+		eventBuilder.ppOrderAfterChanges(updatedPPOrder);
 
 		eventBuilder.newDatePromised(updatedPPOrder.getDatePromised());
 		eventBuilder.newDocStatus(updatedPPOrder.getDocStatus());

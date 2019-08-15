@@ -82,14 +82,13 @@ public class PPOrderPojoSupplier
 		this.productDescriptorFactory = productDescriptorFactory;
 	}
 
-	public PPOrder supplyPPOrderPojoWithLines(
-			@NonNull final IMaterialRequest request)
+	public PPOrder supplyPPOrderPojoWithLines(@NonNull final IMaterialRequest request)
 	{
 		final PPOrder ppOrder = supplyPPOrderPojo(request);
 
-		final PPOrder ppOrderWithLines = ppOrder
-				.toBuilder()
-				.lines(supplyPPOrderLinePojos(ppOrder)).build();
+		final PPOrder ppOrderWithLines = ppOrder.toBuilder()
+				.lines(supplyPPOrderLinePojos(ppOrder))
+				.build();
 
 		return ppOrderWithLines;
 	}

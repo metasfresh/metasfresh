@@ -16,6 +16,7 @@ import com.google.common.collect.Maps;
 import de.metas.Profiles;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
@@ -70,31 +71,48 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 	}
 
 	@Override
-	public void handleEvent(@NonNull final PPOrderChangedEvent ppOrderChangedEvent)
+	public void handleEvent(@NonNull final PPOrderChangedEvent event)
 	{
-		final List<Candidate> candidatesToUpdate = candidateRepositoryRetrieval.retrieveCandidatesForPPOrderId(ppOrderChangedEvent.getPpOrderId());
-		Check.errorIf(candidatesToUpdate.isEmpty(), "No Candidates found for PP_Order_ID={}", ppOrderChangedEvent.getPpOrderId());
+		final List<Candidate> candidatesToUpdate = candidateRepositoryRetrieval.retrieveCandidatesForPPOrderId(event.getPpOrderId());
+		Check.errorIf(candidatesToUpdate.isEmpty(), "No Candidates found for PP_Order_ID={}", event.getPpOrderId());
 
 		final List<Candidate> updatedCandidatesToPersist = new ArrayList<>();
 
 		//
 		// Header candidate (supply)
+		final Candidate headerCandidate;
 		{
 			final Candidate headerCandidateToUpdate = extractHeaderCandidate(candidatesToUpdate);
-			updatedCandidatesToPersist.add(processPPOrderChange(headerCandidateToUpdate, ppOrderChangedEvent));
+			headerCandidate = processPPOrderChange(headerCandidateToUpdate, event);
+			updatedCandidatesToPersist.add(headerCandidate);
 		}
 
 		//
 		// Line candidates (demands, supplies)
-		updatedCandidatesToPersist.addAll(
-				processPPOrderLinesChanges(
-						candidatesToUpdate,
-						ppOrderChangedEvent.getNewDocStatus(),
-						ppOrderChangedEvent.getPpOrderLineChanges()));
-
-		// TODO: handle delete and creation of new lines
-
-		updatedCandidatesToPersist.forEach(candidateChangeService::onCandidateNewOrChange);
+		if (event.isJustCompleted())
+		{
+			PPOrderLineCandidatesCreateCommand.builder()
+					.candidateChangeService(candidateChangeService)
+					.candidateRepositoryRetrieval(candidateRepositoryRetrieval)
+					//
+					.ppOrder(event.getPpOrderAfterChanges())
+					// .supplyRequiredDescriptor(ppOrderEvent.getSupplyRequiredDescriptor())
+					.groupId(headerCandidate.getGroupId())
+					.headerCandidateSeqNo(headerCandidate.getSeqNo())
+					.advised(Flag.FALSE_DONT_UPDATE)
+					.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE)
+					.create();
+		}
+		else
+		{
+			updatedCandidatesToPersist.addAll(
+					processPPOrderLinesChanges(
+							candidatesToUpdate,
+							event.getNewDocStatus(),
+							event.getPpOrderLineChanges()));
+			// TODO: handle delete and creation of new lines
+			updatedCandidatesToPersist.forEach(candidateChangeService::onCandidateNewOrChange);
+		}
 	}
 
 	private static Candidate extractHeaderCandidate(final List<Candidate> candidates)
@@ -154,7 +172,7 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 
 	private static List<Candidate> processPPOrderLinesChanges(
 			@NonNull final List<Candidate> candidatesToUpdate,
-			@NonNull final DocStatus newDocStatusFromEvent,
+			@NonNull final DocStatus ppOrderDocStatus,
 			@NonNull final List<ChangedPPOrderLineDescriptor> ppOrderLineChanges)
 	{
 		final ImmutableMap<Integer, ChangedPPOrderLineDescriptor> ppOrderLineChangesByPPOrderLineId = Maps.uniqueIndex(ppOrderLineChanges, ChangedPPOrderLineDescriptor::getOldPPOrderLineId);
@@ -170,7 +188,7 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 
 			final ChangedPPOrderLineDescriptor changeDescriptor = ppOrderLineChangesByPPOrderLineId.get(productionDetailToUpdate.getPpOrderLineId());
 
-			final Candidate updatedCandidate = processPPOrderLineChange(candidateToUpdate, newDocStatusFromEvent, changeDescriptor);
+			final Candidate updatedCandidate = processPPOrderLineChange(candidateToUpdate, ppOrderDocStatus, changeDescriptor);
 			updatedCandidates.add(updatedCandidate);
 		}
 
@@ -179,7 +197,7 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 
 	private static Candidate processPPOrderLineChange(
 			@NonNull final Candidate candidateToUpdate,
-			@NonNull final DocStatus newDocStatusFromEvent,
+			@NonNull final DocStatus ppOrderDocStatus,
 			@NonNull final ChangedPPOrderLineDescriptor ppOrderLineChange)
 	{
 		final ProductionDetail productionDetailToUpdate = ProductionDetail.cast(candidateToUpdate.getBusinessCaseDetail());
@@ -192,7 +210,7 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 		// final CandidateStatus newCandidateStatus = CandidateStatus.ofDocStatus(newDocStatusFromEvent);
 
 		final ProductionDetail updatedProductionDetail = productionDetailToUpdate.toBuilder()
-				.ppOrderDocStatus(newDocStatusFromEvent)
+				.ppOrderDocStatus(ppOrderDocStatus)
 				.ppOrderLineId(ppOrderLineChange.getNewPPOrderLineId())
 				.qty(newPlannedQty)
 				.build();

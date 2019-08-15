@@ -15,7 +15,6 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
-import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
@@ -23,7 +22,6 @@ import de.metas.material.event.pporder.AbstractPPOrderEvent;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
-import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 
@@ -109,46 +107,10 @@ public final class PPOrderCreatedHandler
 				.groupId(groupId)
 
 				// there might also be supply candidates for co-products, so the groupId alone is not sufficient
-				.materialDescriptorQuery(createMaterialDescriptorQuery(productDescriptor))
+				.materialDescriptorQuery(PPOrderHandlerUtils.createMaterialDescriptorQuery(productDescriptor))
 				.build();
 
 		return query;
-	}
-
-	@Override
-	protected CandidatesQuery createPreExistingCandidatesQuery(
-			@NonNull final PPOrder ppOrder,
-			@NonNull final PPOrderLine ppOrderLine,
-			@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor_NOTUSED)
-	{
-		return createPreExistingCandidatesQuery(ppOrder, ppOrderLine);
-	}
-
-	private static CandidatesQuery createPreExistingCandidatesQuery(
-			@NonNull final PPOrder ppOrder,
-			@NonNull final PPOrderLine ppOrderLine)
-	{
-		final MaterialDispoGroupId groupId = ppOrder.getMaterialDispoGroupId();
-		if (groupId == null)
-		{
-			// returned false, but don't write another log message; we already logged in the other createQuery() method
-			return CandidatesQuery.FALSE;
-		}
-
-		return CandidatesQuery.builder()
-				.type(PPOrderHandlerUtils.extractCandidateType(ppOrderLine))
-				.businessCase(CandidateBusinessCase.PRODUCTION)
-				.groupId(groupId)
-				.materialDescriptorQuery(createMaterialDescriptorQuery(ppOrderLine.getProductDescriptor()))
-				.build();
-	}
-
-	private static MaterialDescriptorQuery createMaterialDescriptorQuery(@NonNull final ProductDescriptor productDescriptor)
-	{
-		return MaterialDescriptorQuery.builder()
-				.productId(productDescriptor.getProductId())
-				.storageAttributesKey(productDescriptor.getStorageAttributesKey())
-				.build();
 	}
 
 	@Override
