@@ -14,7 +14,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.ModelValidator;
@@ -45,9 +44,17 @@ import lombok.NonNull;
 @Interceptor(I_PP_Order.class)
 public class PP_Order
 {
-	private final PPOrderPojoConverter ppOrderConverter = SpringContextHolder.instance.getBean(PPOrderPojoConverter.class);
-	private final PostMaterialEventService materialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
-	
+	private final PPOrderPojoConverter ppOrderConverter;
+	private final PostMaterialEventService materialEventService;
+
+	public PP_Order(
+			@NonNull final PPOrderPojoConverter ppOrderConverter,
+			@NonNull final PostMaterialEventService materialEventService)
+	{
+		this.ppOrderConverter = ppOrderConverter;
+		this.materialEventService = materialEventService;
+	}
+
 	@Init
 	public void registerCallouts()
 	{

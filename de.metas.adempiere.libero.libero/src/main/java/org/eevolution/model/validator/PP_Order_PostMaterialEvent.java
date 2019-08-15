@@ -6,7 +6,6 @@ import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 import org.eevolution.model.I_PP_Order;
 
@@ -30,8 +29,16 @@ import lombok.NonNull;
 @Interceptor(I_PP_Order.class)
 public class PP_Order_PostMaterialEvent
 {
-	private final PPOrderPojoConverter ppOrderConverter = SpringContextHolder.instance.getBean(PPOrderPojoConverter.class);
-	private final PostMaterialEventService materialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
+	private final PPOrderPojoConverter ppOrderConverter;
+	private final PostMaterialEventService materialEventService;
+
+	public PP_Order_PostMaterialEvent(
+			@NonNull final PPOrderPojoConverter ppOrderConverter,
+			@NonNull final PostMaterialEventService materialEventService)
+	{
+		this.ppOrderConverter = ppOrderConverter;
+		this.materialEventService = materialEventService;
+	}
 
 	@ModelChange(//
 			timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })

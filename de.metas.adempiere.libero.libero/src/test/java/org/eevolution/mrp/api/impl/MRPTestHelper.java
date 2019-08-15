@@ -37,6 +37,7 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -90,12 +91,18 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
+import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.logging.LogManager;
+import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.eventbus.MaterialEventConverter;
+import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.material.planning.DurationUnitCodeUtils;
 import de.metas.material.planning.ErrorCodes;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.impl.MRPContext;
+import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfoUpdateRequest;
@@ -299,7 +306,22 @@ public class MRPTestHelper
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
 
 		modelInterceptorRegistry.addModelInterceptor(new org.compiere.wf.model.validator.AD_Workflow(), client);
-		modelInterceptorRegistry.addModelInterceptor(new org.eevolution.model.LiberoValidator(), client);
+
+		modelInterceptorRegistry.addModelInterceptor(createLiberoValidator(), client);
+	}
+
+	private org.eevolution.model.LiberoValidator createLiberoValidator()
+	{
+		final ModelProductDescriptorExtractor productDescriptorFactory = new ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory();
+		final PPOrderPojoConverter ppOrderConverter = new PPOrderPojoConverter(productDescriptorFactory);
+
+		final MaterialEventConverter materialEventConverter = new MaterialEventConverter();
+		final MetasfreshEventBusService materialEventService = MetasfreshEventBusService.createLocalServiceThatIsReadyToUse(
+				materialEventConverter,
+				PlainEventBusFactory.newInstance());
+		final PostMaterialEventService postMaterialEventService = new PostMaterialEventService(materialEventService);
+
+		return new org.eevolution.model.LiberoValidator(ppOrderConverter, postMaterialEventService);
 	}
 
 	public Timestamp getToday()
@@ -348,7 +370,7 @@ public class MRPTestHelper
 		InterfaceWrapperHelper.save(bpartner);
 		//
 		final BPartnerLocationId bpLocationId = createBPLocation(bpartner);
-		
+
 		Services.get(IOrgDAO.class).createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
 				.orgId(OrgId.ofRepoId(org.getAD_Org_ID()))
 				.orgBPartnerLocationId(Optional.of(bpLocationId))
