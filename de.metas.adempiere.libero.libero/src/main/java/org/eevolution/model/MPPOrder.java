@@ -285,6 +285,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		// Update Document Status
 		// NOTE: we need to have it Processed=Yes before calling triggering AFTER_COMPLETE model validator event
 		setProcessed(true);
+		setDocStatus(IDocument.STATUS_Completed);
 		setDocAction(IDocument.ACTION_Close);
 
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
