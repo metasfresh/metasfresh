@@ -134,7 +134,7 @@ public final class PPOrderCreatedHandler
 		}
 
 		return CandidatesQuery.builder()
-				.type(extractCandidateType(ppOrderLine))
+				.type(PPOrderHandlerUtils.extractCandidateType(ppOrderLine))
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.groupId(groupId)
 				.materialDescriptorQuery(createMaterialDescriptorQuery(ppOrderLine.getProductDescriptor()))

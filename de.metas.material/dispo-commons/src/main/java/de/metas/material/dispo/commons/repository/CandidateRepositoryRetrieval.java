@@ -354,7 +354,8 @@ public class CandidateRepositoryRetrieval
 	{
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.productionDetailsQuery(ProductionDetailsQuery.builder()
-						.ppOrderId(ppOrderId).build())
+						.ppOrderId(ppOrderId)
+						.build())
 				.build();
 		return retrieveOrderedByDateAndSeqNo(query);
 	}

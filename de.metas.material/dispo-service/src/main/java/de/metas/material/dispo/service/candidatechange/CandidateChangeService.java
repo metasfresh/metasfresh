@@ -4,12 +4,13 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 
+import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
@@ -39,13 +40,14 @@ import lombok.NonNull;
 @Service
 public class CandidateChangeService
 {
+	private static final Logger logger = LogManager.getLogger(CandidateChangeService.class);
 
 	private final Map<CandidateType, CandidateHandler> type2handler;
 
-	public CandidateChangeService(
-			@NonNull final Collection<CandidateHandler> candidateChangeHandlers)
+	public CandidateChangeService(@NonNull final Collection<CandidateHandler> handlers)
 	{
-		type2handler = createMapOfHandlers(candidateChangeHandlers);
+		type2handler = createMapOfHandlers(handlers);
+		logger.info("Handlers: {}", type2handler);
 	}
 
 	/**
@@ -81,12 +83,17 @@ public class CandidateChangeService
 	}
 
 	@VisibleForTesting
-	static Map<CandidateType, CandidateHandler> createMapOfHandlers(
-			@NonNull final Collection<CandidateHandler> candidateChangeHandlers)
+	static Map<CandidateType, CandidateHandler> createMapOfHandlers(@NonNull final Collection<CandidateHandler> handlers)
 	{
-		final Builder<CandidateType, CandidateHandler> builder = ImmutableMap.builder();
-		for (final CandidateHandler handler : candidateChangeHandlers)
+		final ImmutableMap.Builder<CandidateType, CandidateHandler> builder = ImmutableMap.builder();
+		for (final CandidateHandler handler : handlers)
 		{
+			if (handler.getHandeledTypes().isEmpty())
+			{
+				logger.warn("Skip handler because no handled types provided: {}", handler);
+				continue;
+			}
+
 			for (final CandidateType type : handler.getHandeledTypes())
 			{
 				builder.put(type, handler); // builder already prohibits duplicate keys

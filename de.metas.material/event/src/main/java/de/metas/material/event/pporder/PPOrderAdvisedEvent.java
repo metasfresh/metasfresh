@@ -11,6 +11,7 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -58,9 +59,9 @@ public class PPOrderAdvisedEvent extends AbstractPPOrderEvent
 	@JsonCreator
 	@Builder
 	public PPOrderAdvisedEvent(
-			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
-			@JsonProperty("ppOrder") final PPOrder ppOrder,
-			@JsonProperty("supplyRequiredDescriptor") final SupplyRequiredDescriptor supplyRequiredDescriptor,
+			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
+			@JsonProperty("ppOrder") @NonNull final PPOrder ppOrder,
+			@JsonProperty("supplyRequiredDescriptor") @Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@JsonProperty("directlyCreatePPOrder") final boolean directlyCreatePPOrder,
 			@JsonProperty("directlyPickSupply") final boolean directlyPickSupply)
 	{
@@ -84,12 +85,14 @@ public class PPOrderAdvisedEvent extends AbstractPPOrderEvent
 		Check.errorIf(productPlanningId <= 0,
 				"The given ppOrderAdvisedEvent event has a ppOrder with productPlanningId={}", productPlanningId);
 
-		ppOrder.getLines().forEach(ppOrderLine -> {
+		ppOrder.getLines().forEach(this::validateLine);
+	}
 
-			final int productBomLineId = ppOrderLine.getProductBomLineId();
-			Check.errorIf(productBomLineId <= 0,
-					"The given ppOrderAdvisedEvent event has a ppOrderLine with productBomLineId={}; ppOrderLine={}",
-					productBomLineId, ppOrderLine);
-		});
+	private void validateLine(final PPOrderLine ppOrderLine)
+	{
+		final int productBomLineId = ppOrderLine.getProductBomLineId();
+		Check.errorIf(productBomLineId <= 0,
+				"The given ppOrderAdvisedEvent event has a ppOrderLine with productBomLineId={}; ppOrderLine={}",
+				productBomLineId, ppOrderLine);
 	}
 }

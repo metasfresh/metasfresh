@@ -78,7 +78,7 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 		final List<Candidate> updatedCandidatesToPersist = new ArrayList<>();
 
 		updatedCandidatesToPersist.addAll(
-				processPPOrderChange(
+				processPPOrdersChanges(
 						candidatesToUpdate,
 						ppOrderChangedEvent));
 
@@ -90,17 +90,13 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 
 		// TODO: handle delete and creation of new lines
 
-		updatedCandidatesToPersist.forEach(candidate -> candidateChangeService.onCandidateNewOrChange(candidate));
+		updatedCandidatesToPersist.forEach(candidateChangeService::onCandidateNewOrChange);
 	}
 
-	private static List<Candidate> processPPOrderChange(
+	private static List<Candidate> processPPOrdersChanges(
 			@NonNull final List<Candidate> candidatesToUpdate,
 			@NonNull final PPOrderChangedEvent ppOrderChangedEvent)
 	{
-		final DocStatus newDocStatusFromEvent = ppOrderChangedEvent.getNewDocStatus();
-		// final CandidateStatus newCandidateStatus = EventUtil.getCandidateStatus(newDocStatusFromEvent);
-		final BigDecimal newPlannedQty = ppOrderChangedEvent.getNewQtyRequired();
-
 		final List<Candidate> updatedCandidates = new ArrayList<>();
 		for (final Candidate candidateToUpdate : candidatesToUpdate)
 		{
@@ -110,22 +106,41 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 				continue; // this is a line's candidate; deal with it in the other method
 			}
 
-			final ProductionDetail updatedProductionDetail = productionDetailToUpdate.toBuilder()
-					.ppOrderDocStatus(newDocStatusFromEvent)
-					.qty(newPlannedQty)
-					.build();
-
-			final BigDecimal newCandidateQty = newPlannedQty.max(candidateToUpdate.computeActualQty());
-
-			final Candidate updatedCandidate = candidateToUpdate.toBuilder()
-					// .status(newCandidateStatus)
-					.businessCaseDetail(updatedProductionDetail)
-					.materialDescriptor(candidateToUpdate.getMaterialDescriptor().withQuantity(newCandidateQty))
-					.build();
+			final Candidate updatedCandidate = processPPOrderChange(candidateToUpdate, ppOrderChangedEvent);
 			updatedCandidates.add(updatedCandidate);
 		}
 
 		return updatedCandidates;
+	}
+
+	private static Candidate processPPOrderChange(
+			@NonNull final Candidate candidateToUpdate,
+			@NonNull final PPOrderChangedEvent ppOrderChangedEvent)
+	{
+		final ProductionDetail productionDetailToUpdate = ProductionDetail.cast(candidateToUpdate.getBusinessCaseDetail());
+		if (productionDetailToUpdate.getPpOrderLineId() > 0)
+		{
+			throw new AdempiereException("Invalid order PP Order header candidate: " + candidateToUpdate);
+		}
+
+		final DocStatus newDocStatusFromEvent = ppOrderChangedEvent.getNewDocStatus();
+		// final CandidateStatus newCandidateStatus = CandidateStatus.ofDocStatus(newDocStatusFromEvent);
+		final BigDecimal newPlannedQty = ppOrderChangedEvent.getNewQtyRequired();
+
+		final ProductionDetail updatedProductionDetail = productionDetailToUpdate.toBuilder()
+				.ppOrderDocStatus(newDocStatusFromEvent)
+				.qty(newPlannedQty)
+				.build();
+
+		final BigDecimal newCandidateQty = newPlannedQty.max(candidateToUpdate.computeActualQty());
+
+		final Candidate updatedCandidate = candidateToUpdate.toBuilder()
+				// .status(newCandidateStatus)
+				.businessCaseDetail(updatedProductionDetail)
+				.materialDescriptor(candidateToUpdate.getMaterialDescriptor().withQuantity(newCandidateQty))
+				.build();
+
+		return updatedCandidate;
 	}
 
 	private static List<Candidate> processPPOrderLinesChanges(
@@ -133,8 +148,6 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 			@NonNull final DocStatus newDocStatusFromEvent,
 			@NonNull final List<ChangedPPOrderLineDescriptor> ppOrderLineChanges)
 	{
-		// final CandidateStatus newCandidateStatus = EventUtil.getCandidateStatus(newDocStatusFromEvent);
-
 		final ImmutableMap<Integer, ChangedPPOrderLineDescriptor> ppOrderLineChangesByPPOrderLineId = Maps.uniqueIndex(ppOrderLineChanges, ChangedPPOrderLineDescriptor::getOldPPOrderLineId);
 
 		final List<Candidate> updatedCandidates = new ArrayList<>();
@@ -147,15 +160,15 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 			}
 
 			final ChangedPPOrderLineDescriptor changeDescriptor = ppOrderLineChangesByPPOrderLineId.get(productionDetailToUpdate.getPpOrderLineId());
-			
-			final Candidate updatedCandidate = processPPOrderLinesChanges(candidateToUpdate, newDocStatusFromEvent, changeDescriptor);
+
+			final Candidate updatedCandidate = processPPOrderLineChange(candidateToUpdate, newDocStatusFromEvent, changeDescriptor);
 			updatedCandidates.add(updatedCandidate);
 		}
 
 		return updatedCandidates;
 	}
 
-	private static Candidate processPPOrderLinesChanges(
+	private static Candidate processPPOrderLineChange(
 			@NonNull final Candidate candidateToUpdate,
 			@NonNull final DocStatus newDocStatusFromEvent,
 			@NonNull final ChangedPPOrderLineDescriptor ppOrderLineChange)
@@ -167,6 +180,7 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 		}
 
 		final BigDecimal newPlannedQty = ppOrderLineChange.getNewQtyRequired();
+		// final CandidateStatus newCandidateStatus = CandidateStatus.ofDocStatus(newDocStatusFromEvent);
 
 		final ProductionDetail updatedProductionDetail = productionDetailToUpdate.toBuilder()
 				.ppOrderDocStatus(newDocStatusFromEvent)
@@ -181,7 +195,7 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 				.businessCaseDetail(updatedProductionDetail)
 				.materialDescriptor(candidateToUpdate.getMaterialDescriptor().withQuantity(newCandidateQty))
 				.build();
-		
+
 		return updatedCandidate;
 	}
 

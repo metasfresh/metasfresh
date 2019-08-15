@@ -350,7 +350,8 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 		final ProductionDetailsQuery productionDetailsQuery = ProductionDetailsQuery.builder()
 				.ppOrderId(event.getPpOrderId())
-				.ppOrderLineId(ppOrderLineIdForQuery).build();
+				.ppOrderLineId(ppOrderLineIdForQuery)
+				.build();
 
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.productionDetailsQuery(productionDetailsQuery)

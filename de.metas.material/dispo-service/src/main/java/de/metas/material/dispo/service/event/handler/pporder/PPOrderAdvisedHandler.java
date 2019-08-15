@@ -124,21 +124,21 @@ public final class PPOrderAdvisedHandler
 			@NonNull final PPOrderLine ppOrderLine,
 			@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
-		final PPOrderAdvisedEvent ppOrderAdvisedEvent = PPOrderAdvisedEvent.cast(ppOrderEvent);
+		PPOrderAdvisedEvent.cast(ppOrderEvent);
 
-		final DemandDetail demandDetail = DemandDetail.forSupplyRequiredDescriptorOrNull(ppOrderAdvisedEvent.getSupplyRequiredDescriptor());
-		Check.errorIf(demandDetail == null, "Missing demandDetail for ppOrderAdvisedEvent={}", ppOrderAdvisedEvent);
+		final DemandDetail demandDetail = DemandDetail.forSupplyRequiredDescriptorOrNull(ppOrderEvent.getSupplyRequiredDescriptor());
+		Check.errorIf(demandDetail == null, "Missing demandDetail for ppOrderAdvisedEvent={}", ppOrderEvent);
 
 		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.ofDemandDetailOrNull(demandDetail);
 
-		final PPOrder ppOrder = ppOrderAdvisedEvent.getPpOrder();
+		final PPOrder ppOrder = ppOrderEvent.getPpOrder();
 		final ProductionDetailsQuery productionDetailsQuery = ProductionDetailsQuery.builder()
 				.productPlanningId(ppOrder.getProductPlanningId())
 				.productBomLineId(ppOrderLine.getProductBomLineId())
 				.build();
 
 		return CandidatesQuery.builder()
-				.type(extractCandidateType(ppOrderLine))
+				.type(PPOrderHandlerUtils.extractCandidateType(ppOrderLine))
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.demandDetailsQuery(demandDetailsQuery)
 				.productionDetailsQuery(productionDetailsQuery)

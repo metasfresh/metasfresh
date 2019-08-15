@@ -49,19 +49,19 @@ import lombok.NonNull;
 
 abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> implements MaterialEventHandler<T>
 {
-	private final CandidateChangeService candidateChangeHandler;
+	private final CandidateChangeService candidateChangeService;
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
 	/**
 	 *
-	 * @param candidateChangeHandler
+	 * @param candidateChangeService
 	 * @param candidateService needed in case we directly request a {@link PpOrderSuggestedEvent}'s proposed PP_Order to be created.
 	 */
 	PPOrderAdvisedOrCreatedHandler(
-			@NonNull final CandidateChangeService candidateChangeHandler,
+			@NonNull final CandidateChangeService candidateChangeService,
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
 	{
-		this.candidateChangeHandler = candidateChangeHandler;
+		this.candidateChangeService = candidateChangeService;
 		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
 	}
 
@@ -80,7 +80,7 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 					ppOrderLine,
 					headerCandidate.getGroupId(),
 					headerCandidate.getSeqNo());
-			candidateChangeHandler.onCandidateNewOrChange(lineCandidate);
+			candidateChangeService.onCandidateNewOrChange(lineCandidate);
 		}
 
 		return headerCandidate.getGroupId();
@@ -118,7 +118,7 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 				.materialDescriptor(headerCandidateMaterialDescriptor)
 				.build();
 
-		final Candidate headerCandidateWithGroupId = candidateChangeHandler.onCandidateNewOrChange(headerCandidate);
+		final Candidate headerCandidateWithGroupId = candidateChangeService.onCandidateNewOrChange(headerCandidate);
 		return headerCandidateWithGroupId;
 	}
 
@@ -138,7 +138,7 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 				? existingLineCandidate.toBuilder()
 				: Candidate.builderForEventDescr(ppOrderEvent.getEventDescriptor());
 
-		final CandidateType candidateType = extractCandidateType(ppOrderLine);
+		final CandidateType candidateType = PPOrderHandlerUtils.extractCandidateType(ppOrderLine);
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptorForPpOrderAndLine(ppOrder, ppOrderLine);
 		final DemandDetail lineCandidateDemandDetail = computeDemandDetailOrNull(
 				candidateType,
@@ -199,11 +199,6 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 	protected abstract CandidatesQuery createPreExistingCandidatesQuery(AbstractPPOrderEvent ppOrderEvent);
 
 	protected abstract CandidatesQuery createPreExistingCandidatesQuery(PPOrderLine ppOrderLine, AbstractPPOrderEvent ppOrderEvent);
-
-	protected static final CandidateType extractCandidateType(final PPOrderLine ppOrderLine)
-	{
-		return ppOrderLine.isReceipt() ? CandidateType.SUPPLY : CandidateType.DEMAND;
-	}
 
 	private static MaterialDescriptor createMaterialDescriptorForPpOrder(final PPOrder ppOrder)
 	{
