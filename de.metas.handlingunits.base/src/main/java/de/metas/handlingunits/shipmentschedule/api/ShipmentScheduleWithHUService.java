@@ -61,7 +61,6 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.storage.IStorageQuery;
 import de.metas.storage.spi.hu.impl.HUStorageQuery;
-import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -154,23 +153,23 @@ public class ShipmentScheduleWithHUService
 	}
 
 	private List<ShipmentScheduleWithHU> createShipmentSchedulesWithHUForQtyToDeliver(
-			@NonNull final I_M_ShipmentSchedule schedule,
+			@NonNull final I_M_ShipmentSchedule scheduleRecord,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse,
 			@NonNull final IHUContext huContext)
 	{
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
-		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
+		final ArrayList<ShipmentScheduleWithHU> result = new ArrayList<>();
 
-		final Quantity qtyToDeliver = shipmentScheduleBL.getQtyToDeliver(schedule);
+		final Quantity qtyToDeliver = shipmentScheduleBL.getQtyToDeliver(scheduleRecord);
 		final boolean pickAvailableHUsOnTheFly = retrievePickAvailableHUsOntheFly(huContext);
 		if (pickAvailableHUsOnTheFly)
 		{
-			result.addAll(pickHUsOnTheFly(schedule, qtyToDeliver, huContext));
+			result.addAll(pickHUsOnTheFly(scheduleRecord, qtyToDeliver, huContext));
 		}
 
-		// find out what the pickHUsOnTheFly() method did for us
-		final Quantity allocatedQty = result.build()
+		// find out if and what what the pickHUsOnTheFly() method did for us
+		final Quantity allocatedQty = result
 				.stream()
 				.map(ShipmentScheduleWithHU::getQtyPicked)
 				.reduce(qtyToDeliver.toZero(), Quantity::add);
@@ -179,13 +178,26 @@ public class ShipmentScheduleWithHUService
 		final Quantity remainingQtyToAllocate = qtyToDeliver.subtract(allocatedQty);
 		if (remainingQtyToAllocate.signum() > 0)
 		{
+			final boolean hasNoPickedHUs = result.isEmpty();
+
+			final Quantity catchQtyOverride = hasNoPickedHUs
+					? shipmentScheduleBL.getCatchQtyOverride(scheduleRecord).orElse(null)
+					: null /* if at least one HU was picked, the catchOverride qty was added there */;
+
+			final ProductId productId = ProductId.ofRepoId(scheduleRecord.getM_Product_ID());
+			final StockQtyAndUOMQty stockQtyAndCatchQty = StockQtyAndUOMQty.builder()
+					.productId(productId)
+					.stockQty(remainingQtyToAllocate)
+					.uomQty(catchQtyOverride)
+					.build();
+
 			result.add(ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(
 					huContext, //
-					schedule,
-					remainingQtyToAllocate,
+					scheduleRecord,
+					stockQtyAndCatchQty,
 					quantityTypeToUse));
 		}
-		return result.build();
+		return ImmutableList.copyOf(result);
 	}
 
 	private boolean retrievePickAvailableHUsOntheFly(@NonNull final IHUContext huContext)
@@ -210,7 +222,7 @@ public class ShipmentScheduleWithHUService
 	 * If there are any existing HUs that match the given {@code scheduleRecord},<br>
 	 * then pick them now although they were not explicitly picked by users.
 	 * <p>
-	 * Goal: help keeping the metasfresh stock quantity near the real quantity and avoid some of the inventory effort.
+	 * Goal: help keeping the metasfresh stock quantity near the real quantity and avoid some inventory effort for users that don't want to use metasfresh's picking.
 	 * <p>
 	 * Note that we don't use the picked HUs' catch weights since we don't know which HUs were actually picked in the real world.
 	 */
@@ -233,6 +245,8 @@ public class ShipmentScheduleWithHUService
 		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
 
 		Quantity remainingQtyToAllocate = qtyToDeliver;
+
+		boolean firstHU = true;
 
 		// if we have HUs on stock, get them now
 		final Iterator<I_M_HU> iterator = HUStorageQuery
@@ -276,10 +290,18 @@ public class ShipmentScheduleWithHUService
 				final Quantity qtyOfNewHU = extractQtyOfHU(newHURecord, productId, uomRecord);
 				loggable.addLog("QtyToDeliver={}; assign split M_HU_ID={} with Qty={}", qtyToDeliver, newHURecord.getM_HU_ID(), qtyOfNewHU);
 
+				Quantity catchQtyOverride = null;
+				if (firstHU)
+				{
+					catchQtyOverride = shipmentScheduleBL.getCatchQtyOverride(scheduleRecord).orElse(null);
+					firstHU = false;
+				}
 				// We don't extract the HU's catch weight; see method's javadoc comment.
-				final StockQtyAndUOMQty qtys = StockQtyAndUOMQtys.createConvert(qtyOfNewHU,
+				// but if this is the first HU, then we add the ship ment schedule's override quantity (if any)
+				final StockQtyAndUOMQty qtys = StockQtyAndUOMQtys.createConvert(
+						qtyOfNewHU/* qtyInAnyUom */,
 						productId,
-						UomId.ofRepoId(uomRecord.getC_UOM_ID()));
+						catchQtyOverride);
 
 				result.add(huShipmentScheduleBL.addQtyPicked(
 						scheduleRecord,
@@ -287,6 +309,7 @@ public class ShipmentScheduleWithHUService
 						newHURecord,
 						huContext));
 				remainingQtyToAllocate = remainingQtyToAllocate.subtract(qtyOfNewHU);
+
 			}
 
 			if (remainingQtyToAllocate.signum() <= 0)

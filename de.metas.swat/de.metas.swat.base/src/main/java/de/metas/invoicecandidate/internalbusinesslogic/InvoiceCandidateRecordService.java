@@ -200,7 +200,7 @@ public class InvoiceCandidateRecordService
 		icRecord.setQtyToInvoiceBeforeDiscount(toInvoiceData.getQtysRaw().getStockQty().toBigDecimal());
 		icRecord.setQtyToInvoice(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal());
 
-		icRecord.setQtyToInvoiceInUOM_Calc(toInvoiceData.getQtysCalc().getUOMQty().toBigDecimal());
-		icRecord.setQtyToInvoiceInUOM(toInvoiceData.getQtysEffective().getUOMQty().toBigDecimal());
+		icRecord.setQtyToInvoiceInUOM_Calc(toInvoiceData.getQtysCalc().getUOMQtyNotNull().toBigDecimal());
+		icRecord.setQtyToInvoiceInUOM(toInvoiceData.getQtysEffective().getUOMQtyNotNull().toBigDecimal());
 	}
 }

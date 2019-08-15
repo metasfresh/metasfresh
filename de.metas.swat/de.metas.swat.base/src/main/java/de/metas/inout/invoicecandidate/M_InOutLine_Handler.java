@@ -710,7 +710,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				.computeQtysDelivered(); // this is based on icRecord's QtyOrdered
 
 		icRecord.setQtyDelivered(qtysDelivered.getStockQty().toBigDecimal());
-		icRecord.setQtyDeliveredInUOM(qtysDelivered.getUOMQty().toBigDecimal());
+		icRecord.setQtyDeliveredInUOM(qtysDelivered.getUOMQtyNotNull().toBigDecimal());
 
 		//
 		// Set other delivery informations by fetching them from first shipment/receipt.

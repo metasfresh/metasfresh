@@ -91,7 +91,7 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 				.ofRecord(icRecord)
 				.changeInvoiceRule(InvoiceRule.Immediate)
 				.computeToInvoiceData();
-		final Quantity openQty = imediateInvoiceData.getQtysEffective().getUOMQty();
+		final Quantity openQty = imediateInvoiceData.getQtysEffective().getUOMQtyNotNull();
 
 		final Money netAmtToInvoice = computeNetAmtUsingQty(icRecord, openQty);
 

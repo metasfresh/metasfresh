@@ -170,7 +170,7 @@ public class ShipmentSchedule_QtyPicked_Test
 				uomId);
 
 		final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord = shipmentScheduleAllocBL
-				.addQtyPicked(shipmentSchedule, stockQtyToAdd);
+				.createNewQtyPickedRecord(shipmentSchedule, stockQtyToAdd);
 		Assert.assertNotNull("QtyPicked record was not created", qtyPickedRecord);
 
 		Assert.assertThat("Invalid getQtyPicked()",

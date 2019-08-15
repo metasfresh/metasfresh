@@ -176,7 +176,7 @@ public class C_Invoice_Candidate_Builder
 		ic.setC_Currency_ID(test.currencyConversionBL.getBaseCurrency(ctx).getId().getRepoId());
 		ic.setDiscount(BigDecimal.valueOf(discount));
 		ic.setQtyOrdered(qtysOrdered.getStockQty().toBigDecimal());
-		ic.setQtyEntered(qtysOrdered.getUOMQty().toBigDecimal());
+		ic.setQtyEntered(qtysOrdered.getUOMQtyNotNull().toBigDecimal());
 		ic.setQtyToInvoice(BigDecimal.ZERO); // to be computed
 		ic.setQtyToInvoice_Override(null); // no override
 		ic.setC_ILCandHandler(test.plainHandler);

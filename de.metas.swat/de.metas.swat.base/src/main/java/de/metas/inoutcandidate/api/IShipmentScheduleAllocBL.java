@@ -33,7 +33,7 @@ public interface IShipmentScheduleAllocBL extends ISingletonService
 	/**
 	 * Add stockQtyAndCatchQty shipment schedule by creating a new {@link I_M_ShipmentSchedule_QtyPicked} record.
 	 */
-	I_M_ShipmentSchedule_QtyPicked addQtyPicked(I_M_ShipmentSchedule sched, StockQtyAndUOMQty stockQtyAndCatchQty);
+	I_M_ShipmentSchedule_QtyPicked createNewQtyPickedRecord(I_M_ShipmentSchedule sched, StockQtyAndUOMQty stockQtyAndCatchQty);
 
 	/**
 	 * @return true if given alloc was already delivered (i.e. {@link I_M_ShipmentSchedule_QtyPicked#getM_InOutLine_ID()} is set).

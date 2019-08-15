@@ -76,4 +76,35 @@ class StockQtyAndUOMQtyTest
 
 		assertThat(deserialized).isEqualTo(original);
 	}
+
+	@Test
+	void serialize_deserialize_nullUomQty()
+	{
+		final StockQtyAndUOMQty original = StockQtyAndUOMQty
+				.builder()
+				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
+				.stockQty(Quantity.of(ONE, stockUomRecord))
+				.uomQty(null)
+				.build();
+
+		final JSONObjectMapper<StockQtyAndUOMQty> jsonMapper = JSONObjectMapper.forClass(StockQtyAndUOMQty.class);
+		final String serialized = jsonMapper.writeValueAsString(original);
+
+		final StockQtyAndUOMQty deserialized = jsonMapper.readValue(serialized);
+
+		assertThat(deserialized).isEqualTo(original);
+	}
+
+	@Test
+	void test_toString_nullUomQty()
+	{
+		final StockQtyAndUOMQty stockQtyAndUOMQty = StockQtyAndUOMQty
+				.builder()
+				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
+				.stockQty(Quantity.of(ONE, stockUomRecord))
+				.uomQty(null)
+				.build();
+
+		assertThat(stockQtyAndUOMQty.toString()).isEqualTo("StockQtyAndUOMQty(productId=ProductId(repoId=100002), stockQty=1 null, uomQty=null)");
+	}
 }

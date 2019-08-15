@@ -166,7 +166,7 @@ public class ShipmentScheduleHelper
 
 		if (qtyPickedInitial != null && qtyPickedInitial.signum() != 0)
 		{
-			shipmentScheduleAllocBL.addQtyPicked(
+			shipmentScheduleAllocBL.createNewQtyPickedRecord(
 					shipmentSchedule,
 					StockQtyAndUOMQtys.createConvert(
 							qtyPickedInitial,

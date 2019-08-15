@@ -129,7 +129,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	@Override
 	public ShipmentScheduleWithHU addQtyPicked(
 			@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule sched,
-			@NonNull final StockQtyAndUOMQty qtyPicked,
+			@NonNull final StockQtyAndUOMQty stockQtyAndCatchQty,
 			@NonNull final I_M_HU tuOrVHU,
 			@NonNull final IHUContext huContext)
 	{
@@ -144,7 +144,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 		// Create ShipmentSchedule Qty Picked record
 		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked //
-		schedQtyPicked = shipmentScheduleAllocBL.addQtyPicked(sched, qtyPicked);
+		schedQtyPicked = shipmentScheduleAllocBL.createNewQtyPickedRecord(sched, stockQtyAndCatchQty);
 
 		// Set HU specific stuff
 		final I_M_ShipmentSchedule_QtyPicked schedQtyPickedHU = create(schedQtyPicked, I_M_ShipmentSchedule_QtyPicked.class);

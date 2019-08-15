@@ -193,7 +193,7 @@ public class M_InOutLine
 			final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 
 			final de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked adjustments_allocNew = //
-					shipmentScheduleAllocBL.addQtyPicked(adjustments_shipmentSchedule, qtyPickedToAdd);
+					shipmentScheduleAllocBL.createNewQtyPickedRecord(adjustments_shipmentSchedule, qtyPickedToAdd);
 
 			adjustments_allocNew.setM_InOutLine(inOutLine);
 			adjustments_allocNew.setProcessed(inOutLine.getM_InOut().isProcessed());

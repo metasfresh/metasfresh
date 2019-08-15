@@ -158,7 +158,7 @@ public class StockQtyAndUOMQtys
 	}
 
 	/**
-	 * @param stockQtyInAnyUom converted to the productÄ's stock UOM is needed
+	 * @param stockQtyInAnyUom converted to the product's stock UOM is needed
 	 * @param uomQty added to the new {@link StockQtyAndUOMQty} as-is-
 	 */
 	public StockQtyAndUOMQty createConvert(
@@ -296,11 +296,11 @@ public class StockQtyAndUOMQtys
 
 		final ProductId productId = extractCommonProductId(qtysToCompare1, qtysToCompare2);
 
-		final Quantity uomQty1 = qtysToCompare1.getUOMQty();
+		final Quantity uomQty1 = qtysToCompare1.getUOMQtyNotNull();
 		final Quantity uomQty2 = uomConversionBL.convertQuantityTo(
-				qtysToCompare2.getUOMQty(),
+				qtysToCompare2.getUOMQtyNotNull(),
 				UOMConversionContext.of(productId),
-				qtysToCompare1.getUOMQty().getUomId());
+				qtysToCompare1.getUOMQtyNotNull().getUomId());
 
 		return uomQty1.compareTo(uomQty2) <= 0 ? qtysToCompare1 : qtysToCompare2;
 	}
@@ -313,11 +313,11 @@ public class StockQtyAndUOMQtys
 
 		final ProductId productId = extractCommonProductId(qtysToCompare1, qtysToCompare2);
 
-		final Quantity uomQty1 = qtysToCompare1.getUOMQty();
+		final Quantity uomQty1 = qtysToCompare1.getUOMQtyNotNull();
 		final Quantity uomQty2 = uomConversionBL.convertQuantityTo(
-				qtysToCompare2.getUOMQty(),
+				qtysToCompare2.getUOMQtyNotNull(),
 				UOMConversionContext.of(productId),
-				qtysToCompare1.getUOMQty().getUomId());
+				qtysToCompare1.getUOMQtyNotNull().getUomId());
 
 		return uomQty1.compareTo(uomQty2) >= 0 ? qtysToCompare1 : qtysToCompare2;
 	}
@@ -326,15 +326,15 @@ public class StockQtyAndUOMQtys
 			@NonNull final StockQtyAndUOMQty qtysToCompare1,
 			@NonNull final StockQtyAndUOMQty qtysToCompare2)
 	{
-		final Quantity uomQty1 = qtysToCompare1.getUOMQty();
+		final Quantity uomQty1 = qtysToCompare1.getUOMQtyNotNull();
 
 		final ProductId productId = extractCommonProductId(qtysToCompare1, qtysToCompare2);
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final Quantity uomQty2 = uomConversionBL.convertQuantityTo(
-				qtysToCompare2.getUOMQty(),
+				qtysToCompare2.getUOMQtyNotNull(),
 				UOMConversionContext.of(productId),
-				qtysToCompare1.getUOMQty().getUomId());
+				qtysToCompare1.getUOMQtyNotNull().getUomId());
 
 		return uomQty1.compareTo(uomQty2);
 	}

@@ -30,7 +30,8 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
-import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Services;
 
 /*
@@ -65,7 +66,7 @@ public class ShipmentLineBuilderTest
 	private I_M_HU_PI_Item_Product piipWithCapacityEight;
 	private IHUContext huContext;
 
-	private Quantity one;
+	private StockQtyAndUOMQty oneNoCatch;
 
 	@Before
 	public void init()
@@ -100,7 +101,7 @@ public class ShipmentLineBuilderTest
 		save(shipmentSchedule);
 
 		huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
-		one = Quantity.of(ONE, huTestHelper.uomEach);
+		oneNoCatch = StockQtyAndUOMQtys.create(ONE, huTestHelper.pTomatoProductId, null, null);
 
 		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(OrderLineShipmentScheduleHandler.class);
 		Services.registerService(IShipmentScheduleBL.class, ShipmentScheduleBL.newInstanceForUnitTesting());
@@ -112,7 +113,7 @@ public class ShipmentLineBuilderTest
 		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(
 				huContext,
 				shipmentSchedule,
-				one,
+				oneNoCatch,
 				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
 
 		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(shipment);
@@ -134,7 +135,7 @@ public class ShipmentLineBuilderTest
 		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(
 				huContext,
 				shipmentSchedule,
-				one,
+				oneNoCatch,
 				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
 
 		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(shipment);

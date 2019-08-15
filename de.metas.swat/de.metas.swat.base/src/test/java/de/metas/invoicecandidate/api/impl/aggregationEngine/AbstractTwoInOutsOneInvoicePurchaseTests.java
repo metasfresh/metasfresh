@@ -96,11 +96,11 @@ public abstract class AbstractTwoInOutsOneInvoicePurchaseTests extends AbstractT
 			validateIcIlAllocationQty(ic, invoice1, invoiceLine1, fullqty);
 
 			final InvoiceCandidateInOutLineToUpdate ic_iol11 = retrieveIcIolToUpdateIfExists(invoiceLine1, iol11);
-			assertThat(ic_iol11.getQtyInvoiced().getUOMQty().toBigDecimal(), is(partialQty1_32.multiply(TEN)));
+			assertThat(ic_iol11.getQtyInvoiced().getUOMQtyNotNull().toBigDecimal(), is(partialQty1_32.multiply(TEN)));
 			final InvoiceCandidateInOutLineToUpdate ic_iol21 = retrieveIcIolToUpdateIfExists(invoiceLine1, iol21);
-			assertThat(ic_iol21.getQtyInvoiced().getUOMQty().toBigDecimal(), is(partialQty2_8.multiply(TEN)));
+			assertThat(ic_iol21.getQtyInvoiced().getUOMQtyNotNull().toBigDecimal(), is(partialQty2_8.multiply(TEN)));
 			final InvoiceCandidateInOutLineToUpdate ic_iol22 = retrieveIcIolToUpdateIfExists(invoiceLine1, iol22);
-			assertThat(ic_iol22.getQtyInvoiced().getUOMQty().toBigDecimal(), is(partialQty3_4.multiply(TEN)));
+			assertThat(ic_iol22.getQtyInvoiced().getUOMQtyNotNull().toBigDecimal(), is(partialQty3_4.multiply(TEN)));
 		}
 
 		//

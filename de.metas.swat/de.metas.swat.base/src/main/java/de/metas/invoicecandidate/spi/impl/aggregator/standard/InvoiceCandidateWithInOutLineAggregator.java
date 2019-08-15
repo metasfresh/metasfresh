@@ -228,10 +228,10 @@ import lombok.ToString;
 		if (shipped && stayWithinShippedQty)
 		{
 			final boolean alreadyInvoicedFullShippedQty = qtyAlreadyShippedPerCurrentICS
-					.getUOMQty()
+					.getUOMQtyNotNull()
 					.multiply(factor)
 					.compareTo(qtyAlreadyInvoicedPerCurrentICS
-							.getUOMQty()
+							.getUOMQtyNotNull()
 							.multiply(factor)) <= 0;
 			if (alreadyInvoicedFullShippedQty)
 			{
@@ -288,7 +288,7 @@ import lombok.ToString;
 		// Calculate how much we can invoice for this invoice candidate (final result)
 		// i.e. if the "candQtyToInvoiceUnchecked" does not fit within the calculated limits, use max value
 		final StockQtyAndUOMQty candQtyToInvoiceFinal;
-		final boolean doesNofitWithinLimits = maxQtyToInvoicePerLine.getUOMQty().compareTo(candQtyToInvoiceUnchecked.getUOMQty()) < 0;
+		final boolean doesNofitWithinLimits = maxQtyToInvoicePerLine.getUOMQtyNotNull().compareTo(candQtyToInvoiceUnchecked.getUOMQtyNotNull()) < 0;
 		if (doesNofitWithinLimits && stayWithinShippedQty)
 		{
 			candQtyToInvoiceFinal = maxQtyToInvoicePerLine;
@@ -334,10 +334,10 @@ import lombok.ToString;
 
 			if (!candNetAmtToInvoiceOrig.isEqualByComparingTo(candNetAmtToInvoiceCalc))
 			{
-				if (!candQtyToInvoiceFinal.getUOMQty().isOne())
+				if (!candQtyToInvoiceFinal.getUOMQtyNotNull().isOne())
 				{
 					throw new InvalidQtyForPartialAmtToInvoiceException(
-							candQtyToInvoiceFinal.getUOMQty(),
+							candQtyToInvoiceFinal.getUOMQtyNotNull(),
 							cand,
 							candNetAmtToInvoiceOrig,
 							candNetAmtToInvoiceCalc);
@@ -345,7 +345,7 @@ import lombok.ToString;
 				candPriceActual = ProductPrice.builder()
 						.money(candNetAmtToInvoiceOrig)
 						.productId(ics.getProductId())
-						.uomId(candQtyToInvoiceFinal.getUOMQty().getUomId())
+						.uomId(candQtyToInvoiceFinal.getUOMQtyNotNull().getUomId())
 						.build();
 			}
 			else
@@ -356,7 +356,7 @@ import lombok.ToString;
 		else
 		{
 			candPriceActual = invoiceCandBL.getPriceActual(cand);
-			candNetAmtToInvoice = moneyService.multiply(candQtyToInvoiceFinal.getUOMQty(), candPriceActual);
+			candNetAmtToInvoice = moneyService.multiply(candQtyToInvoiceFinal.getUOMQtyNotNull(), candPriceActual);
 
 		}
 

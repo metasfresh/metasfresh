@@ -132,7 +132,7 @@ public abstract class AbstractMaterialReturnTests extends AbstractNewAggregation
 
 		assertThat(il1.getPriceActual().toBigDecimal(), comparesEqualTo(BigDecimal.ONE.negate()));
 		assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(FIFTY.negate()));
-		assertThat(il1.getQtysToInvoice().getUOMQty().toBigDecimal(), comparesEqualTo(FIVE_HUNDRET.negate()));
+		assertThat(il1.getQtysToInvoice().getUOMQtyNotNull().toBigDecimal(), comparesEqualTo(FIVE_HUNDRET.negate()));
 		assertThat(il1.getNetLineAmt().toBigDecimal(), comparesEqualTo(FIVE_HUNDRET)); /**/
 	}
 

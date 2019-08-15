@@ -47,7 +47,7 @@ public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 {
 
 	@Override
-	public I_M_ShipmentSchedule_QtyPicked addQtyPicked(
+	public I_M_ShipmentSchedule_QtyPicked createNewQtyPickedRecord(
 			@NonNull final I_M_ShipmentSchedule sched,
 			@NonNull final StockQtyAndUOMQty stockQtyAndCatchQty)
 	{

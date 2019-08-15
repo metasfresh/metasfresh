@@ -1032,8 +1032,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		newIla.setC_Invoice_Candidate(invoiceCand);
 		newIla.setC_InvoiceLine(invoiceLine);
 		newIla.setQtyInvoiced(qtysInvoiced.getStockQty().toBigDecimal());
-		newIla.setQtyInvoicedInUOM(qtysInvoiced.getUOMQty().toBigDecimal());
-		newIla.setC_UOM_ID(qtysInvoiced.getUOMQty().getUomId().getRepoId());
+		newIla.setQtyInvoicedInUOM(qtysInvoiced.getUOMQtyNotNull().toBigDecimal());
+		newIla.setC_UOM_ID(qtysInvoiced.getUOMQtyNotNull().getUomId().getRepoId());
 		newIla.setC_Invoice_Candidate_Agg_ID(invoiceCand.getC_Invoice_Candidate_Agg_ID());
 
 		// #870

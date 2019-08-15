@@ -107,7 +107,7 @@ public class InOutLineExpectation<ParentExpectationType> extends AbstractExpecta
 		final BigDecimal actualMovementQty = inoutLine.getMovementQty();
 		assertEquals(message.expect("movement qty"), expectedMovementQty, actualMovementQty);
 
-		assertEquals(message.expect("QtyEntered"), qtys.getUOMQty().toBigDecimal(), inoutLine.getQtyEntered());
+		assertEquals(message.expect("QtyEntered"), qtys.getUOMQtyNotNull().toBigDecimal(), inoutLine.getQtyEntered());
 
 		if (qualityDiscountPercentSet)
 		{
@@ -163,8 +163,8 @@ public class InOutLineExpectation<ParentExpectationType> extends AbstractExpecta
 	protected void populateModel(final I_M_InOutLine inoutLine)
 	{
 		inoutLine.setM_Product_ID(qtys.getProductId().getRepoId());
-		inoutLine.setQtyEntered(qtys.getUOMQty().toBigDecimal());
-		inoutLine.setC_UOM_ID(qtys.getUOMQty().getUomId().getRepoId());
+		inoutLine.setQtyEntered(qtys.getUOMQtyNotNull().toBigDecimal());
+		inoutLine.setC_UOM_ID(qtys.getUOMQtyNotNull().getUomId().getRepoId());
 		inoutLine.setMovementQty(qtys.getStockQty().toBigDecimal());
 
 		if (inDispute != null)

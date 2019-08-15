@@ -550,8 +550,8 @@ public class AbstractICTestSupport extends AbstractTestSupport
 			inOutLine.setM_Product_ID(assumeGreaterThanZero(icRecord.getM_Product_ID(), "icRecord.getM_Product_ID()"));
 			inOutLine.setM_InOut_ID(inOut.getM_InOut_ID());
 			inOutLine.setC_OrderLine_ID(icRecord.getC_OrderLine_ID());
-			inOutLine.setQtyEntered(qtysDelivered.getUOMQty().toBigDecimal());
-			inOutLine.setC_UOM_ID(qtysDelivered.getUOMQty().getUomId().getRepoId());
+			inOutLine.setQtyEntered(qtysDelivered.getUOMQtyNotNull().toBigDecimal());
+			inOutLine.setC_UOM_ID(qtysDelivered.getUOMQtyNotNull().getUomId().getRepoId());
 			inOutLine.setMovementQty(qtysDelivered.getStockQty().toBigDecimal());
 			InterfaceWrapperHelper.save(inOutLine);
 		}

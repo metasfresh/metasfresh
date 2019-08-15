@@ -243,8 +243,8 @@ public class M_MatchInv_RecreateForInvoiceLine extends JavaProcess
 			else
 			{
 				matchInv.setQty(qtyMatched.getStockQty().toBigDecimal());
-				matchInv.setQtyInUOM(qtyMatched.getUOMQty().toBigDecimal());
-				matchInv.setC_UOM_ID(qtyMatched.getUOMQty().getUomId().getRepoId());
+				matchInv.setQtyInUOM(qtyMatched.getUOMQtyNotNull().toBigDecimal());
+				matchInv.setC_UOM_ID(qtyMatched.getUOMQtyNotNull().getUomId().getRepoId());
 				InterfaceWrapperHelper.save(matchInv);
 			}
 
@@ -324,13 +324,13 @@ public class M_MatchInv_RecreateForInvoiceLine extends JavaProcess
 		if (qtyInvoicedNotMatchedSignum == 0)
 		{
 			// NOTE: usually shall not happen because it was checked before
-			return StockQtyAndUOMQtys.createZero(qtyInvoicedNotMatched.getProductId(), qtyInvoicedNotMatched.getUOMQty().getUomId());
+			return StockQtyAndUOMQtys.createZero(qtyInvoicedNotMatched.getProductId(), qtyInvoicedNotMatched.getUOMQtyNotNull().getUomId());
 		}
 
 		final int qtyMovedNotMatchedSignum = qtyMovedNotMatched.signum();
 		if (qtyMovedNotMatchedSignum == 0)
 		{
-			return StockQtyAndUOMQtys.createZero(qtyInvoicedNotMatched.getProductId(), qtyInvoicedNotMatched.getUOMQty().getUomId());
+			return StockQtyAndUOMQtys.createZero(qtyInvoicedNotMatched.getProductId(), qtyInvoicedNotMatched.getUOMQtyNotNull().getUomId());
 		}
 
 		if (qtyInvoicedNotMatchedSignum > 0)
@@ -342,7 +342,7 @@ public class M_MatchInv_RecreateForInvoiceLine extends JavaProcess
 			else
 			// qtyMovedNotMatchedSignum < 0
 			{
-				return StockQtyAndUOMQtys.createZero(qtyInvoicedNotMatched.getProductId(), qtyInvoicedNotMatched.getUOMQty().getUomId());
+				return StockQtyAndUOMQtys.createZero(qtyInvoicedNotMatched.getProductId(), qtyInvoicedNotMatched.getUOMQtyNotNull().getUomId());
 			}
 		}
 		else
@@ -350,7 +350,7 @@ public class M_MatchInv_RecreateForInvoiceLine extends JavaProcess
 		{
 			if (qtyMovedNotMatchedSignum > 0)
 			{
-				return StockQtyAndUOMQtys.createZero(qtyInvoicedNotMatched.getProductId(), qtyInvoicedNotMatched.getUOMQty().getUomId());
+				return StockQtyAndUOMQtys.createZero(qtyInvoicedNotMatched.getProductId(), qtyInvoicedNotMatched.getUOMQtyNotNull().getUomId());
 			}
 			else
 			// qtyMovedNotMatchedSignum < 0

@@ -158,11 +158,11 @@ public abstract class TestTwoReceiptsOneInvoice_QualityDiscount1 extends Abstrac
 
 		final InvoiceCandidateInOutLineToUpdate icIol11 = retrieveIcIolToUpdateIfExists(il1, iol11_three);
 		assertThat(icIol11.getQtyInvoiced().getStockQty().toBigDecimal(), comparesEqualTo(THREE));
-		assertThat(icIol11.getQtyInvoiced().getUOMQty().toBigDecimal(), comparesEqualTo(THIRTY));
+		assertThat(icIol11.getQtyInvoiced().getUOMQtyNotNull().toBigDecimal(), comparesEqualTo(THIRTY));
 
 		final InvoiceCandidateInOutLineToUpdate icIol21 = retrieveIcIolToUpdateIfExists(il1, iol21_ten);
 		assertThat(icIol21.getQtyInvoiced().getStockQty().toBigDecimal(), comparesEqualTo(TEN));
-		assertThat(icIol21.getQtyInvoiced().getUOMQty().toBigDecimal(), comparesEqualTo(HUNDRET));
+		assertThat(icIol21.getQtyInvoiced().getUOMQtyNotNull().toBigDecimal(), comparesEqualTo(HUNDRET));
 
 		//
 		// checking the in-dispute-iols

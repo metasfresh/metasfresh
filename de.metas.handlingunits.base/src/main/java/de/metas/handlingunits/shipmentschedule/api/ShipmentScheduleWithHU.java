@@ -118,7 +118,6 @@ public class ShipmentScheduleWithHU
 		return new ShipmentScheduleWithHU(
 				huContext,
 				shipmentScheduleQtyPicked,
-				false,
 				qtyTypeToUse);
 	}
 
@@ -129,8 +128,7 @@ public class ShipmentScheduleWithHU
 		return new ShipmentScheduleWithHU(
 				huContext,
 				shipmentScheduleQtyPicked,
-				false,
-				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER/* just because that's how it was an we don't have great test coverage */);
+				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER/* just because that's how it was and we don't have great test coverage */);
 	}
 
 	/**
@@ -141,18 +139,19 @@ public class ShipmentScheduleWithHU
 	public static final ShipmentScheduleWithHU ofShipmentScheduleWithoutHu(
 			@NonNull final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
-			@NonNull final Quantity qtyPicked,
+			@NonNull final StockQtyAndUOMQty stockQtyAndCatchQty,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
 	{
-		final boolean createManualPackingMaterial = true;
-		return new ShipmentScheduleWithHU(huContext, shipmentSchedule, qtyPicked, createManualPackingMaterial, qtyTypeToUse);
+		return new ShipmentScheduleWithHU(huContext, shipmentSchedule, stockQtyAndCatchQty, qtyTypeToUse);
 	}
 
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleWithHU.class);
 
 	private final IHUContext huContext;
 	private final I_M_ShipmentSchedule shipmentSchedule;
-	private final Quantity pickedqty;
+	private final Quantity pickedQty;
+
+	@Getter
 	private final Optional<Quantity> catchQty;
 	private final I_M_HU vhu;
 	private final I_M_HU tuHU;
@@ -182,10 +181,8 @@ public class ShipmentScheduleWithHU
 	private ShipmentScheduleWithHU(
 			@NonNull final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule_QtyPicked allocRecord,
-			final boolean createManualPackingMaterial,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
 	{
-
 		this.huContext = huContext;
 
 		this.shipmentScheduleQtyPicked = allocRecord;
@@ -194,18 +191,18 @@ public class ShipmentScheduleWithHU
 		final ProductId productId = ProductIds.ofRecord(shipmentSchedule);
 		final UomId catchUomIdOrNull = UomId.ofRepoIdOrNull(allocRecord.getCatch_UOM_ID());
 
-		final StockQtyAndUOMQty stockQtyAndUOMQty = StockQtyAndUOMQtys.create(
+		final StockQtyAndUOMQty stockQtyAndCatchQty = StockQtyAndUOMQtys.create(
 				allocRecord.getQtyPicked(), productId,
 				allocRecord.getQtyDeliveredCatch(), catchUomIdOrNull);
 
-		this.pickedqty = stockQtyAndUOMQty.getStockQty();
-		this.catchQty = stockQtyAndUOMQty.getUOMQtyOpt();
+		this.pickedQty = stockQtyAndCatchQty.getStockQty();
+		this.catchQty = stockQtyAndCatchQty.getUOMQtyOpt();
 
 		this.vhu = allocRecord.getVHU_ID() > 0 ? allocRecord.getVHU() : null;
 		this.tuHU = allocRecord.getM_TU_HU_ID() > 0 ? allocRecord.getM_TU_HU() : null;
 		this.luHU = allocRecord.getM_LU_HU_ID() > 0 ? allocRecord.getM_LU_HU() : null;
 
-		this.adviseManualPackingMaterial = createManualPackingMaterial;
+		this.adviseManualPackingMaterial = false;
 		this.qtyTypeToUse = qtyTypeToUse;
 	}
 
@@ -215,8 +212,7 @@ public class ShipmentScheduleWithHU
 	private ShipmentScheduleWithHU(
 			@NonNull final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
-			@NonNull final Quantity pickedQty,
-			final boolean createManualPackingMaterial,
+			@NonNull final StockQtyAndUOMQty stockQtyAndCatchQty,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
 	{
 		this.huContext = huContext;
@@ -224,14 +220,14 @@ public class ShipmentScheduleWithHU
 		this.shipmentScheduleQtyPicked = null; // no allocation, will be created on fly when needed
 		this.shipmentSchedule = shipmentSchedule;
 
-		this.pickedqty = pickedQty;
-		this.catchQty = Services.get(IShipmentScheduleBL.class).getCatchQtyOverride(shipmentSchedule);
+		this.pickedQty = stockQtyAndCatchQty.getStockQty();
+		this.catchQty = stockQtyAndCatchQty.getUOMQtyOpt();
 
 		vhu = null; // no VHU
 		tuHU = null; // no TU
 		luHU = null; // no LU
 
-		this.adviseManualPackingMaterial = createManualPackingMaterial;
+		this.adviseManualPackingMaterial = true;
 		this.qtyTypeToUse = qtyTypeToUse;
 	}
 
@@ -240,7 +236,7 @@ public class ShipmentScheduleWithHU
 	{
 		return "ShipmentScheduleWithHU ["
 				+ "\n    shipmentSchedule=" + shipmentSchedule
-				+ "\n    qtyPicked=" + pickedqty
+				+ "\n    qtyPicked=" + pickedQty
 				+ "\n    vhu=" + vhu
 				+ "\n    tuHU=" + tuHU
 				+ "\n    luHU=" + luHU
@@ -335,12 +331,12 @@ public class ShipmentScheduleWithHU
 
 	public Quantity getQtyPicked()
 	{
-		return pickedqty;
+		return pickedQty;
 	}
 
 	public I_C_UOM getUOM()
 	{
-		return pickedqty.getUOM();
+		return pickedQty.getUOM();
 	}
 
 	public I_M_HU getVHU()
@@ -385,8 +381,6 @@ public class ShipmentScheduleWithHU
 
 	/**
 	 * Called by API when a shipment that includes this candidate was generated and processed.
-	 *
-	 * @return
 	 */
 	public ShipmentScheduleWithHU setM_InOut(@NonNull final I_M_InOut inout)
 	{
@@ -419,24 +413,22 @@ public class ShipmentScheduleWithHU
 		Check.assumeNotNull(shipmentLine, "shipmentLine not null");
 
 		// If there is no shipment schedule allocation, create one now
-		// This happens if you called the factory method which is without shipmentScheduleAlloc parameter
+		// This happens if you called the factory method that doesn't have a shipmentScheduleAlloc parameter
 		if (shipmentScheduleQtyPicked == null)
 		{
-			final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 			final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 
-			final StockQtyAndUOMQty stockQtyAndCatchQty = StockQtyAndUOMQtys.createConvert(
-					pickedqty,
-					ProductIds.ofRecord(shipmentSchedule),
-					shipmentScheduleBL.getCatchQtyOverride(shipmentSchedule).orElse(null));
+			final StockQtyAndUOMQty stockQtyAndCatchQty = StockQtyAndUOMQty.builder()
+					.productId(ProductIds.ofRecord(shipmentSchedule))
+					.stockQty(pickedQty)
+					.uomQty(catchQty.orElse(null))
+					.build();
 
 			shipmentScheduleQtyPicked = create(
-					shipmentScheduleAllocBL.addQtyPicked(shipmentSchedule, stockQtyAndCatchQty),
+					shipmentScheduleAllocBL.createNewQtyPickedRecord(shipmentSchedule, stockQtyAndCatchQty),
 					I_M_ShipmentSchedule_QtyPicked.class);
 
 			// lu, tu and vhu are null, so no need to set them
-
-			shipmentScheduleBL.resetCatchQtyOverride(shipmentSchedule);
 
 			if (DocStatus.ofCode(inout.getDocStatus()).isCompletedOrClosed())
 			{
@@ -458,6 +450,9 @@ public class ShipmentScheduleWithHU
 
 		// Save allocation
 		saveRecord(shipmentScheduleQtyPicked);
+
+		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+		shipmentScheduleBL.resetCatchQtyOverride(shipmentSchedule);
 	}
 
 	public void updateQtyTUAndQtyLU()
@@ -560,10 +555,4 @@ public class ShipmentScheduleWithHU
 		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 		return hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx());
 	}
-
-	public Optional<Quantity> getCatchQty()
-	{
-		return catchQty;
-	}
-
 }

@@ -108,13 +108,13 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductIds;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IShipmentScheduleDeliveryDayBL;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -1048,11 +1048,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			return Optional.empty();
 		}
 
-		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
-		final I_C_UOM uomRecord = uomDao.getById(UomId.ofRepoId(shipmentScheduleRecord.getCatch_UOM_ID()));
-
-		final Quantity result = Quantity.of(shipmentScheduleRecord.getQtyToDeliverCatch_Override(), uomRecord);
-
+		final Quantity result = Quantitys.create(
+				shipmentScheduleRecord.getQtyToDeliverCatch_Override(),
+				UomId.ofRepoId(shipmentScheduleRecord.getCatch_UOM_ID()));
 		return Optional.of(result);
 	}
 

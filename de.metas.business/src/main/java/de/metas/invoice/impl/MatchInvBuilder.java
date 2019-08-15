@@ -99,8 +99,8 @@ import de.metas.util.Services;
 
 		// Quantity
 		matchInv.setQty(qtyToMatch.getStockQty().toBigDecimal());
-		matchInv.setQtyInUOM(qtyToMatch.getUOMQty().toBigDecimal());
-		matchInv.setC_UOM_ID(qtyToMatch.getUOMQty().getUomId().getRepoId());
+		matchInv.setQtyInUOM(qtyToMatch.getUOMQtyNotNull().toBigDecimal());
+		matchInv.setC_UOM_ID(qtyToMatch.getUOMQtyNotNull().getUomId().getRepoId());
 
 		// Product & ASI
 		matchInv.setM_Product_ID(inoutLine.getM_Product_ID());

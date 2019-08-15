@@ -376,7 +376,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			}
 		}
 		icRecord.setQtyDelivered(qtysDelivered.getStockQty().toBigDecimal());
-		icRecord.setQtyDeliveredInUOM(qtysDelivered.getUOMQty().toBigDecimal());
+		icRecord.setQtyDeliveredInUOM(qtysDelivered.getUOMQtyNotNull().toBigDecimal());
 		//
 		// Find out the first shipment/receipt
 		final List<I_C_InvoiceCandidate_InOutLine> icIols = invoiceCandDAO.retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(icRecord));

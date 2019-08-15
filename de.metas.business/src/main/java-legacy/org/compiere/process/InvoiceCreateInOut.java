@@ -170,7 +170,7 @@ public class InvoiceCreateInOut extends JavaProcess
 		sLine.setInvoiceLine(invoiceLine, 0,	// Locator
 				invoice.isSOTrx() ? qtyNotMatched.getStockQty().toBigDecimal() : ZERO);
 
-		sLine.setQtyEntered(qtyNotMatched.getUOMQty().toBigDecimal());
+		sLine.setQtyEntered(qtyNotMatched.getUOMQtyNotNull().toBigDecimal());
 		sLine.setMovementQty(qtyNotMatched.getStockQty().toBigDecimal());
 
 		if (invoiceBL.isCreditMemo(invoice))

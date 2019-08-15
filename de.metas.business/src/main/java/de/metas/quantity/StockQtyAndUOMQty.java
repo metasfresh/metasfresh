@@ -13,13 +13,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.product.ProductId;
 import de.metas.util.Check;
-import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 
 @Value
+@ToString(doNotUseGetters = true)
 public class StockQtyAndUOMQty
 {
 	ProductId productId;
@@ -27,7 +27,6 @@ public class StockQtyAndUOMQty
 	Quantity stockQty;
 
 	/** Quantity in a "parallel" UOM. Note that often there is no fix UOM conversion rule between this quantity and {@link #getStockingQty()}. */
-	@Getter(AccessLevel.NONE)
 	Quantity uomQty;
 
 	@Builder(toBuilder = true)
@@ -48,10 +47,16 @@ public class StockQtyAndUOMQty
 		return Optional.ofNullable(uomQty);
 	}
 
-	@JsonProperty("uomQty")
-	public Quantity getUOMQty()
+	@JsonIgnore
+	public Quantity getUOMQtyNotNull()
 	{
 		return assumeNotNull(uomQty, "uomQty may not be null; this={}", this);
+	}
+
+	@JsonProperty("uomQty")
+	private Quantity getUOMQty()
+	{
+		return uomQty;
 	}
 
 	public StockQtyAndUOMQty add(@NonNull final StockQtyAndUOMQty other)

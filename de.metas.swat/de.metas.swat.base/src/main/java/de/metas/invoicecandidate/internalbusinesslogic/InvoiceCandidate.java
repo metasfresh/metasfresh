@@ -253,7 +253,7 @@ public class InvoiceCandidate
 		result.qtysEffective(qtysEffective);
 
 		final Quantity qtyInPriceUom = Quantitys.create(
-				qtysEffective.getUOMQty(),
+				qtysEffective.getUOMQtyNotNull(),
 				UOMConversionContext.of(productId),
 				priceUomId);
 

@@ -95,7 +95,7 @@ public class TestFreshQualityDiscountPercentOverrideNoDiscountIol extends TestQu
 		assertThat("Invalid invoice line 1 - QtyToInvoice", invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(new BigDecimal("100")));
 
 		final InvoiceCandidateInOutLineToUpdate icIolToUpdate11 = retrieveIcIolToUpdateIfExists(invoiceLine1, iol11);
-		assertThat(icIolToUpdate11.getQtyInvoiced().getUOMQty().toBigDecimal(), comparesEqualTo(new BigDecimal("900")));
+		assertThat(icIolToUpdate11.getQtyInvoiced().getUOMQtyNotNull().toBigDecimal(), comparesEqualTo(new BigDecimal("900")));
 
 		final IInvoiceLineRW invoiceLine2 = invoiceLines.get(1);
 		assertThat("Invalid invoice line 2 - QtyToInvoice", invoiceLine2.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(new BigDecimal("-10")));

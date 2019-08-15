@@ -240,8 +240,8 @@ public class M_MatchInv_RecreateForInOutLine extends JavaProcess
 			else
 			{
 				matchInv.setQty(qtyMatched.getStockQty().toBigDecimal());
-				matchInv.setQtyInUOM(qtyMatched.getUOMQty().toBigDecimal());
-				matchInv.setC_UOM_ID(qtyMatched.getUOMQty().getUomId().getRepoId());
+				matchInv.setQtyInUOM(qtyMatched.getUOMQtyNotNull().toBigDecimal());
+				matchInv.setC_UOM_ID(qtyMatched.getUOMQtyNotNull().getUomId().getRepoId());
 				InterfaceWrapperHelper.save(matchInv);
 			}
 
