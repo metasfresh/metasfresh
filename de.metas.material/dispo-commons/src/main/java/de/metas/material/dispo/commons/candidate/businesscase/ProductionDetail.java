@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
-import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.product.ResourceId;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -46,25 +45,6 @@ public class ProductionDetail implements BusinessCaseDetail
 	public static ProductionDetail cast(@NonNull final BusinessCaseDetail businessCaseDetail)
 	{
 		return (ProductionDetail)businessCaseDetail;
-	}
-
-	public static ProductionDetail forProductionDetailRecord(
-			@NonNull final I_MD_Candidate_Prod_Detail productionDetailRecord)
-	{
-		final ProductionDetail productionDetail = ProductionDetail.builder()
-				.advised(Flag.of(productionDetailRecord.isAdvised()))
-				.pickDirectlyIfFeasible(Flag.of(productionDetailRecord.isPickDirectlyIfFeasible()))
-				.description(productionDetailRecord.getDescription())
-				.plantId(ResourceId.ofRepoIdOrNull(productionDetailRecord.getPP_Plant_ID()))
-				.productBomLineId(productionDetailRecord.getPP_Product_BOMLine_ID())
-				.productPlanningId(productionDetailRecord.getPP_Product_Planning_ID())
-				.ppOrderId(productionDetailRecord.getPP_Order_ID())
-				.ppOrderLineId(productionDetailRecord.getPP_Order_BOMLine_ID())
-				.ppOrderDocStatus(DocStatus.ofNullableCode(productionDetailRecord.getPP_Order_DocStatus()))
-				.qty(productionDetailRecord.getPlannedQty())
-				.build();
-
-		return productionDetail;
 	}
 
 	ResourceId plantId;

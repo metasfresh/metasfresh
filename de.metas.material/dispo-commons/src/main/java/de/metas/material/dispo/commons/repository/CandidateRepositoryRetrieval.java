@@ -20,6 +20,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -29,6 +30,7 @@ import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
@@ -47,6 +49,7 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.organization.OrgId;
+import de.metas.product.ResourceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
@@ -232,14 +235,25 @@ public class CandidateRepositoryRetrieval
 
 	private static ProductionDetail createProductionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
-		final I_MD_Candidate_Prod_Detail productionDetail = //
-				RepositoryCommons.retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Prod_Detail.class);
-		if (productionDetail == null)
+		final I_MD_Candidate_Prod_Detail //
+		productionDetailRecord = RepositoryCommons.retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Prod_Detail.class);
+		if (productionDetailRecord == null)
 		{
 			return null;
 		}
 
-		return ProductionDetail.forProductionDetailRecord(productionDetail);
+		return ProductionDetail.builder()
+				.advised(Flag.of(productionDetailRecord.isAdvised()))
+				.pickDirectlyIfFeasible(Flag.of(productionDetailRecord.isPickDirectlyIfFeasible()))
+				.description(productionDetailRecord.getDescription())
+				.plantId(ResourceId.ofRepoIdOrNull(productionDetailRecord.getPP_Plant_ID()))
+				.productBomLineId(productionDetailRecord.getPP_Product_BOMLine_ID())
+				.productPlanningId(productionDetailRecord.getPP_Product_Planning_ID())
+				.ppOrderId(productionDetailRecord.getPP_Order_ID())
+				.ppOrderLineId(productionDetailRecord.getPP_Order_BOMLine_ID())
+				.ppOrderDocStatus(DocStatus.ofNullableCode(productionDetailRecord.getPP_Order_DocStatus()))
+				.qty(productionDetailRecord.getPlannedQty())
+				.build();
 	}
 
 	private static DistributionDetail createDistributionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
