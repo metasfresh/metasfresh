@@ -87,7 +87,7 @@ public class C_PurchaseCandidate_PostEventsTest
 		final PurchaseCandidateUpdatedEvent result = mi.createUpdatedEvent(purchaseCandidateRecord);
 
 		assertThat(result).isNotNull();
-		assertThat(result.getPurchaseMaterialDescriptor().getWarehouseId()).isEqualTo(20);
+		assertThat(result.getPurchaseMaterialDescriptor().getWarehouseId().getRepoId()).isEqualTo(20);
 		assertThat(result.getVendorId()).isEqualTo(30);
 
 	}

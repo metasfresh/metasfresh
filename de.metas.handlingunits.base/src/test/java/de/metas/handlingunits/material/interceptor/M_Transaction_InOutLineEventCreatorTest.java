@@ -77,7 +77,7 @@ import mockit.Expectations;
 public class M_Transaction_InOutLineEventCreatorTest
 {
 
-	private static final BigDecimal SEVEN = new BigDecimal("7");;
+	private static final BigDecimal SEVEN = new BigDecimal("7");
 	private static final BigDecimal THREE = new BigDecimal("3");
 	private static final BigDecimal TWO = new BigDecimal("2");
 	private static final BigDecimal MINUS_ONE = new BigDecimal("-1");
@@ -316,7 +316,7 @@ public class M_Transaction_InOutLineEventCreatorTest
 	{
 		assertThat(result).isNotNull();
 		assertThat(result.getTransactionId()).isEqualTo(transaction.getM_Transaction_ID());
-		assertThat(result.getMaterialDescriptor().getWarehouseId()).isEqualTo(wh.getM_Warehouse_ID());
+		assertThat(result.getMaterialDescriptor().getWarehouseId().getRepoId()).isEqualTo(wh.getM_Warehouse_ID());
 		assertThat(result.getMaterialDescriptor().getProductId()).isEqualTo(product.getM_Product_ID());
 		assertThat(result.getMaterialDescriptor().getDate()).isEqualTo(asInstant(movementDate));
 	}
