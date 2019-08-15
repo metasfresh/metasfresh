@@ -44,7 +44,9 @@ public class ClientAndOrgId
 	}
 
 	@JsonCreator
-	public static ClientAndOrgId ofClientAndOrg(@NonNull final ClientId adClientId, @NonNull final OrgId adOrgId)
+	public static ClientAndOrgId ofClientAndOrg(
+			@JsonProperty("clientId") @NonNull final ClientId adClientId,
+			@JsonProperty("orgId") @NonNull final OrgId adOrgId)
 	{
 		return new ClientAndOrgId(adClientId, adOrgId);
 	}
@@ -56,8 +58,8 @@ public class ClientAndOrgId
 	OrgId orgId;
 
 	private ClientAndOrgId(
-			@JsonProperty("clientId") @NonNull final ClientId clientId,
-			@JsonProperty("orgId") @NonNull final OrgId orgId)
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId)
 	{
 		this.clientId = clientId;
 		this.orgId = orgId;
