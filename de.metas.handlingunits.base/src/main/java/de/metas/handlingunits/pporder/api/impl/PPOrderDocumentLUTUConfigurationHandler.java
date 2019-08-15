@@ -33,6 +33,8 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.IPPOrderBL;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.impl.AbstractDocumentLUTUConfigurationHandler;
@@ -63,7 +65,11 @@ import lombok.NonNull;
 	@Override
 	public I_M_HU_LUTU_Configuration createNewLUTUConfiguration(@NonNull final I_PP_Order ppOrder)
 	{
-		final I_C_BPartner bpartner = ppOrder.getC_BPartner();
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(ppOrder.getC_BPartner_ID());
+		final I_C_BPartner bpartner = bpartnerId != null
+				? Services.get(IBPartnerDAO.class).getById(bpartnerId)
+				: null;
+				
 		final I_M_HU_PI_Item_Product tuPIItemProduct = getM_HU_PI_Item_Product(ppOrder);
 		final ProductId cuProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
 		final I_C_UOM cuUOM = Services.get(IUOMDAO.class).getById(ppOrder.getC_UOM_ID());

@@ -784,14 +784,14 @@ public class MRPTestHelper
 	public I_PP_Order createPP_Order(final I_PP_Product_BOM productBOM, final String qtyOrderedStr, final I_C_UOM uom)
 	{
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class, contextProvider);
-		ppOrder.setAD_Org(this.adOrg01);
+		ppOrder.setAD_Org_ID(this.adOrg01.getAD_Org_ID());
 
 		setCommonProperties(ppOrder);
 
 		ppOrder.setM_Product_ID(productBOM.getM_Product_ID());
 		ppOrder.setPP_Product_BOM_ID(productBOM.getPP_Product_BOM_ID());
 		ppOrder.setAD_Workflow(this.workflow_Standard);
-		ppOrder.setM_Warehouse(this.warehouse_plant01);
+		ppOrder.setM_Warehouse_ID(this.warehouse_plant01.getM_Warehouse_ID());
 		ppOrder.setS_Resource(this.plant01);
 		ppOrder.setQtyOrdered(new BigDecimal(qtyOrderedStr));
 		ppOrder.setDatePromised(getToday());

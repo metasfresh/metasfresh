@@ -63,6 +63,8 @@ import de.metas.adempiere.form.terminal.ITerminalScrollPane;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -307,17 +309,20 @@ public class HUIssuePanel implements IHUSelectPanel
 		//
 		// BPP data
 		{
-			final I_C_BPartner partner = ppOrder.getC_BPartner();
+			final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(ppOrder.getC_BPartner_ID());
+			final I_C_BPartner bpartner = bpartnerId != null
+					? Services.get(IBPartnerDAO.class).getById(bpartnerId)
+					: null;
 
 			String productNo = null;
 			String productEAN = null; // i.e. CU EAN
-			if (partner != null)
+			if (bpartner != null)
 			{
 				final I_M_Product product = Services.get(IProductDAO.class).getById(ppOrder.getM_Product_ID());
 
 				final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
 
-				final I_C_BPartner_Product bpp = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(partner, product, orgId);
+				final I_C_BPartner_Product bpp = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(bpartner, product, orgId);
 				if (bpp != null)
 				{
 					productNo = bpp.getProductNo();

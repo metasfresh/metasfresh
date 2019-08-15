@@ -79,7 +79,7 @@ public class PPOrderBOMBL_calculateQtyToIssueBasedOnFinishedGoodReceipt_Test
 		// Finished good
 		ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class);
 		ppOrder.setM_Product_ID(pABAliceSalad.getRepoId());
-		ppOrder.setC_UOM(uomEa);
+		ppOrder.setC_UOM_ID(uomEa.getC_UOM_ID());
 
 		PPOrderBOMBL_TestUtils.setCommonValues(ppOrder);
 		

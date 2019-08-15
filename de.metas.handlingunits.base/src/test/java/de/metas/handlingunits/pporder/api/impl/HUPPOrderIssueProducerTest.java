@@ -508,12 +508,12 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		saveRecord(docType);
 
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(Env.getCtx(), I_PP_Order.class, ITrx.TRXNAME_None);
-		ppOrder.setAD_Org(masterData.adOrg01);
-		ppOrder.setC_DocTypeTarget(docType);
+		ppOrder.setAD_Org_ID(masterData.adOrg01.getAD_Org_ID());
+		ppOrder.setC_DocTypeTarget_ID(docType.getC_DocType_ID());
 		ppOrder.setM_Product_ID(productBOM.getM_Product_ID());
 		ppOrder.setPP_Product_BOM_ID(productBOM.getPP_Product_BOM_ID());
 		ppOrder.setAD_Workflow(masterData.workflow_Standard);
-		ppOrder.setM_Warehouse(masterData.warehouse_plant01);
+		ppOrder.setM_Warehouse_ID(masterData.warehouse_plant01.getM_Warehouse_ID());
 		ppOrder.setS_Resource(masterData.plant01);
 		ppOrder.setQtyOrdered(new BigDecimal(qtyOrderedStr));
 		ppOrder.setDatePromised(SystemTime.asDayTimestamp());

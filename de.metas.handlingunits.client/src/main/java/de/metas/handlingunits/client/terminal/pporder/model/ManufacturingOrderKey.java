@@ -38,6 +38,10 @@ import org.eevolution.model.I_PP_Order;
 
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -67,7 +71,7 @@ public class ManufacturingOrderKey extends TerminalKey
 		documentNo = order.getDocumentNo();
 		this.order = order;
 		final int orderId = order.getPP_Order_ID();
-		value = new KeyNamePair(orderId, documentNo);
+		value = KeyNamePair.of(orderId, documentNo);
 	}
 
 	@Override
@@ -104,11 +108,18 @@ public class ManufacturingOrderKey extends TerminalKey
 		//
 		// Document Type
 		{
-			I_C_DocType docType = order.getC_DocType();
-			if (docType == null || docType.getC_DocType_ID() <= 0)
+			final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID());
+			I_C_DocType docType = docTypeId != null
+					? Services.get(IDocTypeDAO.class).getById(docTypeId)
+					: null;
+			if (docType == null)
 			{
-				docType = order.getC_DocTypeTarget();
+				final DocTypeId docTypeTargetId = DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
+				docType = docTypeTargetId != null
+						? Services.get(IDocTypeDAO.class).getById(docTypeTargetId)
+						: null;
 			}
+			
 			if(docType != null)
 			{
 				final I_C_DocType docTypeTrl = InterfaceWrapperHelper.translate(docType, I_C_DocType.class);
@@ -197,7 +208,10 @@ public class ManufacturingOrderKey extends TerminalKey
 
 	private final I_C_BPartner getC_BPartner()
 	{
-		return order.getC_BPartner();
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+		return bpartnerId != null
+				? Services.get(IBPartnerDAO.class).getById(bpartnerId)
+				: null;
 	}
 
 	@Override

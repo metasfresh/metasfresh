@@ -1057,39 +1057,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	{
 		final boolean ignoreProcessed = false;
 		return Services.get(IInvoiceBL.class).testAllocation(this, ignoreProcessed);
-
-		// tsa: 04098: moving getAllocatedAmt business logic to the implementors of IInvoiceBL
-		// boolean change = false;
-		//
-		// if ( isProcessed() ) {
-		// BigDecimal alloc = getAllocatedAmt(); // absolute
-		// boolean hasAllocations = alloc != null; // metas: tsa: 01955
-		// if (alloc == null)
-		// alloc = BigDecimal.ZERO;
-		// BigDecimal total = getGrandTotal();
-		// // metas: tsa: begin: 01955:
-		// // If is an zero invoice, it has no allocations and the AutoPayZeroAmt is not set
-		// // then don't touch the invoice
-		// if (total.signum() == 0 && !hasAllocations
-		// && !MSysConfig.getBooleanValue("org.compiere.model.MInvoice.AutoPayZeroAmt", true, getAD_Client_ID()) )
-		// {
-		// // don't touch the IsPaid flag, return not changed
-		// return false;
-		// }
-		// // metas: tsa: end: 01955
-		// if (!isSOTrx())
-		// total = total.negate();
-		// if (isCreditMemo())
-		// total = total.negate();
-		// boolean test = total.compareTo(alloc) == 0;
-		// change = test != isPaid();
-		// if (change)
-		// setIsPaid(test);
-		// log.debug("Paid=" + test
-		// + " (" + alloc + "=" + total + ")");
-		// }
-		//
-		// return change;
 	}	// testAllocation
 
 	/**
@@ -1848,6 +1815,11 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			project.setInvoicedAmt(newAmt);
 			project.saveEx(get_TrxName());
 		} 	// project
+
+		// Make sure is flagged as processed.
+		// Else, APIs like checking the allocated amount will ignore this invoice.
+		setProcessed(true);
+		saveEx();
 
 		// User Validation
 		final String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
