@@ -6,7 +6,7 @@ import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 import org.eevolution.model.I_PP_Order;
 
@@ -30,6 +30,8 @@ import lombok.NonNull;
 @Interceptor(I_PP_Order.class)
 public class PP_Order_PostMaterialEvent
 {
+	private final PPOrderPojoConverter ppOrderConverter = SpringContextHolder.instance.getBean(PPOrderPojoConverter.class);
+	private final PostMaterialEventService materialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
 
 	@ModelChange(//
 			timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
@@ -43,7 +45,6 @@ public class PP_Order_PostMaterialEvent
 			return;
 		}
 
-		final PPOrderPojoConverter ppOrderConverter = Adempiere.getBean(PPOrderPojoConverter.class);
 		final PPOrder ppOrderPojo = ppOrderConverter.toPPOrder(ppOrderRecord);
 
 		final PPOrderCreatedEvent ppOrderCreatedEvent = PPOrderCreatedEvent.builder()
@@ -51,7 +52,6 @@ public class PP_Order_PostMaterialEvent
 				.ppOrder(ppOrderPojo)
 				.build();
 
-		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
 		materialEventService.postEventAfterNextCommit(ppOrderCreatedEvent);
 	}
 
@@ -72,7 +72,6 @@ public class PP_Order_PostMaterialEvent
 				.ppOrderId(ppOrderRecord.getPP_Order_ID())
 				.build();
 
-		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
 		materialEventService.postEventAfterNextCommit(event);
 	}
 
@@ -88,10 +87,9 @@ public class PP_Order_PostMaterialEvent
 			@NonNull final DocTimingType type)
 	{
 		final PPOrderChangedEvent changeEvent = PPOrderChangedEventFactory
-				.newWithPPOrderBeforeChange(ppOrderRecord)
+				.newWithPPOrderBeforeChange(ppOrderConverter, ppOrderRecord)
 				.inspectPPOrderAfterChange();
 
-		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
 		materialEventService.postEventAfterNextCommit(changeEvent);
 	}
 }

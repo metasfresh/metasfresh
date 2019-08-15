@@ -77,11 +77,15 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 
 		final List<Candidate> updatedCandidatesToPersist = new ArrayList<>();
 
-		updatedCandidatesToPersist.addAll(
-				processPPOrdersChanges(
-						candidatesToUpdate,
-						ppOrderChangedEvent));
+		//
+		// Header candidate (supply)
+		{
+			final Candidate headerCandidateToUpdate = extractHeaderCandidate(candidatesToUpdate);
+			updatedCandidatesToPersist.add(processPPOrderChange(headerCandidateToUpdate, ppOrderChangedEvent));
+		}
 
+		//
+		// Line candidates (demands, supplies)
 		updatedCandidatesToPersist.addAll(
 				processPPOrderLinesChanges(
 						candidatesToUpdate,
@@ -93,24 +97,29 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 		updatedCandidatesToPersist.forEach(candidateChangeService::onCandidateNewOrChange);
 	}
 
-	private static List<Candidate> processPPOrdersChanges(
-			@NonNull final List<Candidate> candidatesToUpdate,
-			@NonNull final PPOrderChangedEvent ppOrderChangedEvent)
+	private static Candidate extractHeaderCandidate(final List<Candidate> candidates)
 	{
-		final List<Candidate> updatedCandidates = new ArrayList<>();
-		for (final Candidate candidateToUpdate : candidatesToUpdate)
+		Candidate headerCandidate = null;
+		for (final Candidate candidate : candidates)
 		{
-			final ProductionDetail productionDetailToUpdate = ProductionDetail.cast(candidateToUpdate.getBusinessCaseDetail());
-			if (productionDetailToUpdate.getPpOrderLineId() > 0)
+			final ProductionDetail productionDetailToUpdate = ProductionDetail.cast(candidate.getBusinessCaseDetail());
+			if (productionDetailToUpdate.isFinishedGoodsCandidate())
 			{
-				continue; // this is a line's candidate; deal with it in the other method
-			}
+				if (headerCandidate != null)
+				{
+					throw new AdempiereException("More than one header candidate found: " + headerCandidate + ", " + candidate);
+				}
 
-			final Candidate updatedCandidate = processPPOrderChange(candidateToUpdate, ppOrderChangedEvent);
-			updatedCandidates.add(updatedCandidate);
+				headerCandidate = candidate;
+			}
 		}
 
-		return updatedCandidates;
+		if (headerCandidate == null)
+		{
+			throw new AdempiereException("No header candidate found in " + candidates);
+		}
+
+		return headerCandidate;
 	}
 
 	private static Candidate processPPOrderChange(
@@ -118,7 +127,7 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 			@NonNull final PPOrderChangedEvent ppOrderChangedEvent)
 	{
 		final ProductionDetail productionDetailToUpdate = ProductionDetail.cast(candidateToUpdate.getBusinessCaseDetail());
-		if (productionDetailToUpdate.getPpOrderLineId() > 0)
+		if (!productionDetailToUpdate.isFinishedGoodsCandidate())
 		{
 			throw new AdempiereException("Invalid order PP Order header candidate: " + candidateToUpdate);
 		}
@@ -154,7 +163,7 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 		for (final Candidate candidateToUpdate : candidatesToUpdate)
 		{
 			final ProductionDetail productionDetailToUpdate = ProductionDetail.cast(candidateToUpdate.getBusinessCaseDetail());
-			if (productionDetailToUpdate.getPpOrderLineId() <= 0)
+			if (!productionDetailToUpdate.isBOMLine())
 			{
 				continue; // this is the header's candidate; deal with it in the other method
 			}
@@ -174,7 +183,7 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 			@NonNull final ChangedPPOrderLineDescriptor ppOrderLineChange)
 	{
 		final ProductionDetail productionDetailToUpdate = ProductionDetail.cast(candidateToUpdate.getBusinessCaseDetail());
-		if (productionDetailToUpdate.getPpOrderLineId() <= 0)
+		if (!productionDetailToUpdate.isBOMLine())
 		{
 			throw new AdempiereException("Invalid order BOM line candidate: " + candidateToUpdate);
 		}

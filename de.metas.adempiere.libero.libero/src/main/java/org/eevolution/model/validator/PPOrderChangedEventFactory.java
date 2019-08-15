@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.compiere.Adempiere;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.material.event.commons.EventDescriptor;
@@ -45,22 +44,26 @@ import lombok.NonNull;
 
 public class PPOrderChangedEventFactory
 {
-	public static PPOrderChangedEventFactory newWithPPOrderBeforeChange(@NonNull final I_PP_Order ppOrderRecord)
+	public static PPOrderChangedEventFactory newWithPPOrderBeforeChange(
+			@NonNull final PPOrderPojoConverter ppOrderConverter,
+			@NonNull final I_PP_Order ppOrderRecord)
 	{
-		return new PPOrderChangedEventFactory(ppOrderRecord);
+		return new PPOrderChangedEventFactory(ppOrderConverter, ppOrderRecord);
 	}
 
-	private final PPOrderChangedEventBuilder eventBuilder;
 	private final PPOrderPojoConverter ppOrderConverter;
 	private final I_PP_Order ppOrderRecord;
 
+	private final PPOrderChangedEventBuilder eventBuilder;
 	private final Map<Integer, ChangedPPOrderLineDescriptorBuilder> productBomLineId2ChangeBuilder = new HashMap<>();
 
-	private PPOrderChangedEventFactory(@NonNull final I_PP_Order ppOrderRecord)
+	private PPOrderChangedEventFactory(
+			@NonNull final PPOrderPojoConverter ppOrderConverter,
+			@NonNull final I_PP_Order ppOrderRecord)
 	{
-		this.ppOrderConverter = Adempiere.getBean(PPOrderPojoConverter.class);
-
+		this.ppOrderConverter = ppOrderConverter;
 		this.ppOrderRecord = ppOrderRecord;
+		
 		this.eventBuilder = createAndInitEventBuilderWithOldValues(ppOrderRecord, ppOrderConverter);
 
 		final PPOrder ppOrderPojo = ppOrderConverter.toPPOrder(ppOrderRecord);
@@ -77,7 +80,6 @@ public class PPOrderChangedEventFactory
 		final List<PPOrderLine> linesWithProductBomLine = linesWithAndWithoutProductBomLineId.get(true);
 		linesWithProductBomLine
 				.forEach(line -> {
-
 					final ChangedPPOrderLineDescriptorBuilder builder = ChangedPPOrderLineDescriptor.builder()
 							.issueOrReceiveDate(line.getIssueOrReceiveDate())
 							.productDescriptor(line.getProductDescriptor())

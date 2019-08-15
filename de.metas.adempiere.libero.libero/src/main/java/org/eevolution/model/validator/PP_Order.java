@@ -32,6 +32,7 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
@@ -44,6 +45,9 @@ import lombok.NonNull;
 @Interceptor(I_PP_Order.class)
 public class PP_Order
 {
+	private final PPOrderPojoConverter ppOrderConverter = SpringContextHolder.instance.getBean(PPOrderPojoConverter.class);
+	private final PostMaterialEventService materialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
+	
 	@Init
 	public void registerCallouts()
 	{
@@ -178,15 +182,14 @@ public class PP_Order
 			throw new LiberoException("Cannot quantity is not allowed because there is something already processed on this order"); // TODO: trl
 		}
 
-		final PPOrderChangedEventFactory eventfactory = PPOrderChangedEventFactory.newWithPPOrderBeforeChange(ppOrderRecord);
+		final PPOrderChangedEventFactory eventFactory = PPOrderChangedEventFactory.newWithPPOrderBeforeChange(ppOrderConverter, ppOrderRecord);
 
 		final PPOrderId orderId = PPOrderId.ofRepoId(ppOrderRecord.getPP_Order_ID());
 		deleteWorkflowAndBOM(orderId);
 		createWorkflowAndBOM(ppOrderRecord);
 
-		final PPOrderChangedEvent event = eventfactory.inspectPPOrderAfterChange();
+		final PPOrderChangedEvent event = eventFactory.inspectPPOrderAfterChange();
 
-		final PostMaterialEventService materialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
 		materialEventService.postEventAfterNextCommit(event);
 	}
 

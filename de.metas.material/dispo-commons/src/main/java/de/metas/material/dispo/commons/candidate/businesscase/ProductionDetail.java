@@ -106,4 +106,14 @@ public class ProductionDetail implements BusinessCaseDetail
 	{
 		return CandidateBusinessCase.PRODUCTION;
 	}
+
+	public boolean isFinishedGoodsCandidate()
+	{
+		return getPpOrderLineId() <= 0;
+	}
+
+	public boolean isBOMLine()
+	{
+		return getPpOrderLineId() > 0;
+	}
 }
