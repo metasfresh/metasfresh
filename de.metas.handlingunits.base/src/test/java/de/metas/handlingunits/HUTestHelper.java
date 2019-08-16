@@ -146,6 +146,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -198,7 +199,11 @@ public class HUTestHelper
 	public IHUTrxBL trxBL;
 
 	public I_C_UOM uomKg;
+	public UomId uomKgId;
+
 	public I_C_UOM uomEach;
+	public UomId uomEachId;
+
 	public I_C_UOM uomPCE;
 
 	/**
@@ -552,7 +557,9 @@ public class HUTestHelper
 	protected void setupMasterData()
 	{
 		uomKg = createUomKg();
+		uomKgId = UomId.ofRepoId(uomKg.getC_UOM_ID());
 		uomEach = createUomEach();
+		uomEachId = UomId.ofRepoId(uomEach.getC_UOM_ID());
 		uomPCE = createUomPCE();
 
 		final AttributesTestHelper attributesTestHelper = new AttributesTestHelper();

@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
@@ -121,49 +119,36 @@ public class DeliveredDataLoader
 
 		final ArrayList<ShippedQtyItem> deliveredQtyItemsWithCatch = new ArrayList<ShippedQtyItem>();
 		final ArrayList<ShippedQtyItem> deliveredQtyItemsWithoutCatch = new ArrayList<ShippedQtyItem>();
-		for (final ShippedQtyItem deliveredQtyItem : shippedQtyItems)
+		for (final ShippedQtyItem shippedQtyItem : shippedQtyItems)
 		{
 			qtyInStockUom = Quantitys.add(conversionCtx,
 					qtyInStockUom,
-					deliveredQtyItem.getQtyInStockUom());
+					shippedQtyItem.getQtyInStockUom());
 
 			qtyNominal = Quantitys.add(conversionCtx,
 					qtyNominal,
-					coalesce(deliveredQtyItem.getQtyOverride(), deliveredQtyItem.getQtyNominal()));
+					coalesce(shippedQtyItem.getQtyOverride(), shippedQtyItem.getQtyNominal()));
 
 			final Quantity qtyCatchEffective = coalesce(
-					deliveredQtyItem.getQtyOverride(),
-					deliveredQtyItem.getQtyCatch());
+					shippedQtyItem.getQtyOverride(),
+					shippedQtyItem.getQtyCatch());
 			if (qtyCatchEffective == null)
 			{
-				deliveredQtyItemsWithoutCatch.add(deliveredQtyItem);
+				deliveredQtyItemsWithoutCatch.add(shippedQtyItem);
 			}
 			else
 			{
-				deliveredQtyItemsWithCatch.add(deliveredQtyItem);
+				deliveredQtyItemsWithCatch.add(shippedQtyItem);
 				qtyCatch = Quantitys.add(conversionCtx,
 						qtyCatch,
 						qtyCatchEffective);
 			}
 		}
 
-		boolean hasItemsWithoutCatch = !deliveredQtyItemsWithoutCatch.isEmpty();
-		boolean hasItemsWithCatch = !deliveredQtyItemsWithCatch.isEmpty();
-
-		if (hasItemsWithCatch && hasItemsWithoutCatch)
-		{
-			throw new AdempiereException("Either all or none if the invoice candidate's deliveredQtyItemsWithoutCatch nned to have a catch quantity") // can be fixed by setting QtyCatchOverride
-					.appendParametersToMessage()
-					.setParameter("invoiceCandidateId", invoiceCandidateId)
-					.setParameter("itemsWithCatch", ImmutableList.copyOf(deliveredQtyItemsWithCatch))
-					.setParameter("itemsWithoutCatch", ImmutableList.copyOf(deliveredQtyItemsWithoutCatch));
-		}
-
 		result
 				.qtyInStockUom(qtyInStockUom)
 				.qtyNominal(qtyNominal);
-
-		if (hasItemsWithCatch)
+		if (!deliveredQtyItemsWithCatch.isEmpty())
 		{
 			result.qtyCatch(qtyCatch);
 		}

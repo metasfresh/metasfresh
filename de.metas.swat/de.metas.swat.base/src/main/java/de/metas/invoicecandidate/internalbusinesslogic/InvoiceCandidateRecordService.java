@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import java.math.BigDecimal;
 import java.util.Optional;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableMap;
@@ -22,6 +23,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.uom.UomIds;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -143,6 +145,25 @@ public class InvoiceCandidateRecordService
 	}
 
 	public void updateRecord(
+			@NonNull final InvoiceCandidate invoiceCandidate,
+			@NonNull final I_C_Invoice_Candidate icRecord)
+	{
+		try
+		{
+			updateRecord0(invoiceCandidate, icRecord);
+		}
+		catch (final RuntimeException e)
+		{
+			// log, enrich info and rethrow
+			Loggables.get().addLog("Caught {} updating icRecord={} from invoiceCandidate={}", e.getClass().getSimpleName(), icRecord, invoiceCandidate);
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("icRecord", icRecord)
+					.setParameter("invoiceCandidate", invoiceCandidate);
+		}
+	}
+
+	private void updateRecord0(
 			@NonNull final InvoiceCandidate invoiceCandidate,
 			@NonNull final I_C_Invoice_Candidate icRecord)
 	{

@@ -2,13 +2,16 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.compiere.model.I_C_UOM_Conversion;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -58,20 +61,23 @@ import de.metas.util.Services;
 
 public class ShipmentLineBuilderTest
 {
-
 	private static final BigDecimal EIGHT = new BigDecimal(8);
+
 	private I_M_ShipmentSchedule shipmentSchedule;
 	private I_M_InOut shipment;
 	private I_C_OrderLine orderLine;
 	private I_M_HU_PI_Item_Product piipWithCapacityEight;
 	private IHUContext huContext;
 
-	private StockQtyAndUOMQty oneNoCatch;
+	private StockQtyAndUOMQty oneWithoutCatch;
+	private StockQtyAndUOMQty oneWithCatch;
+
+	private HUTestHelper huTestHelper;
 
 	@Before
 	public void init()
 	{
-		final HUTestHelper huTestHelper = new HUTestHelper();
+		huTestHelper = new HUTestHelper();
 
 		final I_M_HU_PI huDefIFCO = huTestHelper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		final I_M_HU_PI_Item itemMA = huTestHelper.createHU_PI_Item_Material(huDefIFCO);
@@ -101,19 +107,31 @@ public class ShipmentLineBuilderTest
 		save(shipmentSchedule);
 
 		huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
-		oneNoCatch = StockQtyAndUOMQtys.create(ONE, huTestHelper.pTomatoProductId, null, null);
+
+		oneWithoutCatch = StockQtyAndUOMQtys.create(ONE, huTestHelper.pTomatoProductId, null, null);
+		oneWithCatch = StockQtyAndUOMQtys.create(ONE, huTestHelper.pTomatoProductId, new BigDecimal("1.2"), huTestHelper.uomKgId);
+
+		final I_C_UOM_Conversion catchUOMConversionRecord = newInstance(I_C_UOM_Conversion.class);
+		catchUOMConversionRecord.setM_Product_ID(huTestHelper.pTomatoProductId.getRepoId());
+		catchUOMConversionRecord.setC_UOM_ID(huTestHelper.uomEachId.getRepoId());
+		catchUOMConversionRecord.setC_UOM_To_ID(huTestHelper.uomKgId.getRepoId());
+		catchUOMConversionRecord.setMultiplyRate(TEN);
+		catchUOMConversionRecord.setDivideRate(ONE.divide(TEN));
+		catchUOMConversionRecord.setIsCatchUOMForProduct(true);
+		catchUOMConversionRecord.setIsActive(true);
+		saveRecord(catchUOMConversionRecord);
 
 		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(OrderLineShipmentScheduleHandler.class);
 		Services.registerService(IShipmentScheduleBL.class, ShipmentScheduleBL.newInstanceForUnitTesting());
 	}
 
 	@Test
-	public void createShipmentLine_shipmentScheduleWithoutHu()
+	public void createShipmentLine_shipmentScheduleWithoutHu_noCatchQty()
 	{
 		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(
 				huContext,
 				shipmentSchedule,
-				oneNoCatch,
+				oneWithoutCatch,
 				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
 
 		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(shipment);
@@ -127,15 +145,18 @@ public class ShipmentLineBuilderTest
 		assertThat(shipmentLine.getC_OrderLine_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
 		assertThat(shipmentLine.getM_Product_ID()).isEqualTo(shipmentSchedule.getM_Product_ID());
 		assertThat(shipmentLine.getQtyTU_Override()).isEqualByComparingTo(TEN); // we want 10, not the piip's 8
+
+		assertThat(shipmentLine.getCatch_UOM_ID()).isEqualTo(huTestHelper.uomKgId.getRepoId());
+		assertThat(isNull(shipmentLine, I_M_InOutLine.COLUMNNAME_QtyDeliveredCatch)).isTrue();
 	}
 
 	@Test
-	public void createShipmentLine_shipmentScheduleWithoutHu_BothQty()
+	public void createShipmentLine_shipmentScheduleWithoutHu_QtyTypeBoth_noCatchQty()
 	{
 		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(
 				huContext,
 				shipmentSchedule,
-				oneNoCatch,
+				oneWithoutCatch,
 				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
 
 		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(shipment);
@@ -151,5 +172,60 @@ public class ShipmentLineBuilderTest
 		assertThat(shipmentLine.getM_Product_ID()).isEqualTo(shipmentSchedule.getM_Product_ID());
 		assertThat(shipmentLine.getQtyEntered()).isEqualByComparingTo(ONE);
 		assertThat(shipmentLine.getQtyTU_Override()).isEqualByComparingTo(ONE);
+
+		assertThat(shipmentLine.getCatch_UOM_ID()).isEqualTo(huTestHelper.uomKgId.getRepoId());
+		assertThat(isNull(shipmentLine, I_M_InOutLine.COLUMNNAME_QtyDeliveredCatch)).isTrue();
+	}
+
+	@Test
+	public void createShipmentLine_shipmentScheduleWithoutHu_withCatchQty()
+	{
+		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(
+				huContext,
+				shipmentSchedule,
+				oneWithCatch,
+				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
+
+		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(shipment);
+		shipmentLineBuilder.setManualPackingMaterial(true);
+
+		// invoke the methods under test
+		shipmentLineBuilder.add(shipmentScheduleWithoutHu);
+		final I_M_InOutLine shipmentLine = shipmentLineBuilder.createShipmentLine();
+
+		assertThat(shipmentLine).isNotNull();
+		assertThat(shipmentLine.getC_OrderLine_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
+		assertThat(shipmentLine.getM_Product_ID()).isEqualTo(shipmentSchedule.getM_Product_ID());
+		assertThat(shipmentLine.getQtyTU_Override()).isEqualByComparingTo(TEN); // we want 10, not the piip's 8
+
+		assertThat(shipmentLine.getCatch_UOM_ID()).isEqualTo(huTestHelper.uomKgId.getRepoId());
+		assertThat(shipmentLine.getQtyDeliveredCatch()).isEqualByComparingTo("1.2");
+	}
+
+	@Test
+	public void createShipmentLine_shipmentScheduleWithoutHu_QtyTypeBoth_withCatchQty()
+	{
+		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(
+				huContext,
+				shipmentSchedule,
+				oneWithCatch,
+				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
+
+		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(shipment);
+		shipmentLineBuilder.setQtyTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_BOTH);
+		shipmentLineBuilder.setManualPackingMaterial(true);
+
+		// invoke the methods under test
+		shipmentLineBuilder.add(shipmentScheduleWithoutHu);
+		final I_M_InOutLine shipmentLine = shipmentLineBuilder.createShipmentLine();
+
+		assertThat(shipmentLine).isNotNull();
+		assertThat(shipmentLine.getC_OrderLine_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
+		assertThat(shipmentLine.getM_Product_ID()).isEqualTo(shipmentSchedule.getM_Product_ID());
+		assertThat(shipmentLine.getQtyEntered()).isEqualByComparingTo(ONE);
+		assertThat(shipmentLine.getQtyTU_Override()).isEqualByComparingTo(ONE);
+
+		assertThat(shipmentLine.getCatch_UOM_ID()).isEqualTo(huTestHelper.uomKgId.getRepoId());
+		assertThat(shipmentLine.getQtyDeliveredCatch()).isEqualByComparingTo("1.2");
 	}
 }

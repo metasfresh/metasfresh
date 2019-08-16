@@ -1,5 +1,6 @@
 package de.metas.handlingunits.shipmentschedule.spi.impl;
 
+import static de.metas.util.Check.assumeNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -265,10 +266,10 @@ import lombok.NonNull;
 		final I_C_UOM stockingUOM = productBL.getStockUOM(productId);
 		movementQty = Quantity.zero(stockingUOM);
 
-		final Optional<I_C_UOM> catchUOM = productBL.getCatchUOM(productId);
-		if (catchUOM.isPresent())
+		final Optional<UomId> catchUOMId = productBL.getCatchUOMId(productId);
+		if (catchUOMId.isPresent())
 		{
-			catchQty = Quantity.zero(catchUOM.get());
+			catchQty = Quantitys.createZero(catchUOMId.get());
 		}
 
 		//
@@ -296,6 +297,9 @@ import lombok.NonNull;
 
 		if (candidate.getCatchQty().isPresent())
 		{
+
+			// catchQty might be null in a unit test, if you forgot to set up a catch-UOM for the productId's product
+			assumeNotNull(catchQty, "Param candidate has a catch qty, but this instance has no catchQty; candidate={}; this={}", candidate, this);
 			catchQty = Quantitys.add(UOMConversionContext.of(productId), catchQty, candidate.getCatchQty().get());
 		}
 
@@ -456,10 +460,16 @@ import lombok.NonNull;
 			shipmentLine.setMovementQty(movementQty.toBigDecimal());
 		}
 
-		if (catchQty != null && catchQty.signum() != 0)
+		if (catchQty != null)
 		{
+			if (catchQty.signum() != 0)
+			{
+				shipmentLine.setQtyDeliveredCatch(catchQty.toBigDecimal());
+			}
+
+			// Set the catch UOM also if the shipmentline has no catch qty.
+			// Also we can end up with C_InvoiceCandidate_InoutLine records that refer to the same invoice candidate but have different UOMs
 			shipmentLine.setCatch_UOM_ID(catchQty.getUomId().getRepoId());
-			shipmentLine.setQtyDeliveredCatch(catchQty.toBigDecimal());
 		}
 
 		// Update packing materials info, if there is "one" info

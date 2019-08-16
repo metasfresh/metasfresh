@@ -464,10 +464,4 @@ public final class ProductBL implements IProductBL
 		}
 		return Optional.of(UomId.ofRepoId(catchUomRecord.getC_UOM_ID()));
 	}
-
-	@Override
-	public Optional<I_C_UOM> getCatchUOM(@NonNull final ProductId productId)
-	{
-		return getCatchUOMId(productId).map(uomId -> loadOutOfTrx(uomId, I_C_UOM.class));
-	}
 }
