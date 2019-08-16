@@ -107,3 +107,13 @@ Cypress.Commands.add('selectNthRow', (rowNumber, modal = false) => {
 Cypress.Commands.add('expectNumberOfRows', numberOfRows => {
   return cy.get('table tbody tr').should('have.length', numberOfRows);
 });
+/**
+ * Expect the table rows to be greater than a given number
+ *
+ * @param numberOfRows - the number of rows
+ */
+Cypress.Commands.add('expectNumberOfRowsToBeGreaterThan', numberOfRows => {
+  return cy.get('table tbody tr').should(el => {
+    expect(el).to.have.length.greaterThan(numberOfRows);
+  });
+});

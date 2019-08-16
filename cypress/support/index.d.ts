@@ -466,21 +466,21 @@ declare namespace Cypress {
 
 
     /**
-     * Please help with documentation!
-     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
-     *
+     * It selects the current date from the picker
+     * @fieldName - the date field for which the current date is selected
+     * @modal - optional, default false, set to true is the date field is in a modal
      * from cypress/support/commands/form.js
      */
-    selectDateViaPicker(fieldName, modal): Chainable<any>
+    selectDateViaPicker(fieldName: string, modal?: boolean): Chainable<any>
 
 
-    /**
-     * Please help with documentation!
-     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
-     *
-     * from cypress/support/commands/form.js
+    /**Selects a date in the picker
+     * should not be used for offsets larger than a couple of days
+     * @param {string} fieldName - name of the field
+     * @param {number} dayOffset - the number of days before/after today;
+     * @param {boolean} modal - optional, default false, use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
      */
-    selectOffsetDateViaPicker(fieldName, dayOffset, modal): Chainable<any>
+    selectOffsetDateViaPicker(fieldName: string, dayOffset: number, modal?: boolean): Chainable<any>
 
 
     /**
@@ -565,7 +565,7 @@ declare namespace Cypress {
      *
      * @param numberOfRows - the number of rows
      */
-    expectNumberOfRows(numberOfRows): Chainable<any>
+    expectNumberOfRows(numberOfRows: number): Chainable<any>
 
     /**
      * Complete the current document
@@ -604,7 +604,12 @@ declare namespace Cypress {
      * @param destinationWindowID - the expected window where the notification redirects
      */
     openNotificationContaining(expectedValue: string | RegExp, destinationWindowID: string | number): Chainable<any>
-
+   /**
+     * Expect the table rows to be greater than a given number
+     *
+     * @param numberOfRows - the number of rows
+     */
+    expectNumberOfRowsToBeGreaterThan(numberOfRows: number): Chainable<any>
   }
 
 }
