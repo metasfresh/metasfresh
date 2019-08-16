@@ -117,6 +117,7 @@ public class ServerBoot implements InitializingBean
 					// if we did that, then to also have jasper within the backend, we would start it with -Dspring.profiles.active=metasfresh-jasper-server
 					// same goes for PrintService
 					.profiles(activeProfiles.toArray(new String[0]))
+					.beanNameGenerator(new MetasfreshBeanNameGenerator())
 					.run(args);
 		}
 
