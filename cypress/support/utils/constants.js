@@ -32,4 +32,6 @@ export class RewriteURL {
   static REFERENCES = `/rest/api/window/.*/references$`;
 
   static DocActionDropdown = `rest/api/window/[0-9]+/[0-9]+/field/DocAction/dropdown`;
+
+  static DocumentLayout = `/rest/api/.*/layout`;
 }

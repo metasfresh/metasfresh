@@ -29,7 +29,7 @@ Cypress.Commands.add('executeHeaderAction', actionName => {
 Cypress.Commands.add('executeHeaderActionWithDialog', actionName => {
   describe('Fire header action with a certain name and expect a modal dialog to pop up within 10 secs', function() {
     cy.server();
-    cy.route('GET', 'rest/api/process/*/layout').as('dialogLayout');
+    cy.route('GET', new RegExp(RewriteURL.DocumentLayout)).as('dialogLayout');
 
     executeHeaderAction(actionName);
 
