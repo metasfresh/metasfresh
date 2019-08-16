@@ -43,7 +43,7 @@ import de.metas.util.Services;
  */
 
 @Interceptor(I_M_Inventory.class)
-@Component("de.metas.inventory.interceptor.M_Inventory")
+@Component
 public class M_Inventory
 {
 	public static final String MSG_NOT_ALL_LINES_COUNTED = "de.metas.inventory.interceptor.NotAllLinesCounted";

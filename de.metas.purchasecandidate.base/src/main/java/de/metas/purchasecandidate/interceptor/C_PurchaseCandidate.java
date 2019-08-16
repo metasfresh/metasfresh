@@ -21,7 +21,6 @@ import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.util.lang.Percent;
-
 import lombok.NonNull;
 
 /*
@@ -47,7 +46,7 @@ import lombok.NonNull;
  */
 
 @Interceptor(I_C_PurchaseCandidate.class)
-@Component("de.metas.purchasecandidate.interceptor.C_PurchaseCandidate")
+@Component
 public class C_PurchaseCandidate
 {
 	private final PurchaseCandidateRepository purchaseCandidateRepository;

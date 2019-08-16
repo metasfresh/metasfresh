@@ -1,6 +1,5 @@
 package de.metas.dataentry.layout.interceptor;
 
-import de.metas.dataentry.model.I_DataEntry_Tab;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -11,8 +10,8 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.dataentry.model.I_DataEntry_Field;
-
 import de.metas.dataentry.model.I_DataEntry_ListValue;
+import de.metas.dataentry.model.I_DataEntry_Tab;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -38,7 +37,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@Component("de.metas.dataentry.layout.interceptor.DataEntry_Field")
+@Component
 @Interceptor(I_DataEntry_Field.class)
 @Callout(I_DataEntry_Field.class)
 public class DataEntry_Field

@@ -1,7 +1,5 @@
 package de.metas.payment.esr.model.validator;
 
-import lombok.NonNull;
-
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.model.I_C_Invoice;
@@ -10,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import de.metas.payment.esr.api.IESRBL;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -34,7 +33,7 @@ import de.metas.util.Services;
  */
 
 @Interceptor(I_C_Invoice.class)
-@Component("de.metas.payment.esr.model.validator.C_Invoice")
+@Component
 public class C_Invoice
 {
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)

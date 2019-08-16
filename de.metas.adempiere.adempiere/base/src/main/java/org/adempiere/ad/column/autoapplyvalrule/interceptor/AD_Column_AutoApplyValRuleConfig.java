@@ -47,7 +47,7 @@ import lombok.NonNull;
  */
 
 @Interceptor(I_AD_Column.class)
-@Component("org.adempiere.ad.column.model.interceptor.AD_Column_AutoApplyValidationRuleConfig")
+@Component
 public class AD_Column_AutoApplyValRuleConfig
 {
 	private IModelValidationEngine engine;

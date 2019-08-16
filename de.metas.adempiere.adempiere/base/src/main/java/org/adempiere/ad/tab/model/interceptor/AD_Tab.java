@@ -44,7 +44,7 @@ import de.metas.util.Services;
 
 @Interceptor(I_AD_Tab.class)
 @Callout(I_AD_Tab.class)
-@Component("org.adempiere.ad.tab.model.interceptor.AD_Tab")
+@Component
 public class AD_Tab
 {
 	@Init

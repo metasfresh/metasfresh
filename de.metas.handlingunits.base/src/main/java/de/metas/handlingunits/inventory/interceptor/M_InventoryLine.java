@@ -41,7 +41,7 @@ import lombok.NonNull;
  */
 
 @Interceptor(I_M_InventoryLine.class)
-@Component("de.metas.handlingunits.inventory.interceptor.M_InventoryLine")
+@Component
 public class M_InventoryLine
 {
 	private final InventoryRepository inventoryLineRepository;
