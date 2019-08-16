@@ -78,7 +78,6 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
-import de.metas.util.NullLoggable;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -231,7 +230,7 @@ public class AggregationEngine implements IAggregationEngine
 
 				final ILoggable loggable = Loggables.get();
 				// task 08451: log why we create a new invoice header
-				if (!NullLoggable.isNull(loggable))
+				if (!Loggables.isNull(loggable))
 				{
 					loggable.addLog("Created new InvoiceHeaderAndLineAggregators instance. current number: " + key2headerAndAggregators.size() + "\n"
 							+ "Params: ['ic'=" + ic + ", 'headerAggregationKey'=" + headerAggregationKey + ", 'inutId'=" + inoutId + ", 'iciol'=" + iciol + "];\n"
@@ -395,7 +394,7 @@ public class AggregationEngine implements IAggregationEngine
 			final IInvoiceHeader invoiceHeader = aggregate(headerAndAggregators);
 
 			final ILoggable loggable = Loggables.get();
-			if (!NullLoggable.isNull(loggable))
+			if (!Loggables.isNull(loggable))
 			{
 				loggable.addLog("Aggregated InvoiceHeaderAndLineAggregators=" + headerAndAggregators + "; result IInvoiceHeader=" + invoiceHeader);
 			}

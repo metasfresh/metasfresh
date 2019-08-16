@@ -392,7 +392,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		final Duration countDuration = Duration.ofNanos(stopwatch.stop().elapsed(TimeUnit.NANOSECONDS));
 		query.setRecordCount(count, countDuration);
 
-		Loggables.get().addLog("RelationTypeZoomProvider {} took {}", this, countDuration);
+		Loggables.addLog("RelationTypeZoomProvider {} took {}", this, countDuration);
 	}
 
 	/**

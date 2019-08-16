@@ -112,7 +112,7 @@ class PMMRfQResponseChangeEventTrxItemProcessor extends TrxItemProcessorAdapter<
 		event.setAD_Issue(issue);
 		InterfaceWrapperHelper.save(event);
 
-		Loggables.get().addLog("Event marked as isError='Y' with message: {}; event={}", errorMsg, event);
+		Loggables.addLog("Event marked as isError='Y' with message: {}; event={}", errorMsg, event);
 	}
 
 	private void process_PriceChangeEvent(final I_PMM_RfQResponse_ChangeEvent event)

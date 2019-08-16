@@ -1,7 +1,10 @@
 package de.metas.material.event.ddorder;
 
+import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.model.I_DD_Order;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -41,6 +44,7 @@ import lombok.ToString;
  */
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class DDOrderAdvisedEvent extends AbstractDDOrderEvent
 {
 	public static final String TYPE = "DDOrderAdvisedEvent";
@@ -59,8 +63,8 @@ public class DDOrderAdvisedEvent extends AbstractDDOrderEvent
 	public DDOrderAdvisedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("ddOrder") final DDOrder ddOrder,
-			@JsonProperty("fromWarehouseId") final int fromWarehouseId,
-			@JsonProperty("toWarehouseId") final int toWarehouseId,
+			@JsonProperty("fromWarehouseId") final WarehouseId fromWarehouseId,
+			@JsonProperty("toWarehouseId") final WarehouseId toWarehouseId,
 			@JsonProperty("supplyRequiredDescriptor") final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@JsonProperty("advisedToCreateDDrder") final boolean advisedToCreateDDrder,
 			@JsonProperty("pickIfFeasible") final boolean pickIfFeasible)

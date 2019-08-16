@@ -2,9 +2,8 @@ package de.metas.material.dispo.service.candidatechange;
 
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
 import static de.metas.material.event.EventTestHelper.BEFORE_NOW;
-import static de.metas.material.event.EventTestHelper.CLIENT_ID;
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
@@ -109,8 +108,7 @@ public class StockCandidateServiceTests
 
 		final Candidate stockCandidate = Candidate.builder()
 				.type(CandidateType.STOCK)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescr)
 				.build();
 		candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(stockCandidate);
@@ -131,8 +129,7 @@ public class StockCandidateServiceTests
 
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.STOCK)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescr)
 				.build();
 
@@ -158,8 +155,7 @@ public class StockCandidateServiceTests
 
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.STOCK)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescr)
 				.build();
 
@@ -191,6 +187,7 @@ public class StockCandidateServiceTests
 		save(candidateRecord);
 
 		final Candidate candidate = Candidate.builder()
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(createMaterialDescriptor().withQuantity(BigDecimal.ONE))
 				.id(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID()))
@@ -468,8 +465,7 @@ public class StockCandidateServiceTests
 		}
 		final Candidate stockCandidate = candidateBuilder
 				.type(CandidateType.SUPPLY) // doesn't really matter, but it's important to note that stockCandidateService will create a stock candidate *for* this candidate
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescr)
 				.parentId(CandidateId.ofRepoId(parentIdSequence++)) // don't update stock candidates, but add new ones.
 				.build();

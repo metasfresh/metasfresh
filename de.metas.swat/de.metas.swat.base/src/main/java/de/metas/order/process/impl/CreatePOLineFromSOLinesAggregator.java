@@ -93,7 +93,7 @@ public class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_O
 		}
 		catch (final Throwable t)
 		{
-			Loggables.get().addLog("@Error@: " + t);
+			Loggables.addLog("@Error@: " + t);
 			throw AdempiereException.wrapIfNeeded(t);
 		}
 

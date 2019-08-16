@@ -53,7 +53,6 @@ import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
-import de.metas.util.NullLoggable;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -121,7 +120,7 @@ class OLCandOrderFactory
 		this.orderDefaults = orderDefaults;
 		ctx = Env.getCtx();
 		this.userInChargeId = userInChargeId;
-		this.loggable = loggable != null ? loggable : NullLoggable.instance;
+		this.loggable = loggable != null ? loggable : Loggables.nop();
 
 		Check.assume(olCandProcessorId > 0, "olCandProcessorId > 0");
 		this.olCandProcessorId = olCandProcessorId;
@@ -391,7 +390,7 @@ class OLCandOrderFactory
 
 	private void markAsError(final OLCand olCand, final Exception ex)
 	{
-		Loggables.get().addLog("Caught exception while processing {}; message={}; exception={}", olCand, ex.getLocalizedMessage(), ex);
+		Loggables.addLog("Caught exception while processing {}; message={}; exception={}", olCand, ex.getLocalizedMessage(), ex);
 		logger.warn("Caught exception while processing {}", olCand, ex);
 
 		final I_AD_Note note = createOLCandErrorNote(olCand, ex);

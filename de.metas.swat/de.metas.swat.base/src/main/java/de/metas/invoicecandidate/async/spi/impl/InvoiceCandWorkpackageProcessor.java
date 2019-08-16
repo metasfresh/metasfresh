@@ -118,7 +118,7 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 			// Log invoices generation result
 			final String createInvoiceResultsSummary = createInvoiceResults.getSummary(localCtx);
 			logger.info(createInvoiceResultsSummary);
-			Loggables.get().addLog(createInvoiceResultsSummary);
+			Loggables.addLog(createInvoiceResultsSummary);
 
 			// invalidate them all at once
 			invoiceCandDAO.invalidateCands(candidatesOfPackage);
@@ -214,7 +214,7 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 
 		// this happens if processing this workpackage failed once in the past.
 		// because in that case, the framework unlocked all workpackage elements
-		Loggables.get().addLog("The lock specified in the package parameter is gone! Trying to obtain a new lock");
+		Loggables.addLog("The lock specified in the package parameter is gone! Trying to obtain a new lock");
 
 		final String uniqueLockOwnerSuffix = I_C_Queue_WorkPackage.Table_Name + "_" + getC_Queue_WorkPackage().getC_Queue_WorkPackage_ID();
 
@@ -229,7 +229,7 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 		final IParams parameters = workpackageParamDAO.retrieveWorkpackageParams(getC_Queue_WorkPackage());
 		setParameters(parameters);
 
-		Loggables.get().addLog("Obtained new lock with ownerName={} and updated our package parameter", lock.getOwner().getOwnerName());
+		Loggables.addLog("Obtained new lock with ownerName={} and updated our package parameter", lock.getOwner().getOwnerName());
 		return lock;
 	}
 }

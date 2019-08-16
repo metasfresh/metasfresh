@@ -8,6 +8,7 @@ import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Lazy;
@@ -132,7 +133,7 @@ public class M_ReceiptSchedule_PostEvents
 		final PurchaseCandidateId purchaseCandidateIdOrNull = purchaseCandidateRepository.getIdByPurchaseOrderLineIdOrNull(orderLineId);
 
 		final ReceiptScheduleCreatedEvent event = ReceiptScheduleCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(receiptSchedule))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()))
 				.orderLineDescriptor(orderLineDescriptor)
 				.materialDescriptor(orderedMaterial)
 				.reservedQuantity(extractQtyReserved(receiptSchedule))
@@ -167,7 +168,7 @@ public class M_ReceiptSchedule_PostEvents
 		final BigDecimal qtyReserved = extractQtyReserved(receiptSchedule);
 
 		final ReceiptScheduleUpdatedEvent event = ReceiptScheduleUpdatedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(receiptSchedule))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()))
 				.materialDescriptor(orderedMaterial)
 				.reservedQuantity(qtyReserved)
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
@@ -194,7 +195,7 @@ public class M_ReceiptSchedule_PostEvents
 		final MaterialDescriptor orderedMaterial = createOrderMaterialDescriptor(receiptSchedule);
 
 		final ReceiptScheduleDeletedEvent event = ReceiptScheduleDeletedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(receiptSchedule))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()))
 				.materialDescriptor(orderedMaterial)
 				.reservedQuantity(extractQtyReserved(receiptSchedule))
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
@@ -215,7 +216,7 @@ public class M_ReceiptSchedule_PostEvents
 		final MaterialDescriptor orderedMaterial = MaterialDescriptor.builder()
 				.date(TimeUtil.asInstant(preparationDate))
 				.productDescriptor(productDescriptor)
-				.warehouseId(receiptScheduleBL.getM_Warehouse_Effective_ID(receiptSchedule))
+				.warehouseId(WarehouseId.ofRepoId(receiptScheduleBL.getM_Warehouse_Effective_ID(receiptSchedule)))
 				// .customerId() we don't have the *customer* ID
 				.quantity(orderedQuantity)
 				.build();

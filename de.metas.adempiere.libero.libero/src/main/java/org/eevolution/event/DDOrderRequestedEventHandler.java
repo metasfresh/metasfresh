@@ -83,7 +83,7 @@ public class DDOrderRequestedEventHandler implements MaterialEventHandler<DDOrde
 
 		final I_DD_Order ddOrderRecord = ddOrderProducer.createDDOrder(ddOrder, dateOrdered);
 
-		Loggables.get().addLog(
+		Loggables.addLog(
 				"Created ddOrder; DDOrder_ID={}; DocumentNo={}",
 				ddOrderRecord.getDD_Order_ID(), ddOrderRecord.getDocumentNo());
 

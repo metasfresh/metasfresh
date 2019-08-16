@@ -266,7 +266,7 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 		event.setAD_Issue(issue);
 
 		InterfaceWrapperHelper.save(event);
-		Loggables.get().addLog("Event marked as isError='Y' with message: {}; event={}", errorMsg, event);
+		Loggables.addLog("Event marked as isError='Y' with message: {}; event={}", errorMsg, event);
 
 		countErrors.incrementAndGet();
 	}
@@ -278,7 +278,7 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 
 		if (errorMsg != null)
 		{
-			Loggables.get().addLog("Event " + event + " skipped: " + errorMsg);
+			Loggables.addLog("Event " + event + " skipped: " + errorMsg);
 		}
 		countSkipped.incrementAndGet();
 

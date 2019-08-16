@@ -113,14 +113,14 @@ public class RefundConfigs
 
 		if (hasDifferentValues(refundConfigs, RefundConfig::getRefundBase))
 		{
-			Loggables.get().addLog("The given refundConfigs need to all have the same RefundBase; refundConfigs={}", refundConfigs);
+			Loggables.addLog("The given refundConfigs need to all have the same RefundBase; refundConfigs={}", refundConfigs);
 
 			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_REFUND_CONFIG_SAME_REFUND_BASE);
 			throw new AdempiereException(msg).markAsUserValidationError();
 		}
 		if (hasDifferentValues(refundConfigs, RefundConfig::getRefundMode))
 		{
-			Loggables.get().addLog("The given refundConfigs need to all have the same RefundMode; refundConfigs={}", refundConfigs);
+			Loggables.addLog("The given refundConfigs need to all have the same RefundMode; refundConfigs={}", refundConfigs);
 
 			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_REFUND_CONFIG_SAME_REFUND_MODE);
 			throw new AdempiereException(msg).markAsUserValidationError();
@@ -131,7 +131,7 @@ public class RefundConfigs
 			// we have one IC with different configs, so those configs need to have the consistent settings
 			if (hasDifferentValues(refundConfigs, RefundConfig::getInvoiceSchedule))
 			{
-				Loggables.get().addLog(
+				Loggables.addLog(
 						"Because refundMode={}, all the given refundConfigs need to all have the same invoiceSchedule; refundConfigs={}",
 						RefundMode.APPLY_TO_ALL_QTIES, refundConfigs);
 
@@ -140,7 +140,7 @@ public class RefundConfigs
 			}
 			if (hasDifferentValues(refundConfigs, RefundConfig::getRefundInvoiceType))
 			{
-				Loggables.get().addLog(
+				Loggables.addLog(
 						"Because refundMode={}, all the given refundConfigs need to all have the same refundInvoiceType; refundConfigs={}",
 						RefundMode.APPLY_TO_ALL_QTIES, refundConfigs);
 

@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.IdConstants;
@@ -43,6 +45,8 @@ import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.product.ResourceId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -271,7 +275,7 @@ public class CandidateRepositoryWriteService
 
 		// add a log message to be shown in the event log
 		final String verb = oldCandidateRecord == null ? "created" : "updated";
-		Loggables.get().addLog(
+		Loggables.addLog(
 				"addOrUpdate - {} candidate={}; singleCandidateOrNullQuery={}; preserveExistingSeqNoAndParentId={}",
 				verb, savedCandidate, singleCandidateOrNullQuery, preserveExistingSeqNoAndParentId);
 
@@ -331,9 +335,9 @@ public class CandidateRepositoryWriteService
 	{
 		final MaterialDescriptor materialDescriptor = candidate.getMaterialDescriptor();
 
-		candidateRecord.setAD_Org_ID(candidate.getOrgId());
+		candidateRecord.setAD_Org_ID(candidate.getOrgId().getRepoId());
 		candidateRecord.setMD_Candidate_Type(candidate.getType().toString());
-		candidateRecord.setM_Warehouse_ID(materialDescriptor.getWarehouseId());
+		candidateRecord.setM_Warehouse_ID(WarehouseId.toRepoId(materialDescriptor.getWarehouseId()));
 
 		candidateRecord.setC_BPartner_Customer_ID(BPartnerId.toRepoId(materialDescriptor.getCustomerId()));
 
@@ -366,9 +370,9 @@ public class CandidateRepositoryWriteService
 			candidateRecord.setSeqNo(candidate.getSeqNo());
 		}
 
-		if (candidate.getGroupId() > 0)
+		if (candidate.getGroupId() != null)
 		{
-			candidateRecord.setMD_Candidate_GroupId(candidate.getGroupId());
+			candidateRecord.setMD_Candidate_GroupId(candidate.getGroupId().toInt());
 		}
 
 		final BigDecimal fulfilledQty = candidate
@@ -478,8 +482,8 @@ public class CandidateRepositoryWriteService
 		{
 			productionDetailRecordToUpdate = newInstance(I_MD_Candidate_Prod_Detail.class, synchedRecord);
 			productionDetailRecordToUpdate.setMD_Candidate(synchedRecord);
-			productionDetailRecordToUpdate.setIsPickDirectlyIfFeasible(productionDetail.getPickDirectlyIfFeasible().toBoolean());
-			productionDetailRecordToUpdate.setIsAdvised(productionDetail.getAdvised().toBoolean());
+			productionDetailRecordToUpdate.setIsPickDirectlyIfFeasible(productionDetail.getPickDirectlyIfFeasible().isTrue());
+			productionDetailRecordToUpdate.setIsAdvised(productionDetail.getAdvised().isTrue());
 		}
 		else
 		{
@@ -487,21 +491,21 @@ public class CandidateRepositoryWriteService
 
 			if (productionDetail.getPickDirectlyIfFeasible().isUpdateExistingRecord())
 			{
-				productionDetailRecordToUpdate.setIsPickDirectlyIfFeasible(productionDetail.getPickDirectlyIfFeasible().toBoolean());
+				productionDetailRecordToUpdate.setIsPickDirectlyIfFeasible(productionDetail.getPickDirectlyIfFeasible().isTrue());
 			}
 			if (productionDetail.getAdvised().isUpdateExistingRecord())
 			{
-				productionDetailRecordToUpdate.setIsAdvised(productionDetail.getAdvised().toBoolean());
+				productionDetailRecordToUpdate.setIsAdvised(productionDetail.getAdvised().isTrue());
 			}
 		}
 
 		productionDetailRecordToUpdate.setDescription(productionDetail.getDescription());
-		productionDetailRecordToUpdate.setPP_Plant_ID(productionDetail.getPlantId());
+		productionDetailRecordToUpdate.setPP_Plant_ID(ResourceId.toRepoId(productionDetail.getPlantId()));
 		productionDetailRecordToUpdate.setPP_Product_BOMLine_ID(productionDetail.getProductBomLineId());
 		productionDetailRecordToUpdate.setPP_Product_Planning_ID(productionDetail.getProductPlanningId());
 		productionDetailRecordToUpdate.setPP_Order_ID(productionDetail.getPpOrderId());
 		productionDetailRecordToUpdate.setPP_Order_BOMLine_ID(productionDetail.getPpOrderLineId());
-		productionDetailRecordToUpdate.setPP_Order_DocStatus(productionDetail.getPpOrderDocStatus());
+		productionDetailRecordToUpdate.setPP_Order_DocStatus(DocStatus.toCodeOrNull(productionDetail.getPpOrderDocStatus()));
 		productionDetailRecordToUpdate.setPlannedQty(productionDetail.getQty());
 		productionDetailRecordToUpdate.setActualQty(candidate.computeActualQty());
 
@@ -524,14 +528,14 @@ public class CandidateRepositoryWriteService
 		{
 			detailRecordToUpdate = newInstance(I_MD_Candidate_Dist_Detail.class, synchedRecord);
 			detailRecordToUpdate.setMD_Candidate(synchedRecord);
-			detailRecordToUpdate.setIsPickDirectlyIfFeasible(distributionDetail.getPickDirectlyIfFeasible().toBoolean());
+			detailRecordToUpdate.setIsPickDirectlyIfFeasible(distributionDetail.getPickDirectlyIfFeasible().isTrue());
 		}
 		else
 		{
 			detailRecordToUpdate = existingDetail;
 			if (distributionDetail.getPickDirectlyIfFeasible().isUpdateExistingRecord())
 			{
-				detailRecordToUpdate.setIsPickDirectlyIfFeasible(distributionDetail.getPickDirectlyIfFeasible().toBoolean());
+				detailRecordToUpdate.setIsPickDirectlyIfFeasible(distributionDetail.getPickDirectlyIfFeasible().isTrue());
 			}
 		}
 
@@ -645,7 +649,7 @@ public class CandidateRepositoryWriteService
 		return candidate
 				.withId(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID()))
 				.withParentId(CandidateId.ofRepoIdOrNull(candidateRecord.getMD_Candidate_Parent_ID()))
-				.withGroupId(candidateRecord.getMD_Candidate_GroupId())
+				.withGroupId(MaterialDispoGroupId.ofIntOrNull(candidateRecord.getMD_Candidate_GroupId()))
 				.withSeqNo(candidateRecord.getSeqNo());
 	}
 

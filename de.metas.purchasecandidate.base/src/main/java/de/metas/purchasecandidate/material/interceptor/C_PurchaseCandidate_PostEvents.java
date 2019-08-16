@@ -4,6 +4,7 @@ import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Lazy;
@@ -87,7 +88,7 @@ public class C_PurchaseCandidate_PostEvents
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(purchaseCandidateRecord);
 
 		final PurchaseCandidateCreatedEvent purchaseCandidateCreatedEvent = PurchaseCandidateCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(purchaseCandidateRecord))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(purchaseCandidateRecord.getAD_Client_ID(), purchaseCandidateRecord.getAD_Org_ID()))
 				.purchaseCandidateRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID())
 				.purchaseMaterialDescriptor(materialDescriptor)
 				.supplyRequiredDescriptor(createSupplyRequiredDescritproOrNull(purchaseCandidateRecord))
@@ -130,7 +131,7 @@ public class C_PurchaseCandidate_PostEvents
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(purchaseCandidateRecord);
 
 		final PurchaseCandidateUpdatedEvent purchaseCandidateUpdatedEvent = PurchaseCandidateUpdatedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(purchaseCandidateRecord))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(purchaseCandidateRecord.getAD_Client_ID(), purchaseCandidateRecord.getAD_Org_ID()))
 				.purchaseCandidateRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID())
 				.vendorId(purchaseCandidateRecord.getVendor_ID())
 				.purchaseMaterialDescriptor(materialDescriptor)
@@ -150,7 +151,7 @@ public class C_PurchaseCandidate_PostEvents
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.date(TimeUtil.asInstant(purchaseCandidateRecord.getPurchaseDatePromised()))
-				.warehouseId(purchaseCandidateRecord.getM_WarehousePO_ID())
+				.warehouseId(WarehouseId.ofRepoId(purchaseCandidateRecord.getM_WarehousePO_ID()))
 				.productDescriptor(productDescriptor)
 				// .customerId() we don't have a customer
 				.quantity(purchaseQty.toBigDecimal())

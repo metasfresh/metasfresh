@@ -43,6 +43,6 @@ public class Reset_M_ShipmentSchedule_Recompute implements IStartupHouseKeepingT
 	public void executeTask()
 	{
 		final int no = DB.getSQLValue(ITrx.TRXNAME_None, "SELECT de_metas_inoutcandidate.Reset_M_ShipmentSchedule_Recompute();");
-		Loggables.get().addLog("Cleaned up " + no + " stale M_ShipmentSchedule_Recompute records");
+		Loggables.addLog("Cleaned up " + no + " stale M_ShipmentSchedule_Recompute records");
 	}
 }

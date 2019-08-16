@@ -293,7 +293,7 @@ public class HUReportService
 	 */
 	public void printPickingLabel(@Nullable final HUToReportWrapper huToReport, final boolean onlyIfAutoPrintIsEnabled)
 	{
-		final ILoggable loggable = Loggables.get().withLogger(logger, Level.INFO);
+		final ILoggable loggable = Loggables.withLogger(logger, Level.INFO);
 
 		if (huToReport == null)
 		{

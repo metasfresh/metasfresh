@@ -149,7 +149,7 @@ public class LanguageDAO implements ILanguageDAO
 			}
 		}
 
-		Loggables.get().addLog("@Deleted@=" + deleteNo + " - @Inserted@=" + insertNo);
+		Loggables.addLog("@Deleted@=" + deleteNo + " - @Inserted@=" + insertNo);
 	}
 
 	@Override

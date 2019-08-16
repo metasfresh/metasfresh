@@ -173,7 +173,7 @@ public class ShipmentScheduleWithHUService
 				.stream()
 				.map(ShipmentScheduleWithHU::getQtyPicked)
 				.reduce(qtyToDeliver.toZero(), Quantity::add);
-		Loggables.get().addLog("QtyToDeliver={}; Qty picked on-the-fly from available HUs: {}", qtyToDeliver, allocatedQty);
+		Loggables.addLog("QtyToDeliver={}; Qty picked on-the-fly from available HUs: {}", qtyToDeliver, allocatedQty);
 
 		final Quantity remainingQtyToAllocate = qtyToDeliver.subtract(allocatedQty);
 		if (remainingQtyToAllocate.signum() > 0)
@@ -212,7 +212,7 @@ public class ShipmentScheduleWithHUService
 						adClientId,
 						adOrgId);
 
-		Loggables.get().addLog("SysConfig {}={} for AD_Client_ID={} and AD_Org_ID={}",
+		Loggables.addLog("SysConfig {}={} for AD_Client_ID={} and AD_Org_ID={}",
 				SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY, pickAvailableHUsOntheFly, adClientId, adOrgId);
 
 		return pickAvailableHUsOntheFly;
@@ -353,10 +353,10 @@ public class ShipmentScheduleWithHUService
 			final boolean wereDelivered = shipmentScheduleAllocDAO.retrieveOnShipmentLineRecordsQuery(schedule).create().match();
 			if (wereDelivered)
 			{
-				Loggables.get().withLogger(logger, Level.INFO).addLog("Skipped shipment schedule because it was already delivered: {}", schedule);
+				Loggables.withLogger(logger, Level.INFO).addLog("Skipped shipment schedule because it was already delivered: {}", schedule);
 				return Collections.emptyList();
 			}
-			Loggables.get().withLogger(logger, Level.WARN).addLog("Shipment schedule has no I_M_ShipmentSchedule_QtyPicked records (or these records have inactive HUs); M_ShipmentSchedule={}", schedule);
+			Loggables.withLogger(logger, Level.WARN).addLog("Shipment schedule has no I_M_ShipmentSchedule_QtyPicked records (or these records have inactive HUs); M_ShipmentSchedule={}", schedule);
 			final ITranslatableString errorMsg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_NoQtyPicked);
 			throw new AdempiereException(errorMsg);
 		}
@@ -394,7 +394,7 @@ public class ShipmentScheduleWithHUService
 			// guard: Skip inactive records.
 			if (!qtyPickedRecordHU.isActive())
 			{
-				Loggables.get().withLogger(logger, Level.INFO).addLog("Skipped inactive qtyPickedRecordHU={}", qtyPickedRecordHU);
+				Loggables.withLogger(logger, Level.INFO).addLog("Skipped inactive qtyPickedRecordHU={}", qtyPickedRecordHU);
 				continue;
 			}
 

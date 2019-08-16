@@ -739,7 +739,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		if (ic.isProcessed())
 		{
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_PROCESSED, new Object[] { ic.getC_Invoice_Candidate_ID() });
-			Loggables.get().withLogger(logger, Level.INFO).addLog(msg);
+			Loggables.withLogger(logger, Level.INFO).addLog(msg);
 			return true;
 		}
 
@@ -751,7 +751,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					.append(": ")
 					.append(ic.getErrorMsg())
 					.toString();
-			Loggables.get().withLogger(logger, Level.DEBUG).addLog(msg);
+			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
 			return true;
 		}
 
@@ -760,7 +760,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			// don't log (per Mark request) because those could be a lot and because user has no opportunity to react
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_TO_CLEAR,
 					new Object[] { ic.getC_Invoice_Candidate_ID() });
-			Loggables.get().withLogger(logger, Level.DEBUG).addLog(msg);
+			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
 			return true;
 		}
 
@@ -769,7 +769,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			// don't log (per Mark request) because those could be a lot and because user has no opportunity to react
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_IN_DISPUTE,
 					new Object[] { ic.getC_Invoice_Candidate_ID() });
-			Loggables.get().withLogger(logger, Level.DEBUG).addLog(msg);
+			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
 			return true;
 		}
 
@@ -781,7 +781,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE,
 					new Object[] { ic.getC_Invoice_Candidate_ID(), dateToInvoice, getToday() });
-			Loggables.get().withLogger(logger, Level.DEBUG).addLog(msg);
+			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
 			return true;
 		}
 

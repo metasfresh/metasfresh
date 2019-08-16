@@ -3,6 +3,8 @@ package de.metas.material.event.commons;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+import org.adempiere.warehouse.WarehouseId;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
@@ -44,10 +46,10 @@ import lombok.experimental.FieldDefaults;
 public class MaterialDescriptor extends ProductDescriptor
 {
 	@Getter
-	int warehouseId;
+	WarehouseId warehouseId;
 
 	/**
-	 * Optional, may be <= 0; if set, then the respective candidate allocated to the respective *customer*
+	 * Optional, if set, then the respective candidate allocated to the respective *customer*
 	 * and is not available to other customers.
 	 */
 	@Getter
@@ -66,7 +68,7 @@ public class MaterialDescriptor extends ProductDescriptor
 
 	@Builder
 	private MaterialDescriptor(
-			final int warehouseId,
+			final WarehouseId warehouseId,
 			final BPartnerId customerId,
 			final BPartnerId vendorId,
 			final Instant date,
@@ -86,7 +88,7 @@ public class MaterialDescriptor extends ProductDescriptor
 
 	@JsonCreator
 	public MaterialDescriptor(
-			@JsonProperty("warehouseId") final int warehouseId,
+			@JsonProperty("warehouseId") final WarehouseId warehouseId,
 			@JsonProperty("customerId") final BPartnerId customerId,
 			@JsonProperty("vendorId") final BPartnerId vendorId,
 			@JsonProperty("quantity") final BigDecimal quantity,
@@ -111,7 +113,7 @@ public class MaterialDescriptor extends ProductDescriptor
 
 	public MaterialDescriptor asssertMaterialDescriptorComplete()
 	{
-		Preconditions.checkArgument(warehouseId > 0, "warehouseId=%s needs to be >0", warehouseId);
+		Preconditions.checkNotNull(warehouseId != null, "warehouseId needs to be set");
 
 		// Don't enforce customer/vendor. e.g. in case of Inventory there is no customer/vendor.
 		// Preconditions.checkNotNull(customerId, "customerId needs to be not-null", customerId);
@@ -159,7 +161,7 @@ public class MaterialDescriptor extends ProductDescriptor
 		return result.asssertMaterialDescriptorComplete();
 	}
 
-	public MaterialDescriptor withWarehouseId(final int warehouseId)
+	public MaterialDescriptor withWarehouseId(final WarehouseId warehouseId)
 	{
 		final MaterialDescriptor result = MaterialDescriptor.builder()
 				.warehouseId(warehouseId)

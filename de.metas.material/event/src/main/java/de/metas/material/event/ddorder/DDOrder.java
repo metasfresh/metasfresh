@@ -1,7 +1,5 @@
 package de.metas.material.event.ddorder;
 
-import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
-
 import java.time.Instant;
 import java.util.List;
 
@@ -10,6 +8,8 @@ import org.compiere.model.I_S_Resource;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -44,7 +44,7 @@ final public class DDOrder
 	/**
 	 * {@code AD_Org_ID} of the <b>receiving</b> organization.
 	 */
-	int orgId;
+	OrgId orgId;
 
 	/**
 	 * The {@link I_S_Resource#getS_Resource_ID()} of the plant, as specified by the respective product planning record.
@@ -70,11 +70,11 @@ final public class DDOrder
 	 * when material-dispo posts {@link DDOrderRequestedEvent}, it contains a group-ID,
 	 * and the respective {@link DDOrderCreatedEvent} contains the same group-ID.
 	 */
-	int materialDispoGroupId;
+	MaterialDispoGroupId materialDispoGroupId;
 
 	@JsonCreator
 	public DDOrder(
-			@JsonProperty("orgId") final int orgId,
+			@JsonProperty("orgId") @NonNull final OrgId orgId,
 			@JsonProperty("plantId") final int plantId,
 			@JsonProperty("productPlanningId") final int productPlanningId,
 			@JsonProperty("datePromised") @NonNull final Instant datePromised,
@@ -82,10 +82,10 @@ final public class DDOrder
 			@JsonProperty("lines") final List<DDOrderLine> lines,
 			@JsonProperty("ddOrderId") final int ddOrderId,
 			@JsonProperty("docStatus") final String docStatus,
-			@JsonProperty("materialDispoGroupId") final int materialDispoGroupId)
+			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId)
 	{
-		this.orgId = checkIdGreaterThanZero("orgId", orgId);
-
+		this.orgId = orgId;
+		
 		// these two might be zero, if the DDOrder was created manually
 		this.plantId = plantId;
 		this.productPlanningId = productPlanningId;

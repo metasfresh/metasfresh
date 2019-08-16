@@ -135,7 +135,7 @@ public class PPOrderMInOutLineRetrievalService implements IPPOrderMInOutLineRetr
 
 			if (qtyToAllocate.signum() > 0)
 			{
-				Loggables.get().addLog("PROBLEM: PP_Cost_Collector {0} of PP_Order {1} has a remaining unallocated qty of {2}!", costCollector, ppOrderId, qtyToAllocate);
+				Loggables.addLog("PROBLEM: PP_Cost_Collector {0} of PP_Order {1} has a remaining unallocated qty of {2}!", costCollector, ppOrderId, qtyToAllocate);
 			}
 		}
 

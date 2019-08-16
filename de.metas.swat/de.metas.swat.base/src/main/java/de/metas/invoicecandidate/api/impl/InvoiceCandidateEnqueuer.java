@@ -262,7 +262,7 @@ import lombok.NonNull;
 		if (getInvoicingParams().isOnlyApprovedForInvoicing() && !ic.isApprovalForInvoicing())
 		{
 			final String msg = msgBL.getMsg(getCtx(), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_APPROVAL, new Object[] { ic.getC_Invoice_Candidate_ID() });
-			Loggables.get().addLog(msg);
+			Loggables.addLog(msg);
 			return false;
 		}
 
@@ -281,7 +281,7 @@ import lombok.NonNull;
 		if (ic.getQtyOrdered().signum() != 0 && ic.getQtyToInvoice().signum() == 0)
 		{
 			final String msg = msgBL.getMsg(getCtx(), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_QTY_TO_INVOICE, new Object[] { ic.getC_Invoice_Candidate_ID() });
-			Loggables.get().addLog(msg);
+			Loggables.addLog(msg);
 			return false;
 		}
 

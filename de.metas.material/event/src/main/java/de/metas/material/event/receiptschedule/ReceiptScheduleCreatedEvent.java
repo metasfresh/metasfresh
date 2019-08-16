@@ -2,6 +2,8 @@ package de.metas.material.event.receiptschedule;
 
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -39,6 +41,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @Getter
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 {
 	public static ReceiptScheduleCreatedEvent cast(@NonNull final AbstractReceiptScheduleEvent event)

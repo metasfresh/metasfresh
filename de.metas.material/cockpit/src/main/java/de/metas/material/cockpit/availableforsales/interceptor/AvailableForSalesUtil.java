@@ -1,8 +1,6 @@
 package de.metas.material.cockpit.availableforsales.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.compiere.util.Util.coalesce;
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -323,8 +321,9 @@ public class AvailableForSalesUtil
 			@NonNull final ColorId insufficientQtyAvailableForSalesColorId)
 	{
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 
-		final I_C_OrderLine salesOrderLineRecord = load(orderLineId, I_C_OrderLine.class);
+		final I_C_OrderLine salesOrderLineRecord = ordersRepo.getOrderLineById(orderLineId, I_C_OrderLine.class);
 
 		// We do everything in the order line's UOM right from the start in order to depend on QtyEntered as opposed to QtyOrdered.
 		// Because QtyEntered is what the user can see.. (who knows, QtyOrdered might even be zero in some cases)
@@ -357,6 +356,7 @@ public class AvailableForSalesUtil
 		{
 			salesOrderLineRecord.setInsufficientQtyAvailableForSalesColor(null);
 		}
-		saveRecord(salesOrderLineRecord);
+		
+		ordersRepo.save(salesOrderLineRecord);
 	}
 }

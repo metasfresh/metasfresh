@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -37,7 +36,6 @@ import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.ddorder.DDOrderAdvisedEventCreator;
 import de.metas.material.planning.ddorder.DDOrderPojoSupplier;
 import de.metas.material.planning.pporder.PPOrderAdvisedEventCreator;
-import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Loggables;
@@ -129,14 +127,14 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
 		final I_S_Resource plant = productPlanningDAO.findPlant(
-				eventDescr.getOrgId(),
+				eventDescr.getOrgId().getRepoId(),
 				warehouse,
 				materialDescr.getProductId(),
 				materialDescr.getAttributeSetInstanceId());
 
 		final ProductPlanningQuery productPlanningQuery = ProductPlanningQuery.builder()
-				.orgId(OrgId.ofRepoId(eventDescr.getOrgId()))
-				.warehouseId(WarehouseId.ofRepoId(materialDescr.getWarehouseId()))
+				.orgId(eventDescr.getOrgId())
+				.warehouseId(materialDescr.getWarehouseId())
 				.plantId(ResourceId.ofRepoId(plant.getS_Resource_ID()))
 				.productId(ProductId.ofRepoId(materialDescr.getProductId()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(materialDescr.getAttributeSetInstanceId()))
@@ -145,7 +143,7 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(productPlanningQuery);
 		if (productPlanning == null)
 		{
-			Loggables.get().addLog("No PP_Product_Planning record found; query={}", productPlanningQuery);
+			Loggables.addLog("No PP_Product_Planning record found; query={}", productPlanningQuery);
 			return null;
 		}
 

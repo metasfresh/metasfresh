@@ -203,7 +203,7 @@ public class InvoiceCandidateWriter
 		// Make sure the invoice candidate is saved, so that we can use its ID further down (e.g. to reference if from the detail lines)
 		InterfaceWrapperHelper.save(invoiceCandidate);
 
-		Loggables.get().addLog((newIc ? "Created new IC " : "Updated existing IC ") + invoiceCandidate);
+		Loggables.addLog((newIc ? "Created new IC " : "Updated existing IC ") + invoiceCandidate);
 
 		//
 		// delete/recreate Invoice Clearing Allocation

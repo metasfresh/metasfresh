@@ -59,7 +59,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		if (shipmentSchedulesWithHU.isEmpty())
 		{
 			// this is a frequent case and we received no complaints so far. So don't throw an exception, just log it
-			Loggables.get().addLog("No unprocessed candidates were found");
+			Loggables.addLog("No unprocessed candidates were found");
 		}
 
 		final IParams parameters = getParameters();
@@ -82,7 +82,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				// Think about HUs which are linked to multiple shipments: you will not see them in Aggregation POS because are already assigned, but u are not able to create shipment from them again.
 				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)
 				.createShipments(shipmentSchedulesWithHU);
-		Loggables.get().addLog("Generated: {}", result);
+		Loggables.addLog("Generated: {}", result);
 
 		return Result.SUCCESS;
 	}

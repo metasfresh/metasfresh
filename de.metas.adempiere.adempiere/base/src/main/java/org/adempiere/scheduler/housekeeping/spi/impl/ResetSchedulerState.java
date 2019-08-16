@@ -49,6 +49,6 @@ public class ResetSchedulerState implements IStartupHouseKeepingTask
 				+ " SET " + I_AD_Scheduler.COLUMNNAME_Status + "='" + X_AD_Scheduler.STATUS_Started + "'"
 				+ " WHERE " + I_AD_Scheduler.COLUMNNAME_Status + "='" + X_AD_Scheduler.STATUS_Running + "'", ITrx.TRXNAME_None);
 
-		Loggables.get().addLog("Updated " + no + " AD_Scheduler records from status '" + X_AD_Scheduler.STATUS_Running + "' to '" + X_AD_Scheduler.STATUS_Started + "'");
+		Loggables.addLog("Updated " + no + " AD_Scheduler records from status '" + X_AD_Scheduler.STATUS_Running + "' to '" + X_AD_Scheduler.STATUS_Started + "'");
 	}
 }

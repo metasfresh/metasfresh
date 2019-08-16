@@ -72,7 +72,7 @@ public class InvoiceExportClientFactoryImpl implements InvoiceExportClientFactor
 				.anyMatch(id -> requiredAttachmentTag.equals(id));
 		if (!supported)
 		{
-			Loggables.get().addLog("forum_datenaustausch_ch - The invoice with id={} has no attachment with an {}-tag", invoice.getId(), requiredAttachmentTag);
+			Loggables.addLog("forum_datenaustausch_ch - The invoice with id={} has no attachment with an {}-tag", invoice.getId(), requiredAttachmentTag);
 			return Optional.empty();
 		}
 
@@ -84,13 +84,13 @@ public class InvoiceExportClientFactoryImpl implements InvoiceExportClientFactor
 		final ExportConfig config = configRepository.getForQueryOrNull(query);
 		if (config == null)
 		{
-			Loggables.get().addLog("forum_datenaustausch_ch - There is no export config for the recipiend-id={} of the invoice with id={}", recipientId, invoice.getId());
+			Loggables.addLog("forum_datenaustausch_ch - There is no export config for the recipiend-id={} of the invoice with id={}", recipientId, invoice.getId());
 			return Optional.empty();
 		}
 		final InvoiceExportClientImpl client = new InvoiceExportClientImpl(crossVersionServiceRegistry, config);
 		if (!client.canExport(invoice))
 		{
-			Loggables.get().addLog("forum_datenaustausch_ch - the export-client {} claims that it can't export the invoice with id={}", client.getClass().getSimpleName(), invoice.getId());
+			Loggables.addLog("forum_datenaustausch_ch - the export-client {} claims that it can't export the invoice with id={}", client.getClass().getSimpleName(), invoice.getId());
 			return Optional.empty();
 		}
 

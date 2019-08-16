@@ -1,9 +1,8 @@
 package de.metas.material.dispo.commons;
 
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
-import static de.metas.material.event.EventTestHelper.CLIENT_ID;
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
@@ -67,8 +66,7 @@ public class RepositoryTestHelper
 				.addOrUpdateOverwriteStoredSeqNo(
 						Candidate.builder()
 								.type(CandidateType.STOCK)
-								.clientId(CLIENT_ID)
-								.orgId(ORG_ID)
+								.clientAndOrgId(CLIENT_AND_ORG_ID)
 								.materialDescriptor(materialDescriptorOfStockCandidate)
 								.build())
 				.getCandidate();
@@ -84,8 +82,7 @@ public class RepositoryTestHelper
 				.addOrUpdateOverwriteStoredSeqNo(
 						Candidate.builder()
 								.type(CandidateType.STOCK)
-								.clientId(CLIENT_ID)
-								.orgId(ORG_ID)
+								.clientAndOrgId(CLIENT_AND_ORG_ID)
 								.materialDescriptor(laterMaterialDescriptor)
 								.build())
 				.getCandidate();

@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.LoggerLoggable;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -71,7 +70,7 @@ public class HouseKeepingService
 		logger.info("Executing the registered house keeping tasks; disable with SysConfig {}=true", SYSCONFIG_SKIP_HOUSE_KEEPING);
 		final Stopwatch allTasksWatch = Stopwatch.createStarted();
 
-		final ILoggable loggable = LoggerLoggable.of(logger, Level.INFO);
+		final ILoggable loggable = Loggables.logback(logger, Level.INFO);
 		try (final IAutoCloseable temporaryLoggable = Loggables.temporarySetLoggable(loggable);)
 		{
 			for (final IStartupHouseKeepingTask task : startupTasks)

@@ -1,5 +1,6 @@
 package de.metas.material.dispo.service.event.handler;
 
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
@@ -156,7 +157,7 @@ public class TransactionCreatedHandlerTests
 		final Instant date = SystemTime.asInstant();
 
 		final Candidate exisitingCandidate = Candidate.builder()
-				.clientId(10).orgId(20)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.type(CandidateType.UNRELATED_INCREASE)
 				.id(CandidateId.ofRepoId(11))
 				.materialDescriptor(MaterialDescriptor.builder()
@@ -255,8 +256,7 @@ public class TransactionCreatedHandlerTests
 	{
 		final Candidate exisitingCandidate = Candidate.builder()
 				.id(CandidateId.ofRepoId(11))
-				.clientId(10)
-				.orgId(20)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())
@@ -326,7 +326,7 @@ public class TransactionCreatedHandlerTests
 	private TransactionCreatedEventBuilder createTransactionEventBuilderWithQuantity(@NonNull final BigDecimal quantity)
 	{
 		return TransactionCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.transactionId(TRANSACTION_ID)
 				.materialDescriptor(MaterialDescriptor.builder()
 						.date(Instant.parse("2017-10-15T00:00:00.00Z"))
@@ -339,8 +339,7 @@ public class TransactionCreatedHandlerTests
 	private void makeCommonAssertions(final Candidate candidate)
 	{
 		assertThat(candidate).isNotNull();
-		assertThat(candidate.getClientId()).isEqualTo(10);
-		assertThat(candidate.getOrgId()).isEqualTo(20);
+		assertThat(candidate.getClientAndOrgId()).isEqualTo(CLIENT_AND_ORG_ID);
 		assertThat(candidate.getMaterialDescriptor()).isNotNull();
 		assertThat(candidate.getProductId()).isEqualTo(PRODUCT_ID);
 		assertThat(candidate.getWarehouseId()).isEqualTo(WAREHOUSE_ID);

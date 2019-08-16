@@ -247,7 +247,7 @@ public class ShipmentScheduleEnqueuer
 		}
 		else
 		{
-			Loggables.get().addLog(Services.get(IMsgBL.class).parseTranslation(
+			Loggables.addLog(Services.get(IMsgBL.class).parseTranslation(
 					_ctx,
 					"@Skip@ @" + I_M_ShipmentSchedule.COLUMNNAME_HeaderAggregationKey + "@=" + lastHeaderAggregationKey + ": "
 							+ "@" + I_M_ShipmentSchedule.COLUMNNAME_IsToRecompute + "@ = @Yes@"));

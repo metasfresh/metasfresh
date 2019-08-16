@@ -1,7 +1,6 @@
 package de.metas.material.dispo.service.event.handler.shipmentschedule;
 
-import static de.metas.material.event.EventTestHelper.CLIENT_ID;
-import static de.metas.material.event.EventTestHelper.ORG_ID;
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static java.math.BigDecimal.ZERO;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -93,7 +92,7 @@ public class ShipmentScheduleDeletedHandlerTests
 	{
 		final int shipmentScheduleId = ShipmentScheduleCreatedHandlerTests.performTest(shipmentScheduleCreatedHandler, atpRepository);
 
-		final EventDescriptor eventDescriptor = EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID);
+		final EventDescriptor eventDescriptor = EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID);
 		final ShipmentScheduleDeletedEvent shipmentScheduleDeletedEvent = ShipmentScheduleDeletedEvent
 				.builder()
 				.eventDescriptor(eventDescriptor)

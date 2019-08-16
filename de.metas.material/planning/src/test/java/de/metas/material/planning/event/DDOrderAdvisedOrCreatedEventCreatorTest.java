@@ -88,6 +88,8 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 	public void createProductionAdvisedEvents_returns_same_supplyRequiredDescriptor()
 	{
 		final I_DD_NetworkDistributionLine networkDistributionLine = newInstance(I_DD_NetworkDistributionLine.class);
+		networkDistributionLine.setM_WarehouseSource_ID(1);
+		networkDistributionLine.setM_Warehouse_ID(2);
 		save(networkDistributionLine);
 
 		// @formatter:off

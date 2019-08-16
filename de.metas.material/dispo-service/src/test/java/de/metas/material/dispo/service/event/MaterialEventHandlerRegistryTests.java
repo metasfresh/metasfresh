@@ -1,6 +1,6 @@
 package de.metas.material.dispo.service.event;
 
-import static de.metas.material.event.EventTestHelper.CLIENT_ID;
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -14,6 +14,7 @@ import java.util.Optional;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.Mutable;
+import org.adempiere.warehouse.WarehouseId;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -94,9 +95,9 @@ public class MaterialEventHandlerRegistryTests
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
-	public static final int fromWarehouseId = 10;
-	public static final int intermediateWarehouseId = 20;
-	public static final int toWarehouseId = 30;
+	public static final WarehouseId fromWarehouseId = WarehouseId.ofRepoId(10);
+	public static final WarehouseId intermediateWarehouseId = WarehouseId.ofRepoId(20);
+	public static final WarehouseId toWarehouseId = WarehouseId.ofRepoId(30);
 
 	private MaterialEventHandlerRegistry materialEventListener;
 
@@ -229,7 +230,7 @@ public class MaterialEventHandlerRegistryTests
 
 		// create a distributionAdvisedEvent event which matches the shipmentscheduleEvent that we processed in testShipmentScheduleEvent()
 		final DDOrderAdvisedEvent ddOrderAdvisedEvent = DDOrderAdvisedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.fromWarehouseId(fromWarehouseId)
 				.toWarehouseId(toWarehouseId)
 				.supplyRequiredDescriptor(supplyRequiredDescriptor.getValue())
@@ -298,7 +299,7 @@ public class MaterialEventHandlerRegistryTests
 		materialEventListener.onEvent(shipmentScheduleEvent);
 
 		final TransactionCreatedEvent transactionEvent = TransactionCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.materialDescriptor(orderedMaterial.withDate(twoHoursAfterShipmentSched))
 				.build();
 

@@ -163,7 +163,7 @@ public class HUShippingFacade
 		{
 			final List<I_M_Package> result = huShipperTransportationBL.addHUsToShipperTransportation(addToShipperTransportationId, hus);
 			mpackagesCreated.addAll(result);
-			Loggables.get().addLog("HUs added to M_ShipperTransportation_ID={}", addToShipperTransportationId);
+			Loggables.addLog("HUs added to M_ShipperTransportation_ID={}", addToShipperTransportationId);
 		}
 	}
 
@@ -188,7 +188,7 @@ public class HUShippingFacade
 				// Think about HUs which are linked to multiple shipments: you will not see then in Aggregation POS because are already assigned, but u are not able to create shipment from them again.
 				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)
 				.createShipments(candidates);
-		Loggables.get().addLog("Generated {}", shipmentsGenerateResult);
+		Loggables.addLog("Generated {}", shipmentsGenerateResult);
 
 	}
 
@@ -225,7 +225,7 @@ public class HUShippingFacade
 				.setInvoicingParams(invoicingParams)
 				//
 				.enqueueInvoiceCandidateIds(invoiceCandidateIds);
-		Loggables.get().addLog("Invoice candidates enqueued: {}", enqueueResult);
+		Loggables.addLog("Invoice candidates enqueued: {}", enqueueResult);
 	}
 
 	private void generateShipperDeliveryOrdersIfNeeded()

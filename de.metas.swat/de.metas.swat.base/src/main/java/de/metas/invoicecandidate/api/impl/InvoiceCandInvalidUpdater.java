@@ -156,7 +156,7 @@ import lombok.NonNull;
 		if (!candidatesToUpdate.hasNext())
 		{
 			// no candidates found => nothing to do
-			Loggables.get().withLogger(logger, Level.DEBUG).addLog("icTagger has no invoice candidates to update; nothing to do; icTagger={}", icTagger);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("icTagger has no invoice candidates to update; nothing to do; icTagger={}", icTagger);
 			return;
 		}
 
@@ -195,7 +195,7 @@ import lombok.NonNull;
 							}
 							else
 							{
-								Loggables.get().withLogger(logger, Level.DEBUG)
+								Loggables.withLogger(logger, Level.DEBUG)
 										.addLog("Error processing invoice; ic.errorMessage={}; ic={}", ic.getErrorMsg(), ic);
 								result.incrementErrorsCount();
 							}
@@ -238,7 +238,7 @@ import lombok.NonNull;
 
 		//
 		// Log the result
-		Loggables.get().addLog("Update invalid result: {}", result.getSummary());
+		Loggables.addLog("Update invalid result: {}", result.getSummary());
 	}
 
 	private final void updateInvalid(final I_C_Invoice_Candidate ic)

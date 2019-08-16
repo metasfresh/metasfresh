@@ -218,7 +218,7 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 			// Log if there were no candidates created for current HU.
 			if (candidatesForHU.isEmpty())
 			{
-				Loggables.get().addLog("No eligible {} records found for hu {}",
+				Loggables.addLog("No eligible {} records found for hu {}",
 						de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.Table_Name,
 						handlingUnitsBL.getDisplayName(hu));
 			}

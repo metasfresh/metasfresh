@@ -135,8 +135,7 @@ public class RemoteServletInvoker implements IJasperServer
 
 	private void writeLog(final String urlStr, final IOException e)
 	{
-		Loggables.get()
-				.withLogger(logger, Level.ERROR)
+		Loggables.withLogger(logger, Level.ERROR)
 				.addLog("Caught {} trying to invoke URL {}; message: {}", e.getClass(), urlStr, e.getMessage());
 	}
 

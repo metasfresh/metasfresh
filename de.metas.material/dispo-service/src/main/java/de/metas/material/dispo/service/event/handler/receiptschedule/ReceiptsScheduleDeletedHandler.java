@@ -72,7 +72,7 @@ public class ReceiptsScheduleDeletedHandler
 		final Candidate candidateToDelete = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
 		if (candidateToDelete == null)
 		{
-			Loggables.get().addLog("No deletable candidate found; query={}", query);
+			Loggables.addLog("No deletable candidate found; query={}", query);
 			return;
 		}
 
@@ -80,13 +80,13 @@ public class ReceiptsScheduleDeletedHandler
 		final boolean candidateHasTransactions = actualQty.signum() > 0;
 		if (candidateHasTransactions)
 		{
-			Loggables.get().addLog("candidateId={} for the deleted receiptScheduleId={} already has actual trasactions",
+			Loggables.addLog("candidateId={} for the deleted receiptScheduleId={} already has actual trasactions",
 					candidateToDelete.getId(), event.getReceiptScheduleId());
 			candidateChangeHandler.onCandidateNewOrChange(candidateToDelete.withQuantity(actualQty));
 		}
 		else
 		{
-			Loggables.get().addLog("candidateId={} for the deleted receiptScheduleId={} can be deleted",
+			Loggables.addLog("candidateId={} for the deleted receiptScheduleId={} can be deleted",
 					candidateToDelete.getId(), event.getReceiptScheduleId());
 			candidateChangeHandler.onCandidateDelete(candidateToDelete);
 		}

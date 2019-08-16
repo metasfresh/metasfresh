@@ -92,7 +92,7 @@ public class FlatrateTermCreator
 				@Override
 				public boolean doCatch(Throwable ex)
 				{
-					Loggables.get().addLog("@Error@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName() + ": " + ex.getLocalizedMessage());
+					Loggables.addLog("@Error@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName() + ": " + ex.getLocalizedMessage());
 					logger.warn("Failed creating contract for {}", partner, ex);
 					throw AdempiereException
 						.wrapIfNeeded(ex)
@@ -102,7 +102,7 @@ public class FlatrateTermCreator
 				@Override
 				public void doFinally()
 				{
-					Loggables.get().addLog("@Processed@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName());
+					Loggables.addLog("@Processed@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName());
 				}
 			});
 		}

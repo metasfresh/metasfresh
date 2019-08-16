@@ -81,7 +81,7 @@ public class DunningExportClientFactoryImpl implements DunningExportClientFactor
 
 		if (!atLeastOneattachmentWasCreatedByForumDatenaustausch)
 		{
-			Loggables.get().addLog("forum_datenaustausch_ch - The dunning with id={} has no attachment with an {}={}-tag",
+			Loggables.addLog("forum_datenaustausch_ch - The dunning with id={} has no attachment with an {}={}-tag",
 					dunning.getId(), requiredAttachmentTagName, requiredAttachmentTagValue);
 			return Optional.empty();
 		}
@@ -94,13 +94,13 @@ public class DunningExportClientFactoryImpl implements DunningExportClientFactor
 		final ExportConfig config = configRepository.getForQueryOrNull(query);
 		if (config == null)
 		{
-			Loggables.get().addLog("forum_datenaustausch_ch - There is no export config for the recipiend-id={} of the invoice with id={}", recipientId, dunning.getId());
+			Loggables.addLog("forum_datenaustausch_ch - There is no export config for the recipiend-id={} of the invoice with id={}", recipientId, dunning.getId());
 			return Optional.empty();
 		}
 		final DunningExportClientImpl client = new DunningExportClientImpl(crossVersionServiceRegistry, config);
 		if (!client.canExport(dunning))
 		{
-			Loggables.get().addLog("forum_datenaustausch_ch - the export-client {} claims that it can't export the dunning with id={}", client.getClass().getSimpleName(), dunning.getId());
+			Loggables.addLog("forum_datenaustausch_ch - the export-client {} claims that it can't export the dunning with id={}", client.getClass().getSimpleName(), dunning.getId());
 			return Optional.empty();
 		}
 
