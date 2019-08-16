@@ -30,7 +30,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@Component("de.metas.ui.web.dataentry.interceptor.DataEntry_ListValue")
+@Component
 @Interceptor(I_DataEntry_ListValue.class)
 public class DataEntry_ListValue
 {

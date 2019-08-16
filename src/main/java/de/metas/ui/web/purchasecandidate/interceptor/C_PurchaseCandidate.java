@@ -34,7 +34,7 @@ import lombok.NonNull;
  */
 
 @Interceptor(I_C_PurchaseCandidate.class)
-@Component("de.metas.ui.web.purchasecandidate.interceptor.C_PurchaseCandidate")
+@Component
 public class C_PurchaseCandidate
 {
 	private final PurchaseCandidateReminderScheduler scheduler;
