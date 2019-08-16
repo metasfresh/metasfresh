@@ -326,7 +326,7 @@ public class TransactionCreatedHandlerTests
 	private TransactionCreatedEventBuilder createTransactionEventBuilderWithQuantity(@NonNull final BigDecimal quantity)
 	{
 		return TransactionCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.transactionId(TRANSACTION_ID)
 				.materialDescriptor(MaterialDescriptor.builder()
 						.date(Instant.parse("2017-10-15T00:00:00.00Z"))
@@ -339,8 +339,7 @@ public class TransactionCreatedHandlerTests
 	private void makeCommonAssertions(final Candidate candidate)
 	{
 		assertThat(candidate).isNotNull();
-		assertThat(candidate.getClientAndOrgId().getClientId().getRepoId()).isEqualTo(10);
-		assertThat(candidate.getOrgId().getRepoId()).isEqualTo(20);
+		assertThat(candidate.getClientAndOrgId()).isEqualTo(CLIENT_AND_ORG_ID);
 		assertThat(candidate.getMaterialDescriptor()).isNotNull();
 		assertThat(candidate.getProductId()).isEqualTo(PRODUCT_ID);
 		assertThat(candidate.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
