@@ -2,7 +2,7 @@ import { PriceList } from '../../support/utils/pricelist';
 import { Pricesystem } from '../../support/utils/pricesystem';
 import { humanReadableNow } from '../../support/utils/utils';
 
-describe('Create a Pricelist with currency CHF and precision 3: https://github.com/metasfresh/metasfresh-e2e/issues/195', function() {
+describe('Create a Pricelist with currency CHF and precision 3', function() {
     const date = humanReadableNow();
     const priceSystemName = `TestPriceSystem ${date}`;
     const priceListName = `TestPriceList ${date}`;
