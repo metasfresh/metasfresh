@@ -109,6 +109,7 @@ Cypress.Commands.add('selectNthRow', (rowNumber, modal = false, force = false) =
 Cypress.Commands.add('expectNumberOfRows', numberOfRows => {
   return cy.get('table tbody tr').should('have.length', numberOfRows);
 });
+
 /**
  * Expect the table rows to be greater than a given number
  *
@@ -118,4 +119,30 @@ Cypress.Commands.add('expectNumberOfRowsToBeGreaterThan', numberOfRows => {
   return cy.get('table tbody tr').should(el => {
     expect(el).to.have.length.greaterThan(numberOfRows);
   });
+});
+
+Cypress.Commands.add('selectRowByColumnAndValue', (columnName, expectedValue, modal = false, force = false) => {
+  cy.log(`Select row by columnName=${columnName} and expectedValue=${expectedValue}`);
+  if (!force) {
+    cy.waitForSaveIndicator();
+  }
+  let path = '.table-flex-wrapper';
+
+  if (modal) {
+    path = '.modal-content-wrapper ' + path;
+  }
+
+  // step 1: figure out from the thead what is the column index
+  return cy
+    .get(path)
+    .contains('thead tr th', columnName)
+    .invoke('index')
+    .then(columnIndex => {
+      // step 2: return the cell which contains the particular soDocNumber in columnNumber from above
+      return cy
+        .get(path)
+        .contains(`tbody td:nth-child(${columnIndex + 1})`, expectedValue)
+        .should('exist')
+        .click();
+    });
 });

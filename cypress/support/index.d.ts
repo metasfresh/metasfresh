@@ -603,6 +603,49 @@ declare namespace Cypress {
      * @param numberOfRows - the number of rows
      */
     expectNumberOfRowsToBeGreaterThan(numberOfRows: number): Chainable<any>
+
+
+    /**
+     * Select the left table from a modal dialog with 2 tables side by side.
+     */
+    selectLeftTable(): Chainable<any>
+
+
+    /**
+     * Select the right table from a modal dialog with 2 tables side by side.
+     */
+    selectRightTable(): Chainable<any>
+
+
+    /**
+     * Runs the action "Open HU selection" window inside the window Picking Terminal (Prototype)
+     */
+    openPickingHUSelectionWindow(): Chainable<any>
+
+
+    /**
+     * Searches and selects a specific row cell of a table by using column name and the expected value of that column.
+     *
+     * @param columnName - name of the column
+     * @param expectedValue - expected value of the column in any row
+     * @param modal - optional, default = false - use true if the field is in a modal overlay
+     * @param force - optional, default = false - use true when no checks should be done if the selection was successful
+     *
+     * @example
+     * // normal usage
+     * cy.selectRowByColumnAndValue('Code', huValue);
+     *
+     * @example
+     * // usage when inside a left/right table (eg. during Picking)
+     * // note that we're using `.within()`
+     * // also note that we're setting `modal=false`, and `force=true` because of within
+     * cy.selectRightTable().within(() => {
+     *   cy.selectRowByColumnAndValue(huCodeColumnName, huValue, false, true);
+     * });
+     */
+    selectRowByColumnAndValue(columnName: string, expectedValue: string | number, modal ?: boolean, force ?: boolean): Chainable<any>
+
+
   }
 
 }

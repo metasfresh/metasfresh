@@ -46,7 +46,7 @@ Cypress.Commands.add('executeQuickAction', (actionName, defaultAction = false, m
     let path = `.quick-actions-wrapper`; // default action
     const requestAlias = `quickAction-${actionName}-${humanReadableNow()}`;
 
-  cy.waitForSaveIndicator();
+    cy.waitForSaveIndicator();
 
     if (modal) {
       path = '.modal-content-wrapper ' + path;
@@ -83,3 +83,12 @@ Cypress.Commands.add('executeQuickAction', (actionName, defaultAction = false, m
     cy.waitForSaveIndicator();
   }
 );
+
+Cypress.Commands.add('openPickingHUSelectionWindow', function() {
+  const layoutAlias = 'layout_' + new Date().getTime();
+  cy.waitForSaveIndicator();
+  cy.server();
+  cy.route('GET', new RegExp(RewriteURL.DocumentLayout)).as(layoutAlias);
+  cy.executeQuickAction('WEBUI_Picking_HUEditor_Launcher', false, true, false);
+  cy.wait(`@${layoutAlias}`);
+});

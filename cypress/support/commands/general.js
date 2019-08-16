@@ -430,3 +430,22 @@ Cypress.Commands.add('openNotificationContaining', (expectedValue, destinationWi
   // hope this is enough for the whole window to load
   cy.waitForSaveIndicator();
 });
+
+Cypress.Commands.add('selectLeftTable', function() {
+  cy.waitForSaveIndicator();
+  cy.get('.modal-content-wrapper .table-flex-wrapper .document-list-table').within(el => {
+    el = el[0].parentElement;
+    return cy.wrap(el);
+  });
+});
+
+Cypress.Commands.add('selectRightTable', function() {
+  cy.waitForSaveIndicator();
+  cy.get('.modal-content-wrapper .table-flex-wrapper .document-list-table').within(el => {
+    el = el[1].parentElement;
+    return cy.wrap(el);
+  });
+});
+
+
+
