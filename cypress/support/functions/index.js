@@ -32,6 +32,13 @@ const confirmCalendarDay = () => {
     .click();
 };
 
+const clearNotFrequentFilters = () => {
+  cy.get('.filters-not-frequent')
+    .click()
+    .find('.filter-clear')
+    .click();
+}
+
 export {
   toggleFrequentFilters,
   toggleNotFrequentFilters,
@@ -39,4 +46,5 @@ export {
   selectNotFrequentFilterWidget,
   applyFilters,
   confirmCalendarDay,
+  clearNotFrequentFilters,
 };
