@@ -14,7 +14,7 @@ import {
   toggleFrequentFilters,
 } from '../../support/functions';
 
-describe('Create Sales order and open Picking Terminal and filter for Date, Product and BPartner', function() {
+describe('Create Sales order, open Picking Terminal and filter for Date, Product and BPartner', function() {
   const date = humanReadableNow();
   const customer1 = `CustomerTest1 ${date}`;
   const productName1 = `ProductTest1 ${date}`;
@@ -56,7 +56,7 @@ describe('Create Sales order and open Picking Terminal and filter for Date, Prod
   it('Open Picking terminal', function() {
     cy.visitWindow('540345');
     toggleFrequentFilters();
-    selectFrequentFilterWidget();
+    selectFrequentFilterWidget(true);
     cy.get('.ranges')
       .find('li')
       .first()

@@ -8,8 +8,10 @@ const toggleNotFrequentFilters = () => {
   cy.get('.filter-menu').should('exist');
 };
 
-const selectFrequentFilterWidget = () => {
-  cy.clickElementWithClass(`.meta-icon-calendar.input-icon-right`, true);
+const selectFrequentFilterWidget = isDate => {
+  if (isDate) {
+    cy.clickElementWithClass(`.meta-icon-calendar.input-icon-right`, true);
+  }
   return cy.get('.filters-frequent .filter-widget');
 };
 
