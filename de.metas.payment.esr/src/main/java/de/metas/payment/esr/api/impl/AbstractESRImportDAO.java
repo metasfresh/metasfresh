@@ -136,7 +136,7 @@ public abstract class AbstractESRImportDAO implements IESRImportDAO
 
 		if (referenceNo == null)
 		{
-			Loggables.get().addLog("Found no C_ReferenceNo record for esrReferenceNumber={}", esrReferenceNumber);
+			Loggables.addLog("Found no C_ReferenceNo record for esrReferenceNumber={}", esrReferenceNumber);
 			return null;
 		}
 

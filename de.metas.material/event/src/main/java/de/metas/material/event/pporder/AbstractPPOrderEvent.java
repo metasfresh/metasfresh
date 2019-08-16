@@ -46,10 +46,7 @@ import lombok.ToString;
 @ToString
 public abstract class AbstractPPOrderEvent implements MaterialEvent
 {
-	@NonNull
 	private final EventDescriptor eventDescriptor;
-
-	@NonNull
 	private final PPOrder ppOrder;
 
 	/**

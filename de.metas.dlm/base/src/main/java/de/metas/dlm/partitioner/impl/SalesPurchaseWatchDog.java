@@ -75,7 +75,7 @@ public class SalesPurchaseWatchDog implements IIterateResultHandler
 		}
 		if (getNotNullReferenceCount() > 1)
 		{
-			Loggables.get().withLogger(logger, Level.WARN).addLog("Records which do not fit together are added to the same result.\n"
+			Loggables.withLogger(logger, Level.WARN).addLog("Records which do not fit together are added to the same result.\n"
 					+ "Signaling the crawler to stop! The records are:\n"
 					+ "IsSOTrx=true, seen at {}: {}\n"
 					+ "IsSOTrx=false, seen at {}: {}\n"

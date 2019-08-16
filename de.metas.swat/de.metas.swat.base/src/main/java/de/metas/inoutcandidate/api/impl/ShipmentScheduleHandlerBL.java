@@ -179,7 +179,7 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 					final OnMissingCandidate listenerResult = l.foundModelWithoutInOutCandidate(model);
 					if (listenerResult == OnMissingCandidate.I_VETO)
 					{
-						Loggables.get().withLogger(logger, Level.DEBUG)
+						Loggables.withLogger(logger, Level.DEBUG)
 								.addLog("IInOutCandHandlerListener {} doesn't want us to create a shipment schedule", l);
 						vetoListeners.add(l);
 					}

@@ -96,7 +96,7 @@ public final class PurchaseDetailRepoHelper
 
 		if (purchaseDetail.getAdvised().isUpdateExistingRecord())
 		{
-			recordToUpdate.setIsAdvised(purchaseDetail.getAdvised().toBoolean());
+			recordToUpdate.setIsAdvised(purchaseDetail.getAdvised().isTrue());
 		}
 
 		// don't set anything to null just because it's missing in a partial purchase detail instance

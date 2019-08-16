@@ -55,7 +55,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.LoggerLoggable;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.StatusBar;
@@ -395,7 +394,7 @@ final class ReadPaymentForm
 	 * @param e event
 	 */
 	@Override
-	public final void actionPerformed(final ActionEvent e)
+	public void actionPerformed(final ActionEvent e)
 	{
 		try
 		{
@@ -407,7 +406,7 @@ final class ReadPaymentForm
 		}
 	}
 
-	private final void actionPerformed0(final ActionEvent e) throws Exception
+	private void actionPerformed0(final ActionEvent e) throws Exception
 	{
 		logger.info("");
 
@@ -434,7 +433,7 @@ final class ReadPaymentForm
 	 */
 	private I_C_Payment_Request paymentRequestTemplate = null;
 
-	private final void readPaymentDocument()
+	private void readPaymentDocument()
 	{
 		final Properties ctx = getCtx();
 
@@ -501,56 +500,51 @@ final class ReadPaymentForm
 		AEnv.showCenterScreen(readPaymentDocumentDialog);
 	}
 
-	private final void enqueueSelection()
+	private void enqueueSelection()
 	{
 		final Properties ctx = getCtx();
 
-		trxManager.run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName)
+		trxManager.run((TrxRunnable)localTrxName -> {
+			final List<I_C_Invoice_Candidate> candidates = getSelectedInvoiceCandidates();
+			if (candidates.isEmpty())
 			{
-				final List<I_C_Invoice_Candidate> candidates = getSelectedInvoiceCandidates();
-				if (candidates.isEmpty())
-				{
-					throw new AdempiereException("@" + IInvoiceCandidateEnqueuer.MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P + "@");
-				}
-
-				//
-				// Generate invoices
-				final Timestamp dateInvoiced = SystemTime.asDayTimestamp();
-				final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-				invoicingParams.setDateInvoiced(dateInvoiced);
-				invoicingParams.setDateAcct(dateInvoiced);
-
-				final boolean storeInvoicesInResult = true;
-				final IInvoiceGenerateResult existingResult = invoiceCandBL.createInvoiceGenerateResult(storeInvoicesInResult);
-
-				final IInvoiceGenerateResult result;
-				try (final IAutoCloseable temporarySetLoggable = Loggables.temporarySetLoggable(LoggerLoggable.of(logger, Level.INFO)))
-				{
-					result = invoiceCandBL.generateInvoices()
-							.setContext(ctx, localTrxName)
-							.setIgnoreInvoiceSchedule(true) // ignoring the schedule because we assume that the iterator will only contain appropriate candidates.
-							.setCollector(existingResult)
-							.setInvoicingParams(invoicingParams)
-							.generateInvoices(candidates.iterator());
-				}
-				//
-				// Create payment requests for each given invoice out of the payment request template
-				for (final I_C_Invoice invoice : result.getC_Invoices())
-				{
-					paymentRequestBL.createPaymentRequest(invoice, getPaymentRequestTemplate());
-				}
-
-				//
-				// Re-validate all invoice candidates involved
-				invoiceCandBL.updateInvalid()
-						.setContext(ctx, localTrxName)
-						.setTaggedWithAnyTag()
-						.setOnlyC_Invoice_Candidates(candidates)
-						.update();
+				throw new AdempiereException("@" + IInvoiceCandidateEnqueuer.MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P + "@");
 			}
+
+			//
+			// Generate invoices
+			final Timestamp dateInvoiced = SystemTime.asDayTimestamp();
+			final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
+			invoicingParams.setDateInvoiced(dateInvoiced);
+			invoicingParams.setDateAcct(dateInvoiced);
+
+			final boolean storeInvoicesInResult = true;
+			final IInvoiceGenerateResult existingResult = invoiceCandBL.createInvoiceGenerateResult(storeInvoicesInResult);
+
+			final IInvoiceGenerateResult result;
+			try (final IAutoCloseable temporarySetLoggable = Loggables.temporarySetLoggable(Loggables.logback(logger, Level.INFO)))
+			{
+				result = invoiceCandBL.generateInvoices()
+						.setContext(ctx, localTrxName)
+						.setIgnoreInvoiceSchedule(true) // ignoring the schedule because we assume that the iterator will only contain appropriate candidates.
+						.setCollector(existingResult)
+						.setInvoicingParams(invoicingParams)
+						.generateInvoices(candidates.iterator());
+			}
+			//
+			// Create payment requests for each given invoice out of the payment request template
+			for (final I_C_Invoice invoice : result.getC_Invoices())
+			{
+				paymentRequestBL.createPaymentRequest(invoice, getPaymentRequestTemplate());
+			}
+
+			//
+			// Re-validate all invoice candidates involved
+			invoiceCandBL.updateInvalid()
+					.setContext(ctx, localTrxName)
+					.setTaggedWithAnyTag()
+					.setOnlyC_Invoice_Candidates(candidates)
+					.update();
 		});
 
 		//
@@ -565,7 +559,7 @@ final class ReadPaymentForm
 	 * @param trxName
 	 * @return selected rows of invoice candidates, with their DateInvoice beeing updated
 	 */
-	private final List<I_C_Invoice_Candidate> getSelectedInvoiceCandidates()
+	private List<I_C_Invoice_Candidate> getSelectedInvoiceCandidates()
 	{
 		final Set<Integer> invoiceCandidateIds = invoiceCandidatesTableModel.getSelectedInvoiceCandidateIds();
 		if (invoiceCandidateIds.isEmpty())
@@ -617,17 +611,10 @@ final class ReadPaymentForm
 		//
 		// Select freshly-created candidate
 		final int createdInvoiceCandidateId = createInvoiceCandidateDialog.getC_Invoice_Candidate_ID();
-		SwingUtilities.invokeLater(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				selectInvoiceCandidates(Collections.singleton(createdInvoiceCandidateId));
-			}
-		});
+		SwingUtilities.invokeLater(() -> selectInvoiceCandidates(Collections.singleton(createdInvoiceCandidateId)));
 	}
 
-	private final void selectInvoiceCandidates(final Collection<Integer> invoiceCandidateIds)
+	private void selectInvoiceCandidates(final Collection<Integer> invoiceCandidateIds)
 	{
 		invoiceCandidatesTableModel.selectRowsByInvoiceCandidateIds(invoiceCandidateIds);
 		updateInfos(false); // do not requery, just refresh all data
@@ -713,7 +700,7 @@ final class ReadPaymentForm
 	 *
 	 * @param requery
 	 */
-	protected final void updateInfos(final boolean requery)
+	protected void updateInfos(final boolean requery)
 	{
 		checkBPartner();
 
@@ -726,7 +713,7 @@ final class ReadPaymentForm
 		updateTotals();
 	}
 
-	private final void updateInvoiceCandidateRows(final boolean requery)
+	private void updateInvoiceCandidateRows(final boolean requery)
 	{
 		//
 		// Retrieve the rows from database if asked.
@@ -744,7 +731,7 @@ final class ReadPaymentForm
 	 * @returns the latest date of all selected invoice candidates.
 	 */
 	@Override
-	protected final Date calculateAllocationDate()
+	protected Date calculateAllocationDate()
 	{
 		return invoiceCandidatesTableModel.getLatestDocumentDateOfSelectedRows();
 	}
@@ -755,13 +742,13 @@ final class ReadPaymentForm
 	 * @returns the latest accounting date of all selected invoice candidates.
 	 */
 	@Override
-	protected final Date calculateDateAcct()
+	protected Date calculateDateAcct()
 	{
 		return invoiceCandidatesTableModel.getLatestDateAcctOfSelectedRows();
 	}
 
 	@Override
-	protected final PaymentAllocationTotals getTotals()
+	protected PaymentAllocationTotals getTotals()
 	{
 		final BigDecimal totalInvoicedAmt = invoiceCandidatesTableModel.getTotalNetAmtToInvoiceOfSelectedRows();
 
@@ -772,7 +759,7 @@ final class ReadPaymentForm
 				.build();
 	}
 
-	private final void setTotalPayExisting(final BigDecimal totalPayExisting)
+	private void setTotalPayExisting(final BigDecimal totalPayExisting)
 	{
 		this._totalPayExisting = totalPayExisting;
 	}

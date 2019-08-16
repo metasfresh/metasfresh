@@ -3,9 +3,8 @@ package de.metas.material.dispo.service.candidatechange.handler;
 import static de.metas.material.dispo.commons.DispoTestUtils.filter;
 import static de.metas.material.dispo.commons.DispoTestUtils.retrieveAllRecords;
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
-import static de.metas.material.event.EventTestHelper.CLIENT_ID;
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static java.math.BigDecimal.ONE;
@@ -103,8 +102,7 @@ public class SupplyCandidateHandlerTest
 
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.SUPPLY)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescriptor)
 				.build();
 		supplyCandiateHandler.onCandidateNewOrChange(candidate);
@@ -136,8 +134,7 @@ public class SupplyCandidateHandlerTest
 
 		final Candidate candidatee = Candidate.builder()
 				.type(CandidateType.SUPPLY)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescriptor)
 				.build();
 
@@ -176,8 +173,7 @@ public class SupplyCandidateHandlerTest
 
 		final Candidate candidatee = Candidate.builder()
 				.type(CandidateType.SUPPLY)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescriptor)
 				.build();
 
@@ -219,8 +215,7 @@ public class SupplyCandidateHandlerTest
 
 		final Candidate olderStockCandidate = Candidate.builder()
 				.type(CandidateType.STOCK)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(olderMaterialDescriptor)
 				.build();
 		candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(olderStockCandidate);
@@ -234,8 +229,7 @@ public class SupplyCandidateHandlerTest
 
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.SUPPLY)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescriptoriptor)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.build();
@@ -286,8 +280,7 @@ public class SupplyCandidateHandlerTest
 
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.SUPPLY)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescriptor)
 				.businessCase(CandidateBusinessCase.PURCHASE)
 				.build();
@@ -318,6 +311,7 @@ public class SupplyCandidateHandlerTest
 	private Candidate createCandidateWithType(@NonNull final CandidateType type)
 	{
 		final Candidate candidate = Candidate.builder()
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.type(type)
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())

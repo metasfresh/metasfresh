@@ -51,7 +51,7 @@ public class PPOrderDemandMatcher implements IMaterialDemandMatcher
 		}
 
 		final I_M_Product product = mrpContext.getM_Product();
-		Loggables.get().addLog(
+		Loggables.addLog(
 				"Product {}_{} is not set to be manufactured; PPOrderDemandMatcher returns false; productPlanning={}; product={}",
 				product.getValue(), product.getName(), productPlanning, product);
 		return false;

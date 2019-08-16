@@ -49,7 +49,7 @@ public class ShipmentSchedulePackingMaterialLineListener implements ModelWithout
 		final I_C_OrderLine ol = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
 		if (ol.isPackagingMaterial())
 		{
-			Loggables.get().addLog("ShipmentSchedulePackingMaterialLineListener - orderLine.isPackagingMaterial=true; return {}; orderLine={}",
+			Loggables.addLog("ShipmentSchedulePackingMaterialLineListener - orderLine.isPackagingMaterial=true; return {}; orderLine={}",
 					OnMissingCandidate.I_VETO, ol);
 			return OnMissingCandidate.I_VETO; // don't create the shipment schedule
 		}

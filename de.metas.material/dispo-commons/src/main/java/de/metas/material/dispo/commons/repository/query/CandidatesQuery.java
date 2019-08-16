@@ -13,6 +13,8 @@ import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -127,7 +129,7 @@ public final class CandidatesQuery
 
 	DemandDetailsQuery parentDemandDetailsQuery;
 
-	int orgId;
+	OrgId orgId;
 
 	CandidateType type;
 
@@ -152,7 +154,7 @@ public final class CandidatesQuery
 	/**
 	 * A supply candidate and its corresponding demand candidate are associated by a common group id.
 	 */
-	int groupId;
+	MaterialDispoGroupId groupId;
 
 	MaterialDescriptorQuery materialDescriptorQuery;
 
@@ -185,13 +187,13 @@ public final class CandidatesQuery
 	public CandidatesQuery(
 			final MaterialDescriptorQuery parentMaterialDescriptorQuery,
 			final DemandDetailsQuery parentDemandDetailsQuery,
-			final int orgId,
+			final OrgId orgId,
 			final CandidateType type,
 			final CandidateBusinessCase businessCase,
 			//final CandidateStatus status,
 			final CandidateId id,
 			final CandidateId parentId,
-			final int groupId,
+			final MaterialDispoGroupId groupId,
 			final MaterialDescriptorQuery materialDescriptorQuery,
 			final boolean matchExactStorageAttributesKey,
 			final ProductionDetailsQuery productionDetailsQuery,

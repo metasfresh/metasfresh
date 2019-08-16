@@ -36,7 +36,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.LoggerLoggable;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
@@ -56,6 +55,7 @@ import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
@@ -91,7 +91,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	// Parameters
 	private Properties _ctx;
 	private IParams _parameters = IParams.NULL;
-	private ILoggable loggable = LoggerLoggable.of(log, Level.INFO);
+	private ILoggable loggable = Loggables.logback(log, Level.INFO);
 
 	@Getter(lazy = true)
 	private final DBFunctions dbFunctions = createDBFunctions();

@@ -14,8 +14,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
@@ -28,6 +31,7 @@ import org.compiere.model.X_AD_Workflow;
 import org.compiere.model.X_C_DocType;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -41,14 +45,22 @@ import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.event.impl.PlainEventBusFactory;
+import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.eventbus.MaterialEventConverter;
+import de.metas.material.event.eventbus.MetasfreshEventBusService;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -80,11 +92,11 @@ public class PPOrderRequestedEventHandlerTests
 	@Rule
 	public final AdempiereTestWatcher watcher = new AdempiereTestWatcher();
 
-	private static final int PPORDER_POJO_GROUPID = 33;
+	private static final MaterialDispoGroupId PPORDER_POJO_GROUPID = MaterialDispoGroupId.ofInt(33);
 
 	private I_PP_Product_Planning productPlanning;
 
-	private I_AD_Org org;
+	private OrgId orgId;
 
 	private I_C_UOM uom;
 
@@ -108,7 +120,7 @@ public class PPOrderRequestedEventHandlerTests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		
+
 		final I_C_Order order = newInstance(I_C_Order.class);
 		save(order);
 
@@ -138,8 +150,9 @@ public class PPOrderRequestedEventHandlerTests
 		productPlanning.setIsDocComplete(true);
 		save(productPlanning);
 
-		org = newInstance(I_AD_Org.class);
-		save(org);
+		final I_AD_Org orgRecord = newInstance(I_AD_Org.class);
+		save(orgRecord);
+		orgId = OrgId.ofRepoId(orgRecord.getAD_Org_ID());
 
 		warehouse = newInstance(I_M_Warehouse.class);
 		save(warehouse);
@@ -184,17 +197,17 @@ public class PPOrderRequestedEventHandlerTests
 				bomMainProduct.getM_AttributeSetInstance_ID());
 
 		ppOrderPojo = PPOrder.builder()
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.ofRepoId(123), orgId))
 				.materialDispoGroupId(PPORDER_POJO_GROUPID)
 				.datePromised(SystemTime.asInstant())
 				.dateStartSchedule(SystemTime.asInstant())
-				.orgId(org.getAD_Org_ID())
-				.plantId(110)
+				.plantId(ResourceId.ofRepoId(110))
 				.orderLineId(orderLine.getC_OrderLine_ID())
 				.productDescriptor(productDescriptor)
 				.productPlanningId(productPlanning.getPP_Product_Planning_ID())
 				.qtyRequired(TEN)
 				.qtyDelivered(ONE)
-				.warehouseId(warehouse.getM_Warehouse_ID())
+				.warehouseId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()))
 				.build();
 
 		ppOrderRequestedEventHandler = new PPOrderRequestedEventHandler(new PPOrderProducer());
@@ -236,7 +249,8 @@ public class PPOrderRequestedEventHandlerTests
 		final PPOrderRequestedEvent ppOrderRequestedEvent = PPOrderRequestedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(0, 10))
 				.dateOrdered(SystemTime.asInstant())
-				.ppOrder(ppOrderPojo).build();
+				.ppOrder(ppOrderPojo)
+				.build();
 
 		final I_PP_Order ppOrder = ppOrderRequestedEventHandler.createProductionOrder(ppOrderRequestedEvent);
 		verifyPPOrder(ppOrder);
@@ -245,11 +259,11 @@ public class PPOrderRequestedEventHandlerTests
 	private void verifyPPOrder(final I_PP_Order ppOrder)
 	{
 		assertThat(ppOrder).isNotNull();
-		assertThat(ppOrder.getAD_Org_ID()).isEqualTo(org.getAD_Org_ID());
+		assertThat(ppOrder.getAD_Org_ID()).isEqualTo(orgId.getRepoId());
 		assertThat(ppOrder.getPP_Product_BOM_ID()).isEqualTo(productPlanning.getPP_Product_BOM_ID());
 
 		final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
-		final I_PP_Product_BOM productBOM = productBOMsRepo.getById(ppOrder.getPP_Product_BOM_ID());
+		final I_PP_Product_BOM productBOM = productBOMsRepo.getById(ProductBOMId.ofRepoId(ppOrder.getPP_Product_BOM_ID()));
 		assertThat(ppOrder.getM_Product_ID()).isEqualTo(productBOM.getM_Product_ID());
 
 		assertThat(ppOrder.getPP_Product_Planning_ID()).isEqualTo(productPlanning.getPP_Product_Planning_ID());
@@ -266,23 +280,22 @@ public class PPOrderRequestedEventHandlerTests
 			assertThat(ppOrder.getDocStatus()).isEqualTo(STATUS_Completed);
 		}
 
-		final Integer groupId = PPOrderPojoConverter.ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.getValue(ppOrder);
+		final MaterialDispoGroupId groupId = PPOrderPojoConverter.getMaterialDispoGroupIdOrNull(ppOrder);
 		assertThat(groupId).isEqualTo(PPORDER_POJO_GROUPID);
 	}
 
 	@Test
 	public void testPPOrderWithLines()
 	{
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new PP_Order(), null); // enable the MI supposed to supplement lines
+		registerPP_Order_Interceptor();  // enable the MI supposed to supplement lines
 
 		final PPOrderRequestedEvent ppOrderRequestedEvent = PPOrderRequestedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(0, 10))
 				.dateOrdered(SystemTime.asInstant())
-				.ppOrder(ppOrderPojo).build();
+				.ppOrder(ppOrderPojo)
+				.build();
 
-		final I_PP_Order ppOrder = ppOrderRequestedEventHandler
-				.createProductionOrder(ppOrderRequestedEvent);
-
+		final I_PP_Order ppOrder = ppOrderRequestedEventHandler.createProductionOrder(ppOrderRequestedEvent);
 		verifyPPOrder(ppOrder);
 
 		final List<I_PP_Order_BOMLine> orderBOMLines = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(ppOrder);
@@ -298,6 +311,20 @@ public class PPOrderRequestedEventHandlerTests
 		final I_PP_Order_BOMLine coProductLine = filter(ppOrder, BOMComponentType.CoProduct).get(0);
 		assertThat(coProductLine.getDescription()).isEqualTo("supposed to become the co-product line");
 		assertThat(coProductLine.getM_Product_ID()).isEqualTo(bomCoProduct.getM_Product_ID());
+	}
+
+	private void registerPP_Order_Interceptor()
+	{
+		final ModelProductDescriptorExtractor productDescriptorFactory = new ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory();
+		final PPOrderPojoConverter ppOrderConverter = new PPOrderPojoConverter(productDescriptorFactory);
+
+		final MaterialEventConverter materialEventConverter = new MaterialEventConverter();
+		final MetasfreshEventBusService materialEventService = MetasfreshEventBusService.createLocalServiceThatIsReadyToUse(
+				materialEventConverter,
+				PlainEventBusFactory.newInstance());
+		final PostMaterialEventService postMaterialEventService = new PostMaterialEventService(materialEventService);
+
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new PP_Order(ppOrderConverter, postMaterialEventService));
 	}
 
 	private List<I_PP_Order_BOMLine> filter(final I_PP_Order ppOrder, final BOMComponentType componentType)

@@ -1,6 +1,8 @@
 package de.metas.material.dispo.commons.candidate;
 
-import de.metas.material.dispo.model.X_MD_Candidate;
+import javax.annotation.Nullable;
+
+import de.metas.document.engine.DocStatus;
 
 /*
  * #%L
@@ -15,20 +17,40 @@ import de.metas.material.dispo.model.X_MD_Candidate;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-/**
- * Please keep in sync with the values of {@link X_MD_Candidate#MD_CANDIDATE_STATUS_AD_Reference_ID}
- */
 public enum CandidateStatus
 {
-	doc_planned, doc_created, doc_completed, doc_closed, unexpected
+	doc_planned, doc_created, doc_completed, doc_closed, unexpected;
+
+	public static CandidateStatus ofDocStatus(@Nullable final DocStatus docStatus)
+	{
+		if (docStatus == null)
+		{
+			return unexpected;
+		}
+		if (docStatus.isDraftedOrInProgress())
+		{
+			return doc_created;
+		}
+		else if (docStatus.isCompleted())
+		{
+			return doc_completed;
+		}
+		else if (docStatus.isClosed())
+		{
+			return doc_closed;
+		}
+		else
+		{
+			return unexpected;
+		}
+	}
 }

@@ -126,7 +126,7 @@ public class PickingRequestedHandler implements MaterialEventHandler<PickingRequ
 
 		final I_M_PickingSlot firstPickingSlot = pickingSlots.get(0);
 
-		Loggables.get().addLog(
+		Loggables.addLog(
 				"Retrieved an available picking slot, because none was set in the event; pickingSlot={}",
 				firstPickingSlot);
 

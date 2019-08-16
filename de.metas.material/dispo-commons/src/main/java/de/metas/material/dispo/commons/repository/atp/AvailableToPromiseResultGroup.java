@@ -8,6 +8,7 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
@@ -46,9 +47,7 @@ import lombok.ToString;
 @Getter
 public final class AvailableToPromiseResultGroup
 {
-	static final int WAREHOUSE_ID_ANY = -1;
-
-	private final int warehouseId;
+	private final WarehouseId warehouseId;
 	private final int productId;
 	private final AttributesKey storageAttributesKey;
 	private final Predicate<AttributesKey> storageAttributesKeyMatcher;
@@ -65,13 +64,13 @@ public final class AvailableToPromiseResultGroup
 
 	@Builder
 	public AvailableToPromiseResultGroup(
-			final int warehouseId,
+			@Nullable final WarehouseId warehouseId,
 			final int productId,
 			@NonNull final AttributesKey storageAttributesKey,
 			@Nullable final Predicate<AttributesKey> storageAttributesKeyMatcher,
 			@NonNull final BPartnerClassifier bpartner)
 	{
-		this.warehouseId = warehouseId > 0 ? warehouseId : WAREHOUSE_ID_ANY;
+		this.warehouseId = warehouseId;
 		this.productId = Check.assumeGreaterThanZero(productId, "productId");
 		this.storageAttributesKey = storageAttributesKey;
 		this.storageAttributesKeyMatcher = storageAttributesKeyMatcher != null
@@ -158,10 +157,10 @@ public final class AvailableToPromiseResultGroup
 		includedRequestKeys.put(computeKey, latest);
 	}
 
-	private boolean isWarehouseMatching(final int warehouseIdToMatch)
+	private boolean isWarehouseMatching(final WarehouseId warehouseIdToMatch)
 	{
-		return warehouseId == WAREHOUSE_ID_ANY
-				|| warehouseId == warehouseIdToMatch;
+		return warehouseId == null
+				|| WarehouseId.equals(warehouseId, warehouseIdToMatch);
 	}
 
 	private boolean isStorageAttributesKeyMatching(final AttributesKey storageAttributesKeyToMatch)

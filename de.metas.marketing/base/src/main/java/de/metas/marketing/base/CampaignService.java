@@ -90,7 +90,7 @@ public class CampaignService
 
 		if (isRequiredMailAddres && Check.isEmpty(user.getEmailAddress(), true))
 		{
-			Loggables.get().addLog("Skip user because it has no email address or campaign does not require mail address; user={}", user);
+			Loggables.addLog("Skip user because it has no email address or campaign does not require mail address; user={}", user);
 			return;
 		}
 
@@ -101,7 +101,7 @@ public class CampaignService
 		if (isRequiredLocation && addressToUse == null )
 		{
 			final String addressTypeForMessage = defaultAddressType != null ? defaultAddressType.toString() : DefaultAddressType.BillToDefault.toString() ;
-			Loggables.get().addLog("Skip user because it has no {} location and the campaign requires location; user={}", addressTypeForMessage,user);
+			Loggables.addLog("Skip user because it has no {} location and the campaign requires location; user={}", addressTypeForMessage,user);
 			return;
 		}
 

@@ -147,7 +147,7 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 		}
 		catch (final MailboxNotFoundException e)
 		{
-			Loggables.get().addLog("DefaultDocOutboundLogMailRecipientProvider - Unable to find a mailbox; exception message: {}", e.getMessage());
+			Loggables.addLog("DefaultDocOutboundLogMailRecipientProvider - Unable to find a mailbox; exception message: {}", e.getMessage());
 			return null;
 		}
 	}

@@ -98,7 +98,7 @@ public class DDOrderPojoSupplier
 		if (productPlanningData.getDD_NetworkDistribution_ID() <= 0)
 		{
 			// Indicates that the Product Planning Data for this product does not specify a valid network distribution.
-			Loggables.get().addLog(
+			Loggables.addLog(
 					"PP_Product_Planning has no DD_NetworkDistribution_ID; {} returns entpy list; productPlanningData={}",
 					this.getClass(), productPlanningData);
 
@@ -112,7 +112,7 @@ public class DDOrderPojoSupplier
 		{
 			// No network lines were found for our target warehouse
 			final I_M_Warehouse warehouseTo = productPlanningData.getM_Warehouse();
-			Loggables.get().addLog(
+			Loggables.addLog(
 					"DD_NetworkDistribution has no lines for target M_Warehouse_ID={}; {} returns entpy list; "
 							+ "networkDistribution={}"
 							+ "warehouseTo={}",
@@ -140,7 +140,7 @@ public class DDOrderPojoSupplier
 			final I_M_Locator locatorFrom = Services.get(IWarehouseBL.class).getDefaultLocator(warehouseFrom);
 			if (locatorFrom == null)
 			{
-				Loggables.get().addLog(
+				Loggables.addLog(
 						"The source warehouse with ID={} has no default locator; {} returns entpy list; "
 								+ "networkLine={}"
 								+ "network={}"
@@ -154,7 +154,7 @@ public class DDOrderPojoSupplier
 			final I_M_Locator locatorTo = Services.get(IWarehouseBL.class).getDefaultLocator(warehouseTo);
 			if (locatorTo == null)
 			{
-				Loggables.get().addLog(
+				Loggables.addLog(
 						"The target warehouse with ID={} has no default locator; {} returns entpy list; "
 								+ "networkLine={}"
 								+ "network={}"
@@ -168,7 +168,7 @@ public class DDOrderPojoSupplier
 			if (warehouseInTrasitId == null)
 			{
 				// DRP-010: Do not exist Transit Warehouse to this Organization
-				Loggables.get().addLog(
+				Loggables.addLog(
 						"No in-transit warehouse found for AD_Org_ID={} of the source warehouse; {} returns entpy list; "
 								+ "networkLine={}"
 								+ "network={}"
@@ -180,7 +180,7 @@ public class DDOrderPojoSupplier
 			// DRP-030: Do not exist Shipper for Create Distribution Order
 			if (networkLine.getM_Shipper_ID() <= 0)
 			{
-				Loggables.get().addLog(
+				Loggables.addLog(
 						"DD_NetworkDistributionLine has no M_Shipper_ID; {} returns entpy list; "
 								+ "networkDistribution={}"
 								+ "networkLine={}",
@@ -195,7 +195,7 @@ public class DDOrderPojoSupplier
 				if (orgBPartnerId <= 0)
 				{
 					// DRP-020: Target Org has no BP linked to it
-					Loggables.get().addLog(
+					Loggables.addLog(
 							"No org-bpartner found for AD_Org_ID={} of target locator; {} returns entpy list; "
 									+ "networkLine={}"
 									+ "network={}"
@@ -208,7 +208,7 @@ public class DDOrderPojoSupplier
 				// Try to find some DD_Order with Shipper , Business Partner and Doc Status = Draft
 				// Consolidate the demand in a single order for each Shipper , Business Partner , DemandDateStartSchedule
 				ddOrderBuilder = DDOrder.builder()
-						.orgId(warehouseTo.getAD_Org_ID())
+						.orgId(OrgId.ofRepoId(warehouseTo.getAD_Org_ID()))
 						.plantId(plant.getS_Resource_ID())
 						.productPlanningId(productPlanningData.getPP_Product_Planning_ID())
 						.datePromised(supplyDateFinishSchedule)

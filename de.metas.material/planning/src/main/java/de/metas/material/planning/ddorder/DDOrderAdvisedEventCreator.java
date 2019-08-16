@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
@@ -89,8 +90,8 @@ public class DDOrderAdvisedEventCreator
 				final DDOrderAdvisedEvent distributionAdvisedEvent = DDOrderAdvisedEvent.builder()
 						.supplyRequiredDescriptor(supplyRequiredDescriptor)
 						.eventDescriptor(supplyRequiredDescriptor.getEventDescriptor())
-						.fromWarehouseId(networkLine.getM_WarehouseSource_ID())
-						.toWarehouseId(networkLine.getM_Warehouse_ID())
+						.fromWarehouseId(WarehouseId.ofRepoId(networkLine.getM_WarehouseSource_ID()))
+						.toWarehouseId(WarehouseId.ofRepoId(networkLine.getM_Warehouse_ID()))
 						.ddOrder(ddOrder)
 						.advisedToCreateDDrder(productPlanningData.isCreatePlan())
 						.pickIfFeasible(productPlanningData.isPickDirectlyIfFeasible())

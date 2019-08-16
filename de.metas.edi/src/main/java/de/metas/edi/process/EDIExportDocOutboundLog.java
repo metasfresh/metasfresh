@@ -184,7 +184,7 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 			// Only EDI-enabled documents
 			if (!ediDocument.isEdiEnabled())
 			{
-				Loggables.get().addLog("Skipping ediDocument={}, because IsEdiEnabled='N'", ediDocument);
+				Loggables.addLog("Skipping ediDocument={}, because IsEdiEnabled='N'", ediDocument);
 				continue;
 			}
 
@@ -193,11 +193,11 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 			// note that there might be a problem with inouts, if we used this process: inOuts might be invalid, but still we want to aggregate them, and then fix stuff in the DESADV record itself
 			if (!I_EDI_Document.EDI_EXPORTSTATUS_Pending.equals(ediDocument.getEDI_ExportStatus()))
 			{
-				Loggables.get().addLog("Skipping ediDocument={}, because EDI_ExportStatus={} is != Pending", new Object[] { ediDocument, ediDocument.getEDI_ExportStatus() });
+				Loggables.addLog("Skipping ediDocument={}, because EDI_ExportStatus={} is != Pending", new Object[] { ediDocument, ediDocument.getEDI_ExportStatus() });
 				continue;
 			}
 
-			Loggables.get().addLog("Adding ediDocument {}", ediDocument);
+			Loggables.addLog("Adding ediDocument {}", ediDocument);
 			filteredDocuments.add(ediDocument);
 		}
 		return filteredDocuments;

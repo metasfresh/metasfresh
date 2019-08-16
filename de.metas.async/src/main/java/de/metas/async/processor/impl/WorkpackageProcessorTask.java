@@ -319,7 +319,7 @@ import lombok.NonNull;
 		final int retryAdvisedInMillis = e.getRetryAdvisedInMillis();
 		if (retryAdvisedInMillis > 0)
 		{
-			Loggables.get().addLog("Caught a {} with an advise to retry in {}ms; ServiceURL={}",
+			Loggables.addLog("Caught a {} with an advise to retry in {}ms; ServiceURL={}",
 					e.getClass().getSimpleName(), retryAdvisedInMillis, e.getServiceURL());
 
 			final WorkpackageSkipRequestException //
@@ -493,7 +493,7 @@ import lombok.NonNull;
 
 		// log error to console (for later audit):
 		logger.info(msg, skipException);
-		Loggables.get().addLog(msg);
+		Loggables.addLog(msg);
 	}
 
 	private void markError(final I_C_Queue_WorkPackage workPackage, final AdempiereException ex)
@@ -526,7 +526,7 @@ import lombok.NonNull;
 		// log error to console (for later audit):
 		final Level logLevel = Services.get(IDeveloperModeBL.class).isEnabled() ? Level.WARN : Level.INFO;
 		LoggingHelper.log(logger, logLevel, "Error while processing workpackage: {}", workPackage, ex);
-		Loggables.get().addLog("Error while processing workpackage: {0}", workPackage);
+		Loggables.addLog("Error while processing workpackage: {0}", workPackage);
 
 		notifyErrorAfterCommit(workPackage, ex);
 	}

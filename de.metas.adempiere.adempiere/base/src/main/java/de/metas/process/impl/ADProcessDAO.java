@@ -427,11 +427,11 @@ public class ADProcessDAO implements IADProcessDAO
 
 		if (wasNew)
 		{
-			Loggables.get().addLog("@Created@ {}", columnName);
+			Loggables.addLog("@Created@ {}", columnName);
 		}
 		else
 		{
-			Loggables.get().addLog("@Updated@ {}", columnName);
+			Loggables.addLog("@Updated@ {}", columnName);
 		}
 
 		//

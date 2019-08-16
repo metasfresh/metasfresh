@@ -172,7 +172,7 @@ class TablePrimaryKeyGenerator
 
 	private void addLog(final String msg, final Object... msgParameters)
 	{
-		Loggables.get().addLog(msg, msgParameters);
+		Loggables.addLog(msg, msgParameters);
 	}
 
 	private final boolean hasColumnPK(final I_AD_Table table)

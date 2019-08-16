@@ -94,7 +94,7 @@ public class StockRepository
 					insertSQL,
 					sqlQuery.getParametersEffective().toArray(),
 					ITrx.TRXNAME_ThreadInherited);
-			Loggables.get().addLog("Inserted {} records with UUID={} into table {}", insertCount, uuid, I_T_MD_Stock_WarehouseAndProduct.Table_Name);
+			Loggables.addLog("Inserted {} records with UUID={} into table {}", insertCount, uuid, I_T_MD_Stock_WarehouseAndProduct.Table_Name);
 
 			return Services
 					.get(IQueryBL.class)
@@ -126,7 +126,7 @@ public class StockRepository
 				.addEqualsFilter(I_T_MD_Stock_WarehouseAndProduct.COLUMN_UUID, uuid)
 				.create()
 				.deleteDirectly();
-		Loggables.get().addLog("Deleted {} records with UUID={} from table {}", deleteCount, uuid, I_T_MD_Stock_WarehouseAndProduct.Table_Name);
+		Loggables.addLog("Deleted {} records with UUID={} from table {}", deleteCount, uuid, I_T_MD_Stock_WarehouseAndProduct.Table_Name);
 	}
 
 	/**
