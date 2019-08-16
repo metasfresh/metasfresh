@@ -4,13 +4,11 @@ import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
@@ -114,8 +112,13 @@ class DeliveredQtysLoaderTest
 		assertThat(result.getShipmentData().getQtyCatch().toBigDecimal()).isEqualByComparingTo("61"); // 42 + 19
 	}
 
+	/**
+	 * Verifies that we tolerate individual {@link I_C_InvoiceCandidate_InOutLine} the have no catch quantities.
+	 * This can happen if we create shipments and a part of the quantity is on-the-fly-picked,
+	 * and we have a quantity override value set in the shipment schedule.
+	 */
 	@Test
-	void loadDeliveredQtys_sales_one_icIol_without_catch_exception()
+	void loadDeliveredQtys_sales_one_icIol_without_catch()
 	{
 		createStandardData();
 		icIol1.setQtyDeliveredInUOM_Catch(null);
@@ -131,9 +134,22 @@ class DeliveredQtysLoaderTest
 				.negateQtys(false)
 				.build();
 
-		assertThatThrownBy(() -> deliveredQtysLoader.loadDeliveredQtys())
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("Either all or none");
+		final DeliveredData result = deliveredQtysLoader.loadDeliveredQtys();
+
+		assertThat(result.getShipmentData().getShippedQtyItems())
+				.extracting("qtyInStockUom.qty", "qtyNominal.qty", "qtyCatch.qty", "qtyOverride.qty")
+				.contains(tuple(TEN, FOUR_HUNDRET, null, null),
+						tuple(FIVE, TWO_HUNDRET, ONE_HUNDRET_NINETY, null));
+
+		assertThat(result.getShipmentData().getQtyInStockUom().getUomId()).isEqualTo(UomIds.ofRecord(stockUomRecord));
+		assertThat(result.getShipmentData().getQtyInStockUom().toBigDecimal()).isEqualByComparingTo("15");
+
+		assertThat(result.getShipmentData().getQtyNominal().getUomId()).isEqualTo(UomIds.ofRecord(icUomRecord));
+		assertThat(result.getShipmentData().getQtyNominal().toBigDecimal()).isEqualByComparingTo("60"); // 40 + 20
+
+		assertThat(result.getShipmentData().getQtyCatch()).isNotNull();
+		assertThat(result.getShipmentData().getQtyCatch().getUomId()).isEqualTo(UomIds.ofRecord(icUomRecord));
+		assertThat(result.getShipmentData().getQtyCatch().toBigDecimal()).isEqualByComparingTo("19"); // null + 19
 	}
 
 	@Test
