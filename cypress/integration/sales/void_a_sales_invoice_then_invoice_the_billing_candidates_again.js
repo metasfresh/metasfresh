@@ -34,6 +34,7 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
   const originalQuantity = 200;
   const shipmentNotificationInboxText = `Lieferung [number] für Partner ${businessPartnerName} wurde erstellt.`;
   const shipmentNotificationModalText = 'Created: 1 WorkPackage Queue;';
+  const shipmentQuantityTypeOption = 'Quantity to deliver';
   const generateInvoicesNotificationModalText =
     'Fakturlauf mit 1 Rechnungen eingeplant. Es sind bereits 0 zu erstellende Rechnungen in der Warteschlange, die vorher verarbeitet werden.';
 
@@ -125,7 +126,7 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
     it('Execute action "Generate shipments', function() {
       cy.readAllNotifications();
       cy.executeHeaderActionWithDialog('M_ShipmentSchedule_EnqueueSelection');
-      cy.selectInListField('QuantityType', 'Quantity to deliver', true, null, true);
+      cy.selectInListField('QuantityType', shipmentQuantityTypeOption, true, null, true);
       cy.setCheckBoxValue('IsCompleteShipments', true, true);
       cy.setCheckBoxValue('IsShipToday', false, true);
       cy.pressStartButton();

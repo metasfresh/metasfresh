@@ -51,7 +51,7 @@ describe('Create Sales order', function() {
     cy.openReferencedDocuments('M_ShipmentSchedule');
     cy.selectNthRow(0).click();
   });
-  it('Generate shipments', function() {
+  it('Run action "Generate shipments"', function() {
     cy.executeQuickAction('M_ShipmentSchedule_EnqueueSelection', false);
     cy.pressStartButton();
     cy.waitUntilProcessIsFinished();

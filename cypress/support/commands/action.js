@@ -46,6 +46,8 @@ Cypress.Commands.add('executeQuickAction', (actionName, defaultAction = false, m
     let path = `.quick-actions-wrapper`; // default action
     const requestAlias = `quickAction-${actionName}-${humanReadableNow()}`;
 
+  cy.waitForSaveIndicator();
+
     if (modal) {
       path = '.modal-content-wrapper ' + path;
     }
