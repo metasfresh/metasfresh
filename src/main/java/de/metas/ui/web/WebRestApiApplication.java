@@ -34,6 +34,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.metas.JsonObjectMapperHolder;
+import de.metas.MetasfreshBeanNameGenerator;
 import de.metas.Profiles;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.session.WebRestApiContextProvider;
@@ -105,6 +106,7 @@ public class WebRestApiApplication
 					.headless(Boolean.parseBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
 					.web(true)
 					.profiles(activeProfiles.toArray(new String[0]))
+					.beanNameGenerator(new MetasfreshBeanNameGenerator())
 					.run(args);
 		}
 
