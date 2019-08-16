@@ -33,7 +33,7 @@ import de.metas.util.Services;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Component("de.metas.freighcost.interceptor.M_FreightCostDetail")
+@Component
 @Callout(I_M_FreightCostDetail.class)
 public class M_FreightCostDetail
 {

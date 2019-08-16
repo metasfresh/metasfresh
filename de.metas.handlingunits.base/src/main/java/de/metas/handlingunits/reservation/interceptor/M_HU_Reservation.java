@@ -38,7 +38,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@Component("de.metas.handlingunits.reservation.interceptor.M_HU_Reservation")
+@Component
 @Interceptor(I_M_HU_Reservation.class)
 public class M_HU_Reservation
 {

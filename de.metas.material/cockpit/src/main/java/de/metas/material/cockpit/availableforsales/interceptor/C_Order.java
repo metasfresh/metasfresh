@@ -39,7 +39,7 @@ import lombok.NonNull;
  */
 
 @Interceptor(I_C_Order.class)
-@Component("de.metas.material.cockpit.availableforsales.interceptor.C_Order")
+@Component
 public class C_Order
 {
 

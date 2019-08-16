@@ -48,7 +48,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@Component("de.metas.contracts.refund.interceptor.C_Invoice_Candidate")
+@Component
 @Interceptor(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate_Manage_Refund_Candidates
 {

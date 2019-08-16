@@ -39,7 +39,7 @@ import lombok.NonNull;
  */
 
 @Interceptor(I_C_OrderLine.class)
-@Component("de.metas.material.cockpit.availableforsales.interceptor.C_OrderLine")
+@Component
 public class C_OrderLine
 {
 	private final AvailableForSalesUtil availableForSalesUtil;

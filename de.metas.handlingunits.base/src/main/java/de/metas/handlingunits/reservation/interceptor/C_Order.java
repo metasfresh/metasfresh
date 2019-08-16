@@ -33,7 +33,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@Component("de.metas.handlingunits.reservation.interceptor.C_Order")
+@Component
 @Interceptor(I_C_Order.class)
 public class C_Order
 {

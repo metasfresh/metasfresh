@@ -30,7 +30,7 @@ import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
 @Callout(I_C_Invoice.class)
-@Component("de.metas.invoice.callout.C_Invoice")
+@Component
 public class C_Invoice
 {
 	public C_Invoice()

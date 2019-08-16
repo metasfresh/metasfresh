@@ -1,5 +1,7 @@
 package de.metas.location.interceptor;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -14,8 +16,6 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import de.metas.util.Services;
-
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -39,7 +39,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  * #L%
  */
 @Interceptor(I_C_Country.class)
-@Component("de.metas.location.model.interceptor.C_Country")
+@Component
 public class C_Country
 {
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)

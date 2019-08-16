@@ -35,7 +35,7 @@ import de.metas.util.Services;
  * #L%
  */
 
-@Component("de.metas.location.geocoding.interceptor.C_Location")
+@Component
 @Interceptor(I_C_Location.class)
 public class C_Location
 {
