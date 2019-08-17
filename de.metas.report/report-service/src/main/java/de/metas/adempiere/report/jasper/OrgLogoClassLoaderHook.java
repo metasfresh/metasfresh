@@ -26,8 +26,8 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.Callable;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_ClientInfo;
@@ -54,22 +54,19 @@ import lombok.NonNull;
  */
 class OrgLogoClassLoaderHook
 {
-	public static final OrgLogoClassLoaderHook ofOrgId(@NonNull final OrgId adOrgId)
+	public static final OrgLogoClassLoaderHook newInstance()
 	{
-		return new OrgLogoClassLoaderHook(adOrgId);
+		return new OrgLogoClassLoaderHook();
 	}
 
 	// services
 	private static final transient Logger logger = LogManager.getLogger(OrgLogoClassLoaderHook.class);
 
-	// Parameters
-	private final OrgId adOrgId;
-
 	//
 	// Org Logo resource matchers
 	private static final String SYSCONFIG_ResourceNameEndsWith = "de.metas.adempiere.report.jasper.OrgLogoClassLoaderHook.ResourceNameEndsWith";
 	private static final String DEFAULT_ResourceNameEndsWith = "de/metas/generics/logo.png";
-	private final Set<String> resourceNameEndsWithMatchers;
+	private final ImmutableSet<String> resourceNameEndsWithMatchers;
 
 	//
 	// Caching (static)
@@ -81,16 +78,16 @@ class OrgLogoClassLoaderHook
 			.additionalTableNameToResetFor(I_AD_OrgInfo.Table_Name) // FRESH-327
 			.additionalTableNameToResetFor(I_C_BPartner.Table_Name) // for C_BPartner.Logo_ID FRESH-356
 			.build();
-	private final Callable<Optional<File>> orgLogoLocalFileLoader;
 
-	private OrgLogoClassLoaderHook(@NonNull final OrgId adOrgId)
+	private final OrgLogoLocalFileLoader orgLogoLocalFileLoader;
+
+	private OrgLogoClassLoaderHook()
 	{
-		this.adOrgId = adOrgId;
 		this.resourceNameEndsWithMatchers = buildResourceNameEndsWithMatchers();
-		this.orgLogoLocalFileLoader = OrgLogoLocalFileLoader.ofOrgId(adOrgId);
+		this.orgLogoLocalFileLoader = OrgLogoLocalFileLoader.newInstance();
 	}
 
-	private static final Set<String> buildResourceNameEndsWithMatchers()
+	private static final ImmutableSet<String> buildResourceNameEndsWithMatchers()
 	{
 		final String resourceNameEndsWithStr = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_ResourceNameEndsWith, DEFAULT_ResourceNameEndsWith);
 		if (Check.isEmpty(resourceNameEndsWithStr, true))
@@ -104,7 +101,9 @@ class OrgLogoClassLoaderHook
 				.splitToList(resourceNameEndsWithStr));
 	}
 
-	public URL getResourceURLOrNull(final String resourceName)
+	public URL getResourceURLOrNull(
+			@NonNull final OrgId adOrgId,
+			@Nullable final String resourceName)
 	{
 		// Skip if it's not about our hooked logo resources
 		if (!isLogoResourceName(resourceName))
@@ -114,7 +113,7 @@ class OrgLogoClassLoaderHook
 
 		//
 		// Get the local logo file
-		final File logoFile = getLogoFile();
+		final File logoFile = getLogoFile(adOrgId);
 		if (logoFile == null)
 		{
 			return null;
@@ -128,20 +127,24 @@ class OrgLogoClassLoaderHook
 		}
 		catch (MalformedURLException e)
 		{
-			logger.warn("Failed converting the local logo file to URL: " + logoFile, e);
+			logger.warn("Failed converting the local logo file to URL: {}", logoFile, e);
 		}
 		return null;
 	}
 
-	private final File getLogoFile()
+	private final File getLogoFile(@NonNull final OrgId adOrgId)
 	{
-		File logoFile = adOrgId2logoLocalFile.get(adOrgId, orgLogoLocalFileLoader).orElse(null);
+		File logoFile = adOrgId2logoLocalFile
+				.getOrLoad(adOrgId, orgLogoLocalFileLoader::loadLogoForOrg)
+				.orElse(null);
 
 		// If logo file does not exist or it's not readable, try recreating it
 		if (logoFile != null && !logoFile.canRead())
 		{
 			adOrgId2logoLocalFile.put(adOrgId, null); // invalidate current cached record
-			logoFile = adOrgId2logoLocalFile.get(adOrgId, orgLogoLocalFileLoader).orElse(null); // get it again
+			logoFile = adOrgId2logoLocalFile
+					.getOrLoad(adOrgId, orgLogoLocalFileLoader::loadLogoForOrg)
+					.orElse(null);
 		}
 
 		return logoFile;

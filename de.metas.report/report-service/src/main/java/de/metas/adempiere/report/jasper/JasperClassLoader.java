@@ -40,6 +40,7 @@ import org.apache.commons.vfs2.VFS;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
@@ -59,7 +60,8 @@ public final class JasperClassLoader extends ClassLoader
 
 	public static final String PLACEHOLDER = "@PREFIX@";
 
-	private String prefix;
+	private final OrgId adOrgId;
+	private String reportsPathPrefix;
 	private boolean alwaysPrependPrefix = false;
 
 	// Hooks
@@ -69,8 +71,9 @@ public final class JasperClassLoader extends ClassLoader
 	{
 		super(parent);
 
-		this.prefix = retrieveReportPrefix(adOrgId);
-		this.logoHook = OrgLogoClassLoaderHook.ofOrgId(adOrgId);
+		this.adOrgId = adOrgId;
+		this.reportsPathPrefix = retrieveReportPrefix(adOrgId);
+		this.logoHook = OrgLogoClassLoaderHook.newInstance();
 	}
 
 	private static String retrieveReportPrefix(@NonNull final OrgId adOrgId)
@@ -79,6 +82,16 @@ public final class JasperClassLoader extends ClassLoader
 		logger.info("Reports Path Prefix: {} (AD_Org_ID={})", reportPrefix, adOrgId);
 
 		return reportPrefix;
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("adOrgId", adOrgId)
+				.add("reportsPathPrefix", reportsPathPrefix)
+				.add("parent", getParent())
+				.toString();
 	}
 
 	@Override
@@ -119,7 +132,7 @@ public final class JasperClassLoader extends ClassLoader
 	@Override
 	public URL getResource(String name)
 	{
-		final URL url = logoHook.getResourceURLOrNull(name);
+		final URL url = logoHook.getResourceURLOrNull(adOrgId, name);
 		if (url != null)
 		{
 			return url;
@@ -217,7 +230,7 @@ public final class JasperClassLoader extends ClassLoader
 	 */
 	private String convertResourceNameToURLString(final String resourceName)
 	{
-		if (Check.isEmpty(prefix))
+		if (Check.isEmpty(reportsPathPrefix))
 		{
 			return resourceName;
 		}
@@ -230,17 +243,17 @@ public final class JasperClassLoader extends ClassLoader
 			if (resourceName.startsWith(PLACEHOLDER + "/"))
 			{
 
-				urlStr.append(resourceName.replace(PLACEHOLDER, prefix));
+				urlStr.append(resourceName.replace(PLACEHOLDER, reportsPathPrefix));
 			}
 			else
 			{
-				if (prefix.endsWith("/"))
+				if (reportsPathPrefix.endsWith("/"))
 				{
-					urlStr.append(resourceName.replace(PLACEHOLDER, prefix));
+					urlStr.append(resourceName.replace(PLACEHOLDER, reportsPathPrefix));
 				}
 				else
 				{
-					urlStr.append(resourceName.replace(PLACEHOLDER, prefix + "/"));
+					urlStr.append(resourceName.replace(PLACEHOLDER, reportsPathPrefix + "/"));
 				}
 			}
 			alwaysPrependPrefix = true;
@@ -254,12 +267,12 @@ public final class JasperClassLoader extends ClassLoader
 			if (matcher.find())
 			{
 
-				prefix = matcher.group(1);
-				urlStr.append(prefix);
+				reportsPathPrefix = matcher.group(1);
+				urlStr.append(reportsPathPrefix);
 
 				final String report = matcher.group(2);
 
-				if (!prefix.endsWith("/") && !report.startsWith("/"))
+				if (!reportsPathPrefix.endsWith("/") && !report.startsWith("/"))
 				{
 					urlStr.append("/");
 				}
@@ -272,9 +285,9 @@ public final class JasperClassLoader extends ClassLoader
 
 		if (alwaysPrependPrefix)
 		{
-			urlStr.append(prefix);
+			urlStr.append(reportsPathPrefix);
 
-			if (!prefix.endsWith("/") && !resourceName.startsWith("/"))
+			if (!reportsPathPrefix.endsWith("/") && !resourceName.startsWith("/"))
 			{
 				urlStr.append("/");
 			}

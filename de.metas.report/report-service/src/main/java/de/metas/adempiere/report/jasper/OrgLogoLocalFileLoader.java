@@ -27,9 +27,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.concurrent.Callable;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.compiere.model.I_AD_ClientInfo;
@@ -39,6 +37,8 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MImage;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+
+import com.google.common.io.BaseEncoding;
 
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.logging.LogManager;
@@ -56,38 +56,45 @@ import lombok.ToString;
  *
  */
 @ToString
-class OrgLogoLocalFileLoader implements Callable<Optional<File>>
+class OrgLogoLocalFileLoader // implements Callable<Optional<File>>
 {
-	public static final OrgLogoLocalFileLoader ofOrgId(@NonNull final OrgId adOrgId)
+	public static final OrgLogoLocalFileLoader newInstance()
 	{
-		return new OrgLogoLocalFileLoader(adOrgId);
+		return new OrgLogoLocalFileLoader();
 	}
 
 	private static final transient Logger logger = LogManager.getLogger(OrgLogoLocalFileLoader.class);
-	
-	private final OrgId adOrgId;
+	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
+	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
+	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
 
-	private OrgLogoLocalFileLoader(@NonNull final OrgId adOrgId)
+	private static final String emptyPNGBase64Encoded = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="; // thanks to http://png-pixel.com/
+	private transient File emptyPNGFile; // lazy
+
+	private OrgLogoLocalFileLoader()
 	{
-		this.adOrgId = adOrgId;
 	}
 
-	@Override
-	public Optional<File> call() throws Exception
+	// @Override
+	public Optional<File> loadLogoForOrg(@NonNull final OrgId adOrgId)
 	{
-		final File logoFile = createAndGetLocalLogoFile();
-		if (logoFile == null)
+		final File logoFile = createAndGetLocalLogoFile(adOrgId);
+		if (logoFile != null)
 		{
-			new AdempiereException("Cannot find logo for " + this + ", please add a logo file to the organization.").throwIfDeveloperModeOrLogWarningElse(logger);
+			return Optional.of(logoFile);
 		}
-		return Optional.ofNullable(logoFile);
+		else
+		{
+			logger.warn("Cannot find logo for {}, please add a logo file to the organization. Returning empty PNG file", this);
+			return Optional.of(getEmptyPNGFile());
+		}
 	}
 
-	private File createAndGetLocalLogoFile()
+	private File createAndGetLocalLogoFile(@NonNull final OrgId adOrgId)
 	{
 		//
 		// Retrieve the logo image
-		final I_AD_Image logo = retrieveLogoImage();
+		final I_AD_Image logo = retrieveLogoImage(adOrgId);
 		if (logo == null || logo.getAD_Image_ID() <= 0)
 		{
 			return null;
@@ -99,7 +106,7 @@ class OrgLogoLocalFileLoader implements Callable<Optional<File>>
 		return logoFile;
 	}
 
-	private final I_AD_Image retrieveLogoImage()
+	private final I_AD_Image retrieveLogoImage(@NonNull final OrgId adOrgId)
 	{
 		if (adOrgId.isAny())
 		{
@@ -112,10 +119,10 @@ class OrgLogoLocalFileLoader implements Callable<Optional<File>>
 		// Get Logo from Org's BPartner
 		// task FRESH-356: get logo also from org's bpartner if is set
 		{
-			final I_AD_Org org = Services.get(IOrgDAO.class).getById(adOrgId);
+			final I_AD_Org org = orgsRepo.getById(adOrgId);
 			if (org != null)
 			{
-				final I_C_BPartner orgBPartner = Services.get(IBPartnerOrgBL.class).retrieveLinkedBPartner(org);
+				final I_C_BPartner orgBPartner = bpartnerOrgBL.retrieveLinkedBPartner(org);
 				if (orgBPartner != null)
 				{
 					final I_AD_Image orgBPartnerLogo = orgBPartner.getLogo();
@@ -129,7 +136,7 @@ class OrgLogoLocalFileLoader implements Callable<Optional<File>>
 
 		//
 		// Get Org Logo
-		final OrgInfo orgInfo = Services.get(IOrgDAO.class).getOrgInfoById(adOrgId);
+		final OrgInfo orgInfo = orgsRepo.getOrgInfoById(adOrgId);
 		final int logoImageId = orgInfo.getLogoImageId();
 		if (logoImageId > 0)
 		{
@@ -139,7 +146,7 @@ class OrgLogoLocalFileLoader implements Callable<Optional<File>>
 		//
 		// Get Tenant level Logo
 		final ClientId adClientId = orgInfo.getClientId();
-		final I_AD_ClientInfo clientInfo = Services.get(IClientDAO.class).retrieveClientInfo(ctx, adClientId.getRepoId());
+		final I_AD_ClientInfo clientInfo = clientsRepo.retrieveClientInfo(ctx, adClientId.getRepoId());
 		I_AD_Image clientLogo = clientInfo.getLogoReport();
 		if (clientLogo == null || clientLogo.getAD_Image_ID() <= 0)
 		{
@@ -152,7 +159,7 @@ class OrgLogoLocalFileLoader implements Callable<Optional<File>>
 		return clientLogo;
 	}
 
-	private final File createTempLogoFile(final I_AD_Image logo)
+	private static final File createTempLogoFile(final I_AD_Image logo)
 	{
 		if (logo == null)
 		{
@@ -165,12 +172,19 @@ class OrgLogoLocalFileLoader implements Callable<Optional<File>>
 			return null;
 		}
 
+		return createTempPNGFile("logo", logoData);
+	}
+
+	private static final File createTempPNGFile(
+			@NonNull final String filenamePrefix,
+			@NonNull byte[] content)
+	{
 		try
 		{
 			final File tempFile = File.createTempFile("logo", ".png");
 			try (final FileOutputStream out = new FileOutputStream(tempFile))
 			{
-				out.write(logoData);
+				out.write(content);
 				out.close();
 			}
 
@@ -179,9 +193,24 @@ class OrgLogoLocalFileLoader implements Callable<Optional<File>>
 		catch (IOException e)
 		{
 			logger.warn("Failed creating the logo temporary file", e);
+			return null;
 		}
-
-		return null;
 	}
 
+	private File getEmptyPNGFile()
+	{
+		File file = this.emptyPNGFile;
+		if (file != null && !file.exists())
+		{
+			file = null;
+		}
+
+		if (file == null)
+		{
+			file = this.emptyPNGFile = createTempPNGFile(
+					"empty",
+					BaseEncoding.base64().decode(emptyPNGBase64Encoded));
+		}
+		return file;
+	}
 }
