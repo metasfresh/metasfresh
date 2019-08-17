@@ -32,7 +32,7 @@ package de.metas.report.server;
 public final class ReportConstants
 {
 	public static final String SYSCONFIG_ReportsServerServlet = "de.metas.adempiere.report.jasper.JRServerServlet";
-	private static final String SYSCONFIG_ReportsServerBaseUrl_DEFAULT = "http://localhost:8080/adempiereJasper";
+	private static final String SYSCONFIG_ReportsServerBaseUrl_DEFAULT = "http://localhost:8585/adempiereJasper";
 	public static final String SYSCONFIG_ReportsServerServlet_DEFAULT = SYSCONFIG_ReportsServerBaseUrl_DEFAULT + "/ReportServlet";
 
 	public static final String SYSCONFIG_BarcodeServlet = "de.metas.adempiere.report.barcode.BarcodeServlet";
