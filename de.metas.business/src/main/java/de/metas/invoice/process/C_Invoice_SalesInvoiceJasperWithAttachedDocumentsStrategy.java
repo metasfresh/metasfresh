@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 import com.google.common.collect.ImmutableList;
 
 import ch.qos.logback.classic.Level;
-import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
@@ -24,6 +23,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.report.ExecuteReportStrategy;
 import de.metas.report.ExecuteReportStrategyUtil;
 import de.metas.report.ExecuteReportStrategyUtil.PdfDataProvider;
+import de.metas.report.server.OutputType;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;

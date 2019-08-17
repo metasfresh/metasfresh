@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import ch.qos.logback.classic.Level;
-import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.dunning.DunningDocId;
 import de.metas.dunning.invoice.DunningService;
 import de.metas.logging.LogManager;
@@ -22,6 +21,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.report.ExecuteReportStrategy;
 import de.metas.report.ExecuteReportStrategyUtil;
 import de.metas.report.ExecuteReportStrategyUtil.PdfDataProvider;
+import de.metas.report.server.OutputType;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;

@@ -34,10 +34,10 @@ import java.net.URL;
 
 import org.junit.Ignore;
 
+import de.metas.report.server.OutputType;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
-import de.metas.adempiere.report.jasper.OutputType;
 
 @Ignore
 public class TestJasperPrint

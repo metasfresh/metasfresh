@@ -48,7 +48,7 @@ import de.metas.util.StringUtils;
 
 @SpringBootApplication(scanBasePackages = { "de.metas" })
 @ServletComponentScan(value = { "de.metas.adempiere.report.jasper.servlet" })
-@Profile(Profiles.PROFILE_JasperService)
+@Profile(Profiles.PROFILE_ReportService)
 public class ReportServiceMain
 {
 	@Autowired
@@ -71,7 +71,7 @@ public class ReportServiceMain
 			new SpringApplicationBuilder(ReportServiceMain.class)
 					.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
 					.web(true)
-					.profiles(Profiles.PROFILE_JasperService)
+					.profiles(Profiles.PROFILE_ReportService)
 					.beanNameGenerator(new MetasfreshBeanNameGenerator())
 					.run(args);
 		}

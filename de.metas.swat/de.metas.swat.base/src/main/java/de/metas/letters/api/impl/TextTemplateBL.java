@@ -40,7 +40,6 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.annotation.CacheCtx;
@@ -61,7 +60,8 @@ import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
-import de.metas.report.jasper.client.JRClient;
+import de.metas.report.client.ReportsClient;
+import de.metas.report.server.OutputType;
 import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 
@@ -186,8 +186,8 @@ public final class TextTemplateBL implements ITextTemplateBL
 
 		createLetterSpoolRecord(jasperProcessInfo.getPinstanceId(), request, jasperProcessInfo.getAD_Client_ID());
 
-		final JRClient jrClient = JRClient.get();
-		final byte[] pdf = jrClient.report(jasperProcessInfo);
+		final ReportsClient reportsClient = ReportsClient.get();
+		final byte[] pdf = reportsClient.report(jasperProcessInfo);
 
 		return pdf;
 	}

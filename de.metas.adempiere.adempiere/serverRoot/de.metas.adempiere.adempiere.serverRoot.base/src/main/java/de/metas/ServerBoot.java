@@ -105,7 +105,7 @@ public class ServerBoot implements InitializingBean
 
 			final ArrayList<String> activeProfiles = retrieveActiveProfilesFromSysConfig();
 			activeProfiles.add(Profiles.PROFILE_App);
-			activeProfiles.add(Profiles.PROFILE_JasperService);
+			activeProfiles.add(Profiles.PROFILE_ReportService);
 			activeProfiles.add(Profiles.PROFILE_PrintService);
 			activeProfiles.add(Profiles.PROFILE_AccountingService);
 

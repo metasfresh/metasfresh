@@ -20,7 +20,6 @@ import org.compiere.util.Env;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.report.jasper.JasperConstants;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
@@ -34,6 +33,7 @@ import de.metas.process.AdProcessId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
+import de.metas.report.server.ReportConstants;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -226,7 +226,7 @@ public class HUReportExecutor
 				.setWindowNo(request.getWindowNo())
 				.setTableName(I_M_HU.Table_Name)
 				.setReportLanguage(reportLanguageToUse)
-				.addParameter(JasperConstants.REPORT_PARAM_BARCODE_URL, ReportEngine.getBarcodeServlet(ctx))
+				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, ReportEngine.getBarcodeServlet(ctx))
 				.addParameter(IPrintService.PARAM_PrintCopies, request.getCopies())
 				.setPrintPreview(request.getPrintPreview())
 				//

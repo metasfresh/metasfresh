@@ -20,11 +20,11 @@ import org.compiere.util.Evaluatees;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.report.engine.AbstractReportEngine;
-import de.metas.report.engine.ReportContext;
+import de.metas.report.server.AbstractReportEngine;
+import de.metas.report.server.OutputType;
+import de.metas.report.server.ReportContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
