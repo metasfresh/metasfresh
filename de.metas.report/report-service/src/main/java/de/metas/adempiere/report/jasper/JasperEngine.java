@@ -97,9 +97,8 @@ public class JasperEngine extends AbstractReportEngine
 	private static final String PARAM_OUTPUTTYPE = "OUTPUTTYPE";
 
 	// services
+	private static final Logger logger = LogManager.getLogger(JasperEngine.class);
 	private final JsonDataSourceService jsonDSService = SpringContextHolder.instance.getBean(JsonDataSourceService.class);
-
-	private final transient Logger log = LogManager.getLogger(getClass());
 
 	@Override
 	public void report(@NonNull final ReportContext reportContext, @NonNull final OutputStream out)
@@ -128,7 +127,7 @@ public class JasperEngine extends AbstractReportEngine
 
 	private JasperPrint createJasperPrint(final ReportContext reportContext) throws JRException
 	{
-		log.info("{}", reportContext);
+		logger.debug("Creating jasper print for {}", reportContext);
 
 		//
 		// Get the classloader to be used when loading jasper resources
@@ -156,7 +155,7 @@ public class JasperEngine extends AbstractReportEngine
 				// Create jasper's JDBC connection
 				conn = getConnection();
 				final String sqlQueryInfo = "jasper main report=" + jasperReport.getProperty(JRPROPERTY_ReportPath)
-				+ ", AD_PInstance_ID=" + reportContext.getPinstanceId();
+						+ ", AD_PInstance_ID=" + reportContext.getPinstanceId();
 
 				final String securityWhereClause;
 				if (reportContext.isApplySecuritySettings())
@@ -193,8 +192,8 @@ public class JasperEngine extends AbstractReportEngine
 		{
 			// load the jasper file(s) using an ordinary class loader.
 			final String name = reportPath.substring("resource:".length()).trim();
-			log.info("reportPath = " + reportPath);
-			log.info("getting resource from = " + jasperLoader.getResource(name));
+			logger.debug("reportPath = {}", reportPath);
+			// logger.debug("getting resource from = {}", jasperLoader.getResource(name));
 
 			jasperInputStream = jasperLoader.getResourceAsStream(name);
 		}
@@ -278,7 +277,7 @@ public class JasperEngine extends AbstractReportEngine
 
 			//
 			// We must provide the json as parameter input stream
-			// See  https://stackoverflow.com/questions/33300592/how-to-fill-report-using-json-datasource-without-getting-null-values/33301039
+			// See https://stackoverflow.com/questions/33300592/how-to-fill-report-using-json-datasource-without-getting-null-values/33301039
 			// See http://jasperreports.sourceforge.net/sample.reference/jsondatasource/
 			final InputStream is = jsonDSService.getInputStream(reportContext);
 			jrParameters.put(JsonQLQueryExecuterFactory.JSON_INPUT_STREAM, is);
@@ -495,7 +494,7 @@ public class JasperEngine extends AbstractReportEngine
 		}
 		catch (final Exception e)
 		{
-			log.warn("Failed loading resource bundle for base name: " + resourceBundleName + ", " + locale + ". Skipping", e);
+			logger.warn("Failed loading resource bundle for base name: {}, {}. Skipping", resourceBundleName, locale, e);
 		}
 
 		return false; // not loaded
