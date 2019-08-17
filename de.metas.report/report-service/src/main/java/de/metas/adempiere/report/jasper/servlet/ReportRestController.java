@@ -23,7 +23,7 @@ public class ReportRestController
 {
 	public static final String ENDPOINT = JasperServerConstants.SERVLET_ROOT + "/ReportServlet";
 
-	private LocalJasperServer server = new LocalJasperServer();
+	private final LocalJasperServer server = new LocalJasperServer();
 
 	@GetMapping
 	public ResponseEntity<byte[]> report( //
