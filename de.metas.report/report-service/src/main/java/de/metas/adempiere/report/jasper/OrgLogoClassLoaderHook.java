@@ -52,9 +52,9 @@ import lombok.NonNull;
  * @author tsa
  *
  */
-class OrgLogoClassLoaderHook
+final class OrgLogoClassLoaderHook
 {
-	public static final OrgLogoClassLoaderHook newInstance()
+	public static OrgLogoClassLoaderHook newInstance()
 	{
 		return new OrgLogoClassLoaderHook();
 	}
@@ -87,7 +87,7 @@ class OrgLogoClassLoaderHook
 		this.orgLogoLocalFileLoader = OrgLogoLocalFileLoader.newInstance();
 	}
 
-	private static final ImmutableSet<String> buildResourceNameEndsWithMatchers()
+	private static ImmutableSet<String> buildResourceNameEndsWithMatchers()
 	{
 		final String resourceNameEndsWithStr = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_ResourceNameEndsWith, DEFAULT_ResourceNameEndsWith);
 		if (Check.isEmpty(resourceNameEndsWithStr, true))
@@ -132,7 +132,7 @@ class OrgLogoClassLoaderHook
 		return null;
 	}
 
-	private final File getLogoFile(@NonNull final OrgId adOrgId)
+	private File getLogoFile(@NonNull final OrgId adOrgId)
 	{
 		File logoFile = adOrgId2logoLocalFile
 				.getOrLoad(adOrgId, orgLogoLocalFileLoader::loadLogoForOrg)

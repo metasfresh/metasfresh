@@ -56,9 +56,9 @@ import lombok.ToString;
  *
  */
 @ToString
-class OrgLogoLocalFileLoader // implements Callable<Optional<File>>
+final class OrgLogoLocalFileLoader
 {
-	public static final OrgLogoLocalFileLoader newInstance()
+	public static OrgLogoLocalFileLoader newInstance()
 	{
 		return new OrgLogoLocalFileLoader();
 	}
@@ -106,7 +106,7 @@ class OrgLogoLocalFileLoader // implements Callable<Optional<File>>
 		return logoFile;
 	}
 
-	private final I_AD_Image retrieveLogoImage(@NonNull final OrgId adOrgId)
+	private I_AD_Image retrieveLogoImage(@NonNull final OrgId adOrgId)
 	{
 		if (adOrgId.isAny())
 		{
@@ -159,7 +159,7 @@ class OrgLogoLocalFileLoader // implements Callable<Optional<File>>
 		return clientLogo;
 	}
 
-	private static final File createTempLogoFile(final I_AD_Image logo)
+	private static File createTempLogoFile(final I_AD_Image logo)
 	{
 		if (logo == null)
 		{
@@ -175,7 +175,7 @@ class OrgLogoLocalFileLoader // implements Callable<Optional<File>>
 		return createTempPNGFile("logo", logoData);
 	}
 
-	private static final File createTempPNGFile(
+	private static File createTempPNGFile(
 			@NonNull final String filenamePrefix,
 			@NonNull byte[] content)
 	{
