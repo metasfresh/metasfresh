@@ -55,8 +55,8 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.report.server.AbstractReportEngine;
-import de.metas.report.server.ReportConstants;
 import de.metas.report.server.OutputType;
+import de.metas.report.server.ReportConstants;
 import de.metas.report.server.ReportContext;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.permissions.Access;
@@ -132,11 +132,10 @@ public class JasperEngine extends AbstractReportEngine
 
 		//
 		// Get the classloader to be used when loading jasper resources
-		final Properties ctx = reportContext.getCtx();
 		final ClassLoader jasperLoader = createReportClassLoader(reportContext);
 
 		final Map<String, Object> jrParameters = createJRParameters(reportContext);
-		final JasperReport jasperReport = createJasperReport(ctx, reportContext.getAD_Process_ID(), jrParameters, jasperLoader);
+		final JasperReport jasperReport = createJasperReport(reportContext.getAD_Process_ID(), jrParameters, jasperLoader);
 
 		// JSON Data source
 		if (jsonDSService.isJasperJSONReport(reportContext))
@@ -185,7 +184,10 @@ public class JasperEngine extends AbstractReportEngine
 		}
 	}
 
-	private final JasperReport createJasperReport(final Properties ctx, final AdProcessId adProcessId, final Map<String, Object> jrParameters, final ClassLoader jasperLoader) throws JRException
+	private final JasperReport createJasperReport(
+			final AdProcessId adProcessId,
+			final Map<String, Object> jrParameters,
+			final ClassLoader jasperLoader) throws JRException
 	{
 		final String reportPath = getReportPath(adProcessId, jrParameters);
 		final InputStream jasperInputStream;

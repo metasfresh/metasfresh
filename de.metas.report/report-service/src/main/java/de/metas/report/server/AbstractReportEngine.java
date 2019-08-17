@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.List;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -61,7 +60,7 @@ public abstract class AbstractReportEngine implements IReportEngine
 			parentClassLoader = contextClassLoader;
 		}
 
-		final OrgId adOrgId = Env.getOrgId(reportContext.getCtx());
+		final OrgId adOrgId = reportContext.getOrgId();
 		final JasperClassLoader jasperLoader = new JasperClassLoader(adOrgId, parentClassLoader);
 		logger.debug("Created jasper loader: {}", jasperLoader);
 		return jasperLoader;

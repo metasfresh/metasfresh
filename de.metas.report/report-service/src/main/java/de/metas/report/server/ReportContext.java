@@ -9,6 +9,7 @@ import org.compiere.util.Env;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
@@ -33,11 +34,11 @@ import lombok.NonNull;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -107,6 +108,11 @@ public final class ReportContext
 	public Properties getCtx()
 	{
 		return ctx;
+	}
+
+	public OrgId getOrgId()
+	{
+		return Env.getOrgId(getCtx());
 	}
 
 	public String getReportTemplatePath()
@@ -254,7 +260,6 @@ public final class ReportContext
 			return this;
 		}
 
-
 		public Builder setRecord(final int AD_Table_ID, final int Record_ID)
 		{
 			this.AD_Table_ID = AD_Table_ID;
@@ -279,8 +284,6 @@ public final class ReportContext
 			this.applySecuritySettings = applySecuritySettings;
 			return this;
 		}
-
-
 
 		private List<ProcessInfoParameter> getProcessInfoParameters()
 		{
