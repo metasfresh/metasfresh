@@ -244,7 +244,9 @@ class TableFilter extends Component {
                     key={`top-action-${action.processId}`}
                   >
                     <Tooltips
-                      name={action.shortcut ? action.shortcut.replace('-', '+') : ''}
+                      name={
+                        action.shortcut ? action.shortcut.replace('-', '+') : ''
+                      }
                       action={action.caption}
                       type={''}
                     />
