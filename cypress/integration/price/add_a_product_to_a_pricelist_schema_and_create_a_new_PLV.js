@@ -20,33 +20,33 @@
  * #L%
  */
 
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 import { PriceListSchema, PriceListSchemaLine } from '../../support/utils/price_list_schema';
 import { Builder } from '../../support/utils/builder';
 import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
 import { ProductPrices } from '../../page_objects/product_prices';
 import { PriceList, PriceListVersion } from '../../support/utils/pricelist';
 
-const date = humanReadableNow();
-
 // Price
-const priceSystemName = `PriceSystem_${date}`;
-const priceListVersionName = `PriceListVersion_${date}`;
-const priceListName = `PriceList_${date}`;
-const priceListSchemaVersionName = `PriceListSchemaVersion_${date}`;
-const priceListVersion2ValidFrom = '01/02/2019';
-const priceListVersionNameSearch1 = new RegExp(priceListName + '.*' + '2019-01-01$'); // magic from fixture (PLV doesn't have standard name :( )
-const priceListVersionNameSearch2 = new RegExp(priceListName + '.*' + '2019-01-02$'); // magic from fixture (PLV doesn't have standard name :( )
+let priceSystemName;
+let priceListName;
+let priceListVersionName;
+
+let priceListSchemaVersionName;
+let priceListVersion2ValidFrom;
+
+let priceListVersionNameSearch1; // magic from fixture (PLV doesnt have standard name :( )"
+let priceListVersionNameSearch2; // magic from fixture (PLV doesnt have standard name :( )"
 
 // Product
-const categoryName = `Category_${date}`;
-const productName1 = `Product1 ${date}`;
-const productName2 = `Product2 ${date}`;
-const productType = 'Item';
+let categoryName;
+let productName1;
+let productName2;
+let productType;
 
 // Price List Schema
-const priceListSchemaName = `PriceListSchema_${date}`;
-const surchargeAmount = 222;
+let priceListSchemaName;
+let surchargeAmount;
 
 // test
 let priceListID;
@@ -56,7 +56,33 @@ let originalPriceList;
 let originalUOM;
 let originalTaxCategory;
 
+it('Read fixture and prepare the names', function() {
+  cy.fixture('price/add_a_product_to_a_pricelist_schema_and_create_a_new_PLV.json').then(f => {
+    priceSystemName = appendHumanReadableNow(f['priceSystemName']);
+    priceListName = appendHumanReadableNow(f['priceListName']);
+    priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
+
+    priceListSchemaVersionName = appendHumanReadableNow(f['priceListSchemaVersionName']);
+    priceListVersion2ValidFrom = f['priceListVersion2ValidFrom'];
+
+    priceListVersionNameSearch1 = new RegExp(f['priceListVersionNameSearch1']);
+    priceListVersionNameSearch2 = new RegExp(f['priceListVersionNameSearch2']);
+
+    categoryName = appendHumanReadableNow(f['categoryName']);
+    productName1 = appendHumanReadableNow(f['productName1']);
+    productName2 = appendHumanReadableNow(f['productName2']);
+    productType = f['productType'];
+
+    priceListSchemaName = appendHumanReadableNow(f['priceListSchemaName']);
+    surchargeAmount = f['surchargeAmount'];
+  });
+});
+
 describe('Create Price and Products', function() {
+  it('reaaaaaalyyyyyyyyy', function() {
+    cy.wait(5000);
+  });
+
   it('Create Price', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, false);
 
