@@ -22,14 +22,14 @@
 
 /// <reference types="Cypress" />
 
-import {getLanguageSpecific, humanReadableNow} from '../../support/utils/utils';
-import {salesInvoices} from '../../page_objects/sales_invoices';
-import {Builder} from '../../support/utils/builder';
-import {DiscountSchema} from '../../support/utils/discountschema';
-import {Bank} from '../../support/utils/bank';
-import {BPartner} from '../../support/utils/bpartner';
-import {SalesInvoice, SalesInvoiceLine} from '../../support/utils/sales_invoice';
-import {DocumentActionKey, DocumentStatusKey, RewriteURL} from '../../support/utils/constants';
+import { humanReadableNow } from '../../support/utils/utils';
+import { salesInvoices } from '../../page_objects/sales_invoices';
+import { Builder } from '../../support/utils/builder';
+import { DiscountSchema } from '../../support/utils/discountschema';
+import { Bank } from '../../support/utils/bank';
+import { BPartner } from '../../support/utils/bpartner';
+import { SalesInvoice, SalesInvoiceLine } from '../../support/utils/sales_invoice';
+import { DocumentStatusKey, RewriteURL } from '../../support/utils/constants';
 
 describe('Create a Credit memo for Sales Invoice', function() {
   const date = humanReadableNow();
@@ -39,7 +39,6 @@ describe('Create a Credit memo for Sales Invoice', function() {
   let originalPriceList;
   let originalCurrency;
   let originalProduct;
-  let originalSalesInvoiceTotalAmount;
   let originalSalesInvoiceID;
 
   // data for "before" section
@@ -91,34 +90,12 @@ describe('Create a Credit memo for Sales Invoice', function() {
   });
 
   it('Prepare sales invoice', function() {
-    cy.fixture('sales/sales_invoice.json').then(salesInvoiceJson => {
-      new SalesInvoice(bPartnerName, salesInvoiceTargetDocumentType)
-        .addLine(
-          new SalesInvoiceLine().setProduct(productName).setQuantity(originalQuantity)
-          // todo @dh: how to add packing item
-          // .setPackingItem('IFCO 6410 x 10 Stk')
-          // .setTuQuantity(2)
-        )
-        // .addLine(
-        // todo @dh: how to add this line which depends on the packing item?
-        //   new SalesInvoiceLine()
-        //     .setProduct('IFCO 6410_P001512')
-        //     .setQuantity(2)
-        // )
-        .setPriceList(priceListName)
-        .setDocumentAction(getLanguageSpecific(salesInvoiceJson, DocumentActionKey.Complete))
-        .setDocumentStatus(getLanguageSpecific(salesInvoiceJson, DocumentStatusKey.Completed))
-        .apply();
-    });
+    new SalesInvoice(bPartnerName, salesInvoiceTargetDocumentType)
+      .addLine(new SalesInvoiceLine().setProduct(productName).setQuantity(originalQuantity))
+      .setPriceList(priceListName)
+      .apply();
+    cy.completeDocument();
 
-    // this is stupid. it seems that with cypress you can ONLY read the alias in the same "it" block. so i cannot retrieve my aliases
-    // in an organised (to be read "sane") fashion inside 'Save values needed for the next step', but must do it here, even though
-    // this step should only create the SI.
-    // WAT??!!
-    cy.get('@newInvoiceDocumentId').then(function({ documentId /* this is destructuring */ }) {
-      originalSalesInvoiceID = documentId;
-      cy.log(`originalSalesInvoiceID is ${originalSalesInvoiceID}`);
-    });
     cy.readAllNotifications();
   });
 
@@ -127,13 +104,12 @@ describe('Create a Credit memo for Sales Invoice', function() {
   });
 
   it('Sales Invoice is not paid', function() {
-    cy.getCheckboxValue('IsPaid').then(checkBoxValue => {
-      cy.log(`IsPaid = ${checkBoxValue}`);
-      assert.equal(checkBoxValue, false);
-    });
+    cy.expectCheckboxValue('IsPaid', false);
   });
 
   it('Save values needed for the next step', function() {
+    cy.getCurrentWindowRecordId().then(id => (originalSalesInvoiceID = id));
+
     cy.getStringFieldValue('DocumentNo').then(documentNumber => {
       originalSalesInvoiceNumber = documentNumber;
     });
@@ -151,10 +127,6 @@ describe('Create a Credit memo for Sales Invoice', function() {
     cy.openAdvancedEdit();
     cy.getStringFieldValue('M_Product_ID', true).then(product => {
       originalProduct = product;
-    });
-
-    cy.get('.header-breadcrumb-sitename').then(si => {
-      originalSalesInvoiceTotalAmount = parseFloat(si.html().split(' ')[2]); // the format is "DOC_NO MM/DD/YYYY total"
     });
     cy.pressDoneButton();
   });
@@ -215,38 +187,15 @@ describe('Create a Credit memo for Sales Invoice', function() {
   });
 
   it('Complete the Credit Memo SI', function() {
-    // complete it and verify the status
-    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      cy.processDocument(
-        getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
-        getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
-      );
-    });
-  });
-
-  it('Total amount should be lower than the original SI', function() {
-    let newTotalAmount = 0;
-    it('Save the new total amount', function() {
-      cy.get('.header-breadcrumb-sitename').then(function(si) {
-        newTotalAmount = parseFloat(si.html().split(' ')[2]); // the format is "DOC_NO MM/DD/YYYY total"
-      });
-    });
-
-    expect(newTotalAmount).lessThan(originalSalesInvoiceTotalAmount);
+    cy.completeDocument();
   });
 
   it('Credit Memo SI is paid', function() {
-    cy.getCheckboxValue('IsPaid').then(checkBoxValue => {
-      cy.log(`IsPaid = ${checkBoxValue}`);
-      assert.equal(checkBoxValue, true);
-    });
+    cy.expectCheckboxValue('IsPaid', true);
   });
 
   it('Original Sales Invoice is paid', function() {
     cy.visitWindow('167', originalSalesInvoiceID);
-    cy.getCheckboxValue('IsPaid').then(checkBoxValue => {
-      cy.log(`IsPaid = ${checkBoxValue}`);
-      assert.equal(checkBoxValue, true);
-    });
+    cy.expectCheckboxValue('IsPaid', true);
   });
 });

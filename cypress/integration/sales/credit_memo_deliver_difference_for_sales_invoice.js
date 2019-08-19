@@ -22,13 +22,11 @@
 
 /// <reference types="Cypress" />
 
-import { getLanguageSpecific } from '../../support/utils/utils';
 import { salesInvoices } from '../../page_objects/sales_invoices';
 import { SalesInvoice, SalesInvoiceLine } from '../../support/utils/sales_invoice';
-import { DocumentActionKey, DocumentStatusKey, RewriteURL } from '../../support/utils/constants';
+import { DocumentStatusKey, RewriteURL } from '../../support/utils/constants';
 
 describe('Create a Credit memo deliver difference for Sales Invoice', function() {
-
   const creditMemoDeliverDiff = 'Credit Memo - Deliver Diff';
   let originalSalesInvoiceNumber;
   let originalPriceList;
@@ -43,42 +41,11 @@ describe('Create a Credit memo deliver difference for Sales Invoice', function()
   const salesInvoiceTargetDocumentType = 'Sales Invoice';
   let originalQuantity = 20;
 
-  before(function() {
-    // This wait is stupid.
-    // It also appears to be a good workaround for the problems in
-    // cypress/support/utils/utils.js:1
-    cy.wait(5000);
-  });
-
   it('Prepare sales invoice', function() {
-    cy.fixture('sales/sales_invoice.json').then((salesInvoiceJson) => {
-      new SalesInvoice('Test Lieferant 1', salesInvoiceTargetDocumentType)
-        .addLine(
-          new SalesInvoiceLine().setProduct('Convenience Salat 250g').setQuantity(originalQuantity)
-          // todo @dh: how to add a "per test" packing item
-          // .setPackingItem('IFCO 6410 x 10 Stk')
-          // .setTuQuantity(2)
-        )
-        // .addLine(
-        // todo @dh: how to add this line which depends on the packing item?
-        //   new SalesInvoiceLine()
-        //     .setProduct('IFCO 6410_P001512')
-        //     .setQuantity(2)
-        // )
-        // .setPriceList(priceListName)
-        .setDocumentAction(getLanguageSpecific(salesInvoiceJson, DocumentActionKey.Complete))
-        .setDocumentStatus(getLanguageSpecific(salesInvoiceJson, DocumentStatusKey.Completed))
-        .apply();
-    });
-
-    // this is stupid. it seems that with cypress you can ONLY read the alias in the same "it" block. so i cannot retrieve my aliases
-    // in an organised (to be read "sane") fashion inside 'Save values needed for the next step', but must do it here, even though
-    // this step should only create the SI.
-    // WAT??!!
-    cy.get('@newInvoiceDocumentId').then(function({ documentId /* this is destructuring */ }) {
-      originalSalesInvoiceID = documentId;
-      cy.log(`originalSalesInvoiceID is ${originalSalesInvoiceID}`);
-    });
+    new SalesInvoice('Test Lieferant 1', salesInvoiceTargetDocumentType)
+      .addLine(new SalesInvoiceLine().setProduct('Convenience Salat 250g').setQuantity(originalQuantity))
+      .apply();
+    cy.completeDocument();
   });
 
   it('Sales Invoice is Completed', function() {
@@ -93,6 +60,8 @@ describe('Create a Credit memo deliver difference for Sales Invoice', function()
   });
 
   it('Save values needed for the next step', function() {
+    cy.getCurrentWindowRecordId().then(id => (originalSalesInvoiceID = id));
+
     cy.getStringFieldValue('DocumentNo').then(documentNumber => {
       originalSalesInvoiceNumber = documentNumber;
     });
@@ -181,32 +150,21 @@ describe('Create a Credit memo deliver difference for Sales Invoice', function()
     cy.pressDoneButton(200);
   });
 
-  let newTotalAmount = 0;
-  it('Save the new total amount', function() {
-    cy.get('.header-breadcrumb-sitename').then(function(si) {
-      newTotalAmount = parseFloat(si.html().split(' ')[2]); // the format is "DOC_NO MM/DD/YYYY total"
-    });
-  });
-
   it('Complete the Credit Memo SI', function() {
-    // complete it and verify the status
-    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      cy.processDocument(
-        getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
-        getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
-      );
-    });
+    cy.completeDocument();
   });
 
   it('Total amount should be lower than the original SI', function() {
-    expect(newTotalAmount).lessThan(originalSalesInvoiceTotalAmount);
+    cy.getSalesInvoiceTotalAmount().then(newTotalAmount => {
+      expect(newTotalAmount).lessThan(originalSalesInvoiceTotalAmount);
+    });
   });
 
   it('Credit Memo SI is paid', function() {
     cy.getCheckboxValue('IsPaid').then(checkBoxValue => {
       cy.log(`IsPaid = ${checkBoxValue}`);
       assert.equal(checkBoxValue, true);
-    })
+    });
   });
 
   it('Original Sales Invoice is not paid', function() {
@@ -216,5 +174,4 @@ describe('Create a Credit memo deliver difference for Sales Invoice', function()
       assert.equal(checkBoxValue, false);
     });
   });
-
 });

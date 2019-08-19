@@ -79,10 +79,6 @@ it('Read fixture and prepare the names', function() {
 });
 
 describe('Create Price and Products', function() {
-  it('reaaaaaalyyyyyyyyy', function() {
-    cy.wait(5000);
-  });
-
   it('Create Price', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, false);
 
