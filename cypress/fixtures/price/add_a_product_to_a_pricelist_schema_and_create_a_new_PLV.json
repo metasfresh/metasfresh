@@ -1,0 +1,22 @@
+{
+  "priceSystemName": "IntergalacticPriceSystem",
+  "priceListName": "PlanetaryPriceList",
+  "priceListVersionName": "PlanetaryPriceListVersion",
+
+
+  "priceListSchemaVersionName": "ProductPriceListSchemaVersion",
+  "priceListVersion2ValidFrom": "01/02/2019",
+
+  "priceListVersionNameSearch1": "PlanetaryPriceList.*2019-01-01$",
+  "priceListVersionNameSearch2": "PlanetaryPriceList.*2019-01-02$",
+
+
+  "categoryName": "PopsiclesCategory",
+  "productName1": "StrawberryPopsicleProduct",
+  "productName2": "LemonPopsicleProduct",
+  "productType": "Item",
+
+
+  "priceListSchemaName": "PriceListSchema",
+  "surchargeAmount": 22
+}
