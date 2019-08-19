@@ -21,6 +21,12 @@ export class PackingInstructionsVersion {
     return this;
   }
 
+  setUnit(unit) {
+    cy.log(`PackingInstructionsVersionBuilder - set handling unit type = ${unit}`);
+    this.unit = unit;
+    return this;
+  }
+
   apply() {
     cy.log(`PackingInstructionsVersion - apply - START (name=${this.name})`);
     applyPackingInstructionsVersion(this);
@@ -33,6 +39,9 @@ function applyPackingInstructionsVersion(packingInstructionsVersion) {
     cy.visitWindow('540344', 'NEW');
     cy.selectInListField('M_HU_PI_ID', packingInstructionsVersion.packingInstructions);
     cy.writeIntoStringField('Name', packingInstructionsVersion.name);
+    if (packingInstructionsVersion.unit) {
+      cy.selectInListField('HU_UnitType', packingInstructionsVersion.unit, false, null, true);
+    }
     cy.clickOnCheckBox('IsCurrent');
 
     cy.selectTab('M_HU_PI_Item');
