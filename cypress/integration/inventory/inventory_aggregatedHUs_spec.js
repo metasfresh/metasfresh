@@ -10,7 +10,6 @@ describe('Aggregated-HUs inventory test', function() {
   const productValue = `${date}`;
 
   before(function() {
-    cy.wait(1000); // see comment/doc of getLanguageSpecific
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)
