@@ -84,7 +84,19 @@ const findByName = (dataArray, name) => {
  */
 const humanReadableNow = () => {
   const date = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString();
-  return date.slice(8, date.length - 1).split(/:|\./g).join('_');
+  // noinspection RegExpSingleCharAlternation
+  return date
+    .slice(8, date.length - 1)
+    .split(/:|\./g)
+    .join('_');
 };
 
-export {getLanguageSpecific, wrapRequest, findByName, humanReadableNow};
+let date;
+const appendHumanReadableNow = (str) => {
+  if (!date) {
+    date = humanReadableNow();
+  }
+  return `${str}_${date}`;
+};
+
+export { getLanguageSpecific, wrapRequest, findByName, humanReadableNow, appendHumanReadableNow };
