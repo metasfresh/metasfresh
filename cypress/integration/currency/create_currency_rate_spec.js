@@ -6,12 +6,14 @@ describe(`Create a new currency rate`, function() {
     const multiplyRate = `0.919191919191`;
     
     it(`Create a new currency rate`, function(){
-        new CurrencyRate()
+        cy.fixture('currency/currencyrate.json').then(currencyrateJson => {
+            Object.assign(new CurrencyRate(), currencyrateJson)
             .setCurrency(currency)
             .setMultiplyRate(multiplyRate)
             .setCurrencyTo(currencyTo)
             .setIsActive(true)
             .apply();
+        });
     });
 });
 
