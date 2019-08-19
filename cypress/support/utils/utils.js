@@ -1,3 +1,4 @@
+/* eslint-disable */
 /*
  * IMPORTANT: be sure not to do this right at the start of a spec; if in doubt, do an extra "cy.wait(1000)".
  * Otherwise you will likely get this error
@@ -15,32 +16,13 @@
  * 
  */
 const getLanguageSpecific = (data, key) => {
-  // this is more of a guard; it succeeds, even if this whole function fails with; comment it back in, if you are interested, or see a benefit
-  // cy.window()
-  //   .its('store')
-  //   .invoke('getState')
-  //   .its('appHandler.me.language.key')
-  //   .should('exist');
+  const _ = getLanguageSpecificWorkaround();
 
   const lang = Cypress.reduxStore.getState().appHandler.me.language.key;
   if (lang !== 'en_US') {
     key = `${lang}__${key}`;
   }
   return data[key];
-
-  // 1. this gives me
-  //    "CypressError: cy.then() failed because you are mixing up async and sync code.""
-  // 2. if it worked, I still would not know how to wait for all of this to be done asynchronously, and then return my result
-  // cy.wrap(data)
-  //   .should('exist')
-  //   .then(dataObj => {
-  //     cy.log(`dataObj=${JSON.stringify(dataObj)}`);
-  //     if (lang !== 'en_US') {
-  //       key = `${lang}__${key}`;
-  //     }
-  //     return { trl: dataObj[key] };
-  //   })
-  //   .as(`${key}_trl`);
 };
 
 /*
@@ -92,11 +74,31 @@ const humanReadableNow = () => {
 };
 
 let date;
-const appendHumanReadableNow = (str) => {
+const appendHumanReadableNow = str => {
   if (!date) {
     date = humanReadableNow();
   }
   return `${str}_${date}`;
 };
 
-export { getLanguageSpecific, wrapRequest, findByName, humanReadableNow, appendHumanReadableNow };
+const getLanguageSpecificWorkaround_date = new Date();
+const getLanguageSpecificWorkaround = () => {
+  const TIME_TO_WAIT = 6 * 1000;
+  return cy.get('body').then(function() {
+    const now = new Date();
+    const delta = now - getLanguageSpecificWorkaround_date;
+    if (delta < TIME_TO_WAIT) {
+      cy.log(`getLanguageSpecificWorkaround sleeping: date=${getLanguageSpecificWorkaround_date.getTime()}, now=${now.getTime()}, delta=${delta}ms`);
+      return cy.wait(5000);
+    }
+  });
+};
+
+export {
+  getLanguageSpecific,
+  wrapRequest,
+  findByName,
+  humanReadableNow,
+  appendHumanReadableNow,
+  getLanguageSpecificWorkaround,
+};
