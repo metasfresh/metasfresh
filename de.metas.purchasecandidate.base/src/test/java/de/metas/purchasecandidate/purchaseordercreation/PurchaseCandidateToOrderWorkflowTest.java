@@ -102,7 +102,8 @@ public class PurchaseCandidateToOrderWorkflowTest
 		workflowUnderTest = PurchaseCandidateToOrderWorkflow.builder()
 				.purchaseCandidateRepo(purchaseCandidateRepo)
 				.vendorGatewayInvokerFactory(vendorGatewayInvokerFactory)
-				.purchaseOrderFromItemsAggregator(purchaseOrderFromItemsAggregator).build();
+				.purchaseOrderFromItemsAggregator(purchaseOrderFromItemsAggregator)
+				.build();
 	}
 
 	private I_C_UOM createUOM(final String name)
