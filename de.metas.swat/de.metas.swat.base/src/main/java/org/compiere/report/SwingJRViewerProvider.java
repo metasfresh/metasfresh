@@ -87,11 +87,11 @@ public class SwingJRViewerProvider implements JRReportViewerProvider
 		}
 		catch (IOException e)
 		{
-			throw new RuntimeException(e.getLocalizedMessage(), e);
+			throw new AdempiereException(e.getLocalizedMessage(), e);
 		}
 		catch (ClassNotFoundException e)
 		{
-			throw new RuntimeException(e.getLocalizedMessage(), e);
+			throw new AdempiereException(e.getLocalizedMessage(), e);
 		}
 	}
 

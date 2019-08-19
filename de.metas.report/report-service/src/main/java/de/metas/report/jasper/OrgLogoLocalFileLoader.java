@@ -181,7 +181,7 @@ final class OrgLogoLocalFileLoader
 	{
 		try
 		{
-			final File tempFile = File.createTempFile("logo", ".png");
+			final File tempFile = File.createTempFile(filenamePrefix, ".png");
 			try (final FileOutputStream out = new FileOutputStream(tempFile))
 			{
 				out.write(content);
