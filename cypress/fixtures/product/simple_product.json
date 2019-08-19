@@ -2,7 +2,7 @@
   "name": "ProductName",
   "description": "TestProduct1",
   "value": "TestProduct1",
-  "m_product_category": "06_Kartoffeln",
+  "productCategory": "06_Kartoffeln",
   "c_uom": "Each",
   "de_DE__c_uom": "Stück",
   "isStocked": true,
