@@ -36,7 +36,7 @@ import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
 import lombok.NonNull;
 
 @Interceptor(I_M_Inventory.class)
-@Component("de.metas.vertical.pharma.securpharm.inventory.interceptor.M_Inventory")
+@Component
 public class M_Inventory
 {
 	private final SecurPharmService securPharmService;

@@ -27,7 +27,7 @@ import de.metas.material.dispo.commons.model.I_C_OrderLine;
  * #L%
  */
 @Interceptor(I_C_OrderLine.class)
-@Component("de.metas.material.dispo.commons.interceptor.C_OrderLine")
+@Component
 public class C_OrderLine
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {

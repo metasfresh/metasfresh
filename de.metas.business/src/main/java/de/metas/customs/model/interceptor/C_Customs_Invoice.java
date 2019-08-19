@@ -39,7 +39,7 @@ import de.metas.util.Services;
  * #L%
  */
 @Interceptor(I_C_Customs_Invoice.class)
-@Component("de.metas.customs.model.interceptor.C_Customs_Invoice")
+@Component
 public class C_Customs_Invoice
 {
 	private static final String MSG_C_Customs_Invoice_Tariff_NotSet = "C_Customs_Invoice_Tariff_NotSet";

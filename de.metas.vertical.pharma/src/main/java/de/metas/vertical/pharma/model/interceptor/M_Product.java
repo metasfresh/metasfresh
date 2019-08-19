@@ -34,7 +34,7 @@ import de.metas.vertical.pharma.model.I_M_Product;
  * #L%
  */
 @Interceptor(I_M_Product.class)
-@Component("de.metas.vertical.pharma.model.interceptor.M_Product")
+@Component
 public class M_Product
 {
 	private final static String ERR_Invalid_PZN = "de.metas.vertical.pharma.model.interceptor.M_Product.Invalid_PZN";

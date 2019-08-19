@@ -45,7 +45,7 @@ import de.metas.util.Services;
  */
 
 @Interceptor(I_M_InOut.class)
-@Component("de.metas.bpartner.product.stats.interceptor.M_InOut")
+@Component
 public class M_InOut
 {
 	private final BPartnerProductStatsEventSender eventSender;

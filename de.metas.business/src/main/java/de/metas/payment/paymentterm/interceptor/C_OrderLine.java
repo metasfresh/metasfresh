@@ -42,7 +42,7 @@ import lombok.NonNull;
  */
 
 @Callout(I_C_OrderLine.class)
-@Component("de.metas.payment.paymentterm.interceptor.C_OrderLine")
+@Component
 public class C_OrderLine
 {
 	private final PaymentTermService paymentTermService;

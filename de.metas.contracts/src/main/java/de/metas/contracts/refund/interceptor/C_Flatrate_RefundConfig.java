@@ -44,7 +44,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@Component("de.metas.contracts.refund.interceptor.C_Flatrate_RefundConfig")
+@Component
 @Interceptor(I_C_Flatrate_RefundConfig.class)
 @Callout(I_C_Flatrate_RefundConfig.class)
 public class C_Flatrate_RefundConfig

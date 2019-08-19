@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Profile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.metas.JsonObjectMapperHolder;
+import de.metas.MetasfreshBeanNameGenerator;
 import de.metas.Profiles;
 import de.metas.cache.CacheMgt;
 import de.metas.material.dispo.model.I_MD_Candidate;
@@ -78,6 +79,7 @@ public class Application
 					.headless(true)
 					.web(true)
 					.profiles(Profiles.PROFILE_MaterialDispo)
+					.beanNameGenerator(new MetasfreshBeanNameGenerator())
 					.run(args);
 		}
 

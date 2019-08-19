@@ -41,7 +41,7 @@ import de.metas.vertical.pharma.model.I_C_BPartner;
  */
 
 @Interceptor(I_C_BPartner.class)
-@Component("de.metas.vertical.pharma.model.interceptor.C_BPartner")
+@Component
 public class C_BPartner
 {
 	private static final String ERR_NarcoticPermissions_Valid_BTM = "de.metas.vertical.pharma.model.interceptor.C_BPartner.NarcoticPermissions_Valid_BTM";

@@ -57,7 +57,7 @@ import lombok.NonNull;
 
 @Interceptor(I_C_OrderLine.class)
 @Callout(I_C_OrderLine.class)
-@Component("de.metas.order.model.interceptor.C_OrderLine")
+@Component
 public class C_OrderLine
 {
 	private static final Logger logger = LogManager.getLogger(C_OrderLine.class);
@@ -71,7 +71,7 @@ public class C_OrderLine
 		this.groupChangesHandler = groupChangesHandler;
 
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
-	};
+	}
 
 	/**
 	 * 09557: If a purchase order line is deleted, then all sales order lines need to un-reference it to avoid an FK-constraint-error

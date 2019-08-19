@@ -43,7 +43,7 @@ import de.metas.util.Services;
 
 @Interceptor(I_AD_Menu.class)
 @Callout(I_AD_Menu.class)
-@Component("org.adempiere.ad.menu.model.interceptor.AD_Menu")
+@Component
 public class AD_Menu
 {
 	@Init

@@ -77,6 +77,7 @@ public abstract class SwingUIApplicationTemplate
 					.web(false)
 					.profiles(Profiles.PROFILE_SwingUI)
 					.properties(CConnection.get().createRabbitmqSpringProperties())
+					.beanNameGenerator(new MetasfreshBeanNameGenerator())
 					.run(args);
 		}
 		catch (final Exception ex)

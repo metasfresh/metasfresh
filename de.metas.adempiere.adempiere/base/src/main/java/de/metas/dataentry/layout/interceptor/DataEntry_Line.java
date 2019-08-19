@@ -33,7 +33,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@Component("de.metas.dataentry.layout.interceptor.DataEntry_Line")
+@Component
 @Interceptor(I_DataEntry_Line.class)
 public class DataEntry_Line
 {

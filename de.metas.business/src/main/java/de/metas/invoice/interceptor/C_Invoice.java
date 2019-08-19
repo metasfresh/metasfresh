@@ -64,7 +64,7 @@ import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 @Interceptor(I_C_Invoice.class)
-@Component("de.metas.invoice.interceptor.C_Invoice")
+@Component
 public class C_Invoice // 03771
 {
 	private final PaymentReservationService paymentReservationService;
