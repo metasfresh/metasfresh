@@ -51,6 +51,7 @@ Cypress.Commands.add('selectSingleTabRow', () => {
 Cypress.Commands.add('openReferencedDocuments', (referenceId, retriesLeft = 8) => {
   // retry 8 times to open the referenced document
   const date = humanReadableNow();
+  const timeout = { timeout: 20000 };
 
   if (retriesLeft >= 1) {
     const referencesAliasName = `references-${date}`;
@@ -58,9 +59,8 @@ Cypress.Commands.add('openReferencedDocuments', (referenceId, retriesLeft = 8) =
     cy.route('GET', new RegExp(RewriteURL.REFERENCES)).as(referencesAliasName);
 
     cy.get('body').type('{alt}6'); // open referenced docs
-    cy.wait(`@${referencesAliasName}`, { timeout: 20000 });
-
-    cy.get('.order-list-panel .order-list-loader').should('not.exist');
+    cy.wait(`@${referencesAliasName}`, timeout);
+    cy.get('.order-list-panel .order-list-loader', timeout).should('not.exist');
 
     return cy.get('body').then(body => {
       if (body.find(`.reference_${referenceId}`).length > 0) {

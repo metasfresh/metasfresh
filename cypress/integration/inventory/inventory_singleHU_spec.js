@@ -11,8 +11,6 @@ const locatorId = 'Hauptlager_StdWarehouse_Hauptlager_0_0_0';
 
 describe('Create a single HU', function() {
   it('Create Product', function() {
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(1000); // see comment/doc of getLanguageSpecific
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)

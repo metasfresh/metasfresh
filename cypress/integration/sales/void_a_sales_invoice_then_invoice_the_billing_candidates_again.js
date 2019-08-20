@@ -44,14 +44,6 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
   let salesOrderRecordId;
   let totalAmountToPay = 0;
 
-  before(function() {
-    // This wait is stupid.
-    // It also appears to be a good workaround for the problems in
-    // cypress/support/utils/utils.js:1
-    cy.wait(5000);
-    cy.readAllNotifications();
-  });
-
   it('Create Sales Order', function() {
     new SalesOrder()
       .setBPartner(businessPartnerName)
@@ -131,6 +123,7 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
     });
 
     it('Execute action "Generate shipments', function() {
+      cy.readAllNotifications();
       cy.executeHeaderActionWithDialog('M_ShipmentSchedule_EnqueueSelection');
       cy.selectInListField('QuantityType', 'Quantity to deliver', true, null, true);
       cy.setCheckBoxValue('IsCompleteShipments', true, true);
@@ -171,6 +164,7 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
 
   describe('Generate Invoice and check it', function() {
     it('Execute action "Generate Invoices"', function() {
+      cy.readAllNotifications();
       cy.executeHeaderActionWithDialog('C_Invoice_Candidate_EnqueueSelectionForInvoicing');
       cy.pressStartButton(500);
 
@@ -286,6 +280,7 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
     });
 
     it('Execute action "Generate Invoices" the second time', function() {
+      cy.readAllNotifications();
       cy.executeHeaderActionWithDialog('C_Invoice_Candidate_EnqueueSelectionForInvoicing');
       cy.pressStartButton();
 

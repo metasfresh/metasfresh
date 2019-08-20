@@ -19,6 +19,7 @@ import './commands/navigation';
 import './commands/form';
 import './commands/action';
 import './commands/test';
+import { getLanguageSpecificWorkaround } from './utils/utils';
 
 Cypress.on('uncaught:exception', () => {
   //(err, runnable) => {
@@ -36,7 +37,8 @@ Cypress.on('window:alert', text => {
 });
 
 before(function() {
-  cy.loginViaAPI();
+  // no clue why i have to add this wait, but it seems to be the only way the getLanguageSpecific workaround... works
+  cy.loginViaAPI().wait(100);
 
   Cypress.Cookies.defaults({
     whitelist: ['SESSION', 'isLogged'],

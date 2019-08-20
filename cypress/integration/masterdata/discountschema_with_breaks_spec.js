@@ -3,9 +3,10 @@ import { humanReadableNow } from '../../support/utils/utils';
 
 describe('New discount schema Test', function() {
   const date = humanReadableNow();
-  const discountschemaName = `discountschema_with_breaks-${date}`;
-  const productCategoryName = `discountschema_with_breaks-${date}`;
-  const productName = `discountschema_with_breaks-${date}`;
+  const discountschemaName = `dscschema_with_breaks-${date}`;
+  const productCategoryName = `dscschema_with_breaks-${date}`;
+  const productName = `dscschema_with_breaks-${date}`;
+
   it('Create a product to test with', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)

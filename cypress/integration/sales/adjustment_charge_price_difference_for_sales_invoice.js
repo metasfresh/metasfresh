@@ -22,10 +22,9 @@
 
 /// <reference types="Cypress" />
 
-import { getLanguageSpecific } from '../../support/utils/utils';
 import { salesInvoices } from '../../page_objects/sales_invoices';
 import { SalesInvoice, SalesInvoiceLine } from '../../support/utils/sales_invoice';
-import { DocumentActionKey, DocumentStatusKey } from '../../support/utils/constants';
+import { DocumentStatusKey } from '../../support/utils/constants';
 
 describe('Create Adjustment Charge price difference (Nachbelastung Preisdifferenz) for Sales Invoice', function() {
   const adjustmentChargePriceDifference = 'Nachbelastung - Preisdifferenz';
@@ -46,33 +45,11 @@ describe('Create Adjustment Charge price difference (Nachbelastung Preisdifferen
   const productName = 'Convenience Salat 250g';
   const originalQuantity = 200;
 
-  before(function() {
-    // This wait is stupid.
-    // It also appears to be a good workaround for the problems in
-    // cypress/support/utils/utils.js:1
-    cy.wait(5000);
-  });
-
   it('Prepare sales invoice', function() {
-    cy.fixture('sales/sales_invoice.json').then(salesInvoiceJson => {
-      new SalesInvoice(businessPartnerName, salesInvoiceTargetDocumentType)
-        .addLine(
-          new SalesInvoiceLine().setProduct(productName).setQuantity(originalQuantity)
-          // todo @dh: how to add a "per test" packing item
-          // .setPackingItem('IFCO 6410 x 10 Stk')
-          // .setTuQuantity(2)
-        )
-        // .addLine(
-        // todo @dh: how to add this line which depends on the packing item?
-        //   new SalesInvoiceLine()
-        //     .setProduct('IFCO 6410_P001512')
-        //     .setQuantity(2)
-        // )
-        // .setPriceList(priceListName)
-        .setDocumentAction(getLanguageSpecific(salesInvoiceJson, DocumentActionKey.Complete))
-        .setDocumentStatus(getLanguageSpecific(salesInvoiceJson, DocumentStatusKey.Completed))
-        .apply();
-    });
+    new SalesInvoice(businessPartnerName, salesInvoiceTargetDocumentType)
+      .addLine(new SalesInvoiceLine().setProduct(productName).setQuantity(originalQuantity))
+      .apply();
+    cy.completeDocument();
 
     // this is stupid. it seems that with cypress you can ONLY read the alias in the same "it" block. so i cannot retrieve my aliases
     // in an organised (to be read "sane") fashion inside 'Save values needed for the next step', but must do it here, even though
@@ -82,10 +59,6 @@ describe('Create Adjustment Charge price difference (Nachbelastung Preisdifferen
       originalSalesInvoiceID = documentId;
       cy.log(`originalSalesInvoiceID is ${originalSalesInvoiceID}`);
     });
-  });
-
-  it('Sales Invoice is Completed', function() {
-    cy.expectDocumentStatus(DocumentStatusKey.Completed);
   });
 
   it('Sales Invoice is not paid', function() {
@@ -189,13 +162,7 @@ describe('Create Adjustment Charge price difference (Nachbelastung Preisdifferen
   });
 
   it('Complete the Adjustment Charge SI', function() {
-    // complete it and verify the status
-    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      cy.processDocument(
-        getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
-        getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
-      );
-    });
+    cy.completeDocument();
   });
 
   it('Total amount should be lower than the original SI', function() {

@@ -31,7 +31,6 @@ describe('Create material tracking contract conditions', function() {
 
   let countryName;
   before(function() {
-    cy.wait(1000);
     cy.fixture('misc/misc_dictionary.json').then(dictionary => {
       countryName = getLanguageSpecific(dictionary, 'c_country_CH');
     });
