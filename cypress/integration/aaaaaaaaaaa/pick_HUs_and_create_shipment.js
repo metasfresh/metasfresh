@@ -24,6 +24,7 @@ const expectedPackingStatus = 'Shipped';
 //   or something else?
 const pickingOrderColumn = 'Order';
 const huCodeColumn = 'Code';
+const productPartnerColumn = 'Product / Partner';
 
 // test
 let soDocNumber;
@@ -32,11 +33,6 @@ let huValue1;
 let huValue2;
 
 describe('Create test data', function() {
-  before(function() {
-    // eslint-disable-next-line
-    cy.wait(5000);
-  });
-
   it('Create first single-HU inventory doc', function() {
     let uomName;
     cy.fixture('product/simple_product.json').then(productJson => {
@@ -121,13 +117,12 @@ describe('Pick the SO', function() {
   it('Visit "Picking Terminal (Prototype)"', function() {
     // unfortunately the picking assignment is not created instantly and there's no way to check when it is created except by refreshing the page,
     // so i have to wait for it to be created :(
-    // eslint-disable-next-line
     cy.waitUntilProcessIsFinished();
     cy.visitWindow('540345');
   });
 
   it('Select first row and run action Pick', function() {
-    cy.selectNthRow(0);
+    cy.selectRowByColumnAndValue(productPartnerColumn, productName);
     cy.executeQuickAction('WEBUI_Picking_Launcher');
   });
 

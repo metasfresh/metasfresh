@@ -28,10 +28,8 @@ import { ProductCategory } from '../../support/utils/product';
 import { BPartner } from '../../support/utils/bpartner';
 import { SalesOrder, SalesOrderLine } from '../../support/utils/sales_order';
 import { salesOrders } from '../../page_objects/sales_orders';
-import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
 
 const date = humanReadableNow();
-// const date = '20T13_16_11_919';
 // Price
 const priceSystemName = `PriceSystem_${date}`;
 const priceListName = `PriceList_${date}`;
@@ -239,6 +237,7 @@ describe('Checks after picking', function() {
 
   // it('Visit HU Editor and expect the HU to have less quantity than initially', function() {
   //   // blocked by: https://github.com/metasfresh/metasfresh-e2e/issues/327
+
   //   cy.visitWindow(540189);
   //   toggleNotFrequentFilters();
   //   selectNotFrequentFilterWidget('default');
