@@ -110,7 +110,7 @@ describe('Partial material withdrawal in handling unit editor with Materialentna
       .type('0', { force: true });
     cy.selectTab('M_HU_PI_Item');
   });
-  it('create packing instruction version for handling unit - Transport unit; with packmittel and packingInstructionsNameForTU as unter-packvorschrift', function() {
+  it('create packing instruction version for handling unit - Loading unit; with packmittel and packingInstructionsNameForTU as unter-packvorschrift', function() {
     cy.fixture('product/packing_instructions_version.json').then(pivJson => {
       Object.assign(new PackingInstructionsVersion(), pivJson)
         .setName(packingInstructionsVersionForLU)
@@ -178,11 +178,11 @@ describe('Create a purchase order and Material Receipts', function() {
     cy.expectNumberOfRows(2);
   });
 
-  it('Create Material Receipt 1', function() {
+  it('Create Material Receipt', function() {
     cy.selectNthRow(0).click();
     cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults', true);
     cy.selectNthRow(0, true);
-    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', false, true, false);
+    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', false, true);
     cy.pressDoneButton();
   });
   it('Check if Materialentnahmelager warehouse exists', function() {

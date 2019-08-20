@@ -74,9 +74,9 @@ Cypress.Commands.add('executeQuickAction', (actionName, defaultAction = false, m
         }
       });
 
-    // if (!defaultAction) {
-    //   cy.wait(`@${requestAlias}`);
-    // }
+    if (!defaultAction) {
+      cy.wait(`@${requestAlias}`);
+    }
     cy.waitForSaveIndicator();
   }
 );

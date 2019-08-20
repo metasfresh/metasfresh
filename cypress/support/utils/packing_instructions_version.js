@@ -37,12 +37,12 @@ export class PackingInstructionsVersion {
 function applyPackingInstructionsVersion(packingInstructionsVersion) {
   describe('create new packing instructions version', function() {
     cy.visitWindow('540344', 'NEW');
-    cy.selectInListField('M_HU_PI_ID', packingInstructionsVersion.packingInstructions);
+    cy.selectInListField('M_HU_PI_ID', packingInstructionsVersion.packingInstructions, false, null, true);
     cy.writeIntoStringField('Name', packingInstructionsVersion.name);
+    cy.clickOnCheckBox('IsCurrent');
     if (packingInstructionsVersion.unit) {
       cy.selectInListField('HU_UnitType', packingInstructionsVersion.unit, false, null, true);
     }
-    cy.clickOnCheckBox('IsCurrent');
 
     cy.selectTab('M_HU_PI_Item');
     cy.pressAddNewButton();
