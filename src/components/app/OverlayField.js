@@ -32,7 +32,6 @@ class OverlayField extends Component {
 
   renderBarcodeScanButton = () => {
     const { onScanBarcode } = this.props;
-    console.log("onScanBarcode: "+onScanBarcode);
 
     return (
       <button
@@ -47,8 +46,6 @@ class OverlayField extends Component {
   renderElements = (layout, data, type) => {
     const { disabled, codeSelected, onChange } = this.props;
     const elements = layout.elements;
-
-    console.log("onChange: "+onChange);
 
     return elements.map((elem, id) => {
       const widgetData = elem.fields.map(item => data[item.field] || -1);
