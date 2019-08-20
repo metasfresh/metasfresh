@@ -22,8 +22,10 @@
 
 import { getLanguageSpecific } from '../../support/utils/utils';
 import { Inventory, InventoryLine } from '../../support/utils/inventory';
+import { Builder } from '../../support/utils/builder';
+import { DiscountSchema } from '../../support/utils/discountschema';
 
-const productName = 'Convenience Salat 250g';
+const productName = 'Product';
 const productQty = 10;
 const locatorId = 'Hauptlager_StdWarehouse_Hauptlager_0_0_0';
 
@@ -42,9 +44,13 @@ let huValue1;
 let huValue2;
 
 describe('Create test data', function() {
-  before(function() {
-    // eslint-disable-next-line
-    cy.wait(5000);
+  it('Create price entities', function() {
+    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, false);
+    cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
+      Object.assign(new DiscountSchema(), discountSchemaJson)
+        .setName(discountSchemaName)
+        .apply();
+    });
   });
 
   it('Create first single-HU inventory doc', function() {
