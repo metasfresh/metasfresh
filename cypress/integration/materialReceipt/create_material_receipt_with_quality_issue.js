@@ -84,7 +84,6 @@ describe('Create material receipt with quality issue', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
-        .setValue(productCategoryName)
         .apply();
     });
   });

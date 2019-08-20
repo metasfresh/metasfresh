@@ -50,7 +50,6 @@ export class Builder {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
-        .setValue(productCategoryValue)
         .apply();
     });
 
@@ -62,7 +61,6 @@ export class Builder {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)
-        .setValue(productValue)
         .setProductType(productType)
         .setProductCategory(productCategoryValue + '_' + productCategoryName)
         .addProductPrice(productPrice)
@@ -87,7 +85,6 @@ export class Builder {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)
-        .setValue(productValue)
         .setProductType(productType)
         .setProductCategory(productCategoryValue + '_' + productCategoryName)
         .addProductPrice(productPrice)
@@ -111,7 +108,6 @@ export class Builder {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)
-        .setValue(productValue)
         .setProductType(productType)
         .setProductCategory(categoryName)
         .addProductPrice(productPrice)

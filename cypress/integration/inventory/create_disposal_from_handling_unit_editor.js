@@ -39,7 +39,6 @@ describe('Create a single HU', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)
-        .setValue(productName)
         .apply();
     });
   });

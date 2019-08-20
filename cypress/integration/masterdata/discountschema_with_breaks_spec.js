@@ -11,14 +11,12 @@ describe('New discount schema Test', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
-        .setValue(productCategoryName)
         .apply();
     });
 
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)
-        .setValue(productName)
         .setProductType('Service')
         .apply();
     });
