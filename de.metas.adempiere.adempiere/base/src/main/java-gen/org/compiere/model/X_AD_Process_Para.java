@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -30,7 +14,7 @@ public class X_AD_Process_Para extends org.compiere.model.PO implements I_AD_Pro
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 894158685L;
+	private static final long serialVersionUID = 1583714777L;
 
     /** Standard Constructor */
     public X_AD_Process_Para (Properties ctx, int AD_Process_Para_ID, String trxName)
@@ -42,18 +26,14 @@ public class X_AD_Process_Para extends org.compiere.model.PO implements I_AD_Pro
 			setAD_Process_Para_ID (0);
 			setAD_Reference_ID (0);
 			setColumnName (null);
-			setEntityType (null);
-// U
+			setEntityType (null); // U
 			setFieldLength (0);
-			setIsCentrallyMaintained (true);
-// Y
-			setIsEncrypted (false);
-// N
+			setIsCentrallyMaintained (true); // Y
+			setIsEncrypted (false); // N
 			setIsMandatory (false);
 			setIsRange (false);
 			setName (null);
-			setSeqNo (0);
-// @SQL=SELECT NVL(MAX(SeqNo),0)+10 AS DefaultValue FROM AD_Process_Para WHERE AD_Process_ID=@AD_Process_ID@
+			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM AD_Process_Para WHERE AD_Process_ID=@AD_Process_ID@
         } */
     }
 
@@ -63,33 +43,17 @@ public class X_AD_Process_Para extends org.compiere.model.PO implements I_AD_Pro
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 4 - System 
-      */
-    @Override
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
     @Override
     protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    @Override
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_AD_Process_Para[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
 	@Override
-	public org.compiere.model.I_AD_Element getAD_Element() throws RuntimeException
+	public org.compiere.model.I_AD_Element getAD_Element()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Element_ID, org.compiere.model.I_AD_Element.class);
 	}
@@ -126,7 +90,7 @@ public class X_AD_Process_Para extends org.compiere.model.PO implements I_AD_Pro
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Process getAD_Process() throws RuntimeException
+	public org.compiere.model.I_AD_Process getAD_Process()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Process_ID, org.compiere.model.I_AD_Process.class);
 	}
@@ -185,7 +149,7 @@ public class X_AD_Process_Para extends org.compiere.model.PO implements I_AD_Pro
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Reference getAD_Reference() throws RuntimeException
+	public org.compiere.model.I_AD_Reference getAD_Reference()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Reference_ID, org.compiere.model.I_AD_Reference.class);
 	}
@@ -222,7 +186,7 @@ public class X_AD_Process_Para extends org.compiere.model.PO implements I_AD_Pro
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Reference getAD_Reference_Value() throws RuntimeException
+	public org.compiere.model.I_AD_Reference getAD_Reference_Value()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Reference_Value_ID, org.compiere.model.I_AD_Reference.class);
 	}
@@ -259,7 +223,7 @@ public class X_AD_Process_Para extends org.compiere.model.PO implements I_AD_Pro
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Val_Rule getAD_Val_Rule() throws RuntimeException
+	public org.compiere.model.I_AD_Val_Rule getAD_Val_Rule()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Val_Rule_ID, org.compiere.model.I_AD_Val_Rule.class);
 	}
@@ -293,6 +257,34 @@ public class X_AD_Process_Para extends org.compiere.model.PO implements I_AD_Pro
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * BarcodeScannerType AD_Reference_ID=541029
+	 * Reference name: BarcodeScannerType
+	 */
+	public static final int BARCODESCANNERTYPE_AD_Reference_ID=541029;
+	/** QRCode = qrCode */
+	public static final String BARCODESCANNERTYPE_QRCode = "qrCode";
+	/** Barcode = barcode */
+	public static final String BARCODESCANNERTYPE_Barcode = "barcode";
+	/** Datamatrix = datamatrix */
+	public static final String BARCODESCANNERTYPE_Datamatrix = "datamatrix";
+	/** Set Barcode Scanner Type.
+		@param BarcodeScannerType Barcode Scanner Type	  */
+	@Override
+	public void setBarcodeScannerType (java.lang.String BarcodeScannerType)
+	{
+
+		set_Value (COLUMNNAME_BarcodeScannerType, BarcodeScannerType);
+	}
+
+	/** Get Barcode Scanner Type.
+		@return Barcode Scanner Type	  */
+	@Override
+	public java.lang.String getBarcodeScannerType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_BarcodeScannerType);
 	}
 
 	/** Set Spaltenname.
@@ -584,9 +576,7 @@ public class X_AD_Process_Para extends org.compiere.model.PO implements I_AD_Pro
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -594,21 +584,12 @@ public class X_AD_Process_Para extends org.compiere.model.PO implements I_AD_Pro
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
-
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public org.compiere.util.KeyNamePair getKeyNamePair() 
-    {
-        return new org.compiere.util.KeyNamePair(get_ID(), getName());
-    }
 
 	/** Set Read Only Logic.
 		@param ReadOnlyLogic 
