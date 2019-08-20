@@ -44,7 +44,6 @@ describe('Create Purchase order from sales order', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productForPackingMaterial)
-        .setValue(productForPackingMaterial)
         .setProductType(productType)
         .setProductCategory('24_Gebinde')
         .addProductPrice(productPricePM1)
@@ -76,7 +75,6 @@ describe('Create Purchase order from sales order', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
-        .setValue(productCategoryName)
         .apply();
     });
     /**Create vendor to use in product - Business partner tab - current vendor */
@@ -112,7 +110,6 @@ describe('Create Purchase order from sales order', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName1)
-        .setValue(productName1)
         .setProductType(productType)
         .setProductCategory(productCategoryName + '_' + productCategoryName)
         .addProductPrice(productPrice1)

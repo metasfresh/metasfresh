@@ -27,7 +27,7 @@ export class RewriteURL {
 
   static ATTRIBUTE = '/rest/api/pattribute';
 
-  static QUICKACTION = `/rest/api/process.*/start\$`;
+  static QUICKACTION = `/rest/api/process/.*/start$`;
 
   static REFERENCES = `/rest/api/window/.*/references$`;
 

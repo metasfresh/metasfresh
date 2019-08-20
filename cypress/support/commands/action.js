@@ -57,7 +57,8 @@ Cypress.Commands.add('executeQuickAction', (actionName, defaultAction = false, m
       cy.get('.quick-actions-dropdown').should('exist');
 
       path = `#quickAction_${actionName}`;
-
+    }
+    if (!defaultAction && !isDialogExpected) {
       cy.server();
       cy.route('GET', new RegExp(RewriteURL.QUICKACTION)).as(requestAlias);
     }
@@ -74,7 +75,7 @@ Cypress.Commands.add('executeQuickAction', (actionName, defaultAction = false, m
         }
       });
 
-    if (!defaultAction) {
+    if (!defaultAction && !isDialogExpected) {
       cy.wait(`@${requestAlias}`);
     }
     cy.waitForSaveIndicator();

@@ -67,7 +67,6 @@ describe('Create test data', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
-        .setValue(productCategoryName)
         .apply();
     });
   });
@@ -142,7 +141,7 @@ describe('Create a purchase order and Material Receipts', function() {
     cy.selectNthRow(0).click();
     cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults', false);
     cy.selectNthRow(0, true);
-    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', false, true);
+    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', false, true, false);
     cy.pressDoneButton();
   });
 
@@ -150,7 +149,7 @@ describe('Create a purchase order and Material Receipts', function() {
     cy.selectNthRow(1).click();
     cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults', false);
     cy.selectNthRow(0, true);
-    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', false, true);
+    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', false, true, false);
     cy.pressDoneButton();
   });
 
@@ -181,11 +180,14 @@ describe('Create a purchase order and Material Receipts', function() {
 
   it('Open Purchase Invoice from notifications bell and check GrandTotal', function() {
     cy.openInboxNotificationWithText(vendorName);
+    cy.waitForSaveIndicator();
+
     // wait until current window is PurchaseInvoice
     cy.url().should('contain', '/183/');
 
     // hope this is enough for the whole window to load
     cy.waitForSaveIndicator();
+    cy.getStringFieldValue('C_BPartner_ID').should('contain', vendorName);
 
     cy.openAdvancedEdit();
     cy.getStringFieldValue('GrandTotal').then(el => {

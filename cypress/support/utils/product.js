@@ -17,12 +17,6 @@ export class Product {
     return this;
   }
 
-  setValue(value) {
-    cy.log(`Product value is never used`);
-    this.value = value;
-    return this;
-  }
-
   setDescription(description) {
     cy.log(`Product - set description = ${description}`);
     this.description = description;
@@ -55,9 +49,9 @@ export class Product {
     return this;
   }
 
-  setProductCategory(m_product_category) {
-    cy.log(`Product - set productCategory = ${m_product_category}`);
-    this.m_product_category = m_product_category;
+  setProductCategory(productCategory) {
+    cy.log(`Product - set productCategory = ${productCategory}`);
+    this.productCategory = productCategory;
     return this;
   }
 
@@ -104,7 +98,7 @@ export class Product {
     cy.visitWindow('140', 'NEW');
     cy.writeIntoStringField('Name', product.name);
 
-    cy.selectInListField('M_Product_Category_ID', product.m_product_category);
+    cy.selectInListField('M_Product_Category_ID', product.productCategory);
 
     cy.writeIntoStringField('Description', product.description);
 
@@ -178,10 +172,16 @@ export class Product {
   static applyProductPrice(productPrice) {
     cy.selectTab('M_ProductPrice');
     cy.pressAddNewButton();
-    
+
     cy.writeIntoLookupListField('M_PriceList_Version_ID', productPrice.priceList, productPrice.priceList, true, true);
     cy.writeIntoStringField('PriceList', productPrice.listPriceAmount, true, null, true);
-    cy.writeIntoStringField('PriceStd', productPrice.standardPriceAmount, true /*modal*/, null /*rewriteUrl*/,true /*noRequest*/);
+    cy.writeIntoStringField(
+      'PriceStd',
+      productPrice.standardPriceAmount,
+      true /*modal*/,
+      null /*rewriteUrl*/,
+      true /*noRequest*/
+    );
     cy.writeIntoStringField('PriceLimit', productPrice.limitPriceAmount, true, null, true);
 
     const taxCategory = getLanguageSpecific(productPrice, 'taxCategory');
@@ -203,12 +203,6 @@ export class ProductCategory {
     return this;
   }
 
-  setValue(value) {
-    cy.log(`Product Category - set value = ${value}`);
-    this.value = value;
-    return this;
-  }
-
   setAttributeSet(attributeSet) {
     cy.log(`Product Category - set attributeSet = ${attributeSet}`);
     this.attributeSet = attributeSet;
@@ -226,8 +220,7 @@ export class ProductCategory {
     cy.visitWindow('144', 'NEW');
     cy.writeIntoStringField('Name', productCategory.name);
 
-    // Value can be updated
-    cy.writeIntoStringField('Value', productCategory.value);
+    cy.writeIntoStringField('Value', productCategory.name);
     if (productCategory.attributeSet) {
       cy.selectInListField('M_AttributeSet_ID', productCategory.attributeSet);
     }

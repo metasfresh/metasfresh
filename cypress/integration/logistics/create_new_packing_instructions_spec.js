@@ -15,7 +15,6 @@ describe('create new packing instructions ', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
-        .setValue(productCategoryValue)
         .apply();
     });
 

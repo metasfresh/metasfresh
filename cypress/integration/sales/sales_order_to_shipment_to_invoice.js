@@ -1,8 +1,7 @@
 import { BPartner } from '../../support/utils/bpartner';
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { Builder } from '../../support/utils/builder';
-import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
-import { DocumentActionKey, DocumentStatusKey } from '../../support/utils/constants';
+import { humanReadableNow } from '../../support/utils/utils';
 import { SalesOrder, SalesOrderLine } from '../../support/utils/sales_order';
 
 describe('Create Sales order', function() {
@@ -33,9 +32,7 @@ describe('Create Sales order', function() {
         .apply();
     });
     cy.fixture('sales/simple_customer.json').then(customerJson => {
-      const bpartner = new BPartner({ ...customerJson, name: customer })
-        .setCustomerDiscountSchema(discountSchemaName)
-        .setBank(undefined);
+      const bpartner = new BPartner({ ...customerJson, name: customer }).setCustomerDiscountSchema(discountSchemaName);
 
       bpartner.apply();
     });
@@ -43,21 +40,19 @@ describe('Create Sales order', function() {
     cy.readAllNotifications();
   });
   it('Create a sales order', function() {
-    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      new SalesOrder()
-        .setBPartner(customer)
-        .setPriceSystem(priceSystemName)
-        .addLine(new SalesOrderLine().setProduct(productName).setQuantity(1))
-        .apply();
-    });
+    new SalesOrder()
+      .setBPartner(customer)
+      .setPriceSystem(priceSystemName)
+      .addLine(new SalesOrderLine().setProduct(productName).setQuantity(1))
+      .apply();
     cy.completeDocument();
   });
   it('Go to Shipment disposition', function() {
     cy.openReferencedDocuments('M_ShipmentSchedule');
-    cy.selectNthRow(0).dblclick();
+    cy.selectNthRow(0).click();
   });
   it('Generate shipments', function() {
-    cy.executeHeaderAction('M_ShipmentSchedule_EnqueueSelection');
+    cy.executeQuickAction('M_ShipmentSchedule_EnqueueSelection', false);
     cy.pressStartButton();
     cy.waitUntilProcessIsFinished();
   });
@@ -65,13 +60,15 @@ describe('Create Sales order', function() {
     cy.openInboxNotificationWithText(customer);
   });
   it('Billing - Invoice disposition', function() {
+    // wait until current window is "Shipment"
+    cy.url().should('contain', '/169/');
+
     cy.openReferencedDocuments('C_Invoice_Candidate');
     cy.selectNthRow(0).click();
   });
   it('Generate invoices on billing candidates', function() {
-    cy.executeHeaderAction('C_Invoice_Candidate_EnqueueSelectionForInvoicing');
+    cy.executeQuickAction('C_Invoice_Candidate_EnqueueSelectionForInvoicing', false, false, true);
     cy.pressStartButton();
-    cy.waitUntilProcessIsFinished();
     cy.openInboxNotificationWithText(customer);
   });
 });

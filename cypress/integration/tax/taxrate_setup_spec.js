@@ -3,8 +3,6 @@ import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils
 
 describe('Create Taxrate for Automatic End2End Tests with cypress https://github.com/metasfresh/metasfresh-e2e/issues/74', function() {
   it('Create new Taxrate', function() {
-    cy.wait(1000); // see comment/doc of getLanguageSpecific
-
     const date = humanReadableNow();
     const taxrateName = `Text-Tax 10% ${date}`;
 
