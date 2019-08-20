@@ -185,39 +185,39 @@ describe('Create a purchase order and Material Receipts', function() {
     cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', false, true, false);
     cy.pressDoneButton();
   });
-//   it('Check if Materialentnahmelager warehouse exists', function() {
-//     cy.visitWindow('139');
-//     toggleNotFrequentFilters();
-//     selectNotFrequentFilterWidget('default');
-//     cy.writeIntoStringField('Name', materialentnahme, false, null, true);
-//     applyFilters();
+  it('Check if Materialentnahmelager warehouse exists', function() {
+    cy.visitWindow('139');
+    toggleNotFrequentFilters();
+    selectNotFrequentFilterWidget('default');
+    cy.writeIntoStringField('Name', materialentnahme, false, null, true);
+    applyFilters();
 
-//     cy.expectNumberOfRows(1);
-//   });
-//   it('Partial material withdrawal in handling unit editor', function() {
-//     cy.visitWindow('540189');
-//     toggleNotFrequentFilters();
-//     selectNotFrequentFilterWidget('default');
-//     cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
-//     cy.writeIntoLookupListField('M_Locator_ID', warehouseName, warehouseName, false, false, null, true);
-//     applyFilters();
-//   });
-//   it('Select first row - related to LU quantity and extract 1 from there', function() {
-    // cy.selectNthRow(0).click();
-//     cy.executeQuickAction('WEBUI_M_HU_MoveTUsToDirectWarehouse', false, false, false);
-//     cy.writeIntoStringField('QtyTU', '1', true, null, true);
-//     cy.pressStartButton();
+    cy.expectNumberOfRows(1);
+  });
+  it('Partial material withdrawal in handling unit editor', function() {
+    cy.visitWindow('540189');
+    toggleNotFrequentFilters();
+    selectNotFrequentFilterWidget('default');
+    cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
+    cy.writeIntoLookupListField('M_Locator_ID', warehouseName, warehouseName, false, false, null, true);
+    applyFilters();
+  });
+  it('Select first row - related to LU quantity and extract 1 from there', function() {
+    cy.selectNthRow(0).click();
+    cy.executeQuickAction('WEBUI_M_HU_MoveTUsToDirectWarehouse', false, false, false);
+    cy.writeIntoStringField('QtyTU', '1', true, null, true);
+    cy.pressStartButton();
 
-//     clearNotFrequentFilters();
+    clearNotFrequentFilters();
 
-//     toggleNotFrequentFilters();
-//     selectNotFrequentFilterWidget('default');
-//     cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
-//     cy.writeIntoLookupListField('M_Locator_ID', warehouseName, warehouseName, false, false, null, true);
-//     applyFilters();
+    toggleNotFrequentFilters();
+    selectNotFrequentFilterWidget('default');
+    cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
+    cy.writeIntoLookupListField('M_Locator_ID', warehouseName, warehouseName, false, false, null, true);
+    applyFilters();
 
-//     cy.selectNthRow(0)
-//       .find('.Quantity')
-//       .should('contain', '40');
-//   });
+    cy.selectNthRow(0)
+      .find('.Quantity')
+      .should('contain', '40');
+  });
 });
