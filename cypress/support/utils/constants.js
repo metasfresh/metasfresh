@@ -1,6 +1,7 @@
 export class DocumentStatusKey {
   static Completed = 'docStatusCompleted';
   static Reversed = 'docStatusReversed';
+  // noinspection JSUnusedGlobalSymbols
   static Voided = 'docStatusVoided';
   static InProgress = 'docStatusInProgress';
   static Drafted = 'docStatusDrafted';
@@ -34,4 +35,12 @@ export class RewriteURL {
   static DocActionDropdown = `rest/api/window/[0-9]+/[0-9]+/field/DocAction/dropdown`;
 
   static DocumentLayout = `/rest/api/.*/layout`;
+
+  // noinspection JSUnusedGlobalSymbols
+  static SingleView = new RegExp(`/window/\\d+/\\d+$`);
+
+  // noinspection JSUnusedGlobalSymbols
+  static ExactSingleView(windowId) {
+    return new RegExp(`/window/${windowId}/\\d+$`);
+  }
 }

@@ -34,24 +34,21 @@ Cypress.Commands.add('selectTab', (tabName, force) => {
     opts.force = true;
   }
 
-  describe('Select and activate the tab with a certain name', function() {
-    return cy.get(`#tab_${tabName}`).click(opts);
-  });
+  return cy.get(`#tab_${tabName}`).click(opts);
 });
 
 Cypress.Commands.add('selectSingleTabRow', () => {
-  describe('Select the only row in the currently selected tab', function() {
-    cy.get('.table-flex-wrapper')
-      .find('tbody tr')
-      .should('exist')
-      .click({ force: true });
-  });
+  cy.get('.table-flex-wrapper')
+    .find('tbody tr')
+    .should('exist')
+    .click({ force: true });
 });
 
 Cypress.Commands.add('openReferencedDocuments', (referenceId, retriesLeft = 8) => {
   // retry 8 times to open the referenced document
   const date = humanReadableNow();
   const timeout = { timeout: 20000 };
+  cy.waitForSaveIndicator();
 
   if (retriesLeft >= 1) {
     const referencesAliasName = `references-${date}`;
