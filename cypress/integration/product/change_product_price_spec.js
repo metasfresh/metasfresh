@@ -1,23 +1,21 @@
-import { Product, ProductCategory, ProductPrice} from '../../support/utils/product';
-import { SalesOrder, SalesOrderLine} from '../../support/utils/sales_order';
-import { BPartner} from '../../support/utils/bpartner';
+import { Product, ProductCategory, ProductPrice } from '../../support/utils/product';
+import { SalesOrder, SalesOrderLine } from '../../support/utils/sales_order';
+import { BPartner } from '../../support/utils/bpartner';
 import { BPartnerLocation } from '../../support/utils/bpartner_ui';
 import { humanReadableNow } from '../../support/utils/utils';
 
-describe('Create Product', function() {
-  const timestamp = humanReadableNow();
-  const productName = `ProductName ${timestamp}`;
-  const productValue = `ProductNameValue ${timestamp}`;
-  const productCategoryName = `ProductCategoryName ${timestamp}`;
-  const productCategoryValue = `ProductNameValue ${timestamp}`;
-  const bpName = `Customer ${timestamp}`;
-  
+describe('Change Product Price', function() {
+  const date = humanReadableNow();
+  const productName = `ProductName ${date}`;
+  const productCategoryName = `ProductCategory ${date}`;
+  const bpName = `Customer ${date}`;
+
   const priceList = `Testpreise Kunden (Deutschland)_Germany - Deutschland_EUR_2015-01-01`;
   const taxCatergory = `Regular Tax Rate 19% (Germany)`;
   let salesOrderRecordID;
   let productRecordID;
 
-  it('Create a new ProductCategory', function() {
+  it('Create a Product Category', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
@@ -36,7 +34,7 @@ describe('Create Product', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)
-        .setProductCategory(productCategoryValue + '_' + productCategoryName)
+        .setProductCategory(productCategoryName + '_' + productCategoryName)
         .addProductPrice(productPrice)
         .setSold(false)
         .apply();
@@ -47,7 +45,7 @@ describe('Create Product', function() {
     });
   });
 
-  it('create BP', function() {
+  it('Create Business Partner', function() {
     new BPartner({ name: bpName })
       .setCustomer(true)
       .setPaymentTerm('Immediatlely')
@@ -57,15 +55,13 @@ describe('Create Product', function() {
   });
 
   it('Create a Sales Order', function() {
-    const salesOrderLine = new SalesOrderLine()
-      .setProduct(productName)
-      .setQuantity(`1`);
+    const salesOrderLine = new SalesOrderLine().setProduct(productName).setQuantity(`1`);
 
     cy.fixture('sales/sales_order.json').then(salesOrderJson => {
       Object.assign(new SalesOrder(), salesOrderJson)
-      .setBPartner(bpName)
-      .addLine(salesOrderLine)
-      .apply();
+        .setBPartner(bpName)
+        .addLine(salesOrderLine)
+        .apply();
     });
 
     cy.getCurrentWindowRecordId().then(recordId => {
@@ -73,7 +69,7 @@ describe('Create Product', function() {
     });
   });
 
-  it(`Change Price and use it`, function(){
+  it(`Change Price and use it`, function() {
     cy.visitWindow(`140`, productRecordID);
     cy.selectTab(`M_ProductPrice`);
     cy.selectNthRow(0);
@@ -84,9 +80,8 @@ describe('Create Product', function() {
     cy.visitWindow(`143`, salesOrderRecordID);
     cy.selectTab('C_OrderLine');
     cy.pressAddNewButton();
-    cy.writeIntoLookupListField('M_Product_ID', productName, productName, false, true );
-    cy.writeIntoStringField('QtyEntered', 1, true, null, true );
+    cy.writeIntoLookupListField('M_Product_ID', productName, productName, false, true);
+    cy.writeIntoStringField('QtyEntered', 1, true, null, true);
     cy.pressDoneButton();
   });
-
 });
