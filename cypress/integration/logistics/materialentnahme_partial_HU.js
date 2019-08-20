@@ -132,7 +132,6 @@ describe('Partial material withdrawal in handling unit editor with Materialentna
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
-        .setValue(productCategoryName)
         .apply();
     });
   });
@@ -182,7 +181,7 @@ describe('Create a purchase order and Material Receipts', function() {
     cy.selectNthRow(0).click();
     cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults', true, false, false);
     cy.wait(10000);
-    cy.selectNthRow(0, true);
+    // cy.selectNthRow(0, true);
     cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', false, false, false);
     cy.pressDoneButton();
   });
