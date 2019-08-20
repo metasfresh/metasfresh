@@ -5,13 +5,10 @@ import { humanReadableNow } from '../../support/utils/utils';
 describe('Create Product', function() {
   const date = humanReadableNow();
   const productName = `ProductName ${date}`;
-  const productValue = `ProductNameValue ${date}`;
   const bomName = `BOM ${date}`;
 
   const productCategoryName = `ProductCategoryName ${date}`;
-  const productCategoryValue = `ProductNameValue ${date}`;
   const productComponentName = `ProductComponentName ${date}`;
-  const productComponentValue = `ProductComponentValue ${date}`;
 
   it('Create a new ProductCategory', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
@@ -27,7 +24,7 @@ describe('Create Product', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)
-        .setProductCategory(productCategoryValue + '_' + productCategoryName)
+        .setProductCategory(productCategoryName + '_' + productCategoryName)
         .setStocked(true)
         .setPurchased(true)
         .setSold(true)
@@ -42,7 +39,7 @@ describe('Create Product', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productComponentName)
-        .setProductCategory(productCategoryValue + '_' + productCategoryName)
+        .setProductCategory(productCategoryName + '_' + productCategoryName)
         .setStocked(true)
         .setPurchased(true)
         .setSold(true)

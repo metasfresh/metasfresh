@@ -4,9 +4,7 @@ import { humanReadableNow } from '../../support/utils/utils';
 describe('Create Test: set packing item in product window https://github.com/metasfresh/metasfresh-e2e/issues/26', function() {
   const date = humanReadableNow();
   const productName = `ProductName ${date}`;
-  const productValue = `ProductNameValue ${date}`;
   const productCategoryName = `ProductCategoryName ${date}`;
-  const productCategoryValue = `ProductNameValue ${date}`;
 
   it('Create a new ProductCategory', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
@@ -20,7 +18,7 @@ describe('Create Test: set packing item in product window https://github.com/met
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)
-        .setProductCategory(productCategoryValue + '_' + productCategoryName)
+        .setProductCategory(productCategoryName + '_' + productCategoryName)
         .apply();
     });
   });

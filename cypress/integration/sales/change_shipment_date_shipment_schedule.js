@@ -10,9 +10,7 @@ describe('Create Sales order', function() {
   const date = humanReadableNow();
   const customer = `CustomerTest ${date}`;
   const productName = `ProductTest ${date}`;
-  const productValue = `sales_order_test ${date}`;
   const productCategoryName = `ProductCategoryName ${date}`;
-  const productCategoryValue = `ProductCategoryValue ${date}`;
   const discountSchemaName = `DiscountSchemaTest ${date}`;
   const priceSystemName = `PriceSystem ${date}`;
   const priceListName = `PriceList ${date}`;
@@ -23,10 +21,10 @@ describe('Create Sales order', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
     Builder.createBasicProductEntities(
       productCategoryName,
-      productCategoryValue,
+      productCategoryName,
       priceListName,
       productName,
-      productValue,
+      productName,
       productType
     );
 
