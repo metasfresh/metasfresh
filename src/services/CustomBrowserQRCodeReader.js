@@ -23,6 +23,6 @@ export default class CustomBrowserQRCodeReader extends BrowserQRCodeReader {
     }
 
     this.timer.destroy();
-    throw new ScannerError('No QR Code found. Fall back to barcode scanner');
+    throw new ScannerError('No QR Code found.');
   }
 }
