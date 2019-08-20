@@ -90,7 +90,7 @@ describe('Create disposal from HU Editor', function() {
 
   it('Run quick-action "Dispose"', function() {
     cy.selectNthRow(0).click();
-    cy.executeQuickAction('WEBUI_M_HU_MoveToGarbage', false, false, false);
+    cy.executeQuickAction('WEBUI_M_HU_MoveToGarbage', false, false);
   });
 
   it('Visit HU Editor, filter for the product, and expect no records', function() {

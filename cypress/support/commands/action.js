@@ -42,42 +42,40 @@ Cypress.Commands.add('executeHeaderActionWithDialog', actionName => {
 });
 
 // eslint-disable-next-line prettier/prettier
-Cypress.Commands.add('executeQuickAction', (actionName, defaultAction = false, modal = false, isDialogExpected = true) => {
-    let path = `.quick-actions-wrapper`; // default action
-    const requestAlias = `quickAction-${actionName}-${humanReadableNow()}`;
+Cypress.Commands.add('executeQuickAction', (actionName, modal = false, isDialogExpected = true) => {
+  let path = `.quick-actions-wrapper`; // default action
+  const requestAlias = `quickAction-${actionName}-${humanReadableNow()}`;
 
-    if (modal) {
-      path = '.modal-content-wrapper ' + path;
-    }
-
-    if (!defaultAction) {
-      cy.get(`${path} .btn-inline`)
-        .eq(0)
-        .click();
-      cy.get('.quick-actions-dropdown').should('exist');
-
-      path = `#quickAction_${actionName}`;
-    }
-    if (!defaultAction && !isDialogExpected) {
-      cy.server();
-      cy.route('GET', new RegExp(RewriteURL.QUICKACTION)).as(requestAlias);
-    }
-
-    cy.get(path)
-      .should('not.have.class', 'quick-actions-item-disabled')
-      .get(path)
-      .click({ timeout: 10000 })
-      .then(el => {
-        if (isDialogExpected) {
-          cy.wrap(el)
-            .get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
-            .should('exist');
-        }
-      });
-
-    if (!defaultAction && !isDialogExpected) {
-      cy.wait(`@${requestAlias}`);
-    }
-    cy.waitForSaveIndicator();
+  if (modal) {
+    path = '.modal-content-wrapper ' + path;
   }
-);
+
+  cy.get(`${path} .btn-inline`)
+    .eq(0)
+    .click();
+  cy.get('.quick-actions-dropdown').should('exist');
+
+  path = `#quickAction_${actionName}`;
+
+  if (!isDialogExpected) {
+    cy.server();
+    cy.route('GET', new RegExp(RewriteURL.QUICKACTION)).as(requestAlias);
+  }
+
+  cy.get(path)
+    .should('not.have.class', 'quick-actions-item-disabled')
+    .get(path)
+    .click({ timeout: 10000 })
+    .then(el => {
+      if (isDialogExpected) {
+        cy.wrap(el)
+          .get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
+          .should('exist');
+      }
+    });
+
+  if (!isDialogExpected) {
+    cy.wait(`@${requestAlias}`);
+  }
+  cy.waitForSaveIndicator();
+});

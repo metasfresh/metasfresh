@@ -52,7 +52,7 @@ describe('Create Sales order', function() {
     cy.selectNthRow(0).click();
   });
   it('Generate shipments', function() {
-    cy.executeQuickAction('M_ShipmentSchedule_EnqueueSelection', false);
+    cy.executeQuickAction('M_ShipmentSchedule_EnqueueSelection');
     cy.pressStartButton();
     cy.waitUntilProcessIsFinished();
   });
@@ -67,7 +67,7 @@ describe('Create Sales order', function() {
     cy.selectNthRow(0).click();
   });
   it('Generate invoices on billing candidates', function() {
-    cy.executeQuickAction('C_Invoice_Candidate_EnqueueSelectionForInvoicing', false, false, true);
+    cy.executeQuickAction('C_Invoice_Candidate_EnqueueSelectionForInvoicing', false, true);
     cy.pressStartButton();
     cy.openInboxNotificationWithText(customer);
   });
