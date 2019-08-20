@@ -16,8 +16,8 @@ import {
 } from '../../support/functions';
 
 const date = humanReadableNow();
-const productForPackingMaterial = `ProductPackingMaterial_${date}`;
-const productForPackingMaterial1 = `ProductPackingMaterial1_${date}`;
+const productForPackingMaterialTU = `ProductPackingMaterialTU_${date}`;
+const productForPackingMaterialLU = `ProductPackingMaterialLU_${date}`;
 const packingMaterialForTU = `PackingMaterialForTU_${date}`;
 const packingMaterialForLU = `PackingMaterialForLU${date}`;
 const packingInstructionsNameForTU = `ProductPackingInstructionsForTU_${date}`;
@@ -44,38 +44,56 @@ describe('Partial material withdrawal in handling unit editor with Materialentna
         .apply();
     });
   });
-  it('Create packing related entities', function() {
+  it('create product from 24_Gebinde category in order to use it for packing material for transport unit', function() {
     // eslint-disable-next-line
-    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productForPackingMaterial, productType, "24_Gebinde");
+    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterialTU, productForPackingMaterialTU, productType, "24_Gebinde");
+  });
+  it('create product from 24_Gebinde category in order to use it for packing material for loading unit', function() {
     Builder.createProductWithPriceUsingExistingCategory(
       priceListName,
-      productForPackingMaterial1,
-      productForPackingMaterial1,
+      productForPackingMaterialLU,
+      productForPackingMaterialLU,
       productType,
       '24_Gebinde'
     );
+  });
+  it('create packing material for handling unit - Transport unit', function() {
     cy.fixture('product/packing_material.json').then(packingMaterialJson => {
       Object.assign(new PackingMaterial(), packingMaterialJson)
         .setName(packingMaterialForTU)
-        .setProduct(productForPackingMaterial)
+        .setProduct(productForPackingMaterialTU)
+        .setLength('0')
+        .setWidth('0')
+        .setHeight('0')
         .apply();
     });
+  });
+  it('create packing material for handling unit - Load unit', function() {
     cy.fixture('product/packing_material.json').then(packingMaterialJson => {
       Object.assign(new PackingMaterial(), packingMaterialJson)
         .setName(packingMaterialForLU)
-        .setProduct(productForPackingMaterial1)
+        .setProduct(productForPackingMaterialLU)
+        .setLength('0')
+        .setWidth('0')
+        .setHeight('0')
         .apply();
     });
+  });
+  it('create packing instruction for handling unit - Transport unit', function() {
     cy.fixture('product/packing_instructions.json').then(packingInstructionsJson => {
       Object.assign(new PackingInstructions(), packingInstructionsJson)
         .setName(packingInstructionsNameForTU)
         .apply();
     });
+  });
+  it('create packing instruction for handling unit - Load unit', function() {
     cy.fixture('product/packing_instructions.json').then(packingInstructionsJson => {
       Object.assign(new PackingInstructions(), packingInstructionsJson)
         .setName(packingInstructionsNameForLU)
         .apply();
     });
+  });
+  it('create packing instruction version for handling unit - Transport unit; with packgut - quantity=0.00 and packmittel', function() {
     cy.fixture('product/packing_instructions_version.json').then(pivJson => {
       Object.assign(new PackingInstructionsVersion(), pivJson)
         .setName(packingInstructionsVersionForTU)
@@ -83,13 +101,16 @@ describe('Partial material withdrawal in handling unit editor with Materialentna
         .setPackingMaterial(packingMaterialForTU)
         .apply();
     });
-    // cy.selectTab('M_HU_PI_Item');
-    // cy.selectNthRow(1)
-    //   .find('.Quantity')
-    //   .dblclick({ force: true })
-    //   .type('150', { force: true });
-    // // cy.type('enter');
-    // cy.selectTab('M_HU_PI_Item');
+    /**For some reasons,the quantity for the packgut cannot be added in advanced edit mode, only like below */
+    cy.selectTab('M_HU_PI_Item');
+    cy.selectNthRow(1)
+      .find('.Quantity')
+      .dblclick({ force: true })
+      .find('.form-field-Qty input')
+      .type('0', { force: true });
+    cy.selectTab('M_HU_PI_Item');
+  });
+  it('create packing instruction version for handling unit - Transport unit; with packmittel and packingInstructionsNameForTU as unter-packvorschrift', function() {
     cy.fixture('product/packing_instructions_version.json').then(pivJson => {
       Object.assign(new PackingInstructionsVersion(), pivJson)
         .setName(packingInstructionsVersionForLU)
@@ -97,13 +118,14 @@ describe('Partial material withdrawal in handling unit editor with Materialentna
         .setPackingMaterial(packingMaterialForLU)
         .setUnit('Load/Logistique Unit')
         .apply();
-      cy.selectTab('M_HU_PI_Item');
-      cy.pressAddNewButton();
-      cy.selectInListField('ItemType', 'Unter-Packvorschrift', true);
-      cy.selectInListField('Included_HU_PI_ID', packingInstructionsNameForLU, true);
-      cy.writeIntoStringField('Qty', '10', true, null, true);
-      cy.pressDoneButton();
     });
+    cy.selectTab('M_HU_PI_Item');
+    cy.pressAddNewButton();
+    cy.selectInListField('ItemType', 'Unter-Packvorschrift', true);
+    /**VERY IMPORTANT!!! the packing instruction for TU have to be set as unter-packvorschrift otherwise the LU quantity won't appear after creating a material receipt */
+    cy.selectInListField('Included_HU_PI_ID', packingInstructionsNameForTU, true);
+    cy.writeIntoStringField('Qty', '10', true, null, true);
+    cy.pressDoneButton();
   });
 
   it('Create category', function() {
@@ -115,7 +137,7 @@ describe('Partial material withdrawal in handling unit editor with Materialentna
     });
   });
 
-  it('Create product1', function() {
+  it('Create product for the purchase order', function() {
     Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(
       productCategoryName,
       productCategoryName,
@@ -146,7 +168,7 @@ describe('Create a purchase order and Material Receipts', function() {
       .setBPartner(vendorName)
       .setPriceSystem(priceSystemName)
       .setPoReference('test')
-      .addLine(new PurchaseOrderLine().setProduct(productName1).setQuantity(15))
+      .addLine(new PurchaseOrderLine().setProduct(productName1).setQuantity(5))
       .apply();
     cy.completeDocument();
   });
@@ -158,7 +180,7 @@ describe('Create a purchase order and Material Receipts', function() {
 
   it('Create Material Receipt 1', function() {
     cy.selectNthRow(0).click();
-    cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults');
+    cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults', true);
     cy.selectNthRow(0, true);
     cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', false, true);
     cy.pressDoneButton();
@@ -180,19 +202,19 @@ describe('Create a purchase order and Material Receipts', function() {
     cy.writeIntoLookupListField('M_Locator_ID', warehouseName, warehouseName, false, false, null, true);
     applyFilters();
 
-    // cy.selectNthRow(0).click();
-    // cy.executeQuickAction('WEBUI_M_HU_MoveTUsToDirectWarehouse');
-    // cy.writeIntoStringField('QtyTU', '1', true, null, true);
-    // cy.pressStartButton();
+    cy.selectNthRow(0).click();
+    cy.executeQuickAction('WEBUI_M_HU_MoveTUsToDirectWarehouse');
+    cy.writeIntoStringField('QtyTU', '1', true, null, true);
+    cy.pressStartButton();
 
-    // clearNotFrequentFilters();
+    clearNotFrequentFilters();
 
-    // toggleNotFrequentFilters();
-    // selectNotFrequentFilterWidget('default');
-    // cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
+    toggleNotFrequentFilters();
+    selectNotFrequentFilterWidget('default');
+    cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
     // cy.writeIntoLookupListField('M_Locator_ID', materialentnahme, materialentnahme, false, false, null, true);
-    // applyFilters();
+    applyFilters();
 
-    // cy.expectNumberOfRows(2);
+    cy.expectNumberOfRows(2);
   });
 });
