@@ -179,10 +179,10 @@ describe('Create a purchase order and Material Receipts', function() {
 
   it('Create Material Receipt', function() {
     cy.selectNthRow(0).click();
-    cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults', true, false, false);
-    cy.wait(10000);
-    // cy.selectNthRow(0, true);
-    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', false, false, false);
+    cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults', false);
+    cy.selectNthRow(0, true);
+    // cy.get('.quick-actions-tag.pointer').should('contain', 'Create material receipt').click();
+    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', false, true, false);
     cy.pressDoneButton();
   });
   it('Check if Materialentnahmelager warehouse exists', function() {
