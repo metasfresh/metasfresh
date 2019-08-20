@@ -20,13 +20,40 @@
  * #L%
  */
 
-import { getLanguageSpecific } from '../../support/utils/utils';
+import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
 import { Inventory, InventoryLine } from '../../support/utils/inventory';
 import { Builder } from '../../support/utils/builder';
 import { DiscountSchema } from '../../support/utils/discountschema';
+import { ProductCategory } from '../../support/utils/product';
+import { BPartner } from '../../support/utils/bpartner';
+import { SalesOrder, SalesOrderLine } from '../../support/utils/sales_order';
+import { salesOrders } from '../../page_objects/sales_orders';
+import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
 
-const productName = 'Product';
-const productQty = 10;
+const date = humanReadableNow();
+// const date = '20T13_16_11_919';
+// Price
+const priceSystemName = `PriceSystem_${date}`;
+const priceListName = `PriceList_${date}`;
+const priceListVersionName = `PriceListVersion_${date}`;
+const discountSchemaName = `DiscountSchema_${date}`;
+
+// Packing
+const productForPackingMaterial = `ProductPackingMaterial_${date}`;
+const packingInstructionsName = `ProductPackingInstructions_${date}`;
+
+// Products
+const productCategoryName = `ProductCategoryName_${date}`;
+const productName = `Product_${date}`;
+const productType = 'Item';
+
+// BPartner
+const bPartnerName = `BPartner_${date}`;
+
+// SO/HU
+const productQty = 100;
+const soProductQuantity = 20;
+const expectedProductQtyAfterPicking = productQty - soProductQuantity;
 const locatorId = 'Hauptlager_StdWarehouse_Hauptlager_0_0_0';
 
 // test columns
@@ -36,16 +63,17 @@ const locatorId = 'Hauptlager_StdWarehouse_Hauptlager_0_0_0';
 //   or something else?
 const pickingOrderColumn = 'Order';
 const huCodeColumn = 'Code';
+const productColumn = 'Product';
+const productPartnerColumn = 'Product / Partner';
 
 // test
 let soDocNumber;
 let soRecordId;
-let huValue1;
-let huValue2;
+let huValue;
 
 describe('Create test data', function() {
   it('Create price entities', function() {
-    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, false);
+    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
     cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
       Object.assign(new DiscountSchema(), discountSchemaJson)
         .setName(discountSchemaName)
@@ -53,7 +81,41 @@ describe('Create test data', function() {
     });
   });
 
-  it('Create first single-HU inventory doc', function() {
+  it('Create category', function() {
+    cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
+      Object.assign(new ProductCategory(), productCategoryJson)
+        .setName(productCategoryName)
+        .apply();
+    });
+  });
+
+  it('Create packing related entities', function() {
+    // eslint-disable-next-line
+    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productForPackingMaterial, productType, "24_Gebinde");
+    Builder.createPackingMaterial(productForPackingMaterial, packingInstructionsName);
+  });
+
+  it('Create product', function() {
+    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(
+      productCategoryName,
+      productCategoryName,
+      priceListName,
+      productName,
+      productName,
+      productType,
+      packingInstructionsName
+    );
+  });
+
+  it('Create bPartner', function() {
+    cy.fixture('sales/simple_customer.json').then(customerJson => {
+      new BPartner({ ...customerJson, name: bPartnerName }).setCustomerDiscountSchema(discountSchemaName).apply();
+    });
+
+    cy.readAllNotifications();
+  });
+
+  it('Create  single-HU inventory doc', function() {
     let uomName;
     cy.fixture('product/simple_product.json').then(productJson => {
       uomName = getLanguageSpecific(productJson, 'c_uom');
@@ -77,13 +139,119 @@ describe('Create test data', function() {
     });
   });
 
-  it('Save HU Value 1', function() {
+  it('Save HU Value', function() {
     cy.selectTab('M_InventoryLine');
     cy.selectNthRow(0);
     cy.openAdvancedEdit();
     cy.getStringFieldValue('M_HU_ID').then(val => {
-      huValue1 = val.split('_')[0];
+      huValue = val.split('_')[0];
     });
     cy.pressDoneButton();
   });
+
+  it('Create Sales Order', function() {
+    new SalesOrder()
+      .setBPartner(bPartnerName)
+      .setPriceSystem(priceSystemName)
+      .addLine(new SalesOrderLine().setProduct(productName).setQuantity(soProductQuantity))
+      .apply();
+    cy.completeDocument();
+
+    cy.getCurrentWindowRecordId().then(id => (soRecordId = id));
+    cy.getStringFieldValue('DocumentNo').then(docNO => (soDocNumber = docNO));
+  });
+});
+
+describe('Pick the SO', function() {
+  it('Visit "Picking Terminal (Prototype)"', function() {
+    // unfortunately the picking assignment is not created instantly and there's no way to check when it is created except by refreshing the page,
+    // so i have to wait for it to be created :(
+    cy.waitUntilProcessIsFinished();
+    cy.visitWindow('540345');
+  });
+
+  it('Select first row and run action Pick', function() {
+    cy.selectRowByColumnAndValue(productPartnerColumn, productName);
+    cy.executeQuickAction('WEBUI_Picking_Launcher');
+  });
+
+  it('Mark the HU as source', function() {
+    cy.selectLeftTable().within(() => {
+      cy.selectRowByColumnAndValue(pickingOrderColumn, soDocNumber, false, true);
+    });
+    cy.openPickingHUSelectionWindow();
+    cy.selectRightTable().within(() => {
+      cy.selectRowByColumnAndValue(huCodeColumn, huValue, false, true);
+    });
+    cy.executeQuickAction('WEBUI_Picking_HUEditor_Create_M_Source_HUs', false, true, false);
+    cy.selectRightTable().within(() => {
+      // expecting the HU to be here
+      cy.selectRowByColumnAndValue(huCodeColumn, huValue, false, true);
+    });
+  });
+
+  it('Run quick-action "Pick to new HU"', function() {
+    cy.selectLeftTable().within(() => {
+      cy.selectRowByColumnAndValue(pickingOrderColumn, soDocNumber, false, true);
+    });
+    cy.selectRightTable().within(() => {
+      cy.selectNthRow(0, false, true);
+    });
+    cy.executeQuickAction('WEBUI_Picking_PickQtyToNewHU', false, true);
+
+    cy.resetListValue('M_HU_PI_Item_Product_ID', true);
+    cy.selectInListField('M_HU_PI_Item_Product_ID', packingInstructionsName, true);
+    cy.getStringFieldValue('QtyCU').should('equals', soProductQuantity.toString(10));
+    cy.pressStartButton();
+  });
+
+  it('Confirm Pick', function() {
+    cy.selectLeftTable().within(() => {
+      cy.selectRowByColumnAndValue(pickingOrderColumn, soDocNumber, false, true);
+    });
+    cy.selectRightTable().within(() => {
+      cy.selectRowByColumnAndValue(productColumn, productName, false, true);
+    });
+    cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', false, true, false);
+    cy.waitForSaveIndicator();
+    cy.pressDoneButton();
+  });
+});
+
+describe('Checks after picking', function() {
+  it('Open the Referenced Shipment Disposition', function() {
+    salesOrders.visit(soRecordId);
+    cy.openReferencedDocuments('M_ShipmentSchedule');
+
+    cy.expectNumberOfRows(1);
+    cy.selectNthRow(0).dblclick();
+  });
+
+  it('Shipment Disposition checks', function() {
+    cy.expectCheckboxValue('IsToRecompute', false);
+    cy.getStringFieldValue('C_BPartner_ID').should('contain', bPartnerName);
+    cy.getStringFieldValue('M_Product_ID').should('contain', productName);
+    cy.getStringFieldValue('C_Order_ID').should('equal', soDocNumber);
+    cy.getStringFieldValue('QtyOrdered_Calculated').should('equal', soProductQuantity.toString(10));
+    cy.getStringFieldValue('QtyToDeliver ').should('equal', '0');
+    cy.getStringFieldValue('QtyPickList ').should('equal', soProductQuantity.toString(10));
+  });
+
+  // it('Visit HU Editor and expect the HU to have less quantity than initially', function() {
+  //   // blocked by: https://github.com/metasfresh/metasfresh-e2e/issues/327
+  //   cy.visitWindow(540189);
+  //   toggleNotFrequentFilters();
+  //   selectNotFrequentFilterWidget('default');
+  //   cy.writeIntoStringField('Value', huValue, false, null, true);
+  //
+  //   applyFilters();
+  //
+  //   cy.expectNumberOfRows(1);
+  //   cy.selectNthRow(0).dblclick();
+  //   cy.selectTab('M_HU_Storage');
+  //   cy.selectNthRow(0);
+  //   cy.openAdvancedEdit();
+  //   cy.getStringFieldValue('Qty').should('equals', expectedProductQtyAfterPicking.toString(10));
+  //   cy.pressDoneButton();
+  // });
 });
