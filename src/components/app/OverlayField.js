@@ -32,6 +32,7 @@ class OverlayField extends Component {
 
   renderBarcodeScanButton = () => {
     const { onScanBarcode } = this.props;
+    console.log("onScanBarcode: "+onScanBarcode);
 
     return (
       <button
@@ -47,11 +48,13 @@ class OverlayField extends Component {
     const { disabled, codeSelected, onChange } = this.props;
     const elements = layout.elements;
 
+    console.log("onChange: "+onChange);
+
     return elements.map((elem, id) => {
       const widgetData = elem.fields.map(item => data[item.field] || -1);
       let captionElement = null;
 
-      if (elem.caption === 'Barcode') {
+      if (elem.barcodeScannerType) {
         captionElement = this.renderBarcodeScanButton();
       }
 
@@ -89,7 +92,7 @@ class OverlayField extends Component {
     return parameters.map((item, index) => {
       let captionElement = null;
 
-      if (item.parameterName === 'Barcode') {
+      if (item.barcodeScannerType) {
         captionElement = this.renderBarcodeScanButton();
       }
 
