@@ -204,7 +204,7 @@ describe('Create a purchase order and Material Receipts', function() {
   });
   it('Select first row - related to LU quantity and extract 1 from there', function() {
     cy.selectNthRow(0).click();
-    cy.executeQuickAction('WEBUI_M_HU_MoveTUsToDirectWarehouse', false, false, false);
+    cy.executeQuickAction('WEBUI_M_HU_MoveTUsToDirectWarehouse', false, false, true);
     cy.writeIntoStringField('QtyTU', '1', true, null, true);
     cy.pressStartButton();
 
