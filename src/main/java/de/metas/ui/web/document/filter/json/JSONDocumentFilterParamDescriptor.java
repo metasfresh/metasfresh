@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.process.BarcodeScannerType;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
@@ -94,6 +95,10 @@ import lombok.ToString;
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private Boolean showIncrementDecrementButtons;
 
+	@JsonProperty("barcodeScannerType")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final BarcodeScannerType barcodeScannerType;
+
 	private JSONDocumentFilterParamDescriptor(final DocumentFilterParamDescriptor param, final JSONDocumentLayoutOptions options)
 	{
 		parameterName = param.getParameterName();
@@ -121,6 +126,8 @@ import lombok.ToString;
 		type = toJSONLayoutType(widgetType);
 
 		showIncrementDecrementButtons = param.isShowIncrementDecrementButtons() ? Boolean.TRUE : null;
+
+		barcodeScannerType = param.getBarcodeScannerType();
 	}
 
 	private static JSONLayoutType toJSONLayoutType(final JSONLayoutWidgetType widgetType)

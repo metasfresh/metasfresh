@@ -34,6 +34,7 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
+import de.metas.process.BarcodeScannerType;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
@@ -406,7 +407,8 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.addParameter(DocumentFilterParamDescriptor.builder()
 							.setFieldName(PARAM_Barcode)
 							.setDisplayName(barcodeCaption)
-							.setWidgetType(DocumentFieldWidgetType.Text))
+							.setWidgetType(DocumentFieldWidgetType.Text)
+							.barcodeScannerType(BarcodeScannerType.QRCode))
 					.build();
 		}
 
