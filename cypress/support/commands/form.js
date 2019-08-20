@@ -1,4 +1,5 @@
 import { confirmCalendarDay } from '../functions';
+import { RewriteURL } from '../utils/constants';
 
 // thx to https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace
 function removeSubstringsWithCurlyBrackets(stringValue) {
@@ -93,7 +94,7 @@ Cypress.Commands.add('expectCheckboxValue', (fieldName, isChecked, modal) => {
 Cypress.Commands.add('resetListValue', (fieldName, modal, rewriteUrl = null) => {
   cy.log(`resetListValue - fieldName=${fieldName}; modal=${modal}`);
 
-  const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
+  const patchUrlPattern = rewriteUrl || RewriteURL.Generic;
   const patchListValueAliasName = `patchListValue-${fieldName}-${new Date().getTime()}`;
 
   cy.server();
@@ -311,7 +312,7 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue, modal, rewriteU
   cy.log(`selectInListField - fieldName=${fieldName}; listValue=${listValue}; modal=${modal}`);
 
   const patchListFieldAliasName = `patchListField-${fieldName}-${new Date().getTime()}`;
-  const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
+  const patchUrlPattern = rewriteUrl || RewriteURL.Generic;
 
   // here we want to match URLs that don *not* end with "/NEW"
   if (!skipRequest) {
