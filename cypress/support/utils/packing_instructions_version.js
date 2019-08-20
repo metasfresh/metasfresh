@@ -49,10 +49,8 @@ function applyPackingInstructionsVersion(packingInstructionsVersion) {
     cy.selectInListField('ItemType', 'Packmittel', true);
     cy.selectInListField('M_HU_PackingMaterial_ID', packingInstructionsVersion.packingMaterial, true);
     cy.pressDoneButton();
-    if (!packingInstructionsVersion.unit) {
-      cy.pressAddNewButton();
-      cy.selectInListField('ItemType', 'Packgut', true);
-      cy.pressDoneButton();
-    }
+    cy.pressAddNewButton();
+    cy.selectInListField('ItemType', 'Packgut', true);
+    cy.pressDoneButton();
   });
 }

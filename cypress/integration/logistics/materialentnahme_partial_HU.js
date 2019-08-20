@@ -182,7 +182,7 @@ describe('Create a purchase order and Material Receipts', function() {
     cy.selectNthRow(0).click();
     cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults', true);
     cy.selectNthRow(0, true);
-    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', false, true);
+    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', false, true, false);
     cy.pressDoneButton();
   });
   it('Check if Materialentnahmelager warehouse exists', function() {
@@ -201,7 +201,8 @@ describe('Create a purchase order and Material Receipts', function() {
     cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
     cy.writeIntoLookupListField('M_Locator_ID', warehouseName, warehouseName, false, false, null, true);
     applyFilters();
-
+  });
+  it('Select first row - related to LU quantity and extract 1 from there', function() {
     cy.selectNthRow(0).click();
     cy.executeQuickAction('WEBUI_M_HU_MoveTUsToDirectWarehouse');
     cy.writeIntoStringField('QtyTU', '1', true, null, true);
@@ -212,9 +213,11 @@ describe('Create a purchase order and Material Receipts', function() {
     toggleNotFrequentFilters();
     selectNotFrequentFilterWidget('default');
     cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
-    // cy.writeIntoLookupListField('M_Locator_ID', materialentnahme, materialentnahme, false, false, null, true);
+    cy.writeIntoLookupListField('M_Locator_ID', warehouseName, warehouseName, false, false, null, true);
     applyFilters();
 
-    cy.expectNumberOfRows(2);
+    cy.selectNthRow(0)
+      .find('.Quantity')
+      .should('contain', '40');
   });
 });
