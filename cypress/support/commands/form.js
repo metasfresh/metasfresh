@@ -77,7 +77,7 @@ Cypress.Commands.add('expectCheckboxValue', (fieldName, isChecked, modal) => {
 
   const path = createFieldPath(fieldName, modal);
 
-  const timeout = { timeout: 20000 };
+  const timeout = { timeout: 40000 };
   if (isChecked) {
     return cy
       .get(path)
