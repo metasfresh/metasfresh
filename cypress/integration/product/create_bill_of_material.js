@@ -24,7 +24,7 @@ describe('Create Product', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)
-        .setProductCategory(productCategoryName)
+        .setProductCategory(productCategoryName + '_' + productCategoryName)
         .setStocked(true)
         .setPurchased(true)
         .setSold(true)
@@ -39,7 +39,7 @@ describe('Create Product', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productComponentName)
-        .setProductCategory(productCategoryName)
+        .setProductCategory(productCategoryName + '_' + productCategoryName)
         .setStocked(true)
         .setPurchased(true)
         .setSold(true)

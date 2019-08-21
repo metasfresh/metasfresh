@@ -51,3 +51,20 @@ Cypress.on('scrolled', $el => {
     inline: 'center',
   });
 });
+
+// This adds a delay between cypress commands for easier debugging
+// Ref: https://github.com/cypress-io/cypress/issues/249
+//
+// const COMMAND_DELAY = 1000;
+//
+// for (const command of ['visit', 'click', 'trigger', 'type', 'clear', 'reload', 'contains']) {
+//   Cypress.Commands.overwrite(command, (originalFn, ...args) => {
+//     const origVal = originalFn(...args);
+//
+//     return new Promise((resolve) => {
+//       setTimeout(() => {
+//         resolve(origVal);
+//       }, COMMAND_DELAY);
+//     });
+//   });
+// }

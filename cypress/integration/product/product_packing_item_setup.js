@@ -18,7 +18,7 @@ describe('Create Test: set packing item in product window https://github.com/met
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)
-        .setProductCategory(productCategoryName)
+        .setProductCategory(productCategoryName + '_' + productCategoryName)
         .apply();
     });
   });

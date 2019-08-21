@@ -11,7 +11,7 @@ declare namespace Cypress {
      * Asserts that a particular filed is not shown (e.g. because of a display rule)
      *
      * @param fieldName - name of the field is question
-     * @param modal - optional, default = false - use true if the field is in a modal overlay; required if the underlying window has a field with the same name.
+     * @param modal - optional, default = false - use true if the field is in a modal overlay
      */
     assertFieldNotShown(fieldName: string, modal?: boolean): Chainable<any>
 
@@ -28,14 +28,14 @@ declare namespace Cypress {
      *
      * @param actionName - internal name of the action to be executed
      * @param defaultAction - optional, default false - if truthy the default action will be executed.
-     * @param modal - optional, default = false - use true if the field is in a modal overlay; required if the underlying window has a field with the same name.
+     * @param modal - optional, default = false - use true if the field is in a modal overlay
      * @param isDialogExpected - optional, default true - use false if this action does not open any dialog
      */
     executeQuickAction(actionName: string, defaultAction?: boolean, modal?: boolean, isDialogExpected ?: boolean): Chainable<any>
 
     /**
      * @param fieldName - name of the field is question
-     * @param modal - optional, default = false; - use true if the field is in a modal overlay; required if the underlying window has a field with the same name.
+     * @param modal - optional, default = false - use true if the field is in a modal overlay
      *
      * @example
      * cy.getStringFieldValue('C_BPartner_ID').should('contain', businessPartnerName);
@@ -47,7 +47,7 @@ declare namespace Cypress {
      * Used for reading text fields such as the `Description` field.
      *
      * @param fieldName - name of the field is question
-     * @param modal - optional, default = false; - use true if the field is in a modal overlay; required if the underlying window has a field with the same name.
+     * @param modal - optional, default = false - use true if the field is in a modal overlay
      *
      * @example
      * cy.getTextFieldValue('Description').should('contain', originalDocumentDescription);
@@ -57,7 +57,7 @@ declare namespace Cypress {
 
     /**
      * @param fieldName - name of the field is question
-     * @param modal - optional, default = false; - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name.
+     * @param modal - optional, default = false - use true if the field is in a modal overlay
      *
      * @example
      * cy.getCheckboxValue('IsDefault').then(checkBoxValue => {
@@ -98,7 +98,7 @@ declare namespace Cypress {
      *
      * @param fieldName - name of the field is question
      * @param expectedPatchValue - the expected value of the checkbox
-     * @param modal optional, default = false; - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
+     * @param modal - optional, default = false - use true if the field is in a modal overlay
      * @param rewriteUrl optional, default = null; - specify to which URL the command expects the frontend to patch
      *
      * @example
@@ -117,33 +117,24 @@ declare namespace Cypress {
     /**
      * Presses a single document's add-new-button to create a new subrow / included document
      *
-     * @param includedDocumentIdAliasName optional; default value: 'newIncludedDocumentId'; the name of the alias in which the command will store the new record's ID; example " { documentId: 1000001 }";
-     *
      * @example
      *
-     * // press the button to open the new sub-record's modal dialog using the default documentId
-     * cy.pressAddNewButton()
-     *
      * // press the button to open the new sub-record's modal dialog
-     * cy.pressAddNewButton('myNewIncludedDcumentId')
-     *
+     * cy.pressAddNewButton()
      * // set fields
-     *
+     * // [...]
      * // close the modal dialog
      * cy.pressDoneButton()
-     *
-     * cy.get('@myNewIncludedDcumentId').then((newIncludedDocument) => {
-     *   cy.log(`going to do things with the included document we added just before; newIncludedDocument=${JSON.stringify(newIncludedDocument)}`)
-     * })
      */
-    pressAddNewButton(includedDocumentIdAliasName?: string): Chainable<any>
+    pressAddNewButton(): Chainable<any>
 
     /**
      *
      * @param action
      * @param expectedStatus - optional; if given, the command verifies the status
      *
-     * @example cy.processDocument('Complete', 'Completed');
+     * @example
+     * cy.processDocument('Complete', 'Completed');
      */
     processDocument(action: string, expectedStatus?: string)
 
@@ -152,9 +143,10 @@ declare namespace Cypress {
      *
      * @param fieldName name of the field is question
      * @param stringValue (sub-)string of the list item to select
-     * @param modal optional, default = false; use true, if the field is in a modal overlay; required if the underlying window has a field with the same name.
+     * @param modal - optional, default = false - use true if the field is in a modal overlay
      * @param rewriteUrl optional - specify to which URL the command expects the frontend to patch.
      * @param skipRequest optional, default false - if set to true, cypress won't expect a request to the server and won't wait for it
+     *
      * @example
      * // select a certain flatrate condition is a process dialog
      * cy.selectInListField('C_Flatrate_Conditions_ID', conditionsName, true, '/rest/api/process/');
@@ -197,7 +189,7 @@ declare namespace Cypress {
      * @param partialValue string to enter into the lookup field
      * @param expectedListValue (sub-)string of the expected item to show up in the lookup list when the partial value was entered
      * @param typeList optional, default = false; use true when selecting value from a list not lookup field.
-     * @param modal optional, default = false; use true, if the field is in a modal overlay; required if the underlying window has a field with the same name.
+     * @param modal - optional, default = false - use true if the field is in a modal overlay
      * @param rewriteUrl optional, default = null; specify to which URL the command expects the frontend to patch.
      * @param skipRequest optional, default false - if set to true, cypress won't expect a request to the server and won't wait for it
      */
@@ -209,7 +201,7 @@ declare namespace Cypress {
      *
      * @param fieldName name of the field is question
      * @param value - the value to write. This command prepends "{enter}" to that string. Also works for number or date fields, e.g. '01/01/2018' when invoked with skipRequest=true.
-     * @param modal - optional - set true if the field in question is assumed to be in a modal/overlay dialog.
+     * @param modal - optional, default = false - use true if the field is in a modal overlay
      * @param rewriteUrl optional - specify to which URL the command expects the frontend to patch.
      * @param skipRequest optional - set true if the command shall not very that a patch with the "right" response takes place. This is currently required if you use this command to non-string fields.
      *
@@ -226,7 +218,7 @@ declare namespace Cypress {
      *
      * @param fieldName name of the field is question
      * @param stringValue the string to write. This command prepends "{enter}" to that string
-     * @param modal optional, default = false; use true, if the field is in a modal overlay; required if the underlying window has a field with the same name.
+     * @param modal - optional, default = false - use true if the field is in a modal overlay
      *
      * @example
      * // This will work also with modal dialogs, *unless* there is also a description field in the underlying document
@@ -250,9 +242,9 @@ declare namespace Cypress {
      * Select a tab by its name.
      *
      * @param tabName the name of the tab
-     * @param forced optional, default = false;
+     * @param force optional, default = false;
      */
-    selectTab(tabName: string, forced?: boolean): Chainable<any>
+    selectTab(tabName: string, force?: boolean): Chainable<any>
 
 
     /**
@@ -311,7 +303,7 @@ declare namespace Cypress {
      *
      * @param fieldName name of the field is question
      * @param isChecked if true the checkbox is set to checked state, if false the checkbox is set to unchecked state
-     * @param modal - optional, default = false - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
+     * @param modal - optional, default = false - use true if the field is in a modal overlay
      * @param rewriteUrl - optional, default = null - specify to which URL the command expects the frontend to patch
      * @param skipRequest - optional, default = false - if set to true, cypress won't expect a request to the server and won't wait for it
      */
@@ -323,7 +315,7 @@ declare namespace Cypress {
      *
      * @param fieldName name of the field is question
      * @param isChecked if true the checkbox should be in checked state, if false the checkbox should be unchecked
-     * @param modal - optional, default = false - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
+     * @param modal - optional, default = false - use true if the field is in a modal overlay
      */
     expectCheckboxValue(fieldName: string, isChecked: boolean, modal?: boolean): Chainable<any>
 
@@ -333,7 +325,7 @@ declare namespace Cypress {
      * Similar to pressing the (x) button of a list.
      *
      * @param fieldName - name of the field is question
-     * @param modal - optional, default = false - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
+     * @param modal - optional, default = false - use true if the field is in a modal overlay
      * @param rewriteUrl - optional, default = null - specify to which URL the command expects the frontend to patch
      */
     resetListValue(fieldName: string, modal?: boolean, rewriteUrl?: RewriteURL): Chainable<any>
@@ -370,7 +362,7 @@ declare namespace Cypress {
      * Erase the contents of this field.
      *
      * @param fieldName - name of the field is question
-     * @param modal - optional, default = false - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
+     * @param modal - optional, default = false - use true if the field is in a modal overlay
      */
     clearField(fieldName: string, modal?: boolean): Chainable<any>
 
@@ -379,9 +371,9 @@ declare namespace Cypress {
      * Basic command for clicking an element with certain selector.
      *
      * @param selector - string used to query for the element
-     * @param forced - use force clicking or normal clicking
+     * @param force - use force clicking or normal clicking
      */
-    clickElementWithClass(selector, forced): Chainable<any>
+    clickElementWithClass(selector, force): Chainable<any>
 
 
     /*
@@ -429,7 +421,7 @@ declare namespace Cypress {
      *
      * @param fieldName - id of the field to select from
      * @param index - index of the item to select
-     * @param modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
+     * @param modal - optional, default = false - use true if the field is in a modal overlay
      */
     selectNthInListField(fieldName: string, index: number, modal?: boolean): Chainable<any>
 
@@ -555,9 +547,10 @@ declare namespace Cypress {
      * Select the nth row in a list. Starts from 0.
      *
      * @param rowNumber - the row number
-     * @param modal - optional, default = false - use true if the field is in a modal overlay; required if the underlying window has a field with the same name.
+     * @param modal - optional, default = false - use true if the field is in a modal overlay
+     * @param force - optional, default = false - use true when no checks should be done if the selection was successful;
      */
-    selectNthRow(rowNumber: number, modal?: boolean): Chainable<any>
+    selectNthRow(rowNumber: number, modal?: boolean, force ?: boolean): Chainable<any>
 
 
     /**
@@ -610,6 +603,49 @@ declare namespace Cypress {
      * @param numberOfRows - the number of rows
      */
     expectNumberOfRowsToBeGreaterThan(numberOfRows: number): Chainable<any>
+
+
+    /**
+     * Select the left table from a modal dialog with 2 tables side by side.
+     */
+    selectLeftTable(): Chainable<any>
+
+
+    /**
+     * Select the right table from a modal dialog with 2 tables side by side.
+     */
+    selectRightTable(): Chainable<any>
+
+
+    /**
+     * Runs the action "Open HU selection" window inside the window Picking Terminal (Prototype)
+     */
+    openPickingHUSelectionWindow(): Chainable<any>
+
+
+    /**
+     * Searches and selects a specific row cell of a table by using column name and the expected value of that column.
+     *
+     * @param columnName - name of the column
+     * @param expectedValue - expected value of the column in any row
+     * @param modal - optional, default = false - use true if the field is in a modal overlay
+     * @param force - optional, default = false - use true when no checks should be done if the selection was successful
+     *
+     * @example
+     * // normal usage
+     * cy.selectRowByColumnAndValue('Code', huValue);
+     *
+     * @example
+     * // usage when inside a left/right table (eg. during Picking)
+     * // note that we're using `.within()`
+     * // also note that we're setting `modal=false`, and `force=true` because of within
+     * cy.selectRightTable().within(() => {
+     *   cy.selectRowByColumnAndValue(huCodeColumnName, huValue, false, true);
+     * });
+     */
+    selectRowByColumnAndValue(columnName: string, expectedValue: string | number, modal ?: boolean, force ?: boolean): Chainable<any>
+
+
   }
 
 }
