@@ -448,11 +448,13 @@ Cypress.Commands.add('waitUntilProcessIsFinished', () => {
 });
 
 Cypress.Commands.add('waitForSaveIndicator', (expectIndicator = false) => {
+  const timeout = { timeout: 10000 };
+
   if (expectIndicator) {
-    cy.get('.indicator-pending').should('exist');
+    cy.get('.indicator-pending', timeout).should('exist');
   }
-  cy.get('.indicator-pending').should('not.exist');
-  cy.get('.indicator-saved').should('exist');
+  cy.get('.indicator-pending', timeout).should('not.exist');
+  cy.get('.indicator-saved', timeout).should('exist');
 });
 
 Cypress.Commands.add('selectNotificationContaining', expectedValue => {
