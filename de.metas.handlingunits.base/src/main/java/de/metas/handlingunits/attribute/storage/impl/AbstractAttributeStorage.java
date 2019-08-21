@@ -143,11 +143,11 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		toString(stringHelper);
 
 		return stringHelper
-				.add("huAttributePropagatorFactory", huAttributePropagatorFactory)
-				.add("storageFactory", storageFactory)
-				.add("indexedAttributeValues", _indexedAttributeValues)
-				.add("listeners", listeners)
-				.add("attributeValueListener", attributeValueListener)
+				// .add("huAttributePropagatorFactory", huAttributePropagatorFactory)
+				// .add("storageFactory", storageFactory)
+				// .add("indexedAttributeValues", _indexedAttributeValues)
+				// .add("listeners", listeners)
+				// .add("attributeValueListener", attributeValueListener)
 				.toString();
 	}
 
@@ -1253,7 +1253,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	{
 		public static final IndexedAttributeValues NULL = new IndexedAttributeValues();
 
-		public static final IndexedAttributeValues of(final List<IAttributeValue> attributeValues)
+		public static IndexedAttributeValues of(final List<IAttributeValue> attributeValues)
 		{
 			if (attributeValues == null || attributeValues.isEmpty())
 			{
@@ -1350,7 +1350,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 			return !attributeKey2attributeRO.isEmpty();
 		}
 
-		public final I_M_Attribute getAttributeByValueKeyOrNull(final String attributeValueKey)
+		public I_M_Attribute getAttributeByValueKeyOrNull(final String attributeValueKey)
 		{
 			return attributeKey2attributeRO.get(attributeValueKey);
 		}

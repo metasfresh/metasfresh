@@ -77,7 +77,7 @@ import lombok.NonNull;
 	protected void toString(final ToStringHelper stringHelper)
 	{
 		stringHelper
-				.add("hu", _hu)
+				.add("huId", _hu.getM_HU_ID())
 				// .add("huDisplayName", Services.get(IHandlingUnitsBL.class).getDisplayName(getM_HU())) // used only for debugging)
 				;
 	}
@@ -147,7 +147,7 @@ import lombok.NonNull;
 		final IAttributeStorageFactory storageFactory = getAttributeStorageFactory();
 		final IHandlingUnitsDAO handlingUnitsDAO = getHandlingUnitsDAO();
 
-		final Map<String, IAttributeStorage> childrenAttributeSetStorages = new LinkedHashMap<String, IAttributeStorage>();
+		final Map<String, IAttributeStorage> childrenAttributeSetStorages = new LinkedHashMap<>();
 
 		final I_M_HU hu = getM_HU();
 		if (hu == null)
