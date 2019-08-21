@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.logging.LogManager;
+import de.metas.process.BarcodeScannerType;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -295,19 +296,11 @@ import lombok.NonNull;
 		final DocumentFieldWidgetType widgetType = extractWidgetType(parameterName, adProcessParam.getAD_Reference_ID(), lookupDescriptor, adProcessParam.isRange());
 		final Class<?> valueClass = DescriptorsFactoryHelper.getValueClass(widgetType, lookupDescriptor);
 		final boolean allowShowPassword = widgetType == DocumentFieldWidgetType.Password ? true : false; // process parameters shall always allow displaying the password
+		final BarcodeScannerType barcodeScannerType = extractBarcodeScannerTypeOrNull(adProcessParam, webuiProcesClassInfo);
 
 		final ILogicExpression readonlyLogic = expressionFactory.compileOrDefault(adProcessParam.getReadOnlyLogic(), ConstantLogicExpression.FALSE, ILogicExpression.class);
 		final ILogicExpression displayLogic = expressionFactory.compileOrDefault(adProcessParam.getDisplayLogic(), ConstantLogicExpression.TRUE, ILogicExpression.class);
-
-		final ILogicExpression mandatoryLogic;
-		if (adProcessParam.isMandatory())
-		{
-			mandatoryLogic = displayLogic;
-		}
-		else
-		{
-			mandatoryLogic = ConstantLogicExpression.FALSE;
-		}
+		final ILogicExpression mandatoryLogic = adProcessParam.isMandatory() ? displayLogic : ConstantLogicExpression.FALSE;
 
 		final Optional<IExpression<?>> defaultValueExpr = defaultValueExpressions.extractDefaultValueExpression(
 				adProcessParam.getDefaultValue(),
@@ -326,6 +319,7 @@ import lombok.NonNull;
 				.setValueClass(valueClass)
 				.setWidgetType(widgetType)
 				.setAllowShowPassword(allowShowPassword)
+				.barcodeScannerType(barcodeScannerType)
 				.setLookupDescriptorProvider(lookupDescriptorProvider)
 				//
 				.setDefaultValueExpression(defaultValueExpr)
@@ -344,6 +338,23 @@ import lombok.NonNull;
 		}
 
 		return paramDescriptor;
+	}
+
+	private static BarcodeScannerType extractBarcodeScannerTypeOrNull(
+			@NonNull final I_AD_Process_Para adProcessParamRecord,
+			final WebuiProcessClassInfo webuiProcesClassInfo)
+	{
+		final String parameterName = adProcessParamRecord.getColumnName();
+		BarcodeScannerType barcodeScannerType = webuiProcesClassInfo.getBarcodeScannerTypeOrNull(parameterName);
+		if (barcodeScannerType != null)
+		{
+			return barcodeScannerType;
+		}
+
+		final String barcodeScannerTypeCode = adProcessParamRecord.getBarcodeScannerType();
+		return !Check.isEmpty(barcodeScannerTypeCode, true)
+				? BarcodeScannerType.ofCode(barcodeScannerTypeCode)
+				: null;
 	}
 
 	private void extractAndSetTranslatableValues(

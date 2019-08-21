@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.process.BarcodeScannerType;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
@@ -106,6 +107,10 @@ public final class JSONDocumentLayoutElement
 	@JsonProperty("buttonProcessId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final ProcessId buttonProcessId;
+	
+	@JsonProperty("barcodeScannerType")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	final BarcodeScannerType barcodeScannerType;
 
 	@ApiModelProperty(allowEmptyValue = true)
 	@JsonProperty("type")
@@ -178,6 +183,8 @@ public final class JSONDocumentLayoutElement
 		{
 			buttonProcessId = null;
 		}
+		
+		this.barcodeScannerType = element.getBarcodeScannerType();
 
 		type = JSONLayoutType.fromNullable(element.getLayoutType());
 		size = element.getWidgetSize();
@@ -202,6 +209,7 @@ public final class JSONDocumentLayoutElement
 		multilineText = null;
 		multilineTextLines = null;
 		buttonProcessId = null;
+		barcodeScannerType = null;
 
 		type = null;
 		size = null;
