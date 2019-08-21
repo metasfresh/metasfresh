@@ -130,7 +130,7 @@ describe('Create a purchase order and Material Receipts', function() {
     cy.selectNthRow(0).click();
     cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults');
     cy.selectNthRow(0, true);
-    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', true);
+    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams');
     cy.pressDoneButton();
   });
   it('Check if Materialentnahmelager warehouse exists', function() {

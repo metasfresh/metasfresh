@@ -201,10 +201,9 @@ describe('Create a purchase order and Material Receipts', function() {
 
   it('Create Material Receipt', function() {
     cy.selectNthRow(0).click();
-    cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults', false);
+    cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults');
     cy.selectNthRow(0, true);
-    // cy.get('.quick-actions-tag.pointer').should('contain', 'Create material receipt').click();
-    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', false, true, false);
+    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', true, false);
     cy.pressDoneButton();
   });
   it('Check if Materialentnahmelager warehouse exists', function() {
@@ -226,7 +225,7 @@ describe('Create a purchase order and Material Receipts', function() {
   });
   it('Select first row - related to LU quantity and extract 1 from there', function() {
     cy.selectNthRow(0).click();
-    cy.executeQuickAction('WEBUI_M_HU_MoveTUsToDirectWarehouse', false, false, true);
+    cy.executeQuickAction('WEBUI_M_HU_MoveTUsToDirectWarehouse', false, true);
     cy.writeIntoStringField('QtyTU', '1', true, null, true);
     cy.pressStartButton();
 
