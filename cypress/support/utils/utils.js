@@ -83,7 +83,7 @@ const appendHumanReadableNow = str => {
 
 const getLanguageSpecificWorkaround_date = new Date();
 const getLanguageSpecificWorkaround = () => {
-  const TIME_TO_WAIT = 6 * 1000;
+  const TIME_TO_WAIT = 10 * 1000;
   return cy.get('body').then(function() {
     const now = new Date();
     const delta = now - getLanguageSpecificWorkaround_date;
