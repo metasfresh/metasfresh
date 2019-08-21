@@ -32,22 +32,22 @@ let soRecordId;
 let huValue1;
 let huValue2;
 
-it('Read fixture and prepare the names', function() {
-  cy.fixture('picking/pick_HUs_and_create_shipment.json').then(f => {
-    productName = f['productName'];
-    productQty = f['productQty'];
-    locatorId = f['locatorId'];
-
-    businessPartnerName = f['businessPartnerName'];
-    soProductQuantity = f['soProductQuantity'];
-
-    shipmentQuantityTypeOption = f['shipmentQuantityTypeOption'];
-    shipmentNotificationModalText = f['shipmentNotificationModalText'];
-    expectedPackingStatus = f['expectedPackingStatus'];
-  });
-});
-
 describe('Create test data', function() {
+  it('Read fixture and prepare the names', function() {
+    cy.fixture('picking/pick_HUs_and_create_shipment.json').then(f => {
+      productName = f['productName'];
+      productQty = f['productQty'];
+      locatorId = f['locatorId'];
+
+      businessPartnerName = f['businessPartnerName'];
+      soProductQuantity = f['soProductQuantity'];
+
+      shipmentQuantityTypeOption = f['shipmentQuantityTypeOption'];
+      shipmentNotificationModalText = f['shipmentNotificationModalText'];
+      expectedPackingStatus = f['expectedPackingStatus'];
+    });
+  });
+
   it('Create first single-HU inventory doc', function() {
     let uomName;
     cy.fixture('product/simple_product.json').then(productJson => {
@@ -149,7 +149,7 @@ describe('Pick the SO', function() {
     cy.selectRightTable().within(() => {
       cy.selectRowByColumnAndValue(huCodeColumn, huValue1, false, true);
     });
-    cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', false, true, false);
+    cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', true, false);
   });
 
   it('Pick second HU', function() {
@@ -160,7 +160,7 @@ describe('Pick the SO', function() {
     cy.selectRightTable().within(() => {
       cy.selectRowByColumnAndValue(huCodeColumn, huValue2, false, true);
     });
-    cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', false, true, false);
+    cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', true, false);
   });
 
   it('Confirm Picks', function() {
@@ -170,7 +170,7 @@ describe('Pick the SO', function() {
     cy.selectRightTable().within(() => {
       cy.selectRowByColumnAndValue(huCodeColumn, huValue2, false, true);
     });
-    cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', false, true, false);
+    cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', true, false);
     cy.waitForSaveIndicator();
 
     cy.selectLeftTable().within(() => {
@@ -179,7 +179,7 @@ describe('Pick the SO', function() {
     cy.selectRightTable().within(() => {
       cy.selectRowByColumnAndValue(huCodeColumn, huValue1, false, true);
     });
-    cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', false, true, false);
+    cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', true, false);
     cy.waitForSaveIndicator();
   });
 });

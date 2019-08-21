@@ -60,7 +60,7 @@ let locatorId;
 //   or something else?
 const pickingOrderColumn = 'Order';
 const huCodeColumn = 'Code';
-const productColumn = 'Product';
+const qtyCUColumn = 'Qty CU';
 const productPartnerColumn = 'Product / Partner';
 
 // test
@@ -68,30 +68,30 @@ let soDocNumber;
 let soRecordId;
 let huValue;
 
-it('Read fixture and prepare the names', function() {
-  cy.fixture('picking/pick_in_a_new_HU.json').then(f => {
-    priceSystemName = appendHumanReadableNow(f['priceSystemName']);
-    priceListName = appendHumanReadableNow(f['priceListName']);
-    priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
-    discountSchemaName = appendHumanReadableNow(f['discountSchemaName']);
-
-    productForPackingMaterial = appendHumanReadableNow(f['productForPackingMaterial']);
-    packingInstructionsName = appendHumanReadableNow(f['packingInstructionsName']);
-
-    productCategoryName = appendHumanReadableNow(f['productCategoryName']);
-    productName = appendHumanReadableNow(f['productName']);
-    productType = f['productType'];
-
-    bPartnerName = appendHumanReadableNow(f['bPartnerName']);
-
-    productQty = f['productQty'];
-    soProductQuantity = f['soProductQuantity'];
-    expectedProductQtyAfterPicking = f['expectedProductQtyAfterPicking'];
-    locatorId = f['locatorId'];
-  });
-});
-
 describe('Create test data', function() {
+  it('Read fixture and prepare the names', function() {
+    cy.fixture('picking/pick_in_a_new_HU.json').then(f => {
+      priceSystemName = appendHumanReadableNow(f['priceSystemName']);
+      priceListName = appendHumanReadableNow(f['priceListName']);
+      priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
+      discountSchemaName = appendHumanReadableNow(f['discountSchemaName']);
+
+      productForPackingMaterial = appendHumanReadableNow(f['productForPackingMaterial']);
+      packingInstructionsName = appendHumanReadableNow(f['packingInstructionsName']);
+
+      productCategoryName = appendHumanReadableNow(f['productCategoryName']);
+      productName = appendHumanReadableNow(f['productName']);
+      productType = f['productType'];
+
+      bPartnerName = appendHumanReadableNow(f['bPartnerName']);
+
+      productQty = f['productQty'];
+      soProductQuantity = f['soProductQuantity'];
+      expectedProductQtyAfterPicking = f['expectedProductQtyAfterPicking'];
+      locatorId = f['locatorId'];
+    });
+  });
+
   it('Create price entities', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
     cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
@@ -203,7 +203,7 @@ describe('Pick the SO', function() {
     cy.selectRightTable().within(() => {
       cy.selectRowByColumnAndValue(huCodeColumn, huValue, false, true);
     });
-    cy.executeQuickAction('WEBUI_Picking_HUEditor_Create_M_Source_HUs', false, true, false);
+    cy.executeQuickAction('WEBUI_Picking_HUEditor_Create_M_Source_HUs', true, false);
     cy.selectRightTable().within(() => {
       // expecting the HU to be here
       cy.selectRowByColumnAndValue(huCodeColumn, huValue, false, true);
@@ -230,9 +230,9 @@ describe('Pick the SO', function() {
       cy.selectRowByColumnAndValue(pickingOrderColumn, soDocNumber, false, true);
     });
     cy.selectRightTable().within(() => {
-      cy.selectRowByColumnAndValue(productColumn, productName, false, true);
+      cy.selectRowByColumnAndValue(qtyCUColumn, soProductQuantity, false, true);
     });
-    cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', false, true, false);
+    cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', true, false);
     cy.waitForSaveIndicator();
     cy.pressDoneButton();
   });
