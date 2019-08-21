@@ -5,17 +5,17 @@ import { Inventory, InventoryLine } from '../../support/utils/inventory';
 import { DocumentStatusKey } from '../../support/utils/constants';
 import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
 
-const productName = 'Convenience Salat 250g';
-const productQty = 10;
-const locatorId = 'Hauptlager_StdWarehouse_Hauptlager_0_0_0';
+let productName;
+let productQty;
+let locatorId;
 
-const businessPartnerName = 'Test Lieferant 1';
-const soProductQuantity = 2 * productQty;
+let businessPartnerName;
+let soProductQuantity;
 
 // shipment
-const shipmentQuantityTypeOption = 'Picked quantity';
-const shipmentNotificationModalText = 'Created: 1 WorkPackage Queue;';
-const expectedPackingStatus = 'Shipped';
+let shipmentQuantityTypeOption;
+let shipmentNotificationModalText;
+let expectedPackingStatus;
 
 // test columns
 // todo @kuba: these should be somehow made translation independent!
@@ -31,6 +31,21 @@ let soDocNumber;
 let soRecordId;
 let huValue1;
 let huValue2;
+
+it('Read fixture and prepare the names', function() {
+  cy.fixture('picking/pick_HUs_and_create_shipment.json').then(f => {
+    productName = f['productName'];
+    productQty = f['productQty'];
+    locatorId = f['locatorId'];
+
+    businessPartnerName = f['businessPartnerName'];
+    soProductQuantity = f['soProductQuantity'];
+
+    shipmentQuantityTypeOption = f['shipmentQuantityTypeOption'];
+    shipmentNotificationModalText = f['shipmentNotificationModalText'];
+    expectedPackingStatus = f['expectedPackingStatus'];
+  });
+});
 
 describe('Create test data', function() {
   it('Create first single-HU inventory doc', function() {

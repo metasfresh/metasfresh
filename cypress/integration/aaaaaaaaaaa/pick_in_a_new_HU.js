@@ -20,7 +20,7 @@
  * #L%
  */
 
-import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow, getLanguageSpecific } from '../../support/utils/utils';
 import { Inventory, InventoryLine } from '../../support/utils/inventory';
 import { Builder } from '../../support/utils/builder';
 import { DiscountSchema } from '../../support/utils/discountschema';
@@ -29,30 +29,29 @@ import { BPartner } from '../../support/utils/bpartner';
 import { SalesOrder, SalesOrderLine } from '../../support/utils/sales_order';
 import { salesOrders } from '../../page_objects/sales_orders';
 
-const date = humanReadableNow();
 // Price
-const priceSystemName = `PriceSystem_${date}`;
-const priceListName = `PriceList_${date}`;
-const priceListVersionName = `PriceListVersion_${date}`;
-const discountSchemaName = `DiscountSchema_${date}`;
+let priceSystemName;
+let priceListName;
+let priceListVersionName;
+let discountSchemaName;
 
 // Packing
-const productForPackingMaterial = `ProductPackingMaterial_${date}`;
-const packingInstructionsName = `ProductPackingInstructions_${date}`;
+let productForPackingMaterial;
+let packingInstructionsName;
 
 // Products
-const productCategoryName = `ProductCategoryName_${date}`;
-const productName = `Product_${date}`;
-const productType = 'Item';
+let productCategoryName;
+let productName;
+let productType;
 
 // BPartner
-const bPartnerName = `BPartner_${date}`;
+let bPartnerName;
 
 // SO/HU
-const productQty = 100;
-const soProductQuantity = 20;
-const expectedProductQtyAfterPicking = productQty - soProductQuantity;
-const locatorId = 'Hauptlager_StdWarehouse_Hauptlager_0_0_0';
+let productQty;
+let soProductQuantity;
+let expectedProductQtyAfterPicking;
+let locatorId;
 
 // test columns
 // todo @kuba: these should be somehow made translation independent!
@@ -68,6 +67,29 @@ const productPartnerColumn = 'Product / Partner';
 let soDocNumber;
 let soRecordId;
 let huValue;
+
+it('Read fixture and prepare the names', function() {
+  cy.fixture('picking/pick_in_a_new_HU.json').then(f => {
+    priceSystemName = appendHumanReadableNow(f['priceSystemName']);
+    priceListName = appendHumanReadableNow(f['priceListName']);
+    priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
+    discountSchemaName = appendHumanReadableNow(f['discountSchemaName']);
+
+    productForPackingMaterial = appendHumanReadableNow(f['productForPackingMaterial']);
+    packingInstructionsName = appendHumanReadableNow(f['packingInstructionsName']);
+
+    productCategoryName = appendHumanReadableNow(f['productCategoryName']);
+    productName = appendHumanReadableNow(f['productName']);
+    productType = f['productType'];
+
+    bPartnerName = appendHumanReadableNow(f['bPartnerName']);
+
+    productQty = f['productQty'];
+    soProductQuantity = f['soProductQuantity'];
+    expectedProductQtyAfterPicking = f['expectedProductQtyAfterPicking'];
+    locatorId = f['locatorId'];
+  });
+});
 
 describe('Create test data', function() {
   it('Create price entities', function() {
