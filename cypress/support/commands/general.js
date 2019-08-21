@@ -322,10 +322,50 @@ Cypress.Commands.add('getNotificationModal', optionalText => {
  */
 Cypress.Commands.add('openInboxNotificationWithText', text => {
   cy.get('.header-item-badge.icon-lg i', { timeout: 10000 }).click();
-  cy.get('.inbox-item-unread .inbox-item-title')
+  // cy.get('.inbox-item-unread .inbox-item-title')
+  cy.get('.inbox-item-title')
     .filter(':contains("' + text + '")')
     .first()
     .click();
+  cy.waitForSaveIndicator();
+
+  /**
+   * todo @kuba:
+   *  Since Frontend already knows what a notification should do when clicked via the /all request and the "target" element in the response (see json below)
+   *  it would be helpful for cypress if each notification would also contain a data- attribute with the target,
+   *  so that i know what to wait after when the notification is clicked, or that nothing should happens.
+   *
+   * maybe that notification could contain `data-cy="/window/169/1000043"` or `data-cy=null`.
+   *
+   *
+   * JSON response
+   {
+   "notifications": [
+   {
+      "id": "1000058",
+      "message": "Lieferung 545170 für Partner 1000107 CustomerTest 20T09_14_32_145 wurde erstellt.",
+      "timestamp": "2019-08-20T08:17:06.000+02:00",
+      "important": false,
+      "read": true,
+      "target": {         // i know that here i have to go to a specific single view: /window/169/1000043
+        "targetType": "window",
+        "windowId": "169",
+        "documentId": "1000043",
+        "documentType": "169"
+      }
+    },
+    {
+      "id": "1000055",
+      "message": "AD_PInstance_ID=1001782\n Summary:\nIhr Test hat einen bisher unentdeckten Fehler offengelegt.\r\nBitte leiten Sie diese Meldung an metas weiter:\n\nError: Missing AD_Printer_Config record for hostKey=095c60c6-60a4-4477-8602-ede23627d1cc, userToPrintId=2188223, ctx={#AD_Org_ID=1000000, #AD_Client_ID=1000000}\nNotification",
+      "timestamp": "2019-08-20T06:54:28.000+02:00",
+      "important": true,
+      "read": true,
+      "target": null      // i know that here i have nothing to do
+    }
+   ]
+   }
+   *  Reference: https://docs.cypress.io/guides/references/best-practices.html#Selecting-Elements
+   */
 });
 
 // may be useful to wait for the response to a particular patch where a particular field value was set
@@ -430,3 +470,22 @@ Cypress.Commands.add('openNotificationContaining', (expectedValue, destinationWi
   // hope this is enough for the whole window to load
   cy.waitForSaveIndicator();
 });
+
+Cypress.Commands.add('selectLeftTable', function() {
+  cy.waitForSaveIndicator();
+  cy.get('.modal-content-wrapper .table-flex-wrapper .document-list-table').within(el => {
+    el = el[0].parentElement;
+    return cy.wrap(el);
+  });
+});
+
+Cypress.Commands.add('selectRightTable', function() {
+  cy.waitForSaveIndicator();
+  cy.get('.modal-content-wrapper .table-flex-wrapper .document-list-table').within(el => {
+    el = el[1].parentElement;
+    return cy.wrap(el);
+  });
+});
+
+
+

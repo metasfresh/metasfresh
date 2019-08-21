@@ -29,7 +29,7 @@ Cypress.Commands.add('executeHeaderAction', actionName => {
 Cypress.Commands.add('executeHeaderActionWithDialog', actionName => {
   describe('Fire header action with a certain name and expect a modal dialog to pop up within 10 secs', function() {
     cy.server();
-    cy.route('GET', 'rest/api/process/*/layout').as('dialogLayout');
+    cy.route('GET', new RegExp(RewriteURL.DocumentLayout)).as('dialogLayout');
 
     executeHeaderAction(actionName);
 
@@ -45,6 +45,8 @@ Cypress.Commands.add('executeHeaderActionWithDialog', actionName => {
 Cypress.Commands.add('executeQuickAction', (actionName, modal = false, isDialogExpected = true) => {
   let path = `.quick-actions-wrapper`; // default action
   const requestAlias = `quickAction-${actionName}-${humanReadableNow()}`;
+
+  cy.waitForSaveIndicator();
 
   if (modal) {
     path = '.modal-content-wrapper ' + path;
@@ -78,4 +80,13 @@ Cypress.Commands.add('executeQuickAction', (actionName, modal = false, isDialogE
     cy.wait(`@${requestAlias}`);
   }
   cy.waitForSaveIndicator();
+});
+
+Cypress.Commands.add('openPickingHUSelectionWindow', function() {
+  const layoutAlias = 'layout_' + new Date().getTime();
+  cy.waitForSaveIndicator();
+  cy.server();
+  cy.route('GET', new RegExp(RewriteURL.DocumentLayout)).as(layoutAlias);
+  cy.executeQuickAction('WEBUI_Picking_HUEditor_Launcher', false, true, false);
+  cy.wait(`@${layoutAlias}`);
 });

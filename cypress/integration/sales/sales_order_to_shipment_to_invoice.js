@@ -3,6 +3,7 @@ import { DiscountSchema } from '../../support/utils/discountschema';
 import { Builder } from '../../support/utils/builder';
 import { humanReadableNow } from '../../support/utils/utils';
 import { SalesOrder, SalesOrderLine } from '../../support/utils/sales_order';
+import { RewriteURL } from '../../support/utils/constants';
 
 describe('Create Sales order', function() {
   const date = humanReadableNow();
@@ -61,7 +62,7 @@ describe('Create Sales order', function() {
   });
   it('Billing - Invoice disposition', function() {
     // wait until current window is "Shipment"
-    cy.url().should('contain', '/169/');
+    cy.url().should('matches', RewriteURL.ExactSingleView(169));
 
     cy.openReferencedDocuments('C_Invoice_Candidate');
     cy.selectNthRow(0).click();

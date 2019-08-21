@@ -9,6 +9,7 @@ import { Builder } from '../../support/utils/builder';
 import { humanReadableNow } from '../../support/utils/utils';
 import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_order';
 import { purchaseOrders } from '../../page_objects/purchase_orders';
+import { RewriteURL } from '../../support/utils/constants';
 
 // task: https://github.com/metasfresh/metasfresh-e2e/issues/161
 
@@ -183,7 +184,7 @@ describe('Create a purchase order and Material Receipts', function() {
     cy.waitForSaveIndicator();
 
     // wait until current window is PurchaseInvoice
-    cy.url().should('contain', '/183/');
+    cy.url().should('matches', RewriteURL.ExactSingleView(183));
 
     // hope this is enough for the whole window to load
     cy.waitForSaveIndicator();
