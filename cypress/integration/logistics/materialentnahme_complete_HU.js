@@ -6,7 +6,7 @@ import { PackingMaterial } from '../../support/utils/packing_material';
 import { PackingInstructions } from '../../support/utils/packing_instructions';
 import { PackingInstructionsVersion } from '../../support/utils/packing_instructions_version';
 import { Builder } from '../../support/utils/builder';
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_order';
 import {
   applyFilters,
@@ -15,19 +15,35 @@ import {
   clearNotFrequentFilters,
 } from '../../support/functions';
 
-const date = humanReadableNow();
-const productForPackingMaterial = `ProductPackingMaterial_${date}`;
-const packingInstructionsName = `ProductPackingInstructions_${date}`;
-const productName1 = `Product1_${date}`;
-const productCategoryName = `ProductCategoryName_${date}`;
-const discountSchemaName = `DiscountSchema_${date}`;
-const priceSystemName = `PriceSystem_${date}`;
-const priceListName = `PriceList_${date}`;
-const priceListVersionName = `PriceListVersion_${date}`;
-const productType = 'Item';
-const vendorName = `Vendor_${date}`;
-const materialentnahme = 'Materialentnahmelager';
-const warehouseName = 'Hauptlager_StdWarehouse_Hauptlager_0_0_0';
+let productForPackingMaterial;
+let packingInstructionsName;
+let productName1;
+let productCategoryName;
+let discountSchemaName;
+let priceSystemName;
+let priceListName;
+let priceListVersionName;
+let productType;
+let vendorName;
+let materialentnahme;
+let warehouseName;
+
+it('Read the fixture', function() {
+  cy.fixture('logistics/materialentnahme_complete_HU.json').then(f => {
+    productForPackingMaterial = appendHumanReadableNow(f['productForPackingMaterial']);
+    packingInstructionsName = appendHumanReadableNow(f['packingInstructionsName']);
+    productName1 = appendHumanReadableNow(f['productName1']);
+    productCategoryName = appendHumanReadableNow(f['productCategoryName']);
+    discountSchemaName = appendHumanReadableNow(f['discountSchemaName']);
+    priceSystemName = appendHumanReadableNow(f['priceSystemName']);
+    priceListName = appendHumanReadableNow(f['']);
+    priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
+    productType = f['productType'];
+    vendorName = appendHumanReadableNow(f['vendorName']);
+    materialentnahme = f['materialentnahme'];
+    warehouseName = f['warehouseName'];
+  });
+});
 
 describe('Change warehouse to Materialentnahmelager', function() {
   it('Create price entities', function() {
