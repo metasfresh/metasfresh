@@ -60,9 +60,9 @@ describe('Create Purchase order - complete - change - complete', function() {
   it('Open Material receipt candidates and create material receipt', function() {
     cy.openReferencedDocuments('M_ReceiptSchedule');
     cy.selectNthRow(0).click();
-    cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveCUs', false);
+    cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveCUs');
     cy.selectNthRow(0, true);
-    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', false, true, false);
+    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', true, false);
     cy.pressDoneButton();
   });
   it('Go to Material receipt', function() {
@@ -76,7 +76,7 @@ describe('Create Purchase order - complete - change - complete', function() {
     cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
     applyFilters();
     cy.selectNthRow(0).click();
-    cy.executeQuickAction('WEBUI_M_HU_ReturnToVendor', false, false, false);
+    cy.executeQuickAction('WEBUI_M_HU_ReturnToVendor', false, false);
   });
   it('Check document type, bpartner, product and notification in vendor returns', function() {
     cy.visitWindow('53098');
