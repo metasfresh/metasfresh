@@ -135,7 +135,7 @@ describe('Create material receipt with quality issue', function() {
     /**this means that 50% of the products are altered. */
     cy.writeIntoStringField('QualityDiscountPercent', qualityDiscountPercent, true, null, true);
     cy.selectInListField('QualityNotice', qualityNoteName, true, null, true);
-    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', false, true, false);
+    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', true, false);
     cy.pressDoneButton();
   });
 
