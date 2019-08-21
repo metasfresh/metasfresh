@@ -13,13 +13,10 @@ import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_o
 describe('Create Purchase order - complete - change - complete', function() {
   const date = humanReadableNow();
   const productForPackingMaterial = `ProductPackingMaterial ${date}`;
-  const productPMValue = `purchase_order_testPM ${date}`;
   const packingMaterialName = `ProductPackingMaterial ${date}`;
   const packingInstructionsName = `ProductPackingInstrutions ${date}`;
   const productName1 = `ProductTest ${date}`;
-  const productValue1 = `purchase_order_test ${date}`;
   const productCategoryName = `ProductCategoryName ${date}`;
-  const productCategoryValue = `ProductCategoryValue ${date}`;
   const discountSchemaName = `DiscountSchemaTest ${date}`;
   const priceSystemName = `PriceSystem ${date}`;
   const priceListName = `PriceList ${date}`;
@@ -37,7 +34,7 @@ describe('Create Purchase order - complete - change - complete', function() {
     Builder.createProductWithPriceUsingExistingCategory(
       priceListName,
       productForPackingMaterial,
-      productPMValue,
+      productForPackingMaterial,
       productType,
       '24_Gebinde'
     );
@@ -71,10 +68,10 @@ describe('Create Purchase order - complete - change - complete', function() {
 
     Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(
       productCategoryName,
-      productCategoryValue,
+      productCategoryName,
       priceListName,
       productName1,
-      productValue1,
+      productName1,
       productType,
       packingInstructionsName
     );
