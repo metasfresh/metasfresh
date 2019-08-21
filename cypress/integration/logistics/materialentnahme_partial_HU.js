@@ -6,7 +6,7 @@ import { PackingMaterial } from '../../support/utils/packing_material';
 import { PackingInstructions } from '../../support/utils/packing_instructions';
 import { PackingInstructionsVersion } from '../../support/utils/packing_instructions_version';
 import { Builder } from '../../support/utils/builder';
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_order';
 import {
   applyFilters,
@@ -15,25 +15,47 @@ import {
   clearNotFrequentFilters,
 } from '../../support/functions';
 
-const date = humanReadableNow();
-const productForPackingMaterialTU = `ProductPackingMaterialTU_${date}`;
-const productForPackingMaterialLU = `ProductPackingMaterialLU_${date}`;
-const packingMaterialForTU = `PackingMaterialForTU_${date}`;
-const packingMaterialForLU = `PackingMaterialForLU${date}`;
-const packingInstructionsNameForTU = `ProductPackingInstructionsForTU_${date}`;
-const packingInstructionsNameForLU = `ProductPackingInstructionsForLU_${date}`;
-const productName1 = `Product1_${date}`;
-const productCategoryName = `ProductCategoryName_${date}`;
-const discountSchemaName = `DiscountSchema_${date}`;
-const priceSystemName = `PriceSystem_${date}`;
-const priceListName = `PriceList_${date}`;
-const priceListVersionName = `PriceListVersion_${date}`;
-const productType = 'Item';
-const vendorName = `Vendor_${date}`;
-const materialentnahme = 'Materialentnahmelager';
-const warehouseName = 'Hauptlager_StdWarehouse_Hauptlager_0_0_0';
-const packingInstructionsVersionForTU = `PackingInstructionsVersionForTU_${date}`;
-const packingInstructionsVersionForLU = `PackingInstructionsVersionForLU_${date}`;
+let productForPackingMaterialTU;
+let productForPackingMaterialLU;
+let packingMaterialForTU;
+let packingMaterialForLU;
+let packingInstructionsNameForTU;
+let packingInstructionsNameForLU;
+let productName1;
+let productCategoryName;
+let discountSchemaName;
+let priceSystemName;
+let priceListName;
+let priceListVersionName;
+let productType;
+let vendorName;
+let materialentnahme;
+let warehouseName;
+let packingInstructionsVersionForTU;
+let packingInstructionsVersionForLU;
+
+it('Read the fixture', function() {
+  cy.fixture('logistics/materialentnahme_partial_HU.json').then(f => {
+    productForPackingMaterialTU = appendHumanReadableNow(f['productForPackingMaterialTU']);
+    productForPackingMaterialLU = appendHumanReadableNow(f['productForPackingMaterialLU']);
+    packingMaterialForTU = appendHumanReadableNow(f['packingMaterialForTU']);
+    packingMaterialForLU = appendHumanReadableNow(f['packingMaterialForLU']);
+    packingInstructionsNameForTU = appendHumanReadableNow(f['packingInstructionsNameForTU']);
+    packingInstructionsNameForLU = appendHumanReadableNow(f['packingInstructionsNameForLU']);
+    productName1 = appendHumanReadableNow(f['productName1']);
+    productCategoryName = appendHumanReadableNow(f['productCategoryName']);
+    discountSchemaName = appendHumanReadableNow(f['discountSchemaName']);
+    priceSystemName = appendHumanReadableNow(f['priceSystemName']);
+    priceListName = appendHumanReadableNow(f['']);
+    priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
+    productType = f['productType'];
+    vendorName = appendHumanReadableNow(f['vendorName']);
+    materialentnahme = f['materialentnahme'];
+    warehouseName = f['warehouseName'];
+    packingInstructionsVersionForTU = appendHumanReadableNow(f['packingInstructionsVersionForTU']);
+    packingInstructionsVersionForLU = appendHumanReadableNow(f['packingInstructionsVersionForLU']);
+  });
+});
 
 describe('Partial material withdrawal in handling unit editor with Materialentnahmelager', function() {
   it('Create price entities', function() {
