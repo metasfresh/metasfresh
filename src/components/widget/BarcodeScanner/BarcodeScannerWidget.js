@@ -8,17 +8,18 @@ function addBarcodeScanner(WrappedComponent) {
     constructor(props) {
       super(props);
 
-      if (props.data && props.data.Barcode && currentDevice.type === 'mobile') {
-        this.state = {
-          scanning: true,
-          codeSelected: null,
-        };
-      } else {
-        this.state = {
-          scanning: false,
-          codeSelected: null,
-        };
-      }
+      const barcodeScannerType =
+        props.layout && props.layout.barcodeScannerType
+          ? props.layout.barcodeScannerType
+          : null;
+
+      const scanning = barcodeScannerType && currentDevice.type === 'mobile';
+
+      this.state = {
+        barcodeScannerType: barcodeScannerType,
+        scanning: scanning,
+        codeSelected: null,
+      };
     }
 
     scanBarcode = val => {
@@ -37,11 +38,13 @@ function addBarcodeScanner(WrappedComponent) {
 
     renderScanner = () => {
       const { closeOverlay } = this.props;
+      const { barcodeScannerType } = this.state;
 
       return (
         <div className="row barcode-scanner-widget">
           <div className="col-sm-12">
             <BarcodeScanner
+              barcodeScannerType={barcodeScannerType}
               onDetected={this.onBarcodeDetected}
               onClose={val => {
                 const value = typeof val !== 'undefined' ? val : false;

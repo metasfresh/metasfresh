@@ -51,7 +51,7 @@ class OverlayField extends Component {
       const widgetData = elem.fields.map(item => data[item.field] || -1);
       let captionElement = null;
 
-      if (elem.caption === 'Barcode') {
+      if (elem.barcodeScannerType) {
         captionElement = this.renderBarcodeScanButton();
       }
 
@@ -89,7 +89,7 @@ class OverlayField extends Component {
     return parameters.map((item, index) => {
       let captionElement = null;
 
-      if (item.parameterName === 'Barcode') {
+      if (item.barcodeScannerType) {
         captionElement = this.renderBarcodeScanButton();
       }
 

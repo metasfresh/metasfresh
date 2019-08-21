@@ -48,11 +48,15 @@
             height: 25px;
         }
 
-        &.btn-Qr {
+        &.btn-qrCode {
             background-image: url('../images/qrcode-solid.svg');
         }
 
-        &.btn-Barcode {
+        &.btn-datamatrix {
+            background-image: url('../images/qrcode-solid.svg');
+        }
+
+        &.btn-barcode {
             background-image: url('../images/barcode-solid.svg');
         }
     }
