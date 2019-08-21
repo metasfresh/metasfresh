@@ -4,13 +4,17 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
-import org.compiere.util.Util;
+import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -41,7 +45,6 @@ import lombok.experimental.Wither;
  */
 
 @Value
-@Builder(toBuilder = true)
 @EqualsAndHashCode(doNotUseGetters = true)
 @Wither
 public class Candidate
@@ -49,13 +52,16 @@ public class Candidate
 	public static CandidateBuilder builderForEventDescr(@NonNull final EventDescriptor eventDescr)
 	{
 		return Candidate.builder()
-				.clientId(eventDescr.getClientId())
-				.orgId(eventDescr.getOrgId());
+				.clientAndOrgId(eventDescr.getClientAndOrgId());
 	}
 
-	int clientId;
+	public static CandidateBuilder builderForClientAndOrgId(@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		return Candidate.builder()
+				.clientAndOrgId(clientAndOrgId);
+	}
 
-	int orgId;
+	ClientAndOrgId clientAndOrgId;
 
 	@NonNull
 	CandidateType type;
@@ -75,7 +81,7 @@ public class Candidate
 	/**
 	 * A supply candidate and its corresponding demand candidate are associated by a common group id.
 	 */
-	int groupId;
+	MaterialDispoGroupId groupId;
 
 	int seqNo;
 
@@ -86,7 +92,6 @@ public class Candidate
 
 	DemandDetail additionalDemandDetail;
 
-	@Singular
 	List<TransactionDetail> transactionDetails;
 
 	/**
@@ -117,26 +122,25 @@ public class Candidate
 		return withMaterialDescriptor(materialDescriptor.withDate(date));
 	}
 
-	public Candidate withWarehouseId(final int warehouseId)
+	public Candidate withWarehouseId(final WarehouseId warehouseId)
 	{
 		return withMaterialDescriptor(materialDescriptor.withWarehouseId(warehouseId));
 	}
 
-	public int getEffectiveGroupId()
+	public MaterialDispoGroupId getEffectiveGroupId()
 	{
 		if (type == CandidateType.STOCK)
 		{
-			return 0;
+			return null;
 		}
-		if (groupId > 0)
+		else if (groupId != null)
 		{
 			return groupId;
 		}
-		if (id == null)
+		else
 		{
-			return 0;
+			return MaterialDispoGroupId.ofIdOrNull(id);
 		}
-		return id.getRepoId();
 	}
 
 	public Instant getDate()
@@ -149,7 +153,7 @@ public class Candidate
 		return materialDescriptor.getProductId();
 	}
 
-	public int getWarehouseId()
+	public WarehouseId getWarehouseId()
 	{
 		return materialDescriptor.getWarehouseId();
 	}
@@ -164,7 +168,7 @@ public class Candidate
 
 	public DemandDetail getDemandDetail()
 	{
-		return Util.coalesce(DemandDetail.castOrNull(businessCaseDetail), additionalDemandDetail);
+		return CoalesceUtil.coalesce(DemandDetail.castOrNull(businessCaseDetail), additionalDemandDetail);
 	}
 
 	public BigDecimal getDetailQty()
@@ -176,29 +180,30 @@ public class Candidate
 		return businessCaseDetail.getQty();
 	}
 
-	private Candidate(final int clientId, final int orgId,
+	@Builder(toBuilder = true)
+	private Candidate(
+			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final CandidateType type,
 			final CandidateBusinessCase businessCase,
-			//final CandidateStatus status,
+			// final CandidateStatus status,
 			final CandidateId id,
 			final CandidateId parentId,
-			final int groupId,
+			final MaterialDispoGroupId groupId,
 			final int seqNo,
 			@NonNull final MaterialDescriptor materialDescriptor,
 			final BusinessCaseDetail businessCaseDetail,
 			final DemandDetail additionalDemandDetail,
-			final List<TransactionDetail> transactionDetails)
+			@Singular final List<TransactionDetail> transactionDetails)
 	{
-		this.clientId = clientId;
-		this.orgId = orgId;
+		this.clientAndOrgId = clientAndOrgId;
 		this.type = type;
 		this.businessCase = businessCase;
-		//this.status = status;
+		// this.status = status;
 
-		this.id = Util.coalesce(id, CandidateId.NULL);
+		this.id = CoalesceUtil.coalesce(id, CandidateId.NULL);
 		Check.errorIf(this.id.isUnspecified(), "The given id may be null or CandidateId.NULL, but not unspecified");
 
-		this.parentId = Util.coalesce(parentId, CandidateId.NULL);
+		this.parentId = CoalesceUtil.coalesce(parentId, CandidateId.NULL);
 		Check.errorIf(this.parentId.isUnspecified(), "The given parentId may be null or CandidateId.NULL, but not unspecified");
 
 		this.groupId = groupId;
@@ -256,5 +261,10 @@ public class Candidate
 				businessCase, businessCaseDetail, this);
 
 		return this;
+	}
+
+	public OrgId getOrgId()
+	{
+		return getClientAndOrgId().getOrgId();
 	}
 }

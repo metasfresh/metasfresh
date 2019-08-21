@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -78,6 +80,8 @@ public final class ProcessClassParamInfo
 
 	private final boolean mandatory;
 
+	private final BarcodeScannerType barcodeScannerType;
+
 	// NOTE: NEVER EVER store the process class as field because we want to have a weak reference to it to prevent ClassLoader memory leaks nightmare.
 	// Remember that we are caching this object.
 	private final ArrayKey fieldKey;
@@ -89,7 +93,8 @@ public final class ProcessClassParamInfo
 			@NonNull final String parameterName,
 			final boolean parameterTo,
 			@NonNull final Field field,
-			boolean mandatory)
+			boolean mandatory,
+			@Nullable final BarcodeScannerType barcodeScannerType)
 	{
 		Check.assumeNotEmpty(parameterName, "parameter name not empty");
 
@@ -101,6 +106,8 @@ public final class ProcessClassParamInfo
 		this.fieldTypeRef = ClassReference.of(field.getType());
 
 		this.mandatory = mandatory;
+
+		this.barcodeScannerType = barcodeScannerType;
 	}
 
 	public Class<?> getFieldType()
@@ -118,9 +125,9 @@ public final class ProcessClassParamInfo
 	 * @param failIfNotValid
 	 */
 	public void loadParameterValue(
-			@NonNull final JavaProcess processInstance, 
-			@NonNull final Field processField, 
-			@NonNull final IRangeAwareParams source, 
+			@NonNull final JavaProcess processInstance,
+			@NonNull final Field processField,
+			@NonNull final IRangeAwareParams source,
 			final boolean failIfNotValid)
 	{
 		//
@@ -234,17 +241,17 @@ public final class ProcessClassParamInfo
 			final int valueInt = parameterTo
 					? source.getParameter_ToAsInt(parameterName, -1)
 					: source.getParameterAsInt(parameterName, -1);
-			
+
 			@SuppressWarnings("unchecked")
 			final Class<? extends RepoIdAware> repoIdAwareType = (Class<? extends RepoIdAware>)fieldType;
 			value = RepoIdAwares.ofRepoIdOrNull(valueInt, repoIdAwareType);
 		}
-		else if(ReferenceListAwareEnum.class.isAssignableFrom(fieldType))
+		else if (ReferenceListAwareEnum.class.isAssignableFrom(fieldType))
 		{
 			final String valueStr = parameterTo
 					? source.getParameter_ToAsString(parameterName)
 					: source.getParameterAsString(parameterName);
-			
+
 			@SuppressWarnings("unchecked")
 			final Class<? extends ReferenceListAwareEnum> referenceListAwareClass = (Class<? extends ReferenceListAwareEnum>)fieldType;
 			value = ReferenceListAwareEnums.ofCode(valueStr, referenceListAwareClass);

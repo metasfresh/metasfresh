@@ -64,7 +64,7 @@ public class AsyncRemoveFromIndexProcessor extends WorkpackageProcessorAdapter
 			final IESModelIndexer modelIndexer = esModelIndexersRegistry.getModelIndexerById(modelIndexerId);
 
 			final IESIndexerResult result = modelIndexer.removeFromIndexByIds(idsToRemove);
-			Loggables.get().addLog(result.getSummary());
+			Loggables.addLog(result.getSummary());
 			result.throwExceptionIfAnyFailure();
 
 			return Result.SUCCESS;

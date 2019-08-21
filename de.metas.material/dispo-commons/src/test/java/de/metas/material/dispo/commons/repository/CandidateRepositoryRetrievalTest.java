@@ -1,4 +1,4 @@
-package de.metas.material.dispo.service.event.handler.pporder;
+package de.metas.material.dispo.commons.repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -12,7 +12,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
@@ -21,33 +20,36 @@ import lombok.NonNull;
 
 /*
  * #%L
- * metasfresh-material-dispo-service
+ * metasfresh-material-dispo-commons
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class PPOrderUtilTest
+public class CandidateRepositoryRetrievalTest
 {
+	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 	}
 
 	@Test
@@ -68,7 +70,7 @@ public class PPOrderUtilTest
 		relatedProductionDetail.setMD_Candidate(candidateWithRelatedProdDetail);
 		save(relatedProductionDetail);
 
-		final List<Candidate> result = PPOrderUtil.retrieveCandidatesForPPOrderId(new CandidateRepositoryRetrieval(), 23);
+		final List<Candidate> result = candidateRepositoryRetrieval.retrieveCandidatesForPPOrderId(23);
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0).getId().getRepoId()).isEqualTo(relatedProductionDetail.getMD_Candidate_ID());
 	}
@@ -84,5 +86,4 @@ public class PPOrderUtilTest
 
 		return candidateRecord;
 	}
-
 }

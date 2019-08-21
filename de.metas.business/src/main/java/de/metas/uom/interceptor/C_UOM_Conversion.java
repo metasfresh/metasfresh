@@ -39,7 +39,7 @@ import de.metas.util.Services;
  * #L%
  */
 @Interceptor(I_C_UOM_Conversion.class)
-@Component("de.metas.uom.interceptor.C_UOM_Conversion")
+@Component
 public class C_UOM_Conversion
 {
 	private static final String SYSCONFIG_ProductUOMConversionUOMValidate = "ProductUOMConversionUOMValidate";

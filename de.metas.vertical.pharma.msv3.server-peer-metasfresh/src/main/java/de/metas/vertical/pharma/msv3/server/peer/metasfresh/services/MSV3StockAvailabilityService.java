@@ -112,7 +112,7 @@ public class MSV3StockAvailabilityService
 		final MSV3ServerConfig serverConfig = getServerConfig();
 		if (!serverConfig.hasProducts())
 		{
-			Loggables.get().withLogger(logger, Level.WARN)
+			Loggables.withLogger(logger, Level.WARN)
 					.addLog("Asked to publish all stock availabilities but the MSV3 server has no products defined. Deleting all products. Check {}", serverConfig);
 			msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(MSV3StockAvailabilityUpdatedEvent.deleteAllOlderThan(eventVersion));
 			return;
@@ -192,7 +192,7 @@ public class MSV3StockAvailabilityService
 		}
 		catch (Exception ex)
 		{
-			Loggables.get().withLogger(logger, Level.WARN)
+			Loggables.withLogger(logger, Level.WARN)
 					.addLog("Failed converting StockDataAggregateItems={} to {}", records, MSV3StockAvailability.class.getSimpleName());
 			return null;
 		}
@@ -247,7 +247,7 @@ public class MSV3StockAvailabilityService
 
 	private boolean isEligible(final MSV3ServerConfig serverConfig, final StockChangedEvent event)
 	{
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(event.getWarehouseId());
+		final WarehouseId warehouseId = event.getWarehouseId();
 		if (!serverConfig.getWarehouseIds().contains(warehouseId))
 		{
 			return false;

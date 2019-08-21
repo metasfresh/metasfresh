@@ -1,13 +1,14 @@
 package de.metas.material.event.commons;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IClientOrgAware;
+import org.adempiere.service.ClientId;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -34,41 +35,40 @@ import lombok.Value;
  */
 @Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class EventDescriptor
+public final class EventDescriptor
 {
-	/**
-	 * @param clientOrgAware model which can be made into a {@link IClientOrgAware} via {@link InterfaceWrapperHelper#asColumnReferenceAwareOrNull(Object, Class)}.
-	 */
-	public static EventDescriptor createNew(final Object clientOrgAware)
-	{
-		final IClientOrgAware clientOrgAwareToUse = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(clientOrgAware, IClientOrgAware.class);
-
-		return new EventDescriptor(
-				clientOrgAwareToUse.getAD_Client_ID(),
-				clientOrgAwareToUse.getAD_Org_ID());
-	}
-
 	public static EventDescriptor ofClientAndOrg(final int adClientId, final int adOrgId)
 	{
-		return new EventDescriptor(adClientId, adOrgId);
+		return ofClientAndOrg(ClientAndOrgId.ofClientAndOrg(adClientId, adOrgId));
 	}
 
-	@JsonProperty("clientId")
-	int clientId;
-	@JsonProperty("orgId")
-	int orgId;
+	public static EventDescriptor ofClientAndOrg(@NonNull final ClientId adClientId, @NonNull final OrgId adOrgId)
+	{
+		return ofClientAndOrg(ClientAndOrgId.ofClientAndOrg(adClientId, adOrgId));
+	}
+
+	public static EventDescriptor ofClientAndOrg(@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		return new EventDescriptor(clientAndOrgId);
+	}
+
+	@JsonProperty("clientAndOrgId")
+	ClientAndOrgId clientAndOrgId;
 
 	@JsonCreator
 	private EventDescriptor(
-			@JsonProperty("clientId") @NonNull final Integer clientId,
-			@JsonProperty("orgId") @NonNull final Integer orgId)
+			@JsonProperty("clientAndOrgId") @NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		this.clientId = clientId;
-		this.orgId = orgId;
+		this.clientAndOrgId = clientAndOrgId;
 	}
 
-	public EventDescriptor copy()
+	public ClientId getClientId()
 	{
-		return new EventDescriptor(clientId, orgId);
+		return getClientAndOrgId().getClientId();
+	}
+
+	public OrgId getOrgId()
+	{
+		return getClientAndOrgId().getOrgId();
 	}
 }

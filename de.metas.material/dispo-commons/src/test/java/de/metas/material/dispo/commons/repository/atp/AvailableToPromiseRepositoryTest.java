@@ -306,7 +306,7 @@ public class AvailableToPromiseRepositoryTest
 
 		final I_MD_Candidate_ATP_QueryResult viewRecord = newInstance(I_MD_Candidate_ATP_QueryResult.class);
 		viewRecord.setM_Product_ID(productId);
-		viewRecord.setM_Warehouse_ID(WAREHOUSE_ID);
+		viewRecord.setM_Warehouse_ID(WAREHOUSE_ID.getRepoId());
 		viewRecord.setC_BPartner_Customer_ID(BPartnerId.toRepoId(bpartnerId));
 		viewRecord.setDateProjected(TimeUtil.asTimestamp(dateProjected));
 		viewRecord.setStorageAttributesKey(storgateAttributesKey.getAsString());

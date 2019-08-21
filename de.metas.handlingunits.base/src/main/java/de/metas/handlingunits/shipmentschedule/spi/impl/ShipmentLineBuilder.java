@@ -276,7 +276,7 @@ import lombok.NonNull;
 		final Quantity qtyToAdd = candidate.getQtyPicked();
 		if (qtyToAdd.signum() <= 0)
 		{
-			Loggables.get().addLog("IShipmentScheduleWithHU {} has QtyPicked={}", candidate, qtyToAdd);
+			Loggables.addLog("IShipmentScheduleWithHU {} has QtyPicked={}", candidate, qtyToAdd);
 		}
 		movementQty = movementQty.add(qtyToAdd); // NOTE: we assume qtyToAdd is in stocking UOM
 
@@ -472,8 +472,7 @@ import lombok.NonNull;
 		}
 		else
 		{
-			Loggables.get()
-					.withLogger(logger, Level.INFO)
+			Loggables.withLogger(logger, Level.INFO)
 					.addLog("Not setting the shipment line's M_HU_PI_Item_Product, because the added ShipmentScheduleWithHUs have different ones; huPIItemProducts={}",
 							packingMaterial_huPIItemProducts);
 		}

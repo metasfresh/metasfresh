@@ -14,6 +14,7 @@ import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQueryTest;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.organization.ClientAndOrgId;
 
 /*
  * #%L
@@ -54,7 +55,9 @@ public class CandidatesQueryTest
 	@Test
 	public void fromCandidate()
 	{
-		final Candidate cand = Candidate.builder().type(CandidateType.STOCK)
+		final Candidate cand = Candidate.builder()
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 1))
+				.type(CandidateType.STOCK)
 				.materialDescriptor(createMaterialDescriptor().withDate(NOW))
 				.build();
 		final CandidatesQuery query = CandidatesQuery.fromCandidate(cand, false);

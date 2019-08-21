@@ -47,7 +47,7 @@ public class DDOrderRequestedEvent implements MaterialEvent
 				"The given ddOrderRequestedEvent'd ddOrder may not yet have an ID; ddOrder={}", ddOrder);
 
 		// we need the DDOrder's MaterialDispoGroupId to map the ddOrder its respective candidates after it was created.
-		Check.errorIf(ddOrder.getMaterialDispoGroupId() <= 0, "The ddOrder of a DDOrderRequestedEvent needs to have a group id");
+		Check.errorIf(ddOrder.getMaterialDispoGroupId() == null, "The ddOrder of a DDOrderRequestedEvent needs to have a group id");
 	}
 
 }

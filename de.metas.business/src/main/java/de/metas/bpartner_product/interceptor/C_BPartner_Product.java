@@ -45,7 +45,7 @@ import de.metas.util.Services;
  */
 
 @Interceptor(I_C_BPartner_Product.class)
-@Component("de.metas.bpartner_product.interceptor.C_BPartner_Product")
+@Component
 public class C_BPartner_Product
 {
 	private final static String MSG_C_BPartner_Product_Duplicate_ASI = "C_BPartner_Product_Duplicate_ASI";

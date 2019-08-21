@@ -33,7 +33,7 @@ import de.metas.invoice.InvoiceId;
  */
 
 @Interceptor(I_C_Invoice.class)
-@Component("de.metas.contracts.interceptor.C_Invoice")
+@Component
 public class C_Invoice
 {
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })

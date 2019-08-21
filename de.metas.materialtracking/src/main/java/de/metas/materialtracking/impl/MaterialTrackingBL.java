@@ -182,7 +182,7 @@ public class MaterialTrackingBL implements IMaterialTrackingBL
 	private void logRequest(final MTLinkRequest request, final String msgSuffix)
 	{
 		logger.debug(request + msgSuffix); // log the request
-		Loggables.get().addLog(request.getModel() + msgSuffix); // don't be too verbose in the user/admin output; keep it readable.
+		Loggables.addLog(request.getModel() + msgSuffix); // don't be too verbose in the user/admin output; keep it readable.
 	}
 
 	@Override

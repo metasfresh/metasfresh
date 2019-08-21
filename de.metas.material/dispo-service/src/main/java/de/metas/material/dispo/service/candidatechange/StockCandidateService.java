@@ -25,6 +25,7 @@ import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.MaterialDescriptorQueryBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.util.Check;
 import lombok.NonNull;
 
@@ -101,14 +102,13 @@ public class StockCandidateService
 				.getMaterialDescriptor()
 				.withQuantity(newQty);
 
-		final Integer groupId = previousStockOrNull != null
+		final MaterialDispoGroupId groupId = previousStockOrNull != null
 				? previousStockOrNull.getGroupId()
-				: 0;
+				: null;
 
 		final Candidate stockCandidate = Candidate.builder()
 				.type(CandidateType.STOCK)
-				.orgId(candidate.getOrgId())
-				.clientId(candidate.getClientId())
+				.clientAndOrgId(candidate.getClientAndOrgId())
 				.materialDescriptor(materialDescriptor)
 				.parentId(candidate.getParentId())
 				.seqNo(candidate.getSeqNo())

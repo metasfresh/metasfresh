@@ -2,9 +2,9 @@ package org.adempiere.ad.window.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.copy;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.compiere.util.Util.coalesce;
 
 import java.util.Collection;
 import java.util.List;
@@ -69,6 +69,7 @@ import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 public class ADWindowDAO implements IADWindowDAO
@@ -105,7 +106,7 @@ public class ADWindowDAO implements IADWindowDAO
 
 	@Cached(cacheName = I_AD_Window.Table_Name + "#By#" + I_AD_Window.COLUMNNAME_AD_Window_ID)
 	@Override
-	public String retrieveInternalWindowName(final int adWindowId)
+	public String retrieveInternalWindowName(final AdWindowId adWindowId)
 	{
 		final I_AD_Window window = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_AD_Window.class)
@@ -373,7 +374,7 @@ public class ADWindowDAO implements IADWindowDAO
 	}
 
 	@Override
-	public I_AD_Tab retrieveFirstTab(final int adWindowId)
+	public I_AD_Tab retrieveFirstTab(@NonNull final AdWindowId adWindowId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Tab.class)
@@ -987,6 +988,12 @@ public class ADWindowDAO implements IADWindowDAO
 				.create()
 				.listIds(AdWindowId::ofRepoId);
 	}
+	
+	@Override
+	public I_AD_Window getById(@NonNull final AdWindowId adWindowId)
+	{
+		return loadOutOfTrx(adWindowId, I_AD_Window.class);
+	}
 
 	@Override
 	public I_AD_Window getWindowByIdInTrx(@NonNull final AdWindowId windowId)
@@ -1034,9 +1041,9 @@ public class ADWindowDAO implements IADWindowDAO
 		switch (soTrx)
 		{
 			case SALES:
-				return coalesce(AdWindowId.ofRepoIdOrNull(adTableRecord.getAD_Window_ID()), defaultValue);
+				return CoalesceUtil.coalesce(AdWindowId.ofRepoIdOrNull(adTableRecord.getAD_Window_ID()), defaultValue);
 			case PURCHASE:
-				return coalesce(AdWindowId.ofRepoIdOrNull(adTableRecord.getPO_Window_ID()), defaultValue);
+				return CoalesceUtil.coalesce(AdWindowId.ofRepoIdOrNull(adTableRecord.getPO_Window_ID()), defaultValue);
 			default:
 				throw new AdempiereException("Param 'soTrx' has an unspupported value; soTrx=" + soTrx);
 		}

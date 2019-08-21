@@ -817,7 +817,7 @@ public class FlatrateBL implements IFlatrateBL
 						counter,
 						flatrateTerm.getStartDate(),
 						flatrateTerm.getEndDate() });
-		Loggables.get().withLogger(logger, Level.INFO).addLog(msg);
+		Loggables.withLogger(logger, Level.INFO).addLog(msg);
 	}
 
 	private void createEntriesForFlatFee(
@@ -867,7 +867,7 @@ public class FlatrateBL implements IFlatrateBL
 						flatrateTerm.getStartDate(),
 						flatrateTerm.getEndDate(),
 						columnLookup.getDisplay(flatrateTerm.getUOMType()) });
-		Loggables.get().withLogger(logger, Level.INFO).addLog(msg);
+		Loggables.withLogger(logger, Level.INFO).addLog(msg);
 	}
 
 	@Override
@@ -1311,7 +1311,7 @@ public class FlatrateBL implements IFlatrateBL
 		{
 			if (nextTermStartDate.before(contract.getStartDate()) || nextTermStartDate.after(dayAfterEndDate))
 			{
-				Loggables.get().addLog(
+				Loggables.addLog(
 						"Ignore nextTermStartDate={} because if is not between currentTerm's StartDate={} and DayAfterEndDate={}. Instead, use dayAfterEndDate",
 						nextTermStartDate, contract.getStartDate(), dayAfterEndDate);
 				return dayAfterEndDate;
@@ -1690,7 +1690,7 @@ public class FlatrateBL implements IFlatrateBL
 			final boolean hasOverlappingTerms = hasOverlappingTerms(term);
 			if (hasOverlappingTerms)
 			{
-				Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(
+				Loggables.addLog(Services.get(IMsgBL.class).getMsg(
 						Env.getCtx(),
 						MSG_HasOverlapping_Term,
 						new Object[] { term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue() }));

@@ -36,6 +36,9 @@ import lombok.NonNull;
 /**
  * Clears several temporary tables.
  */
+// not registering this one for because is might lead to problems if a swing-client is running while the server is starting up.
+// TODO: evaluate if this is still valid
+// @Component
 public class ClearTemporaryTables implements IStartupHouseKeepingTask
 {
 	private static final Logger logger = LogManager.getLogger(ClearTemporaryTables.class);
@@ -55,7 +58,7 @@ public class ClearTemporaryTables implements IStartupHouseKeepingTask
 		try
 		{
 			DB.executeUpdateEx("TRUNCATE TABLE " + tableName, ITrx.TRXNAME_None);
-			Loggables.get().addLog("Truncated table {}", tableName);
+			Loggables.addLog("Truncated table {}", tableName);
 		}
 		catch (final Exception ex)
 		{

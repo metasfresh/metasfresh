@@ -29,6 +29,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.DBForeignKeyConstraintException;
 import org.adempiere.service.IRolePermLoggingBL.NoSuchForeignKeyException;
 import org.adempiere.service.ISysConfigBL;
@@ -85,9 +86,9 @@ public class MRolePermRequest extends X_AD_Role_PermRequest
 		logAccess(roleId, COLUMNNAME_AD_Window_ID, id, null, null, access, null);
 	}
 
-	public static void logWindowAccess(final RoleId roleId, final int id, final Boolean access, final String description)
+	public static void logWindowAccess(final RoleId roleId, final AdWindowId id, final Boolean access, final String description)
 	{
-		logAccess(roleId, COLUMNNAME_AD_Window_ID, id, null, null, access, description);
+		logAccess(roleId, COLUMNNAME_AD_Window_ID, id.getRepoId(), null, null, access, description);
 	}
 
 	public static void logFormAccess(final RoleId roleId, final int id, final Boolean access)

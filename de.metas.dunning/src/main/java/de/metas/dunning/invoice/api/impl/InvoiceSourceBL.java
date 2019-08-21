@@ -123,7 +123,7 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 					logger.error(errmsg, e);
 
 					// notify monitor too about this issue
-					Loggables.get().addLog(errmsg);
+					Loggables.addLog(errmsg);
 
 					return true; // rollback
 				}

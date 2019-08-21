@@ -1,5 +1,9 @@
 package de.metas.material.event.pporder;
 
+import javax.annotation.Nullable;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -8,6 +12,7 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -34,16 +39,22 @@ import lombok.ToString;
 
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class PPOrderCreatedEvent extends AbstractPPOrderEvent
 {
+	public static PPOrderCreatedEvent cast(@Nullable final AbstractPPOrderEvent ppOrderEvent)
+	{
+		return (PPOrderCreatedEvent)ppOrderEvent;
+	}
+
 	public static final String TYPE = "PPOrderCreatedEvent";
 
 	@JsonCreator
 	@Builder
 	public PPOrderCreatedEvent(
-			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
-			@JsonProperty("ppOrder") final PPOrder ppOrder,
-			@JsonProperty("supplyRequiredDescriptor") final SupplyRequiredDescriptor supplyRequiredDescriptor)
+			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
+			@JsonProperty("ppOrder") final @NonNull PPOrder ppOrder,
+			@JsonProperty("supplyRequiredDescriptor") @Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
 		super(eventDescriptor, ppOrder, supplyRequiredDescriptor);
 	}
@@ -51,16 +62,17 @@ public class PPOrderCreatedEvent extends AbstractPPOrderEvent
 	public void validate()
 	{
 		final PPOrder ppOrder = getPpOrder();
-
 		final int ppOrderId = ppOrder.getPpOrderId();
 		Check.errorIf(ppOrderId <= 0, "The given ppOrderCreatedEvent event has a ppOrder with ppOrderId={}", ppOrderId);
 
-		ppOrder.getLines().forEach(ppOrderLine -> {
+		ppOrder.getLines().forEach(this::validateLine);
+	}
 
-			final int ppOrderLineId = ppOrderLine.getPpOrderLineId();
-			Check.errorIf(ppOrderLineId <= 0,
-					"The given ppOrderCreatedEvent event has a ppOrderLine with ppOrderLineId={}; ppOrderLine={}",
-					ppOrderLineId, ppOrderLine);
-		});
+	private void validateLine(final PPOrderLine ppOrderLine)
+	{
+		final int ppOrderLineId = ppOrderLine.getPpOrderLineId();
+		Check.errorIf(ppOrderLineId <= 0,
+				"The given ppOrderCreatedEvent event has a ppOrderLine with ppOrderLineId={}; ppOrderLine={}",
+				ppOrderLineId, ppOrderLine);
 	}
 }

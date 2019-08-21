@@ -14,7 +14,6 @@ import java.util.Objects;
 import java.util.TreeSet;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Util;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -51,6 +50,7 @@ import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /*
@@ -152,9 +152,9 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		}
 
 		final Flag pickDirectlyIfFeasible = extractPickDirectlyIfFeasible(candidate);
-		if (!pickDirectlyIfFeasible.toBoolean())
+		if (!pickDirectlyIfFeasible.isTrue())
 		{
-			Loggables.get().addLog("Not posting PickingRequestedEvent: this event's candidate has pickDirectlyIfFeasible={}; candidate={}",
+			Loggables.addLog("Not posting PickingRequestedEvent: this event's candidate has pickDirectlyIfFeasible={}; candidate={}",
 					pickDirectlyIfFeasible, candidate);
 			return;
 		}
@@ -163,7 +163,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final boolean noShipmentScheduleForPicking = demandDetail == null || demandDetail.getShipmentScheduleId() <= 0;
 		if (noShipmentScheduleForPicking)
 		{
-			Loggables.get().addLog("Not posting PickingRequestedEvent: this event's candidate has no shipmentScheduleId; candidate={}",
+			Loggables.addLog("Not posting PickingRequestedEvent: this event's candidate has no shipmentScheduleId; candidate={}",
 					candidate);
 			return;
 		}
@@ -172,7 +172,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final boolean noHUsToPick = huOnHandQtyChangeDescriptors == null || huOnHandQtyChangeDescriptors.isEmpty();
 		if (noHUsToPick)
 		{
-			Loggables.get().addLog("Not posting PickingRequestedEvent: this event has no HuOnHandQtyChangeDescriptors");
+			Loggables.addLog("Not posting PickingRequestedEvent: this event has no HuOnHandQtyChangeDescriptors");
 			return;
 		}
 
@@ -350,7 +350,8 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 		final ProductionDetailsQuery productionDetailsQuery = ProductionDetailsQuery.builder()
 				.ppOrderId(event.getPpOrderId())
-				.ppOrderLineId(ppOrderLineIdForQuery).build();
+				.ppOrderLineId(ppOrderLineIdForQuery)
+				.build();
 
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.productionDetailsQuery(productionDetailsQuery)
@@ -447,7 +448,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 				.withMaterialDescriptorQuery(materialDescriptorQuery)
 				.withMatchExactStorageAttributesKey(true);
 
-		final Candidate existingCandidate = Util.coalesceSuppliers(
+		final Candidate existingCandidate = CoalesceUtil.coalesceSuppliers(
 				() -> candidateRepository.retrieveLatestMatchOrNull(queryWithAttributesKey),
 				() -> candidateRepository.retrieveLatestMatchOrNull(queryWithoutAttributesKey));
 		return existingCandidate;

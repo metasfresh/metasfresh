@@ -42,6 +42,7 @@ import de.metas.payment.reservation.PaymentReservation;
 import de.metas.payment.reservation.PaymentReservationCapture;
 import de.metas.payment.reservation.PaymentReservationId;
 import de.metas.payment.reservation.PaymentReservationRepository;
+import de.metas.ui.web.WebuiURLs;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -185,11 +186,14 @@ public class PayPal
 			@NonNull final PaymentReservation reservation,
 			@NonNull final PayPalConfig config)
 	{
+		final String webuiFrontendUrl = WebuiURLs.newInstance().getFrontendURL();
+		final String approveCallbackUrl = config.getOrderApproveCallbackUrl(webuiFrontendUrl);
+
 		return new OrderRequest()
 				.intent("AUTHORIZE")
 				.applicationContext(new ApplicationContext()
-						.returnUrl(config.getOrderApproveCallbackUrl())
-						.cancelUrl(config.getOrderApproveCallbackUrl()))
+						.returnUrl(approveCallbackUrl)
+						.cancelUrl(approveCallbackUrl))
 				.purchaseUnits(ImmutableList.of(
 						new PurchaseUnitRequest()
 								.amount(toAmountWithBreakdown(reservation.getAmount()))));

@@ -5,6 +5,8 @@ import java.time.Instant;
 
 import javax.annotation.Nullable;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -47,6 +49,7 @@ import lombok.Value;
  *
  */
 @Value
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class PPOrderLine
 {
 	String description;
@@ -103,5 +106,22 @@ public class PPOrderLine
 	public PPOrderLine withQtyRequired(final BigDecimal qtyRequired)
 	{
 		return toBuilder().qtyRequired(qtyRequired).build();
+	}
+
+	public BigDecimal getQtyOpen()
+	{
+		return getQtyRequired().subtract(getQtyDelivered());
+	}
+
+	public BigDecimal getQtyOpenNegateIfReceipt()
+	{
+		if (isReceipt())
+		{
+			return getQtyOpen().negate();
+		}
+		else
+		{
+			return getQtyOpen();
+		}
 	}
 }

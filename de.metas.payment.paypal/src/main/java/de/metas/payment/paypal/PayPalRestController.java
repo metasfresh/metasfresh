@@ -34,7 +34,10 @@ import lombok.NonNull;
 
 @RestController
 @Profile(Profiles.PROFILE_Webui)
-@RequestMapping("/paypal")
+@RequestMapping({
+		"/paypal",
+		"/rest/api/paypal" // NOTE: actually this one is used by frontend because in config.js, the API_URL ends with /rest/api
+})
 public class PayPalRestController
 {
 	private final PayPal paypal;

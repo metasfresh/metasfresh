@@ -34,7 +34,7 @@ import lombok.NonNull;
  */
 
 @Interceptor(I_C_DocType.class)
-@Component("de.metas.document.interceptor.C_DocType")
+@Component
 public class C_DocType
 {
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)

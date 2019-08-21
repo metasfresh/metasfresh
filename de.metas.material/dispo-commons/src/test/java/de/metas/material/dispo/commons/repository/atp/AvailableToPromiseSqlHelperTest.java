@@ -80,7 +80,7 @@ public class AvailableToPromiseSqlHelperTest
 		final IQueryBuilder<I_MD_Candidate_ATP_QueryResult> dbQuery = AvailableToPromiseSqlHelper.createDBQueryForStockQueryBuilder(query);
 
 		final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> dbFilter = dbQuery.getCompositeFilter();
-		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Warehouse_ID, WAREHOUSE_ID);
+		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Warehouse_ID, WAREHOUSE_ID.getRepoId());
 
 		final ICompositeQueryFilter includedCompositeOrFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);
 		assertThat(includedCompositeOrFilter).isJoinOr();

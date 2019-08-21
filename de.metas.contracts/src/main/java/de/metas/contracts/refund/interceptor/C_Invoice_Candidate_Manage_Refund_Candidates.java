@@ -48,7 +48,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@Component("de.metas.contracts.refund.interceptor.C_Invoice_Candidate")
+@Component
 @Interceptor(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate_Manage_Refund_Candidates
 {
@@ -111,8 +111,7 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 		{
 			// allow the "normal ICs" to be updated, even if something is wrong with the "refund-ICs"
 			final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(e);
-			Loggables.get()
-					.withLogger(logger, Level.WARN)
+			Loggables.withLogger(logger, Level.WARN)
 					.addLog("associateDuringUpdateProcess0 - Caught an exception withe processing C_Invoice_Candidate_ID={}; "
 							+ "please check the async workpackage log; AD_Issue_ID={}; e={}",
 							invoiceCandidateRecord.getC_Invoice_Candidate_ID(), issue.getAD_Issue_ID(), e.toString());

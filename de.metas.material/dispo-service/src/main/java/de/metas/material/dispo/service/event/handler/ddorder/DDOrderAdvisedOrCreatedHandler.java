@@ -2,9 +2,9 @@ package de.metas.material.dispo.service.event.handler.ddorder;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -25,6 +25,7 @@ import de.metas.material.event.commons.MaterialDescriptor.MaterialDescriptorBuil
 import de.metas.material.event.ddorder.AbstractDDOrderEvent;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import lombok.NonNull;
 
 /*
@@ -69,15 +70,14 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 	/**
 	 * @return the groupId of the candidates that were created or updated.
 	 */
-	protected final Set<Integer> handleAbstractDDOrderEvent(@NonNull final AbstractDDOrderEvent ddOrderEvent)
+	protected final ImmutableSet<MaterialDispoGroupId> handleAbstractDDOrderEvent(@NonNull final AbstractDDOrderEvent ddOrderEvent)
 	{
-		final ImmutableSet.Builder<Integer> groupIds = ImmutableSet.builder();
+		final ImmutableSet.Builder<MaterialDispoGroupId> groupIds = ImmutableSet.builder();
 
 		for (final DDOrderLine ddOrderLine : ddOrderEvent.getDdOrder().getLines())
 		{
-			final int groupId = createAndProcessCandidatePair(ddOrderEvent, ddOrderLine);
-
-			if (groupId > 0)
+			final MaterialDispoGroupId groupId = createAndProcessCandidatePair(ddOrderEvent, ddOrderLine);
+			if (groupId != null)
 			{
 				groupIds.add(groupId);
 			}
@@ -85,7 +85,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 		return groupIds.build();
 	}
 
-	private int createAndProcessCandidatePair(
+	private MaterialDispoGroupId createAndProcessCandidatePair(
 			final AbstractDDOrderEvent ddOrderEvent,
 			final DDOrderLine ddOrderLine)
 	{
@@ -113,7 +113,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 		final Candidate supplyCandidateWithId = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
 		if (supplyCandidateWithId.getQuantity().signum() == 0)
 		{
-			return -1; // nothing was added as supply in the destination warehouse, so there is no demand to register either
+			return null; // nothing was added as supply in the destination warehouse, so there is no demand to register either
 		}
 
 		//
@@ -123,7 +123,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 		// *but* it might also be the case that the demandCandidate attaches to an existing stock and in that case would need to get another SeqNo
 		final int expectedSeqNoForDemandCandidate = supplyCandidateWithId.getSeqNo() + 1;
 
-		final Integer groupId = supplyCandidateWithId.getGroupId();
+		final MaterialDispoGroupId groupId = supplyCandidateWithId.getGroupId();
 
 		final MaterialDescriptor demandMaterialDescriptor = createDemandMaterialDescriptor(ddOrderEvent, ddOrderLine);
 
@@ -239,7 +239,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 //		return candidateStatus;
 //	}
 
-	protected final int computeWarehouseId(
+	protected final WarehouseId computeWarehouseId(
 			@NonNull final AbstractDDOrderEvent ddOrderEvent,
 			@NonNull final CandidateType candidateType)
 	{

@@ -28,6 +28,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_AD_Scheduler;
 import org.compiere.model.X_AD_Scheduler;
 import org.compiere.util.DB;
+import org.springframework.stereotype.Component;
 
 import de.metas.util.Loggables;
 
@@ -38,6 +39,7 @@ import de.metas.util.Loggables;
  * 
  */
 // task 06295
+@Component
 public class ResetSchedulerState implements IStartupHouseKeepingTask
 {
 	@Override
@@ -47,6 +49,6 @@ public class ResetSchedulerState implements IStartupHouseKeepingTask
 				+ " SET " + I_AD_Scheduler.COLUMNNAME_Status + "='" + X_AD_Scheduler.STATUS_Started + "'"
 				+ " WHERE " + I_AD_Scheduler.COLUMNNAME_Status + "='" + X_AD_Scheduler.STATUS_Running + "'", ITrx.TRXNAME_None);
 
-		Loggables.get().addLog("Updated " + no + " AD_Scheduler records from status '" + X_AD_Scheduler.STATUS_Running + "' to '" + X_AD_Scheduler.STATUS_Started + "'");
+		Loggables.addLog("Updated " + no + " AD_Scheduler records from status '" + X_AD_Scheduler.STATUS_Running + "' to '" + X_AD_Scheduler.STATUS_Started + "'");
 	}
 }

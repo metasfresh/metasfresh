@@ -34,13 +34,16 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.CalloutEngine;
-import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_C_DocType;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_Planning;
 
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.material.planning.IProductPlanningDAO;
@@ -71,9 +74,14 @@ public class PP_Order extends CalloutEngine
 	@CalloutMethod(columnNames = I_PP_Order.COLUMNNAME_C_DocTypeTarget_ID)
 	public void onC_DocTypeTarget_ID(I_PP_Order ppOrder)
 	{
+		final DocTypeId docTypeTargetId = DocTypeId.ofRepoIdOrNull(ppOrder.getC_DocTypeTarget_ID());
+		final I_C_DocType docTypeTarget = docTypeTargetId != null
+				? Services.get(IDocTypeDAO.class).getById(docTypeTargetId)
+				: null;
+
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
-				.setNewDocType(ppOrder.getC_DocTypeTarget())
+				.setNewDocType(docTypeTarget)
 				.setOldDocType_ID(ppOrder.getC_DocType_ID())
 				.setOldDocumentNo(ppOrder.getDocumentNo())
 				.setDocumentModel(ppOrder)
@@ -106,12 +114,14 @@ public class PP_Order extends CalloutEngine
 
 		final I_PP_Product_Planning pp = findPP_Product_Planning(ppOrder);
 		ppOrder.setAD_Workflow_ID(pp.getAD_Workflow_ID());
-		ppOrder.setPP_Product_BOM_ID(pp.getPP_Product_BOM_ID());
+		
+		final ProductBOMId productBOMId = ProductBOMId.ofRepoIdOrNull(pp.getPP_Product_BOM_ID());
+		ppOrder.setPP_Product_BOM_ID(ProductBOMId.toRepoId(productBOMId));
 
-		if (pp.getPP_Product_BOM_ID() > 0)
+		if (productBOMId != null)
 		{
 			final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
-			final I_PP_Product_BOM bom = productBOMsRepo.getById(pp.getPP_Product_BOM_ID());
+			final I_PP_Product_BOM bom = productBOMsRepo.getById(productBOMId);
 			ppOrder.setC_UOM_ID(bom.getC_UOM_ID());
 		}
 
@@ -149,18 +159,18 @@ public class PP_Order extends CalloutEngine
 	private final void updateQtyOrdered(final I_PP_Order ppOrder)
 	{
 		final ProductId productId = ProductId.ofRepoIdOrNull(ppOrder.getM_Product_ID());
-		final I_C_UOM uomTo = ppOrder.getC_UOM();
+		final UomId uomToId = UomId.ofRepoIdOrNull(ppOrder.getC_UOM_ID());
 		final BigDecimal qtyEntered = ppOrder.getQtyEntered();
 
 		BigDecimal qtyOrdered;
-		if (productId == null || uomTo == null)
+		if (productId == null || uomToId == null)
 		{
 			qtyOrdered = qtyEntered;
 		}
 		else
 		{
 			qtyOrdered = Services.get(IUOMConversionBL.class)
-					.convertToProductUOM(productId, uomTo, qtyEntered);
+					.convertToProductUOM(productId, qtyEntered, uomToId);
 			if (qtyOrdered == null)
 			{
 				qtyOrdered = qtyEntered;

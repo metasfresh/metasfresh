@@ -59,7 +59,7 @@ import de.metas.acct.tax.ITaxDeclarationDAO;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
-import de.metas.util.NullLoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 
 /**
@@ -84,7 +84,7 @@ public class TaxDeclarationLinesBuilder
 	private I_C_TaxDeclaration _taxDeclaration;
 	private boolean _deleteOldLines;
 	@ToStringBuilder(skip = true)
-	private ILoggable loggable = NullLoggable.instance;
+	private ILoggable loggable = Loggables.nop();
 
 	// Status
 	private int lineNoOffset_TaxDeclarationLine = 0;
@@ -256,15 +256,9 @@ public class TaxDeclarationLinesBuilder
 	private boolean addInvoice(final I_C_Invoice invoice)
 	{
 		final AtomicBoolean addedRef = new AtomicBoolean(false);
-		trxManager.run(getTrxNameInitial(), new TrxRunnable()
-		{
-
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				final boolean added = addInvoice0(invoice);
-				addedRef.set(added);
-			}
+		trxManager.run(getTrxNameInitial(), (TrxRunnable)localTrxName -> {
+			final boolean added = addInvoice0(invoice);
+			addedRef.set(added);
 		});
 
 		return addedRef.get();
@@ -446,15 +440,9 @@ public class TaxDeclarationLinesBuilder
 	private boolean addGLJournalLine(final I_GL_JournalLine glJournalLine)
 	{
 		final AtomicBoolean addedRef = new AtomicBoolean(false);
-		trxManager.run(getTrxNameInitial(), new TrxRunnable()
-		{
-
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				final boolean added = addGLJournalLine0(glJournalLine);
-				addedRef.set(added);
-			}
+		trxManager.run(getTrxNameInitial(), (TrxRunnable)localTrxName -> {
+			final boolean added = addGLJournalLine0(glJournalLine);
+			addedRef.set(added);
 		});
 
 		return addedRef.get();

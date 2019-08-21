@@ -2,6 +2,7 @@ package org.adempiere.ui.api.impl;
 
 import java.util.Properties;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 
@@ -39,19 +40,19 @@ import org.compiere.util.Ini;
 public class WindowBL implements IWindowBL
 {
 	@Override
-	public boolean openWindow(final int AD_Window_ID)
+	public boolean openWindow(final AdWindowId adWindowId)
 	{
 		final WindowManager windowManager = null;
 		final int adWorkbenchId = 0;
-		return openWindow(windowManager, adWorkbenchId, AD_Window_ID);
+		return openWindow(windowManager, adWorkbenchId, adWindowId);
 	}
 
 	@Override
-	public boolean openWindow(final WindowManager windowManager, final int AD_Workbench_ID, final int AD_Window_ID)
+	public boolean openWindow(final WindowManager windowManager, final int AD_Workbench_ID, final AdWindowId adWindowId)
 	{
 		//
 		// Show hidden window if any
-		AWindow frame = (AWindow)Env.showWindow(AD_Window_ID);
+		AWindow frame = (AWindow)Env.showWindow(adWindowId);
 		if (frame != null)
 		{
 			addFrame(windowManager, frame);
@@ -60,7 +61,7 @@ public class WindowBL implements IWindowBL
 
 		//
 		// Find existing cached window and show it (if any)
-		frame = findFrame(windowManager, AD_Window_ID);
+		frame = findFrame(windowManager, adWindowId);
 		if (frame != null)
 		{
 			final boolean isOneInstanceOnly = frame.getGridWindow().getVO().isOneInstanceOnly();
@@ -82,7 +83,7 @@ public class WindowBL implements IWindowBL
 		}
 		else
 		{
-			OK = frame.initWindow(AD_Window_ID, null);	// No Query Value
+			OK = frame.initWindow(adWindowId, null);	// No Query Value
 		}
 		if (!OK)
 		{
@@ -116,13 +117,13 @@ public class WindowBL implements IWindowBL
 		AEnv.addToWindowManager(frame);
 	}
 
-	private AWindow findFrame(final WindowManager windowManager, final int AD_Window_ID)
+	private AWindow findFrame(final WindowManager windowManager, final AdWindowId adWindowId)
 	{
 		if (windowManager != null)
 		{
-			return windowManager.find(AD_Window_ID);
+			return windowManager.find(adWindowId);
 		}
-		return AEnv.findInWindowManager(AD_Window_ID);
+		return AEnv.findInWindowManager(adWindowId);
 	}
 
 	@Override

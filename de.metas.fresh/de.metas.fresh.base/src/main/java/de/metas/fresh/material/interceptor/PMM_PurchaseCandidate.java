@@ -65,7 +65,7 @@ public class PMM_PurchaseCandidate
 		{
 			event = PurchaseOfferDeletedEvent.builder()
 					.date(TimeUtil.asInstant(purchaseCandidateRecord.getDatePromised()))
-					.eventDescriptor(EventDescriptor.createNew(purchaseCandidateRecord))
+					.eventDescriptor(EventDescriptor.ofClientAndOrg(purchaseCandidateRecord.getAD_Client_ID(), purchaseCandidateRecord.getAD_Org_ID()))
 					.procurementCandidateId(purchaseCandidateRecord.getPMM_PurchaseCandidate_ID())
 					.productDescriptor(productDescriptor)
 					.qty(qtyPromised)
@@ -75,7 +75,7 @@ public class PMM_PurchaseCandidate
 		{
 			event = PurchaseOfferCreatedEvent.builder()
 					.date(TimeUtil.asInstant(purchaseCandidateRecord.getDatePromised()))
-					.eventDescriptor(EventDescriptor.createNew(purchaseCandidateRecord))
+					.eventDescriptor(EventDescriptor.ofClientAndOrg(purchaseCandidateRecord.getAD_Client_ID(), purchaseCandidateRecord.getAD_Org_ID()))
 					.procurementCandidateId(purchaseCandidateRecord.getPMM_PurchaseCandidate_ID())
 					.productDescriptor(productDescriptor)
 					.qty(qtyPromised)
@@ -88,7 +88,7 @@ public class PMM_PurchaseCandidate
 
 			event = PurchaseOfferUpdatedEvent.builder()
 					.date(TimeUtil.asInstant(purchaseCandidateRecord.getDatePromised()))
-					.eventDescriptor(EventDescriptor.createNew(purchaseCandidateRecord))
+					.eventDescriptor(EventDescriptor.ofClientAndOrg(purchaseCandidateRecord.getAD_Client_ID(), purchaseCandidateRecord.getAD_Org_ID()))
 					.procurementCandidateId(purchaseCandidateRecord.getPMM_PurchaseCandidate_ID())
 					.productDescriptor(productDescriptor)
 					.qty(qtyPromised)

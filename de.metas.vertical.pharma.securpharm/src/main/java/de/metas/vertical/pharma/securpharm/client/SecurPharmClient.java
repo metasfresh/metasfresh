@@ -238,7 +238,9 @@ public class SecurPharmClient
 
 		final ProductDetails.ProductDetailsBuilder productDetailsBuilder = ProductDetails.builder()
 				.lot(product.getLot())
-				.productCode(product.getProductCode())
+				// IMPORTANT: setting productCode as Lot is not a mistake.
+				// For some reason the product.getProductCode() is useless and looks like using provided Lot as ProductCode and Lot works!
+				.productCode(product.getLot())
 				.productCodeType(ProductCodeType.ofCode(product.getPcs()))
 				.expirationDate(product.getExpirationDate())
 				.serialNumber(pack.getSerialNumber());

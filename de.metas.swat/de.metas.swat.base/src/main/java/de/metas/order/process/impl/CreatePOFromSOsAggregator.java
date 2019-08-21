@@ -100,7 +100,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		final String msg = msgBL.getMsg(context.getCtx(),
 				MSG_PURCHASE_ORDER_CREATED,
 				new Object[] { purchaseOrder.getDocumentNo() });
-		Loggables.get().addLog(msg);
+		Loggables.addLog(msg);
 
 		return purchaseOrder;
 	}
@@ -127,7 +127,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		}
 		catch (Throwable t)
 		{
-			Loggables.get().addLog("@Error@: " + t);
+			Loggables.addLog("@Error@: " + t);
 			throw AdempiereException.wrapIfNeeded(t);
 		}
 	}
@@ -242,7 +242,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 			}
 			else
 			{
-				Loggables.get().addLog("@Missing@ @AD_OrgInfo@ @DropShip_Warehouse_ID@");
+				Loggables.addLog("@Missing@ @AD_OrgInfo@ @DropShip_Warehouse_ID@");
 			}
 		}
 		// References

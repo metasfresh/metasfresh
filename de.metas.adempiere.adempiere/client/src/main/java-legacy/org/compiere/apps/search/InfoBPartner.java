@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ALayout;
@@ -95,7 +96,9 @@ public class InfoBPartner extends Info
 		setStatusDB(Integer.toString(no));
 		// AutoQuery
 		if (value != null && value.length() > 0)
+		{
 			executeQueryOnInit();
+		}
 		p_loadedOK = true;
 		// Focus
 		fieldValue.requestFocus();
@@ -217,9 +220,13 @@ public class InfoBPartner extends Info
 		checkAND.setSelected(true);
 		checkAND.addActionListener(this);
 		if (m_isSOTrx)
+		{
 			checkCustomer.setText(Msg.getMsg(Env.getCtx(), "OnlyCustomers"));
+		}
 		else
+		{
 			checkCustomer.setText(Msg.getMsg(Env.getCtx(), "OnlyVendors"));
+		}
 		checkCustomer.setSelected(true);
 		checkCustomer.setFocusable(false);
 		checkCustomer.setRequestFocusEnabled(false);
@@ -274,7 +281,9 @@ public class InfoBPartner extends Info
 		StringBuffer where = new StringBuffer();
 		where.append("C_BPartner.IsSummary='N' AND C_BPartner.IsActive='Y'");
 		if (whereClause != null && whereClause.length() > 0)
+		{
 			where.append(" AND ").append(whereClause);
+		}
 		//
 		prepareTable(s_partnerLayout, s_partnerFROM,
 				where.toString(),
@@ -284,32 +293,47 @@ public class InfoBPartner extends Info
 		for (int i = 0; i < p_layout.length; i++)
 		{
 			if (p_layout[i].getIDcolSQL().indexOf("AD_User_ID") != -1)
+			{
 				m_AD_User_ID_index = i;
+			}
 			if (p_layout[i].getIDcolSQL().indexOf("C_BPartner_Location_ID") != -1)
+			{
 				m_C_BPartner_Location_ID_index = i;
+			}
 		}
 
 		// Set Value
 		if (value == null)
+		{
 			value = "%";
+		}
 		if (!value.endsWith("%"))
+		{
 			value += "%";
+		}
 
 		// Put query string in Name if not numeric
 		if (value.equals("%"))
+		{
 			fieldName.setText(value);
-		// No Numbers entered
+		}
 		else if ((value.indexOf('0') + value.indexOf('1') + value.indexOf('2') + value.indexOf('3') + value.indexOf('4') + value.indexOf('5')
 				+ value.indexOf('6') + value.indexOf('7') + value.indexOf('8') + value.indexOf('9')) == -10)
 		{
 			if (value.startsWith("%"))
+			{
 				fieldName.setText(value);
+			}
 			else
+			{
 				fieldName.setText("%" + value);
+			}
 		}
 		// Number entered
 		else
+		{
 			fieldValue.setText(value);
+		}
 	} // initInfo
 
 	/*************************************************************************/
@@ -322,42 +346,56 @@ public class InfoBPartner extends Info
 	@Override
 	protected String getSQLWhere()
 	{
-		ArrayList<String> list = new ArrayList<String>();
+		ArrayList<String> list = new ArrayList<>();
 		// => Value
 		String value = fieldValue.getText().toUpperCase();
 		if (!(value.equals("") || value.equals("%")))
+		{
 			list.add("UPPER(C_BPartner.Value) LIKE ?");
+		}
 		// => Name
 		String name = fieldName.getText().toUpperCase();
 		if (!(name.equals("") || name.equals("%")))
+		{
 			// metas
 			list.add("UPPER(C_BPartner.Name) LIKE ?");
+		}
 		// => Name2
 		// start: metas: c.ghita@metas.ro : 01436
 		String name2 = fieldName2.getText().toUpperCase();
 		if (!(name2.equals("") || name2.equals("%")))
+		{
 			// metas
 			list.add("UPPER(C_BPartner.Name2) LIKE ?");
+		}
 		// end: metas: c.ghita@metas.ro : 01436
 		// => Contact
 		String contact = fieldContact.getText().toUpperCase();
 		if (!(contact.equals("") || contact.equals("%")))
+		{
 			list.add("UPPER(c.Name) LIKE ?");
+		}
 		// => EMail
 		String email = fieldEMail.getText().toUpperCase();
 		if (!(email.equals("") || email.equals("%")))
+		{
 			list.add("UPPER(c.EMail) LIKE ?");
+		}
 		// => Phone
 		String phone = fieldPhone.getText().toUpperCase();
 		if (!(phone.equals("") || phone.equals("%")))
+		 {
 			// metas: Google Suche
 			// list.add ("UPPER(c.Phone) LIKE ?");
 			list.add("UPPER(bpcs.search_phone) LIKE '%' || UPPER(regexp_replace(?,'[-+/()* ]', '', 'g')) || '%'"); // cg:task:02381
+		}
 		// metas: Google Suche
 		// => Postal
 		String postal = fieldPostal.getText().toUpperCase();
 		if (!(postal.equals("") || postal.equals("%")))
+		{
 			list.add("UPPER(a.Postal) LIKE ?");
+		}
 		// metas: Google Suche
 		// => Search
 		String search = fieldSearch.getText().toUpperCase();
@@ -390,10 +428,14 @@ public class InfoBPartner extends Info
 			else
 			{
 				if (!search.startsWith("%"))
+				{
 					value = "%" + value;
+				}
 				// metas-2009_0021_AP1_CR064: end
 				if (!value.endsWith("%"))
+				{
 					value += "%";
+				}
 				list.add("UPPER(bpcs.Search) LIKE ?");
 			}
 
@@ -405,21 +447,29 @@ public class InfoBPartner extends Info
 		int size = list.size();
 		// Just one
 		if (size == 1)
+		{
 			sql.append(" AND ").append(list.get(0));
+		}
 		else if (size > 1)
 		{
 			boolean AND = checkAND.isSelected();
 			sql.append(" AND ");
 			if (!AND)
+			{
 				sql.append("(");
+			}
 			for (int i = 0; i < size; i++)
 			{
 				if (i > 0)
+				{
 					sql.append(AND ? " AND " : " OR ");
+				}
 				sql.append(list.get(i));
 			}
 			if (!AND)
+			{
 				sql.append(")");
+			}
 		}
 
 		// Static SQL
@@ -427,9 +477,13 @@ public class InfoBPartner extends Info
 		{
 			sql.append(" AND ");
 			if (m_isSOTrx)
+			{
 				sql.append("C_BPartner.IsCustomer='Y'");
+			}
 			else
+			{
 				sql.append("C_BPartner.IsVendor='Y'");
+			}
 		}
 		sql.append(" AND ").append(InfoBPartner_RadiusSearch.getSQLWhere(this)); // metas-2009_0017_AP1_G42
 		// Sponsorsuche
@@ -454,7 +508,9 @@ public class InfoBPartner extends Info
 		if (!(value.equals("") || value.equals("%")))
 		{
 			if (!value.endsWith("%"))
+			{
 				value += "%";
+			}
 			pstmt.setString(index++, value);
 			log.debug("Value: " + value);
 		}
@@ -463,7 +519,9 @@ public class InfoBPartner extends Info
 		if (!(name.equals("") || name.equals("%")))
 		{
 			if (!name.endsWith("%"))
+			{
 				name += "%";
+			}
 			pstmt.setString(index++, name);
 			log.debug("Name: " + name);
 		}
@@ -473,7 +531,9 @@ public class InfoBPartner extends Info
 		if (!(name2.equals("") || name2.equals("%")))
 		{
 			if (!name2.endsWith("%"))
+			{
 				name2 += "%";
+			}
 			pstmt.setString(index++, name2);
 			log.debug("Name2: " + name2);
 		}
@@ -483,7 +543,9 @@ public class InfoBPartner extends Info
 		if (!(contact.equals("") || contact.equals("%")))
 		{
 			if (!contact.endsWith("%"))
+			{
 				contact += "%";
+			}
 			pstmt.setString(index++, contact);
 			log.debug("Contact: " + contact);
 		}
@@ -492,7 +554,9 @@ public class InfoBPartner extends Info
 		if (!(email.equals("") || email.equals("%")))
 		{
 			if (!email.endsWith("%"))
+			{
 				email += "%";
+			}
 			pstmt.setString(index++, email);
 			log.debug("EMail: " + email);
 		}
@@ -501,7 +565,9 @@ public class InfoBPartner extends Info
 		if (!(phone.equals("") || phone.equals("%")))
 		{
 			if (!phone.endsWith("%"))
+			{
 				phone += "%";
+			}
 			pstmt.setString(index++, phone);
 			log.debug("Phone: " + phone);
 		}
@@ -510,7 +576,9 @@ public class InfoBPartner extends Info
 		if (!(postal.equals("") || postal.equals("%")))
 		{
 			if (!postal.endsWith("%"))
+			{
 				postal += "%";
+			}
 			pstmt.setString(index++, postal);
 			log.debug("Postal: " + postal);
 		}
@@ -542,10 +610,14 @@ public class InfoBPartner extends Info
 			else
 			{
 				if (!search.startsWith("%"))
+				{
 					search = "%" + search;
+				}
 				// metas-2009_0021_AP1_CR064: end
 				if (!search.endsWith("%"))
+				{
 					search += "%";
+				}
 				pstmt.setString(index++, search);
 				log.debug("Search: " + search);
 			}
@@ -562,7 +634,9 @@ public class InfoBPartner extends Info
 	{
 		int row = p_table.getSelectedRow();
 		if (row == -1)
+		{
 			return;
+		}
 
 		int AD_User_ID = 0;
 		int C_BPartner_Location_ID = 0;
@@ -571,13 +645,17 @@ public class InfoBPartner extends Info
 		{
 			Object data = p_table.getModel().getValueAt(row, m_AD_User_ID_index);
 			if (data instanceof KeyNamePair)
+			{
 				AD_User_ID = ((KeyNamePair)data).getKey();
+			}
 		}
 		if (m_C_BPartner_Location_ID_index != -1)
 		{
 			Object data = p_table.getModel().getValueAt(row, m_C_BPartner_Location_ID_index);
 			if (data instanceof KeyNamePair)
+			{
 				C_BPartner_Location_ID = ((KeyNamePair)data).getKey();
+			}
 		}
 		// publish for Callout to read
 		final int p_WindowNo = getWindowNo();
@@ -649,13 +727,15 @@ public class InfoBPartner extends Info
 		log.info("InfoBPartner.zoom");
 		Integer C_BPartner_ID = getSelectedRowKey();
 		if (C_BPartner_ID == null)
+		 {
 			return;
 		// AEnv.zoom(MBPartner.Table_ID, C_BPartner_ID.intValue(), true); // SO
+		}
 
 		MQuery query = new MQuery("C_BPartner");
 		query.addRestriction("C_BPartner_ID", Operator.EQUAL, C_BPartner_ID);
 		query.setRecordCount(1);
-		int AD_WindowNo = getAD_Window_ID("C_BPartner", true); // SO
+		AdWindowId AD_WindowNo = getAD_Window_ID("C_BPartner", true); // SO
 		zoom(AD_WindowNo, query);
 	} // zoom
 

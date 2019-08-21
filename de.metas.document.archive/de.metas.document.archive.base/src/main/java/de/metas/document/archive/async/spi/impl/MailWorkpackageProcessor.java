@@ -280,7 +280,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 				final BoilerPlateId boilerPlateId = BoilerPlateId.ofRepoId(docType.getAD_BoilerPlate_ID());
 				final BoilerPlate boilerPlate = boilerPlateRepository.getByBoilerPlateId(boilerPlateId, language);
 
-				Loggables.get().addLog("createEmailParams - Using the boilerPlate with boilerPlateId={} of the C_Doc_Outbound_Log's C_DocType", boilerPlateId);
+				Loggables.addLog("createEmailParams - Using the boilerPlate with boilerPlateId={} of the C_Doc_Outbound_Log's C_DocType", boilerPlateId);
 
 				return EmailParams
 						.builder()
@@ -290,7 +290,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			}
 		}
 
-		Loggables.get().addLog("createEmailParams - AD_Messages with values {} and {}", MSG_EmailSubject, MSG_EmailMessage);
+		Loggables.addLog("createEmailParams - AD_Messages with values {} and {}", MSG_EmailSubject, MSG_EmailMessage);
 
 		final String subject = msgBL.getMsg(language.getAD_Language(), MSG_EmailSubject);
 		final String message = msgBL.getMsg(language.getAD_Language(), MSG_EmailMessage);
@@ -311,7 +311,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			final Language userLanguage = recipient.getUserLanguage();
 			if (userLanguage != null)
 			{
-				Loggables.get().addLog(
+				Loggables.addLog(
 						"extractLanguage - Using the userLanguage={} of the C_Doc_Outbound_Log's CurrentEMailRecipient_ID={}",
 						userLanguage.getAD_Language(), docOutboundLogRecord.getCurrentEMailRecipient_ID());
 				return userLanguage;
@@ -324,7 +324,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			final Language bPartnerLanguage = Services.get(IBPartnerBL.class).getLanguageForModel(docOutboundLogRecord);
 			if (bPartnerLanguage != null)
 			{
-				Loggables.get().addLog(
+				Loggables.addLog(
 						"extractLanguage - Using language={} of the C_Doc_Outbound_Log'sC_BPartner_ID={}",
 						bPartnerLanguage.getAD_Language(), docOutboundLogRecord.getC_BPartner_ID());
 				return bPartnerLanguage;
@@ -334,14 +334,14 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		if (recipient != null && recipient.getBPartnerLanguage() != null)
 		{
 			final Language bPartnerLanguage = recipient.getBPartnerLanguage();
-			Loggables.get().addLog(
+			Loggables.addLog(
 					"extractLanguage - Using the bPartnerLanguage={} of the C_Doc_Outbound_Log's CurrentEMailRecipient_ID={}",
 					bPartnerLanguage.getAD_Language(), docOutboundLogRecord.getCurrentEMailRecipient_ID());
 			return bPartnerLanguage;
 		}
 
 		final Language language = Language.getLanguage(Env.getADLanguageOrBaseLanguage());
-		Loggables.get().addLog("extractLanguage - Using the language={} returned by Env.getADLanguageOrBaseLanguage()", language);
+		Loggables.addLog("extractLanguage - Using the language={} returned by Env.getADLanguageOrBaseLanguage()", language);
 		return language;
 	}
 

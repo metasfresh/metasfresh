@@ -67,7 +67,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		if (subscriptionLine.getQty().signum() <= 0)
 		{
-			Loggables.get().addLog(
+			Loggables.addLog(
 					"Skip C_SubscriptionProgress_ID={} with Qty={}",
 					subscriptionLine.getC_SubscriptionProgress_ID(), subscriptionLine.getQty());
 			return ImmutableList.of();

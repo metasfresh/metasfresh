@@ -115,7 +115,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 		final List<I_M_HU> hus = retrieveItems(I_M_HU.class);
 		if (hus.isEmpty())
 		{
-			Loggables.get().addLog("No HUs found");
+			Loggables.addLog("No HUs found");
 			return Result.SUCCESS;
 		}
 

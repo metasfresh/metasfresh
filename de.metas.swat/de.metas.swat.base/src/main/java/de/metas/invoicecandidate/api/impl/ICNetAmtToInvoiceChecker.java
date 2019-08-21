@@ -118,7 +118,7 @@ import lombok.ToString;
 					+ "\n Expected: " + netAmtToInvoiceExpected
 					+ "\n Actual: " + netAmtToInvoiceActual
 					+ "\n Invoice candidates count: " + _countInvoiceCandidates;
-			Loggables.get().addLog(errmsg);
+			Loggables.addLog(errmsg);
 			if (isFailIfNetAmtToInvoiceChecksumNotMatch())
 			{
 				throw new AdempiereException(errmsg);

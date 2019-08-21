@@ -1,8 +1,7 @@
 package de.metas.material.dispo.service.event.handler;
 
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
-import static de.metas.material.event.EventTestHelper.CLIENT_ID;
-import static de.metas.material.event.EventTestHelper.ORG_ID;
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static java.math.BigDecimal.ZERO;
@@ -76,8 +75,7 @@ public class TransactionEventHandlerTest
 				.id(CandidateId.ofRepoId(100))
 				.parentId(CandidateId.ofRepoId(200))
 				.type(CandidateType.SUPPLY)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescriptor)
 				.businessCase(CandidateBusinessCase.PURCHASE)
 				.build();

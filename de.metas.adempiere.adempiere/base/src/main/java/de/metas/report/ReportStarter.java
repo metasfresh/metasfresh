@@ -175,7 +175,7 @@ public abstract class ReportStarter extends JavaProcess
 
 		//
 		// Generate report data
-		Loggables.get().addLog("ReportStarter.startProcess run report: reportingSystemType={}, title={}, outputType={}", reportingSystemType, processInfo.getTitle(), outputType);
+		Loggables.addLog("ReportStarter.startProcess run report: reportingSystemType={}, title={}, outputType={}", reportingSystemType, processInfo.getTitle(), outputType);
 		final ExecuteReportResult result = getExecuteReportStrategy().executeReport(getProcessInfo(), outputType);
 
 		//

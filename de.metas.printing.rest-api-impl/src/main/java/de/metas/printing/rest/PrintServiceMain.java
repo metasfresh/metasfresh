@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Profile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.metas.JsonObjectMapperHolder;
+import de.metas.MetasfreshBeanNameGenerator;
 import de.metas.Profiles;
 import de.metas.security.UserAuthTokenRepository;
 import de.metas.util.StringUtils;
@@ -74,6 +75,7 @@ public class PrintServiceMain
 				.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
 				.web(true)
 				.profiles(Profiles.PROFILE_PrintService)
+				.beanNameGenerator(new MetasfreshBeanNameGenerator())
 				.run(args);
 	}
 

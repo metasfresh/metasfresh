@@ -68,9 +68,9 @@ public class PPOrderCreatedOrAdvisedEventHandler implements MaterialEventHandler
 		if (ppOrderEvent instanceof PPOrderCreatedEvent)
 		{
 			final PPOrderCreatedEvent ppOrderCreatedEvent = (PPOrderCreatedEvent)ppOrderEvent;
-			if (ppOrderCreatedEvent.getPpOrder().getMaterialDispoGroupId() > 0)
+			if (ppOrderCreatedEvent.getPpOrder().getMaterialDispoGroupId() != null)
 			{
-				Loggables.get().addLog("This PPOrderCreatedEvent has a PPOrder with MaterialDispoGroupId > 0, so we already processed its respective PPOrderAdvisedEvent; skipping");
+				Loggables.addLog("This PPOrderCreatedEvent has a PPOrder with MaterialDispoGroupId set, so we already processed its respective PPOrderAdvisedEvent; skipping");
 				return;
 			}
 		}
