@@ -65,8 +65,8 @@ Cypress.Commands.add('executeQuickAction', (actionName, modal = false, isDialogE
   }
 
   cy.get(path)
+    .should('exist')
     .should('not.have.class', 'quick-actions-item-disabled')
-    .get(path)
     .click({ timeout: 10000 })
     .then(el => {
       if (isDialogExpected) {
@@ -87,6 +87,6 @@ Cypress.Commands.add('openPickingHUSelectionWindow', function() {
   cy.waitForSaveIndicator();
   cy.server();
   cy.route('GET', new RegExp(RewriteURL.DocumentLayout)).as(layoutAlias);
-  cy.executeQuickAction('WEBUI_Picking_HUEditor_Launcher', false, true, false);
+  cy.executeQuickAction('WEBUI_Picking_HUEditor_Launcher', true, false);
   cy.wait(`@${layoutAlias}`);
 });
