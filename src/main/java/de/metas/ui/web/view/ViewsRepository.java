@@ -397,8 +397,15 @@ public class ViewsRepository implements IViewsRepository
 			final MutableInt notifiedCount = MutableInt.zero();
 			streamAllViews()
 					.forEach(view -> {
-						view.notifyRecordsChanged(recordRefs);
-						notifiedCount.incrementAndGet();
+						try
+						{
+							view.notifyRecordsChanged(recordRefs);
+							notifiedCount.incrementAndGet();
+						}
+						catch (final Exception ex)
+						{
+							logger.warn("Failed calling notifyRecordsChanged for view={} with recordRefs={}. Ignored.", view, recordRefs, ex);
+						}
 					});
 
 			logger.debug("Notified {} views about changed records: {}", notifiedCount, recordRefs);
