@@ -143,7 +143,7 @@ describe('Create new Price List Version using the Price List Schema', function()
         .setName(priceListSchemaVersionName)
         .setValidFrom(priceListVersion2ValidFrom)
         .setDiscountSchema(priceListSchemaName)
-        .setBasisPricelistVersion(priceListVersionName)
+        .setBasisPriceListVersion(priceListVersionName)
     );
     cy.expectNumberOfRows(2);
   });

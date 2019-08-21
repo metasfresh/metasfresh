@@ -15,10 +15,10 @@ Cypress.Commands.add('clickButtonWithText', text => {
  * Basic command for clicking an element with certain selector
  * @param selector string used to query for the element
  */
-Cypress.Commands.add('clickElementWithClass', (selector, forced) => {
+Cypress.Commands.add('clickElementWithClass', (selector, force) => {
   const opts = {};
 
-  if (forced) {
+  if (force) {
     opts.force = true;
   }
 
@@ -27,31 +27,28 @@ Cypress.Commands.add('clickElementWithClass', (selector, forced) => {
     .click({ ...opts });
 });
 
-Cypress.Commands.add('selectTab', (tabName, forced) => {
+Cypress.Commands.add('selectTab', (tabName, force) => {
   const opts = {};
 
-  if (forced) {
+  if (force) {
     opts.force = true;
   }
 
-  describe('Select and activate the tab with a certain name', function() {
-    return cy.get(`#tab_${tabName}`).click(opts);
-  });
+  return cy.get(`#tab_${tabName}`).click(opts);
 });
 
 Cypress.Commands.add('selectSingleTabRow', () => {
-  describe('Select the only row in the currently selected tab', function() {
-    cy.get('.table-flex-wrapper')
-      .find('tbody tr')
-      .should('exist')
-      .click({ force: true });
-  });
+  cy.get('.table-flex-wrapper')
+    .find('tbody tr')
+    .should('exist')
+    .click({ force: true });
 });
 
 Cypress.Commands.add('openReferencedDocuments', (referenceId, retriesLeft = 8) => {
   // retry 8 times to open the referenced document
   const date = humanReadableNow();
   const timeout = { timeout: 20000 };
+  cy.waitForSaveIndicator();
 
   if (retriesLeft >= 1) {
     const referencesAliasName = `references-${date}`;
@@ -81,7 +78,7 @@ Cypress.Commands.add('openReferencedDocuments', (referenceId, retriesLeft = 8) =
  *
  * @param rowNumber - the row number
  */
-Cypress.Commands.add('selectNthRow', (rowNumber, modal = false) => {
+Cypress.Commands.add('selectNthRow', (rowNumber, modal = false, force = false) => {
   let path = '.table-flex-wrapper';
 
   if (modal) {
@@ -94,7 +91,9 @@ Cypress.Commands.add('selectNthRow', (rowNumber, modal = false) => {
     .should('exist')
     .click()
     .then(el => {
-      cy.waitForSaveIndicator();
+      if (!force) {
+        cy.waitForSaveIndicator();
+      }
       return cy.wrap(el);
     });
 });
@@ -107,6 +106,7 @@ Cypress.Commands.add('selectNthRow', (rowNumber, modal = false) => {
 Cypress.Commands.add('expectNumberOfRows', numberOfRows => {
   return cy.get('table tbody tr').should('have.length', numberOfRows);
 });
+
 /**
  * Expect the table rows to be greater than a given number
  *
@@ -116,4 +116,30 @@ Cypress.Commands.add('expectNumberOfRowsToBeGreaterThan', numberOfRows => {
   return cy.get('table tbody tr').should(el => {
     expect(el).to.have.length.greaterThan(numberOfRows);
   });
+});
+
+Cypress.Commands.add('selectRowByColumnAndValue', (columnName, expectedValue, modal = false, force = false) => {
+  cy.log(`Select row by columnName=${columnName} and expectedValue=${expectedValue}`);
+  if (!force) {
+    cy.waitForSaveIndicator();
+  }
+  let path = '.table-flex-wrapper';
+
+  if (modal) {
+    path = '.modal-content-wrapper ' + path;
+  }
+
+  // step 1: figure out from the thead what is the column index
+  return cy
+    .get(path)
+    .contains('thead tr th', columnName)
+    .invoke('index')
+    .then(columnIndex => {
+      // step 2: return the cell which contains the particular soDocNumber in columnNumber from above
+      return cy
+        .get(path)
+        .contains(`tbody td:nth-child(${columnIndex + 1})`, expectedValue)
+        .should('exist')
+        .click();
+    });
 });
