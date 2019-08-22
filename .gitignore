@@ -9,7 +9,7 @@ dist
 /static
 .vscode
 .history
-out
+docs
 
 # Dynamic storybook configuration file
 .storybook/foundStories.js
