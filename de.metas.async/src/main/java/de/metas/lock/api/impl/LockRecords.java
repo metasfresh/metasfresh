@@ -35,6 +35,7 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
+import com.google.common.base.MoreObjects;
 import de.metas.process.PInstanceId;
 import lombok.NonNull;
 
@@ -56,7 +57,34 @@ import lombok.NonNull;
 	@Override
 	public String toString()
 	{
-		return ObjectUtils.toString(this);
+		if (_selection_filters != null)
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("type", "queryFilter")
+					.add("queryFilter", _selection_filters)
+					.toString();
+		}
+		else if (_selection_pinstanceId != null)
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("type", "selectionId")
+					.add("selectionId", _selection_pinstanceId)
+					.add("adTableId", _selection_AD_Table_ID)
+					.toString();
+		}
+		else if (_records != null)
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("type", "records")
+					.add("recordsCount", _records.size())
+					.toString();
+		}
+		else
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("type", "unknown")
+					.toString();
+		}
 	}
 
 	public void setRecordByModel(final Object model)
