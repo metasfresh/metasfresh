@@ -50,6 +50,8 @@ const huCodeColumn = 'Code';
 const productPartnerColumn = 'Product / Partner';
 
 // test
+const expectedCustomerReturnDocType = 'Kundenwarenrückgabe';
+
 let soDocNumber;
 let soRecordId;
 let huValue;
@@ -215,9 +217,12 @@ describe('Create Customer return from Shipment', function() {
 
     cy.expectDocumentStatus(DocumentStatusKey.Completed);
     cy.getStringFieldValue('C_BPartner_ID').should('contain', businessPartnerName);
+    cy.getStringFieldValue('C_DocType_ID').should('equals', expectedCustomerReturnDocType);
+
     cy.selectTab('M_HU_Assignment');
     cy.selectNthRow(0);
     cy.openAdvancedEdit();
+    cy.getStringFieldValue('M_HU_ID').should('contain', huValue);
     cy.getTextFieldValue('Products').should('contain', productName);
     cy.getStringFieldValue('Qty').should('equal', '0');
     cy.pressDoneButton();
