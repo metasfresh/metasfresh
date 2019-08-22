@@ -322,8 +322,7 @@ Cypress.Commands.add('getNotificationModal', optionalText => {
  */
 Cypress.Commands.add('openInboxNotificationWithText', text => {
   cy.get('.header-item-badge.icon-lg i', { timeout: 10000 }).click();
-  // cy.get('.inbox-item-unread .inbox-item-title')
-  cy.get('.inbox-item-title')
+  cy.get('.inbox-item-unread .inbox-item-title')
     .filter(':contains("' + text + '")')
     .first()
     .click();
