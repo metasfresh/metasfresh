@@ -31,23 +31,6 @@ import { DocumentStatusKey } from '../../support/utils/constants';
 // task: https://github.com/metasfresh/metasfresh-e2e/issues/213
 
 describe('Reverse Empties Return', function() {
-  // const businessPartnerName = 'Test Lieferant 1';
-  // const productQuantity = 222;
-  // const documentType = 'Leergutausgabe';
-
-  // // priceList
-  // const date = humanReadableNow();
-  // const priceSystemName = `PriceSystem ${date}`;
-  // const priceListName = `PriceList ${date}`;
-  // const priceListVersionName = `PriceListVersion ${date}`;
-
-  // // product
-  // const productCategory = `ProductCategory ${date}`;
-  // const productName1 = `Product1 ${date}`;
-  // const productName2 = `Product2 ${date}`;
-  // const productName3 = `Product3 ${date}`;
-  // const productType = 'Item';
-
   let businessPartnerName;
   let productQuantity;
   let documentType;
@@ -74,7 +57,7 @@ describe('Reverse Empties Return', function() {
       businessPartnerName = f['businessPartnerName'];
       productQuantity = f['productQuantity'];
       documentType = f['documentType'];
-      cy.log('documentType#######################3' + documentType);
+
       priceSystemName = appendHumanReadableNow(f['priceSystemName']);
       priceListName = appendHumanReadableNow(f['priceListName']);
       priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
@@ -189,7 +172,6 @@ describe('Reverse Empties Return', function() {
       cy.executeHeaderAction('WEBUI_M_ReceiptSchedule_CreateEmptiesReturnsToVendor');
     });
     it('Create Empties Return', function() {
-      cy.log('documentType#################333' + documentType);
       cy.selectInListField('C_DocType_ID', documentType);
       cy.writeIntoLookupListField('C_BPartner_ID', businessPartnerName, businessPartnerName);
       addLines();

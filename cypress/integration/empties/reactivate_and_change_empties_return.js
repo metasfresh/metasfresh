@@ -20,28 +20,45 @@
  * #L%
  */
 
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 import { Builder } from '../../support/utils/builder';
 import { PackingMaterial } from '../../support/utils/packing_material';
 
 describe('Reactivate and change Empties Return', function() {
-  const businessPartnerName = 'Test Lieferant 1';
-  const initialProductQuantity = 222;
-  const newProductQuantity = 654;
-  const documentType = 'Leergutausgabe';
+  let businessPartnerName;
+  let initialProductQuantity;
+  let newProductQuantity;
+  let documentType;
 
-  // priceList
-  const date = humanReadableNow();
-  const priceSystemName = `PriceSystem ${date}`;
-  const priceListName = `PriceList ${date}`;
-  const priceListVersionName = `PriceListVersion ${date}`;
+  let priceSystemName;
+  let priceListName;
+  let priceListVersionName;
 
   // product
-  const productCategory1 = `ProductCategory ${date}`;
-  const productName1 = `Product1 ${date}`;
-  const productName2 = `Product2 ${date}`;
-  const productName3 = `Product3 ${date}`;
-  const productType = 'Item';
+  let productCategory1;
+  let productName1;
+  let productName2;
+  let productName3;
+  let productType;
+
+  it('Read the fixture', function() {
+    cy.fixture('empties/reactivate_and_change_empties_return.json').then(f => {
+      businessPartnerName = f['businessPartnerName'];
+      initialProductQuantity = f['initialProductQuantity'];
+      newProductQuantity = f['newProductQuantity'];
+      documentType = f['documentType'];
+
+      priceSystemName = appendHumanReadableNow(f['priceSystemName']);
+      priceListName = appendHumanReadableNow(f['priceListName']);
+      priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
+
+      productCategory1 = appendHumanReadableNow(f['productCategory1']);
+      productName1 = appendHumanReadableNow(f['productName1']);
+      productName2 = appendHumanReadableNow(f['productName2']);
+      productName3 = appendHumanReadableNow(f['productName3']);
+      productType = f['productType'];
+    });
+  });
 
   describe('Create Packing Material', function() {
     it('Create Price and Product', function() {
@@ -84,7 +101,18 @@ describe('Reactivate and change Empties Return', function() {
   });
 
   describe('Create Positive Empties Return with 1 product', function() {
-    createEmptiesReturn(documentType, businessPartnerName, [productName2], initialProductQuantity);
+    // createEmptiesReturn(documentType, businessPartnerName, [productName2], initialProductQuantity);
+    it('Open Material Receipt Candidates and execute action "Empties Return"', function() {
+      cy.visitWindow('540196');
+      cy.executeHeaderAction('WEBUI_M_ReceiptSchedule_CreateEmptiesReturnsToVendor');
+    });
+
+    it('Create Empties Return', function() {
+      cy.selectInListField('C_DocType_ID', documentType);
+      cy.writeIntoLookupListField('C_BPartner_ID', businessPartnerName, businessPartnerName);
+      addLines([productName2], initialProductQuantity);
+      cy.completeDocument();
+    });
   });
 
   describe('Reactivate and edit Empties Return with 1 product', function() {
@@ -101,7 +129,18 @@ describe('Reactivate and change Empties Return', function() {
   });
 
   describe('Create Positive Empties Return with 2 products', function() {
-    createEmptiesReturn(documentType, businessPartnerName, [productName1, productName2], initialProductQuantity);
+    // createEmptiesReturn(documentType, businessPartnerName, [productName1, productName2], initialProductQuantity);
+    it('Open Material Receipt Candidates and execute action "Empties Return"', function() {
+      cy.visitWindow('540196');
+      cy.executeHeaderAction('WEBUI_M_ReceiptSchedule_CreateEmptiesReturnsToVendor');
+    });
+
+    it('Create Empties Return', function() {
+      cy.selectInListField('C_DocType_ID', documentType);
+      cy.writeIntoLookupListField('C_BPartner_ID', businessPartnerName, businessPartnerName);
+      addLines([productName1, productName2], initialProductQuantity);
+      cy.completeDocument();
+    });
   });
 
   describe('Reactivate and edit Empties Return with 2 products', function() {
@@ -124,46 +163,32 @@ describe('Reactivate and change Empties Return', function() {
       cy.log(`cannot test due to cypress bug: https://github.com/cypress-io/cypress/issues/2173#issuecomment-512776378 (cypress cannot write minus ('-') for negative numbers)`);
     });
   });
-});
 
-function createEmptiesReturn(documentType, businessPartnerName, productNames, productQuantity) {
-  it('Open Material Receipt Candidates and execute action "Empties Return"', function() {
-    cy.visitWindow('540196');
-    cy.executeHeaderAction('WEBUI_M_ReceiptSchedule_CreateEmptiesReturnsToVendor');
-  });
+  function addLines(productNames, productQuantity) {
+    productNames.forEach((productName, index) => {
+      cy.selectTab('M_InOutLine');
+      cy.pressBatchEntryButton();
+      cy.writeIntoLookupListField('M_HU_PackingMaterial_ID', productName, productName);
 
-  it('Create Empties Return', function() {
-    cy.selectInListField('C_DocType_ID', documentType);
-    cy.writeIntoLookupListField('C_BPartner_ID', businessPartnerName, businessPartnerName);
-    addLines(productNames, productQuantity);
-    cy.completeDocument();
-  });
-}
+      if (productQuantity > 0) {
+        cy.writeIntoStringField('Qty', productQuantity + index, false, null, true); //.type('{enter}');
+        cy.closeBatchEntry();
+      } else {
+        cy.writeIntoStringField('Qty', -1 * productQuantity, false, null, true); //.type('{enter}'); // first write the positive qty (frontend bug workaround)
+        writeQtyInAdvancedEdit(productQuantity + index, productName, index);
+      }
+    });
+  }
 
-function addLines(productNames, productQuantity) {
-  productNames.forEach((productName, index) => {
+  function writeQtyInAdvancedEdit(productQuantity, rowNumber) {
+    // select nth line
     cy.selectTab('M_InOutLine');
-    cy.pressBatchEntryButton();
-    cy.writeIntoLookupListField('M_HU_PackingMaterial_ID', productName, productName);
+    cy.selectNthRow(rowNumber);
 
-    if (productQuantity > 0) {
-      cy.writeIntoStringField('Qty', productQuantity + index, false, null, true); //.type('{enter}');
-      cy.closeBatchEntry();
-    } else {
-      cy.writeIntoStringField('Qty', -1 * productQuantity, false, null, true); //.type('{enter}'); // first write the positive qty (frontend bug workaround)
-      writeQtyInAdvancedEdit(productQuantity + index, productName, index);
-    }
-  });
-}
-
-function writeQtyInAdvancedEdit(productQuantity, rowNumber) {
-  // select nth line
-  cy.selectTab('M_InOutLine');
-  cy.selectNthRow(rowNumber);
-
-  // do ya thing
-  cy.openAdvancedEdit();
-  cy.writeIntoStringField('MovementQty', productQuantity, true, null, true);
-  cy.writeIntoStringField('QtyEntered', productQuantity, true, null, true);
-  cy.pressDoneButton(100);
-}
+    // do ya thing
+    cy.openAdvancedEdit();
+    cy.writeIntoStringField('MovementQty', productQuantity, true, null, true);
+    cy.writeIntoStringField('QtyEntered', productQuantity, true, null, true);
+    cy.pressDoneButton(100);
+  }
+});
