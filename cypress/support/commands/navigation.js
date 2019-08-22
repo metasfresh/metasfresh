@@ -1,5 +1,6 @@
 import { RewriteURL } from '../utils/constants';
 import { humanReadableNow } from '../../support/utils/utils';
+import { checkIfWindowCanExecuteActions } from './commands_utils';
 /*
  * Basic command for clicking a button element having a certain text
  * @param text string to search for in the button
@@ -48,7 +49,7 @@ Cypress.Commands.add('openReferencedDocuments', (referenceId, retriesLeft = 8) =
   // retry 8 times to open the referenced document
   const date = humanReadableNow();
   const timeout = { timeout: 20000 };
-  cy.waitForSaveIndicator();
+  checkIfWindowCanExecuteActions();
 
   if (retriesLeft >= 1) {
     const referencesAliasName = `references-${date}`;
