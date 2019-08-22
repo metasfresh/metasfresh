@@ -1,10 +1,12 @@
 import { BPartner } from '../../support/utils/bpartner';
-import { BPartnerLocation } from '../../support/utils/bpartner_ui';
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { ProductCategory } from '../../support/utils/product';
 import { PackingMaterial } from '../../support/utils/packing_material';
 import { PackingInstructions } from '../../support/utils/packing_instructions';
-import { PackingInstructionsVersion } from '../../support/utils/packing_instructions_version';
+import {
+  PackingInstructionsVersion,
+  PackingInstructionsVersionPosition,
+} from '../../support/utils/packing_instructions_version';
 import { Builder } from '../../support/utils/builder';
 import { appendHumanReadableNow } from '../../support/utils/utils';
 import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_order';
@@ -33,9 +35,6 @@ describe('Partial material withdrawal in handling unit editor with Materialentna
   let warehouseName;
   let packingInstructionsVersionForTU;
   let packingInstructionsVersionForLU;
-  let length;
-  let width;
-  let height;
 
   it('Read the fixture', function() {
     cy.fixture('logistics/materialentnahme_partial_HU.json').then(f => {
@@ -57,9 +56,6 @@ describe('Partial material withdrawal in handling unit editor with Materialentna
       warehouseName = f['warehouseName'];
       packingInstructionsVersionForTU = appendHumanReadableNow(f['packingInstructionsVersionForTU']);
       packingInstructionsVersionForLU = appendHumanReadableNow(f['packingInstructionsVersionForLU']);
-      length = f['length'];
-      width = f['width'];
-      height = f['height'];
     });
   });
 
@@ -89,9 +85,6 @@ describe('Partial material withdrawal in handling unit editor with Materialentna
       Object.assign(new PackingMaterial(), packingMaterialJson)
         .setName(packingMaterialForTU)
         .setProduct(productForPackingMaterialTU)
-        .setLength(length)
-        .setWidth(width)
-        .setHeight(height)
         .apply();
     });
   });
@@ -100,9 +93,6 @@ describe('Partial material withdrawal in handling unit editor with Materialentna
       Object.assign(new PackingMaterial(), packingMaterialJson)
         .setName(packingMaterialForLU)
         .setProduct(productForPackingMaterialLU)
-        .setLength(length)
-        .setWidth(width)
-        .setHeight(height)
         .apply();
     });
   });
@@ -128,14 +118,6 @@ describe('Partial material withdrawal in handling unit editor with Materialentna
         .setPackingMaterial(packingMaterialForTU)
         .apply();
     });
-    /**For some reasons,the quantity for the packgut cannot be added in advanced edit mode, only like below */
-    cy.selectTab('M_HU_PI_Item');
-    cy.selectNthRow(1)
-      .find('.Quantity')
-      .dblclick()
-      .find('.form-field-Qty input')
-      .type('0');
-    cy.selectTab('M_HU_PI_Item');
   });
   it('create packing instruction version for handling unit - Loading unit; with packmittel and packingInstructionsNameForTU as unter-packvorschrift', function() {
     cy.fixture('product/packing_instructions_version.json').then(pivJson => {
