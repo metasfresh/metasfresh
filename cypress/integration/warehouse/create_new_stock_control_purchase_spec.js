@@ -1,21 +1,34 @@
 import { StockControlPurchase, StockControlPurchaseProduct } from '../../support/utils/stockControlPurchase';
 import { Product, ProductCategory, ProductPrice } from '../../support/utils/product';
 import { Builder } from '../../support/utils/builder';
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 
 describe('Create new Stock Control Purchase', function() {
-  const date = humanReadableNow();
-  const productName1 = `StockControlPurchase1 ${date}`;
-  const productName2 = `StockControlPurchase2 ${date}`;
-  const productName3 = `StockControlPurchase3 ${date}`;
-  const productCategoryName = `ProductCategory ${date}`;
-  const priceListName = `PriceList ${date}`;
-  const priceSystemName = `PriceSystem ${date}`;
-  const priceListVersionName = `PriceListVersion ${date}`;
-  const productType = `Item`;
+  let productName1;
+  let productName2;
+  let productName3;
+  let productCategoryName;
+  let priceListName;
+  let priceSystemName;
+  let priceListVersionName;
+  let productType;
 
   // test
   let productPrice;
+
+  it('Read the fixture', function() {
+    cy.fixture('warehouse/create_new_stock_control_purchase_spec.json').then(f => {
+      priceSystemName = appendHumanReadableNow(f['priceSystemName']);
+      priceListName = appendHumanReadableNow(f['priceListName']);
+      priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
+
+      productName1 = appendHumanReadableNow(f['productName1']);
+      productName2 = appendHumanReadableNow(f['productName2']);
+      productName3 = appendHumanReadableNow(f['productName3']);
+      productCategoryName = appendHumanReadableNow(f['productCategoryName']);
+      productType = f['productType'];
+    });
+  });
 
   it('Prepare Price, ProductCategory and Price', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
