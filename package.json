@@ -4,7 +4,7 @@
     "build-storybook": "build-storybook",
     "build-prod": "webpack --config webpack.prod.js --bail --display-error-details",
     "coverage": "nyc --reporter=lcov --reporter=text-lcov npm test > /dev/null",
-    "docs": "./node_modules/.bin/jsdoc",
+    "docs": "./node_modules/.bin/jsdoc -c jsdoc.json",
     "lint": "eslint .",
     "lintfix": "eslint . --fix",
     "start": "node server.js",
