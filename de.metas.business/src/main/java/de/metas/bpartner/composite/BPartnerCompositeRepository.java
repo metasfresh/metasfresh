@@ -4,6 +4,7 @@ import static de.metas.util.Check.assumeGreaterThanZero;
 import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.isEmpty;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOrNew;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.sql.Timestamp;
@@ -25,6 +26,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.table.LogEntriesRepository;
+import org.adempiere.ad.table.LogEntriesRepository.LogEntriesQuery;
 import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.exceptions.AdempiereException;
@@ -63,7 +65,6 @@ import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
-import de.metas.location.LocationId;
 import de.metas.location.impl.PostalQueryFilter;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -587,8 +588,12 @@ public class BPartnerCompositeRepository
 		final ImmutableMap<Integer, I_C_Country> countryId2Country = Maps.uniqueIndex(countryRecords, I_C_Country::getC_Country_ID);
 		countryRecords.forEach(countryRecord -> allTableRecordRefs.add(TableRecordReference.of(countryRecord)));
 
+		final LogEntriesQuery logEntriesQuery = LogEntriesQuery.builder()
+				.tableRecordReferences(allTableRecordRefs)
+				.followLocationIdChanges(true)
+				.build();
 		final ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> //
-		recordRef2LogEntries = recordChangeLogRepository.getLogEntriesForRecordReferences(allTableRecordRefs);
+		recordRef2LogEntries = recordChangeLogRepository.getLogEntriesForRecordReferences(logEntriesQuery);
 
 		return new CompositeRelatedRecords(
 				bpartnerId2Users,
@@ -868,7 +873,9 @@ public class BPartnerCompositeRepository
 			locationType.getShipToDefault().ifPresent(b -> bpartnerLocationRecord.setIsShipToDefault(b));
 		}
 
-		final I_C_Location locationRecord = loadOrNew(LocationId.ofRepoIdOrNull(bpartnerLocationRecord.getC_Location_ID()), I_C_Location.class);
+
+		// C_Location is immutable; never update an existing record, but create a new one
+		final I_C_Location locationRecord = newInstance(I_C_Location.class);
 		locationRecord.setIsActive(bpartnerLocation.isActive());
 
 		locationRecord.setAddress1(bpartnerLocation.getAddress1());
