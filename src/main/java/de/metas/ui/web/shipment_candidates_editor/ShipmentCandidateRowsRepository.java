@@ -29,6 +29,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -56,12 +57,19 @@ import lombok.NonNull;
 final class ShipmentCandidateRowsRepository
 {
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IShipmentScheduleBL shipmentScheduleBL;
 	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 	private final IOrderDAO salesOrdersRepo = Services.get(IOrderDAO.class);
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final IProductBL productsService = Services.get(IProductBL.class);
+
+	@Builder
+	private ShipmentCandidateRowsRepository(
+			@NonNull final IShipmentScheduleBL shipmentScheduleBL)
+	{
+		this.shipmentScheduleBL = shipmentScheduleBL;
+	}
 
 	public ShipmentCandidateRows getByShipmentScheduleIds(final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{

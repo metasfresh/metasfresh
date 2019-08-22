@@ -3,6 +3,7 @@ package de.metas.ui.web.shipment_candidates_editor;
 import java.util.Set;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
@@ -45,9 +46,12 @@ public class ShipmentCandidatesViewFactory implements IViewFactory
 
 	private final ShipmentCandidateRowsRepository rowsRepo;
 
-	public ShipmentCandidatesViewFactory()
+	public ShipmentCandidatesViewFactory(
+			@NonNull final IShipmentScheduleBL shipmentScheduleBL)
 	{
-		rowsRepo = new ShipmentCandidateRowsRepository();
+		rowsRepo = ShipmentCandidateRowsRepository.builder()
+				.shipmentScheduleBL(shipmentScheduleBL)
+				.build();
 	}
 
 	@Override
