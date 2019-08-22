@@ -11,6 +11,7 @@
     "destination": "docs/",
     "recurse": true,
     "verbose": true,
-    "tutorials": "./tutorials"
+    "tutorials": "./tutorials",
+    "template": "./node_modules/better-docs/"
   }
 }
