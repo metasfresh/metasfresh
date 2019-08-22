@@ -3,5 +3,6 @@
   "salesInvoiceTargetDocumentType" : "Sales Invoice",
   "businessPartnerName" : "Test Lieferant 1",
   "productName" : "Convenience Salat 250g",
-  "originalQuantity" : 200
+  "originalQuantity" : 200,
+  "adjustmentChargeQuantityDifference": "Nachbelastung - Mengendifferenz"
 }

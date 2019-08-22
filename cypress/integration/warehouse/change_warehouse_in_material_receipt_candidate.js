@@ -30,8 +30,6 @@ import { purchaseOrders } from '../../page_objects/purchase_orders';
 describe('Change warehouse in material receipt candidate #153', function() {
   let warehouse1;
   let warehouse2;
-
-  //
   let businessPartnerName;
   let productQuantity;
   let productName; // the product must have a packing item, else the test will fail

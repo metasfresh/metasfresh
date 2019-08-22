@@ -26,11 +26,6 @@ import { DocumentStatusKey } from '../../support/utils/constants';
 import { PurchaseInvoice, PurchaseInvoiceLine } from '../../support/utils/purchase_invoice';
 
 describe('Create a Credit memo for Purchase Invoice', function() {
-  // const creditMemoVendor = 'Credit Memo (Vendor)';
-  // const businessPartnerName = 'Test Lieferant 1';
-  // const productName = 'Convenience Salat 250g';
-  // const quantity = 200;
-
   let creditMemoVendor;
   let businessPartnerName;
   let productName;

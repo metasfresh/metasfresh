@@ -27,7 +27,7 @@ import { SalesInvoice, SalesInvoiceLine } from '../../support/utils/sales_invoic
 import { DocumentStatusKey, RewriteURL } from '../../support/utils/constants';
 
 describe('Create a Credit memo deliver difference for Sales Invoice', function() {
-  const creditMemoDeliverDiff = 'Credit Memo - Deliver Diff';
+  let creditMemoDeliverDiff;
   let originalSalesInvoiceNumber;
   let originalPriceList;
   let originalCurrency;
@@ -46,6 +46,7 @@ describe('Create a Credit memo deliver difference for Sales Invoice', function()
       newQuantity = f['newQuantity'];
       salesInvoiceTargetDocumentType = f['salesInvoiceTargetDocumentType'];
       originalQuantity = f['originalQuantity'];
+      creditMemoDeliverDiff = f['creditMemoDeliverDiff'];
     });
   });
 

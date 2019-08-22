@@ -27,7 +27,7 @@ import { SalesInvoice, SalesInvoiceLine } from '../../support/utils/sales_invoic
 import { DocumentStatusKey } from '../../support/utils/constants';
 
 describe('Create Adjustment Charge quantity difference (Nachbelastung Mengendifferenz) for Sales Invoice', function() {
-  const adjustmentChargeQuantityDifference = 'Nachbelastung - Mengendifferenz';
+  let adjustmentChargeQuantityDifference;
   let originalSalesInvoiceNumber;
   let originalPriceList;
   let originalCurrency;
@@ -52,6 +52,7 @@ describe('Create Adjustment Charge quantity difference (Nachbelastung Mengendiff
       productName = f['productName'];
       originalQuantity = f['originalQuantity'];
       newProductQuantity = f['newProductQuantity'];
+      adjustmentChargeQuantityDifference = f['adjustmentChargeQuantityDifference'];
     });
   });
 

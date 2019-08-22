@@ -34,7 +34,6 @@ describe('Reactivate and change Empties Return', function() {
   let priceListName;
   let priceListVersionName;
 
-  // product
   let productCategory1;
   let productName1;
   let productName2;

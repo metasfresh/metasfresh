@@ -25,22 +25,6 @@ import { Builder } from '../../support/utils/builder';
 import { PackingMaterial } from '../../support/utils/packing_material';
 
 describe('Create Empties Receive', function() {
-  // empties receive
-  // const businessPartnerName = 'Test Lieferant 1';
-  // const productQuantity = 222;
-  // const documentType = 'Leergutrücknahme';
-
-  // // priceList
-  // const date = humanReadableNow();
-  // const priceSystemName = `PriceSystem ${date}`;
-  // const priceListName = `PriceList ${date}`;
-  // const priceListVersionName = `PriceListVersion ${date}`;
-
-  // // product
-  // const productCategory = `ProductCategory ${date}`;
-  // const productName = `Product ${date}`;
-  // const productType = 'Item';
-
   let businessPartnerName;
   let productQuantity;
   let documentType;
@@ -49,7 +33,6 @@ describe('Create Empties Receive', function() {
   let priceListName;
   let priceListVersionName;
 
-  // product
   let productCategory;
   let productName;
   let productType;

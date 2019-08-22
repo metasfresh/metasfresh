@@ -27,7 +27,6 @@ import { SalesInvoice, SalesInvoiceLine } from '../../support/utils/sales_invoic
 import { DocumentStatusKey } from '../../support/utils/constants';
 
 describe('Create Adjustment Charge price difference (Nachbelastung Preisdifferenz) for Sales Invoice', function() {
-  const adjustmentChargePriceDifference = 'Nachbelastung - Preisdifferenz';
   let originalSalesInvoiceNumber;
   let originalPriceList;
   let originalCurrency;
@@ -42,6 +41,7 @@ describe('Create Adjustment Charge price difference (Nachbelastung Preisdifferen
   let businessPartnerName;
   let productName;
   let originalQuantity;
+  let adjustmentChargePriceDifference;
 
   it('Read the fixture', function() {
     cy.fixture('sales/adjustment_charge_price_difference_for_sales_invoice.json').then(f => {
@@ -50,6 +50,7 @@ describe('Create Adjustment Charge price difference (Nachbelastung Preisdifferen
       salesInvoiceTargetDocumentType = f['salesInvoiceTargetDocumentType'];
       productName = f['productName'];
       originalQuantity = f['originalQuantity'];
+      adjustmentChargePriceDifference = f['adjustmentChargePriceDifference'];
     });
   });
 
