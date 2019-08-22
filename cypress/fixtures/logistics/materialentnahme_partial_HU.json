@@ -23,5 +23,8 @@
  "warehouseName" : "Hauptlager_StdWarehouse_Hauptlager_0_0_0",
 
  "packingInstructionsVersionForTU" : "PackingInstructionsVersionForTU",
- "packingInstructionsVersionForLU" : "PackingInstructionsVersionForLU"
+ "packingInstructionsVersionForLU" : "PackingInstructionsVersionForLU",
+ "length": 0,
+ "width": 0,
+ "height": 0
 }

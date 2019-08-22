@@ -14,50 +14,55 @@ import {
   toggleNotFrequentFilters,
   clearNotFrequentFilters,
 } from '../../support/functions';
-
-let productForPackingMaterialTU;
-let productForPackingMaterialLU;
-let packingMaterialForTU;
-let packingMaterialForLU;
-let packingInstructionsNameForTU;
-let packingInstructionsNameForLU;
-let productName1;
-let productCategoryName;
-let discountSchemaName;
-let priceSystemName;
-let priceListName;
-let priceListVersionName;
-let productType;
-let vendorName;
-let materialentnahme;
-let warehouseName;
-let packingInstructionsVersionForTU;
-let packingInstructionsVersionForLU;
-
-it('Read the fixture', function() {
-  cy.fixture('logistics/materialentnahme_partial_HU.json').then(f => {
-    productForPackingMaterialTU = appendHumanReadableNow(f['productForPackingMaterialTU']);
-    productForPackingMaterialLU = appendHumanReadableNow(f['productForPackingMaterialLU']);
-    packingMaterialForTU = appendHumanReadableNow(f['packingMaterialForTU']);
-    packingMaterialForLU = appendHumanReadableNow(f['packingMaterialForLU']);
-    packingInstructionsNameForTU = appendHumanReadableNow(f['packingInstructionsNameForTU']);
-    packingInstructionsNameForLU = appendHumanReadableNow(f['packingInstructionsNameForLU']);
-    productName1 = appendHumanReadableNow(f['productName1']);
-    productCategoryName = appendHumanReadableNow(f['productCategoryName']);
-    discountSchemaName = appendHumanReadableNow(f['discountSchemaName']);
-    priceSystemName = appendHumanReadableNow(f['priceSystemName']);
-    priceListName = appendHumanReadableNow(f['']);
-    priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
-    productType = f['productType'];
-    vendorName = appendHumanReadableNow(f['vendorName']);
-    materialentnahme = f['materialentnahme'];
-    warehouseName = f['warehouseName'];
-    packingInstructionsVersionForTU = appendHumanReadableNow(f['packingInstructionsVersionForTU']);
-    packingInstructionsVersionForLU = appendHumanReadableNow(f['packingInstructionsVersionForLU']);
-  });
-});
-
 describe('Partial material withdrawal in handling unit editor with Materialentnahmelager', function() {
+  let productForPackingMaterialTU;
+  let productForPackingMaterialLU;
+  let packingMaterialForTU;
+  let packingMaterialForLU;
+  let packingInstructionsNameForTU;
+  let packingInstructionsNameForLU;
+  let productName1;
+  let productCategoryName;
+  let discountSchemaName;
+  let priceSystemName;
+  let priceListName;
+  let priceListVersionName;
+  let productType;
+  let vendorName;
+  let materialentnahme;
+  let warehouseName;
+  let packingInstructionsVersionForTU;
+  let packingInstructionsVersionForLU;
+  let length;
+  let width;
+  let height;
+
+  it('Read the fixture', function() {
+    cy.fixture('logistics/materialentnahme_partial_HU.json').then(f => {
+      productForPackingMaterialTU = appendHumanReadableNow(f['productForPackingMaterialTU']);
+      productForPackingMaterialLU = appendHumanReadableNow(f['productForPackingMaterialLU']);
+      packingMaterialForTU = appendHumanReadableNow(f['packingMaterialForTU']);
+      packingMaterialForLU = appendHumanReadableNow(f['packingMaterialForLU']);
+      packingInstructionsNameForTU = appendHumanReadableNow(f['packingInstructionsNameForTU']);
+      packingInstructionsNameForLU = appendHumanReadableNow(f['packingInstructionsNameForLU']);
+      productName1 = appendHumanReadableNow(f['productName1']);
+      productCategoryName = appendHumanReadableNow(f['productCategoryName']);
+      discountSchemaName = appendHumanReadableNow(f['discountSchemaName']);
+      priceSystemName = appendHumanReadableNow(f['priceSystemName']);
+      priceListName = appendHumanReadableNow(f['priceListName']);
+      priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
+      productType = f['productType'];
+      vendorName = appendHumanReadableNow(f['vendorName']);
+      materialentnahme = f['materialentnahme'];
+      warehouseName = f['warehouseName'];
+      packingInstructionsVersionForTU = appendHumanReadableNow(f['packingInstructionsVersionForTU']);
+      packingInstructionsVersionForLU = appendHumanReadableNow(f['packingInstructionsVersionForLU']);
+      length = f['length'];
+      width = f['width'];
+      height = f['height'];
+    });
+  });
+
   it('Create price entities', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, false);
     cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
@@ -84,9 +89,9 @@ describe('Partial material withdrawal in handling unit editor with Materialentna
       Object.assign(new PackingMaterial(), packingMaterialJson)
         .setName(packingMaterialForTU)
         .setProduct(productForPackingMaterialTU)
-        .setLength('0')
-        .setWidth('0')
-        .setHeight('0')
+        .setLength(length)
+        .setWidth(width)
+        .setHeight(height)
         .apply();
     });
   });
@@ -95,9 +100,9 @@ describe('Partial material withdrawal in handling unit editor with Materialentna
       Object.assign(new PackingMaterial(), packingMaterialJson)
         .setName(packingMaterialForLU)
         .setProduct(productForPackingMaterialLU)
-        .setLength('0')
-        .setWidth('0')
-        .setHeight('0')
+        .setLength(length)
+        .setWidth(width)
+        .setHeight(height)
         .apply();
     });
   });
@@ -127,9 +132,9 @@ describe('Partial material withdrawal in handling unit editor with Materialentna
     cy.selectTab('M_HU_PI_Item');
     cy.selectNthRow(1)
       .find('.Quantity')
-      .dblclick({ force: true })
+      .dblclick()
       .find('.form-field-Qty input')
-      .type('0', { force: true });
+      .type('0');
     cy.selectTab('M_HU_PI_Item');
   });
   it('create packing instruction version for handling unit - Loading unit; with packmittel and packingInstructionsNameForTU as unter-packvorschrift', function() {
@@ -138,7 +143,7 @@ describe('Partial material withdrawal in handling unit editor with Materialentna
         .setName(packingInstructionsVersionForLU)
         .setPackingInstructions(packingInstructionsNameForLU)
         .setPackingMaterial(packingMaterialForLU)
-        .setUnit('Load/Logistique Unit')
+        .setHandlingUnitType('Load/Logistique Unit')
         .apply();
     });
     cy.selectTab('M_HU_PI_Item');
@@ -146,7 +151,7 @@ describe('Partial material withdrawal in handling unit editor with Materialentna
     cy.selectInListField('ItemType', 'Unter-Packvorschrift', true);
     /**VERY IMPORTANT!!! the packing instruction for TU have to be set as unter-packvorschrift otherwise the LU quantity won't appear after creating a material receipt */
     cy.selectInListField('Included_HU_PI_ID', packingInstructionsNameForTU, true);
-    cy.writeIntoStringField('Qty', '10', true, null, true);
+    cy.writeIntoStringField('Qty', 10, true, null, true);
     cy.pressDoneButton();
   });
 
@@ -171,74 +176,73 @@ describe('Partial material withdrawal in handling unit editor with Materialentna
   });
 
   it('Create vendor', function() {
-    new BPartner({ name: vendorName })
-      .setVendor(true)
-      .setVendorPricingSystem(priceSystemName)
-      .setVendorDiscountSchema(discountSchemaName)
-      .setPaymentTerm('30 days net')
-      .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
-      .apply();
+    cy.fixture('sales/simple_vendor.json').then(vendorJson => {
+      new BPartner({ ...vendorJson, name: vendorName })
+        .setVendorPricingSystem(priceSystemName)
+        .setVendorDiscountSchema(discountSchemaName)
+        .apply();
 
-    cy.readAllNotifications();
-  });
-});
-
-describe('Create a purchase order and Material Receipts', function() {
-  it('Create a purchase order and visit Material Receipt Candidates', function() {
-    new PurchaseOrder()
-      .setBPartner(vendorName)
-      .setPriceSystem(priceSystemName)
-      .setPoReference('test')
-      .addLine(new PurchaseOrderLine().setProduct(productName1).setQuantity(5))
-      .apply();
-    cy.completeDocument();
+      cy.readAllNotifications();
+    });
   });
 
-  it('Visit referenced Material Receipt Candidates', function() {
-    cy.openReferencedDocuments('M_ReceiptSchedule');
-    cy.expectNumberOfRows(2);
-  });
+  describe('Create a purchase order and Material Receipts', function() {
+    it('Create a purchase order and visit Material Receipt Candidates', function() {
+      new PurchaseOrder()
+        .setBPartner(vendorName)
+        .setPriceSystem(priceSystemName)
+        .setPoReference('test')
+        .addLine(new PurchaseOrderLine().setProduct(productName1).setQuantity(5))
+        .apply();
+      cy.completeDocument();
+    });
 
-  it('Create Material Receipt', function() {
-    cy.selectNthRow(0).click();
-    cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults');
-    cy.selectNthRow(0, true);
-    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', true, false);
-    cy.pressDoneButton();
-  });
-  it('Check if Materialentnahmelager warehouse exists', function() {
-    cy.visitWindow('139');
-    toggleNotFrequentFilters();
-    selectNotFrequentFilterWidget('default');
-    cy.writeIntoStringField('Name', materialentnahme, false, null, true);
-    applyFilters();
+    it('Visit referenced Material Receipt Candidates', function() {
+      cy.openReferencedDocuments('M_ReceiptSchedule');
+      cy.expectNumberOfRows(2);
+    });
 
-    cy.expectNumberOfRows(1);
-  });
-  it('Partial material withdrawal in handling unit editor', function() {
-    cy.visitWindow('540189');
-    toggleNotFrequentFilters();
-    selectNotFrequentFilterWidget('default');
-    cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
-    cy.writeIntoLookupListField('M_Locator_ID', warehouseName, warehouseName, false, false, null, true);
-    applyFilters();
-  });
-  it('Select first row - related to LU quantity and extract 1 from there', function() {
-    cy.selectNthRow(0).click();
-    cy.executeQuickAction('WEBUI_M_HU_MoveTUsToDirectWarehouse', false, true);
-    cy.writeIntoStringField('QtyTU', '1', true, null, true);
-    cy.pressStartButton();
+    it('Create Material Receipt', function() {
+      cy.selectNthRow(0).click();
+      cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults');
+      cy.selectNthRow(0, true);
+      cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', true, false);
+      cy.pressDoneButton();
+    });
+    it('Check if Materialentnahmelager warehouse exists', function() {
+      cy.visitWindow('139');
+      toggleNotFrequentFilters();
+      selectNotFrequentFilterWidget('default');
+      cy.writeIntoStringField('Name', materialentnahme, false, null, true);
+      applyFilters();
 
-    clearNotFrequentFilters();
+      cy.expectNumberOfRows(1);
+    });
+    it('Partial material withdrawal in handling unit editor', function() {
+      cy.visitWindow('540189');
+      toggleNotFrequentFilters();
+      selectNotFrequentFilterWidget('default');
+      cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
+      cy.writeIntoLookupListField('M_Locator_ID', warehouseName, warehouseName, false, false, null, true);
+      applyFilters();
+    });
+    it('Select first row - related to LU quantity and extract 1 from there', function() {
+      cy.selectNthRow(0).click();
+      cy.executeQuickAction('WEBUI_M_HU_MoveTUsToDirectWarehouse', false, true);
+      cy.writeIntoStringField('QtyTU', 1, true, null, true);
+      cy.pressStartButton();
 
-    toggleNotFrequentFilters();
-    selectNotFrequentFilterWidget('default');
-    cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
-    cy.writeIntoLookupListField('M_Locator_ID', warehouseName, warehouseName, false, false, null, true);
-    applyFilters();
+      clearNotFrequentFilters();
 
-    cy.selectNthRow(0)
-      .find('.Quantity')
-      .should('contain', '40');
+      toggleNotFrequentFilters();
+      selectNotFrequentFilterWidget('default');
+      cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
+      cy.writeIntoLookupListField('M_Locator_ID', warehouseName, warehouseName, false, false, null, true);
+      applyFilters();
+
+      cy.selectNthRow(0)
+        .find('.Quantity')
+        .should('contain', '40');
+    });
   });
 });

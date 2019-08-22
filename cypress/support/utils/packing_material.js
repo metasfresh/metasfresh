@@ -46,13 +46,13 @@ function applyPackingMaterial(packingMaterial) {
     cy.selectInListField('M_Product_ID', packingMaterial.product);
 
     if (packingMaterial.length) {
-      cy.writeIntoStringField('Length', '0');
+      cy.writeIntoStringField('Length', packingMaterial.length);
     }
     if (packingMaterial.width) {
-      cy.writeIntoStringField('Width', '0');
+      cy.writeIntoStringField('Width', packingMaterial.width);
     }
     if (packingMaterial.height) {
-      cy.writeIntoStringField('Height', '0');
+      cy.writeIntoStringField('Height', packingMaterial.height);
     }
   });
 }

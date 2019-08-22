@@ -7,11 +7,7 @@ describe('purchase - simple vendor spec', function() {
 
   it('Create a vendor with two contacts', function() {
     cy.fixture('purchase/simple_vendor.json').then(vendorJson => {
-      new BPartner({ ...vendorJson, name: vendorName })
-        .setCustomer(false)
-        .clearLocations()
-        .setBank(undefined)
-        .apply();
+      new BPartner({ ...vendorJson, name: vendorName }).clearLocations().apply();
     });
   });
 });

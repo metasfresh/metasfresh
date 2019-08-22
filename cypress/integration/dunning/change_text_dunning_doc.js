@@ -40,7 +40,6 @@ describe('Create Dunning Documents', function() {
   it('Create bpartner', function() {
     cy.fixture('sales/simple_customer.json').then(customerJson => {
       const bpartner = new BPartner({ ...customerJson, name: businessPartnerName })
-        .setCustomer(true)
         .setDunning(dunningTypeName)
         .setPaymentTerm(paymentTerm);
 

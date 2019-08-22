@@ -36,7 +36,7 @@ it('Read the fixture', function() {
     productCategoryName = appendHumanReadableNow(f['productCategoryName']);
     discountSchemaName = appendHumanReadableNow(f['discountSchemaName']);
     priceSystemName = appendHumanReadableNow(f['priceSystemName']);
-    priceListName = appendHumanReadableNow(f['']);
+    priceListName = appendHumanReadableNow(f['priceListName']);
     priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
     productType = f['productType'];
     vendorName = appendHumanReadableNow(f['vendorName']);
@@ -98,15 +98,14 @@ describe('Change warehouse to Materialentnahmelager', function() {
   });
 
   it('Create vendor', function() {
-    new BPartner({ name: vendorName })
-      .setVendor(true)
-      .setVendorPricingSystem(priceSystemName)
-      .setVendorDiscountSchema(discountSchemaName)
-      .setPaymentTerm('30 days net')
-      .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
-      .apply();
+    cy.fixture('sales/simple_vendor.json').then(vendorJson => {
+      new BPartner({ ...vendorJson, name: vendorName })
+        .setVendorPricingSystem(priceSystemName)
+        .setVendorDiscountSchema(discountSchemaName)
+        .apply();
 
-    cy.readAllNotifications();
+      cy.readAllNotifications();
+    });
   });
 });
 

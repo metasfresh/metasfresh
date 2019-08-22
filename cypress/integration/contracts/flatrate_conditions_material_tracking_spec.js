@@ -7,7 +7,6 @@ import { Product, ProductCategory, ProductPrice } from '../../support/utils/prod
 import { Pricesystem } from '../../support/utils/pricesystem';
 import { PriceList, PriceListVersion } from '../../support/utils/pricelist';
 import { BPartner } from '../../support/utils/bpartner';
-import { BPartnerLocation } from '../../support/utils/bpartner_ui';
 import { runProcessCreateContract } from '../../support/functions/contractFunctions';
 import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
 
@@ -168,14 +167,9 @@ describe('Create material tracking contract conditions', function() {
 
   it('Create vendor', function() {
     const vendorName = `vendor ${date}`;
-    new BPartner({ name: vendorName })
-      .setCustomer(false)
-      .setBank(undefined)
-      .setVendor(true)
-      .setVendorPricingSystem(priceSystemName)
-      .addLocation(new BPartnerLocation('Address1').setCity('Bern').setCountry(countryName))
-      .apply();
-
+    cy.fixture('sales/simple_vendor.json').then(vendorJson => {
+      new BPartner({ ...vendorJson, name: vendorName }).setVendorPricingSystem(priceSystemName).apply();
+    });
     runProcessCreateContract(date);
   });
 });

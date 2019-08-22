@@ -21,7 +21,7 @@ export class PackingInstructionsVersion {
     return this;
   }
 
-  setUnit(unit) {
+  setHandlingUnitType(unit) {
     cy.log(`PackingInstructionsVersionBuilder - set handling unit type = ${unit}`);
     this.unit = unit;
     return this;
