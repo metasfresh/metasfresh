@@ -35,12 +35,6 @@ describe('Create a Credit memo deliver difference for Sales Invoice', function()
   let originalSalesInvoiceTotalAmount;
   let originalSalesInvoiceID;
 
-  // const newQuantity = 5; // must be lower than the original amount
-
-  // // Sales Invoice
-  // const salesInvoiceTargetDocumentType = 'Sales Invoice';
-  // let originalQuantity = 20;
-
   let newQuantity; // must be lower than the original amount
 
   // Sales Invoice
