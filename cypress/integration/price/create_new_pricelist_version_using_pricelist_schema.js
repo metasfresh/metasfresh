@@ -20,30 +20,44 @@
  * #L%
  */
 
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 import { PriceListSchema, PriceListSchemaLine } from '../../support/utils/price_list_schema';
 import { Builder } from '../../support/utils/builder';
 import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
 import { ProductPrices } from '../../page_objects/product_prices';
 import { PriceList, PriceListVersion } from '../../support/utils/pricelist';
 
-let date = humanReadableNow();
+// Price
+// const priceSystemName = `PriceSystem_${date}`;
+// const priceListVersionName = `PriceListVersion_${date}`;
+// const priceListName = `PriceList_${date}`;
+// const priceListSchemaVersionName = `PriceListSchemaVersion_${date}`;
+// const priceListVersion2ValidFrom = '01/02/2019';
+
+// // Product
+// const categoryName = `Category_${date}`;
+// const productName = `Product ${date}`;
+// const productType = 'Item';
+
+// // Price List Schema
+// const priceListSchemaName = `PriceListSchema_${date}`;
+// const surchargeAmount = 222;
 
 // Price
-const priceSystemName = `PriceSystem_${date}`;
-const priceListVersionName = `PriceListVersion_${date}`;
-const priceListName = `PriceList_${date}`;
-const priceListSchemaVersionName = `PriceListSchemaVersion_${date}`;
-const priceListVersion2ValidFrom = '01/02/2019';
+let priceSystemName;
+let priceListVersionName;
+let priceListName;
+let priceListSchemaVersionName;
+let priceListVersion2ValidFrom;
 
 // Product
-const categoryName = `Category_${date}`;
-const productName = `Product ${date}`;
-const productType = 'Item';
+let categoryName;
+let productName;
+let productType;
 
 // Price List Schema
-const priceListSchemaName = `PriceListSchema_${date}`;
-const surchargeAmount = 222;
+let priceListSchemaName;
+let surchargeAmount;
 
 // test
 let priceListID;
@@ -52,6 +66,24 @@ let originalPriceLimit;
 let originalPriceList;
 let originalUOM;
 let originalTaxCategory;
+
+it('Read the fixture', function() {
+  cy.fixture('price/create_new_pricelist_version_using_pricelist_schema.json').then(f => {
+    priceSystemName = appendHumanReadableNow(f['priceSystemName']);
+    priceListName = appendHumanReadableNow(f['priceListName']);
+    priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
+
+    priceListSchemaVersionName = appendHumanReadableNow(f['priceListSchemaVersionName']);
+    priceListVersion2ValidFrom = f['priceListVersion2ValidFrom'];
+
+    categoryName = appendHumanReadableNow(f['categoryName']);
+    productName = appendHumanReadableNow(f['productName']);
+    productType = f['productType'];
+
+    priceListSchemaName = appendHumanReadableNow(f['priceListSchemaName']);
+    surchargeAmount = f['surchargeAmount'];
+  });
+});
 
 describe('Create Price and Product', function() {
   it('Create Price', function() {

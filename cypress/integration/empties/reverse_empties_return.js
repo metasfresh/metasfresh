@@ -22,7 +22,7 @@
 
 /// <reference types="Cypress" />
 
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 import { Builder } from '../../support/utils/builder';
 import { PackingMaterial } from '../../support/utils/packing_material';
 import { EmptiesReturn } from '../../page_objects/empties_returns';
@@ -31,27 +31,62 @@ import { DocumentStatusKey } from '../../support/utils/constants';
 // task: https://github.com/metasfresh/metasfresh-e2e/issues/213
 
 describe('Reverse Empties Return', function() {
-  const businessPartnerName = 'Test Lieferant 1';
-  const productQuantity = 222;
-  const documentType = 'Leergutausgabe';
+  // const businessPartnerName = 'Test Lieferant 1';
+  // const productQuantity = 222;
+  // const documentType = 'Leergutausgabe';
+
+  // // priceList
+  // const date = humanReadableNow();
+  // const priceSystemName = `PriceSystem ${date}`;
+  // const priceListName = `PriceList ${date}`;
+  // const priceListVersionName = `PriceListVersion ${date}`;
+
+  // // product
+  // const productCategory = `ProductCategory ${date}`;
+  // const productName1 = `Product1 ${date}`;
+  // const productName2 = `Product2 ${date}`;
+  // const productName3 = `Product3 ${date}`;
+  // const productType = 'Item';
+
+  let businessPartnerName;
+  let productQuantity;
+  let documentType;
 
   // priceList
-  const date = humanReadableNow();
-  const priceSystemName = `PriceSystem ${date}`;
-  const priceListName = `PriceList ${date}`;
-  const priceListVersionName = `PriceListVersion ${date}`;
+  let priceSystemName;
+  let priceListName;
+  let priceListVersionName;
 
   // product
-  const productCategory = `ProductCategory ${date}`;
-  const productName1 = `Product1 ${date}`;
-  const productName2 = `Product2 ${date}`;
-  const productName3 = `Product3 ${date}`;
-  const productType = 'Item';
-  const productList = [productName1, productName2, productName3];
+  let productCategory;
+  let productName1;
+  let productName2;
+  let productName3;
+  let productType;
+  let productList;
 
   // test
   let reversalDocumentCounterpartNumber;
   let originalDocumentNumber;
+
+  it('Read the fixture', function() {
+    cy.fixture('empties/reverse_empties_return.json').then(f => {
+      businessPartnerName = f['businessPartnerName'];
+      productQuantity = f['productQuantity'];
+      documentType = f['documentType'];
+      cy.log('documentType#######################3' + documentType);
+      priceSystemName = appendHumanReadableNow(f['priceSystemName']);
+      priceListName = appendHumanReadableNow(f['priceListName']);
+      priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
+
+      productCategory = appendHumanReadableNow(f['productCategory']);
+      productName1 = appendHumanReadableNow(f['productName1']);
+      productName2 = appendHumanReadableNow(f['productName2']);
+      productName3 = appendHumanReadableNow(f['productName3']);
+      productType = f['productType'];
+      productList = [productName1, productName2, productName3];
+    });
+  });
 
   describe('Create Packing Materials', function() {
     it('Create Price and Products', function() {
@@ -94,7 +129,7 @@ describe('Reverse Empties Return', function() {
   });
 
   describe('Create Positive Empties Return with 3 products', function() {
-    createEmptiesReturn(documentType, businessPartnerName, productList, productQuantity);
+    createEmptiesReturn();
 
     it('Save values needed for the next step', function() {
       cy.getStringFieldValue('DocumentNo').then(documentNumber => {
@@ -148,47 +183,46 @@ describe('Reverse Empties Return', function() {
       });
     });
   });
-});
+  function createEmptiesReturn() {
+    it('Open Material Receipt Candidates and execute action "Empties Return"', function() {
+      cy.visitWindow('540196');
+      cy.executeHeaderAction('WEBUI_M_ReceiptSchedule_CreateEmptiesReturnsToVendor');
+    });
+    it('Create Empties Return', function() {
+      cy.log('documentType#################333' + documentType);
+      cy.selectInListField('C_DocType_ID', documentType);
+      cy.writeIntoLookupListField('C_BPartner_ID', businessPartnerName, businessPartnerName);
+      addLines();
+      cy.completeDocument();
+    });
+  }
 
-function createEmptiesReturn(documentType, businessPartnerName, productNames, productQuantity) {
-  it('Open Material Receipt Candidates and execute action "Empties Return"', function() {
-    cy.visitWindow('540196');
-    cy.executeHeaderAction('WEBUI_M_ReceiptSchedule_CreateEmptiesReturnsToVendor');
-  });
+  function addLines() {
+    productList.forEach((productName, index) => {
+      cy.selectTab('M_InOutLine');
+      cy.pressBatchEntryButton();
+      cy.writeIntoLookupListField('M_HU_PackingMaterial_ID', productName, productName);
 
-  it('Create Empties Return', function() {
-    cy.selectInListField('C_DocType_ID', documentType);
-    cy.writeIntoLookupListField('C_BPartner_ID', businessPartnerName, businessPartnerName);
-    addLines(productNames, productQuantity);
-    cy.completeDocument();
-  });
-}
+      const qty = productQuantity + index;
+      if (productQuantity > 0) {
+        cy.writeIntoStringField('Qty', qty); //.type('{enter}');
+        cy.closeBatchEntry();
+      } else {
+        cy.writeIntoStringField('Qty', -1 * qty); //.type('{enter}'); // first write the positive qty (frontend bug workaround)
+        writeQtyInAdvancedEdit(index);
+      }
+    });
+  }
 
-function addLines(productNames, productQuantity) {
-  productNames.forEach((productName, index) => {
+  function writeQtyInAdvancedEdit(rowNumber) {
+    // select nth line
     cy.selectTab('M_InOutLine');
-    cy.pressBatchEntryButton();
-    cy.writeIntoLookupListField('M_HU_PackingMaterial_ID', productName, productName);
+    cy.selectNthRow(rowNumber);
 
-    const qty = productQuantity + index;
-    if (productQuantity > 0) {
-      cy.writeIntoStringField('Qty', qty); //.type('{enter}');
-      cy.closeBatchEntry();
-    } else {
-      cy.writeIntoStringField('Qty', -1 * qty); //.type('{enter}'); // first write the positive qty (frontend bug workaround)
-      writeQtyInAdvancedEdit(qty, productName, index);
-    }
-  });
-}
-
-function writeQtyInAdvancedEdit(productQuantity, rowNumber) {
-  // select nth line
-  cy.selectTab('M_InOutLine');
-  cy.selectNthRow(rowNumber);
-
-  // do ya thing
-  cy.openAdvancedEdit();
-  cy.writeIntoStringField('MovementQty', productQuantity);
-  cy.writeIntoStringField('QtyEntered', productQuantity);
-  cy.pressDoneButton(100);
-}
+    // do ya thing
+    cy.openAdvancedEdit();
+    cy.writeIntoStringField('MovementQty', productQuantity);
+    cy.writeIntoStringField('QtyEntered', productQuantity);
+    cy.pressDoneButton(100);
+  }
+});

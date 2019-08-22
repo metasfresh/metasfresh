@@ -22,17 +22,24 @@
 
 import { Product } from '../../support/utils/product';
 import { Inventory, InventoryLine } from '../../support/utils/inventory';
-import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
+import { getLanguageSpecific, appendHumanReadableNow } from '../../support/utils/utils';
 import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
 
-let date = humanReadableNow();
-const productName = `Product_${date}`;
-const productQty = 222;
-const locatorId = 'Hauptlager_StdWarehouse_Hauptlager_0_0_0';
+let productName;
+let productQty;
+let locatorId;
 const notificationRegexpExpected = new RegExp(`Eigenverbrauch.*wurde erstellt.`);
 
 // test
 let huValue;
+
+it('Read the fixture', function() {
+  cy.fixture('inventory/create_disposal_from_handling_unit_editor.json').then(f => {
+    productName = appendHumanReadableNow(f['productName']);
+    productQty = f['productQty'];
+    locatorId = f['locatorId'];
+  });
+});
 
 describe('Create a single HU', function() {
   it('Create Product', function() {
