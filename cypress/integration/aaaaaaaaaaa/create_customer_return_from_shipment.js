@@ -32,7 +32,6 @@ let productQty = 10;
 let locatorId = 'Hauptlager_StdWarehouse_Hauptlager_0_0_0';
 
 let businessPartnerName = 'Test Lieferant 1';
-let soProductQuantity = 2 * productQty;
 
 // shipment
 let shipmentQuantityTypeOption = 'Picked quantity';
@@ -57,22 +56,22 @@ let huValue;
 let shipmentRecordID;
 
 describe('Create test data', function() {
-// // // //    it('Read fixture and prepare the names', function() {
-// // // //      cy.fixture('picking/pick_HUs_and_create_shipment.json').then(f => {
-// // // //        productName = f['productName'];
-// // // //        productQty = f['productQty'];
-// // // //        locatorId = f['locatorId'];
-// // // //
-// // // //        businessPartnerName = f['businessPartnerName'];
-// // // //        soProductQuantity = f['soProductQuantity'];
-// // // //
-// // // //        shipmentQuantityTypeOption = f['shipmentQuantityTypeOption'];
-// // // //        shipmentNotificationModalText = f['shipmentNotificationModalText'];
-// // // //        expectedPackingStatus = f['expectedPackingStatus'];
+  // // // //    it('Read fixture and prepare the names', function() {
+  // // // //      cy.fixture('picking/pick_HUs_and_create_shipment.json').then(f => {
+  // // // //        productName = f['productName'];
+  // // // //        productQty = f['productQty'];
+  // // // //        locatorId = f['locatorId'];
+  // // // //
+  // // // //        businessPartnerName = f['businessPartnerName'];
+  // // // //        soProductQuantity = f['soProductQuantity'];
+  // // // //
+  // // // //        shipmentQuantityTypeOption = f['shipmentQuantityTypeOption'];
+  // // // //        shipmentNotificationModalText = f['shipmentNotificationModalText'];
+  // // // //        expectedPackingStatus = f['expectedPackingStatus'];
 
-// // // //        warehouseName = appendDate(f['warehouseName'];)
-// // // //      });
-// // // //    });
+  // // // //        warehouseName = appendDate(f['warehouseName'];)
+  // // // //      });
+  // // // //    });
 
   it('Create quality return warehouse', function() {
     cy.fixture('misc/warehouse.json').then(warehouseJson => {
@@ -108,7 +107,7 @@ describe('Create test data', function() {
     });
   });
 
-  it('Save HU Value 1', function() {
+  it('Save HU Value', function() {
     cy.selectTab('M_InventoryLine');
     cy.selectNthRow(0);
     cy.openAdvancedEdit();
@@ -121,7 +120,7 @@ describe('Create test data', function() {
   it('Create Sales Order', function() {
     new SalesOrder()
       .setBPartner(businessPartnerName)
-      .addLine(new SalesOrderLine().setProduct(productName).setQuantity(soProductQuantity))
+      .addLine(new SalesOrderLine().setProduct(productName).setQuantity(productQty))
       .apply();
     cy.completeDocument();
 
@@ -184,7 +183,6 @@ describe('Generate the Shipment', function() {
 
     cy.pressStartButton();
     cy.getNotificationModal(shipmentNotificationModalText);
-    cy.expectCheckboxValue('Processed', true);
   });
 
   it('Open notifications and go to the shipment', function() {
@@ -216,25 +214,14 @@ describe('Create Customer return from Shipment', function() {
 
     cy.expectNumberOfRows(1);
     cy.selectNthRow(0).dblclick();
-  });
-  //
-  // it('a', function() {
-  //
-  // });
-  // it('a', function() {
-  //
-  // });
-  //
-  // it('a', function() {
-  //
-  // });
-  //
-  // it('a', function() {
-  //
-  // });
-  //
-  // it('a', function() {
-  //
-  // });
 
+    cy.expectDocumentStatus(DocumentStatusKey.Completed);
+    cy.getStringFieldValue('C_BPartner_ID').should('contain', businessPartnerName);
+    cy.selectTab('M_HU_Assignment');
+    cy.selectNthRow(0);
+    cy.openAdvancedEdit();
+    cy.getTextFieldValue('Products').should('contain', productName);
+    cy.getStringFieldValue('Qty').should('equal', '0');
+    cy.pressDoneButton();
+  });
 });
