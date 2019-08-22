@@ -20,25 +20,25 @@
  * #L%
  */
 
-import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow, getLanguageSpecific } from '../../support/utils/utils';
 import { salesOrders } from '../../page_objects/sales_orders';
 import { SalesOrder, SalesOrderLine } from '../../support/utils/sales_order';
 import { Inventory, InventoryLine } from '../../support/utils/inventory';
 import { DocumentStatusKey } from '../../support/utils/constants';
 import { Warehouse } from '../../support/utils/warehouse';
 
-let productName = 'Convenience Salat 250g';
-let productQty = 10;
-let locatorId = 'Hauptlager_StdWarehouse_Hauptlager_0_0_0';
+let productName;
+let productQty;
+let locatorId;
 
-let businessPartnerName = 'Test Lieferant 1';
+let businessPartnerName;
 
 // shipment
-let shipmentQuantityTypeOption = 'Picked quantity';
-let shipmentNotificationModalText = 'Created: 1 WorkPackage Queue;';
+let shipmentQuantityTypeOption;
+let shipmentNotificationModalText;
 
 // warehouse
-let warehouseName = 'Troubled Quality Warehouse' + humanReadableNow();
+let warehouseName;
 
 // test columns
 // todo @kuba: these should be somehow made translation independent!
@@ -56,22 +56,20 @@ let huValue;
 let shipmentRecordID;
 
 describe('Create test data', function() {
-  // // // //    it('Read fixture and prepare the names', function() {
-  // // // //      cy.fixture('picking/pick_HUs_and_create_shipment.json').then(f => {
-  // // // //        productName = f['productName'];
-  // // // //        productQty = f['productQty'];
-  // // // //        locatorId = f['locatorId'];
-  // // // //
-  // // // //        businessPartnerName = f['businessPartnerName'];
-  // // // //        soProductQuantity = f['soProductQuantity'];
-  // // // //
-  // // // //        shipmentQuantityTypeOption = f['shipmentQuantityTypeOption'];
-  // // // //        shipmentNotificationModalText = f['shipmentNotificationModalText'];
-  // // // //        expectedPackingStatus = f['expectedPackingStatus'];
+  it('Read fixture and prepare the names', function() {
+    cy.fixture('returns/create_customer_return_from_shipment.json').then(f => {
+      productName = f['productName'];
+      productQty = f['productQty'];
+      locatorId = f['locatorId'];
 
-  // // // //        warehouseName = appendDate(f['warehouseName'];)
-  // // // //      });
-  // // // //    });
+      businessPartnerName = f['businessPartnerName'];
+
+      shipmentQuantityTypeOption = f['shipmentQuantityTypeOption'];
+      shipmentNotificationModalText = f['shipmentNotificationModalText'];
+
+      warehouseName = appendHumanReadableNow(f['warehouseName']);
+    });
+  });
 
   it('Create quality return warehouse', function() {
     cy.fixture('misc/warehouse.json').then(warehouseJson => {
