@@ -22,7 +22,7 @@
 
 /// <reference types="Cypress" />
 
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 import { salesInvoices } from '../../page_objects/sales_invoices';
 import { Builder } from '../../support/utils/builder';
 import { DiscountSchema } from '../../support/utils/discountschema';
@@ -32,8 +32,6 @@ import { SalesInvoice, SalesInvoiceLine } from '../../support/utils/sales_invoic
 import { DocumentStatusKey, RewriteURL } from '../../support/utils/constants';
 
 describe('Create a Credit memo for Sales Invoice', function() {
-  const date = humanReadableNow();
-
   const creditMemo = 'Credit Memo';
   let originalSalesInvoiceNumber;
   let originalPriceList;
@@ -41,26 +39,41 @@ describe('Create a Credit memo for Sales Invoice', function() {
   let originalProduct;
   let originalSalesInvoiceID;
 
-  // data for "before" section
-  // priceList
-  const priceSystemName = `PriceSystem ${date}`;
-  const priceListName = `PriceList ${date}`;
-  const priceListVersionName = `PriceListVersion ${date}`;
+  let priceSystemName;
+  let priceListName;
+  let priceListVersionName;
 
   // product
-  const productCategoryName = `ProductCategory ${date}`;
-  const productCategoryValue = productCategoryName;
-  const productName = `Product ${date}`;
-  const productValue = productName;
-  const productType = 'Item';
+  let productCategoryName;
+  let productCategoryValue;
+  let productName;
+  let productValue;
+  let productType;
 
   // BPartner
-  const discountSchemaName = `DiscountSchema ${date}`;
-  const bPartnerName = `bPartner ${date}`;
+  let discountSchemaName;
+  let bPartnerName;
 
   // Sales Invoice
-  const salesInvoiceTargetDocumentType = 'Sales Invoice';
-  let originalQuantity = 20;
+  let salesInvoiceTargetDocumentType;
+  let originalQuantity;
+  it('Read the fixture', function() {
+    cy.fixture('sales/credit_memo_for_sales_invoice.json').then(f => {
+      priceSystemName = appendHumanReadableNow(f['priceSystemName']);
+      priceListName = appendHumanReadableNow(f['priceListName']);
+      priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
+
+      productCategoryName = appendHumanReadableNow(f['productCategoryName']);
+      productCategoryValue = productCategoryName;
+      productName = appendHumanReadableNow(f['productName']);
+      productValue = productName;
+      productType = f['productType'];
+      discountSchemaName = appendHumanReadableNow(f['discountSchemaName']);
+      bPartnerName = appendHumanReadableNow(f['bPartnerName']);
+      salesInvoiceTargetDocumentType = f['salesInvoiceTargetDocumentType'];
+      originalQuantity = f['originalQuantity'];
+    });
+  });
 
   it('Prepare product and bartner', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
