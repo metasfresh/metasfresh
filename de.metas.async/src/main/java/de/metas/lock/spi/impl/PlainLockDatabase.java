@@ -38,7 +38,6 @@ import org.adempiere.ad.dao.impl.POJOQuery;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.util.concurrent.CloseableReentrantLock;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
@@ -89,7 +88,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		return key;
 	}
 
-	private ArrayKey createKeyForRecord(final ITableRecordReference record)
+	private ArrayKey createKeyForRecord(final TableRecordReference record)
 	{
 		return new ArrayKey(
 				record.getAD_Table_ID(),
@@ -119,7 +118,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		final PInstanceId adPInstanceId = lockCommand.getSelectionToLock_AD_PInstance_ID();
 
 		int countLocked = 0;
-		for (final ITableRecordReference record : retrieveSelection(adTableId, adPInstanceId))
+		for (final TableRecordReference record : retrieveSelection(adTableId, adPInstanceId))
 		{
 			final boolean locked = lockRecord(lockCommand, record);
 			if (locked)
@@ -154,7 +153,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		int countLocked = 0;
 		for (final Object recordToLock : recordsToLock)
 		{
-			final ITableRecordReference recordToLockRef = TableRecordReference.of(recordToLock);
+			final TableRecordReference recordToLockRef = TableRecordReference.of(recordToLock);
 			final boolean locked = lockRecord(lockCommand, recordToLockRef);
 			if (!locked)
 			{
@@ -177,7 +176,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	}
 
 	@Override
-	protected boolean lockRecord(final ILockCommand lockCommand, final ITableRecordReference record)
+	protected boolean lockRecord(final ILockCommand lockCommand, final TableRecordReference record)
 	{
 		final ArrayKey recordKey = createKeyForRecord(record);
 
@@ -189,7 +188,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	}
 
 	@Override
-	protected boolean changeLockRecord(final ILockCommand lockCommand, final ITableRecordReference record)
+	protected boolean changeLockRecord(final ILockCommand lockCommand, final TableRecordReference record)
 	{
 		final ArrayKey recordKey = createKeyForRecord(record);
 
@@ -219,7 +218,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	}
 
 	@Override
-	protected boolean unlockRecord(final IUnlockCommand unlockCommand, final ITableRecordReference record)
+	protected boolean unlockRecord(final IUnlockCommand unlockCommand, final TableRecordReference record)
 	{
 		final LockOwner ownerRequired = unlockCommand.getOwner();
 
@@ -289,7 +288,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		final PInstanceId adPInstanceId = unlockCommand.getSelectionToUnlock_AD_PInstance_ID();
 
 		int countUnlocked = 0;
-		for (final ITableRecordReference record : retrieveSelection(adTableId, adPInstanceId))
+		for (final TableRecordReference record : retrieveSelection(adTableId, adPInstanceId))
 		{
 			final boolean unlocked = unlockRecord(unlockCommand, record);
 			if (unlocked)
@@ -301,14 +300,14 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		return countUnlocked;
 	}
 
-	private List<ITableRecordReference> retrieveSelection(final int adTableId, final PInstanceId pinstanceId)
+	private List<TableRecordReference> retrieveSelection(final int adTableId, final PInstanceId pinstanceId)
 	{
 		// NOTE: below comes a fucked up, not optimum implementation shit which shall do the work for testing
 
 		final POJOInSelectionQueryFilter<Object> filter = POJOInSelectionQueryFilter.inSelection(pinstanceId);
 
 		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
-		final List<ITableRecordReference> records = new ArrayList<>();
+		final List<TableRecordReference> records = new ArrayList<>();
 		for (final Object model : POJOLookupMap.get().getRawRecords(tableName))
 		{
 			if (!filter.accept(model))
@@ -316,7 +315,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 				continue;
 			}
 
-			final ITableRecordReference record = TableRecordReference.of(model);
+			final TableRecordReference record = TableRecordReference.of(model);
 			records.add(record);
 		}
 
@@ -338,14 +337,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		final POJOQuery<T> pojoQueryFinal = pojoQuery.copy();
 
 		// filter out locked records
-		pojoQueryFinal.addFilter(new IQueryFilter<T>()
-		{
-			@Override
-			public boolean accept(final T model)
-			{
-				return !isLocked(model, LockOwner.ANY);
-			}
-		});
+		pojoQueryFinal.addFilter(model -> !isLocked(model, LockOwner.ANY));
 
 		return pojoQueryFinal;
 	}
@@ -627,27 +619,13 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	@Override
 	public final <T> IQueryFilter<T> getLockedByFilter(final Class<T> modelClass, final LockOwner lockOwner)
 	{
-		return new IQueryFilter<T>()
-		{
-			@Override
-			public boolean accept(final T model)
-			{
-				return isLocked(model, lockOwner);
-			}
-		};
+		return model -> isLocked(model, lockOwner);
 	}
 
 	@Override
 	public <T> IQueryFilter<T> getNotLockedFilter(final Class<T> modelClass)
 	{
-		return new IQueryFilter<T>()
-		{
-			@Override
-			public boolean accept(final T model)
-			{
-				return !isLocked(model, LockOwner.ANY);
-			}
-		};
+		return model -> !isLocked(model, LockOwner.ANY);
 	}
 
 	@Override
