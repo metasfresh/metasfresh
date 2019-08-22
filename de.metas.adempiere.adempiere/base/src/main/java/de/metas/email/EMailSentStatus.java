@@ -30,12 +30,12 @@ import de.metas.util.Check;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,7 +44,7 @@ import de.metas.util.Check;
 
 /**
  * EMail sent status.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  * @see EMail#send()
  */
@@ -60,27 +60,27 @@ public final class EMailSentStatus implements Serializable
 	@VisibleForTesting
 	/* package */static final String SENT_OK = new String("OK");
 
-	/* package */static final EMailSentStatus ok(final String messageId)
+	/* package */static EMailSentStatus ok(final String messageId)
 	{
 		final boolean sentConnectionError = false;
 		return new EMailSentStatus(SENT_OK, sentConnectionError, messageId);
 	}
 
-	/* package */static final EMailSentStatus invalid(final String errorMessage)
+	/* package */static EMailSentStatus invalid(final String errorMessage)
 	{
 		final boolean sentConnectionError = false;
 		final String messageId = null;
 		return new EMailSentStatus(errorMessage, sentConnectionError, messageId);
 	}
 
-	/* package */static final EMailSentStatus error(final String errorMessage)
+	/* package */static EMailSentStatus error(final String errorMessage)
 	{
 		final boolean sentConnectionError = false;
 		final String messageId = null;
 		return new EMailSentStatus(errorMessage, sentConnectionError, messageId);
 	}
 
-	/* package */static final EMailSentStatus error(final MessagingException me)
+	/* package */static EMailSentStatus error(final MessagingException me)
 	{
 		Exception ex = me;
 		final StringBuilder errorMsgBuilder = new StringBuilder("(ME)");
@@ -130,7 +130,11 @@ public final class EMailSentStatus implements Serializable
 			}
 			else if (ex instanceof AuthenticationFailedException)
 			{
-				errorMsgBuilder.append(" - Invalid Username/Password");
+				errorMsgBuilder.append(" - Authentication failed");
+				if (!Check.isEmpty(ex.getLocalizedMessage(), true))
+				{
+					errorMsgBuilder.append(": ").append(ex.getLocalizedMessage());
+				}
 			}
 			else if (ex instanceof java.net.ConnectException)
 			{
