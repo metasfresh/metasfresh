@@ -109,10 +109,10 @@ public class ChangeLogUtil
 			.put(I_C_BPartner_Location.COLUMNNAME_IsShipTo, BPartnerLocationType.SHIP_TO)
 			.put(I_C_BPartner_Location.COLUMNNAME_IsActive, BPartnerLocation.ACTIVE)
 
-			// C_Location is immutable and therefore individual C_Location records don't have a change log.
-			// However, when we load the change log records of C_BPartner_Location,
-			// then we iterate the change log history of the C_BPartner_Location.C_Location_ID column,
-			// load the respective C_Location records and derive change log entries which we add to C_BPartner_Location's change log.
+			// C_Location is immutable and therefore individual C_Location records don't have a change log
+			// however, when we load the change log records of C_BPartner_Location,
+			// we iterate the change log history of the C_BPartner_Location.C_Location_ID column
+			// and derive change log entries which we add to C_BPartner_Location's change log.
 			.put(I_C_Location.COLUMNNAME_Address1, BPartnerLocation.ADDRESS_1)
 			.put(I_C_Location.COLUMNNAME_Address2, BPartnerLocation.ADDRESS_2)
 			.put(I_C_Location.COLUMNNAME_Address3, BPartnerLocation.ADDRESS_3)
