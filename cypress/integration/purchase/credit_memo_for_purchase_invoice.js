@@ -22,15 +22,28 @@
 
 /// <reference types="Cypress" />
 
-import {getLanguageSpecific} from '../../support/utils/utils';
-import {DocumentActionKey, DocumentStatusKey} from '../../support/utils/constants';
-import {PurchaseInvoice, PurchaseInvoiceLine} from "../../support/utils/purchase_invoice";
+import { DocumentStatusKey } from '../../support/utils/constants';
+import { PurchaseInvoice, PurchaseInvoiceLine } from '../../support/utils/purchase_invoice';
 
 describe('Create a Credit memo for Purchase Invoice', function() {
-  const creditMemoVendor = 'Credit Memo (Vendor)';
-  const businessPartnerName = 'Test Lieferant 1';
-  const productName = 'Convenience Salat 250g';
-  const quantity = 200;
+  // const creditMemoVendor = 'Credit Memo (Vendor)';
+  // const businessPartnerName = 'Test Lieferant 1';
+  // const productName = 'Convenience Salat 250g';
+  // const quantity = 200;
+
+  let creditMemoVendor;
+  let businessPartnerName;
+  let productName;
+  let quantity;
+
+  it('Read the fixture', function() {
+    cy.fixture('purchase/credit_memo_for_purchase_invoice.json').then(f => {
+      creditMemoVendor = f['creditMemoVendor'];
+      businessPartnerName = f['businessPartnerName'];
+      productName = f['productName'];
+      quantity = f['quantity'];
+    });
+  });
 
   it(`Ensure ${creditMemoVendor} is Number Controlled`, function() {
     // very bold assumption that this document type always has recordId=1000006
@@ -39,15 +52,10 @@ describe('Create a Credit memo for Purchase Invoice', function() {
   });
 
   it('Prepare Purchase Invoice', function() {
-    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      new PurchaseInvoice(businessPartnerName, creditMemoVendor)
-        .addLine(
-          new PurchaseInvoiceLine().setProduct(productName).setQuantity(quantity)
-        )
-        .setDocumentAction(getLanguageSpecific(miscDictionary, DocumentActionKey.Complete))
-        .setDocumentStatus(getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed))
-        .apply();
-    });
+    new PurchaseInvoice(businessPartnerName, creditMemoVendor)
+      .addLine(new PurchaseInvoiceLine().setProduct(productName).setQuantity(quantity))
+      .apply();
+    cy.completeDocument();
   });
 
   it('Purchase Invoice is Completed', function() {
@@ -60,5 +68,4 @@ describe('Create a Credit memo for Purchase Invoice', function() {
       assert.equal(checkBoxValue, false);
     });
   });
-
 });

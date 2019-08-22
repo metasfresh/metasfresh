@@ -28,14 +28,23 @@ import { purchaseOrders } from '../../page_objects/purchase_orders';
 // task: https://github.com/metasfresh/metasfresh-e2e/issues/153
 
 describe('Change warehouse in material receipt candidate #153', function() {
-  //
-  const warehouse1 = 'Hauptlager';
-  const warehouse2 = 'Lager für Streckengeschäft';
+  let warehouse1;
+  let warehouse2;
 
   //
-  const businessPartnerName = 'Test Lieferant 1';
-  const productQuantity = 222;
-  const productName = 'Convenience Salat 250g'; // the product must have a packing item, else the test will fail
+  let businessPartnerName;
+  let productQuantity;
+  let productName; // the product must have a packing item, else the test will fail
+
+  it('Read the fixture', function() {
+    cy.fixture('warehouse/change_warehouse_in_material_receipt_candidate.json').then(f => {
+      warehouse1 = f['warehouse1'];
+      warehouse2 = f['warehouse2'];
+      businessPartnerName = f['businessPartnerName'];
+      productQuantity = f['productQuantity'];
+      productName = f['productName'];
+    });
+  });
 
   // test
   let purchaseOrderRecordId;

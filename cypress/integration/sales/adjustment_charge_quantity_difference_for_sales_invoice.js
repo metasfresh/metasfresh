@@ -37,13 +37,23 @@ describe('Create Adjustment Charge quantity difference (Nachbelastung Mengendiff
   let originalSalesInvoiceTotalAmount;
   let newTotalAmount;
 
-  const newProductQuantity = 50; // must be lower than the original quantity
+  let newProductQuantity; // must be lower than the original quantity
 
   // Sales Invoice
-  const salesInvoiceTargetDocumentType = 'Sales Invoice';
-  const businessPartnerName = 'Test Lieferant 1';
-  const productName = 'Convenience Salat 250g';
-  const originalQuantity = 200;
+  let salesInvoiceTargetDocumentType;
+  let businessPartnerName;
+  let productName;
+  let originalQuantity;
+
+  it('Read the fixture', function() {
+    cy.fixture('sales/adjustment_charge_quantity_difference_for_sales_invoice.json').then(f => {
+      businessPartnerName = f['businessPartnerName'];
+      salesInvoiceTargetDocumentType = f['salesInvoiceTargetDocumentType'];
+      productName = f['productName'];
+      originalQuantity = f['originalQuantity'];
+      newProductQuantity = f['newProductQuantity'];
+    });
+  });
 
   it('Prepare sales invoice', function() {
     new SalesInvoice(businessPartnerName, salesInvoiceTargetDocumentType)

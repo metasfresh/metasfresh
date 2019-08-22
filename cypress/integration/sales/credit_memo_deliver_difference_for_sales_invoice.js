@@ -35,11 +35,25 @@ describe('Create a Credit memo deliver difference for Sales Invoice', function()
   let originalSalesInvoiceTotalAmount;
   let originalSalesInvoiceID;
 
-  const newQuantity = 5; // must be lower than the original amount
+  // const newQuantity = 5; // must be lower than the original amount
+
+  // // Sales Invoice
+  // const salesInvoiceTargetDocumentType = 'Sales Invoice';
+  // let originalQuantity = 20;
+
+  let newQuantity; // must be lower than the original amount
 
   // Sales Invoice
-  const salesInvoiceTargetDocumentType = 'Sales Invoice';
-  let originalQuantity = 20;
+  let salesInvoiceTargetDocumentType;
+  let originalQuantity;
+
+  it('Read the fixture', function() {
+    cy.fixture('sales/credit_memo_deliver_difference_for_sales_invoice.json').then(f => {
+      newQuantity = f['newQuantity'];
+      salesInvoiceTargetDocumentType = f['salesInvoiceTargetDocumentType'];
+      originalQuantity = f['originalQuantity'];
+    });
+  });
 
   it('Prepare sales invoice', function() {
     new SalesInvoice('Test Lieferant 1', salesInvoiceTargetDocumentType)
