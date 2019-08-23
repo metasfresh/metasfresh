@@ -42,7 +42,7 @@ import lombok.Value;
 
 @Value
 @Builder
-final class WebuiASIEditingInfo
+public final class WebuiASIEditingInfo
 {
 	public static WebuiASIEditingInfoBuilder builder(@NonNull ASIEditingInfo info)
 	{
@@ -64,7 +64,7 @@ final class WebuiASIEditingInfo
 				.attributes(info.getAvailableAttributes());
 	}
 
-	public static final WebuiASIEditingInfo readonlyASI(final AttributeSetInstanceId attributeSetInstanceId)
+	public static WebuiASIEditingInfo readonlyASI(final AttributeSetInstanceId attributeSetInstanceId)
 	{
 		final ASIEditingInfo info = ASIEditingInfo.builder()
 				.type(WindowType.StrictASIAttributes)
@@ -75,7 +75,9 @@ final class WebuiASIEditingInfo
 		return builder(info).build();
 	}
 
-	public static final WebuiASIEditingInfo processParameterASI(final AttributeSetInstanceId attributeSetInstanceId, final DocumentPath documentPath)
+	public static WebuiASIEditingInfo processParameterASI(
+			final AttributeSetInstanceId attributeSetInstanceId,
+			final DocumentPath documentPath)
 	{
 		final ASIEditingInfo info = ASIEditingInfo.builder()
 				.type(WindowType.ProcessParameter)

@@ -2,7 +2,6 @@ package de.metas.ui.web.pattribute.json;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -11,10 +10,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
-import lombok.AccessLevel;
-import lombok.Getter;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -48,25 +45,14 @@ public final class JSONCreateASIRequest
 
 	@JsonProperty("source")
 	@JsonInclude(JsonInclude.Include.NON_ABSENT)
-	@Getter(AccessLevel.NONE)
 	private final JSONDocumentPath source;
 
 	@JsonCreator
 	private JSONCreateASIRequest(
 			@JsonProperty("templateId") @Nullable final AttributeSetInstanceId templateId,
-			@JsonProperty("source") @Nullable final JSONDocumentPath source)
+			@JsonProperty("source") @NonNull final JSONDocumentPath source)
 	{
 		this.templateId = templateId != null ? templateId : AttributeSetInstanceId.NONE;
 		this.source = source;
-	}
-
-	public DocumentPath getContextDocumentPath()
-	{
-		if (source == null)
-		{
-			throw new AdempiereException("source is not set for " + this);
-		}
-
-		return source.toSingleDocumentPath();
 	}
 }
