@@ -39,6 +39,7 @@ function applyBillOfMaterial(billOfMaterial) {
   billOfMaterial.lines.forEach(line => {
     applyBillOfMaterialLine(line);
   });
+  cy.expectNumberOfRows(billOfMaterial.lines.length);
 }
 
 function applyBillOfMaterialLine(bomLine) {
