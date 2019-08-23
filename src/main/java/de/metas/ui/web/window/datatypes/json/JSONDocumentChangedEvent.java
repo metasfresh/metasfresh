@@ -15,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -107,11 +108,8 @@ public class JSONDocumentChangedEvent
 
 	public int getValueAsInteger(final int defaultValueIfNull)
 	{
-		if (value == null)
-		{
-			return defaultValueIfNull;
-		}
-		return Integer.parseInt(value.toString());
+		final Integer valueInt = DataTypes.convertToInteger(value);
+		return valueInt != null ? valueInt : defaultValueIfNull;
 	}
 
 	public List<Integer> getValueAsIntegersList()

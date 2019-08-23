@@ -274,7 +274,7 @@ public final class DataTypes
 		}
 	}
 
-	private static Integer convertToInteger(final Object value)
+	public static Integer convertToInteger(final Object value)
 	{
 		if (value == null)
 		{
@@ -302,6 +302,10 @@ public final class DataTypes
 		else if (value instanceof LookupValue)
 		{
 			return ((LookupValue)value).getIdAsInt();
+		}
+		else if (value instanceof JSONLookupValue)
+		{
+			return ((JSONLookupValue)value).getKeyAsInt();
 		}
 		else if (value instanceof Map)
 		{
