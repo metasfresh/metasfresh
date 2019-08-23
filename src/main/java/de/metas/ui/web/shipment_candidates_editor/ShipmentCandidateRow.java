@@ -7,9 +7,15 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.util.ASIEditingInfo;
+import org.adempiere.mm.attributes.util.ASIEditingInfo.WindowType;
 
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.lang.SOTrx;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.ui.web.pattribute.WebuiASIEditingInfo;
+import de.metas.ui.web.pattribute.WebuiASIEditingInfoAware;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
@@ -44,7 +50,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class ShipmentCandidateRow implements IViewRow
+public class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfoAware
 {
 	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.Text, captionKey = "C_OrderSO_ID")
 	private final String salesOrderDocumentNo;
@@ -148,5 +154,22 @@ public class ShipmentCandidateRow implements IViewRow
 		}
 
 		return builder.build();
+	}
+
+	@Override
+	public WebuiASIEditingInfo getWebuiASIEditingInfo(@NonNull final AttributeSetInstanceId asiId)
+	{
+		final ProductId productId = product.getIdAs(ProductId::ofRepoIdOrNull);
+
+		final ASIEditingInfo info = ASIEditingInfo.builder()
+				.type(WindowType.Regular)
+				.productId(productId)
+				.attributeSetInstanceId(asiId)
+				.callerTableName(null)
+				.callerColumnId(-1)
+				.soTrx(SOTrx.SALES)
+				.build();
+
+		return WebuiASIEditingInfo.builder(info).build();
 	}
 }
