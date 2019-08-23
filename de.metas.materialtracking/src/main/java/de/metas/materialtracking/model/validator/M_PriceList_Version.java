@@ -67,7 +67,7 @@ public class M_PriceList_Version
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		final IMaterialTrackingPPOrderDAO materialTrackingPPOrderDAO = Services.get(IMaterialTrackingPPOrderDAO.class);
 
-		final org.compiere.model.I_M_PriceList_Version previousPLV = priceListDAO.retrievePreviousVersionOrNull(plv);
+		final org.compiere.model.I_M_PriceList_Version previousPLV = priceListDAO.retrievePreviousVersionOrNull(plv, true /*TODO: MAKE SURE THIS IS OK> IT WAS LIKE THIS BEFORE*/);
 
 		final ICompositeQueryFilter<I_C_Invoice_Candidate> plvFilter =
 				queryBL.createCompositeQueryFilter(I_C_Invoice_Candidate.class)

@@ -93,7 +93,7 @@ public interface IPriceListDAO extends ISingletonService
 	 * @param processed optional, can be <code>null</code>. Allow to filter by <code>I_M_PriceList.Processed</code>
 	 */
 	I_M_PriceList_Version retrievePriceListVersionOrNull(org.compiere.model.I_M_PriceList priceList, LocalDate date, @Nullable Boolean processed);
-	
+
 	/**
 	 * Retrieves the plv for the given price list and date. Never returns <code>null</code>
 	 *
@@ -129,13 +129,14 @@ public interface IPriceListDAO extends ISingletonService
 	 */
 	I_M_PriceList_Version retrieveNextVersionOrNull(I_M_PriceList_Version plv);
 
-	/**
-	 * Retrieve the price list version that has <code>Processed='Y'</code> and and was valid before before the the given <code>plv</code> .
-	 *
-	 * @param plv
-	 * @return
-	 */
-	I_M_PriceList_Version retrievePreviousVersionOrNull(I_M_PriceList_Version plv);
+	// /**
+	// * Retrieve the price list version that has <code>Processed='Y'</code> and and was valid before before the the given <code>plv</code> .
+	// *
+	// * @param plv
+	// * @return
+	// */
+	// I_M_PriceList_Version retrievePreviousVersionOrNull(I_M_PriceList_Version plv);
+	// TODO CLEAN THIS UP
 
 	/** @return next product price's MatchSeqNo */
 	int retrieveNextMatchSeqNo(final I_M_ProductPrice productPrice);
@@ -183,4 +184,8 @@ public interface IPriceListDAO extends ISingletonService
 	void updateProductPrice(UpdateProductPriceRequest request);
 
 	void deleteProductPricesByIds(Set<ProductPriceId> productPriceIds);
+
+	List<I_M_PriceList_Version> retrieveCustomPLVsForBasePLV(I_M_PriceList_Version basePLV);
+
+	I_M_PriceList_Version retrievePreviousVersionOrNull(I_M_PriceList_Version plv, boolean onlyProcessed);
 }

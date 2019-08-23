@@ -211,7 +211,7 @@ public class PriceListDAO implements IPriceListDAO
 
 		return new PriceListsCollection(pricingSystemId, priceLists);
 	}
-	
+
 	@Override
 	public I_M_PriceList_Version retrievePriceListVersionOrNull(
 			@NonNull final org.compiere.model.I_M_PriceList priceList,
@@ -308,33 +308,40 @@ public class PriceListDAO implements IPriceListDAO
 		final Operator validFromOperator = Operator.GREATER;
 		final boolean orderAscending = true;
 
-		return retrievePreviousOrNext(plv, validFromOperator, orderAscending);
+		return retrievePreviousOrNext(plv, validFromOperator, true /* TODO: MAKE SURE THIS IS OK> IT WAS LIKE THIS BEFORE */, orderAscending);
 	}
 
 	@Override
-	public I_M_PriceList_Version retrievePreviousVersionOrNull(final I_M_PriceList_Version plv)
+	public I_M_PriceList_Version retrievePreviousVersionOrNull(final I_M_PriceList_Version plv, final boolean onlyProcessed /* TODO:DROP IF NOT NEEDED */)
 	{
 		// we want the PLV with the highest ValidFrom that is just less than plv's
 		final Operator validFromOperator = Operator.LESS;
 		final boolean orderAscending = false; // i.e. descending
-		return retrievePreviousOrNext(plv, validFromOperator, orderAscending);
+		return retrievePreviousOrNext(plv, validFromOperator, onlyProcessed, orderAscending);
 	}
 
 	private I_M_PriceList_Version retrievePreviousOrNext(final I_M_PriceList_Version plv,
 			final Operator validFromOperator,
+			final boolean onlyProcessed, // TODO: Make sure it's needed or drop it if not
 			final boolean orderAscending)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList_Version.class, plv)
+		final IQueryBuilder<I_M_PriceList_Version> filter = Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList_Version.class, plv)
 				// active
 				.addOnlyActiveRecordsFilter()
 				// same price list
 				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, plv.getM_PriceList_ID())
-				// same processed value
-				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_Processed, true)
+
 				// valid from must be after the given PLV's validFrom date
-				.addCompareFilter(I_M_PriceList_Version.COLUMNNAME_ValidFrom, validFromOperator, plv.getValidFrom())
-				// by validFrom, ascending.
-				.orderBy()
+				.addCompareFilter(I_M_PriceList_Version.COLUMNNAME_ValidFrom, validFromOperator, plv.getValidFrom());
+
+		if (onlyProcessed)
+		{
+			filter// same processed value
+					.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_Processed, onlyProcessed);
+		}
+
+		// by validFrom, ascending.
+		return filter.orderBy()
 				.addColumn(I_M_PriceList_Version.COLUMNNAME_ValidFrom, orderAscending)
 				.endOrderBy()
 				.create()
@@ -510,7 +517,7 @@ public class PriceListDAO implements IPriceListDAO
 		save(plv);
 
 		// now set the previous one as base list
-		final I_M_PriceList_Version previousPlv = Services.get(IPriceListDAO.class).retrievePreviousVersionOrNull(plv);
+		final I_M_PriceList_Version previousPlv = Services.get(IPriceListDAO.class).retrievePreviousVersionOrNull(plv, true /* TODO CHECKIF THIS IS OK> IT WAS LIKE THIS BEFORE */);
 		if (previousPlv != null)
 		{
 			plv.setM_Pricelist_Version_Base(previousPlv);
@@ -627,5 +634,17 @@ public class PriceListDAO implements IPriceListDAO
 				.addInArrayFilter(I_M_ProductPrice.COLUMN_M_ProductPrice_ID, productPriceIds)
 				.create()
 				.delete();
+	}
+
+	@Override
+	public List<I_M_PriceList_Version> retrieveCustomPLVsForBasePLV(@NonNull final I_M_PriceList_Version basePLV)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList_Version.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_Pricelist_Version_Base_ID, basePLV.getM_PriceList_Version_ID())
+				.addNotEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, basePLV.getM_PriceList_ID())
+				.create()
+				.list();
 	}
 }
