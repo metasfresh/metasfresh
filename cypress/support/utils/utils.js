@@ -73,7 +73,10 @@ const humanReadableNow = () => {
 };
 
 let date;
-const appendHumanReadableNow = str => {
+const appendHumanReadableNow = (str, dateOverride) => {
+  if(dateOverride) {
+    date = dateOverride;
+  }
   if (!date) {
     date = humanReadableNow();
   }
