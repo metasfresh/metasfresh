@@ -187,6 +187,12 @@ __Dropzone__
 
 Class based component (`components/`). The DropzoneWrapper allows the user to drag&drop files onto the UI. These files are then uploaded to metasfresh backend.
 
+__EntryTable__
+
+Class based component (`components/table/`).
+- MasterWidget
+- WidgetTooltip
+
 __DocList__
   - Container
   - DocumentList
