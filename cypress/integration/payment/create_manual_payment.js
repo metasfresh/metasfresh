@@ -5,35 +5,54 @@ import { SalesInvoice, SalesInvoiceLine } from '../../support/utils/sales_invoic
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { Bank } from '../../support/utils/bank';
 import { Builder } from '../../support/utils/builder';
-import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
+import { getLanguageSpecific, appendHumanReadableNow } from '../../support/utils/utils';
 
 describe('Create a manual Payment for a Sales Invoice', function() {
-  const date = humanReadableNow();
-
-  const salesInvoiceTargetDocumentType = 'Sales Invoice';
+  let salesInvoiceTargetDocumentType;
   let salesInvoiceNumber;
-  let salesInvoiceTotalAmount = 0;
-  let salesInvoiceID = 0;
+  let salesInvoiceTotalAmount;
+  let salesInvoiceID;
 
-  const paymentDocumentType = 'Zahlungseingang';
-  let paymentTotalAmount = 0; // may be different from salesInvoiceTotalAmount because there could be some discounts
+  let paymentDocumentType;
+  let paymentTotalAmount; // may be different from salesInvoiceTotalAmount because there could be some discounts
 
   // data for "before" section
   // priceList
-  const priceSystemName = `PriceSystem ${date}`;
-  const priceListName = `PriceList ${date}`;
-  const priceListVersionName = `PriceListVersion ${date}`;
+  let priceSystemName;
+  let priceListName;
+  let priceListVersionName;
 
   // product
-  const productCategoryName = `ProductCategory ${date}`;
-  const productCategoryValue = productCategoryName;
-  const productName = `Product ${date}`;
-  const productValue = productName;
-  const productType = 'Service';
+  let productCategoryName;
+  let productCategoryValue = productCategoryName;
+  let productName;
+  let productValue;
+  let productType;
 
   // BPartner
-  const discountSchemaName = `DiscountSchema ${date}`;
-  const bPartnerName = `BPartner ${date}`;
+  let discountSchemaName;
+  let bPartnerName;
+
+  it('Read the fixture', function() {
+    cy.fixture('payment/create_manual_payment.json').then(f => {
+      salesInvoiceTargetDocumentType = f['salesInvoiceTargetDocumentType'];
+      salesInvoiceTotalAmount = f['salesInvoiceTotalAmount'];
+      salesInvoiceID = f['salesInvoiceID'];
+
+      paymentDocumentType = f['paymentDocumentType'];
+      paymentTotalAmount = f['paymentTotalAmount'];
+      priceSystemName = appendHumanReadableNow(f['priceSystemName']);
+      priceListName = appendHumanReadableNow(f['priceListName']);
+      priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
+      productCategoryName = appendHumanReadableNow(f['productCategoryName']);
+      productCategoryValue = productCategoryName;
+      productName = appendHumanReadableNow(f['productName']);
+      productValue = productName;
+      productType = f['productType'];
+      discountSchemaName = appendHumanReadableNow(f['discountSchemaName']);
+      bPartnerName = appendHumanReadableNow(f['bPartnerName']);
+    });
+  });
 
   it('Prepare product and pricing', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);

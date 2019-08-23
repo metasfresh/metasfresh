@@ -23,7 +23,7 @@
 /// <reference types="Cypress" />
 
 import { SalesInvoice, SalesInvoiceLine } from '../../support/utils/sales_invoice';
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 import { DocumentStatusKey } from '../../support/utils/constants';
 import { BPartner } from '../../support/utils/bpartner';
 import { DunningCandidates } from '../../page_objects/dunning_candidates';
@@ -31,24 +31,29 @@ import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters }
 import { DunningType } from '../../support/utils/dunning_type';
 
 describe('Create Dunning Candidates', function() {
-  // human readable date with millis!
-  const date = humanReadableNow();
-
-  const dunningTypeName = `Dunning ${date}`;
-  // const dunningTypeName = `Dunning 2019-07-05T10:09:30.514Z`;
-
-  const businessPartnerName = `Customer Dunning ${date}`;
-  const paymentTerm = 'immediately';
-
-  const salesInvoiceTargetDocumentType = 'Sales Invoice';
-  const productName = 'Convenience Salat 250g';
-  const originalQuantity = 200;
+  let dunningTypeName;
+  let businessPartnerName;
+  let paymentTerm;
+  let salesInvoiceTargetDocumentType;
+  let productName;
+  let originalQuantity;
 
   // Test data
   let siDocumentNumber;
   let siCurrency;
   let siDueDate;
   let siTotalAmount;
+
+  it('Read the fixture', function() {
+    cy.fixture('dunning/create_dunning_candidates.json').then(f => {
+      businessPartnerName = appendHumanReadableNow(f['businessPartnerName']);
+      productName = f['productName'];
+      originalQuantity = f['originalQuantity'];
+      dunningTypeName = appendHumanReadableNow(f['dunningTypeName']);
+      paymentTerm = f['paymentTerm'];
+      salesInvoiceTargetDocumentType = f['salesInvoiceTargetDocumentType'];
+    });
+  });
 
   it('Prepare dunning type', function() {
     cy.fixture('settings/dunning_type.json').then(dunningType => {

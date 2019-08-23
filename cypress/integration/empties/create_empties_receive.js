@@ -20,27 +20,38 @@
  * #L%
  */
 
-import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
-import { DocumentActionKey, DocumentStatusKey } from '../../support/utils/constants';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 import { Builder } from '../../support/utils/builder';
 import { PackingMaterial } from '../../support/utils/packing_material';
 
 describe('Create Empties Receive', function() {
-  // empties receive
-  const businessPartnerName = 'Test Lieferant 1';
-  const productQuantity = 222;
-  const documentType = 'Leergutrücknahme';
+  let businessPartnerName;
+  let productQuantity;
+  let documentType;
 
-  // priceList
-  const date = humanReadableNow();
-  const priceSystemName = `PriceSystem ${date}`;
-  const priceListName = `PriceList ${date}`;
-  const priceListVersionName = `PriceListVersion ${date}`;
+  let priceSystemName;
+  let priceListName;
+  let priceListVersionName;
 
-  // product
-  const productCategory = `ProductCategory ${date}`;
-  const productName = `Product ${date}`;
-  const productType = 'Item';
+  let productCategory;
+  let productName;
+  let productType;
+
+  it('Read the fixture', function() {
+    cy.fixture('empties/create_empties_receive.json').then(f => {
+      businessPartnerName = f['businessPartnerName'];
+      productQuantity = f['productQuantity'];
+      documentType = f['documentType'];
+
+      priceSystemName = appendHumanReadableNow(f['priceSystemName']);
+      priceListName = appendHumanReadableNow(f['priceListName']);
+      priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
+
+      productCategory = appendHumanReadableNow(f['productCategory']);
+      productName = appendHumanReadableNow(f['productName']);
+      productType = f['productType'];
+    });
+  });
 
   describe('Create Packing Material', function() {
     it('Create Price and Product', function() {
@@ -78,13 +89,7 @@ describe('Create Empties Receive', function() {
       cy.writeIntoLookupListField('M_HU_PackingMaterial_ID', productName, productName);
       cy.writeIntoStringField('Qty', productQuantity, false, null, true);
       cy.closeBatchEntry();
-
-      cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-        cy.processDocument(
-          getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
-          getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
-        );
-      });
+      cy.completeDocument();
     });
   });
 });
