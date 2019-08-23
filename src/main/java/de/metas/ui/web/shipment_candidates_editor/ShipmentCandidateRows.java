@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.UnaryOperator;
 
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import com.google.common.collect.ImmutableList;
@@ -105,9 +104,9 @@ final class ShipmentCandidateRows implements IEditableRowsData<ShipmentCandidate
 			{
 				builder.qtyToDeliver(fieldChangeRequest.getValueAsBigDecimal());
 			}
-			else if (ShipmentCandidateRow.FIELD_asiId.equals(fieldName))
+			else if (ShipmentCandidateRow.FIELD_asi.equals(fieldName))
 			{
-				builder.asiId(fieldChangeRequest.getValueAsId(AttributeSetInstanceId::ofRepoIdOrNone));
+				builder.asi(fieldChangeRequest.getValueAsIntegerLookupValue());
 			}
 		}
 

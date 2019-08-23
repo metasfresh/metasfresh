@@ -4,8 +4,7 @@ import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-
+import de.metas.ui.web.window.datatypes.LookupValue;
 import lombok.Builder;
 import lombok.Value;
 
@@ -39,5 +38,5 @@ public class ShipmentCandidateRowUserChangeRequest
 	BigDecimal qtyToDeliver;
 
 	@Nullable
-	AttributeSetInstanceId asiId;
+	LookupValue asi;
 }

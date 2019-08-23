@@ -52,8 +52,8 @@ import lombok.NonNull;
 
 public class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfoAware
 {
-	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.Text, captionKey = "C_OrderSO_ID")
-	private final String salesOrderDocumentNo;
+	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "C_OrderSO_ID")
+	private final LookupValue salesOrder;
 
 	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "C_BPartner_Customer_ID")
 	private final LookupValue customer;
@@ -61,7 +61,7 @@ public class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfoAware
 	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Warehouse_ID")
 	private final LookupValue warehouse;
 
-	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Text, captionKey = "M_Product_ID")
+	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Product_ID")
 	private final LookupValue product;
 
 	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.ZonedDateTime, captionKey = "PreparationDate")
@@ -71,9 +71,9 @@ public class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfoAware
 	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Quantity, fieldName = FIELD_qtyToDeliver, captionKey = "QtyToDeliver", editor = ViewEditorRenderMode.ALWAYS)
 	private final BigDecimal qtyToDeliver;
 
-	public static final String FIELD_asiId = "asiId";
-	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.ProductAttributes, fieldName = FIELD_asiId, captionKey = "M_AttributeSetInstance_ID", editor = ViewEditorRenderMode.ALWAYS)
-	private final AttributeSetInstanceId asiId;
+	public static final String FIELD_asi = "asi";
+	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.ProductAttributes, fieldName = FIELD_asi, captionKey = "M_AttributeSetInstance_ID", editor = ViewEditorRenderMode.ALWAYS)
+	private final LookupValue asi;
 
 	private final ShipmentScheduleId shipmentScheduleId;
 	private final DocumentId rowId;
@@ -84,23 +84,23 @@ public class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfoAware
 	@Builder(toBuilder = true)
 	private ShipmentCandidateRow(
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
-			@Nullable final String salesOrderDocumentNo,
+			@Nullable final LookupValue salesOrder,
 			@NonNull final LookupValue customer,
 			@NonNull final LookupValue warehouse,
 			@NonNull final LookupValue product,
 			@NonNull final ZonedDateTime preparationDate,
 			@NonNull final Quantity qtyToDeliverInitial,
 			@NonNull final BigDecimal qtyToDeliver,
-			@NonNull final AttributeSetInstanceId asiId)
+			@NonNull final LookupValue asi)
 	{
-		this.salesOrderDocumentNo = salesOrderDocumentNo;
+		this.salesOrder = salesOrder;
 		this.customer = customer;
 		this.warehouse = warehouse;
 		this.product = product;
 		this.preparationDate = preparationDate;
 		this.qtyToDeliverInitial = qtyToDeliverInitial;
 		this.qtyToDeliver = qtyToDeliver;
-		this.asiId = asiId;
+		this.asi = asi;
 
 		this.shipmentScheduleId = shipmentScheduleId;
 		rowId = DocumentId.of(shipmentScheduleId);
@@ -148,9 +148,9 @@ public class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfoAware
 		{
 			builder.qtyToDeliver(userChanges.getQtyToDeliver());
 		}
-		else if (userChanges.getAsiId() != null)
+		else if (userChanges.getAsi() != null)
 		{
-			builder.asiId(userChanges.getAsiId());
+			builder.asi(userChanges.getAsi());
 		}
 
 		return builder.build();
