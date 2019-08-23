@@ -20,8 +20,6 @@ export class ProductProcurementContracts {
 function applyProduct(product) {
   describe(`Create new ProductProcurementContracts ${product.name}`, function() {
     cy.visitWindow('540288', 'NEW');
-    cy.get('#lookup_M_Product_ID input')
-      .type(product.name)
-      .type('\n');
+    cy.writeIntoLookupListField('M_Product_ID', product.name, product.name, false, false, null, true);
   });
 }

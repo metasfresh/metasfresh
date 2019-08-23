@@ -22,16 +22,15 @@
 
 /// <reference types="Cypress" />
 
-
-import {SalesInvoice, SalesInvoiceLine} from "../../support/utils/sales_invoice";
-import {getLanguageSpecific, humanReadableNow} from "../../support/utils/utils";
-import {DocumentActionKey, DocumentStatusKey} from "../../support/utils/constants";
-import {BPartner} from "../../support/utils/bpartner";
-import {DunningCandidates} from "../../page_objects/dunning_candidates";
-import {applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters} from "../../support/functions";
-import {DunningType} from "../../support/utils/dunning_type";
-import {DunningDocuments} from "../../page_objects/dunning_documents";
-import {salesInvoices} from "../../page_objects/sales_invoices";
+import { SalesInvoice, SalesInvoiceLine } from '../../support/utils/sales_invoice';
+import { humanReadableNow } from '../../support/utils/utils';
+import { DocumentStatusKey } from '../../support/utils/constants';
+import { BPartner } from '../../support/utils/bpartner';
+import { DunningCandidates } from '../../page_objects/dunning_candidates';
+import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
+import { DunningType } from '../../support/utils/dunning_type';
+import { DunningDocuments } from '../../page_objects/dunning_documents';
+import { salesInvoices } from '../../page_objects/sales_invoices';
 
 describe('Create Dunning Documents', function() {
   // human readable date with millis!
@@ -46,15 +45,12 @@ describe('Create Dunning Documents', function() {
   const productName = 'Convenience Salat 250g';
   const originalQuantity = 200;
 
-
   // Test data
   let siDocumentNumber;
   let siCurrency;
   let siRecordId;
 
-
   it('Prepare dunning type', function() {
-
     cy.fixture('settings/dunning_type.json').then(dunningType => {
       Object.assign(new DunningType(), dunningType)
         .setName(dunningTypeName)
@@ -65,25 +61,20 @@ describe('Create Dunning Documents', function() {
   it('Prepare customer bpartner (via api)', function() {
     cy.fixture('sales/simple_customer.json').then(customerJson => {
       const bpartner = new BPartner({ ...customerJson, name: businessPartnerName })
-        .setCustomer(true)
         .setDunning(dunningTypeName)
-        .setPaymentTerm(paymentTerm)
-        .setBank(undefined);
+        .setPaymentTerm(paymentTerm);
 
       bpartner.apply();
     });
   });
 
   it('Prepare sales invoice', function() {
-    cy.fixture('sales/sales_invoice.json').then((salesInvoiceJson) => {
+    cy.fixture('sales/sales_invoice.json').then(salesInvoiceJson => {
       new SalesInvoice(businessPartnerName, salesInvoiceTargetDocumentType)
-        .addLine(
-          new SalesInvoiceLine().setProduct(productName).setQuantity(originalQuantity)
-        )
-        .setDocumentAction(getLanguageSpecific(salesInvoiceJson, DocumentActionKey.Complete))
-        .setDocumentStatus(getLanguageSpecific(salesInvoiceJson, DocumentStatusKey.Completed))
+        .addLine(new SalesInvoiceLine().setProduct(productName).setQuantity(originalQuantity))
         .apply();
     });
+    cy.completeDocument();
   });
 
   it('Sales Invoice is Completed', function() {
@@ -119,14 +110,12 @@ describe('Create Dunning Documents', function() {
     cy.pressStartButton();
   });
 
-
   it('Ensure there are exactly 2 Dunning Candidates', function() {
     DunningCandidates.visit();
     filterBySalesInvoiceNumber(siDocumentNumber);
 
     DunningCandidates.getRows().should('have.length', 2);
   });
-
 
   it('Create Dunning Documents', function() {
     DunningCandidates.selectAllVisibleRows();
@@ -153,12 +142,13 @@ describe('Create Dunning Documents', function() {
     });
   });
 
-
   function checkDunningDocument(dunningLevel) {
     describe(`Open Dunning document ${dunningLevel} via reference from Sales Invoice`, function() {
       cy.visitWindow(salesInvoices.windowId, siRecordId);
       cy.openReferencedDocuments('C_Invoice-C_DunningDoc');
-      DunningDocuments.getRows().contains('td', dunningLevel, { log: true }).dblclick();
+      DunningDocuments.getRows()
+        .contains('td', dunningLevel, { log: true })
+        .dblclick();
     });
 
     describe('Do the checks', function() {
@@ -186,7 +176,6 @@ describe('Create Dunning Documents', function() {
     });
   }
 
-
   function filterBySalesInvoiceNumber(siDocNumber) {
     // cy.wait(1000); // if it's past 01.08.2019 and the test won't fail because this sleep is missing, then we can delete this line
     toggleNotFrequentFilters();
@@ -195,7 +184,3 @@ describe('Create Dunning Documents', function() {
     applyFilters();
   }
 });
-
-
-
-

@@ -76,13 +76,12 @@ describe('Create Purchase order - complete - change - complete', function() {
     );
   });
   it('Create vendor', function() {
-    new BPartner({ name: vendorName })
-      .setVendor(true)
-      .setVendorPricingSystem(priceSystemName)
-      .setVendorDiscountSchema(discountSchemaName)
-      .setPaymentTerm('30 days net')
-      .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
-      .apply();
+    cy.fixture('sales/simple_vendor.json').then(vendorJson => {
+      new BPartner({ ...vendorJson, name: vendorName })
+        .setVendorPricingSystem(priceSystemName)
+        .setVendorDiscountSchema(discountSchemaName)
+        .apply();
+    });
     cy.readAllNotifications();
   });
   it('Create a purchase order and complete it', function() {

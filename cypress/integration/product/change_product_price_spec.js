@@ -46,12 +46,12 @@ describe('Change Product Price', function() {
   });
 
   it('Create Business Partner', function() {
-    new BPartner({ name: bpName })
-      .setCustomer(true)
-      .setPaymentTerm('Immediatlely')
-      .setCustomerPricingSystem(`Testpreisliste Kunden`)
-      .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
-      .apply();
+    cy.fixture('sales/simple_customer.json').then(customerJson => {
+      new BPartner({ ...customerJson, name: bpName })
+        .setPaymentTerm('Immediatlely')
+        .setCustomerPricingSystem(`Testpreisliste Kunden`)
+        .apply();
+    });
   });
 
   it('Create a Sales Order', function() {
