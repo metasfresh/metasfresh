@@ -45,15 +45,17 @@ function applyBillOfMaterialLine(bomLine) {
   cy.selectTab('PP_Product_BOMLine');
   cy.pressAddNewButton();
 
+  if (bomLine.issueMethod) {
+    cy.resetListValue('IssueMethod');
+    cy.selectInListField('IssueMethod', bomLine.issueMethod, true);
+  }
   cy.writeIntoLookupListField('M_Product_ID', bomLine.product, bomLine.product, false, true);
-
   if (bomLine.quantity) {
     cy.writeIntoStringField('QtyBOM', bomLine.quantity, true);
   }
   if (bomLine.scrap) {
     cy.writeIntoStringField('Scrap', bomLine.scrap, true);
   }
-
   cy.pressDoneButton();
 }
 
@@ -73,6 +75,12 @@ export class BillOfMaterialLine {
   setScrap(scrap) {
     cy.log(`BillOfMaterialLine - set scrap = ${scrap}`);
     this.scrap = scrap;
+    return this;
+  }
+
+  setIssueMethod(issueMethod) {
+    cy.log(`BillOfMaterialLine - set issueMethod = ${issueMethod}`);
+    this.issueMethod = issueMethod;
     return this;
   }
 }
