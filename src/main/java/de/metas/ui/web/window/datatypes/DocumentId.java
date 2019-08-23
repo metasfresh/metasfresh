@@ -170,16 +170,13 @@ public abstract class DocumentId implements Serializable
 		}
 	}
 
-	public static final Supplier<DocumentId> supplier(final IntSupplier intSupplier)
+	public static final Supplier<DocumentId> supplier(@NonNull final IntSupplier intSupplier)
 	{
-		Check.assumeNotNull(intSupplier, "Parameter intSupplier is not null");
 		return () -> of(intSupplier.getAsInt());
 	}
 
-	public static final Supplier<DocumentId> supplier(final String prefix, final int firstId)
+	public static final Supplier<DocumentId> supplier(@NonNull final String prefix, final int firstId)
 	{
-		Check.assumeNotNull(prefix, "Parameter prefix is not null");
-
 		final AtomicInteger nextId = new AtomicInteger(firstId);
 		return () -> ofString(prefix + nextId.getAndIncrement());
 	}
@@ -283,7 +280,7 @@ public abstract class DocumentId implements Serializable
 			throw exceptionSupplier.get();
 		}
 	}
-	
+
 	public <T extends RepoIdAware> T toId(@NonNull final IntFunction<T> mapper)
 	{
 		return mapper.apply(toInt());
