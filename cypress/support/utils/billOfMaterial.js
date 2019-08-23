@@ -16,6 +16,12 @@ export class BillOfMaterial {
     return this;
   }
 
+  setIsVerified(isVerified) {
+    cy.log(`BillOfMaterial - set isVerified = ${isVerified}`);
+    this.isVerified = isVerified;
+    return this;
+  }
+
   addLine(bomLine) {
     cy.log(`BillOfMaterial - add BOMLine = ${JSON.stringify(bomLine)}`);
     this.lines.push(bomLine);
@@ -40,6 +46,11 @@ function applyBillOfMaterial(billOfMaterial) {
     applyBillOfMaterialLine(line);
   });
   cy.expectNumberOfRows(billOfMaterial.lines.length);
+
+  if (billOfMaterial.isVerified) {
+    cy.executeHeaderActionWithDialog('PP_Product_BOM');
+    cy.pressStartButton();
+  }
 }
 
 function applyBillOfMaterialLine(bomLine) {

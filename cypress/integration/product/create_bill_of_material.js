@@ -52,14 +52,12 @@ describe('Create Product and BOM', function() {
         .setProduct(productName)
         // eslint-disable-next-line
         .addLine(new BillOfMaterialLine().setProduct(productComponentName).setQuantity(555).setScrap(3333))
+        .setIsVerified(true)
         .apply();
     });
   });
 
   it('Verify the new BOM', function() {
-    cy.executeHeaderActionWithDialog('PP_Product_BOM');
-    cy.pressStartButton();
-
     cy.visitWindow('140', mainProductId);
     cy.expectCheckboxValue('IsBOM', true);
     cy.expectCheckboxValue('IsVerified', true);
