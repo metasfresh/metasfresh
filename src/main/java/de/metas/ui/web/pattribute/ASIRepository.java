@@ -3,11 +3,11 @@ package de.metas.ui.web.pattribute;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
@@ -53,6 +53,8 @@ public class ASIRepository
 {
 	// services
 	private static final Logger logger = LogManager.getLogger(ASIRepository.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final ASIDescriptorFactory descriptorsFactory;
 
 	private final Supplier<DocumentId> nextASIDocId = DocumentId.supplier("N", 1);
@@ -83,7 +85,7 @@ public class ASIRepository
 		final AttributeSetInstanceId templateAsiId = info.getAttributeSetInstanceId();
 		if (templateAsiId.isRegular())
 		{
-			for (final I_M_AttributeInstance fromAI : Services.get(IAttributeDAO.class).retrieveAttributeInstances(templateAsiId))
+			for (final I_M_AttributeInstance fromAI : attributesRepo.retrieveAttributeInstances(templateAsiId))
 			{
 				loadASIDocumentField(asiDocData, fromAI);
 			}
@@ -130,7 +132,7 @@ public class ASIRepository
 		//
 		// If we have a template ASI, populate the ASI document from it
 		final AttributeSetInstanceId templateAsiId = info.getAttributeSetInstanceId();
-		for (final I_M_AttributeInstance fromAI : Services.get(IAttributeDAO.class).retrieveAttributeInstances(templateAsiId))
+		for (final I_M_AttributeInstance fromAI : attributesRepo.retrieveAttributeInstances(templateAsiId))
 		{
 			loadASIDocumentField(asiDocData, fromAI);
 		}
@@ -198,18 +200,16 @@ public class ASIRepository
 
 			final R result = processor.apply(asiDoc);
 
-			Services.get(ITrxManager.class)
-					.getCurrentTrxListenerManagerOrAutoCommit()
-					.newEventListener(TrxEventTiming.AFTER_COMMIT)
-					.registerHandlingMethod(trx -> commit(asiDoc));
+			trxManager.runAfterCommit(() -> commit(asiDoc));
 
 			return result;
 		}
 	}
 
-	private static void loadASIDocumentField(final Document asiDoc, final I_M_AttributeInstance fromAI)
+	private void loadASIDocumentField(final Document asiDoc, final I_M_AttributeInstance fromAI)
 	{
-		final String fieldName = fromAI.getM_Attribute().getValue();
+		final I_M_Attribute attribute = attributesRepo.getAttributeById(fromAI.getM_Attribute_ID());
+		final String fieldName = attribute.getValue();
 		final IDocumentFieldView field = asiDoc.getFieldViewOrNull(fieldName);
 
 		// Skip loading the attribute instance if it's no longer exist.
