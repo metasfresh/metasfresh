@@ -193,20 +193,16 @@ Class based component (`components/table/`).
 - MasterWidget
 - WidgetTooltip
 
-__DocList__
+__MasterWidget__
+
+Class based component (`components/widget/`).
+- RawWidget
+
+---
+
+- DocList
   - Container
   - DocumentList
----
-- Container
-  - Header
-  - Modal
-  - RawModal
-  - ErrorScreen
-  - PluginModalComponent
-- Window
-  - Widget
-  - Tabs
----
 - Header
   - Subheader
   - Sidelist
