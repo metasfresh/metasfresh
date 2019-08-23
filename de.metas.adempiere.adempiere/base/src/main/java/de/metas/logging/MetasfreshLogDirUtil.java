@@ -1,10 +1,6 @@
 package de.metas.logging;
 
-import static org.compiere.util.Util.coalesceSuppliers;
 
-import org.compiere.util.Ini;
-
-import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -27,6 +23,11 @@ import lombok.experimental.UtilityClass;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
+
+import org.compiere.util.Ini;
+
+import lombok.experimental.UtilityClass;
 
 
 @UtilityClass

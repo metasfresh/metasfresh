@@ -31,7 +31,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Util;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -39,6 +38,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.product.ProductId;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -97,7 +97,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	@Override
 	public Timestamp getDatePromised_Effective(@NonNull final I_C_OLCand olCand)
 	{
-		return Util.coalesceSuppliers(
+		return CoalesceUtil.coalesceSuppliers(
 				() -> olCand.getDatePromised_Override(),
 				() -> olCand.getDatePromised(),
 				() -> SystemTime.asDayTimestamp());

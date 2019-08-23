@@ -14,7 +14,6 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import de.metas.adempiere.service.IWarehouseDAO;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
@@ -22,6 +21,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /*
@@ -70,7 +70,7 @@ public class ReceiptLineFindForwardToLocatorTool
 			return LocatorId.ofRecordOrNull(locatorForIssues);
 		}
 
-		final LocatorId effectiveLocatorToId = Util.coalesceSuppliers(
+		final LocatorId effectiveLocatorToId = CoalesceUtil.coalesceSuppliers(
 				() -> locatorToId,
 				() -> ReceiptLineFindForwardToLocatorTool.findDestinationLocatorOrNull(receiptLine));
 
