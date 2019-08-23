@@ -143,18 +143,25 @@ Class based component (`components/app/`). The DocumentList component shows all 
 
 __ErrorScreen__
 
-Class based component (`components/app`). This view is shown when the connection to the backend is lost or other connection issues appear.
+Class based component (`components/app/`). This view is shown when the connection to the backend is lost or other connection issues appear.
 
 __Modal__
 
-Class based component (`components/app`). This is an overlay view that can be opened over the main view.
+Class based component (`components/app/`). This is an overlay view that can be opened over the main view.
 - ChangeLogModal
+- Indicator
+- ModalContextShortcuts
+- OverlayField
 - Process
+- Tooltips
 - Window
+
+__RawModal__
+
+Class based component (`components/app/`).
+- Indicator
 - ModalContextShortcuts
 - Tooltips
-- Indicator
-- OverlayField
 
 __DocList__
   - Container
