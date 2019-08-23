@@ -92,17 +92,26 @@ __SelectionAttributes__ - It is a panel that might contain __Widgets__ and it is
 
 ### Schema
 __MasterWindow__
+
+Class based component.
 - BlankPage
 - Container
 - Overlay
 - Window
 
 __Container__
+
+Class based component.
 - DocumentList
 - ErrorScreen
 - Modal
 - RawModal
 - Header
+
+__BlankPage__
+
+Class based component. Returns the 404 with a reason in case the url was not found.
+
 
 __DocList__
   - Container
