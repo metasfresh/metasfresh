@@ -4,6 +4,7 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Set;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_Order;
@@ -88,6 +89,9 @@ final class ShipmentCandidateRowsRepository
 
 	private ShipmentCandidateRow toShipmentCandidateRow(@NonNull final I_M_ShipmentSchedule record)
 	{
+		final Quantity qtyToDeliver = extractQtyToDeliver(record);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
+
 		return ShipmentCandidateRow.builder()
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
 				.salesOrderDocumentNo(extractSalesOrderDocumentNo(record))
@@ -95,7 +99,9 @@ final class ShipmentCandidateRowsRepository
 				.warehouse(extractWarehouse(record))
 				.product(extractProduct(record))
 				.preparationDate(extractPreparationTime(record))
-				.qtyToDeliver(extractQtyToDeliver(record))
+				.qtyToDeliverInitial(qtyToDeliver)
+				.qtyToDeliver(qtyToDeliver.getAsBigDecimal())
+				.asiId(asiId)
 				.build();
 	}
 

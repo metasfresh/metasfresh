@@ -5,8 +5,10 @@ import javax.annotation.Nullable;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.AbstractCustomView;
+import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -32,7 +34,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public final class ShipmentCandidatesView extends AbstractCustomView<ShipmentCandidateRow>
+public final class ShipmentCandidatesView extends AbstractCustomView<ShipmentCandidateRow> implements IEditableView
 {
 	@Builder
 	private ShipmentCandidatesView(
@@ -47,5 +49,19 @@ public final class ShipmentCandidatesView extends AbstractCustomView<ShipmentCan
 	public String getTableNameOrNull(final DocumentId documentId)
 	{
 		return null;
+	}
+
+	@Override
+	public LookupValuesList getFieldTypeahead(final RowEditingContext ctx, final String fieldName, final String query)
+	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public LookupValuesList getFieldDropdown(final RowEditingContext ctx, final String fieldName)
+	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
 	}
 }

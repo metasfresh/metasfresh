@@ -2,16 +2,24 @@ package de.metas.ui.web.shipment_candidates_editor;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.UnaryOperator;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
-import de.metas.ui.web.view.AbstractCustomView.IRowsData;
+import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.shipment_candidates_editor.ShipmentCandidateRowUserChangeRequest.ShipmentCandidateRowUserChangeRequestBuilder;
+import de.metas.ui.web.view.AbstractCustomView.IEditableRowsData;
+import de.metas.ui.web.view.IEditableView.RowEditingContext;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -25,38 +33,46 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-final class ShipmentCandidateRows implements IRowsData<ShipmentCandidateRow>
+final class ShipmentCandidateRows implements IEditableRowsData<ShipmentCandidateRow>
 {
-	private final ImmutableMap<DocumentId, ShipmentCandidateRow> rowsById;
+	private final ImmutableList<DocumentId> rowIds; // used to preserve the order
+	private final ConcurrentHashMap<DocumentId, ShipmentCandidateRow> rowsById;
 
 	@Builder
 	private ShipmentCandidateRows(
 			@NonNull final List<ShipmentCandidateRow> rows)
 	{
 		Check.assumeNotEmpty(rows, "rows is not empty");
-		rowsById = Maps.uniqueIndex(rows, ShipmentCandidateRow::getId);
+
+		this.rowIds = rows.stream()
+				.map(ShipmentCandidateRow::getId)
+				.collect(ImmutableList.toImmutableList());
+
+		rowsById = new ConcurrentHashMap<>(Maps.uniqueIndex(rows, ShipmentCandidateRow::getId));
 	}
 
 	@Override
 	public Map<DocumentId, ShipmentCandidateRow> getDocumentId2TopLevelRows()
 	{
-		return rowsById;
+		return rowIds.stream()
+				.map(rowsById::get)
+				.collect(GuavaCollectors.toImmutableMapByKey(ShipmentCandidateRow::getId));
 	}
 
 	@Override
-	public DocumentIdsSelection getDocumentIdsToInvalidate(TableRecordReferenceSet recordRefs)
+	public DocumentIdsSelection getDocumentIdsToInvalidate(final TableRecordReferenceSet recordRefs)
 	{
 		// TODO Auto-generated method stub
 		return DocumentIdsSelection.EMPTY;
@@ -66,6 +82,55 @@ final class ShipmentCandidateRows implements IRowsData<ShipmentCandidateRow>
 	public void invalidateAll()
 	{
 		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void patchRow(
+			final RowEditingContext ctx,
+			final List<JSONDocumentChangedEvent> fieldChangeRequests)
+	{
+		final ShipmentCandidateRowUserChangeRequest userChanges = toUserChangeRequest(fieldChangeRequests);
+		changeRow(ctx.getRowId(), row -> row.withChanges(userChanges));
+	}
+
+	private static ShipmentCandidateRowUserChangeRequest toUserChangeRequest(@NonNull final List<JSONDocumentChangedEvent> fieldChangeRequests)
+	{
+		Check.assumeNotEmpty(fieldChangeRequests, "fieldChangeRequests is not empty");
+
+		final ShipmentCandidateRowUserChangeRequestBuilder builder = ShipmentCandidateRowUserChangeRequest.builder();
+		for (final JSONDocumentChangedEvent fieldChangeRequest : fieldChangeRequests)
+		{
+			final String fieldName = fieldChangeRequest.getPath();
+			if (ShipmentCandidateRow.FIELD_qtyToDeliver.equals(fieldName))
+			{
+				builder.qtyToDeliver(fieldChangeRequest.getValueAsBigDecimal());
+			}
+			else if (ShipmentCandidateRow.FIELD_asiId.equals(fieldName))
+			{
+				builder.asiId(fieldChangeRequest.getValueAsId(AttributeSetInstanceId::ofRepoIdOrNone));
+			}
+		}
+
+		return builder.build();
+	}
+
+	private void changeRow(
+			@NonNull final DocumentId rowId,
+			@NonNull final UnaryOperator<ShipmentCandidateRow> mapper)
+	{
+		if (!rowIds.contains(rowId))
+		{
+			throw new EntityNotFoundException(rowId.toJson());
+		}
+
+		rowsById.compute(rowId, (key, oldRow) -> {
+			if (oldRow == null)
+			{
+				throw new EntityNotFoundException(rowId.toJson());
+			}
+
+			return mapper.apply(oldRow);
+		});
 	}
 
 }

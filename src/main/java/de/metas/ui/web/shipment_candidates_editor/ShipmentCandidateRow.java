@@ -6,6 +6,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.view.IViewRow;
@@ -44,29 +46,36 @@ import lombok.NonNull;
 
 public class ShipmentCandidateRow implements IViewRow
 {
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, captionKey = "C_OrderSO_ID", seqNo = 10)
+	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.Text, captionKey = "C_OrderSO_ID")
 	private final String salesOrderDocumentNo;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = "C_BPartner_Customer_ID", seqNo = 20)
+	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "C_BPartner_Customer_ID")
 	private final LookupValue customer;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Warehouse_ID", seqNo = 30)
+	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Warehouse_ID")
 	private final LookupValue warehouse;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, captionKey = "M_Product_ID", seqNo = 50)
+	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Text, captionKey = "M_Product_ID")
 	private final LookupValue product;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.ZonedDateTime, captionKey = "PreparationDate", seqNo = 80)
+	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.ZonedDateTime, captionKey = "PreparationDate")
 	private final ZonedDateTime preparationDate;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = "QtyToDeliver", seqNo = 90, editor = ViewEditorRenderMode.ALWAYS)
-	private final BigDecimal qtyToDeliverBD;
+	public static final String FIELD_qtyToDeliver = "qtyToDeliver";
+	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Quantity, fieldName = FIELD_qtyToDeliver, captionKey = "QtyToDeliver", editor = ViewEditorRenderMode.ALWAYS)
+	private final BigDecimal qtyToDeliver;
 
-	private final ViewRowFieldNameAndJsonValuesHolder<ShipmentCandidateRow> values;
+	public static final String FIELD_asiId = "asiId";
+	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.ProductAttributes, fieldName = FIELD_asiId, captionKey = "M_AttributeSetInstance_ID", editor = ViewEditorRenderMode.ALWAYS)
+	private final AttributeSetInstanceId asiId;
+
+	private final ShipmentScheduleId shipmentScheduleId;
 	private final DocumentId rowId;
 	private final Quantity qtyToDeliverInitial;
 
-	@Builder
+	private final ViewRowFieldNameAndJsonValuesHolder<ShipmentCandidateRow> values;
+
+	@Builder(toBuilder = true)
 	private ShipmentCandidateRow(
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@Nullable final String salesOrderDocumentNo,
@@ -74,17 +83,20 @@ public class ShipmentCandidateRow implements IViewRow
 			@NonNull final LookupValue warehouse,
 			@NonNull final LookupValue product,
 			@NonNull final ZonedDateTime preparationDate,
-			@NonNull final Quantity qtyToDeliver)
+			@NonNull final Quantity qtyToDeliverInitial,
+			@NonNull final BigDecimal qtyToDeliver,
+			@NonNull final AttributeSetInstanceId asiId)
 	{
 		this.salesOrderDocumentNo = salesOrderDocumentNo;
 		this.customer = customer;
 		this.warehouse = warehouse;
 		this.product = product;
 		this.preparationDate = preparationDate;
+		this.qtyToDeliverInitial = qtyToDeliverInitial;
+		this.qtyToDeliver = qtyToDeliver;
+		this.asiId = asiId;
 
-		this.qtyToDeliverInitial = qtyToDeliver;
-		this.qtyToDeliverBD = qtyToDeliver.getAsBigDecimal();
-
+		this.shipmentScheduleId = shipmentScheduleId;
 		rowId = DocumentId.of(shipmentScheduleId);
 
 		values = ViewRowFieldNameAndJsonValuesHolder.newInstance(ShipmentCandidateRow.class);
@@ -122,4 +134,19 @@ public class ShipmentCandidateRow implements IViewRow
 		return values.get(this);
 	}
 
+	public ShipmentCandidateRow withChanges(@NonNull final ShipmentCandidateRowUserChangeRequest userChanges)
+	{
+		final ShipmentCandidateRowBuilder builder = toBuilder();
+
+		if (userChanges.getQtyToDeliver() != null)
+		{
+			builder.qtyToDeliver(userChanges.getQtyToDeliver());
+		}
+		else if (userChanges.getAsiId() != null)
+		{
+			builder.asiId(userChanges.getAsiId());
+		}
+
+		return builder.build();
+	}
 }
