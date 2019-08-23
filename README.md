@@ -117,6 +117,18 @@ __Overlay__
 Class based component (`components/app/`).
 - QRCode
 
+__Window__
+
+Class based component (`components/`). The window component creates the general layout for a frontend UI based on sections, columns, elementgroups, elementlines and elements.
+- Table
+- EntryTable
+- TableContextShortcuts
+- Tabs
+- Tooltips
+- MasterWidget
+- Dropzone
+- Separator
+
 __DocList__
   - Container
   - DocumentList
