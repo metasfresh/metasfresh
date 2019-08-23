@@ -92,6 +92,7 @@ final class ShipmentCandidateRowsRepository
 	private ShipmentCandidateRow toShipmentCandidateRow(@NonNull final I_M_ShipmentSchedule record)
 	{
 		final Quantity qtyToDeliver = extractQtyToDeliver(record);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
 
 		return ShipmentCandidateRow.builder()
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
@@ -100,9 +101,13 @@ final class ShipmentCandidateRowsRepository
 				.warehouse(extractWarehouse(record))
 				.product(extractProduct(record))
 				.preparationDate(extractPreparationTime(record))
+				//
 				.qtyToDeliverInitial(qtyToDeliver)
 				.qtyToDeliver(qtyToDeliver.getAsBigDecimal())
-				.asi(extractASI(record))
+				//
+				.asiIdInitial(asiId)
+				.asi(toLookupValue(asiId))
+				//
 				.build();
 	}
 
@@ -132,9 +137,8 @@ final class ShipmentCandidateRowsRepository
 		return productsLookup.findById(productId);
 	}
 
-	private LookupValue extractASI(@NonNull final I_M_ShipmentSchedule record)
+	private LookupValue toLookupValue(@NonNull final AttributeSetInstanceId asiId)
 	{
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
 		return asiId.isRegular()
 				? asiLookup.findById(asiId)
 				: IntegerLookupValue.of(asiId.getRepoId(), "");

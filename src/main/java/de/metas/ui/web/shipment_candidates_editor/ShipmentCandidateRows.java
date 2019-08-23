@@ -2,17 +2,22 @@ package de.metas.ui.web.shipment_candidates_editor;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.UnaryOperator;
 
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
+import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequest;
+import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequestsList;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.shipment_candidates_editor.ShipmentCandidateRowUserChangeRequest.ShipmentCandidateRowUserChangeRequestBuilder;
 import de.metas.ui.web.view.AbstractCustomView.IEditableRowsData;
+import de.metas.ui.web.view.AbstractCustomView.IRowsData;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -46,6 +51,11 @@ import lombok.NonNull;
 
 final class ShipmentCandidateRows implements IEditableRowsData<ShipmentCandidateRow>
 {
+	public static ShipmentCandidateRows cast(final IRowsData<ShipmentCandidateRow> rowsData)
+	{
+		return (ShipmentCandidateRows)rowsData;
+	}
+
 	private final ImmutableList<DocumentId> rowIds; // used to preserve the order
 	private final ConcurrentHashMap<DocumentId, ShipmentCandidateRow> rowsById;
 
@@ -55,7 +65,7 @@ final class ShipmentCandidateRows implements IEditableRowsData<ShipmentCandidate
 	{
 		Check.assumeNotEmpty(rows, "rows is not empty");
 
-		this.rowIds = rows.stream()
+		rowIds = rows.stream()
 				.map(ShipmentCandidateRow::getId)
 				.collect(ImmutableList.toImmutableList());
 
@@ -132,4 +142,16 @@ final class ShipmentCandidateRows implements IEditableRowsData<ShipmentCandidate
 		});
 	}
 
+	Optional<ShipmentScheduleUserChangeRequestsList> createShipmentScheduleUserChangeRequestsList()
+	{
+		final ImmutableList<ShipmentScheduleUserChangeRequest> userChanges = rowsById.values()
+				.stream()
+				.map(row -> row.createShipmentScheduleUserChangeRequest().orElse(null))
+				.filter(Predicates.notNull())
+				.collect(ImmutableList.toImmutableList());
+
+		return !userChanges.isEmpty()
+				? Optional.of(ShipmentScheduleUserChangeRequestsList.of(userChanges))
+				: Optional.empty();
+	}
 }

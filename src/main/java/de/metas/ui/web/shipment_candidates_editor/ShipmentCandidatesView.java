@@ -3,12 +3,16 @@ package de.metas.ui.web.shipment_candidates_editor;
 import javax.annotation.Nullable;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequestsList;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.AbstractCustomView;
 import de.metas.ui.web.view.IEditableView;
+import de.metas.ui.web.view.ViewCloseReason;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -54,14 +58,28 @@ public final class ShipmentCandidatesView extends AbstractCustomView<ShipmentCan
 	@Override
 	public LookupValuesList getFieldTypeahead(final RowEditingContext ctx, final String fieldName, final String query)
 	{
-		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public LookupValuesList getFieldDropdown(final RowEditingContext ctx, final String fieldName)
 	{
-		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	protected ShipmentCandidateRows getRowsData()
+	{
+		return ShipmentCandidateRows.cast(super.getRowsData());
+	}
+
+	@Override
+	public void close(final ViewCloseReason reason)
+	{
+		final ShipmentScheduleUserChangeRequestsList userChanges = getRowsData().createShipmentScheduleUserChangeRequestsList().orElse(null);
+		if (userChanges != null)
+		{
+			Services.get(IShipmentScheduleBL.class).applyUserChanges(userChanges);
+		}
 	}
 }

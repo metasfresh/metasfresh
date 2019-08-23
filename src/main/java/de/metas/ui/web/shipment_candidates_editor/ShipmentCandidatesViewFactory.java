@@ -7,6 +7,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
+import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
@@ -61,8 +62,8 @@ public class ShipmentCandidatesViewFactory implements IViewFactory
 				.setWindowId(WINDOWID)
 				.setCaption(Services.get(IMsgBL.class).translatable("M_ShipmentSchedule_ID"))
 				.setAllowOpeningRowDetails(false)
-				// .allowViewCloseAction(ViewCloseAction.CANCEL)
-				// .setFilters(getFilterDescriptorsProvider().getAll())
+				.allowViewCloseAction(ViewCloseAction.CANCEL)
+				.allowViewCloseAction(ViewCloseAction.DONE)
 				.addElementsFromViewRowClass(ShipmentCandidateRow.class, viewDataType)
 				.build();
 	}
@@ -79,7 +80,6 @@ public class ShipmentCandidatesViewFactory implements IViewFactory
 		return ShipmentCandidatesView.builder()
 				.viewId(viewId)
 				.rows(rows)
-				// .relatedProcessDescriptors(getRelatedProcessDescriptors())
 				.build();
 	}
 

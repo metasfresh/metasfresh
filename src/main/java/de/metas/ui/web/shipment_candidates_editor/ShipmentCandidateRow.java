@@ -2,6 +2,8 @@ package de.metas.ui.web.shipment_candidates_editor;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -11,6 +13,8 @@ import org.adempiere.mm.attributes.util.ASIEditingInfo;
 import org.adempiere.mm.attributes.util.ASIEditingInfo.WindowType;
 
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequest;
+import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequest.ShipmentScheduleUserChangeRequestBuilder;
 import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -50,7 +54,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfoAware
+public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfoAware
 {
 	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "C_OrderSO_ID")
 	private final LookupValue salesOrder;
@@ -78,6 +82,7 @@ public class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfoAware
 	private final ShipmentScheduleId shipmentScheduleId;
 	private final DocumentId rowId;
 	private final Quantity qtyToDeliverInitial;
+	private final AttributeSetInstanceId asiIdInitial;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<ShipmentCandidateRow> values;
 
@@ -89,8 +94,11 @@ public class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfoAware
 			@NonNull final LookupValue warehouse,
 			@NonNull final LookupValue product,
 			@NonNull final ZonedDateTime preparationDate,
+			//
 			@NonNull final Quantity qtyToDeliverInitial,
 			@NonNull final BigDecimal qtyToDeliver,
+			//
+			@NonNull final AttributeSetInstanceId asiIdInitial,
 			@NonNull final LookupValue asi)
 	{
 		this.salesOrder = salesOrder;
@@ -98,8 +106,11 @@ public class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfoAware
 		this.warehouse = warehouse;
 		this.product = product;
 		this.preparationDate = preparationDate;
+
 		this.qtyToDeliverInitial = qtyToDeliverInitial;
 		this.qtyToDeliver = qtyToDeliver;
+
+		this.asiIdInitial = asiIdInitial;
 		this.asi = asi;
 
 		this.shipmentScheduleId = shipmentScheduleId;
@@ -171,5 +182,30 @@ public class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfoAware
 				.build();
 
 		return WebuiASIEditingInfo.builder(info).build();
+	}
+
+	Optional<ShipmentScheduleUserChangeRequest> createShipmentScheduleUserChangeRequest()
+	{
+		final ShipmentScheduleUserChangeRequestBuilder builder = ShipmentScheduleUserChangeRequest.builder()
+				.shipmentScheduleId(shipmentScheduleId);
+
+		boolean changes = false;
+
+		if (qtyToDeliverInitial.getAsBigDecimal().compareTo(qtyToDeliver) != 0)
+		{
+			builder.qtyToDeliverOverride(qtyToDeliver);
+			changes = true;
+		}
+
+		final AttributeSetInstanceId asiId = asi.getIdAs(AttributeSetInstanceId::ofRepoIdOrNone);
+		if (!Objects.equals(asiIdInitial, asiId))
+		{
+			builder.asiId(asiId);
+			changes = true;
+		}
+
+		return changes
+				? Optional.of(builder.build())
+				: Optional.empty();
 	}
 }
