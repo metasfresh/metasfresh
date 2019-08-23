@@ -308,7 +308,7 @@ public final class DefaultView implements IEditableView
 	}
 
 	@Override
-	public void close(final ViewCloseReason reason)
+	public void close(final ViewCloseAction reason)
 	{
 		if (closed.getAndSet(true))
 		{

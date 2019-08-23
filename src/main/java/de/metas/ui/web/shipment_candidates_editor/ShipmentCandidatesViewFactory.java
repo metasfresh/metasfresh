@@ -45,11 +45,13 @@ public class ShipmentCandidatesViewFactory implements IViewFactory
 	public static final String WINDOWID_String = "540674"; // FIXME: HARDCODED
 	public static final WindowId WINDOWID = WindowId.fromJson(WINDOWID_String);
 
+	private final IShipmentScheduleBL shipmentScheduleBL;
 	private final ShipmentCandidateRowsRepository rowsRepo;
 
 	public ShipmentCandidatesViewFactory(
 			@NonNull final IShipmentScheduleBL shipmentScheduleBL)
 	{
+		this.shipmentScheduleBL = shipmentScheduleBL;
 		rowsRepo = ShipmentCandidateRowsRepository.builder()
 				.shipmentScheduleBL(shipmentScheduleBL)
 				.build();
@@ -78,6 +80,8 @@ public class ShipmentCandidatesViewFactory implements IViewFactory
 		final ShipmentCandidateRows rows = rowsRepo.getByShipmentScheduleIds(shipmentScheduleIds);
 
 		return ShipmentCandidatesView.builder()
+				.shipmentScheduleBL(shipmentScheduleBL)
+				//
 				.viewId(viewId)
 				.rows(rows)
 				.build();

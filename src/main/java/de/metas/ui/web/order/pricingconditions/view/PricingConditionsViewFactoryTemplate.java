@@ -6,7 +6,6 @@ import java.util.stream.Stream;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalNotification;
 
 import de.metas.cache.CCache;
 import de.metas.i18n.ITranslatableString;
@@ -25,7 +24,6 @@ import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsIndexStorage;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewCloseAction;
-import de.metas.ui.web.view.ViewCloseReason;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
@@ -66,7 +64,6 @@ public abstract class PricingConditionsViewFactoryTemplate implements IViewFacto
 
 	private final Cache<ViewId, PricingConditionsView> views = CacheBuilder.newBuilder()
 			.expireAfterAccess(1, TimeUnit.HOURS)
-			.removalListener(notification -> onViewRemoved(notification))
 			.build();
 
 	private final PricingConditionsRowLookups lookups = PricingConditionsRowLookups.newInstance();
@@ -109,18 +106,6 @@ public abstract class PricingConditionsViewFactoryTemplate implements IViewFacto
 				.build();
 	}
 
-	private final void onViewRemoved(final RemovalNotification<Object, Object> notification)
-	{
-		final PricingConditionsView view = PricingConditionsView.cast(notification.getValue());
-		final ViewCloseReason closeReason = ViewCloseReason.fromCacheEvictedFlag(notification.wasEvicted());
-		view.close(closeReason);
-
-		if (closeReason == ViewCloseReason.USER_REQUEST)
-		{
-			onViewClosedByUser(view);
-		}
-	}
-
 	protected void onViewClosedByUser(final PricingConditionsView view)
 	{
 		// nothing on this level
@@ -151,6 +136,17 @@ public abstract class PricingConditionsViewFactoryTemplate implements IViewFacto
 	@Override
 	public final void closeById(@NonNull final ViewId viewId, @NonNull final ViewCloseAction closeAction)
 	{
+		final PricingConditionsView view = views.getIfPresent(viewId);
+		if (view == null || !view.isAllowClosingPerUserRequest())
+		{
+			return;
+		}
+
+		if (closeAction.isDone())
+		{
+			onViewClosedByUser(view);
+		}
+
 		views.invalidate(viewId);
 		views.cleanUp(); // also cleanup to prevent views cache to grow.
 	}

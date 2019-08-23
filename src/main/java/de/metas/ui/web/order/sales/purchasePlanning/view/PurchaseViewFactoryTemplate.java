@@ -9,7 +9,6 @@ import javax.annotation.Nullable;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
@@ -29,7 +28,6 @@ import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsIndexStorage;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewCloseAction;
-import de.metas.ui.web.view.ViewCloseReason;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
@@ -75,7 +73,6 @@ public abstract class PurchaseViewFactoryTemplate implements IViewFactory, IView
 	//
 	private final Cache<ViewId, PurchaseView> views = CacheBuilder.newBuilder()
 			.expireAfterAccess(1, TimeUnit.HOURS)
-			.removalListener(notification -> onViewRemoved(notification))
 			.build();
 
 	public PurchaseViewFactoryTemplate(
@@ -156,6 +153,17 @@ public abstract class PurchaseViewFactoryTemplate implements IViewFactory, IView
 	@Override
 	public final void closeById(@NonNull final ViewId viewId, @NonNull final ViewCloseAction closeAction)
 	{
+		final PurchaseView view = views.getIfPresent(viewId);
+		if (view == null || !view.isAllowClosingPerUserRequest())
+		{
+			return;
+		}
+
+		if (closeAction.isDone())
+		{
+			onViewClosedByUser(view);
+		}
+
 		views.invalidate(viewId);
 		views.cleanUp(); // also cleanup to prevent views cache to grow.
 	}
@@ -225,17 +233,5 @@ public abstract class PurchaseViewFactoryTemplate implements IViewFactory, IView
 				.processId(processId)
 				.displayPlace(DisplayPlace.ViewQuickActions)
 				.build();
-	}
-
-	private final void onViewRemoved(final RemovalNotification<Object, Object> notification)
-	{
-		final PurchaseView view = PurchaseView.cast(notification.getValue());
-		final ViewCloseReason closeReason = ViewCloseReason.fromCacheEvictedFlag(notification.wasEvicted());
-		view.close(closeReason);
-
-		if (closeReason == ViewCloseReason.USER_REQUEST)
-		{
-			onViewClosedByUser(view);
-		}
 	}
 }

@@ -108,7 +108,7 @@ public class PackingHUsViewFactory implements IViewFactory, IViewsIndexStorage
 	public void closeById(@NonNull final ViewId packingHUsViewId, @NonNull final ViewCloseAction closeAction)
 	{
 		final PickingSlotsClearingView pickingSlotsClearingView = getPickingSlotsClearingView(packingHUsViewId);
-		pickingSlotsClearingView.closePackingHUsView(packingHUsViewId);
+		pickingSlotsClearingView.closePackingHUsView(packingHUsViewId, closeAction);
 	}
 
 	private PickingSlotsClearingView getPickingSlotsClearingView(final ViewId packingHUsViewId)

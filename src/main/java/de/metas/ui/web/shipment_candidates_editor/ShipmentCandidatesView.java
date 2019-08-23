@@ -8,11 +8,10 @@ import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequestsList;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.AbstractCustomView;
 import de.metas.ui.web.view.IEditableView;
-import de.metas.ui.web.view.ViewCloseReason;
+import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -40,13 +39,19 @@ import lombok.NonNull;
 
 public final class ShipmentCandidatesView extends AbstractCustomView<ShipmentCandidateRow> implements IEditableView
 {
+	private final IShipmentScheduleBL shipmentScheduleBL;
+
 	@Builder
 	private ShipmentCandidatesView(
+			@NonNull final IShipmentScheduleBL shipmentScheduleBL,
+			//
 			@NonNull final ViewId viewId,
 			@Nullable final ITranslatableString description,
 			@NonNull final ShipmentCandidateRows rows)
 	{
 		super(viewId, description, rows, NullDocumentFilterDescriptorsProvider.instance);
+
+		this.shipmentScheduleBL = shipmentScheduleBL;
 	}
 
 	@Override
@@ -74,12 +79,22 @@ public final class ShipmentCandidatesView extends AbstractCustomView<ShipmentCan
 	}
 
 	@Override
-	public void close(final ViewCloseReason reason)
+	public void close(final ViewCloseAction closeAction)
+	{
+		if (closeAction.isDone())
+		{
+			saveChanges();
+		}
+	}
+
+	private void saveChanges()
 	{
 		final ShipmentScheduleUserChangeRequestsList userChanges = getRowsData().createShipmentScheduleUserChangeRequestsList().orElse(null);
-		if (userChanges != null)
+		if (userChanges == null)
 		{
-			Services.get(IShipmentScheduleBL.class).applyUserChanges(userChanges);
+			return;
 		}
+
+		shipmentScheduleBL.applyUserChanges(userChanges);
 	}
 }
