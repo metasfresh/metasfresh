@@ -28,13 +28,13 @@ const plugins = [
   new HtmlWebpackPlugin({
     template: 'index.html',
   }),
-  // new MomentTimezoneDataPlugin({
-  //   startYear: 2009,
-  //   endYear: 2030,
-  // }),
-  // new MomentLocalesPlugin({
-  //   localesToKeep: ['en', 'de', 'nl'],
-  // }),
+  new MomentTimezoneDataPlugin({
+    startYear: 2005,
+    endYear: 2030,
+  }),
+  new MomentLocalesPlugin({
+    localesToKeep: ['en', 'de', 'nl'],
+  }),
 ];
 
 // WebpackGitHash attempts to run the git binary as well
@@ -125,10 +125,6 @@ module.exports = {
           },
         ],
       },
-      // {
-      //   test: /\.json$/,
-      //   loader: 'json-loader',
-      // },
     ],
   },
   resolve: {
