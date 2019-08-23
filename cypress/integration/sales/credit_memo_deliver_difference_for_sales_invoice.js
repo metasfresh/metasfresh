@@ -27,7 +27,7 @@ import { SalesInvoice, SalesInvoiceLine } from '../../support/utils/sales_invoic
 import { DocumentStatusKey, RewriteURL } from '../../support/utils/constants';
 
 describe('Create a Credit memo deliver difference for Sales Invoice', function() {
-  const creditMemoDeliverDiff = 'Credit Memo - Deliver Diff';
+  let creditMemoDeliverDiff;
   let originalSalesInvoiceNumber;
   let originalPriceList;
   let originalCurrency;
@@ -35,11 +35,20 @@ describe('Create a Credit memo deliver difference for Sales Invoice', function()
   let originalSalesInvoiceTotalAmount;
   let originalSalesInvoiceID;
 
-  const newQuantity = 5; // must be lower than the original amount
+  let newQuantity; // must be lower than the original amount
 
   // Sales Invoice
-  const salesInvoiceTargetDocumentType = 'Sales Invoice';
-  let originalQuantity = 20;
+  let salesInvoiceTargetDocumentType;
+  let originalQuantity;
+
+  it('Read the fixture', function() {
+    cy.fixture('sales/credit_memo_deliver_difference_for_sales_invoice.json').then(f => {
+      newQuantity = f['newQuantity'];
+      salesInvoiceTargetDocumentType = f['salesInvoiceTargetDocumentType'];
+      originalQuantity = f['originalQuantity'];
+      creditMemoDeliverDiff = f['creditMemoDeliverDiff'];
+    });
+  });
 
   it('Prepare sales invoice', function() {
     new SalesInvoice('Test Lieferant 1', salesInvoiceTargetDocumentType)

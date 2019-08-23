@@ -1,0 +1,14 @@
+{
+    "priceSystemName" : "PriceSystem",
+    "priceListVersionName" : "PriceListVersion",
+    "priceListName" : "PriceList",
+    "priceListSchemaVersionName" : "PriceListSchemaVersion",
+    "priceListVersion2ValidFrom" : "01/02/2019",
+
+    "categoryName" : "Category",
+    "productName" : "Product",
+    "productType" : "Item",
+
+    "priceListSchemaName" : "PriceListSchema",
+    "surchargeAmount" : 222
+}
