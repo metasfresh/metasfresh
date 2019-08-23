@@ -119,20 +119,19 @@ Class based component (`components/app/`).
 
 __Window__
 
-Class based component (`components/`). The window component creates the general layout for a frontend UI based on sections, columns, elementgroups, elementlines and elements.
-- Table
+Class based component (`components/`). The window component creates the general layout for a frontend UI based on sections, columns, elementgroups, elementlines and elements. The layout information is received from the backend API.
+- Dropzone
 - EntryTable
+- MasterWidget
+- Separator
+- Table
 - TableContextShortcuts
 - Tabs
 - Tooltips
-- MasterWidget
-- Dropzone
-- Separator
 
 __DocumentList__
 
 Class based component (`components/app/`). The DocumentList component shows all records in a Main Table View. This View are always shown when opening any window without a record ID, e.g. opened when clicking on menu entry or via document reference.
-- Spinner
 - BlankPage
 - DataLayoutWrapper
 - Filters
@@ -140,6 +139,11 @@ Class based component (`components/app/`). The DocumentList component shows all 
 - Table
 - QuickActions
 - SelectionAttributes
+- Spinner
+
+__ErrorScreen__
+
+Class based component (`components/app`). This view is shown when the connection to the backend is lost or other connection issues appear.
 
 __DocList__
   - Container
