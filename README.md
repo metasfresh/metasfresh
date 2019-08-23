@@ -198,6 +198,10 @@ __MasterWidget__
 Class based component (`components/widget/`).
 - RawWidget
 
+__Separator__
+
+Function based component (`components/`). The separator component allows to create collapsible sections in the window component. The separators can  have a title. It is used as layout and grouping element in WebUI.
+
 ---
 
 - DocList
