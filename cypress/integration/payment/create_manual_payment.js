@@ -8,31 +8,6 @@ import { Builder } from '../../support/utils/builder';
 import { getLanguageSpecific, appendHumanReadableNow } from '../../support/utils/utils';
 
 describe('Create a manual Payment for a Sales Invoice', function() {
-  // const salesInvoiceTargetDocumentType = 'Sales Invoice';
-  // let salesInvoiceNumber;
-  // let salesInvoiceTotalAmount = 0;
-  // let salesInvoiceID = 0;
-
-  // const paymentDocumentType = 'Zahlungseingang';
-  // let paymentTotalAmount = 0; // may be different from salesInvoiceTotalAmount because there could be some discounts
-
-  // // data for "before" section
-  // // priceList
-  // const priceSystemName = `PriceSystem ${date}`;
-  // const priceListName = `PriceList ${date}`;
-  // const priceListVersionName = `PriceListVersion ${date}`;
-
-  // // product
-  // const productCategoryName = `ProductCategory ${date}`;
-  // const productCategoryValue = productCategoryName;
-  // const productName = `Product ${date}`;
-  // const productValue = productName;
-  // const productType = 'Service';
-
-  // // BPartner
-  // const discountSchemaName = `DiscountSchema ${date}`;
-  // const bPartnerName = `BPartner ${date}`;
-
   let salesInvoiceTargetDocumentType;
   let salesInvoiceNumber;
   let salesInvoiceTotalAmount;
