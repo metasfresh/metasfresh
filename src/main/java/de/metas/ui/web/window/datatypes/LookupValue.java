@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 
 import javax.annotation.Nullable;
 
@@ -304,7 +305,7 @@ public abstract class LookupValue
 		return id.toString();
 	}
 
-	public <T extends RepoIdAware> T getIdAs(@NonNull final Function<Integer, T> idMapper)
+	public <T extends RepoIdAware> T getIdAs(@NonNull final IntFunction<T> idMapper)
 	{
 		return idMapper.apply(getIdAsInt());
 	}
