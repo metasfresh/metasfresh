@@ -96,6 +96,10 @@ __SelectionAttributes__ - It is a panel that might contain __Widgets__ and it is
     - Overlay
     - BlankPage
     - Window
+      - Separator
+      - EntryTable
+      - MasterWidget
+      - Tabs
     - Steps
     - Hints
 - DocList
