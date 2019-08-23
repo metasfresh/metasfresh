@@ -27,8 +27,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -58,6 +60,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -79,6 +82,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
@@ -895,7 +899,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			logger.debug("Because '{}' has not the standard freight cost rule,  consolidation into one shipment is not allowed", order);
 			return true;
 		}
-		
+
 		return false;
 	}
 
@@ -1006,4 +1010,30 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		return Quantity.of(qtyToDeliverBD, uom);
 	}
 
+	@Override
+	public Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIdsOutOfTrx(final Set<ShipmentScheduleId> ids)
+	{
+		return Services.get(IShipmentSchedulePA.class).getByIdsOutOfTrx(ids);
+	}
+
+	@Override
+	public BPartnerId getBPartnerId(@NonNull final I_M_ShipmentSchedule schedule)
+	{
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		return shipmentScheduleEffectiveBL.getBPartnerId(schedule);
+	}
+
+	@Override
+	public WarehouseId getWarehouseId(@NonNull final I_M_ShipmentSchedule schedule)
+	{
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		return shipmentScheduleEffectiveBL.getWarehouseId(schedule);
+	}
+
+	@Override
+	public ZonedDateTime getPreparationDate(I_M_ShipmentSchedule schedule)
+	{
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		return TimeUtil.asZonedDateTime(shipmentScheduleEffectiveBL.getPreparationDate(schedule));
+	}
 }

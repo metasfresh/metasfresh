@@ -24,13 +24,18 @@ package de.metas.inoutcandidate.api;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
@@ -41,7 +46,7 @@ import de.metas.util.ISingletonService;
 
 public interface IShipmentScheduleBL extends ISingletonService
 {
-	public static final String MSG_ShipmentSchedules_To_Recompute = "ShipmentSchedules_To_Recompute";
+	String MSG_ShipmentSchedules_To_Recompute = "ShipmentSchedules_To_Recompute";
 
 	/**
 	 * Please use this method before calling {@link CreateMissingShipmentSchedulesWorkpackageProcessor#schedule(Properties, String)}, to avoid unneeded work packages.
@@ -172,4 +177,12 @@ public interface IShipmentScheduleBL extends ISingletonService
 	void openShipmentSchedule(I_M_ShipmentSchedule shipmentSchedule);
 
 	Quantity getQtyToDeliver(I_M_ShipmentSchedule sched);
+
+	Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids);
+
+	BPartnerId getBPartnerId(I_M_ShipmentSchedule schedule);
+
+	WarehouseId getWarehouseId(I_M_ShipmentSchedule schedule);
+
+	ZonedDateTime getPreparationDate(I_M_ShipmentSchedule schedule);
 }
