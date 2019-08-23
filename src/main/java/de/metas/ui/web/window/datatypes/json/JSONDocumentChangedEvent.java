@@ -177,31 +177,9 @@ public class JSONDocumentChangedEvent
 		return DateTimeConverters.fromObjectToZonedDateTime(value);
 	}
 
-	public LookupValue getValueAsIntegerLookupValue()
+	public IntegerLookupValue getValueAsIntegerLookupValue()
 	{
-		if (value == null)
-		{
-			return null;
-		}
-		else if (value instanceof Map)
-		{
-			@SuppressWarnings("unchecked")
-			final Map<String, Object> map = (Map<String, Object>)value;
-			return JSONLookupValue.integerLookupValueFromJsonMap(map);
-		}
-		else if (value instanceof JSONLookupValue)
-		{
-			final JSONLookupValue json = (JSONLookupValue)value;
-			if (json == null)
-			{
-				return null;
-			}
-			return json.toIntegerLookupValue();
-		}
-		else
-		{
-			throw new AdempiereException("Cannot convert value '" + value + "' (" + value.getClass() + ") to " + IntegerLookupValue.class);
-		}
+		return DataTypes.convertToIntegerLookupValue(value);
 	}
 
 	public LookupValue getValueAsStringLookupValue()

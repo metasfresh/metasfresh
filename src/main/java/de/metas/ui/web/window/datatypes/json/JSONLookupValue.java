@@ -254,7 +254,7 @@ public final class JSONLookupValue
 		return keyAsInt;
 	}
 
-	public LookupValue toIntegerLookupValue()
+	public IntegerLookupValue toIntegerLookupValue()
 	{
 		return IntegerLookupValue.builder()
 				.id(getKeyAsInt())
@@ -264,7 +264,7 @@ public final class JSONLookupValue
 				.build();
 	}
 
-	public LookupValue toStringLookupValue()
+	public StringLookupValue toStringLookupValue()
 	{
 		return StringLookupValue.builder()
 				.id(getKey())
