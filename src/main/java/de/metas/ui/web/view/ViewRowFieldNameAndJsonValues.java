@@ -12,6 +12,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.NumberUtils;
+import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
@@ -129,5 +130,11 @@ public final class ViewRowFieldNameAndJsonValues
 		{
 			return NumberUtils.asBigDecimal(valueObj, defaultValueIfNotFoundOrError);
 		}
+	}
+
+	public boolean getAsBoolean(@NonNull final String fieldName, final boolean defaultValueIfNotFoundOrError)
+	{
+		final Object valueObj = map.get(fieldName);
+		return StringUtils.toBoolean(valueObj, defaultValueIfNotFoundOrError);
 	}
 }
