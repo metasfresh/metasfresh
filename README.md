@@ -91,18 +91,20 @@ __MenuOverlay__ - These are components that float over __Header__ and contain na
 __SelectionAttributes__ - It is a panel that might contain __Widgets__ and it is a side by side table in __DocumentList__.
 
 ### Schema
-- MasterWindow
-  - Container
-    - Overlay
-    - BlankPage
-    - Window
-      - Separator
-      - EntryTable
-      - MasterWidget
-      - Tabs
-    - Steps
-    - Hints
-- DocList
+__MasterWindow__
+- BlankPage
+- Container
+- Overlay
+- Window
+
+__Container__
+- DocumentList
+- ErrorScreen
+- Modal
+- RawModal
+- Header
+
+__DocList__
   - Container
   - DocumentList
 ---
@@ -110,6 +112,8 @@ __SelectionAttributes__ - It is a panel that might contain __Widgets__ and it is
   - Header
   - Modal
   - RawModal
+  - ErrorScreen
+  - PluginModalComponent
 - Window
   - Widget
   - Tabs
