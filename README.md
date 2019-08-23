@@ -105,7 +105,7 @@ Class based component (`components/`). Returns the 404 with a reason in case the
 
 __Container__
 
-Class based component (`components/`)
+Class based component (`components/`).
 - DocumentList
 - ErrorScreen
 - Modal
@@ -129,6 +129,18 @@ Class based component (`components/`). The window component creates the general 
 - Dropzone
 - Separator
 
+__DocumentList__
+
+Class based component (`components/app/`). The DocumentList component shows all records in a Main Table View. This View are always shown when opening any window without a record ID, e.g. opened when clicking on menu entry or via document reference.
+- Spinner
+- BlankPage
+- DataLayoutWrapper
+- Filters
+- FiltersStatic
+- Table
+- QuickActions
+- SelectionAttributes
+
 __DocList__
   - Container
   - DocumentList
@@ -142,10 +154,6 @@ __DocList__
 - Window
   - Widget
   - Tabs
-- DocumentList
-  - Table
-  - Filters
-  - SelectionAttributes
 ---
 - Header
   - Subheader
