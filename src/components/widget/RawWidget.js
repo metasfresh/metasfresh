@@ -425,7 +425,7 @@ export class RawWidget extends Component {
             <DatePicker
               field={fields[0].field}
               timeFormat={false}
-              dateFormat={false}
+              dateFormat={`x`}
               inputProps={{
                 placeholder: fields[0].emptyText,
                 disabled: readonly,
@@ -466,60 +466,6 @@ export class RawWidget extends Component {
           />
         );
       }
-      // case 'DateTime':
-      //   if (range) {
-      //     // Watch out! The datetimerange widget as exception,
-      //     // is non-controlled input! For further usage, needs
-      //     // upgrade.
-      //     return (
-      //       <DatetimeRange
-      //         onChange={(value, valueTo) =>
-      //           this.handlePatch(
-      //             widgetField,
-      //             value ? Moment(value).format(DATE_FORMAT) : null,
-      //             null,
-      //             valueTo ? Moment(valueTo).format(DATE_FORMAT) : null
-      //           )
-      //         }
-      //         mandatory={widgetData[0].mandatory}
-      //         validStatus={widgetData[0].validStatus}
-      //         onShow={onShow}
-      //         onHide={onHide}
-      //         value={widgetData[0].value}
-      //         valueTo={widgetData[0].valueTo}
-      //         tabIndex={tabIndex}
-      //         timePicker={true}
-      //       />
-      //     );
-      //   } else {
-      //     return (
-      //       <div className={this.getClassNames({ icon: true })}>
-      //         <DatePicker
-      //           field={fields[0].field}
-      //           timeFormat={dateFormat ? false : true}
-      //           dateFormat={dateFormat || true}
-      //           inputProps={{
-      //             placeholder: fields[0].emptyText,
-      //             disabled: readonly,
-      //             tabIndex: tabIndex,
-      //           }}
-      //           value={widgetValue}
-      //           onChange={date => handleChange(widgetField, date)}
-      //           patch={date =>
-      //             this.handlePatch(
-      //               widgetField,
-      //               this.generateMomentObj(date),
-      //               null,
-      //               null,
-      //               true
-      //             )
-      //           }
-      //           tabIndex={tabIndex}
-      //           handleBackdropLock={handleBackdropLock}
-      //         />
-      //       </div>
-      //     );
-      //   }
       case 'Lookup':
         return (
           <Lookup
