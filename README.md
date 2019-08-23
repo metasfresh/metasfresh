@@ -181,7 +181,11 @@ Class based component (`components/header/`). The Header component is shown in e
 
 __QRCode__
 
-Class based component (`components/app`). The QRCode components allows to read QR Codes via webcam.
+Class based component (`components/app/`). The QRCode components allows to read QR Codes via webcam.
+
+__Dropzone__
+
+Class based component (`components/`). The DropzoneWrapper allows the user to drag&drop files onto the UI. These files are then uploaded to metasfresh backend.
 
 __DocList__
   - Container
