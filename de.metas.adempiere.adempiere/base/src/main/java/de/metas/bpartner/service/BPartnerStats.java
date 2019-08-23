@@ -7,10 +7,10 @@ import java.math.BigDecimal;
 import javax.annotation.Nullable;
 
 import org.compiere.model.X_C_BPartner_Stats;
-import org.compiere.util.Util;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.util.Check;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -62,10 +62,10 @@ public class BPartnerStats
 
 		this.repoId = repoId;
 		this.bpartnerId = bpartnerId;
-		this.openItems = Util.coalesce(openItems, ZERO);
-		this.actualLifeTimeValue = Util.coalesce(actualLifeTimeValue, ZERO);
-		this.soCreditUsed = Util.coalesce(soCreditUsed, ZERO);
-		this.soCreditStatus = Util.coalesce(soCreditStatus, X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck);
+		this.openItems = CoalesceUtil.coalesce(openItems, ZERO);
+		this.actualLifeTimeValue = CoalesceUtil.coalesce(actualLifeTimeValue, ZERO);
+		this.soCreditUsed = CoalesceUtil.coalesce(soCreditUsed, ZERO);
+		this.soCreditStatus = CoalesceUtil.coalesce(soCreditStatus, X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck);
 	}
 
 	public BigDecimal getSOCreditUsed()

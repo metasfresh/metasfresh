@@ -15,7 +15,6 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -28,6 +27,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /*
@@ -369,7 +369,7 @@ public class ProductPriceQuery
 		return _additionalMatchers.values();
 	}
 
-	public static interface IProductPriceQueryMatcher
+	public interface IProductPriceQueryMatcher
 	{
 		String getName();
 
@@ -378,7 +378,7 @@ public class ProductPriceQuery
 
 	public static final class ProductPriceQueryMatcher implements IProductPriceQueryMatcher
 	{
-		public static final ProductPriceQueryMatcher of(final String name, final IQueryFilter<I_M_ProductPrice> filter)
+		public static ProductPriceQueryMatcher of(final String name, final IQueryFilter<I_M_ProductPrice> filter)
 		{
 			return new ProductPriceQueryMatcher(name, filter);
 		}
@@ -419,7 +419,7 @@ public class ProductPriceQuery
 
 	private static final class ASIProductPriceAttributesFilter implements IQueryFilter<I_M_ProductPrice>
 	{
-		public static final ASIProductPriceAttributesFilter of(final I_M_AttributeSetInstance asi)
+		public static ASIProductPriceAttributesFilter of(final I_M_AttributeSetInstance asi)
 		{
 			return new ASIProductPriceAttributesFilter(asi);
 		}
@@ -485,7 +485,7 @@ public class ProductPriceQuery
 
 		private static boolean isAttributeInstanceMatching(final I_M_AttributeInstance expected, final I_M_AttributeInstance actual)
 		{
-			final int expectedAttributeValueId = Util.firstGreaterThanZero(expected.getM_AttributeValue_ID(), 0);
+			final int expectedAttributeValueId = CoalesceUtil.firstGreaterThanZero(expected.getM_AttributeValue_ID(), 0);
 
 			final int actualAttributeValueId;
 			if (actual == null)
@@ -494,7 +494,7 @@ public class ProductPriceQuery
 			}
 			else
 			{
-				actualAttributeValueId = Util.firstGreaterThanZero(actual.getM_AttributeValue_ID(), 0);
+				actualAttributeValueId = CoalesceUtil.firstGreaterThanZero(actual.getM_AttributeValue_ID(), 0);
 			}
 
 			if (expectedAttributeValueId != actualAttributeValueId)
@@ -515,7 +515,7 @@ public class ProductPriceQuery
 			return _asiAttributes;
 		}
 
-		private final List<I_M_AttributeInstance> extractProductPriceAttributes(final I_M_ProductPrice productPrice)
+		private List<I_M_AttributeInstance> extractProductPriceAttributes(final I_M_ProductPrice productPrice)
 		{
 			final I_M_AttributeSetInstance productPriceASI = productPrice.getM_AttributeSetInstance();
 			if (productPriceASI == null || productPriceASI.getM_AttributeSetInstance_ID() <= 0)

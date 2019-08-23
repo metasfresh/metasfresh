@@ -5,7 +5,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import org.compiere.util.Util;
 import org.springframework.integration.mail.MailHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
@@ -19,6 +18,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.inbound.mail.config.InboundEMailConfig;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -75,7 +75,7 @@ class InboundEMailMessageHandler implements MessageHandler
 
 		final String messageId = toMessageId(messageRawHeaders.getFirst("Message-ID"));
 		final String firstMessageIdReference = toMessageId(messageRawHeaders.getFirst("References"));
-		final String initialMessageId = Util.coalesce(firstMessageIdReference, messageId);
+		final String initialMessageId = CoalesceUtil.coalesce(firstMessageIdReference, messageId);
 
 		return InboundEMail.builder()
 				.from(messageHeaders.get(MailHeaders.FROM, String.class))
