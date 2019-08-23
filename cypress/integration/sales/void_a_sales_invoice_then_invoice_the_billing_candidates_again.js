@@ -29,22 +29,6 @@ import { getLanguageSpecific } from '../../support/utils/utils';
 import { salesInvoices } from '../../page_objects/sales_invoices';
 
 describe('Void Sales Invoice and invoice the billing candidates again', function() {
-  // const businessPartnerName = 'Test Lieferant 1';
-  // const productName = 'Convenience Salat 250g';
-  // const originalQuantity = 200;
-  // const shipmentNotificationInboxText = `Lieferung [number] für Partner ${businessPartnerName} wurde erstellt.`;
-  // const shipmentNotificationModalText = 'Created: 1 WorkPackage Queue;';
-  // const shipmentQuantityTypeOption = 'Quantity to deliver';
-  // const generateInvoicesNotificationModalText =
-  //   'Fakturlauf mit 1 Rechnungen eingeplant. Es sind bereits 0 zu erstellende Rechnungen in der Warteschlange, die vorher verarbeitet werden.';
-
-  // const salesInvoiceDocumentType = 'Sales Invoice';
-
-  // // for test
-  // let salesOrderDocumentNumber;
-  // let salesOrderRecordId;
-  // let totalAmountToPay = 0;
-
   let businessPartnerName;
   let productName;
   let originalQuantity;
@@ -57,7 +41,7 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
   // for test
   let salesOrderDocumentNumber;
   let salesOrderRecordId;
-  let totalAmountToPay;
+  let totalAmountToPay = 0;
 
   it('Read the fixture', function() {
     cy.fixture('sales/void_a_sales_invoice_then_invoice_the_billing_candidates_again.json').then(f => {

@@ -66,7 +66,6 @@ describe('Create Dunning Candidates', function() {
   it('Prepare customer bpartner (via api)', function() {
     cy.fixture('sales/simple_customer.json').then(customerJson => {
       const bpartner = new BPartner({ ...customerJson, name: businessPartnerName })
-        .setCustomer(true)
         .setDunning(dunningTypeName)
         .setPaymentTerm(paymentTerm);
       bpartner.apply();

@@ -7,6 +7,5 @@
 "shipmentQuantityTypeOption" : "Quantity to deliver",
 "generateInvoicesNotificationModalText" :
   "Fakturlauf mit 1 Rechnungen eingeplant. Es sind bereits 0 zu erstellende Rechnungen in der Warteschlange, die vorher verarbeitet werden.",
-"salesInvoiceDocumentType" : "Sales Invoice",
-"totalAmountToPay" : 0
+"salesInvoiceDocumentType" : "Sales Invoice"
 }
