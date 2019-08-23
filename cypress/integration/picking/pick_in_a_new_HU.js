@@ -131,8 +131,6 @@ describe('Create test data', function() {
     cy.fixture('sales/simple_customer.json').then(customerJson => {
       new BPartner({ ...customerJson, name: bPartnerName }).setCustomerDiscountSchema(discountSchemaName).apply();
     });
-
-    cy.readAllNotifications();
   });
 
   it('Create  single-HU inventory doc', function() {
@@ -217,7 +215,7 @@ describe('Pick the SO', function() {
     cy.selectRightTable().within(() => {
       cy.selectNthRow(0, false, true);
     });
-    cy.executeQuickAction('WEBUI_Picking_PickQtyToNewHU', false, true);
+    cy.executeQuickAction('WEBUI_Picking_PickQtyToNewHU');
 
     cy.resetListValue('M_HU_PI_Item_Product_ID', true);
     cy.selectInListField('M_HU_PI_Item_Product_ID', packingInstructionsName, true);
