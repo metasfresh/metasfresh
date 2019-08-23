@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.function.IntFunction;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DisplayType;
@@ -17,7 +18,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.util.lang.RepoIdAware;
 import io.swagger.annotations.ApiModel;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -132,6 +135,12 @@ public class JSONDocumentChangedEvent
 		{
 			throw new AdempiereException("Cannot convert value to int list").setParameter("event", this);
 		}
+	}
+
+	public <T extends RepoIdAware> T getValueAsId(@NonNull final IntFunction<T> mapper)
+	{
+		final int repoId = getValueAsInteger(-1);
+		return mapper.apply(repoId);
 	}
 
 	public BigDecimal getValueAsBigDecimal()
