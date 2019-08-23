@@ -4,6 +4,8 @@ import { Product, ProductCategory, ProductPrice } from './product';
 import { PackingMaterial } from './packing_material';
 import { PackingInstructions } from './packing_instructions';
 import { PackingInstructionsVersion } from './packing_instructions_version';
+import { getLanguageSpecific } from './utils';
+import { Inventory, InventoryLine } from './inventory';
 
 export class Builder {
   /**
@@ -142,6 +144,48 @@ export class Builder {
         .setPackingInstructions(packingInstructionsName)
         .setPackingMaterial(productForPackingMaterialName)
         .apply();
+    });
+  }
+
+  /**
+   * Create a HU with stock, from a Physical Inventory Document
+   *
+   * @returns the huValue of the newly create HU
+   */
+  static createHUWithStock(productName, productQty, locatorId) {
+    // create HU
+    let uomName;
+    cy.fixture('product/simple_product.json').then(productJson => {
+      uomName = getLanguageSpecific(productJson, 'c_uom');
+    });
+
+    cy.fixture('inventory/inventory.json').then(inventoryJson => {
+      const docTypeName = getLanguageSpecific(inventoryJson, 'singleHUInventoryDocTypeName');
+
+      const inventoryLine = new InventoryLine()
+        .setProductName(productName)
+        .setQuantity(productQty)
+        .setC_UOM_ID(uomName)
+        .setM_Locator_ID(locatorId)
+        .setIsCounted(true);
+
+      new Inventory()
+        .setWarehouse(inventoryJson.warehouseName)
+        .setDocType(docTypeName)
+        .addInventoryLine(inventoryLine)
+        .apply();
+    });
+
+    // save and return the HU value
+    cy.selectTab('M_InventoryLine');
+    cy.selectNthRow(0);
+    cy.openAdvancedEdit();
+    return cy.getStringFieldValue('M_HU_ID').then(val => {
+      cy.pressDoneButton();
+      return cy.wrap(val).then(val => {
+        // noinspection JSUnresolvedFunction
+        return val.split('_')[0];
+      });
     });
   }
 }
