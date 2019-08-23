@@ -22,16 +22,21 @@
 
 import { DunningType } from '../../support/utils/dunning_type';
 import { BPartner } from '../../support/utils/bpartner';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 
 describe('create dunning type', function() {
-  // human readable date with millis!
-  const date = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString();
-
-  const dunningTypeName = `dunning test ${date}`;
-  const bPartnerName = `Customer Dunning ${date}`;
+  let dunningTypeName;
+  let bPartnerName;
   let bpartnerID = null;
 
-  before(function() {
+  it('Read the fixture', function() {
+    cy.fixture('dunning/create_dunning_type_spec.json').then(f => {
+      dunningTypeName = appendHumanReadableNow(f['dunningTypeName']);
+      bPartnerName = appendHumanReadableNow(f['bPartnerName']);
+    });
+  });
+
+  it('Create dunning type and bpartner', function() {
     cy.fixture('settings/dunning_type.json').then(dunningType => {
       Object.assign(new DunningType(), dunningType)
         .setName(dunningTypeName)
@@ -40,11 +45,9 @@ describe('create dunning type', function() {
 
     cy.fixture('sales/simple_customer.json').then(customerJson => {
       const bpartner = new BPartner({ ...customerJson, name: bPartnerName })
-        .setCustomer(true)
         .setDunning(dunningTypeName)
         .clearLocations()
-        .clearContacts()
-        .setBank(undefined);
+        .clearContacts();
 
       bpartner.apply().then(bpartner => {
         bpartnerID = bpartner.id;

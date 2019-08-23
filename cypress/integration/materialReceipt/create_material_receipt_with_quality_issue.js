@@ -98,11 +98,8 @@ describe('Create material receipt with quality issue', function() {
     );
     cy.fixture('sales/simple_vendor.json').then(vendorJson => {
       new BPartner({ ...vendorJson, name: vendorName })
-        .setVendor(true)
         .setVendorPricingSystem(priceSystemName)
         .setVendorDiscountSchema(discountSchemaName)
-        .setPaymentTerm('30 days net')
-        .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
         .apply();
     });
     cy.readAllNotifications();

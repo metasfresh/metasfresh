@@ -2,7 +2,6 @@ import { BPartner } from '../../support/utils/bpartner';
 import { humanReadableNow } from '../../support/utils/utils';
 import { Tour } from '../../support/utils/tour';
 import { TourVersion, TourVersionLine } from '../../support/utils/tour_version';
-import { BPartnerLocation } from '../../support/utils/bpartner_ui';
 
 describe('Adapt tour version', function() {
   const date = humanReadableNow();
@@ -12,10 +11,7 @@ describe('Adapt tour version', function() {
 
   it('Create customer for which we will create a tour', function() {
     cy.fixture('sales/simple_customer.json').then(customerJson => {
-      new BPartner({ ...customerJson, name: customerName })
-        .setCustomer(true)
-        .addLocation(new BPartnerLocation('Address2').setCity('Cologne').setCountry('Deutschland'))
-        .apply();
+      new BPartner({ ...customerJson, name: customerName }).setCustomer(true).apply();
     });
   });
   it('Create a tour', function() {

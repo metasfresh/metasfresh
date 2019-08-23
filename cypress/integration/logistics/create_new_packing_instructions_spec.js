@@ -9,7 +9,6 @@ describe('create new packing instructions ', function() {
   const productName = `TestProductPackingMaterial ${date}`;
   const packingMaterial = `TestPackingMaterial ${date}`;
   const productCategoryName = `ProductCategoryName ${date}`;
-  const productCategoryValue = `ProductNameValue ${date}`;
 
   it('Set up product and partner', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
@@ -21,7 +20,7 @@ describe('create new packing instructions ', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)
-        .setProductCategory(productCategoryValue + '_' + productCategoryName)
+        .setProductCategory(productCategoryName)
         .apply();
     });
 

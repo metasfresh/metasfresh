@@ -23,8 +23,8 @@
 /// <reference types="Cypress" />
 
 import { SalesInvoice, SalesInvoiceLine } from '../../support/utils/sales_invoice';
-import { getLanguageSpecific, appendHumanReadableNow } from '../../support/utils/utils';
-import { DocumentActionKey, DocumentStatusKey } from '../../support/utils/constants';
+import { appendHumanReadableNow } from '../../support/utils/utils';
+import { DocumentStatusKey } from '../../support/utils/constants';
 import { BPartner } from '../../support/utils/bpartner';
 import { DunningCandidates } from '../../page_objects/dunning_candidates';
 import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
@@ -68,9 +68,7 @@ describe('Create Dunning Candidates', function() {
       const bpartner = new BPartner({ ...customerJson, name: businessPartnerName })
         .setCustomer(true)
         .setDunning(dunningTypeName)
-        .setPaymentTerm(paymentTerm)
-        .setBank(undefined);
-
+        .setPaymentTerm(paymentTerm);
       bpartner.apply();
     });
   });
@@ -79,10 +77,9 @@ describe('Create Dunning Candidates', function() {
     cy.fixture('sales/sales_invoice.json').then(salesInvoiceJson => {
       new SalesInvoice(businessPartnerName, salesInvoiceTargetDocumentType)
         .addLine(new SalesInvoiceLine().setProduct(productName).setQuantity(originalQuantity))
-        .setDocumentAction(getLanguageSpecific(salesInvoiceJson, DocumentActionKey.Complete))
-        .setDocumentStatus(getLanguageSpecific(salesInvoiceJson, DocumentStatusKey.Completed))
         .apply();
     });
+    cy.completeDocument();
   });
 
   it('Sales Invoice is Completed', function() {

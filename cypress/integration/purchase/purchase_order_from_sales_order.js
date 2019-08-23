@@ -80,21 +80,15 @@ describe('Create Purchase order from sales order', function() {
     /**Create vendor to use in product - Business partner tab - current vendor */
     cy.fixture('sales/simple_vendor.json').then(vendorJson => {
       new BPartner({ ...vendorJson, name: vendorName })
-        .setVendor(true)
         .setVendorPricingSystem(purchasePriceSystem)
         .setVendorDiscountSchema(discountSchemaName)
-        .setVendorPaymentTerm('30 days net')
-        .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
         .apply();
     });
     /**Create customer for sales order */
     cy.fixture('sales/simple_customer.json').then(customerJson => {
       new BPartner({ ...customerJson, name: customerName })
-        .setCustomer(true)
         .setCustomerPricingSystem(salesPriceSystem)
         .setCustomerDiscountSchema(discountSchemaName)
-        .setPaymentTerm('30 days net')
-        .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
         .apply();
     });
 
