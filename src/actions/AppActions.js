@@ -1,7 +1,6 @@
 import axios from 'axios';
 import Moment from 'moment';
 import MomentTZ from 'moment-timezone';
-// import { Settings } from 'luxon';
 import numeral from 'numeral';
 import { replace } from 'react-router-redux';
 
@@ -127,7 +126,6 @@ function initNumeralLocales(lang, locale) {
 export function languageSuccess(lang) {
   localStorage.setItem(LOCAL_LANG, lang);
   Moment.locale(lang);
-  // Settings.defaultLocale = lang.replace('_', '-');
 
   axios.defaults.headers.common['Accept-Language'] = lang;
 }
@@ -147,9 +145,6 @@ export function loginSuccess(auth) {
       dispatch(userSessionInit(data));
       languageSuccess(data.language['key']);
       initNumeralLocales(data.language['key'], data.locale);
-      // Settings.defaultLocale = data.language['key'].replace('_', '-');
-      // Settings.defaultZoneName = `utc${data.timeZone.replace(/[0,:]/gi, '')}`;
-
       MomentTZ.tz.setDefault(data.timeZone);
 
       auth.initSessionClient(data.websocketEndpoint, msg => {
