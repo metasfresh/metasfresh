@@ -179,6 +179,10 @@ Class based component (`components/header/`). The Header component is shown in e
 - Subheader
 - UserDropdown
 
+__QRCode__
+
+Class based component (`components/app`). The QRCode components allows to read QR Codes via webcam.
+
 __DocList__
   - Container
   - DocumentList
