@@ -163,6 +163,22 @@ Class based component (`components/app/`).
 - ModalContextShortcuts
 - Tooltips
 
+__Header__
+
+Class based component (`components/header/`). The Header component is shown in every view besides Modal or RawModal in frontend. It defines the top bar with different menus and icons in metasfresh WebUI. It hosts the action menu, breadcrumb, logo, notification menu, avatar and sidelist menu.
+- Breadcrumb
+- GlobalContextShortcuts
+- Inbox
+- Indicator
+- MasterWidget
+- NewEmail
+- NewLetter
+- Prompt
+- Tooltips
+- SideList
+- Subheader
+- UserDropdown
+
 __DocList__
   - Container
   - DocumentList
