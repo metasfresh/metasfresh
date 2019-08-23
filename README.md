@@ -202,6 +202,18 @@ __Separator__
 
 Function based component (`components/`). The separator component allows to create collapsible sections in the window component. The separators can  have a title. It is used as layout and grouping element in WebUI.
 
+__Table__
+
+Class based component (`components/table/`). This component represents the generic table views shown as default for all windows without record ID. Is rendered via the document list component.
+- DocumentListContextShortcuts
+- Prompt
+- TableContextShortcuts
+- TableContextMenu
+- TableFilter
+- TableHeader
+- TableItem
+- TablePagination
+
 ---
 
 - DocList
