@@ -92,34 +92,38 @@ __SelectionAttributes__ - It is a panel that might contain __Widgets__ and it is
 
 ### Schema
 - MasterWindow
-    - Container
+  - Container
+    - Overlay
+    - BlankPage
     - Window
+    - Steps
+    - Hints
 - DocList
-    - Container
-    - DocumentList
+  - Container
+  - DocumentList
 ---
 - Container
-    - Header
-    - Modal
-    - RawModal
+  - Header
+  - Modal
+  - RawModal
 - Window
-    - Widget
-    - Tabs
+  - Widget
+  - Tabs
 - DocumentList
-    - Table
-    - Filters
-    - SelectionAttributes
+  - Table
+  - Filters
+  - SelectionAttributes
 ---
 - Header
-    - Subheader
-    - Sidelist
-    - Breadcrumb
-        - MenuOverlay
+  - Subheader
+  - Sidelist
+  - Breadcrumb
+    - MenuOverlay
 - Modal
-    - Window
-    - Process
+  - Window
+  - Process
 - RawModal
-    - DocumentList
+  - DocumentList
 
 ## For webui-api developers
 
