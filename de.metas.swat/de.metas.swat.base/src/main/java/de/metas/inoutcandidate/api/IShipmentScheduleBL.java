@@ -185,4 +185,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	WarehouseId getWarehouseId(I_M_ShipmentSchedule schedule);
 
 	ZonedDateTime getPreparationDate(I_M_ShipmentSchedule schedule);
+	
+	void applyUserChanges(ShipmentScheduleUserChangeRequestsList userChanges);
 }
