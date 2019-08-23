@@ -145,6 +145,17 @@ __ErrorScreen__
 
 Class based component (`components/app`). This view is shown when the connection to the backend is lost or other connection issues appear.
 
+__Modal__
+
+Class based component (`components/app`). This is an overlay view that can be opened over the main view.
+- ChangeLogModal
+- Process
+- Window
+- ModalContextShortcuts
+- Tooltips
+- Indicator
+- OverlayField
+
 __DocList__
   - Container
   - DocumentList
