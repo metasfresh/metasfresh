@@ -69,10 +69,11 @@ import lombok.NonNull;
  */
 public final class ASIEditingInfo
 {
-	public static final ASIEditingInfo of(
+	public static ASIEditingInfo of(
 			final ProductId productId,
 			final AttributeSetInstanceId attributeSetInstanceId,
-			final String callerTableName, final int callerColumnId,
+			final String callerTableName,
+			final int callerColumnId,
 			final SOTrx soTrx)
 	{
 		return builder()
@@ -494,7 +495,7 @@ public final class ASIEditingInfo
 	 * @param attributeSetInstanceId
 	 * @return list of available attributeSet's instance attributes, merged with the attributes which are currently present in our ASI (even if they are not present in attribute set)
 	 */
-	private static final List<I_M_Attribute> retrieveAvailableAttributeSetAndInstanceAttributes(
+	private static List<I_M_Attribute> retrieveAvailableAttributeSetAndInstanceAttributes(
 			@Nullable final AttributeSetId attributeSetId,
 			final AttributeSetInstanceId attributeSetInstanceId)
 	{
@@ -537,7 +538,7 @@ public final class ASIEditingInfo
 		return ImmutableList.copyOf(attributes.values());
 	}
 
-	public static enum WindowType
+	public enum WindowType
 	{
 		Regular, ProductWindow, ProcessParameter, Pricing, StrictASIAttributes
 	}
