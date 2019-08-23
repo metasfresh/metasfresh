@@ -5,17 +5,17 @@ import { Inventory, InventoryLine } from '../../support/utils/inventory';
 import { DocumentStatusKey } from '../../support/utils/constants';
 import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
 
-const productName = 'Convenience Salat 250g';
-const productQty = 10;
-const locatorId = 'Hauptlager_StdWarehouse_Hauptlager_0_0_0';
+let productName;
+let productQty;
+let locatorId;
 
-const businessPartnerName = 'Test Lieferant 1';
-const soProductQuantity = 2 * productQty;
+let businessPartnerName;
+let soProductQuantity;
 
 // shipment
-const shipmentQuantityTypeOption = 'Picked quantity';
-const shipmentNotificationModalText = 'Created: 1 WorkPackage Queue;';
-const expectedPackingStatus = 'Shipped';
+let shipmentQuantityTypeOption;
+let shipmentNotificationModalText;
+let expectedPackingStatus;
 
 // test columns
 // todo @kuba: these should be somehow made translation independent!
@@ -24,6 +24,7 @@ const expectedPackingStatus = 'Shipped';
 //   or something else?
 const pickingOrderColumn = 'Order';
 const huCodeColumn = 'Code';
+const productPartnerColumn = 'Product / Partner';
 
 // test
 let soDocNumber;
@@ -32,9 +33,19 @@ let huValue1;
 let huValue2;
 
 describe('Create test data', function() {
-  before(function() {
-    // eslint-disable-next-line
-    cy.wait(5000);
+  it('Read fixture and prepare the names', function() {
+    cy.fixture('picking/pick_HUs_and_create_shipment.json').then(f => {
+      productName = f['productName'];
+      productQty = f['productQty'];
+      locatorId = f['locatorId'];
+
+      businessPartnerName = f['businessPartnerName'];
+      soProductQuantity = f['soProductQuantity'];
+
+      shipmentQuantityTypeOption = f['shipmentQuantityTypeOption'];
+      shipmentNotificationModalText = f['shipmentNotificationModalText'];
+      expectedPackingStatus = f['expectedPackingStatus'];
+    });
   });
 
   it('Create first single-HU inventory doc', function() {
@@ -121,13 +132,12 @@ describe('Pick the SO', function() {
   it('Visit "Picking Terminal (Prototype)"', function() {
     // unfortunately the picking assignment is not created instantly and there's no way to check when it is created except by refreshing the page,
     // so i have to wait for it to be created :(
-    // eslint-disable-next-line
     cy.waitUntilProcessIsFinished();
     cy.visitWindow('540345');
   });
 
   it('Select first row and run action Pick', function() {
-    cy.selectNthRow(0);
+    cy.selectRowByColumnAndValue(productPartnerColumn, productName);
     cy.executeQuickAction('WEBUI_Picking_Launcher');
   });
 
@@ -139,7 +149,7 @@ describe('Pick the SO', function() {
     cy.selectRightTable().within(() => {
       cy.selectRowByColumnAndValue(huCodeColumn, huValue1, false, true);
     });
-    cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', false, true, false);
+    cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', true, false);
   });
 
   it('Pick second HU', function() {
@@ -150,7 +160,7 @@ describe('Pick the SO', function() {
     cy.selectRightTable().within(() => {
       cy.selectRowByColumnAndValue(huCodeColumn, huValue2, false, true);
     });
-    cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', false, true, false);
+    cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', true, false);
   });
 
   it('Confirm Picks', function() {
@@ -160,7 +170,7 @@ describe('Pick the SO', function() {
     cy.selectRightTable().within(() => {
       cy.selectRowByColumnAndValue(huCodeColumn, huValue2, false, true);
     });
-    cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', false, true, false);
+    cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', true, false);
     cy.waitForSaveIndicator();
 
     cy.selectLeftTable().within(() => {
@@ -169,7 +179,7 @@ describe('Pick the SO', function() {
     cy.selectRightTable().within(() => {
       cy.selectRowByColumnAndValue(huCodeColumn, huValue1, false, true);
     });
-    cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', false, true, false);
+    cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', true, false);
     cy.waitForSaveIndicator();
   });
 });

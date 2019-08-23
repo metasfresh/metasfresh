@@ -44,24 +44,7 @@ describe('Create test data', function() {
   it('Create packing related entities', function() {
     // eslint-disable-next-line
     Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productForPackingMaterial, productType, "24_Gebinde");
-    cy.fixture('product/packing_material.json').then(packingMaterialJson => {
-      Object.assign(new PackingMaterial(), packingMaterialJson)
-        .setName(productForPackingMaterial)
-        .setProduct(productForPackingMaterial)
-        .apply();
-    });
-    cy.fixture('product/packing_instructions.json').then(packingInstructionsJson => {
-      Object.assign(new PackingInstructions(), packingInstructionsJson)
-        .setName(packingInstructionsName)
-        .apply();
-    });
-    cy.fixture('product/packing_instructions_version.json').then(pivJson => {
-      Object.assign(new PackingInstructionsVersion(), pivJson)
-        .setName(packingInstructionsName)
-        .setPackingInstructions(packingInstructionsName)
-        .setPackingMaterial(productForPackingMaterial)
-        .apply();
-    });
+    Builder.createPackingMaterial(productForPackingMaterial, packingInstructionsName);
   });
 
   it('Create category', function() {

@@ -19,7 +19,6 @@ import './commands/navigation';
 import './commands/form';
 import './commands/action';
 import './commands/test';
-import { getLanguageSpecificWorkaround } from './utils/utils';
 
 Cypress.on('uncaught:exception', () => {
   //(err, runnable) => {

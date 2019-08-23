@@ -1,4 +1,3 @@
-/* eslint-disable */
 /*
  * IMPORTANT: be sure not to do this right at the start of a spec; if in doubt, do an extra "cy.wait(1000)".
  * Otherwise you will likely get this error
@@ -82,23 +81,20 @@ const appendHumanReadableNow = str => {
 };
 
 const getLanguageSpecificWorkaround_date = new Date();
+let getLanguageSpecificWorkaround_waitingLock = false; // used so that we don't try to sleep twice
 const getLanguageSpecificWorkaround = () => {
-  const TIME_TO_WAIT = 6 * 1000;
+  const TIME_TO_WAIT = 10 * 1000;
   return cy.get('body').then(function() {
     const now = new Date();
     const delta = now - getLanguageSpecificWorkaround_date;
-    if (delta < TIME_TO_WAIT) {
+    if (delta < TIME_TO_WAIT && !getLanguageSpecificWorkaround_waitingLock) {
+      getLanguageSpecificWorkaround_waitingLock = true;
+      // eslint-disable-next-line
       cy.log(`getLanguageSpecificWorkaround sleeping: date=${getLanguageSpecificWorkaround_date.getTime()}, now=${now.getTime()}, delta=${delta}ms`);
+      // eslint-disable-next-line
       return cy.wait(5000);
     }
   });
 };
 
-export {
-  getLanguageSpecific,
-  wrapRequest,
-  findByName,
-  humanReadableNow,
-  appendHumanReadableNow,
-  getLanguageSpecificWorkaround,
-};
+export { getLanguageSpecific, wrapRequest, findByName, humanReadableNow, appendHumanReadableNow };

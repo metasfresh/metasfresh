@@ -1,6 +1,9 @@
 import { Pricesystem } from './pricesystem';
 import { PriceList, PriceListVersion } from './pricelist';
 import { Product, ProductCategory, ProductPrice } from './product';
+import { PackingMaterial } from './packing_material';
+import { PackingInstructions } from './packing_instructions';
+import { PackingInstructionsVersion } from './packing_instructions_version';
 
 export class Builder {
   /**
@@ -111,6 +114,33 @@ export class Builder {
         .setProductType(productType)
         .setProductCategory(categoryName)
         .addProductPrice(productPrice)
+        .apply();
+    });
+  }
+
+  /**
+   * Create packing material and instructions from an existing Product
+   *
+   * @param productForPackingMaterialName
+   * @param packingInstructionsName
+   */
+  static createPackingMaterial(productForPackingMaterialName, packingInstructionsName) {
+    cy.fixture('product/packing_material.json').then(packingMaterialJson => {
+      Object.assign(new PackingMaterial(), packingMaterialJson)
+        .setName(productForPackingMaterialName)
+        .setProduct(productForPackingMaterialName)
+        .apply();
+    });
+    cy.fixture('product/packing_instructions.json').then(packingInstructionsJson => {
+      Object.assign(new PackingInstructions(), packingInstructionsJson)
+        .setName(packingInstructionsName)
+        .apply();
+    });
+    cy.fixture('product/packing_instructions_version.json').then(pivJson => {
+      Object.assign(new PackingInstructionsVersion(), pivJson)
+        .setName(packingInstructionsName)
+        .setPackingInstructions(packingInstructionsName)
+        .setPackingMaterial(productForPackingMaterialName)
         .apply();
     });
   }

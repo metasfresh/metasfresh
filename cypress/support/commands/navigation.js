@@ -135,11 +135,16 @@ Cypress.Commands.add('selectRowByColumnAndValue', (columnName, expectedValue, mo
     .contains('thead tr th', columnName)
     .invoke('index')
     .then(columnIndex => {
-      // step 2: return the cell which contains the particular soDocNumber in columnNumber from above
+      // step 2: take the cell which contains the expectedValue in columnNumber from above
       return cy
         .get(path)
         .contains(`tbody td:nth-child(${columnIndex + 1})`, expectedValue)
         .should('exist')
-        .click();
+        .click()
+        .then(td => {
+          // step 3: return the row containing that cell
+          const tr = td.parent();
+          return cy.wrap(tr).should('have.class', 'row-selected');
+        });
     });
 });

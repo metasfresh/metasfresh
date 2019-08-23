@@ -1,4 +1,4 @@
-import { getLanguageSpecific } from '../utils/utils';
+import { getLanguageSpecific, humanReadableNow } from '../utils/utils';
 import { DocumentActionKey, DocumentStatusKey, RewriteURL } from '../utils/constants';
 import { checkIfWindowCanExecuteActions } from './commands_utils';
 
@@ -40,6 +40,10 @@ Cypress.Commands.add('pressStartButton', waitBeforePress => {
 
     cy.waitForSaveIndicator();
 
+    const startAlias = `startButton-${humanReadableNow()}`;
+    cy.server();
+    cy.route('GET', new RegExp(RewriteURL.QUICKACTION)).as(startAlias);
+
     // fail if there is a confirm dialog because it's the "do you really want to leave" confrimation which means that the record can not be saved
     // https://docs.cypress.io/api/events/catalog-of-events.html#To-catch-a-single-uncaught-exception
     cy.on('window:confirm', str => {
@@ -48,6 +52,7 @@ Cypress.Commands.add('pressStartButton', waitBeforePress => {
 
     const startText = Cypress.messages.modal.actions.start;
     cy.clickButtonWithText(startText);
+    cy.wait(`@${startAlias}`);
   });
 });
 
