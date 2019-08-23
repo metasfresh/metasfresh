@@ -1,7 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-
+/**
+ * Separator for element groups
+ * @param {object} props Component props
+ * @param {string} title Separator title
+ * @param {bool} collapsible Separator collapsible
+ * @param {bool} sectionCollapsed Separator collapsed
+ * @param {*} idx Index
+ * @param {function} onClick Callback function for onClick Handler
+ * @param {*} tabId Tab ID
+ */
 const Separator = props => {
   const { title, collapsible, sectionCollapsed, idx, onClick, tabId } = props;
 
