@@ -20,6 +20,8 @@ import com.google.common.base.Stopwatch;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.session.UserSession;
+import de.metas.user.UserId;
+import de.metas.util.Check;
 
 /*
  * #%L
@@ -199,25 +201,13 @@ public class ServletLoggingFilter implements Filter
 				return "_noSession";
 			}
 
-			final String userName = userSession.getUserName();
 			if (!userSession.isLoggedIn())
 			{
-				if (userName == null || userName.isEmpty())
-				{
-					return "_notLoggedIn";
-				}
-				else
-				{
-					return "_notLoggedInBut_"+userName;
-				}
-			}
-			else if (userName == null || userName.isEmpty())
-			{
-				return "_unknown";
+				return "_notLoggedIn";
 			}
 			else
 			{
-				return userName;
+				return extractUserName(userSession);
 			}
 		}
 		catch (final Exception e)
@@ -225,6 +215,23 @@ public class ServletLoggingFilter implements Filter
 			e.printStackTrace();
 			return "_error";
 		}
+	}
+
+	private static final String extractUserName(final UserSession userSession)
+	{
+		final String userName = userSession.getUserName();
+		if (!Check.isEmpty(userName, true))
+		{
+			return userName;
+		}
+
+		final UserId loggedUserId = userSession.getLoggedUserIdIfExists().orElse(null);
+		if (loggedUserId != null)
+		{
+			return String.valueOf(loggedUserId.getRepoId());
+		}
+
+		return "?";
 	}
 
 	private static final String extractUserAgent(final HttpServletRequest httpRequest)

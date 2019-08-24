@@ -3,6 +3,7 @@ package de.metas.ui.web.session;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.service.ClientId;
@@ -213,6 +214,11 @@ import de.metas.user.UserId;
 	public UserId getLoggedUserId()
 	{
 		return Env.getLoggedUserId(getCtx());
+	}
+
+	public Optional<UserId> getLoggedUserIdIfExists()
+	{
+		return Env.getLoggedUserIdIfExists(getCtx());
 	}
 
 	public RoleId getLoggedRoleId()
