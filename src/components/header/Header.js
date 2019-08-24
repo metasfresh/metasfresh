@@ -26,6 +26,13 @@ import SideList from './SideList';
 import Subheader from './SubHeader';
 import UserDropdown from './UserDropdown';
 
+/**
+ * Application Header.
+ * The Header component is shown in every view besides Modal or RawModal in frontend. It defines
+ * the top bar with different menus and icons in metasfresh WebUI. It hosts the action menu,
+ * breadcrumb, logo, notification menu, avatar and sidelist menu.
+ * @params {object} props Component props
+ */
 class Header extends Component {
   state = {
     isSubheaderShow: false,
