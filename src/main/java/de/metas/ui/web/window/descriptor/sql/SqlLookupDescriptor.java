@@ -99,6 +99,16 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 				.buildProvider();
 	}
 
+	public static LookupDescriptorProvider productAttributes()
+	{
+		return builder()
+				.setCtxTableName(null) // tableName
+				.setCtxColumnName(I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID)
+				.setDisplayType(DisplayType.PAttribute)
+				.setReadOnlyAccess()
+				.buildProvider();
+	}
+
 	public static LookupDescriptorProvider listByAD_Reference_Value_ID(final int AD_Reference_Value_ID)
 	{
 		Check.assumeGreaterThanZero(AD_Reference_Value_ID, "AD_Reference_Value_ID");
