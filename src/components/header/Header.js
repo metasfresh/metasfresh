@@ -31,7 +31,11 @@ import UserDropdown from './UserDropdown';
  * The Header component is shown in every view besides Modal or RawModal in frontend. It defines
  * the top bar with different menus and icons in metasfresh WebUI. It hosts the action menu,
  * breadcrumb, logo, notification menu, avatar and sidelist menu.
- * @params {object} props Component props
+ * @param {object} props Component props
+ * @param {function} props.dispatch
+ * @param {object} props.inbox
+ * @param {object} props.me
+ * @category Components
  */
 class Header extends Component {
   state = {
