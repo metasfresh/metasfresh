@@ -4,8 +4,10 @@ import java.io.File;
 import java.util.List;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
@@ -13,6 +15,7 @@ import de.metas.organization.OrgId;
 import de.metas.report.jasper.JasperClassLoader;
 import de.metas.report.jasper.JasperCompileClassLoader;
 import de.metas.report.util.DevelopmentWorkspaceJasperDirectoriesFinder;
+import de.metas.util.Check;
 import de.metas.util.Services;
 
 /*
@@ -42,6 +45,8 @@ public abstract class AbstractReportEngine implements IReportEngine
 	private static final Logger logger = LogManager.getLogger(AbstractReportEngine.class);
 	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 
+	private static final String SYSCONFIG_ReportsDirs = "reportsDirs";
+
 	protected ClassLoader createReportClassLoader(final ReportContext reportContext)
 	{
 		final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
@@ -51,6 +56,7 @@ public abstract class AbstractReportEngine implements IReportEngine
 		{
 			parentClassLoader = JasperCompileClassLoader.builder()
 					.parentClassLoader(contextClassLoader)
+					.additionalResourceDirNames(getConfiguredReportsDirs())
 					.additionalResourceDirNames(getDevelopmentWorkspaceReportsDirs())
 					.build();
 			logger.info("Using compile class loader: {}", parentClassLoader);
@@ -78,5 +84,21 @@ public abstract class AbstractReportEngine implements IReportEngine
 			logger.warn("No development workspace directory configured. Not considering workspace reports directories");
 			return ImmutableList.of();
 		}
+	}
+
+	private List<File> getConfiguredReportsDirs()
+	{
+		final String reportsDirs = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_ReportsDirs);
+		if (Check.isEmpty(reportsDirs, true))
+		{
+			return ImmutableList.of();
+		}
+
+		return Splitter.on(",")
+				.omitEmptyStrings()
+				.splitToList(reportsDirs.trim())
+				.stream()
+				.map(File::new)
+				.collect(ImmutableList.toImmutableList());
 	}
 }
