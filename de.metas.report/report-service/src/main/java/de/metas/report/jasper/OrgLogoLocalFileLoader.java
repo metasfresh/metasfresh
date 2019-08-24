@@ -38,6 +38,7 @@ import org.compiere.model.MImage;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.io.BaseEncoding;
 
 import de.metas.bpartner.service.IBPartnerOrgBL;
@@ -47,7 +48,6 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.ToString;
 
 /**
  * Builds and returns the local organization logo {@link File}.
@@ -55,7 +55,6 @@ import lombok.ToString;
  * @author tsa
  *
  */
-@ToString
 final class OrgLogoLocalFileLoader
 {
 	public static OrgLogoLocalFileLoader newInstance()
@@ -73,6 +72,15 @@ final class OrgLogoLocalFileLoader
 
 	private OrgLogoLocalFileLoader()
 	{
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("emptyPNGFile", emptyPNGFile)
+				.toString();
 	}
 
 	// @Override
