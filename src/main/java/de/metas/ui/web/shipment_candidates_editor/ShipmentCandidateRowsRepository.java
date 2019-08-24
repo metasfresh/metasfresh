@@ -8,7 +8,6 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 
@@ -71,7 +70,7 @@ final class ShipmentCandidateRowsRepository
 		customersLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
 		warehousesLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_Warehouse.Table_Name);
 		productsLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_Product.Table_Name);
-		asiLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_AttributeSetInstance.Table_Name);
+		asiLookup = LookupDataSourceFactory.instance.productAttributes();
 	}
 
 	public ShipmentCandidateRows getByShipmentScheduleIds(final Set<ShipmentScheduleId> shipmentScheduleIds)
