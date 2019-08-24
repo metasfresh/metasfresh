@@ -23,11 +23,11 @@ import org.compiere.apps.ConfirmPanel;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import groovy.lang.GroovyShell;
 import groovy.ui.ConsoleTextEditor;
 
@@ -179,7 +179,7 @@ public class GroovyScriptEditor extends CDialog implements ActionListener
 	 */
 	private void setScript(final String script)
 	{
-		this.script = Util.coalesce(script, "");
+		this.script = CoalesceUtil.coalesce(script, "");
 		editor.getTextEditor().setText(this.script);
 	}
 

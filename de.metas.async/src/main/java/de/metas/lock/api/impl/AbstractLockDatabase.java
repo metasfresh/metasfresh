@@ -28,7 +28,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.slf4j.Logger;
@@ -142,7 +141,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 	 */
 	private final int lockByIterator(final ILockCommand lockCommand)
 	{
-		final Iterator<ITableRecordReference> records = lockCommand.getRecordsToLockIterator();
+		final Iterator<TableRecordReference> records = lockCommand.getRecordsToLockIterator();
 		Check.assumeNotNull(records, "records not null");
 
 		final boolean failIfAlreadyLocked = lockCommand.isFailIfAlreadyLocked();
@@ -150,7 +149,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 		int countLocked = 0;
 		while (records.hasNext())
 		{
-			final ITableRecordReference record = records.next();
+			final TableRecordReference record = records.next();
 
 			//
 			// Acquire/Change the lock
@@ -196,7 +195,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 	 *         </ul>
 	 * @throws LockFailedException if locking failed
 	 */
-	protected abstract boolean lockRecord(final ILockCommand lockCommand, final ITableRecordReference record);
+	protected abstract boolean lockRecord(final ILockCommand lockCommand, final TableRecordReference record);
 
 	/**
 	 * Change the lock of given record.
@@ -205,7 +204,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 	 * @param record
 	 * @return true if lock was changed
 	 */
-	protected abstract boolean changeLockRecord(final ILockCommand lockCommand, final ITableRecordReference record);
+	protected abstract boolean changeLockRecord(final ILockCommand lockCommand, final TableRecordReference record);
 
 	@Override
 	public final int unlock(final IUnlockCommand unlockCommand)
@@ -247,13 +246,13 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 
 	private final int unlockByIterator(IUnlockCommand unlockCommand)
 	{
-		final Iterator<ITableRecordReference> records = unlockCommand.getRecordsToUnlockIterator();
+		final Iterator<TableRecordReference> records = unlockCommand.getRecordsToUnlockIterator();
 		Check.assumeNotNull(records, "records not null");
 
 		int countUnlocked = 0;
 		while (records.hasNext())
 		{
-			final ITableRecordReference record = records.next();
+			final TableRecordReference record = records.next();
 			final boolean unlocked = unlockRecord(unlockCommand, record);
 			if (unlocked)
 			{
@@ -264,7 +263,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 		return countUnlocked;
 	}
 
-	protected abstract boolean unlockRecord(IUnlockCommand unlockCommand, ITableRecordReference record);
+	protected abstract boolean unlockRecord(IUnlockCommand unlockCommand, TableRecordReference record);
 
 	@Override
 	public final <T> T retrieveAndLock(final IQuery<T> query, final Class<T> clazz)
@@ -289,7 +288,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 			}
 
 			// attempt to get a lock
-			final ITableRecordReference record = TableRecordReference.of(model);
+			final TableRecordReference record = TableRecordReference.of(model);
 			if (lockRecord(lockCommand, record))
 			{
 				// Successfully acquired our lock :-)

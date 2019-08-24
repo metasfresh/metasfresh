@@ -5,12 +5,12 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import com.google.common.base.Optional;
 
 import de.metas.notification.spi.IRecordTextProvider;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
+import de.metas.util.lang.CoalesceUtil;
 
 /*
  * #%L
@@ -76,6 +76,6 @@ public final class DefaultPrintingRecordTextProvider implements IRecordTextProvi
 		}
 
 		final String errorMsg = printJobInstructions.getErrorMsg();
-		return Optional.of(Util.coalesce(errorMsg, ""));
+		return Optional.of(CoalesceUtil.coalesce(errorMsg, ""));
 	}
 }

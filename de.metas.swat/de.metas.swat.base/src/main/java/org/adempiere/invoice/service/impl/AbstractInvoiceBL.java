@@ -105,6 +105,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -626,7 +627,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return;
 		}
 
-		final String adLanguage = Util.coalesce(invoice.getC_BPartner().getAD_Language(), Env.getAD_Language());
+		final String adLanguage = CoalesceUtil.coalesce(invoice.getC_BPartner().getAD_Language(), Env.getAD_Language());
 
 		final IModelTranslationMap docTypeTrl = InterfaceWrapperHelper.getModelTranslationMap(docType);
 		final ITranslatableString description = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_Description, docType.getDescription());

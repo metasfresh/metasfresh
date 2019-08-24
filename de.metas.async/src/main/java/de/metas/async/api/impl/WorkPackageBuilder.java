@@ -27,7 +27,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.async.api.IQueueDAO;
@@ -58,7 +57,7 @@ import lombok.NonNull;
 	private WorkPackageParamsBuilder _parametersBuilder;
 	private String _trxName = ITrx.TRXNAME_None;
 	private boolean _trxNameBound = false;
-	private final LinkedHashSet<ITableRecordReference> elements = new LinkedHashSet<>();
+	private final LinkedHashSet<TableRecordReference> elements = new LinkedHashSet<>();
 	/** Locker used to lock enqueued elements */
 	private ILockCommand _elementsLocker = null;
 	/** Lock aquired when enqueued elements were locked */
@@ -143,7 +142,7 @@ import lombok.NonNull;
 			@NonNull final IWorkPackageQueue workpackageQueue,
 			@NonNull final I_C_Queue_WorkPackage workpackage)
 	{
-		for (final ITableRecordReference element : elements)
+		for (final TableRecordReference element : elements)
 		{
 			workpackageQueue.enqueueElement(workpackage, element.getAD_Table_ID(), element.getRecord_ID());
 		}
@@ -194,7 +193,7 @@ import lombok.NonNull;
 
 		//
 		// Add the model to elements to enqueue
-		final ITableRecordReference record = TableRecordReference.ofOrNull(model);
+		final TableRecordReference record = TableRecordReference.ofOrNull(model);
 		elements.add(record);
 
 		//

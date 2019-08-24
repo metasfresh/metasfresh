@@ -66,7 +66,6 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Login;
-import org.compiere.util.Util;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
@@ -80,6 +79,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.hash.HashableString;
+import de.metas.util.lang.CoalesceUtil;
 
 /**
  * Application Login Window
@@ -176,7 +176,7 @@ public final class ALogin extends CDialog
 
 	private Login m_login = null;
 
-	private final Properties getCtx()
+	private Properties getCtx()
 	{
 		return ctx;
 	}
@@ -409,8 +409,10 @@ public final class ALogin extends CDialog
 			defaultsOK();
 			validateConnection();
 
-			if (m_connectionOK)		// simulate
+			if (m_connectionOK)
+			{
 				m_okPressed = true;
+			}
 			return m_connectionOK;
 		}
 		return false;
@@ -506,7 +508,7 @@ public final class ALogin extends CDialog
 
 		//
 		// Decide which language to preselect
-		languageToPreselect = Util.coalesce(languageToPreselect, languagePreviouslySelected, baseLanguage);
+		languageToPreselect = CoalesceUtil.coalesce(languageToPreselect, languagePreviouslySelected, baseLanguage);
 
 		//
 		// Update language combo's model and preselect the language
@@ -580,7 +582,7 @@ public final class ALogin extends CDialog
 		}
 	}
 
-	private final void actionPerformed0(final ActionEvent e)
+	private void actionPerformed0(final ActionEvent e)
 	{
 		if (ConfirmPanel.A_OK.equals(e.getActionCommand()))
 		{
@@ -596,7 +598,9 @@ public final class ALogin extends CDialog
 				{
 					// Dispose if OK - teo_sarca [ 1674663 ]
 					if (!defaultsOK())
+					{
 						m_okPressed = false;
+					}
 				}
 				finally
 				{
@@ -849,7 +853,7 @@ public final class ALogin extends CDialog
 		}
 	}
 
-	private static final KeyNamePair findDefaultRole(final Set<KeyNamePair> roles)
+	private static KeyNamePair findDefaultRole(final Set<KeyNamePair> roles)
 	{
 		if (Check.isEmpty(roles))
 		{
@@ -908,7 +912,7 @@ public final class ALogin extends CDialog
 		clientComboChanged();
 	}
 
-	private static final KeyNamePair findDefaultClient(final Set<KeyNamePair> clients)
+	private static KeyNamePair findDefaultClient(final Set<KeyNamePair> clients)
 	{
 		if (Check.isEmpty(clients))
 		{
@@ -965,7 +969,7 @@ public final class ALogin extends CDialog
 		orgComboChanged();
 	}
 
-	private static final KeyNamePair findDefaultOrg(final Set<KeyNamePair> orgs)
+	private static KeyNamePair findDefaultOrg(final Set<KeyNamePair> orgs)
 	{
 		if (Check.isEmpty(orgs))
 		{

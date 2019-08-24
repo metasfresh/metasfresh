@@ -13,21 +13,20 @@ package de.metas.lock.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.Future;
 
-import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.process.PInstanceId;
 
@@ -62,16 +61,15 @@ public interface IUnlockCommand
 	IUnlockCommand setRecordsByModels(Collection<?> models);
 
 	IUnlockCommand setRecordByTableRecordId(int tableId, int recordId);
-	
+
 	IUnlockCommand setRecordByTableRecordId(String tableName, int recordId);
 
-	Iterator<ITableRecordReference> getRecordsToUnlockIterator();
+	Iterator<TableRecordReference> getRecordsToUnlockIterator();
 
 	IUnlockCommand setRecordsBySelection(Class<?> modelClass, PInstanceId adPIstanceId);
 
 	int getSelectionToUnlock_AD_Table_ID();
 
 	PInstanceId getSelectionToUnlock_AD_PInstance_ID();
-
 
 }

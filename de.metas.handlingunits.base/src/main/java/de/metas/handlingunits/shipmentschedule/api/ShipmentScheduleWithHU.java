@@ -46,7 +46,6 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.Null;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -82,6 +81,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -354,7 +354,7 @@ public class ShipmentScheduleWithHU
 	 */
 	private I_M_HU getTopLevelHU()
 	{
-		return Util.coalesce(luHU, tuHU, vhu);
+		return CoalesceUtil.coalesce(luHU, tuHU, vhu);
 	}
 
 	/**

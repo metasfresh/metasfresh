@@ -41,7 +41,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -65,6 +64,7 @@ import de.metas.security.permissions.Access;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.Getter;
 import lombok.NonNull;
@@ -1466,7 +1466,7 @@ public final class ProcessInfo implements Serializable
 
 		private boolean isArchiveReportData()
 		{
-			return Util.coalesce(archiveReportData, Boolean.TRUE);
+			return CoalesceUtil.coalesce(archiveReportData, Boolean.TRUE);
 		}
 
 		public ProcessInfoBuilder setWindowNo(int windowNo)

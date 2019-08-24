@@ -36,7 +36,6 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.inout.model.I_M_InOut;
@@ -45,6 +44,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
@@ -177,7 +177,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 				.create()
 				.aggregate(I_M_InOutLine.COLUMNNAME_MovementQty, Aggregate.SUM, BigDecimal.class);
 
-		return Util.coalesce(qty, ZERO);
+		return CoalesceUtil.coalesce(qty, ZERO);
 	}
 
 	@Override
@@ -193,7 +193,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 				.create()
 				.aggregate(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_QtyPicked, Aggregate.SUM, BigDecimal.class);
 
-		return Util.coalesce(qty, ZERO);
+		return CoalesceUtil.coalesce(qty, ZERO);
 	}
 
 	@Override

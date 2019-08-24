@@ -1,23 +1,5 @@
 package de.metas.invoice;
 
-import static de.metas.util.Check.assume;
-import static de.metas.util.Check.assumeNotNull;
-import static java.time.temporal.TemporalAdjusters.lastDayOfMonth;
-import static java.time.temporal.TemporalAdjusters.nextOrSame;
-import static org.compiere.util.Util.coalesce;
-
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
  * de.metas.business
@@ -39,6 +21,24 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+import static de.metas.util.Check.assume;
+import static de.metas.util.Check.assumeNotNull;
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static java.time.temporal.TemporalAdjusters.lastDayOfMonth;
+import static java.time.temporal.TemporalAdjusters.nextOrSame;
+
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 @Value
 public class InvoiceSchedule
