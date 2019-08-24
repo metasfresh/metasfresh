@@ -56,6 +56,9 @@ import UserDropdown from './UserDropdown';
  * @param {*} handleEditModeToggle
  * @param {*} activeTab
  * @param {*} plugins
+ * @param {*} dropzoneFocused
+ * @param {*} query
+ * @param {*} handleDeletedStatus
  * @category Components
  */
 class Header extends Component {
