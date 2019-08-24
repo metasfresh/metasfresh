@@ -2,7 +2,7 @@ package de.metas.report.client;
 
 /*
  * #%L
- * de.metas.report.jasper.client
+ * de.metas.report.report.client
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -63,17 +63,15 @@ public final class ReportsClient
 		return instance;
 	}
 
-	public static final String SYSCONFIG_JRServerClass = "de.metas.report.jasper.client.JRServerClass";
-	public static final String SYSCONFIG_JRServerRetryMS = "de.metas.report.jasper.client.ServiceConnectionExceptionRetryAdvisedInMillis";
-
-	public static final String SYSCONFIG_JRServerClass_DEFAULT = RemoteServletInvoker.class.getName();
+	private static final String SYSCONFIG_ReportsServerClass = "de.metas.report.jasper.client.JRServerClass";
+	private static final String SYSCONFIG_ReportsServerClass_DEFAULT = RemoteServletInvoker.class.getName();
 
 	private static final Logger logger = LogManager.getLogger(ReportsClient.class);
 
 	// NOTE: keep this one after all other static declarations, to avoid NPE on initialization
 	private static final ReportsClient instance = new ReportsClient();
 
-	/** Jasper server supplier */
+	/** Reports server supplier */
 	private final ExtendedMemorizingSupplier<IReportServer> serverSupplier = ExtendedMemorizingSupplier.of(() -> createReportServer());
 
 	private ReportsClient()
@@ -93,7 +91,7 @@ public final class ReportsClient
 			return 0;
 		}
 
-		// Force recreating of jasper server, just in case the config changed
+		// Force recreating of reports server, just in case the config changed
 		serverSupplier.forget();
 
 		final IReportServer server = serverSupplier.get();
@@ -131,7 +129,7 @@ public final class ReportsClient
 		catch (IOException | ClassNotFoundException e)
 		{
 			throw new AdempiereException(
-					"Caught " + e.getClass().getSimpleName() + " while trying to convert jasper server data byte[] to JasperPrint", e);
+					"Caught " + e.getClass().getSimpleName() + " while trying to convert reports server data byte[] to JasperPrint", e);
 		}
 	}
 
@@ -162,8 +160,8 @@ public final class ReportsClient
 
 	private IReportServer createReportServer()
 	{
-		final String jrClassname = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_JRServerClass, SYSCONFIG_JRServerClass_DEFAULT);
-		logger.info("JasperServer classname: {}", jrClassname);
+		final String serverClassname = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_ReportsServerClass, SYSCONFIG_ReportsServerClass_DEFAULT);
+		logger.info("Reports server classname: {}", serverClassname);
 
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		if (classLoader == null)
@@ -173,16 +171,16 @@ public final class ReportsClient
 		try
 		{
 			final IReportServer server = (IReportServer)classLoader
-					.loadClass(jrClassname)
+					.loadClass(serverClassname)
 					.newInstance();
-			logger.info("JasperServer instance: " + server);
+			logger.info("Reports server instance: " + server);
 			return server;
 		}
 		catch (ClassNotFoundException | InstantiationException | IllegalAccessException e)
 		{
-			throw new AdempiereException("Jasper server class with name " + jrClassname + " could not be instantated", e)
+			throw new AdempiereException("Reports server class with name " + serverClassname + " could not be instantated", e)
 					.appendParametersToMessage()
-					.setParameter("jrClassname", jrClassname)
+					.setParameter("jrClassname", serverClassname)
 					.setParameter("classLoader", classLoader);
 		}
 	}

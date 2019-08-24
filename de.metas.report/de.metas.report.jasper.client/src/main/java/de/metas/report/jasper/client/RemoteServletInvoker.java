@@ -43,7 +43,6 @@ import com.google.common.io.Closeables;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
-import de.metas.report.client.ReportsClient;
 import de.metas.report.server.IReportServer;
 import de.metas.report.server.OutputType;
 import de.metas.report.server.ReportConstants;
@@ -54,6 +53,8 @@ import de.metas.util.exceptions.ServiceConnectionException;
 public class RemoteServletInvoker implements IReportServer
 {
 	private static final Logger logger = LogManager.getLogger(RemoteServletInvoker.class);
+
+	private static final String SYSCONFIG_JRServerRetryMS = "de.metas.report.jasper.client.ServiceConnectionExceptionRetryAdvisedInMillis";
 
 	private final String reportsServlet;
 	private final String mgtServlet;
@@ -118,7 +119,7 @@ public class RemoteServletInvoker implements IReportServer
 		{
 			writeLog(urlStr, e);
 
-			final int retryInMillis = Services.get(ISysConfigBL.class).getIntValue(ReportsClient.SYSCONFIG_JRServerRetryMS, -1);
+			final int retryInMillis = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_JRServerRetryMS, -1);
 			throw new ServiceConnectionException(urlStr, retryInMillis, e);
 		}
 		catch (final IOException e)
