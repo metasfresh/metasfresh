@@ -264,7 +264,7 @@ import de.metas.user.UserId;
 		final String adLanguageNew = validLang.getAD_Language();
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, adLanguageNew);
 		this.locale = validLang.getLocale();
-		UserSession.logger.info("Changed AD_Language: {} -> {}, {}", adLanguageOld, adLanguageNew, validLang);
+		UserSession.logger.debug("Changed AD_Language: {} -> {}, {}", adLanguageOld, adLanguageNew, validLang);
 
 		return adLanguageOld;
 	}

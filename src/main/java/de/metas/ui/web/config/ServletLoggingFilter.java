@@ -137,10 +137,12 @@ public class ServletLoggingFilter implements Filter
 
 	private static final String extractRequestInfo(final ServletRequest request)
 	{
-		String requestInfo;
 		if (request instanceof HttpServletRequest)
 		{
 			final HttpServletRequest httpRequest = (HttpServletRequest)request;
+
+			final String httpMethod = httpRequest.getMethod();
+
 			final String urlStr = httpRequest.getRequestURL().toString();
 			URI uri;
 			try
@@ -164,14 +166,14 @@ public class ServletLoggingFilter implements Filter
 
 			final String queryString = httpRequest.getQueryString();
 
-			requestInfo = path + (queryString != null ? "?" + queryString : "");
+			return (httpMethod != null ? httpMethod : "")
+					+ " " + path
+					+ (queryString != null ? "?" + queryString : "");
 		}
 		else
 		{
-			requestInfo = request.toString();
+			return request.toString();
 		}
-
-		return requestInfo;
 	}
 
 	private static final String extractRemoteAddr(final HttpServletRequest httpRequest)
