@@ -18,6 +18,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
+import de.metas.process.BarcodeScannerType;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 import de.metas.util.Check;
@@ -102,6 +103,7 @@ public final class DocumentLayoutElementDescriptor
 	private final boolean multilineText; // in case widgetType is Text
 	private final int multilineTextLines; // in case widgetType is Text
 	private final ButtonFieldActionDescriptor buttonActionDescriptor;
+	private final BarcodeScannerType barcodeScannerType;
 
 	private final LayoutType layoutType;
 	private final WidgetSize widgetSize;
@@ -127,10 +129,12 @@ public final class DocumentLayoutElementDescriptor
 		description = builder.getDescription();
 
 		widgetType = builder.getWidgetType();
+
 		allowShowPassword = builder.isAllowShowPassword();
 		multilineText = builder.isMultilineText();
 		multilineTextLines = builder.getMultilineTextLines();
 		buttonActionDescriptor = builder.getButtonActionDescriptor();
+		barcodeScannerType = builder.getBarcodeScannerType();
 
 		layoutType = builder.getLayoutType();
 		widgetSize = builder.getWidgetSize();
@@ -262,6 +266,11 @@ public final class DocumentLayoutElementDescriptor
 		return buttonActionDescriptor;
 	}
 
+	public BarcodeScannerType getBarcodeScannerType()
+	{
+		return barcodeScannerType;
+	}
+
 	public static final class Builder
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentLayoutElementDescriptor.Builder.class);
@@ -274,7 +283,8 @@ public final class DocumentLayoutElementDescriptor
 		private boolean _allowShowPassword = false; // in case widgetType is Password
 		private boolean _multilineText = false; // in case widgetType is Text
 		private int _multilineTextLines = 0; // in case widgetType is Text
-		private ButtonFieldActionDescriptor buttonActionDescriptor = null;
+		private ButtonFieldActionDescriptor buttonActionDescriptor;
+		private BarcodeScannerType barcodeScannerType;
 
 		private LayoutType _layoutType;
 		private WidgetSize _widgetSize;
@@ -523,7 +533,7 @@ public final class DocumentLayoutElementDescriptor
 		{
 			return _advancedField;
 		}
-		
+
 		public Builder removeFieldByFieldName(final String fieldName)
 		{
 			_fieldsBuilders.remove(fieldName);
@@ -646,6 +656,17 @@ public final class DocumentLayoutElementDescriptor
 		/* package */ ButtonFieldActionDescriptor getButtonActionDescriptor()
 		{
 			return buttonActionDescriptor;
+		}
+
+		public Builder barcodeScannerType(final BarcodeScannerType barcodeScannerType)
+		{
+			this.barcodeScannerType = barcodeScannerType;
+			return this;
+		}
+
+		private BarcodeScannerType getBarcodeScannerType()
+		{
+			return barcodeScannerType;
 		}
 	}
 }

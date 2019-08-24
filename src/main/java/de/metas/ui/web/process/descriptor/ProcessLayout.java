@@ -7,10 +7,13 @@ import javax.annotation.Nullable;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.process.BarcodeScannerType;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -51,6 +54,7 @@ public class ProcessLayout
 	private final ProcessId processId;
 
 	private final PanelLayoutType layoutType;
+	private final BarcodeScannerType barcodeScannerType;
 
 	private final ITranslatableString caption;
 	private final ITranslatableString description;
@@ -68,6 +72,19 @@ public class ProcessLayout
 		caption = TranslatableStrings.nullToEmpty(builder.caption);
 		description = TranslatableStrings.nullToEmpty(builder.description);
 		elements = ImmutableList.copyOf(builder.elements);
+
+		if (layoutType == PanelLayoutType.SingleOverlayField)
+		{
+			final ImmutableSet<BarcodeScannerType> barcodeScannerTypes = this.elements.stream()
+					.map(DocumentLayoutElementDescriptor::getBarcodeScannerType)
+					.filter(Predicates.notNull())
+					.collect(ImmutableSet.toImmutableSet());
+			barcodeScannerType = barcodeScannerTypes.size() == 1 ? barcodeScannerTypes.iterator().next() : null;
+		}
+		else
+		{
+			barcodeScannerType = null;
+		}
 	}
 
 	@Override
@@ -84,6 +101,11 @@ public class ProcessLayout
 	public PanelLayoutType getLayoutType()
 	{
 		return layoutType;
+	}
+
+	public BarcodeScannerType getBarcodeScannerType()
+	{
+		return barcodeScannerType;
 	}
 
 	public ITranslatableString getCaption()
@@ -184,6 +206,7 @@ public class ProcessLayout
 					.setDescription(processParaDescriptor.getDescription())
 					.setWidgetType(processParaDescriptor.getWidgetType())
 					.setAllowShowPassword(processParaDescriptor.isAllowShowPassword())
+					.barcodeScannerType(processParaDescriptor.getBarcodeScannerType())
 					.addField(DocumentLayoutElementFieldDescriptor.builder(processParaDescriptor.getFieldName())
 							.setLookupInfos(processParaDescriptor.getLookupDescriptor().orElse(null))
 							.setPublicField(true)
