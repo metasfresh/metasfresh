@@ -35,6 +35,27 @@ import UserDropdown from './UserDropdown';
  * @param {function} props.dispatch
  * @param {object} props.inbox
  * @param {object} props.me
+ * @param {*} docSummaryData
+ * @param {*} siteName
+ * @param {*} docNoData
+ * @param {*} docStatus
+ * @param {*} docStatusData
+ * @param {*} dataId
+ * @param {*} breadcrumb
+ * @param {*} showSidelist
+ * @param {*} inbox
+ * @param {*} entity
+ * @param {*} query
+ * @param {*} showIndicator
+ * @param {*} windowId
+ * @param {*} isDocumentNotSaved
+ * @param {*} notfound
+ * @param {*} docId
+ * @param {*} me
+ * @param {*} editmode
+ * @param {*} handleEditModeToggle
+ * @param {*} activeTab
+ * @param {*} plugins
  * @category Components
  */
 class Header extends Component {
