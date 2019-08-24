@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Dropzone from 'react-dropzone';
 
 /**
- * Dropzone Component.
+ * __Dropzone Component__.
  * The DropzoneWrapper allows the user to drag&drop files onto the UI. These files are
  * then uploaded to metasfresh backend.
  * @param {object} props Component props

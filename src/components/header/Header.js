@@ -27,7 +27,7 @@ import Subheader from './SubHeader';
 import UserDropdown from './UserDropdown';
 
 /**
- * Application Header.
+ * __Application Header__.
  * The Header component is shown in every view besides Modal or RawModal in frontend. It defines
  * the top bar with different menus and icons in metasfresh WebUI. It hosts the action menu,
  * breadcrumb, logo, notification menu, avatar and sidelist menu.
