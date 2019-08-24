@@ -102,9 +102,9 @@ public class ASIRepository
 	 * @param attributeSetInstanceId
 	 * @return ASI document
 	 */
-	public ASIDocument loadReadonly(final AttributeSetInstanceId attributeSetInstanceId)
+	public ASIDocument loadReadonly(@NonNull final AttributeSetInstanceId attributeSetInstanceId)
 	{
-		if (!AttributeSetInstanceId.isRegular(attributeSetInstanceId))
+		if (!attributeSetInstanceId.isRegular())
 		{
 			throw new EntityNotFoundException("ASI " + attributeSetInstanceId);
 		}
