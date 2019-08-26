@@ -33,6 +33,22 @@ import OverlayField from './OverlayField';
  * @param {*} props.windowType
  * @param {*} props.viewId
  * @param {*} props.indicator
+ * @param {*} props.dataId
+ * @param {*} props.tabId
+ * @param {*} props.rowId
+ * @param {*} props.modalType
+ * @param {*} props.staticModalType
+ * @param {*} props.parentSelection
+ * @param {*} props.parentType
+ * @param {bool} props.isAdvanced
+ * @param {bool} props.modalViewId
+ * @param {bool} props.modalViewDocumentIds
+ * @param {bool} props.activeTabId
+ * @param {bool} props.childViewId
+ * @param {bool} props.childViewSelectedIds
+ * @param {bool} props.parentViewId
+ * @param {bool} props.parentViewSelectedIds
+ * @category Components
  */
 class Modal extends Component {
   mounted = false;
