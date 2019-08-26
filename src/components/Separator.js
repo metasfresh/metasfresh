@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
 /**
- * Separator for element groups.
+ * __Separator for element groups__.
  * The separator component allows to create collapsible sections in the window component.
  * The separator can  have a title. It is used as layout and grouping element in WebUI.
  * @param {object} props Component props
