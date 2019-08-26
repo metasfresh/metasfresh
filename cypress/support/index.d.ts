@@ -218,6 +218,8 @@ declare namespace Cypress {
      * @param fieldName name of the field is question
      * @param stringValue the string to write. This command prepends "{enter}" to that string
      * @param modal - optional, default = false - use true if the field is in a modal overlay
+     * @param rewriteUrl -optional, use custom url for the request
+     * @param {boolean} skipRequest - if set to true, the PATCH request will be skipped
      *
      * @example
      * // This will work also with modal dialogs, *unless* there is also a description field in the underlying document
@@ -227,7 +229,7 @@ declare namespace Cypress {
      * // This will fail if the field in question is *not* in a modal dialog
      * cy.writeIntoTextField('Description', 'myname', true)
      */
-    writeIntoTextField(fieldName: string, stringValue: string, modal?: boolean): Chainable<any>
+    writeIntoTextField(fieldName: string, stringValue: string, modal?: boolean, rewriteUrl?: RewriteURL, skipRequest?: boolean): Chainable<any>
 
 
     /**
