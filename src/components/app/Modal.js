@@ -115,7 +115,6 @@ class Modal extends Component {
   }
 
   /**
-   *
    * @method componentDidUpdate
    * @summary ToDo: Describe the method.
    * @param {Object} prevProps
@@ -336,6 +335,11 @@ class Modal extends Component {
     }
   };
 
+  /**
+   * @method handleScroll
+   * @summary ToDo: Describe the method
+   * @param {object} event
+   */
   handleScroll = event => {
     this.setState(prevState => {
       const scrolled = event.target.scrollTop > 0;
