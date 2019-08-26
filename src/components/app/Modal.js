@@ -25,38 +25,44 @@ import Indicator from './Indicator';
 import OverlayField from './OverlayField';
 
 /**
- * Modal component.
- * @param {object} props Component props
- * @param {*} props.activeTabId
- * @param {*} props.childViewId
- * @param {*} props.closeCallback
- * @param {*} props.childViewSelectedIds
- * @param {*} props.data
- * @param {*} props.dataId
- * @param {func} props.dispatch Dispatch function
- * @param {*} props.indicator
- * @param {*} props.layout
- * @param {bool} props.isAdvanced
- * @param {bool} props.isDocumentNotSaved
- * @param {bool} props.isNewDoc
- * @param {string} props.staticModalType
- * @param {*} props.modalTitle
- * @param {*} props.modalType
- * @param {*} props.modalSaveStatus
- * @param {*} props.modalViewId
- * @param {*} props.modalViewDocumentIds
- * @param {*} props.staticModalType
- * @param {*} props.tabId
- * @param {*} props.parentSelection
- * @param {*} props.parentType
- * @param {*} props.parentViewId
- * @param {*} props.parentViewSelectedIds
- * @param {*} props.rawModalVisible
- * @param {*} props.rowId
- * @param {*} props.triggerField
- * @param {*} props.viewId
- * @param {*} props.windowType
+ * @file Modal is an overlay view that can be opened over the main view.
+ * @module Modal
+ * @extends Component
+ */
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} activeTabId
+ * @prop {*} childViewId
+ * @prop {*} closeCallback
+ * @prop {*} childViewSelectedIds
+ * @prop {*} data
+ * @prop {*} dataId
+ * @prop {func} dispatch Dispatch function
+ * @prop {*} indicator
+ * @prop {*} layout
+ * @prop {bool} isAdvanced
+ * @prop {bool} isDocumentNotSaved
+ * @prop {bool} isNewDoc
+ * @prop {string} staticModalType
+ * @prop {*} modalTitle
+ * @prop {*} modalType
+ * @prop {*} modalSaveStatus
+ * @prop {*} modalViewId
+ * @prop {*} modalViewDocumentIds
+ * @prop {*} staticModalType
+ * @prop {*} tabId
+ * @prop {*} parentSelection
+ * @prop {*} parentType
+ * @prop {*} parentViewId
+ * @prop {*} parentViewSelectedIds
+ * @prop {*} rawModalVisible
+ * @prop {*} rowId
+ * @prop {*} triggerField
+ * @prop {*} viewId
+ * @prop {*} windowType
  * @category Components
+ * @extends {Component<Props>}
  */
 class Modal extends Component {
   mounted = false;
