@@ -8,6 +8,7 @@ import org.compiere.model.I_AD_ImpFormat;
 import org.compiere.model.I_AD_ImpFormat_Row;
 import org.compiere.model.I_C_DataImport;
 import org.compiere.model.POInfo;
+import org.springframework.stereotype.Repository;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
@@ -38,6 +39,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@Repository
 public class ImpFormatRepository
 {
 	public ImpFormat getById(@NonNull final ImpFormatId impFormatId)
