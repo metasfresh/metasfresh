@@ -35,7 +35,7 @@ import org.compiere.model.I_I_Inventory;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public final class MInventoryImportContext
+final class MInventoryImportContext
 {
 	private I_I_Inventory previousImportRecord = null;
 	private List<I_I_Inventory> previousImportRecordsForSameInventory = new ArrayList<>();

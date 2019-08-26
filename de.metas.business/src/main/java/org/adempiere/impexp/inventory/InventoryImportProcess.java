@@ -1,7 +1,7 @@
 package org.adempiere.impexp.inventory;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -16,6 +16,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -42,6 +43,7 @@ import de.metas.inventory.IInventoryBL;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -55,9 +57,11 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 {
 	private static final Logger logger = LogManager.getLogger(InventoryImportProcess.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-	final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-	final ILotNumberDateAttributeDAO lotNumberDateAttributeDAO = Services.get(ILotNumberDateAttributeDAO.class);
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final ILotNumberDateAttributeDAO lotNumberDateAttributeDAO = Services.get(ILotNumberDateAttributeDAO.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
 
 	@Override
 	public Class<I_I_Inventory> getImportModelClass()
@@ -104,9 +108,10 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(@NonNull final IMutable<Object> state,
+	protected ImportRecordResult importRecord(
+			@NonNull final IMutable<Object> state,
 			@NonNull final I_I_Inventory importRecord,
-			final boolean isInsertOnly) throws Exception
+			final boolean isInsertOnly)
 	{
 		//
 		// Get previous values
@@ -196,8 +201,6 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 
 	private int getDocTypeIdForInternalUseInventory(@NonNull final I_I_Inventory importRecord)
 	{
-		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-
 		final DocTypeQuery query = DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
 				.adClientId(importRecord.getAD_Client_ID())
@@ -211,7 +214,7 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 	 *
 	 * @param importRecord
 	 * @param previousImportRecord
-	 * @return
+	 * @return {@link ImportRecordResult#Nothing}
 	 */
 	private ImportRecordResult doNothingAndUsePreviousInventory(@NonNull final I_I_Inventory importRecord, @NonNull final I_I_Inventory previousImportRecord)
 	{
@@ -219,7 +222,7 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 		return ImportRecordResult.Nothing;
 	}
 
-	public I_M_InventoryLine importInventoryLine(@NonNull final I_I_Inventory importRecord)
+	private I_M_InventoryLine importInventoryLine(@NonNull final I_I_Inventory importRecord)
 	{
 		final I_M_Inventory inventory = importRecord.getM_Inventory();
 
@@ -235,8 +238,8 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 				throw new AdempiereException("Inventory of Inventory Line <> Inventory");
 			}
 
-			inventoryLine.setM_Locator(importRecord.getM_Locator());
-			inventoryLine.setM_Product(importRecord.getM_Product());
+			inventoryLine.setM_Locator_ID(importRecord.getM_Locator_ID());
+			inventoryLine.setM_Product_ID(importRecord.getM_Product_ID());
 			inventoryLine.setQtyCount(importRecord.getQtyCount());
 			inventoryLine.setIsCounted(true);
 
@@ -245,16 +248,22 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 		}
 		else
 		{
-			final int M_AttributeSetInstance_ID = extractM_AttributeSetInstance_ID(importRecord);
-			inventoryLine = InterfaceWrapperHelper.create(getCtx(), I_M_InventoryLine.class, ITrx.TRXNAME_ThreadInherited);
+			inventoryLine = InterfaceWrapperHelper.newInstance(I_M_InventoryLine.class);
 			inventoryLine.setQtyCount(importRecord.getQtyCount());
 			inventoryLine.setM_Inventory(inventory);
-			inventoryLine.setM_Locator(importRecord.getM_Locator());
-			inventoryLine.setM_Product(importRecord.getM_Product());
-			inventoryLine.setC_UOM_ID(importRecord.getM_Product().getC_UOM_ID());
-			inventoryLine.setM_AttributeSetInstance_ID(M_AttributeSetInstance_ID);
-			final int chargeId = Services.get(IInventoryBL.class).getDefaultInternalChargeId();
+			inventoryLine.setM_Locator_ID(importRecord.getM_Locator_ID());
+
+			final ProductId productId = ProductId.ofRepoId(importRecord.getM_Product_ID());
+			final UomId uomId = productBL.getStockingUOMId(productId);
+			inventoryLine.setM_Product_ID(productId.getRepoId());
+			inventoryLine.setC_UOM_ID(uomId.getRepoId());
+
+			final AttributeSetInstanceId asiId = extractASI(importRecord);
+			inventoryLine.setM_AttributeSetInstance_ID(asiId.getRepoId());
+
+			final int chargeId = inventoryBL.getDefaultInternalChargeId();
 			inventoryLine.setC_Charge_ID(chargeId);
+
 			inventoryLine.setIsCounted(true);
 
 			ModelValidationEngine.get().fireImportValidate(this, importRecord, inventoryLine, IImportInterceptor.TIMING_AFTER_IMPORT);
@@ -267,82 +276,87 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 		return inventoryLine;
 	}
 
-	private int extractM_AttributeSetInstance_ID(@NonNull final I_I_Inventory importRecord)
+	private AttributeSetInstanceId extractASI(@NonNull final I_I_Inventory importRecord)
 	{
-		int M_AttributeSetInstance_ID = 0;
 		final ProductId productId = ProductId.ofRepoId(importRecord.getM_Product_ID());
-		if (productBL.isInstanceAttribute(productId))
+		if (!productBL.isInstanceAttribute(productId))
 		{
-			final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASI(productId);
-
-			// lot
-			if (!Check.isEmpty(importRecord.getLot(), true))
-			{
-				final AttributeId lotNumberAttrId = lotNumberDateAttributeDAO.getLotNumberAttributeId();
-				attributeSetInstanceBL.setAttributeInstanceValue(asi, lotNumberAttrId, importRecord.getLot());
-			}
-			//
-			// BestBeforeDate
-			if (importRecord.getHU_BestBeforeDate() != null)
-			{
-				final I_M_Attribute bestBeforeDateAttr = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_BestBeforeDate);
-				attributeSetInstanceBL.setAttributeInstanceValue(asi, bestBeforeDateAttr, importRecord.getHU_BestBeforeDate());
-			}
-			//
-			// TE
-			if (!Check.isEmpty(importRecord.getTE(), true))
-			{
-				final I_M_Attribute TEAttr = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_TE);
-				attributeSetInstanceBL.setAttributeInstanceValue(asi, TEAttr, importRecord.getTE());
-			}
-			//
-			// DateReceived
-			if (importRecord.getDateReceived() != null)
-			{
-				final I_M_Attribute dateReceivedAttr = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_DateReceived);
-				attributeSetInstanceBL.setAttributeInstanceValue(asi, dateReceivedAttr, importRecord.getDateReceived());
-			}
-			//
-			// SubProducerBPartner_Value
-			if (!Check.isEmpty(importRecord.getSubProducerBPartner_Value(), true))
-			{
-				final I_M_Attribute subProducerBPartnettr = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_SubProducerBPartner_Value);
-				final I_M_AttributeValue subProducerBPartneValue = getOrCreateSubproducerAttributeValue(subProducerBPartnettr, importRecord);
-				getCreateAttributeInstanceForSubproducer(asi, subProducerBPartneValue);
-			}
-			attributeSetInstanceBL.setDescription(asi);
-			InterfaceWrapperHelper.save(asi);
-
-			M_AttributeSetInstance_ID = asi.getM_AttributeSetInstance_ID();
+			return AttributeSetInstanceId.NONE;
 		}
 
-		return M_AttributeSetInstance_ID;
+		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASI(productId);
+
+		//
+		// Lot
+		if (!Check.isEmpty(importRecord.getLot(), true))
+		{
+			final AttributeId lotNumberAttrId = lotNumberDateAttributeDAO.getLotNumberAttributeId();
+			attributeSetInstanceBL.setAttributeInstanceValue(asi, lotNumberAttrId, importRecord.getLot());
+		}
+
+		//
+		// BestBeforeDate
+		if (importRecord.getHU_BestBeforeDate() != null)
+		{
+			final I_M_Attribute bestBeforeDateAttr = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_BestBeforeDate);
+			attributeSetInstanceBL.setAttributeInstanceValue(asi, bestBeforeDateAttr, importRecord.getHU_BestBeforeDate());
+		}
+
+		//
+		// TE
+		if (!Check.isEmpty(importRecord.getTE(), true))
+		{
+			final I_M_Attribute TEAttr = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_TE);
+			attributeSetInstanceBL.setAttributeInstanceValue(asi, TEAttr, importRecord.getTE());
+		}
+
+		//
+		// DateReceived
+		if (importRecord.getDateReceived() != null)
+		{
+			final I_M_Attribute dateReceivedAttr = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_DateReceived);
+			attributeSetInstanceBL.setAttributeInstanceValue(asi, dateReceivedAttr, importRecord.getDateReceived());
+		}
+
+		//
+		// SubProducerBPartner_Value
+		if (!Check.isEmpty(importRecord.getSubProducerBPartner_Value(), true))
+		{
+			final I_M_Attribute subProducerBPartnettr = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_SubProducerBPartner_Value);
+			final I_M_AttributeValue subProducerBPartneValue = getOrCreateSubproducerAttributeValue(subProducerBPartnettr, importRecord);
+			getCreateAttributeInstanceForSubproducer(asi, subProducerBPartneValue);
+		}
+
+		attributeSetInstanceBL.setDescription(asi);
+		InterfaceWrapperHelper.saveRecord(asi);
+
+		return AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 	}
 
-	private I_M_AttributeValue getOrCreateSubproducerAttributeValue(@NonNull final I_M_Attribute attribute, @NonNull final I_I_Inventory importRecord)
+	private I_M_AttributeValue getOrCreateSubproducerAttributeValue(
+			@NonNull final I_M_Attribute attribute,
+			@NonNull final I_I_Inventory importRecord)
 	{
-		I_M_AttributeValue attributeValue = Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(attribute, String.valueOf(importRecord.getSubProducer_BPartner_ID()));
+		final String subproducerBPartnerIdString = String.valueOf(importRecord.getSubProducer_BPartner_ID());
+		I_M_AttributeValue attributeValue = attributeDAO.retrieveAttributeValueOrNull(attribute, subproducerBPartnerIdString);
 		if (attributeValue != null)
 		{
 			return attributeValue;
 		}
 
 		attributeValue = InterfaceWrapperHelper.newInstance(I_M_AttributeValue.class);
-		attributeValue.setM_Attribute(attribute);
-		attributeValue.setValue(String.valueOf(importRecord.getSubProducer_BPartner_ID()));
+		attributeValue.setM_Attribute_ID(attribute.getM_Attribute_ID());
+		attributeValue.setValue(subproducerBPartnerIdString);
 		attributeValue.setName(importRecord.getSubProducerBPartner_Value());
 		attributeValue.setIsActive(true);
-		InterfaceWrapperHelper.save(attributeValue);
+		InterfaceWrapperHelper.saveRecord(attributeValue);
 		return attributeValue;
 	}
 
-	private I_M_AttributeInstance getCreateAttributeInstanceForSubproducer(
+	private void getCreateAttributeInstanceForSubproducer(
 			@NonNull final I_M_AttributeSetInstance asi,
 			@NonNull final I_M_AttributeValue attributeValue)
 	{
-				// services
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-
 		// M_Attribute_ID
 		final AttributeId attributeId = AttributeId.ofRepoId(attributeValue.getM_Attribute_ID());
 
@@ -358,9 +372,7 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 		attributeInstance.setM_Attribute_ID(attributeId.getRepoId());
 		// the attribute is a list, but expect to store as number, the id of the partner
 		attributeInstance.setValueNumber(new BigDecimal(attributeValue.getValue()));
-		save(attributeInstance);
 
-		return attributeInstance;
+		saveRecord(attributeInstance);
 	}
-
 }
