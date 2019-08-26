@@ -24,6 +24,16 @@ import Tooltips from '../tooltips/Tooltips.js';
 import Indicator from './Indicator';
 import OverlayField from './OverlayField';
 
+/**
+ * Modal component.
+ * @param {object} props Component props
+ * @param {func} props.dispatch Dispatch function
+ * @param {bool} props.isNewDoc
+ * @param {string} props.staticModalType
+ * @param {*} props.windowType
+ * @param {*} props.viewId
+ * @param {*} props.indicator
+ */
 class Modal extends Component {
   mounted = false;
 
