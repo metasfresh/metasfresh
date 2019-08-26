@@ -12,7 +12,7 @@ import {
   handleProcessResponse,
   fetchChangeLog,
   patch,
-  startProcess
+  startProcess,
 } from '../../actions/WindowActions';
 import { getSelectionInstant } from '../../reducers/windowHandler';
 import keymap from '../../shortcuts/keymap';
@@ -27,29 +27,30 @@ import OverlayField from './OverlayField';
 /**
  * Modal component.
  * @param {object} props Component props
+ * @param {*} props.activeTabId
+ * @param {*} props.childViewId
+ * @param {*} props.closeCallback
+ * @param {*} props.childViewSelectedIds
+ * @param {*} props.dataId
  * @param {func} props.dispatch Dispatch function
+ * @param {*} props.indicator
+ * @param {bool} props.isAdvanced
  * @param {bool} props.isNewDoc
  * @param {string} props.staticModalType
- * @param {*} props.windowType
- * @param {*} props.viewId
- * @param {*} props.indicator
- * @param {*} props.dataId
- * @param {*} props.tabId
- * @param {*} props.rowId
  * @param {*} props.modalType
+ * @param {*} props.modalViewId
+ * @param {*} props.modalViewDocumentIds
  * @param {*} props.staticModalType
+ * @param {*} props.tabId
  * @param {*} props.parentSelection
  * @param {*} props.parentType
- * @param {bool} props.isAdvanced
- * @param {bool} props.modalViewId
- * @param {bool} props.modalViewDocumentIds
- * @param {bool} props.activeTabId
- * @param {bool} props.childViewId
- * @param {bool} props.childViewSelectedIds
- * @param {bool} props.parentViewId
- * @param {bool} props.parentViewSelectedIds
- * @param {bool} props.closeCallback
- * @param {bool} props.triggerField
+ * @param {*} props.parentViewId
+ * @param {*} props.parentViewSelectedIds
+ * @param {*} props.rawModalVisible
+ * @param {*} props.rowId
+ * @param {*} props.triggerField
+ * @param {*} props.viewId
+ * @param {*} props.windowType
  * @category Components
  */
 class Modal extends Component {
@@ -58,7 +59,7 @@ class Modal extends Component {
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
     isNewDoc: PropTypes.bool,
-    staticModalType: PropTypes.string
+    staticModalType: PropTypes.string,
   };
 
   constructor(props) {
@@ -73,7 +74,7 @@ class Modal extends Component {
       init: false,
       pending: false,
       waitingFetch: false,
-      isTooltipShow: false
+      isTooltipShow: false,
     };
   }
 
@@ -115,7 +116,7 @@ class Modal extends Component {
     if (waitingFetch && prevProps.indicator !== indicator) {
       this.setState(
         {
-          waitingFetch: false
+          waitingFetch: false,
         },
         () => {
           this.handleStart();
@@ -162,7 +163,7 @@ class Modal extends Component {
       childViewId,
       childViewSelectedIds,
       parentViewId,
-      parentViewSelectedIds
+      parentViewSelectedIds,
     } = this.props;
 
     switch (modalType) {
@@ -214,13 +215,13 @@ class Modal extends Component {
               ? [dataId]
               : parentSelection,
             tabId,
-            rowId
+            rowId,
           };
 
           if (activeTabId && parentSelection) {
             options.selectedTab = {
               tabId: activeTabId,
-              rowIds: parentSelection
+              rowIds: parentSelection,
             };
           }
 
@@ -258,7 +259,7 @@ class Modal extends Component {
       parentDataId,
       triggerField,
       rowId,
-      tabId
+      tabId,
     } = this.props;
     const { isNew, isNewDoc } = this.state;
 
@@ -285,7 +286,7 @@ class Modal extends Component {
           windowType,
           documentId: dataId,
           tabId,
-          rowId
+          rowId,
         });
       }
 
@@ -336,7 +337,7 @@ class Modal extends Component {
 
     this.setState(
       {
-        pending: true
+        pending: true,
       },
       async () => {
         let response;
@@ -359,7 +360,7 @@ class Modal extends Component {
           if (this.mounted) {
             // prevent a memory leak
             this.setState({
-              pending: false
+              pending: false,
             });
           }
         }
@@ -377,7 +378,7 @@ class Modal extends Component {
       modalType,
       windowType,
       isAdvanced,
-      staticModalType
+      staticModalType,
     } = this.props;
     const { pending } = this.state;
 
@@ -436,7 +437,7 @@ class Modal extends Component {
         <div className="panel panel-modal panel-modal-primary">
           <div
             className={classnames('panel-modal-header', {
-              'header-shadow': scrolled
+              'header-shadow': scrolled,
             })}
           >
             <span className="panel-modal-header-title">
@@ -449,7 +450,7 @@ class Modal extends Component {
                   className={classnames(
                     'btn btn-meta-outline-secondary btn-distance-3 btn-md',
                     {
-                      'tag-disabled disabled ': pending
+                      'tag-disabled disabled ': pending,
                     }
                   )}
                   onClick={this.removeModal}
@@ -473,7 +474,7 @@ class Modal extends Component {
                 className={classnames(
                   'btn btn-meta-outline-secondary btn-distance-3 btn-md',
                   {
-                    'tag-disabled disabled ': pending
+                    'tag-disabled disabled ': pending,
                   }
                 )}
                 onClick={this.handleClose}
@@ -508,7 +509,7 @@ class Modal extends Component {
                   className={classnames(
                     'btn btn-meta-outline-secondary btn-distance-3 btn-md',
                     {
-                      'tag-disabled disabled ': pending
+                      'tag-disabled disabled ': pending,
                     }
                   )}
                   onClick={this.handleStart}
@@ -627,7 +628,7 @@ class Modal extends Component {
     return (
       <div
         className={classnames('screen-freeze js-not-unselect', {
-          light: layout.layoutType === 'singleOverlayField'
+          light: layout.layoutType === 'singleOverlayField',
         })}
       >
         {renderedContent}
@@ -642,7 +643,7 @@ const mapStateToProps = (state, props) => ({
     { ...props, windowType: props.parentType },
     state.windowHandler.selectionsHash
   ),
-  activeTabId: state.windowHandler.master.layout.activeTab
+  activeTabId: state.windowHandler.master.layout.activeTab,
 });
 
 export default connect(mapStateToProps)(Modal);
