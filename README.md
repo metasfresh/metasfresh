@@ -91,35 +91,144 @@ __MenuOverlay__ - These are components that float over __Header__ and contain na
 __SelectionAttributes__ - It is a panel that might contain __Widgets__ and it is a side by side table in __DocumentList__.
 
 ### Schema
-- MasterWindow
-    - Container
-    - Window
-- DocList
-    - Container
-    - DocumentList
----
+__MasterWindow__
+
+Class based component (`containers/`).
+- BlankPage
 - Container
-    - Header
-    - Modal
-    - RawModal
+- Overlay
 - Window
-    - Widget
-    - Tabs
+
+__BlankPage__
+
+Class based component (`components/`). Returns the 404 with a reason in case the url was not found.
+
+__Container__
+
+Class based component (`components/`).
 - DocumentList
-    - Table
-    - Filters
-    - SelectionAttributes
----
-- Header
-    - Subheader
-    - Sidelist
-    - Breadcrumb
-        - MenuOverlay
+- ErrorScreen
 - Modal
-    - Window
-    - Process
 - RawModal
-    - DocumentList
+- Header
+
+__Overlay__
+
+Class based component (`components/app/`).
+- QRCode
+
+__Window__
+
+Class based component (`components/`). The window component creates the general layout for a frontend UI based on sections, columns, elementgroups, elementlines and elements. The layout information is received from the backend API.
+- Dropzone
+- EntryTable
+- MasterWidget
+- Separator
+- Table
+- TableContextShortcuts
+- Tabs
+- Tooltips
+
+__DocumentList__
+
+Class based component (`components/app/`). The DocumentList component shows all records in a Main Table View. This View are always shown when opening any window without a record ID, e.g. opened when clicking on menu entry or via document reference.
+- BlankPage
+- DataLayoutWrapper
+- Filters
+- FiltersStatic
+- Table
+- QuickActions
+- SelectionAttributes
+- Spinner
+
+__ErrorScreen__
+
+Class based component (`components/app/`). This view is shown when the connection to the backend is lost or other connection issues appear.
+
+__Modal__
+
+Class based component (`components/app/`). This is an overlay view that can be opened over the main view.
+- ChangeLogModal
+- Indicator
+- ModalContextShortcuts
+- OverlayField
+- Process
+- Tooltips
+- Window
+
+__RawModal__
+
+Class based component (`components/app/`).
+- Indicator
+- ModalContextShortcuts
+- Tooltips
+
+__Header__
+
+Class based component (`components/header/`). The Header component is shown in every view besides Modal or RawModal in frontend. It defines the top bar with different menus and icons in metasfresh WebUI. It hosts the action menu, breadcrumb, logo, notification menu, avatar and sidelist menu.
+- Breadcrumb
+- GlobalContextShortcuts
+- Inbox
+- Indicator
+- MasterWidget
+- NewEmail
+- NewLetter
+- Prompt
+- Tooltips
+- SideList
+- Subheader
+- UserDropdown
+
+__QRCode__
+
+Class based component (`components/app/`). The QRCode components allows to read QR Codes via webcam.
+
+__Dropzone__
+
+Class based component (`components/`). The DropzoneWrapper allows the user to drag&drop files onto the UI. These files are then uploaded to metasfresh backend.
+
+__EntryTable__
+
+Class based component (`components/table/`).
+- MasterWidget
+- WidgetTooltip
+
+__MasterWidget__
+
+Class based component (`components/widget/`).
+- RawWidget
+
+__Separator__
+
+Function based component (`components/`). The separator component allows to create collapsible sections in the window component. The separators can  have a title. It is used as layout and grouping element in WebUI.
+
+__Table__
+
+Class based component (`components/table/`). This component represents the generic table views shown as default for all windows without record ID. Is rendered via the document list component.
+- DocumentListContextShortcuts
+- Prompt
+- TableContextShortcuts
+- TableContextMenu
+- TableFilter
+- TableHeader
+- TableItem
+- TablePagination
+
+---
+
+- DocList
+  - Container
+  - DocumentList
+- Header
+  - Subheader
+  - Sidelist
+  - Breadcrumb
+    - MenuOverlay
+- Modal
+  - Window
+  - Process
+- RawModal
+  - DocumentList
 
 ## For webui-api developers
 

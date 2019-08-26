@@ -176,6 +176,7 @@ class TableCell extends PureComponent {
       windowId,
       rowId,
       tabId,
+      property,
       handleDoubleClick,
       handleKeyDown,
       updatedRow,
@@ -270,6 +271,7 @@ class TableCell extends PureComponent {
             'pulse-off': !updatedRow,
           }
         )}
+        data-cy={`cell-${property}`}
       >
         {isEdited ? (
           <MasterWidget
@@ -327,6 +329,7 @@ class TableCell extends PureComponent {
 TableCell.propTypes = {
   cellExtended: PropTypes.bool,
   extendLongText: PropTypes.number,
+  property: PropTypes.string,
   handleRightClick: PropTypes.func,
   handleKeyDown: PropTypes.func,
   handleDoubleClick: PropTypes.func,
