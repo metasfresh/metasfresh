@@ -9,7 +9,6 @@ import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Issue;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -24,6 +23,7 @@ import de.metas.rfq.model.I_C_RfQResponseLineQty;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /*
@@ -105,7 +105,7 @@ class PMMRfQResponseChangeEventTrxItemProcessor extends TrxItemProcessorAdapter<
 
 		final AdempiereException metasfreshException = AdempiereException.wrapIfNeeded(e);
 
-		final String errorMsg = Util.firstNotEmptyTrimmed(metasfreshException.getLocalizedMessage(), metasfreshException.getMessage());
+		final String errorMsg = CoalesceUtil.firstNotEmptyTrimmed(metasfreshException.getLocalizedMessage(), metasfreshException.getMessage());
 		event.setErrorMsg(errorMsg);
 
 		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(null, metasfreshException);

@@ -21,7 +21,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
@@ -47,6 +46,7 @@ import de.metas.procurement.sync.protocol.SyncWeeklySupply;
 import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 
 /*
  * #%L
@@ -163,7 +163,7 @@ public class ServerSyncBL implements IServerSyncBL
 			}
 
 			// QtyPromised(CU)
-			final BigDecimal qtyPromised = Util.coalesce(syncProductSupply.getQty(), BigDecimal.ZERO);
+			final BigDecimal qtyPromised = CoalesceUtil.coalesce(syncProductSupply.getQty(), BigDecimal.ZERO);
 			qtyReportEvent.setQtyPromised(qtyPromised);
 
 			// DatePromised

@@ -11,7 +11,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 
 import de.metas.lock.api.ILockManager;
 import de.metas.procurement.base.IPMMWeekDAO;
@@ -25,6 +24,7 @@ import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
 import de.metas.procurement.sync.protocol.SyncProductSupply;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /*
@@ -218,7 +218,7 @@ class PMMWeekReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_W
 
 		final AdempiereException metasfreshException = AdempiereException.wrapIfNeeded(e);
 
-		final String errorMsg = Util.firstNotEmptyTrimmed(metasfreshException.getLocalizedMessage(), metasfreshException.getMessage());
+		final String errorMsg = CoalesceUtil.firstNotEmptyTrimmed(metasfreshException.getLocalizedMessage(), metasfreshException.getMessage());
 		event.setErrorMsg(errorMsg);
 
 		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(null, metasfreshException);

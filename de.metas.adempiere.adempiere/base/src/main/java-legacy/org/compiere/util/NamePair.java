@@ -16,7 +16,7 @@
  *****************************************************************************/
 package org.compiere.util;
 
-import static org.compiere.util.Util.coalesce;
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.io.Serializable;
 import java.util.Comparator;

@@ -10,6 +10,25 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.117
+
+# Features
+* metasfresh
+  * [#5426](https://github.com/metasfresh/metasfresh/issues/5426) Implement MetasfreshBeanNameGenerator to avoid spring bean name collisions in case of model Interceptors
+
+* metasfresh-e2e
+  * [#125](https://github.com/metasfresh/metasfresh-e2e/issues/125) Open Handling Unit Editor
+  * [#145](https://github.com/metasfresh/metasfresh-e2e/issues/145) Purchase order from sales order
+  * [#210](https://github.com/metasfresh/metasfresh-e2e/issues/210) Create material receipt with quality issue
+
+# Fixes
+* metasfresh
+  * [#5193](https://github.com/metasfresh/metasfresh/issues/5193) Error when trying to issue for >1 component in manufacturing
+
+
+* metasfresh-webui-api
+  * [#2334](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2334) Error when layout shortcuts is not defined
+
 # metasfresh 5.116
 
 # Features

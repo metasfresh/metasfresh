@@ -39,7 +39,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.model.FieldGroupVO.FieldGroupType;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -49,6 +48,7 @@ import de.metas.logging.LogManager;
 import de.metas.security.permissions.UIDisplayedEntityTypes;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Getter;
 
 
@@ -180,7 +180,7 @@ public class GridFieldVO implements Serializable
 
 			final GridFieldLayoutConstraints.Builder layoutConstraints = GridFieldLayoutConstraints.builder();
 
-			vo.header = Util.coalesce(rs.getString ("Name"), vo.ColumnName);
+			vo.header = CoalesceUtil.coalesce(rs.getString ("Name"), vo.ColumnName);
 			vo.description = rs.getString ("Description");
 			vo.help = rs.getString ("Help");
 			if(loadAllLanguages)
