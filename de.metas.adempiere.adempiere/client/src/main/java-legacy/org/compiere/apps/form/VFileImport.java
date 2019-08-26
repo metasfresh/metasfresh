@@ -48,12 +48,15 @@ import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.form.fileimport.FileImportPreviewColumnFactory;
 import org.compiere.apps.form.fileimport.FileImportPreviewTableModel;
 import org.compiere.impexp.FileImportReader;
+import org.compiere.impexp.ImpDataContext;
 import org.compiere.impexp.ImpDataLine;
 import org.compiere.impexp.ImpFormat;
+import org.compiere.impexp.ImpFormatRepository;
 import org.compiere.impexp.ImportStatus;
 import org.compiere.model.I_AD_ImpFormat;
 import org.compiere.swing.CComboBox;
@@ -484,17 +487,18 @@ public class VFileImport extends CPanel
 	private void cmd_loadImpFormat()
 	{
 		//
-		final I_AD_ImpFormat impFormatModel = (I_AD_ImpFormat)pickImpFormat.getSelectedItem();
-		if (impFormatModel == null)
+		final I_AD_ImpFormat impFormatRecord = (I_AD_ImpFormat)pickImpFormat.getSelectedItem();
+		if (impFormatRecord == null)
 		{
 			return;
 		}
 
-		final ImpFormat impFormat = ImpFormat.load(impFormatModel);
+		final ImpFormatRepository impFormatsRepo = SpringContextHolder.instance.getBean(ImpFormatRepository.class);
+		final ImpFormat impFormat = impFormatsRepo.toImpFormat(impFormatRecord);
 		previewTableModel.setImpFormat(impFormat);
 		if (impFormat == null)
 		{
-			throw new AdempiereException("@FileImportNoFormat@: " + impFormatModel.getName());
+			throw new AdempiereException("@FileImportNoFormat@: " + impFormatRecord.getName());
 		}
 	}
 
@@ -508,6 +512,12 @@ public class VFileImport extends CPanel
 		m_frame.setBusy(true);
 		m_frame.setBusyMessage(null);
 
+		final ImpDataContext ctx = ImpDataContext.builder()
+				.clientId(Env.getClientId())
+				.orgId(Env.getOrgId())
+				.userId(Env.getLoggedUserId())
+				.build();
+
 		final SwingWorker<Void, ImpDataLine> worker = new SwingWorker<Void, ImpDataLine>()
 		{
 			private int countImported = 0;
@@ -516,7 +526,7 @@ public class VFileImport extends CPanel
 			private String statusMessagePrefix = "";
 
 			@Override
-			protected Void doInBackground() throws Exception
+			protected Void doInBackground()
 			{
 				statusMessagePrefix = msgBL.getMsg(Env.getCtx(), "Processing") + ": ";
 
@@ -531,7 +541,7 @@ public class VFileImport extends CPanel
 						continue;
 					}
 
-					line.importToDB();
+					line.importToDB(ctx);
 					if (ImportStatus.ImportPrepared == line.getImportStatus())
 					{
 						line.setToImport(false);

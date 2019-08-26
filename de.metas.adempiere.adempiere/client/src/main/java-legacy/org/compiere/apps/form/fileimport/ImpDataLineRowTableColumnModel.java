@@ -1,5 +1,7 @@
 package org.compiere.apps.form.fileimport;
 
+import java.util.Objects;
+
 import org.compiere.impexp.CellErrorMessage;
 import org.compiere.impexp.ImpDataLine;
 import org.compiere.impexp.ImpFormatRow;
@@ -52,7 +54,7 @@ class ImpDataLineRowTableColumnModel extends TableColumnModel
 		if (impFormatRow.isNumber())
 		{
 			final String decimalPointName = msgBL.translate(Env.getCtx(), I_AD_ImpFormat_Row.COLUMNNAME_DecimalPoint);
-			final String decimalPoint = impFormatRow.getDecimalPoint();
+			final String decimalPoint = impFormatRow.getDecimalSeparator().getSymbol();
 			displayName.append("<br>").append(StringUtils.maskHTML(decimalPointName)).append(": ").append(StringUtils.maskHTML(decimalPoint));
 		}
 
@@ -90,7 +92,7 @@ class ImpDataLineRowTableColumnModel extends TableColumnModel
 	public void setValue(final ImpDataLine dataLine, final Object value)
 	{
 		final Object valueOld = getValue(dataLine);
-		final boolean flagToImport = !Check.equals(valueOld, value);
+		final boolean flagToImport = !Objects.equals(valueOld, value);
 		dataLine.setValue(impFormatRowIdx, value, flagToImport);
 	}
 

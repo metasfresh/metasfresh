@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  * Contributor(s): Teo Sarca
  *****************************************************************************/
 package org.compiere.impexp;
@@ -23,17 +23,21 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.time.SystemTime;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.Callout;
-import org.compiere.model.I_AD_Column;
-import org.compiere.model.I_AD_ImpFormat_Row;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.lang.CoalesceUtil;
+import de.metas.util.time.SystemTime;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * Import Format Row with pasing capability
@@ -45,401 +49,138 @@ import org.compiere.util.TimeUtil;
  */
 public final class ImpFormatRow
 {
-	/**
-	 * Constructor for fixed format
-	 * 
-	 * @param seqNo sequence
-	 * @param columnName db dolumn name
-	 * @param startNo start no
-	 * @param endNo and no
-	 * @param dataType data type - see constants DATATYPE_
-	 * @param maxLength if String it is the maximum length (truncated)
-	 */
-	public ImpFormatRow(int seqNo, String columnName, int startNo, int endNo, String dataType, int maxLength)
+	private static final Logger logger = LogManager.getLogger(ImpFormatRow.class);
+
+	@Getter
+	private final String name;
+	@Getter
+	private final String columnName;
+	@Getter
+	private final int startNo;
+	@Getter
+	private final int endNo;
+	private final ImpFormatRowDataType dataType;
+	@Getter
+	private final String dataFormat;
+	@Getter
+	private final DecimalSeparator decimalSeparator;
+	@Getter
+	private final boolean divideBy100;
+	private final String constantValue;
+	private final boolean constantIsString;
+	private final int maxLength;
+
+	private DateFormat _dateFormat = null; // lazy
+
+	@Builder
+	private ImpFormatRow(
+			final String name,
+			@NonNull final String columnName,
+			final int startNo,
+			final int endNo,
+			@NonNull final ImpFormatRowDataType dataType,
+			final int maxLength,
+			//
+			@Nullable final String dataFormat,
+			@Nullable final DecimalSeparator decimalSeparator,
+			final boolean divideBy100,
+
+			final String constantValue)
 	{
-		super();
-		m_seqNo = seqNo;
-		setColumnName(columnName);
-		m_startNo = startNo;
-		m_endNo = endNo;
-		setDataType(dataType);
-		setMaxLength(maxLength);
-	}	// ImpFormatRow
+		Check.assumeNotEmpty(columnName, "columnName is not empty");
 
-	/**
-	 * Constructor for non-fixed format
-	 * 
-	 * @param seqNo sequence
-	 * @param columnName db column name
-	 * @param dataType data type - see constants DATATYPE_
-	 * @param maxLength if String it is the maximum length (truncated)
-	 */
-	public ImpFormatRow(int seqNo, String columnName, String dataType, int maxLength)
-	{
-		super();
-		m_seqNo = seqNo;
-		setColumnName(columnName);
-		setDataType(dataType);
-		setMaxLength(maxLength);
-	}	// ImpFormatRow
+		this.name = !Check.isEmpty(name, true) ? name : columnName;
+		this.columnName = columnName;
+		this.startNo = startNo;
+		this.endNo = endNo;
+		this.dataType = dataType;
+		this.maxLength = maxLength;
 
-	public ImpFormatRow(final I_AD_ImpFormat_Row model)
-	{
-		super();
-		final I_AD_Column adColumn = model.getAD_Column();
-
-		m_seqNo = model.getSeqNo();
-		m_name = model.getName();
-		setColumnName(adColumn.getColumnName());
-		m_startNo = model.getStartNo();
-		m_endNo = model.getEndNo();
-		setDataType(model.getDataType());
-		setMaxLength(adColumn.getFieldLength());
-
-		setFormatInfo(
-				model.getDataFormat(), // dataFormat,
-				model.getDecimalPoint(), // decimalPoint,
-				model.isDivideBy100(), // divideBy100,
-				model.getConstantValue(), // constantValue,
-				model.getCallout());
+		this.dataFormat = dataFormat;
+		this.decimalSeparator = CoalesceUtil.coalesce(decimalSeparator, DecimalSeparator.DOT);
+		this.divideBy100 = divideBy100;
+		this.constantValue = CoalesceUtil.coalesce(constantValue, "");
+		this.constantIsString = checkIfConstantIsString(this.constantValue);
 	}
 
-	private int m_seqNo;
-	private String m_name;
-	private String m_columnName;
-	private int m_startNo = 0;
-	private int m_endNo = 0;
-	private String m_dataType;
-	private String _dataFormat = "";
-	private String m_decimalPoint = ".";
-	private boolean m_divideBy100 = false;
-	private String m_constantValue = "";
-	private boolean m_constantIsString = true;
-	//
-	private Callout m_callout = null;
-	private String m_method = null;
-	//
-	private DateFormat _dateFormat = null;
-	private int m_maxLength = 0;
-
-	/** Logger */
-	private Logger log = LogManager.getLogger(getClass());
-
-	/**
-	 * Sequence No
-	 * 
-	 * @return seq no
-	 */
-	public int getSeqNo()
+	private static boolean checkIfConstantIsString(final String constantValue)
 	{
-		return m_seqNo;
-	}   // getSeqNo
-
-	/**
-	 * Set Sequence No
-	 * 
-	 * @param newSeqNo sequence
-	 */
-	public void setSeqNo(int newSeqNo)
-	{
-		m_seqNo = newSeqNo;
-	}   // setSeqNo
-
-	/**
-	 * Start Position
-	 * 
-	 * @param newStartNo start position
-	 */
-	public void setStartNo(int newStartNo)
-	{
-		m_startNo = newStartNo;
-	}   // setStartNo
-
-	/**
-	 * Get Start Position
-	 * 
-	 * @return start position
-	 */
-	public int getStartNo()
-	{
-		return m_startNo;
-	}   // getStartNo
-
-	/**
-	 * End Position
-	 * 
-	 * @param newEndNo end position
-	 */
-	public void setEndNo(int newEndNo)
-	{
-		m_endNo = newEndNo;
-	}   // setEndNo
-
-	/**
-	 * Get End Position
-	 * 
-	 * @return End Position
-	 */
-	public int getEndNo()
-	{
-		return m_endNo;
-	}   // getEndNo
-
-	/**
-	 * Column
-	 * 
-	 * @param columnName column name
-	 */
-	public void setColumnName(String columnName)
-	{
-		if (columnName == null || columnName.length() == 0)
-			throw new IllegalArgumentException("ColumnName must be at least 1 char");
-		else
-			m_columnName = columnName;
-	}   // setColumnName
-
-	public String getName()
-	{
-		if (Check.isEmpty(m_name, true))
+		if (constantValue == null || constantValue.isEmpty())
 		{
-			return getColumnName();
+			return true;
 		}
-		return m_name;
+
+		for (int i = 0; i < constantValue.length(); i++)
+		{
+			final char ch = constantValue.charAt(i);
+			if (!(Character.isDigit(ch) || ch == '.'))	// if a constant number, it must be with . (not ,)
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
-	/**
-	 * Get Column Name
-	 * 
-	 * @return Column Name
-	 */
-	public String getColumnName()
-	{
-		return m_columnName;
-	}   // getColumnName
-
-	/**
-	 * Data Type
-	 * 
-	 * @param dataType data type - see constants DATATYPE_
-	 */
-	public void setDataType(String dataType)
-	{
-		if (dataType.equals(DATATYPE_String) || dataType.equals(DATATYPE_Date)
-				|| dataType.equals(DATATYPE_Number) || dataType.equals(DATATYPE_Constant))
-			m_dataType = dataType;
-		else
-			throw new IllegalArgumentException("DataType must be S/D/N/C");
-	}   // setDataType
-
-	/** String Data type */
-	public static final String DATATYPE_String = "S";
-	/** Data Data type */
-	public static final String DATATYPE_Date = "D";
-	/** Numeric Data type */
-	public static final String DATATYPE_Number = "N";
-	/** Constant Data type */
-	public static final String DATATYPE_Constant = "C";
-
-	/**
-	 * Data Type
-	 * 
-	 * @return data type
-	 */
-	public String getDataType()
-	{
-		return m_dataType;
-	}   // getDataType
-
-	/**
-	 * Is String
-	 * 
-	 * @return true if data type is String
-	 */
 	public boolean isString()
 	{
-		if (m_dataType.equals(DATATYPE_Constant))
-			return m_constantIsString;
-		return m_dataType.equals(DATATYPE_String);
-	}	// isString
+		if (ImpFormatRowDataType.Constant.equals(dataType))
+		{
+			return constantIsString;
+		}
+		else
+		{
+			return ImpFormatRowDataType.String.equals(dataType);
+		}
+	}
 
-	/**
-	 * Is Number
-	 * 
-	 * @return true if data type is Number
-	 */
 	public boolean isNumber()
 	{
-		return m_dataType.equals(DATATYPE_Number);
+		return ImpFormatRowDataType.Number.equals(dataType);
 	}
 
-	/**
-	 * Is Date
-	 * 
-	 * @return true if data type is Date
-	 */
 	public boolean isDate()
 	{
-		return m_dataType.equals(DATATYPE_Date);
+		return ImpFormatRowDataType.Date.equals(dataType);
 	}
 
-	/**
-	 * Is Constant
-	 * 
-	 * @return true if data type is Constant
-	 */
 	public boolean isConstant()
 	{
-		return m_dataType.equals(DATATYPE_Constant);
+		return ImpFormatRowDataType.Constant.equals(dataType);
 	}
 
-	/**
-	 * Set Format Info
-	 * 
-	 * @param dataFormat data format - see constants DATATYPE_
-	 * @param decimalPoint decimal point representation
-	 * @param divideBy100 divide number by 100
-	 * @param constantValue constant value
-	 * @param callout Java callout
-	 */
-	public void setFormatInfo(final String dataFormat, final String decimalPoint, final boolean divideBy100, final String constantValue, final String callout)
+	private DateFormat getDateFormat()
 	{
-		setDataFormat(dataFormat);
-
-		// number
-		if (decimalPoint == null || !decimalPoint.equals(","))
-			m_decimalPoint = ".";
-		else
-			m_decimalPoint = ",";
-
-		m_divideBy100 = divideBy100;
-
-		// constant
-		if (constantValue == null || constantValue.length() == 0 || !m_dataType.equals(DATATYPE_Constant))
+		DateFormat dateFormat = _dateFormat;
+		if (dateFormat == null)
 		{
-			m_constantValue = "";
-			m_constantIsString = true;
-		}
-		else
-		{
-			m_constantValue = constantValue;
-			m_constantIsString = false;
-			for (int i = 0; i < m_constantValue.length(); i++)
-			{
-				char c = m_constantValue.charAt(i);
-				if (!(Character.isDigit(c) || c == '.'))	// if a constant number, it must be with . (not ,)
-				{
-					m_constantIsString = true;
-					break;
-				}
-			}
-		}
-		// callout
-		if (callout != null)
-		{
-			int methodStart = callout.lastIndexOf('.');
-			try
-			{
-				if (methodStart != -1)      // no class
-				{
-					Class<?> cClass = Class.forName(callout.substring(0, methodStart));
-					m_callout = (Callout)cClass.newInstance();
-					m_method = callout.substring(methodStart + 1);
-				}
-			}
-			catch (Exception e)
-			{
-				log.error("MTab.setFormatInfo - " + e.toString());
-			}
-			if (m_callout == null || m_method == null || m_method.length() == 0)
-			{
-				log.error("MTab.setFormatInfo - Invalid Callout " + callout);
-				m_callout = null;
-			}
-		}
-	}   // setFormatInfo
 
-	/**
-	 * Get Format
-	 * 
-	 * @return Data Format
-	 */
-	public String getDataFormat()
-	{
-		return _dataFormat;
-	}
-
-	private void setDataFormat(final String dataFormat)
-	{
-		if (dataFormat == null)
-			_dataFormat = "";
-		else
-			_dataFormat = dataFormat;
-		_dateFormat = null; // reset date format
-	}
-
-	private final DateFormat getDateFormat()
-	{
-		if (_dateFormat == null)
-		{
 			final String dateFormatPattern = getDataFormat();
-			DateFormat dateFormat = null;
-			try
+			if (!Check.isEmpty(dateFormatPattern, true))
 			{
-				dateFormat = new SimpleDateFormat(dateFormatPattern);
+				try
+				{
+					dateFormat = new SimpleDateFormat(dateFormatPattern);
+				}
+				catch (Exception ex)
+				{
+					dateFormat = null;
+					logger.warn("Invalid date format '{}'. Considering defaults.", dateFormatPattern, ex);
+				}
 			}
-			catch (Exception e)
-			{
-				dateFormat = null;
-				log.error("ImpFormatRow.parseDate Format=" + dateFormatPattern, e);
-			}
+
 			if (dateFormat == null)
+			{
 				dateFormat = DateFormat.getDateInstance();
+			}
+
 			dateFormat.setLenient(true);
 
 			this._dateFormat = dateFormat;
 		}
-		return _dateFormat;
-	}
 
-	/**
-	 * Get Decimal Point
-	 * 
-	 * @return Decimal Point
-	 */
-	public String getDecimalPoint()
-	{
-		return m_decimalPoint;
+		return dateFormat;
 	}
-
-	/**
-	 * Divide result by 100
-	 * 
-	 * @return true if result will be divided by 100
-	 */
-	public boolean isDivideBy100()
-	{
-		return m_divideBy100;
-	}
-
-	/**
-	 * Get the constant value
-	 * 
-	 * @return constant value
-	 */
-	public String getConstantValue()
-	{
-		return m_constantValue;
-	}
-
-	/**
-	 * Set maximum length for Strings (truncated). Ignored, if 0
-	 * 
-	 * @param maxLength max length
-	 */
-	public void setMaxLength(int maxLength)
-	{
-		m_maxLength = maxLength;
-	}	// setMaxLength
 
 	/**
 	 * Parse value.
@@ -453,16 +194,19 @@ public final class ImpFormatRow
 	String parse(final String info) throws Exception
 	{
 		if (info == null || info.length() == 0
-				|| (isDate() && "00000000".equals(info)) ) // consider this an empty value for date
+				|| (isDate() && "00000000".equals(info))) // consider this an empty value for date
 		{
 			return "";
 		}
 
 		// Comment ?
 		if (info.startsWith("[") && info.endsWith("]"))
+		{
 			return "";
+		}
+
 		//
-		String retValue;
+		final String retValue;
 		if (isNumber())
 		{
 			retValue = parseNumber(info);
@@ -473,25 +217,11 @@ public final class ImpFormatRow
 		}
 		else if (isConstant())
 		{
-			retValue = m_constantIsString ? parseString(m_constantValue) : m_constantValue;
+			retValue = constantIsString ? parseString(constantValue) : constantValue;
 		}
 		else
 		{
 			retValue = parseString(info);
-		}
-
-		//
-		// Apply the callout's convert method
-		if (m_callout != null)
-		{
-			try
-			{
-				retValue = m_callout.convert(m_method, retValue);
-			}
-			catch (Exception e)
-			{
-				log.error("ImpFormatRow.parse - " + info + " (" + retValue + ")", e);
-			}
 		}
 
 		//
@@ -511,7 +241,7 @@ public final class ImpFormatRow
 		{
 			Timestamp ts = null;
 
-			if (!Check.isEmpty(info, true)) 
+			if (!Check.isEmpty(info, true))
 			{
 				final DateFormat dateFormat = getDateFormat();
 				final Date date = dateFormat.parse(info.trim());
@@ -541,22 +271,32 @@ public final class ImpFormatRow
 	private String parseString(final String info)
 	{
 		String retValue = info;
-		// Length restriction
-		if (m_maxLength > 0 && retValue.length() > m_maxLength)
-			retValue = retValue.substring(0, m_maxLength);
 
-		// copy characters (wee need to look through anyway)
+		// Length restriction
+		if (maxLength > 0 && retValue.length() > maxLength)
+		{
+			retValue = retValue.substring(0, maxLength);
+		}
+
+		// copy characters (we need to look through anyway)
 		final StringBuilder out = new StringBuilder(retValue.length());
 		for (int i = 0; i < retValue.length(); i++)
 		{
 			char c = retValue.charAt(i);
 			if (c == '\'')
+			{
 				out.append("''");
+			}
 			else if (c == '\\')
+			{
 				out.append("\\\\");
+			}
 			else
+			{
 				out.append(c);
+			}
 		}
+
 		return out.toString();
 	}
 
@@ -573,7 +313,7 @@ public final class ImpFormatRow
 			final String numberStringNormalized = normalizeNumberString(info);
 			BigDecimal bd = new BigDecimal(numberStringNormalized);
 
-			if (m_divideBy100)
+			if (divideBy100)
 			{
 				// NOTE: assumed two decimal scale
 				bd = bd.divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP);
@@ -587,33 +327,42 @@ public final class ImpFormatRow
 		}
 	}
 
-	private final String normalizeNumberString(String info)
+	private String normalizeNumberString(String info)
 	{
 		if (Check.isEmpty(info, true))
 		{
 			return "0";
 		}
 
-		boolean hasPoint = info.indexOf('.') != -1;
+		final boolean hasPoint = info.indexOf('.') != -1;
 		boolean hasComma = info.indexOf(',') != -1;
+
 		// delete thousands
-		if (hasComma && m_decimalPoint.equals("."))
+		if (hasComma && decimalSeparator.isDot())
+		{
 			info = info.replace(',', ' ');
-		if (hasPoint && m_decimalPoint.equals(","))
+		}
+		if (hasPoint && decimalSeparator.isComma())
+		{
 			info = info.replace('.', ' ');
+		}
 		hasComma = info.indexOf(',') != -1;
 
 		// replace decimal
-		if (hasComma && m_decimalPoint.equals(","))
+		if (hasComma && decimalSeparator.isComma())
+		{
 			info = info.replace(',', '.');
+		}
 
 		// remove everything but digits & '.' & '-'
 		char[] charArray = info.toCharArray();
 		final StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < charArray.length; i++)
+		for (char element : charArray)
 		{
-			if (Character.isDigit(charArray[i]) || charArray[i] == '.' || charArray[i] == '-')
-				sb.append(charArray[i]);
+			if (Character.isDigit(element) || element == '.' || element == '-')
+			{
+				sb.append(element);
+			}
 		}
 
 		final String numberStringNormalized = sb.toString().trim();

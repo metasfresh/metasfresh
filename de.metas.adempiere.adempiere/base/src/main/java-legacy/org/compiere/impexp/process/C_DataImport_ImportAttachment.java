@@ -12,10 +12,13 @@ import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.impexp.FileImportReader;
+import org.compiere.impexp.ImpDataContext;
 import org.compiere.impexp.ImpDataLine;
 import org.compiere.impexp.ImpFormat;
+import org.compiere.impexp.ImpFormatId;
+import org.compiere.impexp.ImpFormatRepository;
 import org.compiere.impexp.ImportStatus;
 import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.model.I_AD_ImpFormat;
@@ -31,6 +34,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -56,7 +60,8 @@ import de.metas.util.Services;
 
 public class C_DataImport_ImportAttachment extends JavaProcess implements IProcessPrecondition
 {
-	private final transient AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+	private final transient AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+	private final transient ImpFormatRepository importFormatsRepo = SpringContextHolder.instance.getBean(ImpFormatRepository.class);
 	private final transient IImportProcessFactory importProcessFactory = Services.get(IImportProcessFactory.class);
 
 	private static final Charset CHARSET = Charset.forName("UTF-8");
@@ -89,8 +94,13 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 	@Override
 	protected String doIt()
 	{
+		final ImpDataContext ctx = ImpDataContext.builder()
+				.clientId(getClientId())
+				.orgId(getOrgId())
+				.userId(getUserId())
+				.build();
 
-		streamImpDataLines().forEach(this::importLine);
+		streamImpDataLines().forEach(line -> importLine(ctx, line));
 		completeAsyncImportProcessBuilder();
 
 		deleteAttachmentEntry();
@@ -127,12 +137,14 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 
 	private ImpFormat getImpFormat()
 	{
-		if (_impFormat == null)
+		ImpFormat impFormat = _impFormat;
+		if (impFormat == null)
 		{
 			final I_C_DataImport dataImport = getDataImport();
-			_impFormat = ImpFormat.load(dataImport.getAD_ImpFormat_ID());
+			final ImpFormatId impFormatId = ImpFormatId.ofRepoId(dataImport.getAD_ImpFormat_ID());
+			impFormat = _impFormat = importFormatsRepo.getById(impFormatId);
 		}
-		return _impFormat;
+		return impFormat;
 	}
 
 	private Stream<ImpDataLine> streamImpDataLines()
@@ -190,11 +202,13 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 		return CHARSET;
 	}
 
-	private void importLine(final ImpDataLine line)
+	private void importLine(
+			@NonNull final ImpDataContext ctx,
+			@NonNull final ImpDataLine line)
 	{
-		line.importToDB();
+		line.importToDB(ctx);
 
-		if(isManualImport())
+		if (isManualImport())
 		{
 			// nothing to do
 			return;

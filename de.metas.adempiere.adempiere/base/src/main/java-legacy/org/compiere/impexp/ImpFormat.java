@@ -21,31 +21,24 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_ImpFormat;
-import org.compiere.model.I_AD_ImpFormat_Row;
 import org.compiere.model.I_C_DataImport;
-import org.compiere.model.I_I_GLJournal;
-import org.compiere.model.POInfo;
-import org.compiere.model.X_AD_ImpFormat;
+import org.compiere.model.I_GL_Journal;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -58,239 +51,61 @@ import lombok.NonNull;
  */
 public final class ImpFormat
 {
-	/** Logger */
-	private static Logger log = LogManager.getLogger(ImpFormat.class);
+	private static final Logger logger = LogManager.getLogger(ImpFormat.class);
 
 	@Getter
 	private final String name;
-	private final String formatType;
+	private final ImpFormatType formatType;
 	@Getter
 	private final boolean multiLine;
 
 	/** The Table to be imported */
-	private int m_AD_Table_ID;
-	private String m_tableName;
-	private String m_tablePK;
-	private String m_tableUnique1;
-	private String m_tableUnique2;
-	private String m_tableUniqueParent;
-	private String m_tableUniqueChild;
-	private boolean hasDataImportIdColumn;
-	//
-	private ArrayList<ImpFormatRow> m_rows = new ArrayList<>();
+	private final ImpFormatTableInfo tableInfo;
+
+	private final ImmutableList<ImpFormatRow> rows;
 
 	@Builder
 	private ImpFormat(
 			@NonNull final String name,
-			final int adTableId,
-			@NonNull final String formatType,
-			final boolean multiLine)
+			@NonNull final ImpFormatType formatType,
+			final boolean multiLine,
+			@NonNull final ImpFormatTableInfo tableInfo,
+			@NonNull final List<ImpFormatRow> rows)
 	{
 		Check.assumeNotEmpty(name, "name is not empty");
+		Check.assumeNotEmpty(rows, "rows is not empty");
 
 		this.name = name;
-
-		if (formatType.equals(FORMATTYPE_FIXED) || formatType.equals(FORMATTYPE_COMMA)
-				|| formatType.equals(FORMATTYPE_SEMICOLON)
-				|| formatType.equals(FORMATTYPE_TAB) || formatType.equals(FORMATTYPE_XML))
-		{
-			this.formatType = formatType;
-		}
-		else
-		{
-			throw new IllegalArgumentException("FormatType must be F/C/S/T/X");
-		}
-
+		this.formatType = formatType;
 		this.multiLine = multiLine;
-
-		setTable(adTableId);
+		this.tableInfo = tableInfo;
+		this.rows = ImmutableList.copyOf(rows);
 	}
 
 	public String getTableName()
 	{
-		return m_tableName;
+		return tableInfo.getTableName();
 	}
 
 	/**
-	 * Import Table
-	 *
-	 * @param AD_Table_ID table
-	 */
-	private void setTable(final int AD_Table_ID)
-	{
-		m_AD_Table_ID = AD_Table_ID;
-
-		final POInfo poInfo = POInfo.getPOInfo(AD_Table_ID);
-		Check.assumeNotNull(poInfo, "poInfo is not null for AD_Table_ID={}", AD_Table_ID);
-		m_tableName = poInfo.getTableName();
-
-		m_tablePK = poInfo.getKeyColumnName();
-		if (m_tablePK == null)
-		{
-			throw new AdempiereException("Table " + m_tableName + " has not primary key");
-		}
-
-		hasDataImportIdColumn = poInfo.hasColumnName(I_C_DataImport.COLUMNNAME_C_DataImport_ID);
-
-		// Set Additional Table Info
-		m_tableUnique1 = "";
-		m_tableUnique2 = "";
-		m_tableUniqueParent = "";
-		m_tableUniqueChild = "";
-
-		if (m_AD_Table_ID == 532)		// I_Product
-		{
-			m_tableUnique1 = "UPC";						// UPC = unique
-			m_tableUnique2 = "Value";
-			m_tableUniqueChild = "VendorProductNo";		// Vendor No may not be unique !
-			m_tableUniqueParent = "BPartner_Value";		// Makes it unique
-		}
-		else if (m_AD_Table_ID == 533)		// I_BPartner
-		{
-			// gody: 20070113 to allow multiple contacts per BP
-			// m_tableUnique1 = "Value"; // the key
-		}
-		else if (m_AD_Table_ID == 534)		// I_ElementValue
-		{
-			m_tableUniqueParent = "ElementName";			// the parent key
-			m_tableUniqueChild = "Value";					// the key
-		}
-		else if (m_AD_Table_ID == 535)		// I_ReportLine
-		{
-			m_tableUniqueParent = "ReportLineSetName";		// the parent key
-			m_tableUniqueChild = "Name";					// the key
-		}
-	}   // setTable
-
-	/**
-	 * Get Import Table Name
-	 *
-	 * @return AD_Table_ID
-	 */
-	public int getAD_Table_ID()
-	{
-		return m_AD_Table_ID;
-	}   // getAD_Table_ID
-
-	/** Format Type - Fixed Length F */
-	public static final String FORMATTYPE_FIXED = X_AD_ImpFormat.FORMATTYPE_FixedPosition;
-	/** Format Type - Comma Separated C */
-	public static final String FORMATTYPE_COMMA = X_AD_ImpFormat.FORMATTYPE_CommaSeparated;
-	/** Format Type - Semicolon Separated S */
-	public static final String FORMATTYPE_SEMICOLON = X_AD_ImpFormat.FORMATTYPE_SemicolonSeparated;
-		/** Format Type - Tab Separated T */
-	public static final String FORMATTYPE_TAB = X_AD_ImpFormat.FORMATTYPE_TabSeparated;
-	/** Format Type - XML X */
-	public static final String FORMATTYPE_XML = X_AD_ImpFormat.FORMATTYPE_XML;
-
-	/*************************************************************************
-	 * Add Format Row
-	 *
-	 * @param row row
-	 */
-	public void addRow(final ImpFormatRow row)
-	{
-		m_rows.add(row);
-	}	// addRow
-
-	/**
-	 * Get Row
-	 *
-	 * @param index index
-	 * @return Import Format Row
+	 * @return import Format Row or null
 	 */
 	public ImpFormatRow getRow(final int index)
 	{
-		if (index >= 0 && index < m_rows.size())
+		if (index >= 0 && index < rows.size())
 		{
-			return m_rows.get(index);
+			return rows.get(index);
 		}
-		return null;
-	}	// getRow
-
-	/**
-	 * Get Row Count
-	 *
-	 * @return row count
-	 */
-	public int getRowCount()
-	{
-		return m_rows.size();
-	}	// getRowCount
-
-	/*************************************************************************
-	 * Factory load
-	 *
-	 * @param name name
-	 * @return Import Format
-	 * @deprecated Please use {@link #load(I_AD_ImpFormat)}
-	 */
-	@Deprecated
-	public static ImpFormat load(final String name)
-	{
-		final I_AD_ImpFormat impFormatModel = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_ImpFormat.class, Env.getCtx(), ITrx.TRXNAME_None)
-				.addEqualsFilter(I_AD_ImpFormat.COLUMNNAME_Name, name)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClientOrSystem()
-				.create()
-				.firstOnlyOrNull(I_AD_ImpFormat.class);
-		if (impFormatModel == null)
+		else
 		{
 			return null;
 		}
-		return load(impFormatModel);
-	}	// getFormat
+	}	// getRow
 
-	public static ImpFormat load(final int impFormatId)
+	public int getRowCount()
 	{
-		final I_AD_ImpFormat impFormatModel = InterfaceWrapperHelper.loadOutOfTrx(impFormatId, I_AD_ImpFormat.class);
-		return load(impFormatModel);
-	}
-
-	public static ImpFormat load(final I_AD_ImpFormat impFormatModel)
-	{
-		Check.assumeNotNull(impFormatModel, "impFormatModel not null");
-
-		final ImpFormat impFormat = ImpFormat.builder()
-				.name(impFormatModel.getName())
-				.formatType(impFormatModel.getFormatType())
-				.multiLine(impFormatModel.isMultiLine())
-				.adTableId(impFormatModel.getAD_Table_ID())
-				.build();
-		loadRows(impFormat, impFormatModel.getAD_ImpFormat_ID());
-		return impFormat;
-	}
-
-	/**
-	 * Load Format Rows with ID
-	 *
-	 * @param format format
-	 * @param adImpFormatId id
-	 */
-	private static void loadRows(final ImpFormat format, final int adImpFormatId)
-	{
-		final List<I_AD_ImpFormat_Row> impFormatRows = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_ImpFormat_Row.class, Env.getCtx(), ITrx.TRXNAME_None)
-				.addEqualsFilter(I_AD_ImpFormat_Row.COLUMNNAME_AD_ImpFormat_ID, adImpFormatId)
-				.addOnlyActiveRecordsFilter()
-				.orderBy()
-				.addColumn(I_AD_ImpFormat_Row.COLUMNNAME_SeqNo)
-				.endOrderBy()
-				.create()
-				.list(I_AD_ImpFormat_Row.class);
-
-		for (final I_AD_ImpFormat_Row impFormatRow : impFormatRows)
-		{
-			if (!impFormatRow.getAD_Column().isActive())
-			{
-				continue;
-			}
-
-			final ImpFormatRow row = new ImpFormatRow(impFormatRow);
-			format.addRow(row);
-		}
-	}	// loadLines
+		return rows.size();
+	}	// getRowCount
 
 	/*************************************************************************
 	 * Parse Line returns ArrayList of values
@@ -321,9 +136,9 @@ public final class ImpFormat
 	{
 		final List<ImpDataCell> cells = new ArrayList<>();
 		// for all columns
-		for (int index = 0; index < m_rows.size(); index++)
+		for (int index = 0; index < rows.size(); index++)
 		{
-			final ImpFormatRow impFormatRow = m_rows.get(index);
+			final ImpFormatRow impFormatRow = rows.get(index);
 
 			// Get Data
 			String cellValueRaw = null;
@@ -331,7 +146,7 @@ public final class ImpFormat
 			{
 				cellValueRaw = "Constant";
 			}
-			else if (formatType.equals(FORMATTYPE_FIXED))
+			else if (formatType.equals(ImpFormatType.FIXED_POSITION))
 			{
 				// check length
 				if (impFormatRow.getStartNo() > 0 && impFormatRow.getEndNo() <= line.length())
@@ -365,20 +180,23 @@ public final class ImpFormat
 	 * @return field in lime or ""
 	 * @throws IllegalArgumentException if format unknows
 	 */
-	private String parseFlexFormat(final String line, final String formatType, final int fieldNo)
+	private String parseFlexFormat(
+			final String line,
+			final ImpFormatType formatType,
+			final int fieldNo)
 	{
 		final char QUOTE = '"';
 		// check input
 		char delimiter = ' ';
-		if (formatType.equals(FORMATTYPE_COMMA))
+		if (formatType.equals(ImpFormatType.COMMA_SEPARATED))
 		{
 			delimiter = ',';
 		}
-		else if (formatType.equals(FORMATTYPE_SEMICOLON))
+		else if (formatType.equals(ImpFormatType.SEMICOLON_SEPARATED))
 		{
 			delimiter = ';';
 		}
-		else if (formatType.equals(FORMATTYPE_TAB))
+		else if (formatType.equals(ImpFormatType.TAB_SEPARATED))
 		{
 			delimiter = '\t';
 		}
@@ -433,7 +251,7 @@ public final class ImpFormat
 				// we should be at end of line or a delimiter
 				if (pos < length && line.charAt(pos) != delimiter)
 				{
-					log.info("Did not find delimiter at pos " + pos + " " + line);
+					logger.info("Did not find delimiter at pos " + pos + " " + line);
 				}
 				pos++;  // move over delimiter
 			}
@@ -456,26 +274,6 @@ public final class ImpFormat
 		return "";
 	}   // parseFlexFormat
 
-	@Deprecated
-	public boolean updateDB(final Properties ctx, final String lineStr, final String trxName)
-	{
-		try
-		{
-			final ImpDataLine line = ImpDataLine.builder()
-					.impFormat(this)
-					.fileLineNo(0) // unknown
-					.lineStr(lineStr)
-					.build();
-			updateDB(ctx, line, trxName);
-			return true;
-		}
-		catch (Exception e)
-		{
-			log.error("Error while importing: " + lineStr, e);
-			return false;
-		}
-	}
-
 	/*************************************************************************
 	 * Insert/Update Database.
 	 *
@@ -485,7 +283,9 @@ public final class ImpFormat
 	 * @return
 	 * @return reference to import table record
 	 */
-	public ITableRecordReference updateDB(final Properties ctx, final ImpDataLine line, final String trxName) throws AdempiereException
+	public ITableRecordReference updateDB(
+			@NonNull final ImpDataContext ctx,
+			@NonNull final ImpDataLine line)
 	{
 		if (line == null || line.isEmpty())
 		{
@@ -499,30 +299,38 @@ public final class ImpFormat
 		}
 
 		// Standard Fields
-		final int AD_Client_ID = Env.getAD_Client_ID(ctx);
-		final int AD_Org_ID;
-		if (getAD_Table_ID() == Services.get(IADTableDAO.class).retrieveTableId(I_I_GLJournal.Table_Name))
+		final ClientId clientId = ctx.getClientId();
+		final OrgId orgId;
+		if (I_GL_Journal.Table_Name.equals(getTableName())) // FIXME HARDCODED
 		{
-			AD_Org_ID = 0;
+			orgId = OrgId.ANY;
 		}
 		else
 		{
-			AD_Org_ID = Env.getAD_Org_ID(ctx);
+			orgId = ctx.getOrgId();
 		}
-		final int UpdatedBy = Env.getAD_User_ID(ctx);
+		final UserId userId = ctx.getUserId();
+
+		final String tableName = tableInfo.getTableName();
+		final String tablePK = tableInfo.getTablePK();
+		final String tableUnique1 = tableInfo.getTableUnique1();
+		final String tableUnique2 = tableInfo.getTableUnique2();
+		final String tableUniqueParent = tableInfo.getTableUniqueParent();
+		final String tableUniqueChild = tableInfo.getTableUniqueChild();
+		final boolean hasDataImportIdColumn = tableInfo.isHasDataImportIdColumn();
 
 		//
 		// Re-use the same ID if we already imported this record
 		int importRecordId = 0;
 		final ITableRecordReference importRecordRef = line.getImportRecordRef();
 		if (importRecordRef != null
-				&& importRecordRef.getTableName().equals(m_tableName)
+				&& importRecordRef.getTableName().equals(tableName)
 				&& importRecordRef.getRecord_ID() > 0)
 		{
 			final int recordId = importRecordRef.getRecord_ID();
 
 			// make sure it still exists
-			final int count = DB.getSQLValue(trxName, "SELECT COUNT(1) FROM " + m_tableName + " WHERE " + m_tablePK + "=" + recordId);
+			final int count = DB.getSQLValue(ITrx.TRXNAME_ThreadInherited, "SELECT COUNT(1) FROM " + tableName + " WHERE " + tablePK + "=" + recordId);
 			if (count == 1)
 			{
 				importRecordId = recordId;
@@ -534,8 +342,8 @@ public final class ImpFormat
 		if (importRecordId <= 0)
 		{
 			final StringBuilder sql = new StringBuilder("SELECT COUNT(*), MAX(")
-					.append(m_tablePK).append(") FROM ").append(m_tableName)
-					.append(" WHERE AD_Client_ID=").append(AD_Client_ID).append(" AND (");
+					.append(tablePK).append(") FROM ").append(tableName)
+					.append(" WHERE AD_Client_ID=").append(clientId.getRepoId()).append(" AND (");
 			//
 			String where1 = null;
 			String where2 = null;
@@ -548,15 +356,15 @@ public final class ImpFormat
 				}
 
 				final String columnName = node.getColumnName();
-				if (columnName.equals(m_tableUnique1))
+				if (columnName.equals(tableUnique1))
 				{
 					where1 = node.getColumnNameEqualsValueSql();
 				}
-				else if (columnName.equals(m_tableUnique2))
+				else if (columnName.equals(tableUnique2))
 				{
 					where2 = node.getColumnNameEqualsValueSql();
 				}
-				else if (columnName.equals(m_tableUniqueParent) || columnName.equals(m_tableUniqueChild))
+				else if (columnName.equals(tableUniqueParent) || columnName.equals(tableUniqueChild))
 				{
 					if (whereParentChild == null)
 					{
@@ -601,7 +409,7 @@ public final class ImpFormat
 			{
 				if (sqlFindExistingRecord.length() > 0)
 				{
-					pstmt = DB.prepareStatement(sql.toString(), trxName);
+					pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 					rs = pstmt.executeQuery();
 					if (rs.next())
 					{
@@ -627,37 +435,37 @@ public final class ImpFormat
 		// Insert into import table (only mandatory columns)
 		if (importRecordId <= 0)
 		{
-			importRecordId = DB.getNextID(ctx, m_tableName, ITrx.TRXNAME_None);		// get ID
+			importRecordId = DB.getNextID(clientId.getRepoId(), tableName, ITrx.TRXNAME_None);
 			if (importRecordId <= 0)
 			{
-				throw new AdempiereException("Cannot acquire next ID for " + m_tableName);
+				throw new AdempiereException("Cannot acquire next ID for " + tableName);
 			}
 
 			final StringBuilder sql = new StringBuilder("INSERT INTO ")
-					.append(m_tableName).append("(").append(m_tablePK).append(",")
+					.append(tableName).append("(").append(tablePK).append(",")
 					.append("AD_Client_ID,AD_Org_ID,Created,CreatedBy,Updated,UpdatedBy,IsActive")	// StdFields
 					.append(") VALUES (").append(importRecordId).append(",")
-					.append(AD_Client_ID).append(",").append(AD_Org_ID)
-					.append(",now(),").append(UpdatedBy).append(",now(),").append(UpdatedBy).append(",'Y'")
+					.append(clientId.getRepoId()).append(",").append(orgId.getRepoId())
+					.append(",now(),").append(userId.getRepoId()).append(",now(),").append(userId.getRepoId()).append(",'Y'")
 					.append(")");
 			//
-			final int no = DB.executeUpdateEx(sql.toString(), trxName);
+			final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 			if (no != 1)
 			{
 				throw new DBException("Failed inserting the record");
 			}
-			log.trace("New ID={}", importRecordId);
+			logger.trace("New ID={}", importRecordId);
 		}
 		else
 		{
-			log.trace("Old ID={}", importRecordId);
+			logger.trace("Old ID={}", importRecordId);
 		}
 
 		//
 		// Update import row
 		{
 			final StringBuilder sqlUpdate = new StringBuilder("UPDATE ")
-					.append(m_tableName).append(" SET ");
+					.append(tableName).append(" SET ");
 			for (final ImpDataCell node : nodes)
 			{
 				if (node.isEmpty())
@@ -672,16 +480,16 @@ public final class ImpFormat
 				sqlUpdate.append(I_C_DataImport.COLUMNNAME_C_DataImport_ID).append("=").append(line.getDataImportId()).append(",");
 			}
 
-			sqlUpdate.append("IsActive='Y',Processed='N',I_IsImported='N',Updated=now(),UpdatedBy=").append(UpdatedBy);
-			sqlUpdate.append(" WHERE ").append(m_tablePK).append("=").append(importRecordId);
+			sqlUpdate.append("IsActive='Y',Processed='N',I_IsImported='N',Updated=now(),UpdatedBy=").append(userId.getRepoId());
+			sqlUpdate.append(" WHERE ").append(tablePK).append("=").append(importRecordId);
 			//
-			final int no = DB.executeUpdateEx(sqlUpdate.toString(), trxName);
+			final int no = DB.executeUpdateEx(sqlUpdate.toString(), ITrx.TRXNAME_ThreadInherited);
 			if (no != 1)
 			{
 				throw new DBException("Failed updating the record");
 			}
 		}
 
-		return TableRecordReference.of(m_tableName, importRecordId);
+		return TableRecordReference.of(tableName, importRecordId);
 	}
 }	// ImpFormat

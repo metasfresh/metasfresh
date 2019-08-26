@@ -2,10 +2,13 @@ package org.compiere.impexp;
 
 import java.sql.Timestamp;
 
+import javax.annotation.Nullable;
+
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * A cell of {@link ImpDataCell}.
@@ -19,10 +22,14 @@ public class ImpDataCell
 	private String value = "";
 	private CellErrorMessage errorMessage = null;
 
-	public ImpDataCell(final ImpFormatRow impFormatRow)
+	public ImpDataCell(@NonNull final ImpFormatRow impFormatRow)
 	{
-		super();
 		this.impFormatRow = impFormatRow;
+	}
+
+	public ImpDataCell()
+	{
+		this.impFormatRow = null;
 	}
 
 	public String getColumnName()
@@ -47,7 +54,7 @@ public class ImpDataCell
 		{
 			return true;
 		}
-		
+
 		if (impFormatRow != null && impFormatRow.isDate() && "00000000".equals(value))
 		{
 			return true;
@@ -66,14 +73,14 @@ public class ImpDataCell
 	{
 		return errorMessage != null;
 	}
-	
+
 	/** @return cell error message or null */
 	public CellErrorMessage getCellErrorMessage()
 	{
 		return errorMessage;
 	}
 
-	public void setValue(final Object value)
+	public void setValue(@Nullable final Object value)
 	{
 		String valueStr = value == null ? "" : value.toString();
 		CellErrorMessage errorMessage = null;

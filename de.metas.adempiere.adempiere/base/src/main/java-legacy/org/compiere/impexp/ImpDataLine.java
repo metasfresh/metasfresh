@@ -6,7 +6,6 @@ import java.util.Objects;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 
 import com.google.common.collect.ImmutableList;
@@ -28,7 +27,7 @@ public class ImpDataLine
 	private final int fileLineNo;
 	@Getter
 	private final int dataImportId;
-	
+
 	private ImpFormat _impFormat;
 	private List<ImpDataCell> _values;
 
@@ -49,7 +48,6 @@ public class ImpDataLine
 		this.fileLineNo = fileLineNo;
 		this.lineStr = lineStr;
 		this.dataImportId = dataImportId;
-
 
 		this.setImpFormat(impFormat);
 	}
@@ -98,8 +96,7 @@ public class ImpDataLine
 			final ImpFormat impFormat = getImpFormat();
 			if (impFormat == null)
 			{
-				final ImpFormatRow impFormatRow = null; // N/A
-				final ImpDataCell cell = new ImpDataCell(impFormatRow);
+				final ImpDataCell cell = new ImpDataCell();
 				cell.setValue(lineStr); // whole line
 				_values = ImmutableList.of(cell);
 			}
@@ -129,16 +126,6 @@ public class ImpDataLine
 			return null;
 		}
 		return values.get(index).getValueAsString();
-	}
-
-	public boolean isValidIndex(final int index)
-	{
-		if (index < 0)
-		{
-			return false;
-		}
-		final List<ImpDataCell> values = getValues();
-		return index < values.size();
 	}
 
 	/**
@@ -274,7 +261,7 @@ public class ImpDataLine
 		return importRecordRef;
 	}
 
-	public void importToDB()
+	public void importToDB(final ImpDataContext ctx)
 	{
 		final ImpFormat impFormat = getImpFormat();
 		Check.assumeNotNull(impFormat, "impFormat not null");
@@ -284,13 +271,13 @@ public class ImpDataLine
 			private ITableRecordReference importRecordRef;
 
 			@Override
-			public void run(String localTrxName) throws Exception
+			public void run(String localTrxName)
 			{
-				importRecordRef = impFormat.updateDB(Env.getCtx(), ImpDataLine.this, localTrxName);
+				importRecordRef = impFormat.updateDB(ctx, ImpDataLine.this);
 			}
 
 			@Override
-			public boolean doCatch(Throwable e) throws Throwable
+			public boolean doCatch(Throwable e)
 			{
 				error = e;
 				return true;
