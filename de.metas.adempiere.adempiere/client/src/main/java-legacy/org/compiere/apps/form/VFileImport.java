@@ -57,7 +57,7 @@ import org.compiere.impexp.ImpDataContext;
 import org.compiere.impexp.ImpDataLine;
 import org.compiere.impexp.ImpFormat;
 import org.compiere.impexp.ImpFormatRepository;
-import org.compiere.impexp.ImportStatus;
+import org.compiere.impexp.ImpDataLineStatus;
 import org.compiere.model.I_AD_ImpFormat;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CPanel;
@@ -476,7 +476,7 @@ public class VFileImport extends CPanel
 		final ImpFormat impFormat = previewTableModel.getImpFormat();
 
 		final boolean hasData = previewTableModel.getRowCount() > 0
-				&& impFormat != null && impFormat.getRowCount() > 0; // format loaded
+				&& impFormat != null && impFormat.getColumnsCount() > 0; // format loaded
 
 		confirmPanel.getOKButton().setEnabled(hasData);
 	}
@@ -542,7 +542,7 @@ public class VFileImport extends CPanel
 					}
 
 					line.importToDB(ctx);
-					if (ImportStatus.ImportPrepared == line.getImportStatus())
+					if (ImpDataLineStatus.ImportPrepared == line.getImportStatus())
 					{
 						line.setToImport(false);
 						countImported++;
@@ -617,7 +617,7 @@ public class VFileImport extends CPanel
 				}
 
 				// Skip those already scheduled
-				if (ImportStatus.ImportScheduled == line.getImportStatus())
+				if (ImpDataLineStatus.ImportScheduled == line.getImportStatus())
 				{
 					continue;
 				}

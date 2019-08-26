@@ -51,7 +51,7 @@ public class ImpFormatRepository
 	public ImpFormat toImpFormat(@NonNull final I_AD_ImpFormat impFormatRecord)
 	{
 		final ImpFormatId impFormatId = ImpFormatId.ofRepoId(impFormatRecord.getAD_ImpFormat_ID());
-		final ImmutableList<ImpFormatRow> rows = retrieveRows(impFormatId);
+		final ImmutableList<ImpFormatColumn> columns = retrieveColumns(impFormatId);
 		final ImpFormatTableInfo tableInfo = retrieveImpFormatTableInfo(impFormatRecord.getAD_Table_ID());
 
 		return ImpFormat.builder()
@@ -60,11 +60,11 @@ public class ImpFormatRepository
 				.multiLine(impFormatRecord.isMultiLine())
 				.manualImport(impFormatRecord.isManualImport())
 				.tableInfo(tableInfo)
-				.rows(rows)
+				.columns(columns)
 				.build();
 	}
 
-	private ImmutableList<ImpFormatRow> retrieveRows(@NonNull final ImpFormatId impFormatId)
+	private ImmutableList<ImpFormatColumn> retrieveColumns(@NonNull final ImpFormatId impFormatId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_AD_ImpFormat_Row.class)
@@ -78,7 +78,7 @@ public class ImpFormatRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private ImpFormatRow toImpFormatRowOrNull(final I_AD_ImpFormat_Row rowRecord)
+	private ImpFormatColumn toImpFormatRowOrNull(final I_AD_ImpFormat_Row rowRecord)
 	{
 		final I_AD_Column adColumn = rowRecord.getAD_Column();
 		if (!adColumn.isActive())
@@ -86,12 +86,12 @@ public class ImpFormatRepository
 			return null;
 		}
 
-		return ImpFormatRow.builder()
+		return ImpFormatColumn.builder()
 				.name(rowRecord.getName())
 				.columnName(adColumn.getColumnName())
 				.startNo(rowRecord.getStartNo())
 				.endNo(rowRecord.getEndNo())
-				.dataType(ImpFormatRowDataType.ofCode(rowRecord.getDataType()))
+				.dataType(ImpFormatColumnDataType.ofCode(rowRecord.getDataType()))
 				.maxLength(adColumn.getFieldLength())
 				.dataFormat(rowRecord.getDataFormat())
 				.decimalSeparator(DecimalSeparator.ofNullableStringOrDot(rowRecord.getDecimalPoint()))
@@ -156,5 +156,4 @@ public class ImpFormatRepository
 				.dataImportConfigIdColumnName(dataImportConfigIdColumnName)
 				.build();
 	}
-
 }

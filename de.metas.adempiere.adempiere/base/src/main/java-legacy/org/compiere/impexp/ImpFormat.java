@@ -43,7 +43,7 @@ import lombok.Getter;
 import lombok.NonNull;
 
 /**
- * Import Format a Row
+ * Import Format
  *
  * @author Jorg Janke
  * @version $Id: ImpFormat.java,v 1.3 2006/07/30 00:51:05 jjanke Exp $
@@ -63,7 +63,7 @@ public final class ImpFormat
 	/** The Table to be imported */
 	private final ImpFormatTableInfo tableInfo;
 
-	private final ImmutableList<ImpFormatRow> rows;
+	private final ImmutableList<ImpFormatColumn> columns;
 
 	@Builder
 	private ImpFormat(
@@ -72,17 +72,17 @@ public final class ImpFormat
 			final boolean multiLine,
 			final boolean manualImport,
 			@NonNull final ImpFormatTableInfo tableInfo,
-			@NonNull final List<ImpFormatRow> rows)
+			@NonNull final List<ImpFormatColumn> columns)
 	{
 		Check.assumeNotEmpty(name, "name is not empty");
-		Check.assumeNotEmpty(rows, "rows is not empty");
+		Check.assumeNotEmpty(columns, "columns is not empty");
 
 		this.name = name;
 		this.formatType = formatType;
 		this.multiLine = multiLine;
 		this.manualImport = manualImport;
 		this.tableInfo = tableInfo;
-		this.rows = ImmutableList.copyOf(rows);
+		this.columns = ImmutableList.copyOf(columns);
 	}
 
 	public String getTableName()
@@ -91,24 +91,24 @@ public final class ImpFormat
 	}
 
 	/**
-	 * @return import Format Row or null
+	 * @return import Format Column or null
 	 */
-	public ImpFormatRow getRow(final int index)
+	public ImpFormatColumn getColumn(final int index)
 	{
-		if (index >= 0 && index < rows.size())
+		if (index >= 0 && index < columns.size())
 		{
-			return rows.get(index);
+			return columns.get(index);
 		}
 		else
 		{
 			return null;
 		}
-	}	// getRow
+	}
 
-	public int getRowCount()
+	public int getColumnsCount()
 	{
-		return rows.size();
-	}	// getRowCount
+		return columns.size();
+	}
 
 	/*************************************************************************
 	 * Parse Line returns ArrayList of values
@@ -139,34 +139,34 @@ public final class ImpFormat
 	{
 		final List<ImpDataCell> cells = new ArrayList<>();
 		// for all columns
-		for (int index = 0; index < rows.size(); index++)
+		for (int index = 0; index < columns.size(); index++)
 		{
-			final ImpFormatRow impFormatRow = rows.get(index);
+			final ImpFormatColumn impFormatColumn = columns.get(index);
 
 			// Get Data
 			String cellValueRaw = null;
-			if (impFormatRow.isConstant())
+			if (impFormatColumn.isConstant())
 			{
 				cellValueRaw = "Constant";
 			}
 			else if (formatType.equals(ImpFormatType.FIXED_POSITION))
 			{
 				// check length
-				if (impFormatRow.getStartNo() > 0 && impFormatRow.getEndNo() <= line.length())
+				if (impFormatColumn.getStartNo() > 0 && impFormatColumn.getEndNo() <= line.length())
 				{
-					cellValueRaw = line.substring(impFormatRow.getStartNo() - 1, impFormatRow.getEndNo());
+					cellValueRaw = line.substring(impFormatColumn.getStartNo() - 1, impFormatColumn.getEndNo());
 				}
 			}
 			else
 			{
-				cellValueRaw = parseFlexFormat(line, formatType, impFormatRow.getStartNo());
+				cellValueRaw = parseFlexFormat(line, formatType, impFormatColumn.getStartNo());
 			}
 			if (cellValueRaw == null)
 			{
 				cellValueRaw = "";
 			}
 
-			final ImpDataCell cell = new ImpDataCell(impFormatRow);
+			final ImpDataCell cell = new ImpDataCell(impFormatColumn);
 			cell.setValue(cellValueRaw);
 			cells.add(cell);
 		}	// for all columns

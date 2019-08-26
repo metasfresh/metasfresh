@@ -65,9 +65,9 @@ public class FileImportPreviewTableModel extends AbstractTableModel
 			int columnIndex = 0;
 			columnModels.add(new ToImportTableColumnModel(columnIndex++));
 			columnModels.add(new LineNoTableColumnModel(columnIndex++));
-			for (int rowIndex = 0; rowIndex < impFormat.getRowCount(); rowIndex++)
+			for (int rowIndex = 0; rowIndex < impFormat.getColumnsCount(); rowIndex++)
 			{
-				columnModels.add(new ImpDataLineRowTableColumnModel(impFormat.getRow(rowIndex), rowIndex, columnIndex++));
+				columnModels.add(new ImpDataLineRowTableColumnModel(impFormat.getColumn(rowIndex), rowIndex, columnIndex++));
 			}
 			columnModels.add(new ImportStatusTableColumnModel(columnIndex++));
 			columnModels.add(new ImportErrorTableColumnModel(columnIndex++));

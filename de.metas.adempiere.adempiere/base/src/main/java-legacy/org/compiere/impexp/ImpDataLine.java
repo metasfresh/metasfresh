@@ -33,7 +33,7 @@ public class ImpDataLine
 
 	//
 	// Import status
-	private ImportStatus importStatus = ImportStatus.New;
+	private ImpDataLineStatus importStatus = ImpDataLineStatus.New;
 	private Throwable importError = null;
 	private ITableRecordReference importRecordRef;
 	private boolean toImport = true;
@@ -179,7 +179,7 @@ public class ImpDataLine
 
 	private void setImportStatus_New()
 	{
-		this.importStatus = ImportStatus.New;
+		this.importStatus = ImpDataLineStatus.New;
 		this.importError = null;
 		this.importRecordRef = null;
 		this.toImport = getImpFormat() != null;
@@ -187,7 +187,7 @@ public class ImpDataLine
 
 	private void setImportStatus_ImportPrepared(final ITableRecordReference importRecordRef)
 	{
-		this.importStatus = ImportStatus.ImportPrepared;
+		this.importStatus = ImpDataLineStatus.ImportPrepared;
 		this.importError = null;
 		this.importRecordRef = importRecordRef;
 		this.toImport = false;
@@ -195,14 +195,14 @@ public class ImpDataLine
 
 	private void setImportStatus_Error(final Throwable error)
 	{
-		this.importStatus = ImportStatus.Error;
+		this.importStatus = ImpDataLineStatus.Error;
 		this.importError = error;
 		// this.importRecordRef // don't touch it, we keep it as it is
 	}
 
 	public void setImportStatus_Scheduled()
 	{
-		this.importStatus = ImportStatus.ImportScheduled;
+		this.importStatus = ImpDataLineStatus.ImportScheduled;
 		this.toImport = false;
 	}
 
@@ -213,7 +213,7 @@ public class ImpDataLine
 		{
 			return false;
 		}
-		if (importStatus == ImportStatus.ImportScheduled)
+		if (importStatus == ImpDataLineStatus.ImportScheduled)
 		{
 			return false;
 		}
@@ -242,7 +242,7 @@ public class ImpDataLine
 	}
 
 	/** @return the import status of this line; never return null */
-	public ImportStatus getImportStatus()
+	public ImpDataLineStatus getImportStatus()
 	{
 		return importStatus;
 	}

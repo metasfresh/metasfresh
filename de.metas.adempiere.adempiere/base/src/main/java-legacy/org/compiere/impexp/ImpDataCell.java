@@ -18,24 +18,24 @@ import lombok.NonNull;
  */
 public class ImpDataCell
 {
-	private final ImpFormatRow impFormatRow;
+	private final ImpFormatColumn impFormatColumn;
 	private String value = "";
 	private CellErrorMessage errorMessage = null;
 
-	public ImpDataCell(@NonNull final ImpFormatRow impFormatRow)
+	public ImpDataCell(@NonNull final ImpFormatColumn impFormatColumn)
 	{
-		this.impFormatRow = impFormatRow;
+		this.impFormatColumn = impFormatColumn;
 	}
 
 	public ImpDataCell()
 	{
-		this.impFormatRow = null;
+		this.impFormatColumn = null;
 	}
 
 	public String getColumnName()
 	{
-		Check.assumeNotNull(impFormatRow, "impFormatRow not null");
-		return impFormatRow.getColumnName();
+		Check.assumeNotNull(impFormatColumn, "impFormatColumn not null");
+		return impFormatColumn.getColumnName();
 	}
 
 	public boolean isEmpty()
@@ -50,12 +50,12 @@ public class ImpDataCell
 			return true;
 		}
 
-		if (impFormatRow != null && impFormatRow.isNumber() && "0".equals(value))
+		if (impFormatColumn != null && impFormatColumn.isNumber() && "0".equals(value))
 		{
 			return true;
 		}
 
-		if (impFormatRow != null && impFormatRow.isDate() && "00000000".equals(value))
+		if (impFormatColumn != null && impFormatColumn.isDate() && "00000000".equals(value))
 		{
 			return true;
 		}
@@ -85,11 +85,11 @@ public class ImpDataCell
 		String valueStr = value == null ? "" : value.toString();
 		CellErrorMessage errorMessage = null;
 
-		if (impFormatRow != null)
+		if (impFormatColumn != null)
 		{
 			try
 			{
-				valueStr = impFormatRow.parse(valueStr);
+				valueStr = impFormatColumn.parse(valueStr);
 			}
 			catch (final Throwable ex)
 			{
@@ -109,12 +109,12 @@ public class ImpDataCell
 			return "NULL";
 		}
 
-		Check.assumeNotNull(impFormatRow, "impFormatRow not null");
-		if (impFormatRow.isString())
+		Check.assumeNotNull(impFormatColumn, "impFormatColumn not null");
+		if (impFormatColumn.isString())
 		{
 			return DB.TO_STRING(value);
 		}
-		else if (impFormatRow.isDate())
+		else if (impFormatColumn.isDate())
 		{
 			final Timestamp ts = Env.parseTimestamp(value);
 			return DB.TO_DATE(ts, false);

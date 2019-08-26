@@ -27,7 +27,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class ImpFormatTableInfo
+class ImpFormatTableInfo
 {
 	String tableName;
 	String tablePK;

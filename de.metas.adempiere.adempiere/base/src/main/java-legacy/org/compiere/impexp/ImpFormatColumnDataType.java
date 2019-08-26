@@ -35,7 +35,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public enum ImpFormatRowDataType implements ReferenceListAwareEnum
+public enum ImpFormatColumnDataType implements ReferenceListAwareEnum
 {
 	String(X_AD_ImpFormat_Row.DATATYPE_String), //
 	Date(X_AD_ImpFormat_Row.DATATYPE_Date), //
@@ -45,7 +45,7 @@ public enum ImpFormatRowDataType implements ReferenceListAwareEnum
 
 	private final String code;
 
-	private ImpFormatRowDataType(@NonNull final String code)
+	private ImpFormatColumnDataType(@NonNull final String code)
 	{
 		this.code = code;
 	}
@@ -58,15 +58,15 @@ public enum ImpFormatRowDataType implements ReferenceListAwareEnum
 	}
 
 	@JsonCreator
-	public static ImpFormatRowDataType ofCode(@NonNull final String code)
+	public static ImpFormatColumnDataType ofCode(@NonNull final String code)
 	{
-		ImpFormatRowDataType type = typesByCode.get(code);
+		ImpFormatColumnDataType type = typesByCode.get(code);
 		if (type == null)
 		{
-			throw new AdempiereException("No " + ImpFormatRowDataType.class + " found for code: " + code);
+			throw new AdempiereException("No " + ImpFormatColumnDataType.class + " found for code: " + code);
 		}
 		return type;
 	}
 
-	private static final ImmutableMap<String, ImpFormatRowDataType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), ImpFormatRowDataType::getCode);
+	private static final ImmutableMap<String, ImpFormatColumnDataType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), ImpFormatColumnDataType::getCode);
 }

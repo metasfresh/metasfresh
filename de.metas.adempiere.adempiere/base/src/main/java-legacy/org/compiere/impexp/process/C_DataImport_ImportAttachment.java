@@ -18,7 +18,7 @@ import org.compiere.impexp.ImpDataContext;
 import org.compiere.impexp.ImpDataLine;
 import org.compiere.impexp.ImpFormat;
 import org.compiere.impexp.ImpFormatRepository;
-import org.compiere.impexp.ImportStatus;
+import org.compiere.impexp.ImpDataLineStatus;
 import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.util.Env;
 
@@ -203,13 +203,13 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 			return;
 		}
 
-		final ImportStatus importStatus = line.getImportStatus();
-		if (ImportStatus.ImportPrepared == importStatus)
+		final ImpDataLineStatus importStatus = line.getImportStatus();
+		if (ImpDataLineStatus.ImportPrepared == importStatus)
 		{
 			countImported++;
 			scheduleToImport(line);
 		}
-		else if (ImportStatus.Error == importStatus)
+		else if (ImpDataLineStatus.Error == importStatus)
 		{
 			countError++;
 		}
@@ -225,7 +225,7 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 		}
 
 		// Skip those already scheduled
-		if (ImportStatus.ImportScheduled == line.getImportStatus())
+		if (ImpDataLineStatus.ImportScheduled == line.getImportStatus())
 		{
 			return;
 		}

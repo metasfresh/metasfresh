@@ -1,6 +1,6 @@
 package org.compiere.impexp;
 
-public enum ImportStatus
+public enum ImpDataLineStatus
 {
 	New,
 	Error,

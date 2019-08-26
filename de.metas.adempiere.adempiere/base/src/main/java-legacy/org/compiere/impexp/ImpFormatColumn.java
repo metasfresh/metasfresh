@@ -47,9 +47,9 @@ import lombok.NonNull;
  * 
  *          globalqss: integrate Teo Sarca bug fix [ 1623817 ] Minor bug on importing calendar date
  */
-public final class ImpFormatRow
+public final class ImpFormatColumn
 {
-	private static final Logger logger = LogManager.getLogger(ImpFormatRow.class);
+	private static final Logger logger = LogManager.getLogger(ImpFormatColumn.class);
 
 	@Getter
 	private final String name;
@@ -59,7 +59,7 @@ public final class ImpFormatRow
 	private final int startNo;
 	@Getter
 	private final int endNo;
-	private final ImpFormatRowDataType dataType;
+	private final ImpFormatColumnDataType dataType;
 	@Getter
 	private final String dataFormat;
 	@Getter
@@ -73,12 +73,12 @@ public final class ImpFormatRow
 	private DateFormat _dateFormat = null; // lazy
 
 	@Builder
-	private ImpFormatRow(
+	private ImpFormatColumn(
 			final String name,
 			@NonNull final String columnName,
 			final int startNo,
 			final int endNo,
-			@NonNull final ImpFormatRowDataType dataType,
+			@NonNull final ImpFormatColumnDataType dataType,
 			final int maxLength,
 			//
 			@Nullable final String dataFormat,
@@ -124,29 +124,29 @@ public final class ImpFormatRow
 
 	public boolean isString()
 	{
-		if (ImpFormatRowDataType.Constant.equals(dataType))
+		if (ImpFormatColumnDataType.Constant.equals(dataType))
 		{
 			return constantIsString;
 		}
 		else
 		{
-			return ImpFormatRowDataType.String.equals(dataType);
+			return ImpFormatColumnDataType.String.equals(dataType);
 		}
 	}
 
 	public boolean isNumber()
 	{
-		return ImpFormatRowDataType.Number.equals(dataType);
+		return ImpFormatColumnDataType.Number.equals(dataType);
 	}
 
 	public boolean isDate()
 	{
-		return ImpFormatRowDataType.Date.equals(dataType);
+		return ImpFormatColumnDataType.Date.equals(dataType);
 	}
 
 	public boolean isConstant()
 	{
-		return ImpFormatRowDataType.Constant.equals(dataType);
+		return ImpFormatColumnDataType.Constant.equals(dataType);
 	}
 
 	private DateFormat getDateFormat()
