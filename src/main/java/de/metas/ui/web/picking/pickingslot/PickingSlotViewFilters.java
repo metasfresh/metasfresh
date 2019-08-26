@@ -1,6 +1,7 @@
 package de.metas.ui.web.picking.pickingslot;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.process.BarcodeScannerType;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.DocumentFiltersList;
@@ -9,7 +10,6 @@ import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescripto
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Services;
-
 import lombok.experimental.UtilityClass;
 
 /*
@@ -55,7 +55,8 @@ public class PickingSlotViewFilters
 						.setFieldName(PARAM_Barcode)
 						.setDisplayName(Services.get(IMsgBL.class).getTranslatableMsgText("webui.view.pickingSlot.filters.pickingSlotBarcodeFilter"))
 						.setMandatory(true)
-						.setWidgetType(DocumentFieldWidgetType.Text))
+						.setWidgetType(DocumentFieldWidgetType.Text)
+						.barcodeScannerType(BarcodeScannerType.QRCode))
 				.build();
 	}
 

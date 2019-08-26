@@ -22,6 +22,7 @@ import org.adempiere.ad.callout.api.impl.NullCalloutExecutor;
 import org.adempiere.ad.callout.spi.ICalloutProvider;
 import org.adempiere.ad.callout.spi.ImmutablePlainCalloutProvider;
 import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
@@ -795,10 +796,9 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
-		public Builder setDocumentType(final DocumentType documentType, final int documentTypeIdInt)
+		public Builder setDocumentType(@NonNull final AdWindowId adWindowId)
 		{
-			setDocumentType(documentType, DocumentId.of(documentTypeIdInt));
-			return this;
+			return setDocumentType(DocumentType.Window, DocumentId.of(adWindowId.getRepoId()));
 		}
 
 		public DocumentType getDocumentType()

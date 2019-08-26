@@ -25,6 +25,7 @@ import com.google.common.collect.Sets;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
+import de.metas.process.BarcodeScannerType;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -88,6 +89,7 @@ public final class DocumentFieldDescriptor
 	private final DocumentFieldWidgetType widgetType;
 	private final boolean allowShowPassword; // in case widgetType is Password
 	private final ButtonFieldActionDescriptor buttonActionDescriptor;
+	private final BarcodeScannerType barcodeScannerType;
 
 	private final WidgetSize widgetSize;
 
@@ -156,6 +158,7 @@ public final class DocumentFieldDescriptor
 		widgetSize = builder.getWidgetSize();
 		allowShowPassword = builder.isAllowShowPassword();
 		buttonActionDescriptor = builder.getButtonActionDescriptor();
+		barcodeScannerType = builder.getBarcodeScannerType();
 		valueClass = builder.getValueClass();
 
 		lookupDescriptorProvider = builder.getLookupDescriptorProvider();
@@ -249,6 +252,11 @@ public final class DocumentFieldDescriptor
 	public boolean isAllowShowPassword()
 	{
 		return allowShowPassword;
+	}
+
+	public BarcodeScannerType getBarcodeScannerType()
+	{
+		return barcodeScannerType;
 	}
 
 	public ButtonFieldActionDescriptor getButtonActionDescriptor()
@@ -347,9 +355,9 @@ public final class DocumentFieldDescriptor
 	 * @return converted value
 	 */
 	public <T> T convertToValueClass(
-			@Nullable final Object value, 
-			@Nullable final DocumentFieldWidgetType widgetType, 
-			@NonNull final Class<T> targetType, 
+			@Nullable final Object value,
+			@Nullable final DocumentFieldWidgetType widgetType,
+			@NonNull final Class<T> targetType,
 			@Nullable final LookupValueByIdSupplier lookupDataSource)
 	{
 		return DataTypes.convertToValueClass(fieldName, value, widgetType, targetType, lookupDataSource);
@@ -393,6 +401,7 @@ public final class DocumentFieldDescriptor
 		private WidgetSize _widgetSize;
 		private Class<?> _valueClass;
 		private boolean _allowShowPassword = false; // in case widgetType is Password
+		private BarcodeScannerType _barcodeScannerType;
 
 		// Lookup
 		private LookupDescriptorProvider lookupDescriptorProvider = LookupDescriptorProviders.NULL;
@@ -632,6 +641,17 @@ public final class DocumentFieldDescriptor
 		private boolean isAllowShowPassword()
 		{
 			return _allowShowPassword;
+		}
+
+		public Builder barcodeScannerType(final BarcodeScannerType barcodeScannerType)
+		{
+			this._barcodeScannerType = barcodeScannerType;
+			return this;
+		}
+
+		private BarcodeScannerType getBarcodeScannerType()
+		{
+			return _barcodeScannerType;
 		}
 
 		public Builder setLookupDescriptorProvider(@NonNull final LookupDescriptorProvider lookupDescriptorProvider)

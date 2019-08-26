@@ -3,7 +3,6 @@ package de.metas.ui.web.order.products_proposal.view;
 import java.time.LocalDate;
 import java.util.List;
 
-import de.metas.location.CountryId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList;
@@ -17,6 +16,7 @@ import de.metas.bpartner.product.stats.BPartnerProductStatsService;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -151,6 +151,13 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 			return CampaignPriceProviders.none();
 		}
 
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+
+		if(!bpartnersRepo.isActionPriceAllowed(bpartnerId))
+		{
+			return CampaignPriceProviders.none();
+		}
+
 		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 		final I_M_PriceList priceList = priceListsRepo.getById(priceListId);
 		final CountryId countryId = CountryId.ofRepoIdOrNull(priceList.getC_Country_ID());
@@ -160,7 +167,7 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 		}
 		final CurrencyId currencyId = CurrencyId.ofRepoId(priceList.getC_Currency_ID());
 
-		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+
 		final BPGroupId bpGroupId = bpartnersRepo.getBPGroupIdByBPartnerId(bpartnerId);
 
 		return CampaignPriceProviders.standard()

@@ -49,7 +49,7 @@ import lombok.NonNull;
 
 	//
 	// Parameters
-	private final int AD_Window_ID;
+	private final AdWindowId adWindowId;
 
 	private final DataEntrySubTabBindingDescriptorBuilder dataEntrySubTabBindingDescriptorBuilder;
 
@@ -59,10 +59,10 @@ import lombok.NonNull;
 
 
 	/* package */ DefaultDocumentDescriptorLoader(
-			final int AD_Window_ID,
+			final AdWindowId adWindowId,
 			@NonNull final DataEntrySubTabBindingDescriptorBuilder dataEntrySubTabBindingDescriptorBuilder)
 	{
-		this.AD_Window_ID = AD_Window_ID;
+		this.adWindowId = adWindowId;
 		this.dataEntrySubTabBindingDescriptorBuilder = dataEntrySubTabBindingDescriptorBuilder;
 	}
 
@@ -75,20 +75,20 @@ import lombok.NonNull;
 		}
 		_executed = true;
 
-		if (AD_Window_ID <= 0)
+		if (adWindowId == null)
 		{
-			throw new DocumentLayoutBuildException("No window found for AD_Window_ID=" + AD_Window_ID);
+			throw new DocumentLayoutBuildException("No window found for AD_Window_ID=" + adWindowId);
 		}
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
-		final GridWindowVO gridWindowVO = DocumentLoaderUtil.createGridWindoVO(AD_Window_ID);
+		final GridWindowVO gridWindowVO = DocumentLoaderUtil.createGridWindoVO(adWindowId);
 		Check.assumeNotNull(gridWindowVO, "Parameter gridWindowVO is not null"); // shall never happen
 
 		final DocumentDescriptor.Builder documentBuilder = DocumentDescriptor.builder();
 
 		final DocumentLayoutDescriptor.Builder layoutBuilder = DocumentLayoutDescriptor.builder()
-				.setWindowId(WindowId.of(gridWindowVO.getAD_Window_ID()))
+				.setWindowId(WindowId.of(gridWindowVO.getAdWindowId()))
 				.setStopwatch(stopwatch)
 				.putDebugProperty("generator-name", toString());
 
@@ -109,10 +109,8 @@ import lombok.NonNull;
 					.setDocActionElement(rootLayoutFactory.createSpecialElement_DocStatusAndDocAction());
 		}
 
-		final AdWindowId adWindowId = AdWindowId.ofRepoId(AD_Window_ID);
-
 		ADTabLoader.builder()
-				.adWindowId(adWindowId.getRepoId())
+				.adWindowId(adWindowId)
 				.rootLayoutFactory(rootLayoutFactory)
 				.layoutBuilder(layoutBuilder)
 				.build()

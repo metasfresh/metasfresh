@@ -23,7 +23,7 @@ import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.ILoggable;
-import de.metas.util.NullLoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -72,7 +72,7 @@ public class HUMoveToDirectWarehouseService
 	private String _description = null;
 	private boolean _failOnFirstError = false;
 	private boolean _failIfNoHUs = false; // default false for backward compatibility
-	private ILoggable loggable = NullLoggable.instance;
+	private ILoggable loggable = Loggables.nop();
 	private HUEditorView huView;
 
 	// state

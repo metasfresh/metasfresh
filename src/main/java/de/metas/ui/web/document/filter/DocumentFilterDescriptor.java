@@ -14,11 +14,14 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.process.BarcodeScannerType;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -78,6 +81,9 @@ public final class DocumentFilterDescriptor
 	private final boolean autoFilter;
 
 	@Getter
+	private BarcodeScannerType barcodeScannerType;
+
+	@Getter
 	private final Map<String, Object> debugProperties;
 
 	private DocumentFilterDescriptor(final Builder builder)
@@ -97,6 +103,14 @@ public final class DocumentFilterDescriptor
 		autoFilter = parametersByName.values().stream().anyMatch(DocumentFilterParamDescriptor::isAutoFilter);
 
 		debugProperties = builder.debugProperties == null ? ImmutableMap.of() : ImmutableMap.copyOf(builder.debugProperties);
+
+		final ImmutableSet<BarcodeScannerType> barcodeScannerTypes = parametersByName.values().stream()
+				.map(DocumentFilterParamDescriptor::getBarcodeScannerType)
+				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
+		barcodeScannerType = barcodeScannerTypes.size() == 1
+				? barcodeScannerTypes.iterator().next()
+				: null;
 	}
 
 	@Override

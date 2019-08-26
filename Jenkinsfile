@@ -133,7 +133,7 @@ if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 {
 	stage('Invoke downstream job')
 	{
-		def misc = new de.metas.jenkins.Misc();
+		final def misc = new de.metas.jenkins.Misc();
 		final String jobName = misc.getEffectiveDownStreamJobName('metasfresh', MF_UPSTREAM_BRANCH);
 
 		final def metasfreshDownStreamBuildResult = build job: jobName,

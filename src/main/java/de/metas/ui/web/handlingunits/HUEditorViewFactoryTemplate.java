@@ -34,6 +34,7 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
+import de.metas.process.BarcodeScannerType;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
@@ -160,7 +161,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 			sqlWhereClause.append(I_M_HU.COLUMNNAME_M_HU_Item_Parent_ID + " is null"); // top level
 
 			// Consider window tab's where clause if any
-			final I_AD_Tab huTab = Services.get(IADWindowDAO.class).retrieveFirstTab(WEBUI_HU_Constants.WEBUI_HU_Window_ID.toInt());
+			final I_AD_Tab huTab = Services.get(IADWindowDAO.class).retrieveFirstTab(WEBUI_HU_Constants.WEBUI_HU_Window_ID.toAdWindowId());
 			if (!Check.isEmpty(huTab.getWhereClause(), true))
 			{
 				sqlWhereClause.append("\n AND (").append(huTab.getWhereClause()).append(")");
@@ -406,7 +407,8 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.addParameter(DocumentFilterParamDescriptor.builder()
 							.setFieldName(PARAM_Barcode)
 							.setDisplayName(barcodeCaption)
-							.setWidgetType(DocumentFieldWidgetType.Text))
+							.setWidgetType(DocumentFieldWidgetType.Text)
+							.barcodeScannerType(BarcodeScannerType.QRCode))
 					.build();
 		}
 

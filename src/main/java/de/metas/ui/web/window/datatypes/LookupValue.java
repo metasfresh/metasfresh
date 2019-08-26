@@ -13,6 +13,7 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
@@ -172,6 +173,29 @@ public abstract class LookupValue
 			// shall not happen
 			throw new IllegalArgumentException("Unknown namePair: " + namePair + " (" + namePair.getClass() + ")");
 		}
+	}
+
+	public static LookupValue concat(final LookupValue lookupValue1, final LookupValue lookupValue2)
+	{
+		if (lookupValue1 == null)
+		{
+			return lookupValue2;
+		}
+		if (lookupValue2 == null)
+		{
+			return lookupValue1;
+		}
+
+		final String id = Joiner.on("_").skipNulls().join(lookupValue1.getIdAsString(), lookupValue2.getIdAsString());
+		final ITranslatableString displayName = TranslatableStrings.join(" ", lookupValue1.getDisplayNameTrl(), lookupValue2.getDisplayNameTrl());
+		final ITranslatableString description = TranslatableStrings.join(" ", lookupValue1.getDescriptionTrl(), lookupValue2.getDescriptionTrl());
+
+		return StringLookupValue.of(id, displayName, description);
+	}
+
+	public static LookupValue cast(final Object valueObj)
+	{
+		return (LookupValue)valueObj;
 	}
 
 	protected final Object id;
@@ -453,6 +477,18 @@ public abstract class LookupValue
 					id,
 					displayName,
 					helpText,
+					null/* attributes */,
+					null/* active */);
+		}
+
+		public static IntegerLookupValue of(
+				@NonNull final RepoIdAware id,
+				@Nullable final ITranslatableString displayName)
+		{
+			return new IntegerLookupValue(
+					id.getRepoId(),
+					displayName,
+					null/* helpText */,
 					null/* attributes */,
 					null/* active */);
 		}
