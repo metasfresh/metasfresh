@@ -31,13 +31,18 @@ import OverlayField from './OverlayField';
  * @param {*} props.childViewId
  * @param {*} props.closeCallback
  * @param {*} props.childViewSelectedIds
+ * @param {*} props.data
  * @param {*} props.dataId
  * @param {func} props.dispatch Dispatch function
  * @param {*} props.indicator
+ * @param {*} props.layout
  * @param {bool} props.isAdvanced
+ * @param {bool} props.isDocumentNotSaved
  * @param {bool} props.isNewDoc
  * @param {string} props.staticModalType
+ * @param {*} props.modalTitle
  * @param {*} props.modalType
+ * @param {*} props.modalSaveStatus
  * @param {*} props.modalViewId
  * @param {*} props.modalViewDocumentIds
  * @param {*} props.staticModalType
