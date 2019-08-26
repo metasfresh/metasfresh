@@ -308,6 +308,7 @@ class TableItem extends PureComponent {
                   mainTable,
                   viewId,
                   extendLongText,
+                  property,
                 }}
                 cellExtended={cellsExtended}
                 key={`${rowId}-${property}`}
