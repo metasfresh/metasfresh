@@ -86,7 +86,7 @@ public class RecordChangeLogEntryLoader
 	private static final CCache<AdTableId, RecordChangeLogEntryValuesResolver> adTabled2RecordChangeLogEntryValuesResolver = CCache
 			.<AdTableId, RecordChangeLogEntryValuesResolver> builder()
 			.cacheName("adTabled2RecordChangeLogEntryValuesResolver")
-			.additionalTableNameToResetFor(I_AD_Table.Table_Name)
+			.additionalTableNameToResetFor(I_AD_Table.Table_Name) // those table names are more or less here only for good measure; i didn't really analyze their need
 			.additionalTableNameToResetFor(I_AD_Column.Table_Name)
 			.additionalTableNameToResetFor(I_AD_Reference.Table_Name)
 			.additionalTableNameToResetFor(I_AD_Ref_List.Table_Name)
@@ -107,16 +107,17 @@ public class RecordChangeLogEntryLoader
 
 		final Map<TableRecordReference, TreeSet<RecordChangeLogEntry>> intermediateResult = new HashMap<>();
 
-		if (logEntriesQuery.isFollowLocationIdChanges())
+		if (logEntriesQuery.isFollowLocationIdChanges() && POInfo.getPOInfo(I_C_Location.Table_Name).isChangeLog())
 		{
-			// separate change log entries that reference C_Location
+			// separate from each other those change log entries that do and do not reference C_Location
 			final Map<Boolean, List<RecordRefWithLogEntry>> partition = recordRefWithLogEntries.stream()
 					.collect(Collectors.partitioningBy(RecordChangeLogEntryLoader::isReferencesLocationTable));
 
-			addAllToIntermediateResult(partition.get(false)/* entriesWithoutLocationId */, intermediateResult);
+			final List<RecordRefWithLogEntry> entriesWithoutLocationId = partition.get(false);
+			addAllToIntermediateResult(entriesWithoutLocationId, intermediateResult);
 
-			// instead of entriesWithLocationId, we derive C_Location-ChangeLog-Entries and add those
 			final List<RecordRefWithLogEntry> entriesWithLocationId = partition.get(true);
+			// instead of adding entriesWithLocationId, we derive C_Location-ChangeLog-Entries and add those
 			final ImmutableListMultimap<TableRecordReference, LocationId> locationIds = extractLocationIds(entriesWithLocationId);
 			final ImmutableListMultimap<TableRecordReference, I_C_Location> locationRecords = extractLocationRecords(locationIds);
 
@@ -246,7 +247,7 @@ public class RecordChangeLogEntryLoader
 		{
 			final I_C_Location oldRecord = orderedLocationRecords.get(recordIdx - 1);
 			final I_C_Location newRecord = orderedLocationRecords.get(recordIdx);
-			for (int columnIdx = 0; columnIdx <= poInfo.getColumnCount(); columnIdx++)
+			for (int columnIdx = 0; columnIdx < poInfo.getColumnCount(); columnIdx++)
 			{
 				final String columnName = poInfo.getColumnName(columnIdx);
 
