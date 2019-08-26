@@ -314,6 +314,10 @@ class Modal extends Component {
     }
   };
 
+  /**
+   * @method removeModal
+   * @summary ToDo: Describe the method
+   */
   removeModal = () => {
     const { dispatch, rawModalVisible } = this.props;
 
@@ -324,6 +328,10 @@ class Modal extends Component {
     }
   };
 
+  /**
+   * @method handleClose
+   * @summary ToDo: Describe the method
+   */
   handleClose = () => {
     const { modalSaveStatus, modalType } = this.props;
 
@@ -352,6 +360,10 @@ class Modal extends Component {
     });
   };
 
+  /**
+   * @method handleStart
+   * @summary ToDo: Describe the method
+   */
   handleStart = () => {
     const { dispatch, layout, windowType, indicator } = this.props;
 
@@ -393,6 +405,10 @@ class Modal extends Component {
     );
   };
 
+  /**
+   * @method renderModalBody
+   * @summary ToDo: Describe the method
+   */
   renderModalBody = () => {
     const {
       data,
@@ -449,6 +465,10 @@ class Modal extends Component {
     }
   };
 
+  /**
+   * @method renderPanel
+   * @summary ToDo: Describe the method
+   */
   renderPanel = () => {
     const { modalTitle, modalType, isDocumentNotSaved, layout } = this.props;
     const { scrolled, pending, isNewDoc, isTooltipShow } = this.state;
@@ -580,6 +600,10 @@ class Modal extends Component {
     );
   };
 
+  /**
+   * @method renderOverlay
+   * @summary ToDo: Describe the method
+   */
   renderOverlay = () => {
     const { data, layout, windowType, modalType, isNewDoc } = this.props;
     const { pending } = this.state;
@@ -634,6 +658,10 @@ class Modal extends Component {
     );
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   */
   render() {
     const { layout, modalType } = this.props;
     let renderedContent = null;
@@ -662,6 +690,12 @@ class Modal extends Component {
   }
 }
 
+/**
+ * @method mapStateToProps
+ * @summary ToDo: Describe the method
+ * @param {object} state
+ * @param {object} props
+ */
 const mapStateToProps = (state, props) => ({
   parentSelection: getSelectionInstant(
     state,
