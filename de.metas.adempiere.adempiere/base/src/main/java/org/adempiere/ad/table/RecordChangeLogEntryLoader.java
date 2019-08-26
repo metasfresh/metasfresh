@@ -26,6 +26,10 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_AD_ChangeLog;
 import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Ref_List;
+import org.compiere.model.I_AD_Ref_Table;
+import org.compiere.model.I_AD_Reference;
+import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.POInfo;
 import org.compiere.model.POInfoColumn;
@@ -82,6 +86,11 @@ public class RecordChangeLogEntryLoader
 	private static final CCache<AdTableId, RecordChangeLogEntryValuesResolver> adTabled2RecordChangeLogEntryValuesResolver = CCache
 			.<AdTableId, RecordChangeLogEntryValuesResolver> builder()
 			.cacheName("adTabled2RecordChangeLogEntryValuesResolver")
+			.additionalTableNameToResetFor(I_AD_Table.Table_Name)
+			.additionalTableNameToResetFor(I_AD_Column.Table_Name)
+			.additionalTableNameToResetFor(I_AD_Reference.Table_Name)
+			.additionalTableNameToResetFor(I_AD_Ref_List.Table_Name)
+			.additionalTableNameToResetFor(I_AD_Ref_Table.Table_Name)
 			.build();
 
 	private static final POInfo adColumnPOInfo = POInfo.getPOInfo(I_AD_Column.Table_Name);
@@ -144,6 +153,80 @@ public class RecordChangeLogEntryLoader
 		}
 	}
 
+	private static boolean isReferencesLocationTable(@NonNull final RecordRefWithLogEntry recordRefWithLogEntry)
+	{
+		final RecordChangeLogEntry logEntry = recordRefWithLogEntry.getRecordChangeLogEntry();
+		final TableRecordReference recordRef = recordRefWithLogEntry.getRecordRef();
+
+		final POInfo poInfo = POInfo.getPOInfo(recordRef.getAdTableId());
+		final String columnName = logEntry.getColumnName();
+		final String referencedTableName = poInfo.getReferencedTableNameOrNull(columnName);
+		final boolean referencesLocationTable = Objects.equals(referencedTableName, I_C_Location.Table_Name);
+		return referencesLocationTable;
+	}
+
+	private static ImmutableListMultimap<TableRecordReference, LocationId> extractLocationIds(
+			@NonNull final List<RecordRefWithLogEntry> entriesWithLocationId)
+	{
+		final ImmutableListMultimap.Builder<TableRecordReference, LocationId> recordRef2LocationIds = ImmutableListMultimap.builder();
+		if (entriesWithLocationId.isEmpty())
+		{
+			return recordRef2LocationIds.build();
+		}
+
+		// We need have the first changelog's *old* value for each C_Location-referencing column of every TableRecordRef!
+		final ImmutableListMultimap<ArrayKey, RecordRefWithLogEntry> index = Multimaps.index(
+				entriesWithLocationId,
+				entry -> ArrayKey.of(entry.getRecordRef(), entry.getRecordChangeLogEntry().getColumnName()));
+		for (final Collection<RecordRefWithLogEntry> values : index.asMap().values())
+		{
+			final Comparator<RecordRefWithLogEntry> comparator = Comparator
+					.comparing(e -> e.getRecordChangeLogEntry().getChangedTimestamp());
+			final RecordRefWithLogEntry firstRecordRefWithLogEntry = values.stream()
+					.min(comparator)
+					.get() /* the collection is not empty, so there must be a minimum */;
+
+			final LocationId locationId = extractValueOldAsLocationId(firstRecordRefWithLogEntry);
+			recordRef2LocationIds.put(firstRecordRefWithLogEntry.getRecordRef(), locationId);
+		}
+
+		// for all change logs including the first ones, we extract their new values
+		// note that the order doesn't really matter; we will make sure the correct order later, after we got the actual C_Location records
+		for (final RecordRefWithLogEntry recordRefWithLogEntry : entriesWithLocationId)
+		{
+			final LocationId locationId = extractValueNewAsLocationId(recordRefWithLogEntry);
+			recordRef2LocationIds.put(recordRefWithLogEntry.getRecordRef(), locationId);
+		}
+		return recordRef2LocationIds.build();
+	}
+
+	private static ImmutableListMultimap<TableRecordReference, I_C_Location> extractLocationRecords(
+			@NonNull final ImmutableListMultimap<TableRecordReference, LocationId> locationIds)
+	{
+		final ImmutableListMultimap.Builder<TableRecordReference, I_C_Location> recordRef2LocationRecords = ImmutableListMultimap.builder();
+		if (locationIds.isEmpty())
+		{
+			return recordRef2LocationRecords.build(); // don't bother the database
+		}
+
+		final ImmutableList<LocationId> allLocationIds = locationIds.entries().stream().map(Entry::getValue).collect(ImmutableList.toImmutableList());
+
+		final List<I_C_Location> locationRecords = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Location.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Location.COLUMN_C_Location_ID, allLocationIds)
+				.create()
+				.list();
+		final ImmutableMap<Integer, I_C_Location> repoId2LocationRecord = Maps.uniqueIndex(locationRecords, I_C_Location::getC_Location_ID);
+
+		for (final Entry<TableRecordReference, LocationId> recordRefAndLocationId : locationIds.entries())
+		{
+			final I_C_Location locationRecord = repoId2LocationRecord.get(recordRefAndLocationId.getValue().getRepoId());
+			recordRef2LocationRecords.put(recordRefAndLocationId.getKey(), locationRecord);
+		}
+		return recordRef2LocationRecords.build();
+	}
+
 	/**
 	 * @param unOrderedLocationRecords may or may not be ordered
 	 */
@@ -166,16 +249,8 @@ public class RecordChangeLogEntryLoader
 			for (int columnIdx = 0; columnIdx <= poInfo.getColumnCount(); columnIdx++)
 			{
 				final String columnName = poInfo.getColumnName(columnIdx);
-				if (I_C_Location.COLUMNNAME_C_Location_ID.equals(columnName)
-						|| I_C_Location.COLUMNNAME_Created.equals(columnName)
-						|| I_C_Location.COLUMNNAME_CreatedBy.equals(columnName)
-						|| I_C_Location.COLUMNNAME_Updated.equals(columnName)
-						|| I_C_Location.COLUMNNAME_UpdatedBy.equals(columnName))
-				{
-					continue;
-				}
 
-				if (!poInfo.isAllowLogging(columnIdx))
+				if (isSkipLocationColumnName(columnName))
 				{
 					continue;
 				}
@@ -187,11 +262,11 @@ public class RecordChangeLogEntryLoader
 					continue;
 				}
 
-				final POTrlInfo adColumnTrlInfo = adColumnPOInfo.getTrlInfo();
-
 				final POInfoColumn columnInfo = poInfo.getColumn(columnIdx);
 
-				final IModelTranslationMap adColumnTrlMap = trlRepo.retrieveAll(adColumnTrlInfo, columnInfo.getAD_Column_ID());
+				final IModelTranslationMap adColumnTrlMap = trlRepo.retrieveAll(
+						adColumnPOInfo.getTrlInfo(),
+						columnInfo.getAD_Column_ID());
 				final ITranslatableString columnTrl = adColumnTrlMap.getColumnTrl(I_AD_Column.COLUMNNAME_Name, columnInfo.getColumnName());
 
 				final RecordChangeLogEntry logEntry = RecordChangeLogEntry.builder()
@@ -209,33 +284,25 @@ public class RecordChangeLogEntryLoader
 		return result.build();
 	}
 
-	private static ImmutableListMultimap<TableRecordReference, I_C_Location> extractLocationRecords(
-			@NonNull final ImmutableListMultimap<TableRecordReference, LocationId> locationIds)
+	private static boolean isSkipLocationColumnName(@NonNull final String columnName)
 	{
-		final ImmutableListMultimap.Builder<TableRecordReference, I_C_Location> recordRef2LocationRecords = ImmutableListMultimap.builder();
-		if (locationIds.isEmpty())
+		final POInfo poInfo = POInfo.getPOInfo(I_C_Location.Table_Name);
+		final int columnIdx = poInfo.getColumnIndex(columnName);
+
+		if (I_C_Location.COLUMNNAME_C_Location_ID.equals(columnName)
+				|| I_C_Location.COLUMNNAME_Created.equals(columnName)
+				|| I_C_Location.COLUMNNAME_CreatedBy.equals(columnName)
+				|| I_C_Location.COLUMNNAME_Updated.equals(columnName)
+				|| I_C_Location.COLUMNNAME_UpdatedBy.equals(columnName))
 		{
-			return recordRef2LocationRecords.build(); // don't bother the database
+			return true;
+		}
+		if (!poInfo.isAllowLogging(columnIdx))
+		{
+			return true;
 		}
 
-		final ImmutableList<LocationId> allLocationIds = locationIds.entries().stream().map(Entry::getValue).collect(ImmutableList.toImmutableList());
-
-		final List<I_C_Location> locationRecords = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Location.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_C_Location.COLUMN_C_Location_ID, allLocationIds)
-				.orderBy(I_C_Location.COLUMN_Updated) // oldest first
-				.create()
-				.list();
-		final ImmutableMap<Integer, I_C_Location> repoId2LocationRecord = Maps.uniqueIndex(locationRecords, I_C_Location::getC_Location_ID);
-
-		for (final Entry<TableRecordReference, LocationId> recordRefAndLocationId : locationIds.entries())
-		{
-			final I_C_Location locationRecord = repoId2LocationRecord.get(recordRefAndLocationId.getValue().getRepoId());
-			recordRef2LocationRecords.put(recordRefAndLocationId.getKey(), locationRecord);
-			// TODO verify the locationRecords in recordRef2LocationRecords are still ordered by updated
-		}
-		return recordRef2LocationRecords.build();
+		return false;
 	}
 
 	private static TreeSet<RecordChangeLogEntry> createNewTreeSet()
@@ -244,55 +311,6 @@ public class RecordChangeLogEntryLoader
 				.comparing(RecordChangeLogEntry::getChangedTimestamp)
 				.thenComparing(RecordChangeLogEntry::getColumnName);
 		return new TreeSet<RecordChangeLogEntry>(comparator);
-	}
-
-	private static ImmutableListMultimap<TableRecordReference, LocationId> extractLocationIds(
-			@NonNull final List<RecordRefWithLogEntry> entriesWithLocationId)
-	{
-		final ImmutableListMultimap.Builder<TableRecordReference, LocationId> recordRef2LocationIds = ImmutableListMultimap.builder();
-		if (entriesWithLocationId.isEmpty())
-		{
-			return recordRef2LocationIds.build();
-		}
-
-		// we must have the first changelog's *old* value for each TableRecordRef and C_Location-referencing column!
-		final ImmutableListMultimap<ArrayKey, RecordRefWithLogEntry> index = Multimaps.index(
-				entriesWithLocationId,
-				entry -> ArrayKey.of(entry.getRecordRef(), entry.getRecordChangeLogEntry().getColumnName()));
-		for (final Collection<RecordRefWithLogEntry> values : index.asMap().values())
-		{
-			final Comparator<RecordRefWithLogEntry> comparator = Comparator
-					.comparing(e -> e.getRecordChangeLogEntry().getChangedTimestamp());
-			final RecordRefWithLogEntry firstRecordRefWithLogEntry = values.stream()
-					.min(comparator)
-					.get() /* the collection is not empty, so there must be a minimum */;
-
-			final LocationId locationId = extractValueOldAsLocationId(firstRecordRefWithLogEntry);
-			recordRef2LocationIds.put(firstRecordRefWithLogEntry.getRecordRef(), locationId);
-		}
-
-		// TODO: the MUST BE ordered by date!
-		// ..or maybe we can get away with ordere
-
-		// for all change logs incl the first ones, we extract their new values
-		for (final RecordRefWithLogEntry recordRefWithLogEntry : entriesWithLocationId)
-		{
-			final LocationId locationId = extractValueNewAsLocationId(recordRefWithLogEntry);
-			recordRef2LocationIds.put(recordRefWithLogEntry.getRecordRef(), locationId);
-		}
-		return recordRef2LocationIds.build();
-	}
-
-	private static boolean isReferencesLocationTable(@NonNull final RecordRefWithLogEntry recordRefWithLogEntry)
-	{
-		final RecordChangeLogEntry logEntry = recordRefWithLogEntry.getRecordChangeLogEntry();
-		final TableRecordReference recordRef = recordRefWithLogEntry.getRecordRef();
-
-		final POInfo poInfo = POInfo.getPOInfo(recordRef.getAdTableId());
-		final String columnName = logEntry.getColumnName();
-		final String referencedTableName = poInfo.getReferencedTableNameOrNull(columnName);
-		final boolean referencesLocationTable = Objects.equals(referencedTableName, I_C_Location.Table_Name);
-		return referencesLocationTable;
 	}
 
 	private static LocationId extractValueOldAsLocationId(@NonNull final RecordRefWithLogEntry recordRefWithLogEntry)
