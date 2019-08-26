@@ -123,8 +123,8 @@ public class RecordChangeLogEntryLoader
 
 			for (final TableRecordReference recordRef : locationRecords.keySet())
 			{
-				final List<RecordChangeLogEntry> locationLogEntries = deriveLocationLogEntries(locationRecords.get(recordRef));
-				intermediateResult.get(recordRef).addAll(locationLogEntries);
+				final List<RecordRefWithLogEntry> derivedLocationEntries = deriveLocationLogEntries(recordRef, locationRecords.get(recordRef));
+				addAllToIntermediateResult(derivedLocationEntries, intermediateResult);
 			}
 		}
 		else
@@ -229,16 +229,17 @@ public class RecordChangeLogEntryLoader
 	}
 
 	/**
-	 * @param unOrderedLocationRecords may or may not be ordered
+	 * @param unOrderedLocationRecords {@link I_C_Location} records that are referenced from the change log of {@code recordRef}; may or may not be ordered.
 	 */
-	private static ImmutableList<RecordChangeLogEntry> deriveLocationLogEntries(
+	private static ImmutableList<RecordRefWithLogEntry> deriveLocationLogEntries(
+			@NonNull final TableRecordReference recordRef,
 			@NonNull final ImmutableList<I_C_Location> unOrderedLocationRecords)
 	{
 		// Also if there was only only one C_Location_ID changelog, we have already 2 I_C_Locations, because we also got the first changelog's oldValue.
 		assume(unOrderedLocationRecords.size() >= 2, "Parameter 'unOrderedLocationRecords' needs to contain at least 2 items; unOrderedLocationRecords={}", unOrderedLocationRecords);
 
 		final POInfo poInfo = POInfo.getPOInfo(I_C_Location.Table_Name);
-		final ImmutableList.Builder<RecordChangeLogEntry> result = ImmutableList.builder();
+		final ImmutableList.Builder<RecordRefWithLogEntry> result = ImmutableList.builder();
 
 		final ArrayList<I_C_Location> orderedLocationRecords = new ArrayList<>(unOrderedLocationRecords);
 		Collections.sort(orderedLocationRecords, Comparator.comparing(I_C_Location::getCreated));
@@ -279,7 +280,7 @@ public class RecordChangeLogEntryLoader
 						.valueNew(newValue)
 						.valueOld(oldValue)
 						.build();
-				result.add(logEntry);
+				result.add(new RecordRefWithLogEntry(recordRef, logEntry));
 			}
 		}
 		return result.build();
