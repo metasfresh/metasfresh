@@ -30,7 +30,7 @@ export class Warehouse {
   }
 
   setBPartnerLocation(C_BPartner_Location_ID) {
-    cy.log(`BPartnerLocation - set C_BPartner_Location_ID= ${C_BPartner_Location_ID}`);
+    cy.log(`BPartnerLocation - set C_BPartner_Location_ID=${C_BPartner_Location_ID}`);
     this.C_BPartner_Location_ID = C_BPartner_Location_ID;
     return this;
   }
@@ -38,6 +38,12 @@ export class Warehouse {
   setIsQualityIssueWarehouse(isQualityIssueWarehouse) {
     cy.log(`Warehouse - set Quality Issue Warehouse= ${isQualityIssueWarehouse}`);
     this.isQualityIssueWarehouse = isQualityIssueWarehouse;
+    return this;
+  }
+
+  setIsQualityReturnWarehouse(isQualityReturnWarehouse) {
+    cy.log(`Warehouse - isQualityReturnWarehouse=${isQualityReturnWarehouse}`);
+    this.isQualityReturnWarehouse = isQualityReturnWarehouse;
     return this;
   }
 
@@ -103,6 +109,9 @@ function applyWarehouse(warehouse) {
   cy.selectNthInListField('C_BPartner_Location_ID', 1);
   if (warehouse.isQualityIssueWarehouse) {
     cy.setCheckBoxValue('IsIssueWarehouse', warehouse.isQualityIssueWarehouse);
+  }
+  if (warehouse.isQualityReturnWarehouse) {
+    cy.setCheckBoxValue('IsQualityReturnWarehouse', warehouse.isQualityReturnWarehouse);
   }
 
   warehouse.locators.forEach(locator => {

@@ -1,9 +1,0 @@
-{
-    "Name": "Daily",
-    "Value": "Daily",
-    "Description": "Restaurants, Hotels im Zusammenhang mit Spesen",
-    "M_PricingSystem_ID": "Divers CHF Verkauf",
-    "PO_PricingSystem_ID": "Divers CHF Einkauf",
-    "IsPrintTax": "true",
-    "SOCreditStatus": "Keine Kredit-Prüfung"
-}
