@@ -30,43 +30,43 @@ import OverlayField from './OverlayField';
  * @extends Component
  */
 
-/**
- * @typedef {object} Props Component props
- * @prop {*} activeTabId
- * @prop {*} childViewId
- * @prop {*} closeCallback
- * @prop {*} childViewSelectedIds
- * @prop {*} data
- * @prop {*} dataId
- * @prop {func} dispatch Dispatch function
- * @prop {*} indicator
- * @prop {*} layout
- * @prop {bool} isAdvanced
- * @prop {bool} isDocumentNotSaved
- * @prop {bool} isNewDoc
- * @prop {string} staticModalType
- * @prop {*} modalTitle
- * @prop {*} modalType
- * @prop {*} modalSaveStatus
- * @prop {*} modalViewId
- * @prop {*} modalViewDocumentIds
- * @prop {*} staticModalType
- * @prop {*} tabId
- * @prop {*} parentSelection
- * @prop {*} parentType
- * @prop {*} parentViewId
- * @prop {*} parentViewSelectedIds
- * @prop {*} rawModalVisible
- * @prop {*} rowId
- * @prop {*} triggerField
- * @prop {*} viewId
- * @prop {*} windowType
- * @category Components
- * @extends {Component<Props>}
- */
 class Modal extends Component {
   mounted = false;
 
+  /**
+   * @typedef {object} Props Component props
+   * @prop {*} activeTabId
+   * @prop {*} childViewId
+   * @prop {*} closeCallback
+   * @prop {*} childViewSelectedIds
+   * @prop {*} data
+   * @prop {*} dataId
+   * @prop {function} dispatch Dispatch function
+   * @prop {*} indicator
+   * @prop {*} layout
+   * @prop {boolean} isAdvanced
+   * @prop {boolean} isDocumentNotSaved
+   * @prop {boolean} isNewDoc
+   * @prop {string} staticModalType
+   * @prop {*} modalTitle
+   * @prop {*} modalType
+   * @prop {*} modalSaveStatus
+   * @prop {*} modalViewId
+   * @prop {*} modalViewDocumentIds
+   * @prop {*} staticModalType
+   * @prop {*} tabId
+   * @prop {*} parentSelection
+   * @prop {*} parentType
+   * @prop {*} parentViewId
+   * @prop {*} parentViewSelectedIds
+   * @prop {*} rawModalVisible
+   * @prop {*} rowId
+   * @prop {*} triggerField
+   * @prop {*} viewId
+   * @prop {*} windowType
+   * @category Components
+   * @extends {Component<Props>}
+   */
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
     isNewDoc: PropTypes.bool,
@@ -115,9 +115,10 @@ class Modal extends Component {
   }
 
   /**
+   * @async
    * @method componentDidUpdate
    * @summary ToDo: Describe the method.
-   * @param {Object} prevProps
+   * @param {object} prevProps
    * @prop {*} windowType
    * @prop {*} viewId
    * @prop {*} indicator
