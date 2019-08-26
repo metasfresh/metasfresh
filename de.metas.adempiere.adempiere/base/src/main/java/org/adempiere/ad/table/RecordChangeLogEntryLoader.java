@@ -214,7 +214,7 @@ public class RecordChangeLogEntryLoader
 
 		final List<I_C_Location> locationRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Location.class)
-				.addOnlyActiveRecordsFilter()
+				// .addOnlyActiveRecordsFilter() we also deal with records' "inactive" flag, at least in the REST-API; therefore we here also need to load inactive C_Locations
 				.addInArrayFilter(I_C_Location.COLUMN_C_Location_ID, allLocationIds)
 				.create()
 				.list();
