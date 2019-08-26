@@ -2,6 +2,9 @@ package org.compiere.impexp;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_DataImport;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -32,22 +35,22 @@ import lombok.Value;
  */
 
 @Value
-public class DataImportId implements RepoIdAware
+public class DataImportConfigId implements RepoIdAware
 {
 	@JsonCreator
-	public static DataImportId ofRepoId(final int repoId)
+	public static DataImportConfigId ofRepoId(final int repoId)
 	{
-		return new DataImportId(repoId);
+		return new DataImportConfigId(repoId);
 	}
 
-	public static DataImportId ofRepoIdOrNull(final int repoId)
+	public static DataImportConfigId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new DataImportId(repoId) : null;
+		return repoId > 0 ? new DataImportConfigId(repoId) : null;
 	}
 
 	int repoId;
 
-	private DataImportId(final int repoId)
+	private DataImportConfigId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_DataImport_ID");
 	}
@@ -59,8 +62,13 @@ public class DataImportId implements RepoIdAware
 		return repoId;
 	}
 
-	public static int toRepoId(@Nullable final DataImportId id)
+	public static int toRepoId(@Nullable final DataImportConfigId id)
 	{
 		return id != null ? id.getRepoId() : -1;
+	}
+
+	public TableRecordReference toRecordRef()
+	{
+		return TableRecordReference.of(I_C_DataImport.Table_Name, repoId);
 	}
 }

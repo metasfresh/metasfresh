@@ -28,7 +28,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_DataImport;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -321,7 +320,6 @@ public final class ImpFormat
 		final String tableUnique2 = tableInfo.getTableUnique2();
 		final String tableUniqueParent = tableInfo.getTableUniqueParent();
 		final String tableUniqueChild = tableInfo.getTableUniqueChild();
-		final boolean hasDataImportIdColumn = tableInfo.isHasDataImportIdColumn();
 
 		//
 		// Re-use the same ID if we already imported this record
@@ -479,9 +477,10 @@ public final class ImpFormat
 				sqlUpdate.append(node.getColumnNameEqualsValueSql()).append(",");		// column=value
 			}
 
-			if (hasDataImportIdColumn && line.getDataImportId() != null)
+			final String dataImportConfigIdColumnName = tableInfo.getDataImportConfigIdColumnName();
+			if (!Check.isEmpty(dataImportConfigIdColumnName, true) && line.getDataImportConfigId() != null)
 			{
-				sqlUpdate.append(I_C_DataImport.COLUMNNAME_C_DataImport_ID).append("=").append(line.getDataImportId().getRepoId()).append(",");
+				sqlUpdate.append(dataImportConfigIdColumnName).append("=").append(line.getDataImportConfigId().getRepoId()).append(",");
 			}
 
 			sqlUpdate.append("IsActive='Y',Processed='N',I_IsImported='N',Updated=now(),UpdatedBy=").append(userId.getRepoId());

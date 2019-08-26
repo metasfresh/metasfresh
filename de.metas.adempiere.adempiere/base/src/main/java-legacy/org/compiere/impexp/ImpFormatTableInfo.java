@@ -35,5 +35,6 @@ public class ImpFormatTableInfo
 	String tableUnique2;
 	String tableUniqueParent;
 	String tableUniqueChild;
-	boolean hasDataImportIdColumn;
+	
+	String dataImportConfigIdColumnName;
 }

@@ -113,7 +113,9 @@ public class ImpFormatRepository
 			throw new AdempiereException("Table " + tableName + " has not primary key");
 		}
 
-		final boolean hasDataImportIdColumn = poInfo.hasColumnName(I_C_DataImport.COLUMNNAME_C_DataImport_ID);
+		final String dataImportConfigIdColumnName = poInfo.hasColumnName(I_C_DataImport.COLUMNNAME_C_DataImport_ID)
+				? I_C_DataImport.COLUMNNAME_C_DataImport_ID
+				: null;
 
 		// Set Additional Table Info
 		String tableUnique1 = "";
@@ -151,7 +153,7 @@ public class ImpFormatRepository
 				.tableUnique2(tableUnique2)
 				.tableUniqueParent(tableUniqueParent)
 				.tableUniqueChild(tableUniqueChild)
-				.hasDataImportIdColumn(hasDataImportIdColumn)
+				.dataImportConfigIdColumnName(dataImportConfigIdColumnName)
 				.build();
 	}
 

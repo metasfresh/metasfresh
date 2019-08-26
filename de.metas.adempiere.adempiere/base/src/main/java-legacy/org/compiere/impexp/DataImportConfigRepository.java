@@ -1,8 +1,11 @@
 package org.compiere.impexp;
 
-import lombok.Builder;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
+import org.compiere.model.I_C_DataImport;
+import org.springframework.stereotype.Repository;
+
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -26,13 +29,20 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class DataImport
+@Repository
+public class DataImportConfigRepository
 {
-	@NonNull
-	DataImportId id;
+	public DataImportConfig getById(@NonNull final DataImportConfigId id)
+	{
+		final I_C_DataImport record = loadOutOfTrx(id, I_C_DataImport.class);
+		return toDataImportConfig(record);
+	}
 
-	@NonNull
-	ImpFormatId impFormatId;
+	private static DataImportConfig toDataImportConfig(@NonNull final I_C_DataImport record)
+	{
+		return DataImportConfig.builder()
+				.id(DataImportConfigId.ofRepoId(record.getC_DataImport_ID()))
+				.impFormatId(ImpFormatId.ofRepoId(record.getAD_ImpFormat_ID()))
+				.build();
+	}
 }

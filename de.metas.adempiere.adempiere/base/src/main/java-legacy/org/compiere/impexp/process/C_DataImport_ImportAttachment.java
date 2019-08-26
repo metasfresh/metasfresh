@@ -9,11 +9,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
-import org.compiere.impexp.DataImport;
-import org.compiere.impexp.DataImportId;
-import org.compiere.impexp.DataImportRepository;
+import org.compiere.impexp.DataImportConfig;
+import org.compiere.impexp.DataImportConfigId;
+import org.compiere.impexp.DataImportConfigRepository;
 import org.compiere.impexp.FileImportReader;
 import org.compiere.impexp.ImpDataContext;
 import org.compiere.impexp.ImpDataLine;
@@ -60,7 +59,7 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 {
 	private final transient AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 	private final transient ImpFormatRepository importFormatsRepo = SpringContextHolder.instance.getBean(ImpFormatRepository.class);
-	private final transient DataImportRepository dataImportConfigRepo = SpringContextHolder.instance.getBean(DataImportRepository.class);
+	private final transient DataImportConfigRepository dataImportConfigRepo = SpringContextHolder.instance.getBean(DataImportConfigRepository.class);
 	private final transient IImportProcessFactory importProcessFactory = Services.get(IImportProcessFactory.class);
 
 	private static final Charset CHARSET = Charset.forName("UTF-8");
@@ -68,7 +67,7 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 	@Param(parameterName = I_AD_AttachmentEntry.COLUMNNAME_AD_AttachmentEntry_ID)
 	private int p_AD_AttachmentEntry_ID;
 
-	private DataImport _dataImport;
+	private DataImportConfig _dataImportConfig;
 	private ImpFormat _impFormat;
 
 	private int countImported = 0;
@@ -112,18 +111,18 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 		return getImpFormat().isManualImport();
 	}
 
-	private DataImportId getDataImportId()
+	private DataImportConfigId getDataImportConfigId()
 	{
-		return DataImportId.ofRepoId(getRecord_ID());
+		return DataImportConfigId.ofRepoId(getRecord_ID());
 	}
 
-	private DataImport getDataImport()
+	private DataImportConfig getDataImportConfig()
 	{
-		if (_dataImport == null)
+		if (_dataImportConfig == null)
 		{
-			_dataImport = dataImportConfigRepo.getById(getDataImportId());
+			_dataImportConfig = dataImportConfigRepo.getById(getDataImportConfigId());
 		}
-		return _dataImport;
+		return _dataImportConfig;
 	}
 
 	private ImpFormat getImpFormat()
@@ -131,8 +130,8 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 		ImpFormat impFormat = _impFormat;
 		if (impFormat == null)
 		{
-			final DataImport dataImport = getDataImport();
-			impFormat = _impFormat = importFormatsRepo.getById(dataImport.getImpFormatId());
+			final DataImportConfig dataImportConfig = getDataImportConfig();
+			impFormat = _impFormat = importFormatsRepo.getById(dataImportConfig.getImpFormatId());
 		}
 		return impFormat;
 	}
@@ -141,14 +140,14 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 	{
 		final ImpFormat impFormat = getImpFormat();
 		final AtomicInteger nextLineNo = new AtomicInteger(1);
-		final DataImportId dataImportId = getDataImportId();
+		final DataImportConfigId dataImportConfigId = getDataImportConfigId();
 
 		return streamDataLineStrings()
 				.map(lineStr -> ImpDataLine.builder()
 						.impFormat(impFormat)
 						.fileLineNo(nextLineNo.getAndIncrement())
 						.lineStr(lineStr)
-						.dataImportId(dataImportId)
+						.dataImportConfigId(dataImportConfigId)
 						.build());
 	}
 
@@ -179,7 +178,7 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 	private void deleteAttachmentEntry()
 	{
 		final AttachmentEntry attachmentEntry = attachmentEntryService.getById(getAttachmentEntryId());
-		attachmentEntryService.unattach(TableRecordReference.of(getDataImport()), attachmentEntry);
+		attachmentEntryService.unattach(getDataImportConfigId().toRecordRef(), attachmentEntry);
 	}
 
 	private AttachmentEntryId getAttachmentEntryId()
