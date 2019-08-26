@@ -29,6 +29,7 @@ import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenReportAction;
+import de.metas.ui.web.process.adprocess.WebuiProcessClassInfo;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONCreateProcessInstanceRequest;
@@ -164,7 +165,7 @@ public class ProcessRestController
 				.includeLanguageInETag()
 				.cacheMaxAge(userSession.getHttpCacheMaxAge())
 				.map(ProcessDescriptor::getLayout)
-				.jsonLayoutOptions(() -> newJsonLayoutOptions())
+				.jsonLayoutOptions(this::newJsonLayoutOptions)
 				.toLayoutJson(JSONProcessLayout::of);
 	}
 
@@ -355,6 +356,8 @@ public class ProcessRestController
 	public void cacheReset()
 	{
 		ProcessClassInfo.resetCache();
+		WebuiProcessClassInfo.resetCache();
+
 		getAllRepositories().forEach(IProcessInstancesRepository::cacheReset);
 	}
 }

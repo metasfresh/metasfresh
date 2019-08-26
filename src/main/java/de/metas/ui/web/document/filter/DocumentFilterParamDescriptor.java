@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
+import de.metas.process.BarcodeScannerType;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -70,6 +71,8 @@ public final class DocumentFilterParamDescriptor
 	public static final String AUTOFILTER_INITIALVALUE_DATE_NOW = new String("NOW");
 	private final Object autoFilterInitialValue;
 
+	private final BarcodeScannerType barcodeScannerType;
+
 	private DocumentFilterParamDescriptor(final Builder builder)
 	{
 		joinAnd = builder.joinAnd;
@@ -99,6 +102,8 @@ public final class DocumentFilterParamDescriptor
 		mandatory = builder.mandatory;
 
 		autoFilterInitialValue = builder.autoFilterInitialValue;
+		
+		barcodeScannerType = builder.barcodeScannerType;
 	}
 
 	public String getDisplayName(final String adLanguage)
@@ -167,6 +172,7 @@ public final class DocumentFilterParamDescriptor
 		private String fieldName;
 		private String parameterName;
 		private DocumentFieldWidgetType widgetType;
+		private BarcodeScannerType barcodeScannerType;
 		private ITranslatableString displayName;
 		private Operator operator = Operator.EQUAL;
 		private Object defaultValue;
@@ -218,6 +224,12 @@ public final class DocumentFilterParamDescriptor
 		public DocumentFieldWidgetType getWidgetType()
 		{
 			return widgetType;
+		}
+
+		public Builder barcodeScannerType(final BarcodeScannerType barcodeScannerType)
+		{
+			this.barcodeScannerType = barcodeScannerType;
+			return this;
 		}
 
 		public Builder setDisplayName(final ITranslatableString displayName)

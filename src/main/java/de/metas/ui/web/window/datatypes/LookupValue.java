@@ -483,6 +483,18 @@ public abstract class LookupValue
 
 		public static IntegerLookupValue of(
 				@NonNull final RepoIdAware id,
+				@Nullable final ITranslatableString displayName)
+		{
+			return new IntegerLookupValue(
+					id.getRepoId(),
+					displayName,
+					null/* helpText */,
+					null/* attributes */,
+					null/* active */);
+		}
+
+		public static IntegerLookupValue of(
+				@NonNull final RepoIdAware id,
 				@Nullable final ITranslatableString displayName,
 				@Nullable final ITranslatableString helpText)
 		{

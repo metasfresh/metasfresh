@@ -2,10 +2,13 @@ package de.metas.ui.web.debug;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
@@ -14,6 +17,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -539,5 +543,26 @@ public class DebugRestController
 		{
 			sharedJsonObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, failOnUnknownProperties);
 		}
+	}
+
+	@GetMapping("/conext")
+	public Map<String, String> getContext()
+	{
+		userSession.assertLoggedIn();
+
+		final LinkedHashMap<String, String> map = new LinkedHashMap<>();
+
+		final Properties ctx = Env.getCtx();
+
+		final ArrayList<String> keys = new ArrayList<>(ctx.stringPropertyNames());
+		Collections.sort(keys);
+
+		for (final String key : keys)
+		{
+			final String value = ctx.getProperty(key);
+			map.put(key, value);
+		}
+
+		return map;
 	}
 }
