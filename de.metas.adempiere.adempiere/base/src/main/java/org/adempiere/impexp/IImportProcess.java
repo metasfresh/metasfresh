@@ -50,6 +50,7 @@ public interface IImportProcess<ImportRecordType>
 	IImportProcess<ImportRecordType> setCtx(Properties ctx);
 
 	/** @return processing context */
+	@Deprecated
 	Properties getCtx();
 
 	/** Sets process parameters to be used */
@@ -63,9 +64,6 @@ public interface IImportProcess<ImportRecordType>
 
 	/** @return The Name of Import Table (e.g. I_BPartner) */
 	String getImportTableName();
-
-	/** @return SQL WHERE clause to filter records that are candidates for import; <b>please prefix your where clause with " AND "</b> */
-	String getWhereClause();
 
 	/**
 	 * Run the import.

@@ -168,8 +168,8 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 
 	protected abstract String getTargetTableName();
 
-	@Override
-	public final String getWhereClause()
+	/** @return SQL WHERE clause to filter records that are candidates for import; <b>please prefix your where clause with " AND "</b> */
+	protected final String getWhereClause()
 	{
 		StringBuilder whereClause = new StringBuilder();
 
