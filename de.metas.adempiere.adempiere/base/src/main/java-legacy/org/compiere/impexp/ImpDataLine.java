@@ -26,7 +26,7 @@ public class ImpDataLine
 	private final String lineStr;
 	private final int fileLineNo;
 	@Getter
-	private final int dataImportId;
+	private final DataImportId dataImportId;
 
 	private ImpFormat _impFormat;
 	private List<ImpDataCell> _values;
@@ -43,7 +43,7 @@ public class ImpDataLine
 			final ImpFormat impFormat,
 			final int fileLineNo,
 			final String lineStr,
-			final int dataImportId)
+			final DataImportId dataImportId)
 	{
 		this.fileLineNo = fileLineNo;
 		this.lineStr = lineStr;

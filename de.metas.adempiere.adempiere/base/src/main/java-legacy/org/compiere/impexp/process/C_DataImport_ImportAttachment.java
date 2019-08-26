@@ -1,7 +1,5 @@
 package org.compiere.impexp.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -13,16 +11,16 @@ import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.compiere.impexp.DataImport;
+import org.compiere.impexp.DataImportId;
+import org.compiere.impexp.DataImportRepository;
 import org.compiere.impexp.FileImportReader;
 import org.compiere.impexp.ImpDataContext;
 import org.compiere.impexp.ImpDataLine;
 import org.compiere.impexp.ImpFormat;
-import org.compiere.impexp.ImpFormatId;
 import org.compiere.impexp.ImpFormatRepository;
 import org.compiere.impexp.ImportStatus;
 import org.compiere.model.I_AD_AttachmentEntry;
-import org.compiere.model.I_AD_ImpFormat;
-import org.compiere.model.I_C_DataImport;
 import org.compiere.util.Env;
 
 import de.metas.attachments.AttachmentEntry;
@@ -62,6 +60,7 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 {
 	private final transient AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 	private final transient ImpFormatRepository importFormatsRepo = SpringContextHolder.instance.getBean(ImpFormatRepository.class);
+	private final transient DataImportRepository dataImportConfigRepo = SpringContextHolder.instance.getBean(DataImportRepository.class);
 	private final transient IImportProcessFactory importProcessFactory = Services.get(IImportProcessFactory.class);
 
 	private static final Charset CHARSET = Charset.forName("UTF-8");
@@ -69,7 +68,7 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 	@Param(parameterName = I_AD_AttachmentEntry.COLUMNNAME_AD_AttachmentEntry_ID)
 	private int p_AD_AttachmentEntry_ID;
 
-	private I_C_DataImport _dataImport;
+	private DataImport _dataImport;
 	private ImpFormat _impFormat;
 
 	private int countImported = 0;
@@ -110,27 +109,19 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 
 	private boolean isManualImport()
 	{
-		final I_C_DataImport dataImport = getDataImport();
-		if (dataImport == null)
-		{
-			return false;
-		}
-
-		final I_AD_ImpFormat impFormat = dataImport.getAD_ImpFormat();
-
-		return impFormat.isManualImport();
+		return getImpFormat().isManualImport();
 	}
 
-	private int getDataImportId()
+	private DataImportId getDataImportId()
 	{
-		return getRecord_ID();
+		return DataImportId.ofRepoId(getRecord_ID());
 	}
 
-	private I_C_DataImport getDataImport()
+	private DataImport getDataImport()
 	{
 		if (_dataImport == null)
 		{
-			_dataImport = load(getDataImportId(), I_C_DataImport.class);
+			_dataImport = dataImportConfigRepo.getById(getDataImportId());
 		}
 		return _dataImport;
 	}
@@ -140,9 +131,8 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 		ImpFormat impFormat = _impFormat;
 		if (impFormat == null)
 		{
-			final I_C_DataImport dataImport = getDataImport();
-			final ImpFormatId impFormatId = ImpFormatId.ofRepoId(dataImport.getAD_ImpFormat_ID());
-			impFormat = _impFormat = importFormatsRepo.getById(impFormatId);
+			final DataImport dataImport = getDataImport();
+			impFormat = _impFormat = importFormatsRepo.getById(dataImport.getImpFormatId());
 		}
 		return impFormat;
 	}
@@ -151,7 +141,7 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 	{
 		final ImpFormat impFormat = getImpFormat();
 		final AtomicInteger nextLineNo = new AtomicInteger(1);
-		final int dataImportId = getDataImportId();
+		final DataImportId dataImportId = getDataImportId();
 
 		return streamDataLineStrings()
 				.map(lineStr -> ImpDataLine.builder()

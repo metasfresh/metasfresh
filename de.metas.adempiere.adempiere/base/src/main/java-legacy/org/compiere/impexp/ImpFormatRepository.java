@@ -58,6 +58,7 @@ public class ImpFormatRepository
 				.name(impFormatRecord.getName())
 				.formatType(ImpFormatType.ofCode(impFormatRecord.getFormatType()))
 				.multiLine(impFormatRecord.isMultiLine())
+				.manualImport(impFormatRecord.isManualImport())
 				.tableInfo(tableInfo)
 				.rows(rows)
 				.build();

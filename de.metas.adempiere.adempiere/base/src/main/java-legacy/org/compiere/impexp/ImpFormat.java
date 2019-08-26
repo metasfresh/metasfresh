@@ -58,6 +58,8 @@ public final class ImpFormat
 	private final ImpFormatType formatType;
 	@Getter
 	private final boolean multiLine;
+	@Getter
+	private final boolean manualImport;
 
 	/** The Table to be imported */
 	private final ImpFormatTableInfo tableInfo;
@@ -69,6 +71,7 @@ public final class ImpFormat
 			@NonNull final String name,
 			@NonNull final ImpFormatType formatType,
 			final boolean multiLine,
+			final boolean manualImport,
 			@NonNull final ImpFormatTableInfo tableInfo,
 			@NonNull final List<ImpFormatRow> rows)
 	{
@@ -78,6 +81,7 @@ public final class ImpFormat
 		this.name = name;
 		this.formatType = formatType;
 		this.multiLine = multiLine;
+		this.manualImport = manualImport;
 		this.tableInfo = tableInfo;
 		this.rows = ImmutableList.copyOf(rows);
 	}
@@ -475,9 +479,9 @@ public final class ImpFormat
 				sqlUpdate.append(node.getColumnNameEqualsValueSql()).append(",");		// column=value
 			}
 
-			if (hasDataImportIdColumn && line.getDataImportId() > 0)
+			if (hasDataImportIdColumn && line.getDataImportId() != null)
 			{
-				sqlUpdate.append(I_C_DataImport.COLUMNNAME_C_DataImport_ID).append("=").append(line.getDataImportId()).append(",");
+				sqlUpdate.append(I_C_DataImport.COLUMNNAME_C_DataImport_ID).append("=").append(line.getDataImportId().getRepoId()).append(",");
 			}
 
 			sqlUpdate.append("IsActive='Y',Processed='N',I_IsImported='N',Updated=now(),UpdatedBy=").append(userId.getRepoId());
