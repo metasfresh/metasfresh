@@ -1,16 +1,25 @@
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 import { Tour } from '../../support/utils/tour';
 import { Shipper } from '../../support/utils/shipper';
 import { TransportationOrder } from '../../support/utils/transportationOrder';
 
 describe('create new tour and transportation order', function() {
-  const date = humanReadableNow();
   let shipperBPartner;
-  const shipperLocation = `Am Nossbacher Weg 2`;
-  const tourName = `TestTour_${date}`;
-  const shipperName = `ShipperTest ${date}`;
-  const shipperDescription = `ShipperDescriptionTest ${date}`;
-  const documentNo = `X`;
+  let shipperLocation;
+  let tourName;
+  let shipperName;
+  let shipperDescription;
+  let documentNo;
+
+  it('Read the fixture', function() {
+    cy.fixture('logistics/create_new_tour_and_transportation_order_spec.json').then(f => {
+      shipperLocation = f['shipperLocation'];
+      tourName = appendHumanReadableNow(f['tourName']);
+      shipperName = appendHumanReadableNow(f['shipperName']);
+      shipperDescription = appendHumanReadableNow(f['shipperDescription']);
+      documentNo = f['documentNo'];
+    });
+  });
 
   it('Create a tour', function() {
     cy.fixture('logistics/tour.json').then(tourJson => {

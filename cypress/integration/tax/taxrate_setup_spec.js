@@ -1,19 +1,29 @@
 import { Taxrate } from '../../support/utils/taxrate';
-import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
+import { getLanguageSpecific, appendHumanReadableNow } from '../../support/utils/utils';
 
 describe('Create Taxrate for Automatic End2End Tests with cypress https://github.com/metasfresh/metasfresh-e2e/issues/74', function() {
-  it('Create new Taxrate', function() {
-    const date = humanReadableNow();
-    const taxrateName = `Text-Tax 10% ${date}`;
+  let taxRateName;
+  let validFrom;
+  let rate;
+  let defaultTaxCategory;
 
+  it('Read fixture and prepare the names', function() {
+    cy.fixture('tax/taxrate_setup_spec.json').then(f => {
+      taxRateName = appendHumanReadableNow(f['taxRateName']);
+      validFrom = f['validFrom'];
+      rate = f['rate'];
+      defaultTaxCategory = f['defaultTaxCategory'];
+    });
+  });
+  it('Create new Taxrate', function() {
     cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      const taxCategoryName = getLanguageSpecific(miscDictionary, 'defaultTaxCategory');
+      const taxCategoryName = getLanguageSpecific(miscDictionary, defaultTaxCategory);
 
       cy.fixture('tax/taxrate.json').then(taxrateJson => {
         Object.assign(new Taxrate(), taxrateJson)
-          .setName(taxrateName)
-          .setRate(10)
-          .setValidFrom('2019/01/01')
+          .setName(taxRateName)
+          .setRate(rate)
+          .setValidFrom(validFrom)
           .setTaxCategory(taxCategoryName)
           .apply();
       });

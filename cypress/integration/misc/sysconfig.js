@@ -1,9 +1,20 @@
 import { SysConfig } from '../../support/utils/sysconfig';
 import { toggleNotFrequentFilters, selectNotFrequentFilterWidget, applyFilters } from '../../support/functions';
 import { sysconfigs } from '../../page_objects/sysconfig';
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 
 describe('SysConfig Tests', function() {
+  let sysConfigName;
+  let sysConfigValue;
+  let sysConfigDescription;
+
+  it('Read fixture and prepare the names', function() {
+    cy.fixture('misc/sysconfig.json').then(f => {
+      sysConfigName = appendHumanReadableNow(f['sysConfigName']);
+      sysConfigValue = appendHumanReadableNow(f['sysConfigValue']);
+      sysConfigDescription = appendHumanReadableNow(f['sysConfigDescription']);
+    });
+  });
   it('Filter for a sysconfig entry', function() {
     sysconfigs.visit();
 
@@ -15,11 +26,6 @@ describe('SysConfig Tests', function() {
 
     sysconfigs.getRows().should('have.length', 1);
   });
-
-  const date = humanReadableNow();
-  const sysConfigName = `SysConfig ${date}`;
-  const sysConfigValue = `Value ${date}`;
-  const sysConfigDescription = `Description ${date}`;
 
   it('Create a sysconfig entry', function() {
     cy.log(`Create Sysconfig with name=${sysConfigName}`);

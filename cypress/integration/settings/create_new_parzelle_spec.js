@@ -1,15 +1,18 @@
 describe('Create new Parzelle/Allotment', function() {
-  before(function() {
-    cy.visit('/window/540210');
+  let name;
+  it('Read fixture and prepare the names', function() {
+    cy.fixture('settings/create_new_parzelle_spec.json').then(f => {
+      name = f['name'];
+    });
   });
-
-  it('open new parzelle', function() {
+  it('Open new parzelle', function() {
+    cy.visit('/window/540210');
     cy.clickHeaderNav('new');
   });
 
-  it('create it', function() {
-    cy.writeIntoStringField('Value', 'Industriestrasse');
-    cy.writeIntoStringField('Name', 'Industriestrasse');
+  it('Create it', function() {
+    cy.writeIntoStringField('Value', name);
+    cy.writeIntoStringField('Name', name);
     cy.get(':nth-child(4) > .header-btn > .header-item-container > .header-item').click();
   });
 });

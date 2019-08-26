@@ -1,0 +1,6 @@
+{
+    "taxRateName": "Text-Tax 10%",
+    "validFrom": "01/01/2019",
+    "rate": 10,
+    "defaultTaxCategory": "defaultTaxCategory"
+}

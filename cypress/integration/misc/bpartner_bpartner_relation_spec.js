@@ -1,18 +1,29 @@
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { BPartner } from '../../support/utils/bpartner';
 import { SalesOrder } from '../../support/utils/sales_order_api';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 
 describe('BPartner relations', function() {
-  const timestamp = new Date().getTime();
-  const customer1Name = `Customer1_${timestamp}`;
-  const customer2Name = `Customer2_${timestamp}`;
-  const salesOrder1Name = `SalesOrder1-${timestamp}`;
-  const bPartnerRelationName = `BPartnerRelation_${timestamp}`;
-  const priceListName = 'Testpreisliste Kunden';
-  const discountSchemaName = `DiscountSchemaTest ${timestamp}`;
+  let customer1Name;
+  let customer2Name;
+  let salesOrder1Name;
+  let bPartnerRelationName;
+  let priceListName;
+  let discountSchemaName;
   let relationID = null;
 
-  before(function() {
+  it('Read fixture and prepare the names', function() {
+    cy.fixture('misc/bpartner_bpartner_relation_spec.json').then(f => {
+      customer1Name = appendHumanReadableNow(f['customer1Name']);
+      customer2Name = appendHumanReadableNow(f['customer2Name']);
+      salesOrder1Name = appendHumanReadableNow(f['salesOrder1Name']);
+      bPartnerRelationName = appendHumanReadableNow(f['bPartnerRelationName']);
+      priceListName = f['priceListName'];
+      discountSchemaName = appendHumanReadableNow(f['discountSchemaName']);
+    });
+  });
+
+  it('Create discount schema,customers and a sales order', function() {
     cy.fixture('discount/discountschema.json').then(discountschemaJson => {
       Object.assign(new DiscountSchema(), discountschemaJson)
         .setName(discountSchemaName)
@@ -49,22 +60,15 @@ describe('BPartner relations', function() {
 
     cy.writeIntoStringField(`Name`, bPartnerRelationName);
     cy.writeIntoLookupListField('C_BPartner_ID', customer1Name, customer1Name);
-    // cy.writeIntoLookupListField('C_BPartner_Location_ID', 'Address1', 'Address1', true);
     cy.writeIntoLookupListField('C_BPartnerRelation_ID', customer2Name, customer2Name);
-    // cy.writeIntoLookupListField('C_BPartnerRelation_Location_ID', 'Address1', 'Address1', true);
   });
 
   it('Set bpartner relation inactive', function() {
     cy.visitWindow(313, relationID);
-
     cy.clickOnIsActive();
-
     cy.visitWindow('143', 'NEW');
-
     cy.writeIntoLookupListField('C_BPartner_ID', customer1Name, customer1Name);
-
     const path = `#lookup_Bill_BPartner_ID`;
-
     cy.get(path).within(el => {
       if (el.find('.lookup-widget-wrapper input').length) {
         return cy
