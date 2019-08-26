@@ -83,14 +83,13 @@ final class ShipmentCandidateRows implements IEditableRowsData<ShipmentCandidate
 	@Override
 	public DocumentIdsSelection getDocumentIdsToInvalidate(final TableRecordReferenceSet recordRefs)
 	{
-		// TODO Auto-generated method stub
 		return DocumentIdsSelection.EMPTY;
 	}
 
 	@Override
 	public void invalidateAll()
 	{
-		// TODO Auto-generated method stub
+		// nothing
 	}
 
 	@Override

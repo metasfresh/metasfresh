@@ -128,14 +128,12 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 	@Override
 	public boolean isProcessed()
 	{
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public DocumentPath getDocumentPath()
 	{
-		// TODO Auto-generated method stub
 		return null;
 	}
 
