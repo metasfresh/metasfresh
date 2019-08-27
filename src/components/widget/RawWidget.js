@@ -7,8 +7,7 @@ import classnames from 'classnames';
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { getClassNames, generateMomentObj } from './RawWidgetHelpers';
 import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
-import { DATE_FORMAT,   DATE_FIELD_TYPES,
-  DATE_FIELD_FORMATS, } from '../../constants/Constants';
+import { DATE_FORMAT, DATE_TIMEZONE_FORMAT } from '../../constants/Constants';
 import ActionButton from './ActionButton';
 import Attributes from './Attributes/Attributes';
 import Checkbox from './Checkbox';
@@ -136,7 +135,7 @@ export class RawWidget extends Component {
     // or cache is set and it is not equal value
     if ((isForce || willPatch) && handlePatch && !inProgress) {
       if (widgetType === 'ZonedDateTime') {
-        value = Moment(value).format(`YYYY-MM-DDTHH:mm:ss.SSSZ`);
+        value = Moment(value).format(DATE_TIMEZONE_FORMAT);
       }
 
       this.setState({
