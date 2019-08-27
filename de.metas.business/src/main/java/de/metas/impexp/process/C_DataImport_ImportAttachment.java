@@ -9,6 +9,7 @@ import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.impexp.DataImportConfigId;
 import de.metas.impexp.DataImportRequest;
+import de.metas.impexp.DataImportResult;
 import de.metas.impexp.DataImportService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -66,7 +67,7 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 	{
 		final AttachmentEntryDataResource data = attachmentEntryService.retrieveDataResource(getAttachmentEntryId());
 
-		final String result = dataImportService.importData(DataImportRequest.builder()
+		final DataImportResult result = dataImportService.importData(DataImportRequest.builder()
 				.data(data)
 				.dataImportConfigId(getDataImportConfigId())
 				.clientId(getClientId())
@@ -76,7 +77,8 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 
 		deleteAttachmentEntry();
 
-		return result;
+		return "@IsImportScheduled@ #" + result.getCountImportPrepared()
+				+ ", @IsError@ #" + result.getCountError();
 	}
 
 	private AttachmentEntryId getAttachmentEntryId()
