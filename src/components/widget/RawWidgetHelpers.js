@@ -1,12 +1,10 @@
 import Moment from 'moment';
 
-import { DATE_FORMAT } from '../../constants/Constants';
-
-export function generateMomentObj(value) {
+export function generateMomentObj(value, FORMAT) {
   if (Moment.isMoment(value)) {
-    return value;
+    return value.format(FORMAT);
   }
-  return value ? Moment(value).format(DATE_FORMAT) : null;
+  return value ? Moment(value).format(FORMAT) : null;
 }
 
 // TODO: No idea why somebody decided to reimplement classnames instead

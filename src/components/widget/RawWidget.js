@@ -7,7 +7,11 @@ import classnames from 'classnames';
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { getClassNames, generateMomentObj } from './RawWidgetHelpers';
 import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
-import { DATE_FORMAT, DATE_TIMEZONE_FORMAT } from '../../constants/Constants';
+import {
+  DATE_FORMAT,
+  TIME_FORMAT,
+  DATE_TIMEZONE_FORMAT,
+} from '../../constants/Constants';
 import ActionButton from './ActionButton';
 import Attributes from './Attributes/Attributes';
 import Checkbox from './Checkbox';
@@ -257,7 +261,6 @@ export class RawWidget extends Component {
       dateFormat,
       initialFocus,
     } = this.props;
-    // let { widgetType } = this.props;
 
     let widgetValue = data != null ? data : widgetData[0].value;
     const { isEdited } = this.state;
@@ -336,11 +339,14 @@ export class RawWidget extends Component {
                   tabIndex: tabIndex,
                 }}
                 value={widgetValue || widgetData[0].value}
-                onChange={date => handleChange(widgetField, date)}
+                onChange={date => {
+                  date = Moment(date).format(DATE_FORMAT);
+                  handleChange(widgetField, date);
+                }}
                 patch={date =>
                   this.handlePatch(
                     widgetField,
-                    this.generateMomentObj(date),
+                    this.generateMomentObj(date, DATE_FORMAT),
                     null,
                     null,
                     true
@@ -373,7 +379,7 @@ export class RawWidget extends Component {
               patch={date =>
                 this.handlePatch(
                   widgetField,
-                  this.generateMomentObj(date),
+                  this.generateMomentObj(date, DATE_TIMEZONE_FORMAT),
                   null,
                   null,
                   true
@@ -402,7 +408,7 @@ export class RawWidget extends Component {
               patch={date =>
                 this.handlePatch(
                   widgetField,
-                  this.generateMomentObj(date),
+                  this.generateMomentObj(date, TIME_FORMAT),
                   null,
                   null,
                   true
@@ -430,7 +436,7 @@ export class RawWidget extends Component {
               patch={date =>
                 this.handlePatch(
                   widgetField,
-                  this.generateMomentObj(date),
+                  this.generateMomentObj(date, `x`),
                   null,
                   null,
                   true

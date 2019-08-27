@@ -17,7 +17,8 @@ export const AMOUNT_FIELD_FORMATS_BY_PRECISION = [
 export const SPECIAL_FIELD_TYPES = ['Color'];
 
 export const DATE_FORMAT = 'YYYY-MM-DD';
-export const DATE_TIMEZONE_FORMAT = 'YYYY-MM-DDTHH:mm:ss.SSSZ';
+export const TIME_FORMAT = `HH:mm`;
+export const DATE_TIMEZONE_FORMAT = `YYYY-MM-DDTHH:mm:ss.SSSZ`;
 export const DATE_FIELDS = ['Date', 'DateTime'];
 export const DATE_FIELD_TYPES = [
   'Date',
