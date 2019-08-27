@@ -1,4 +1,4 @@
-package org.compiere.impexp;
+package de.metas.impexp;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;

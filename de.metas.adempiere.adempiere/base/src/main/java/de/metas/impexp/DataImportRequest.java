@@ -1,6 +1,12 @@
-package org.compiere.impexp;
+package de.metas.impexp;
 
+import org.adempiere.service.ClientId;
+import org.springframework.core.io.Resource;
+
+import de.metas.organization.OrgId;
+import de.metas.user.UserId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -27,14 +33,20 @@ import lombok.Value;
 
 @Value
 @Builder
-class ImpFormatTableInfo
+public class DataImportRequest
 {
-	String tableName;
-	String tablePK;
-	String tableUnique1;
-	String tableUnique2;
-	String tableUniqueParent;
-	String tableUniqueChild;
-	
-	String dataImportConfigIdColumnName;
+	@NonNull
+	Resource data;
+
+	@NonNull
+	DataImportConfigId dataImportConfigId;
+
+	@NonNull
+	ClientId clientId;
+
+	@NonNull
+	OrgId orgId;
+
+	@NonNull
+	UserId userId;
 }

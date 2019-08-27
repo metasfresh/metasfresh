@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.compiere.impexp;
+package de.metas.impexp;
 
 import java.io.File;
 import java.io.IOException;

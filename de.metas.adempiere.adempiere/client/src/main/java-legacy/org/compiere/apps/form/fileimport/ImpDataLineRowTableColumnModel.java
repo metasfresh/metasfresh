@@ -2,13 +2,13 @@ package org.compiere.apps.form.fileimport;
 
 import java.util.Objects;
 
-import org.compiere.impexp.CellErrorMessage;
-import org.compiere.impexp.ImpDataLine;
-import org.compiere.impexp.ImpFormatColumn;
 import org.compiere.model.I_AD_ImpFormat_Row;
 import org.compiere.util.Env;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.impexp.CellErrorMessage;
+import de.metas.impexp.ImpDataLine;
+import de.metas.impexp.ImpFormatColumn;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;

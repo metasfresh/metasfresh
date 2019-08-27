@@ -11,12 +11,12 @@ import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.apache.commons.io.FileUtils;
-import org.compiere.impexp.FileImportReader;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 
+import de.metas.impexp.FileImportReader;
 import de.metas.logging.LogManager;
 
 /*

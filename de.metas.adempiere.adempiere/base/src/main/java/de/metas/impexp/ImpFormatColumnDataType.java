@@ -1,9 +1,9 @@
-package org.compiere.impexp;
+package de.metas.impexp;
 
 import java.util.Arrays;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.X_AD_ImpFormat;
+import org.compiere.model.X_AD_ImpFormat_Row;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -35,18 +35,17 @@ import lombok.NonNull;
  * #L%
  */
 
-public enum ImpFormatType implements ReferenceListAwareEnum
+public enum ImpFormatColumnDataType implements ReferenceListAwareEnum
 {
-	FIXED_POSITION(X_AD_ImpFormat.FORMATTYPE_FixedPosition), //
-	COMMA_SEPARATED(X_AD_ImpFormat.FORMATTYPE_CommaSeparated), //
-	SEMICOLON_SEPARATED(X_AD_ImpFormat.FORMATTYPE_SemicolonSeparated), //
-	TAB_SEPARATED(X_AD_ImpFormat.FORMATTYPE_TabSeparated), //
-	XML(X_AD_ImpFormat.FORMATTYPE_XML) //
+	String(X_AD_ImpFormat_Row.DATATYPE_String), //
+	Date(X_AD_ImpFormat_Row.DATATYPE_Date), //
+	Number(X_AD_ImpFormat_Row.DATATYPE_Number), //
+	Constant(X_AD_ImpFormat_Row.DATATYPE_Constant) //
 	;
 
 	private final String code;
 
-	private ImpFormatType(@NonNull final String code)
+	private ImpFormatColumnDataType(@NonNull final String code)
 	{
 		this.code = code;
 	}
@@ -59,15 +58,15 @@ public enum ImpFormatType implements ReferenceListAwareEnum
 	}
 
 	@JsonCreator
-	public static ImpFormatType ofCode(@NonNull final String code)
+	public static ImpFormatColumnDataType ofCode(@NonNull final String code)
 	{
-		ImpFormatType type = typesByCode.get(code);
+		ImpFormatColumnDataType type = typesByCode.get(code);
 		if (type == null)
 		{
-			throw new AdempiereException("No " + ImpFormatType.class + " found for code: " + code);
+			throw new AdempiereException("No " + ImpFormatColumnDataType.class + " found for code: " + code);
 		}
 		return type;
 	}
 
-	private static final ImmutableMap<String, ImpFormatType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), ImpFormatType::getCode);
+	private static final ImmutableMap<String, ImpFormatColumnDataType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), ImpFormatColumnDataType::getCode);
 }

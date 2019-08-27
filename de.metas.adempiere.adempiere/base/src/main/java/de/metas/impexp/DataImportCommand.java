@@ -1,4 +1,4 @@
-package org.compiere.impexp;
+package de.metas.impexp;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -41,7 +41,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class DataImportCommand
+final class DataImportCommand
 {
 	private final IImportProcessFactory importProcessFactory;
 

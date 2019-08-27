@@ -1,15 +1,15 @@
-package org.compiere.impexp.process;
+package de.metas.impexp.process;
 
 import org.compiere.SpringContextHolder;
-import org.compiere.impexp.DataImportConfigId;
-import org.compiere.impexp.DataImportRequest;
-import org.compiere.impexp.DataImportService;
 import org.compiere.model.I_AD_AttachmentEntry;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryDataResource;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.impexp.DataImportConfigId;
+import de.metas.impexp.DataImportRequest;
+import de.metas.impexp.DataImportService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;

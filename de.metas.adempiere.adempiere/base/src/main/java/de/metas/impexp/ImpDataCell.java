@@ -1,4 +1,4 @@
-package org.compiere.impexp;
+package de.metas.impexp;
 
 import java.sql.Timestamp;
 

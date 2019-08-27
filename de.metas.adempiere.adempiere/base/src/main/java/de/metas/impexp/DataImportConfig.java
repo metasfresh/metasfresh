@@ -1,11 +1,8 @@
-package org.compiere.impexp;
+package de.metas.impexp;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import org.compiere.model.I_C_DataImport;
-import org.springframework.stereotype.Repository;
-
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -29,20 +26,13 @@ import lombok.NonNull;
  * #L%
  */
 
-@Repository
-public class DataImportConfigRepository
+@Value
+@Builder
+public class DataImportConfig
 {
-	public DataImportConfig getById(@NonNull final DataImportConfigId id)
-	{
-		final I_C_DataImport record = loadOutOfTrx(id, I_C_DataImport.class);
-		return toDataImportConfig(record);
-	}
+	@NonNull
+	DataImportConfigId id;
 
-	private static DataImportConfig toDataImportConfig(@NonNull final I_C_DataImport record)
-	{
-		return DataImportConfig.builder()
-				.id(DataImportConfigId.ofRepoId(record.getC_DataImport_ID()))
-				.impFormatId(ImpFormatId.ofRepoId(record.getAD_ImpFormat_ID()))
-				.build();
-	}
+	@NonNull
+	ImpFormatId impFormatId;
 }

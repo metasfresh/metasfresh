@@ -1,13 +1,6 @@
-package org.compiere.impexp;
+package de.metas.impexp;
 
-import org.adempiere.service.ClientId;
-import org.springframework.core.io.Resource;
-
-import de.metas.organization.OrgId;
-import de.metas.user.UserId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import lombok.Getter;
 
 /*
  * #%L
@@ -31,22 +24,32 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class DataImportRequest
+public enum DecimalSeparator
 {
-	@NonNull
-	Resource data;
+	COMMA(","), //
+	DOT(".") //
+	;
 
-	@NonNull
-	DataImportConfigId dataImportConfigId;
+	@Getter
+	private final String symbol;
 
-	@NonNull
-	ClientId clientId;
+	DecimalSeparator(final String symbol)
+	{
+		this.symbol = symbol;
+	}
 
-	@NonNull
-	OrgId orgId;
+	public static DecimalSeparator ofNullableStringOrDot(final String symbol)
+	{
+		return ",".equals(symbol) ? COMMA : DOT;
+	}
 
-	@NonNull
-	UserId userId;
+	public boolean isComma()
+	{
+		return COMMA.equals(this);
+	}
+
+	public boolean isDot()
+	{
+		return DOT.equals(this);
+	}
 }

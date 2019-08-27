@@ -1,4 +1,4 @@
-package org.compiere.impexp;
+package de.metas.impexp;
 
 import java.util.List;
 import java.util.Objects;
