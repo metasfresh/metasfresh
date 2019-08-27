@@ -99,12 +99,19 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
+	public I_M_Attribute getAttributeById(@NonNull final AttributeId attributeId)
+	{
+		return getAttributeById(attributeId, I_M_Attribute.class);
+	}
+
+	@Override
 	public <T extends I_M_Attribute> T getAttributeById(@NonNull final AttributeId attributeId, @NonNull Class<T> type)
 	{
 		// assume table level caching is enabled
 		return InterfaceWrapperHelper.loadOutOfTrx(attributeId, type);
 	}
 
+	@Override
 	public List<I_M_Attribute> getAttributesByIds(final Collection<AttributeId> attributeIds)
 	{
 		if (attributeIds.isEmpty())
@@ -135,6 +142,17 @@ public class AttributeDAO implements IAttributeDAO
 				.filter(I_M_Attribute::isActive)
 				.sorted(order)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public Set<AttributeId> getAttributeIdsByAttributeSetInstanceId(@NonNull final AttributeSetInstanceId attributeSetInstanceId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_AttributeInstance.class)
+				.addEqualsFilter(I_M_AttributeInstance.COLUMN_M_AttributeSetInstance_ID, attributeSetInstanceId)
+				.andCollect(I_M_AttributeInstance.COLUMN_M_Attribute_ID)
+				.create()
+				.listIds(AttributeId::ofRepoId);
 	}
 
 	@Override
@@ -191,9 +209,22 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
+	public List<I_M_Attribute> getAllAttributes()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_Attribute.class)
+				.addOnlyActiveRecordsFilter()
+				// .addOnlyContextClient()
+				.orderBy(I_M_Attribute.COLUMNNAME_Name)
+				.orderBy(I_M_Attribute.COLUMNNAME_M_Attribute_ID)
+				.create()
+				.list();
+	}
+
+	@Override
 	public List<I_M_AttributeValue> retrieveAttributeValues(final I_M_Attribute attribute)
 	{
-		final Map<String, I_M_AttributeValue> map = retrieveAttributeValuesMap(attribute, false/*includeInactive*/);
+		final Map<String, I_M_AttributeValue> map = retrieveAttributeValuesMap(attribute, false/* includeInactive */);
 		return ImmutableList.copyOf(map.values());
 	}
 
@@ -244,7 +275,7 @@ public class AttributeDAO implements IAttributeDAO
 		}
 		else
 		{
-			return retrieveAttributeValuesMap(attribute, false/*includeInactive*/)
+			return retrieveAttributeValuesMap(attribute, false/* includeInactive */)
 					.values()
 					.stream()
 					.filter(av -> av.getM_AttributeValue_ID() == attributeValueId.getRepoId())
@@ -366,7 +397,7 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public List<I_M_AttributeValue> retrieveFilteredAttributeValues(final I_M_Attribute attribute, final SOTrx soTrx)
 	{
-		return retrieveAttributeValuesMap(attribute, false/*includeInactive*/)
+		return retrieveAttributeValuesMap(attribute, false/* includeInactive */)
 				.values()
 				.stream()
 				.filter(av -> isAttributeValueMatchingSOTrx(av, soTrx))

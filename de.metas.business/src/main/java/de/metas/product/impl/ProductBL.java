@@ -248,24 +248,15 @@ public final class ProductBL implements IProductBL
 		return getAttributeSetId(product);
 	}
 
-	public I_M_AttributeSet getM_AttributeSet(@NonNull final ProductId productId)
+	@Override
+	public I_M_AttributeSet getAttributeSetOrNull(@NonNull final ProductId productId)
 	{
 		final AttributeSetId attributeSetId = getAttributeSetId(productId);
 		if (attributeSetId.isNone())
 		{
 			return null;
 		}
-		return Services.get(IAttributeDAO.class).getAttributeSetById(attributeSetId);
-	}
 
-	@Override
-	public I_M_AttributeSet getM_AttributeSet(I_M_Product product)
-	{
-		final AttributeSetId attributeSetId = getAttributeSetId(product);
-		if (attributeSetId.isNone())
-		{
-			return null;
-		}
 		return Services.get(IAttributeDAO.class).getAttributeSetById(attributeSetId);
 	}
 
@@ -362,7 +353,7 @@ public final class ProductBL implements IProductBL
 	@Override
 	public boolean isInstanceAttribute(@NonNull final ProductId productId)
 	{
-		final I_M_AttributeSet mas = getM_AttributeSet(productId);
+		final I_M_AttributeSet mas = getAttributeSetOrNull(productId);
 		return mas != null && mas.isInstanceAttribute();
 	}
 

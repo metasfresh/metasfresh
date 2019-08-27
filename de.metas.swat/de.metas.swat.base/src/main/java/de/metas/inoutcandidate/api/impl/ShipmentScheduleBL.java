@@ -27,11 +27,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.inout.util.DeliveryGroupCandidate;
 import org.adempiere.inout.util.DeliveryLineCandidate;
@@ -58,6 +61,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -79,6 +83,9 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequest;
+import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequestsList;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
@@ -895,7 +902,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			logger.debug("Because '{}' has not the standard freight cost rule,  consolidation into one shipment is not allowed", order);
 			return true;
 		}
-		
+
 		return false;
 	}
 
@@ -1006,4 +1013,76 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		return Quantity.of(qtyToDeliverBD, uom);
 	}
 
+	@Override
+	public Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIdsOutOfTrx(final Set<ShipmentScheduleId> ids)
+	{
+		return Services.get(IShipmentSchedulePA.class).getByIdsOutOfTrx(ids);
+	}
+
+	@Override
+	public BPartnerId getBPartnerId(@NonNull final I_M_ShipmentSchedule schedule)
+	{
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		return shipmentScheduleEffectiveBL.getBPartnerId(schedule);
+	}
+
+	@Override
+	public WarehouseId getWarehouseId(@NonNull final I_M_ShipmentSchedule schedule)
+	{
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		return shipmentScheduleEffectiveBL.getWarehouseId(schedule);
+	}
+
+	@Override
+	public ZonedDateTime getPreparationDate(I_M_ShipmentSchedule schedule)
+	{
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		return TimeUtil.asZonedDateTime(shipmentScheduleEffectiveBL.getPreparationDate(schedule));
+	}
+
+	@Override
+	public void applyUserChanges(@NonNull final ShipmentScheduleUserChangeRequestsList userChanges)
+	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		trxManager.runInThreadInheritedTrx(() -> applyUserChangesInTrx(userChanges));
+	}
+
+	private void applyUserChangesInTrx(@NonNull ShipmentScheduleUserChangeRequestsList userChanges)
+	{
+		final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
+
+		final Set<ShipmentScheduleId> shipmentScheduleIds = userChanges.getShipmentScheduleIds();
+		final Map<ShipmentScheduleId, I_M_ShipmentSchedule> recordsById = shipmentSchedulesRepo.getByIds(shipmentScheduleIds);
+
+		for (final ShipmentScheduleId shipmentScheduleId : shipmentScheduleIds)
+		{
+			final ShipmentScheduleUserChangeRequest userChange = userChanges.getByShipmentScheduleId(shipmentScheduleId);
+			final I_M_ShipmentSchedule record = recordsById.get(shipmentScheduleId);
+			if (record == null)
+			{
+				// shall not happen
+				logger.warn("No record found for {}. Skip applying user changes: {}", shipmentScheduleId, userChange);
+				continue;
+			}
+
+			updateRecord(record, userChange);
+
+			shipmentSchedulesRepo.save(record);
+		}
+	}
+
+	private static void updateRecord(
+			@NonNull final I_M_ShipmentSchedule record,
+			@NonNull final ShipmentScheduleUserChangeRequest from)
+	{
+		if (from.getQtyToDeliverOverride() != null)
+		{
+			record.setQtyToDeliver_Override(from.getQtyToDeliverOverride());
+		}
+
+		if (from.getAsiId() != null)
+		{
+			record.setM_AttributeSetInstance_ID(from.getAsiId().getRepoId());
+		}
+	}
 }

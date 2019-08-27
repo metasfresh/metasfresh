@@ -1,5 +1,7 @@
 package org.adempiere.mm.attributes.api;
 
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -49,18 +51,21 @@ public interface IAttributeDAO extends ISingletonService
 
 	I_M_Attribute getAttributeById(int attributeId);
 
+	I_M_Attribute getAttributeById(AttributeId attributeId);
+
 	<T extends I_M_Attribute> T getAttributeById(AttributeId attributeId, Class<T> type);
 
-	default I_M_Attribute getAttributeById(AttributeId attributeId)
-	{
-		return getAttributeById(attributeId, I_M_Attribute.class);
-	}
+	List<I_M_Attribute> getAttributesByIds(Collection<AttributeId> attributeIds);
 
 	/** @return attributeIds ordered by M_AttributeUse.SeqNo */
 	List<AttributeId> getAttributeIdsByAttributeSetId(AttributeSetId attributeSetId);
 
+	Set<AttributeId> getAttributeIdsByAttributeSetInstanceId(AttributeSetInstanceId attributeSetInstanceId);
+
 	/** @return attributes, ordered by M_AttributeUse.SeqNo */
 	List<I_M_Attribute> getAttributesByAttributeSetId(AttributeSetId attributeSetId);
+
+	List<I_M_Attribute> getAllAttributes();
 
 	String getAttributeCodeById(AttributeId attributeId);
 
@@ -196,5 +201,4 @@ public interface IAttributeDAO extends ISingletonService
 	boolean areAttributeSetsEqual(AttributeSetInstanceId firstASIId, AttributeSetInstanceId secondASIId);
 
 	I_M_AttributeSetInstance getAttributeSetInstanceById(AttributeSetInstanceId attributeSetInstanceId);
-
 }

@@ -84,9 +84,9 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
             "value": 4
           }
         },
-        "leftToRight": true,
+        "baseLanguage": true,
         "decimalPoint": false,
-        "baseLanguage": true
+        "leftToRight": true
       },
       "name": "bPartner.name",
       "parentId": 1,
