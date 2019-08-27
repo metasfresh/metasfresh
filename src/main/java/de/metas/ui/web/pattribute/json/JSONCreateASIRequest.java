@@ -1,6 +1,6 @@
 package de.metas.ui.web.pattribute.json;
 
-import java.io.Serializable;
+import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
@@ -9,10 +9,10 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
 
-import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -36,52 +36,23 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
  * #L%
  */
 
-@SuppressWarnings("serial")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class JSONCreateASIRequest implements Serializable
+@Value
+public final class JSONCreateASIRequest
 {
 	@JsonProperty("templateId")
-	private final int templateId;
+	private final AttributeSetInstanceId templateId;
 
-	//
-	// Source
 	@JsonProperty("source")
 	@JsonInclude(JsonInclude.Include.NON_ABSENT)
 	private final JSONDocumentPath source;
 
 	@JsonCreator
 	private JSONCreateASIRequest(
-			@JsonProperty("templateId") final int templateId //
-			, @JsonProperty("source") final JSONDocumentPath source //
-	)
+			@JsonProperty("templateId") @Nullable final AttributeSetInstanceId templateId,
+			@JsonProperty("source") @NonNull final JSONDocumentPath source)
 	{
-		super();
-		this.templateId = templateId;
+		this.templateId = templateId != null ? templateId : AttributeSetInstanceId.NONE;
 		this.source = source;
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("templateId", templateId)
-				.add("source", source)
-				.toString();
-	}
-
-	public AttributeSetInstanceId getTemplateId()
-	{
-		return AttributeSetInstanceId.ofRepoIdOrNone(templateId);
-	}
-
-	public DocumentPath getContextDocumentPath()
-	{
-		if (source == null)
-		{
-			throw new IllegalStateException("source is not set for " + this);
-		}
-
-		return source.toSingleDocumentPath();
 	}
 }

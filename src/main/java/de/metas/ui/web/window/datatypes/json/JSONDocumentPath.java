@@ -1,7 +1,6 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.io.Serializable;
-import java.util.Objects;
+import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 
@@ -10,14 +9,15 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.process.ProcessId;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -44,10 +44,9 @@ import lombok.Value;
  * #L%
  */
 
-@SuppressWarnings("serial")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class JSONDocumentPath implements Serializable
+public class JSONDocumentPath
 {
 	public static final JSONDocumentPath ofWindowDocumentPath(@NonNull final DocumentPath documentPath)
 	{
@@ -55,12 +54,12 @@ public class JSONDocumentPath implements Serializable
 		return ofWindowDocumentPath(documentPath, fieldName);
 	}
 
-	public static final JSONDocumentPath ofWindowDocumentPath(@NonNull final DocumentPath documentPath, final String fieldName)
+	public static final JSONDocumentPath ofWindowDocumentPath(@NonNull final DocumentPath documentPath, @Nullable final String fieldName)
 	{
 		final JSONDocumentPathBuilder builder = builder()
-				.fieldName(fieldName) // optional
 				.windowId(documentPath.getWindowId())
-				.documentId(documentPath.getDocumentId());
+				.documentId(documentPath.getDocumentId())
+				.fieldName(fieldName); // optional
 
 		if (documentPath.isRootDocument())
 		{
@@ -79,37 +78,11 @@ public class JSONDocumentPath implements Serializable
 		}
 	}
 
-	public static final DocumentPath toDocumentPathOrNull(final JSONDocumentPath jsonDocumentPath)
+	public static final DocumentPath toDocumentPathOrNull(@Nullable final JSONDocumentPath jsonDocumentPath)
 	{
-		if(jsonDocumentPath == null)
-		{
-			return null;
-		}
-
-		final DocumentPath.Builder builder = DocumentPath.builder();
-
-		// Window
-		if (jsonDocumentPath.getWindowId() != null)
-		{
-			builder.setDocumentType(jsonDocumentPath.getWindowId());
-		}
-		// Process
-		else if (jsonDocumentPath.getProcessId() != null)
-		{
-			builder.setDocumentType(DocumentType.Process, jsonDocumentPath.getProcessId().toDocumentId());
-		}
-		else
-		{
-			throw new AdempiereException("Cannot identify the document type because it's not window nor process")
-					.setParameter("documentPath", jsonDocumentPath);
-		}
-		return builder
-				.setDocumentId(jsonDocumentPath.getDocumentId())
-				.setDetailId(jsonDocumentPath.getTabId())
-				.setRowId(jsonDocumentPath.getRowId())
-				.build();
+		return jsonDocumentPath != null ? jsonDocumentPath.toDocumentPath() : null;
 	}
-	
+
 	public static JSONDocumentPath newWindowRecord(@NonNull final WindowId windowId)
 	{
 		return builder().windowId(windowId).documentId(DocumentId.NEW).build();
@@ -123,6 +96,10 @@ public class JSONDocumentPath implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final ProcessId processId;
 
+	@JsonProperty("viewId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final ViewId viewId;
+
 	//
 	@JsonProperty("documentId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -131,11 +108,6 @@ public class JSONDocumentPath implements Serializable
 	@JsonProperty("tabId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final DetailId tabId;
-	//
-	@JsonProperty("tabid")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Deprecated
-	private final DetailId legacyTabId;
 
 	//
 	@JsonProperty("rowId")
@@ -149,72 +121,76 @@ public class JSONDocumentPath implements Serializable
 	@JsonCreator
 	@Builder
 	private JSONDocumentPath(
-			@JsonProperty("windowId") final WindowId windowId //
-			, @JsonProperty("processId") final ProcessId processId //
-			, @JsonProperty("documentId") final DocumentId documentId //
-			, @JsonProperty("tabId") final DetailId tabId //
-			, @JsonProperty("tabid") @Deprecated final DetailId legacyTabId //
-			, @JsonProperty("rowId") final DocumentId rowId //
-			, @JsonProperty("fieldName") final String fieldName)
+			@JsonProperty("windowId") final WindowId windowId,
+			@JsonProperty("processId") final ProcessId processId,
+			@JsonProperty("viewId") final ViewId viewId,
+			@JsonProperty("documentId") final DocumentId documentId,
+			@JsonProperty("tabId") final DetailId tabId,
+			@JsonProperty("rowId") final DocumentId rowId,
+			@JsonProperty("fieldName") final String fieldName)
 	{
-		if (windowId == null && processId == null)
+		if (windowId != null)
 		{
-			throw new IllegalArgumentException("windowId or processId shall be set");
+			Check.assumeNull(processId, "processId shall be null when windowId is set");
+			Check.assumeNull(viewId, "viewId shall be null when windowId is set");
+			Check.assumeNotNull(documentId, "Parameter documentId is not null");
+
+			this.windowId = windowId;
+			this.processId = null;
+			this.viewId = null;
+
+			this.documentId = documentId;
+			this.tabId = tabId;
+			this.rowId = rowId;
 		}
-		else if (windowId != null && processId != null)
+		else if (processId != null)
 		{
-			throw new IllegalArgumentException("windowId or processId shall be set but not all of them");
+			Check.assumeNull(windowId, "windowId shall be null when processId is set");
+			Check.assumeNull(viewId, "viewId shall be null when processId is set");
+
+			this.windowId = null;
+			this.processId = processId;
+			this.viewId = null;
+
+			this.documentId = documentId;
+			this.tabId = null;
+			this.rowId = null;
+		}
+		else if (viewId != null)
+		{
+			Check.assumeNull(windowId, "windowId shall be null when viewId is set");
+			Check.assumeNull(processId, "processId shall be null when viewId is set");
+			Check.assumeNotNull(rowId, "Parameter rowId is not null");
+
+			this.windowId = null;
+			this.processId = null;
+			this.viewId = viewId;
+
+			this.documentId = null;
+			this.tabId = null;
+			this.rowId = rowId;
 		}
 		else
 		{
-			this.windowId = windowId;
-			this.processId = processId;
+			throw new AdempiereException("At least windowId or processId or viewId shall be set");
 		}
 
-		this.documentId = documentId;
-
-		this.tabId = extractTabId(tabId, legacyTabId);
-		this.legacyTabId = this.tabId;
-		this.rowId = rowId;
 		this.fieldName = fieldName;
 	}
 
-	private static final DetailId extractTabId(final DetailId tabId, final DetailId legacyTabId)
+	public boolean isWindow()
 	{
-		if (tabId == legacyTabId)
-		{
-			return tabId;
-		}
-		else if (tabId != null && legacyTabId == null)
-		{
-			return tabId;
-		}
-		else if (tabId == null && legacyTabId != null)
-		{
-			return legacyTabId;
-		}
-		else if (Objects.equals(tabId, legacyTabId))
-		{
-			return tabId;
-		}
-		else
-		{
-			throw new IllegalArgumentException("tabId and tabid(legacy) does not match");
-		}
+		return windowId != null;
 	}
 
-	@Override
-	public String toString()
+	public boolean isProcess()
 	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("windowId", windowId)
-				.add("processId", processId)
-				.add("documentId", documentId)
-				.add("tabId", tabId)
-				.add("rowId", rowId)
-				.add("fieldName", fieldName)
-				.toString();
+		return processId != null;
+	}
+
+	public boolean isView()
+	{
+		return viewId != null;
 	}
 
 	public DocumentPath toSingleDocumentPath()
@@ -231,5 +207,32 @@ public class JSONDocumentPath implements Serializable
 		{
 			throw new IllegalStateException("Cannot create single document path from " + this);
 		}
+	}
+
+	private DocumentPath toDocumentPath()
+	{
+		final DocumentPath.Builder builder = DocumentPath.builder();
+
+		// Window
+		if (windowId != null)
+		{
+			builder.setDocumentType(windowId);
+		}
+		// Process
+		else if (processId != null)
+		{
+			builder.setDocumentType(DocumentType.Process, processId.toDocumentId());
+		}
+		else
+		{
+			throw new AdempiereException("Cannot identify the document type because it's not window nor process")
+					.setParameter("documentPath", this);
+		}
+
+		return builder
+				.setDocumentId(documentId)
+				.setDetailId(tabId)
+				.setRowId(rowId)
+				.build();
 	}
 }

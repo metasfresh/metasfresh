@@ -48,8 +48,7 @@ import lombok.NonNull;
 @Service
 public class MaterialCockpitViewsIndexStorage implements IViewsIndexStorage
 {
-
-	private final IViewsIndexStorage defaultViewsRepositoryStorage = new DefaultViewsRepositoryStorage();;
+	private final DefaultViewsRepositoryStorage defaultViewsRepositoryStorage = new DefaultViewsRepositoryStorage();
 
 	public MaterialCockpitViewsIndexStorage()
 	{
@@ -77,14 +76,14 @@ public class MaterialCockpitViewsIndexStorage implements IViewsIndexStorage
 	}
 
 	@Override
-	public void put(IView view)
+	public void put(final IView view)
 	{
 		defaultViewsRepositoryStorage.put(view);
 
 	}
 
 	@Override
-	public IView getByIdOrNull(ViewId viewId)
+	public IView getByIdOrNull(final ViewId viewId)
 	{
 		return defaultViewsRepositoryStorage.getByIdOrNull(viewId);
 	}
@@ -102,7 +101,7 @@ public class MaterialCockpitViewsIndexStorage implements IViewsIndexStorage
 	}
 
 	@Override
-	public void invalidateView(ViewId viewId)
+	public void invalidateView(final ViewId viewId)
 	{
 		defaultViewsRepositoryStorage.invalidateView(viewId);
 	}

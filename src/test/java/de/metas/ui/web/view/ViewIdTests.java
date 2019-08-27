@@ -2,13 +2,19 @@ package de.metas.ui.web.view;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
 import java.util.Random;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.JsonObjectMapperHolder;
 import de.metas.ui.web.window.datatypes.WindowId;
 
 /*
@@ -36,6 +42,14 @@ import de.metas.ui.web.window.datatypes.WindowId;
 public class ViewIdTests
 {
 	private final Random random = new Random(System.currentTimeMillis());
+
+	private ObjectMapper jsonObjectMapper;
+
+	@Before
+	public void init()
+	{
+		jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+	}
 
 	@Test
 	public void test_deriveWithWindowId_StandardCase()
@@ -188,5 +202,42 @@ public class ViewIdTests
 	{
 		final ViewId viewId = ViewId.ofViewIdString("packingHUs-351a5c70a1ff4d4fb2852468d6b5b01b-1-2-3");
 		assertThat(viewId.getOtherParts()).isEqualTo(ImmutableList.of("1", "2", "3"));
+	}
+
+	@Test
+	public void testSerializeDeserialize()
+	{
+		testSerializeDeserialize(ViewId.ofParts(WindowId.fromJson("windowId"), "viewIdPart"));
+		testSerializeDeserialize(ViewId.ofParts(WindowId.fromJson("windowId"), "viewIdPart", "otherPart1", "otherPart2"));
+	}
+
+	private void testSerializeDeserialize(final ViewId viewId)
+	{
+		final ViewId viewIdDeserialized = fromJson(toJson(viewId));
+		assertThat(viewIdDeserialized).isEqualTo(viewId);
+	}
+
+	private String toJson(final ViewId viewId)
+	{
+		try
+		{
+			return jsonObjectMapper.writeValueAsString(viewId);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new AdempiereException("Failed serializing " + viewId, e);
+		}
+	}
+
+	private ViewId fromJson(final String json)
+	{
+		try
+		{
+			return jsonObjectMapper.readValue(json, ViewId.class);
+		}
+		catch (final IOException e)
+		{
+			throw new AdempiereException("Failed deserializing:\n" + json, e);
+		}
 	}
 }

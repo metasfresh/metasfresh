@@ -3,6 +3,7 @@ package de.metas.ui.web.view;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 import de.metas.ui.web.pattribute.ASIDocument;
@@ -54,9 +55,15 @@ public class ASIViewRowAttributesProvider implements IViewRowAttributesProvider
 		return attributesById.computeIfAbsent(asiId, this::createAttributes);
 	}
 
-	private final ASIViewRowAttributes createAttributes(final DocumentId asiId)
+	private final ASIViewRowAttributes createAttributes(final DocumentId asiDocumentId)
 	{
-		final ASIDocument asiDoc = asiRepository.loadReadonly(AttributeSetInstanceId.ofRepoIdOrNull(asiId.toInt()));
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNull(asiDocumentId.toInt());
+		if (asiId == null)
+		{
+			throw new AdempiereException("Invalid ASI document ID: " + asiDocumentId);
+		}
+
+		final ASIDocument asiDoc = asiRepository.loadReadonly(asiId);
 		final ASILayout asiLayout = asiDoc.getLayout();
 		return new ASIViewRowAttributes(asiDoc, asiLayout);
 	}

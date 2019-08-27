@@ -99,7 +99,12 @@ public interface IView
 		return true;
 	}
 
-	default void close(final ViewCloseReason reason)
+	default void close(final ViewCloseAction closeAction)
+	{
+		// nothing
+	}
+	
+	default void afterDestroy()
 	{
 		// nothing
 	}

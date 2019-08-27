@@ -76,8 +76,7 @@ public class AddressRepository
 				.getEntityDescriptor();
 
 		final Document addressDoc = Document.builder(entityDescriptor)
-				.initializeAsNewDocument(nextAddressDocId::getAndIncrement, VERSION_DEFAULT)
-				.build();
+				.initializeAsNewDocument(nextAddressDocId::getAndIncrement, VERSION_DEFAULT);
 
 		final I_C_Location fromLocation = fromC_Location_ID <= 0 ? null : InterfaceWrapperHelper.create(Env.getCtx(), fromC_Location_ID, I_C_Location.class, ITrx.TRXNAME_ThreadInherited);
 		if (fromLocation != null)
