@@ -122,6 +122,7 @@ describe('Create a purchase order and Material Receipts', function() {
 
   it('Visit referenced Material Receipt Candidates', function() {
     cy.openReferencedDocuments('M_ReceiptSchedule');
+    cy.waitForSaveIndicator();
     cy.expectNumberOfRows(2);
   });
 
@@ -150,6 +151,7 @@ describe('Create a purchase order and Material Receipts', function() {
     applyFilters();
 
     cy.selectNthRow(0).click();
+    cy.waitForSaveIndicator();
     cy.executeQuickAction('WEBUI_M_HU_MoveToDirectWarehouse', false, false);
 
     clearNotFrequentFilters();
