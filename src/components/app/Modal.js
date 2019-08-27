@@ -29,7 +29,6 @@ import OverlayField from './OverlayField';
  * @module Modal
  * @extends Component
  */
-
 class Modal extends Component {
   mounted = false;
 
@@ -690,7 +689,7 @@ class Modal extends Component {
  * @prop {shape} data
  * @prop {string} dataId
  * @prop {func} dispatch Dispatch function
- * @prop {*} indicator
+ * @prop {string} indicator
  * @prop {shape} layout
  * @prop {bool} isAdvanced
  * @prop {bool} isDocumentNotSaved
