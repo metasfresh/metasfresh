@@ -193,8 +193,7 @@ Cypress.Commands.add('selectOffsetDateViaPicker', (fieldName, dayOffset, modal) 
 Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rewriteUrl, noRequest) => {
   const aliasName = `writeIntoStringField-${fieldName}-${new Date().getTime()}`;
   const expectedPatchValue = removeSubstringsWithCurlyBrackets(stringValue);
-  // in the default pattern we want to match URLs that do *not* end with "/NEW"
-  const patchUrlPattern = rewriteUrl || '/rest/api/window';
+  const patchUrlPattern = rewriteUrl || RewriteURL.Generic; // todo @TheBestPessimist: get rid of rewriteUrl parameter everywhere and just use "generic". it's useless in the way we're using it now.
   cy.log(
     `writeIntoStringField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}; patchUrlPattern=${patchUrlPattern}`
   );
