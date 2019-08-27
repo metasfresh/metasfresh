@@ -195,6 +195,7 @@ class TableCell extends PureComponent {
       onClickOutside,
       isGerman,
     } = this.props;
+
     const docId = `${this.props.docId}`;
     const { tooltipToggled } = this.state;
     const tdValue = !isEdited
@@ -241,6 +242,15 @@ class TableCell extends PureComponent {
       };
     }
 
+    let entityEffective;
+    if (viewId) {
+      entityEffective = 'documentView';
+    } else if (mainTable) {
+      entityEffective = 'window';
+    } else {
+      entityEffective = entity;
+    }
+
     return (
       <td
         tabIndex={modalVisible ? -1 : tabIndex}
@@ -266,7 +276,7 @@ class TableCell extends PureComponent {
         {isEdited ? (
           <MasterWidget
             {...item}
-            entity={mainTable ? 'window' : entity}
+            entity={entityEffective}
             dateFormat={isDateField}
             dataId={mainTable ? null : docId}
             widgetData={widgetData}
