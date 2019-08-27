@@ -1,26 +1,13 @@
 package org.compiere.impexp.process;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.IImportProcessFactory;
-import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.SpringContextHolder;
-import org.compiere.impexp.DataImportConfig;
 import org.compiere.impexp.DataImportConfigId;
-import org.compiere.impexp.DataImportConfigRepository;
-import org.compiere.impexp.FileImportReader;
-import org.compiere.impexp.ImpDataContext;
-import org.compiere.impexp.ImpDataLine;
-import org.compiere.impexp.ImpFormat;
-import org.compiere.impexp.ImpFormatRepository;
-import org.compiere.impexp.ImpDataLineStatus;
+import org.compiere.impexp.DataImportRequest;
+import org.compiere.impexp.DataImportService;
 import org.compiere.model.I_AD_AttachmentEntry;
-import org.compiere.util.Env;
+import org.fusesource.hawtbuf.ByteArrayInputStream;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
@@ -30,8 +17,6 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -58,21 +43,10 @@ import lombok.NonNull;
 public class C_DataImport_ImportAttachment extends JavaProcess implements IProcessPrecondition
 {
 	private final transient AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
-	private final transient ImpFormatRepository importFormatsRepo = SpringContextHolder.instance.getBean(ImpFormatRepository.class);
-	private final transient DataImportConfigRepository dataImportConfigRepo = SpringContextHolder.instance.getBean(DataImportConfigRepository.class);
-	private final transient IImportProcessFactory importProcessFactory = Services.get(IImportProcessFactory.class);
+	private final transient DataImportService dataImportService = SpringContextHolder.instance.getBean(DataImportService.class);
 
-	private static final Charset CHARSET = Charset.forName("UTF-8");
-
-	@Param(parameterName = I_AD_AttachmentEntry.COLUMNNAME_AD_AttachmentEntry_ID)
-	private int p_AD_AttachmentEntry_ID;
-
-	private DataImportConfig _dataImportConfig;
-	private ImpFormat _impFormat;
-
-	private int countImported = 0;
-	private int countError = 0;
-	private IAsyncImportProcessBuilder _asyncImportProcessBuilder;
+	@Param(parameterName = I_AD_AttachmentEntry.COLUMNNAME_AD_AttachmentEntry_ID, mandatory = true)
+	private AttachmentEntryId p_AD_AttachmentEntry_ID;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -92,23 +66,22 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 	@Override
 	protected String doIt()
 	{
-		final ImpDataContext ctx = ImpDataContext.builder()
+		final String result = dataImportService.importData(DataImportRequest.builder()
+				.data(getData())
+				.dataImportConfigId(getDataImportConfigId())
 				.clientId(getClientId())
 				.orgId(getOrgId())
 				.userId(getUserId())
-				.build();
-
-		streamImpDataLines().forEach(line -> importLine(ctx, line));
-		completeAsyncImportProcessBuilder();
+				.build());
 
 		deleteAttachmentEntry();
 
-		return "@IsImportScheduled@ #" + countImported + ", @IsError@ #" + countError;
+		return result;
 	}
 
-	private boolean isManualImport()
+	private AttachmentEntryId getAttachmentEntryId()
 	{
-		return getImpFormat().isManualImport();
+		return p_AD_AttachmentEntry_ID;
 	}
 
 	private DataImportConfigId getDataImportConfigId()
@@ -116,63 +89,10 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 		return DataImportConfigId.ofRepoId(getRecord_ID());
 	}
 
-	private DataImportConfig getDataImportConfig()
+	private Resource getData()
 	{
-		if (_dataImportConfig == null)
-		{
-			_dataImportConfig = dataImportConfigRepo.getById(getDataImportConfigId());
-		}
-		return _dataImportConfig;
-	}
-
-	private ImpFormat getImpFormat()
-	{
-		ImpFormat impFormat = _impFormat;
-		if (impFormat == null)
-		{
-			final DataImportConfig dataImportConfig = getDataImportConfig();
-			impFormat = _impFormat = importFormatsRepo.getById(dataImportConfig.getImpFormatId());
-		}
-		return impFormat;
-	}
-
-	private Stream<ImpDataLine> streamImpDataLines()
-	{
-		final ImpFormat impFormat = getImpFormat();
-		final AtomicInteger nextLineNo = new AtomicInteger(1);
-		final DataImportConfigId dataImportConfigId = getDataImportConfigId();
-
-		return streamDataLineStrings()
-				.map(lineStr -> ImpDataLine.builder()
-						.impFormat(impFormat)
-						.fileLineNo(nextLineNo.getAndIncrement())
-						.lineStr(lineStr)
-						.dataImportConfigId(dataImportConfigId)
-						.build());
-	}
-
-	private Stream<String> streamDataLineStrings()
-	{
-		try
-		{
-			if (getImpFormat().isMultiLine())
-			{
-				return FileImportReader.readMultiLines(getData(), getCharset()).stream();
-			}
-			else
-			{
-				return FileImportReader.readRegularLines(getData(), getCharset()).stream();
-			}
-		}
-		catch (final IOException ex)
-		{
-			throw new AdempiereException("Failed reading attachment", ex);
-		}
-	}
-
-	private byte[] getData()
-	{
-		return attachmentEntryService.retrieveData(getAttachmentEntryId());
+		final byte[] data = attachmentEntryService.retrieveData(getAttachmentEntryId());
+		return new InputStreamResource(new ByteArrayInputStream(data));
 	}
 
 	private void deleteAttachmentEntry()
@@ -181,74 +101,4 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 		attachmentEntryService.unattach(getDataImportConfigId().toRecordRef(), attachmentEntry);
 	}
 
-	private AttachmentEntryId getAttachmentEntryId()
-	{
-		return AttachmentEntryId.ofRepoId(p_AD_AttachmentEntry_ID);
-	}
-
-	public Charset getCharset()
-	{
-		return CHARSET;
-	}
-
-	private void importLine(
-			@NonNull final ImpDataContext ctx,
-			@NonNull final ImpDataLine line)
-	{
-		line.importToDB(ctx);
-
-		if (isManualImport())
-		{
-			// nothing to do
-			return;
-		}
-
-		final ImpDataLineStatus importStatus = line.getImportStatus();
-		if (ImpDataLineStatus.ImportPrepared == importStatus)
-		{
-			countImported++;
-			scheduleToImport(line);
-		}
-		else if (ImpDataLineStatus.Error == importStatus)
-		{
-			countError++;
-		}
-	}
-
-	private void scheduleToImport(final ImpDataLine line)
-	{
-		// Skip those which were not prepared yet
-		final ITableRecordReference importRecordRef = line.getImportRecordRef();
-		if (importRecordRef == null)
-		{
-			return;
-		}
-
-		// Skip those already scheduled
-		if (ImpDataLineStatus.ImportScheduled == line.getImportStatus())
-		{
-			return;
-		}
-
-		//
-		if (_asyncImportProcessBuilder == null)
-		{
-			_asyncImportProcessBuilder = importProcessFactory
-					.newAsyncImportProcessBuilder()
-					.setCtx(Env.getCtx())
-					.setImportTableName(getImpFormat().getTableName());
-		}
-		_asyncImportProcessBuilder.addImportRecord(importRecordRef);
-	}
-
-	private void completeAsyncImportProcessBuilder()
-	{
-		final IAsyncImportProcessBuilder asyncImportProcessBuilder = _asyncImportProcessBuilder;
-		if (asyncImportProcessBuilder != null)
-		{
-			asyncImportProcessBuilder.buildAndEnqueue();
-		}
-
-		_asyncImportProcessBuilder = null;
-	}
 }
