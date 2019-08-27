@@ -75,10 +75,10 @@ stage('Set versions and build metasfresh-webui-frontend')
 	}
 	else 
 	{
-		withEnv(["JEST_JUNIT_OUTPUT=./jest-test-results.xml"]) {
+		//withEnv(["JEST_JUNIT_OUTPUT=./jest-test-results.xml"]) {
 			sh 'yarn test --ci --debug --reporters="default" --reporters="jest-junit"'
-		}
-		junit './jest-test-results.xml'
+		//}
+		junit './junit-results.xml'
 	}
 				
 	sh "webpack --config webpack.prod.js --bail --display-error-details"
