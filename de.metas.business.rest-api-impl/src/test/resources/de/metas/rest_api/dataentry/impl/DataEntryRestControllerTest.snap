@@ -663,3 +663,96 @@ de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.fieldNamesAreNotCha
     "status": 200
   }
 ]
+
+
+de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.badRecordIdGivesEmptyResult=[
+  {
+    "status": 404,
+    "error": "No dataentry for windowId '123' and recordId '5'."
+  }
+]
+
+
+de.metas.rest_api.dataentry.impl.DataEntryRestControllerTest.fieldNamesAreNotChanged=[
+  {
+    "result": {
+      "tabs": [
+        {
+          "id": 100003,
+          "caption": "tabRecord1_tabName",
+          "description": "tabRecord1_description",
+          "subtabs": [
+            {
+              "id": 100009,
+              "caption": "subTabRecord1_2_tabName",
+              "description": "subTabRecord1_2_description - seqNo10",
+              "sections": [
+                {
+                  "id": 100010,
+                  "caption": "sectionRecord1_2_1_sectionName",
+                  "description": "sectionRecord1_2_1_description - seqNo20",
+                  "initially_closed": true,
+                  "lines": [
+                    {
+                      "fields": [
+                        {
+                          "id": 100012,
+                          "caption": "fieldRecord1_2_1_1_1_name",
+                          "description": "fieldRecord1_2_1_1_1_description - seqNo10",
+                          "type": "DATE",
+                          "mandatory": false
+                        },
+                        {
+                          "id": 100013,
+                          "caption": "fieldRecord1_2_1_1_2_name",
+                          "description": "fieldRecord1_2_1_1_2_description",
+                          "type": "LIST",
+                          "mandatory": false,
+                          "list_values": [
+                            {
+                              "id": 100015,
+                              "name": "listValueRecord1_2_1_1_2_2_name",
+                              "description": "listValueRecord1_2_1_1_2_2_description - seqNo10"
+                            },
+                            {
+                              "id": 100014,
+                              "name": "listValueRecord1_2_1_1_2_1_name",
+                              "description": "listValueRecord1_2_1_1_2_1_description - seqNo20"
+                            }
+                          ]
+                        },
+                        {
+                          "id": 100016,
+                          "caption": "fieldRecord1_2_1_1_3_name",
+                          "description": "fieldRecord1_2_1_1_3_description",
+                          "type": "YESNO",
+                          "mandatory": false
+                        },
+                        {
+                          "id": 100017,
+                          "caption": "fieldRecord1_2_1_1_4_name",
+                          "description": "fieldRecord1_2_1_1_4_description",
+                          "type": "TEXT",
+                          "mandatory": true
+                        },
+                        {
+                          "id": 100018,
+                          "caption": "fieldRecord1_2_1_1_5_name",
+                          "description": "fieldRecord1_2_1_1_5_description",
+                          "type": "LONG_TEXT",
+                          "mandatory": true,
+                          "value": "someText"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "status": 200
+  }
+]

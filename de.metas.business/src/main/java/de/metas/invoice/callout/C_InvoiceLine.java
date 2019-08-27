@@ -36,7 +36,7 @@ import de.metas.invoice.IInvoiceLineBL;
 import de.metas.util.Services;
 
 @Callout(I_C_InvoiceLine.class)
-@Component("de.metas.invoice.callout.C_InvoiceLine")
+@Component
 public class C_InvoiceLine
 {
 

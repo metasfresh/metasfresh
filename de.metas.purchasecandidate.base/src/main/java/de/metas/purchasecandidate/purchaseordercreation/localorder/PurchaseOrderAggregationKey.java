@@ -1,6 +1,7 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
 import java.time.ZonedDateTime;
+import java.util.Comparator;
 
 import org.adempiere.warehouse.WarehouseId;
 
@@ -36,8 +37,18 @@ import lombok.Value;
 
 @Value
 @Builder
-/* package */ final class PurchaseOrderAggregationKey
+public final class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggregationKey>
 {
+	private final OrgId orgId;
+	private final WarehouseId warehouseId;
+	private final BPartnerId vendorId;
+	private final ZonedDateTime datePromised;
+
+	private static final Comparator<PurchaseOrderAggregationKey> COMPARATOR = Comparator.comparing(PurchaseOrderAggregationKey::getOrgId)
+			.thenComparing(PurchaseOrderAggregationKey::getWarehouseId)
+			.thenComparing(PurchaseOrderAggregationKey::getVendorId)
+			.thenComparing(PurchaseOrderAggregationKey::getDatePromised);
+
 	public static PurchaseOrderAggregationKey fromPurchaseOrderItem(@NonNull final PurchaseOrderItem purchaseOrderItem)
 	{
 		return PurchaseOrderAggregationKey.builder()
@@ -63,8 +74,9 @@ import lombok.Value;
 		return (PurchaseOrderAggregationKey)obj;
 	}
 
-	private final OrgId orgId;
-	private final WarehouseId warehouseId;
-	private final BPartnerId vendorId;
-	private final ZonedDateTime datePromised;
+	@Override
+	public int compareTo(@NonNull final PurchaseOrderAggregationKey other)
+	{
+		return COMPARATOR.compare(this, other);
+	}
 }

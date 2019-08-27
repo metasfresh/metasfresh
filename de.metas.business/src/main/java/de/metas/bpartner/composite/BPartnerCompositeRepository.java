@@ -4,6 +4,7 @@ import static de.metas.util.Check.assumeGreaterThanZero;
 import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.isEmpty;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOrNew;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.sql.Timestamp;
@@ -25,6 +26,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.table.LogEntriesRepository;
+import org.adempiere.ad.table.LogEntriesRepository.LogEntriesQuery;
 import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.exceptions.AdempiereException;
@@ -62,7 +64,6 @@ import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
-import de.metas.location.LocationId;
 import de.metas.location.impl.PostalQueryFilter;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
@@ -422,8 +423,8 @@ public class BPartnerCompositeRepository
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_C_BPartner> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner.class)
 				.addOnlyContextClient()
-				//.addOnlyActiveRecordsFilter() also load inactive records!
-				;
+		// .addOnlyActiveRecordsFilter() also load inactive records!
+		;
 
 		if (!query.getOnlyOrgIds().isEmpty())
 		{
@@ -538,7 +539,7 @@ public class BPartnerCompositeRepository
 
 		final List<I_AD_User> contactRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User.class)
-				// .addOnlyActiveRecordsFilter()  also load inactive records!
+				// .addOnlyActiveRecordsFilter() also load inactive records!
 				.addOnlyContextClient()
 				.addInArrayFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bPartnerIds)
 				.create()
@@ -548,7 +549,7 @@ public class BPartnerCompositeRepository
 
 		final List<I_C_BPartner_Location> bPartnerLocationRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner_Location.class)
-				// .addOnlyActiveRecordsFilter()  also load inactive records!
+				// .addOnlyActiveRecordsFilter() also load inactive records!
 				.addOnlyContextClient()
 				.addInArrayFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bPartnerIds)
 				.create()
@@ -559,7 +560,7 @@ public class BPartnerCompositeRepository
 		final ImmutableList<Integer> locationIds = CollectionUtils.extractDistinctElements(bPartnerLocationRecords, I_C_BPartner_Location::getC_Location_ID);
 		final List<I_C_Location> locationRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Location.class)
-				// .addOnlyActiveRecordsFilter()  also load inactive records!
+				// .addOnlyActiveRecordsFilter() also load inactive records!
 				.addOnlyContextClient()
 				.addInArrayFilter(I_C_Location.COLUMNNAME_C_Location_ID, locationIds)
 				.create()
@@ -587,8 +588,12 @@ public class BPartnerCompositeRepository
 		final ImmutableMap<Integer, I_C_Country> countryId2Country = Maps.uniqueIndex(countryRecords, I_C_Country::getC_Country_ID);
 		countryRecords.forEach(countryRecord -> allTableRecordRefs.add(TableRecordReference.of(countryRecord)));
 
+		final LogEntriesQuery logEntriesQuery = LogEntriesQuery.builder()
+				.tableRecordReferences(allTableRecordRefs)
+				.followLocationIdChanges(true)
+				.build();
 		final ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> //
-		recordRef2LogEntries = recordChangeLogRepository.getLogEntriesForRecordReferences(allTableRecordRefs);
+		recordRef2LogEntries = recordChangeLogRepository.getLogEntriesForRecordReferences(logEntriesQuery);
 
 		return new CompositeRelatedRecords(
 				bpartnerId2Users,
@@ -868,19 +873,28 @@ public class BPartnerCompositeRepository
 			locationType.getShipToDefault().ifPresent(b -> bpartnerLocationRecord.setIsShipToDefault(b));
 		}
 
-		final I_C_Location locationRecord = loadOrNew(LocationId.ofRepoIdOrNull(bpartnerLocationRecord.getC_Location_ID()), I_C_Location.class);
+		boolean anyLocationChange = false;
+
+		// C_Location is immutable; never update an existing record, but create a new one
+		final I_C_Location locationRecord = newInstance(I_C_Location.class);
+
+		anyLocationChange = anyLocationChange || bpartnerLocation.isActiveChanged();
 		locationRecord.setIsActive(bpartnerLocation.isActive());
 
+		anyLocationChange = anyLocationChange || bpartnerLocation.isAddress1Changed();
 		locationRecord.setAddress1(bpartnerLocation.getAddress1());
+
+		anyLocationChange = anyLocationChange || bpartnerLocation.isAddress2Changed();
 		locationRecord.setAddress2(bpartnerLocation.getAddress2());
+
+		anyLocationChange = anyLocationChange || bpartnerLocation.isAddress3Changed();
 		locationRecord.setAddress3(bpartnerLocation.getAddress3());
+
+		anyLocationChange = anyLocationChange || bpartnerLocation.isAddress4Changed();
 		locationRecord.setAddress4(bpartnerLocation.getAddress4());
 
-		if (isEmpty(bpartnerLocation.getCountryCode(), true))
-		{
-			locationRecord.setC_Country(null);
-		}
-		else
+		anyLocationChange = anyLocationChange || bpartnerLocation.isCountryCodeChanged();
+		if (!isEmpty(bpartnerLocation.getCountryCode(), true))
 		{
 			final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 			final CountryId countryId = countryDAO.getCountryIdByCountryCode(bpartnerLocation.getCountryCode());
@@ -888,6 +902,7 @@ public class BPartnerCompositeRepository
 		}
 
 		boolean postalDataSetFromPostalRecord = false;
+		anyLocationChange = anyLocationChange || bpartnerLocation.isPostalChanged();
 		if (!isEmpty(bpartnerLocation.getPostal(), true))
 		{
 			final IQueryBuilder<I_C_Postal> postalQueryBuilder = Services.get(IQueryBL.class)
@@ -948,7 +963,6 @@ public class BPartnerCompositeRepository
 		bpartnerLocationRecord.setGLN(bpartnerLocation.getGln());
 		// bpartnerLocation.getId() // id is only for lookup and won't be updated later
 
-		locationRecord.setPOBox(bpartnerLocation.getPoBox());
 		if (!postalDataSetFromPostalRecord)
 		{
 			locationRecord.setPostal(bpartnerLocation.getPostal());
@@ -956,12 +970,16 @@ public class BPartnerCompositeRepository
 			locationRecord.setRegionName(bpartnerLocation.getRegion());
 		}
 
-		saveRecord(locationRecord);
+		anyLocationChange = anyLocationChange || bpartnerLocation.isPoBoxChanged();
+		locationRecord.setPOBox(bpartnerLocation.getPoBox());
 
-		bpartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
+		if (anyLocationChange)
+		{
+			saveRecord(locationRecord);
+			bpartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
+		}
 
 		Services.get(IBPartnerBL.class).setAddress(bpartnerLocationRecord);
-
 		saveRecord(bpartnerLocationRecord);
 
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID(), bpartnerLocationRecord.getC_BPartner_Location_ID());

@@ -34,7 +34,7 @@ import lombok.NonNull;
  */
 
 @Interceptor(I_C_BPartner.class)
-@Component("de.metas.contracts.interceptor.C_BPartner")
+@Component
 public class C_BPartner
 {
 

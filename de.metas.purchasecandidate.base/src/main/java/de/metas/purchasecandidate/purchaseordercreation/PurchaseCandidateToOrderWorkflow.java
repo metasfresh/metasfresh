@@ -3,6 +3,7 @@ package de.metas.purchasecandidate.purchaseordercreation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -21,6 +22,7 @@ import de.metas.logging.LogManager;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.purchaseordercreation.localorder.PurchaseOrderAggregationKey;
 import de.metas.purchasecandidate.purchaseordercreation.localorder.PurchaseOrderFromItemsAggregator;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvoker;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvokerFactory;
@@ -80,14 +82,17 @@ public class PurchaseCandidateToOrderWorkflow
 		this.purchaseCandidateRepo = purchaseCandidateRepo;
 		this.vendorGatewayInvokerFactory = vendorGatewayInvokerFactory;
 		this.purchaseOrderFromItemsAggregator = purchaseOrderFromItemsAggregator;
-	};
+	}
 
 	public void executeForPurchaseCandidates(@NonNull final List<PurchaseCandidate> purchaseCandidates)
 	{
 		final BPartnerId vendorId = assertValidAndExtractVendorId(purchaseCandidates);
 		try
 		{
-			createPurchaseOrder0(vendorId, purchaseCandidates);
+			final ArrayList<PurchaseCandidate> purchaseCandidatesSorted = new ArrayList<>(purchaseCandidates);
+			Collections.sort(purchaseCandidatesSorted, Comparator.comparing(PurchaseOrderAggregationKey::fromPurchaseCandidate));
+
+			createPurchaseOrder0(vendorId, purchaseCandidatesSorted);
 		}
 		catch (final Throwable t)
 		{

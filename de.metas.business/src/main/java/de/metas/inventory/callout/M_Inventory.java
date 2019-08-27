@@ -12,7 +12,7 @@ import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.util.Services;
 
 @Callout(I_M_Inventory.class)
-@Component("de.metas.inventory.callout.M_Inventory")
+@Component
 public class M_Inventory
 {
 	public M_Inventory()

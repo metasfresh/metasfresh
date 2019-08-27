@@ -36,7 +36,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  */
 @Callout(I_MKTG_ContactPerson.class)
-@Component("de.metas.letter.interceptor.MKTG_ContactPerson")
+@Component
 public class MKTG_ContactPerson
 {
 	public MKTG_ContactPerson()

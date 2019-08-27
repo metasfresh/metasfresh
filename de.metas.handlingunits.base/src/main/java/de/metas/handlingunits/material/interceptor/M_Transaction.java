@@ -39,7 +39,7 @@ import lombok.NonNull;
  * #L%
  */
 @Interceptor(I_M_Transaction.class)
-@Component("de.metas.handlingunits.material.interceptor.M_Transaction")
+@Component
 public class M_Transaction
 {
 	private final PostMaterialEventService materialEventService;

@@ -5,7 +5,6 @@ import java.math.BigDecimal;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_OrderLine;
-import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
 import de.metas.pricing.IEditablePricingContext;
@@ -17,6 +16,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
@@ -78,12 +78,12 @@ public class GroupCompensationLineCreateRequestFactory
 
 	private static final GroupCompensationType extractGroupCompensationType(final I_M_Product product)
 	{
-		return GroupCompensationType.ofAD_Ref_List_Value(Util.coalesce(product.getGroupCompensationType(), X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount));
+		return GroupCompensationType.ofAD_Ref_List_Value(CoalesceUtil.coalesce(product.getGroupCompensationType(), X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount));
 	}
 
 	private static final GroupCompensationAmtType extractGroupCompensationAmtType(final I_M_Product product)
 	{
-		return GroupCompensationAmtType.ofAD_Ref_List_Value(Util.coalesce(product.getGroupCompensationAmtType(), X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent));
+		return GroupCompensationAmtType.ofAD_Ref_List_Value(CoalesceUtil.coalesce(product.getGroupCompensationAmtType(), X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent));
 	}
 
 	private Percent calculateDefaultDiscountPercentage(final GroupTemplateLine templateLine, final Group group)

@@ -48,7 +48,6 @@ import org.adempiere.util.logging.LoggingHelper;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
@@ -82,6 +81,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.exceptions.ServiceConnectionException;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -161,16 +161,11 @@ import lombok.NonNull;
 				trxManager.run(
 						trxNamePrefix,
 						trxRunConfig,
-						new TrxRunnable()
-						{
-							@Override
-							public void run(final String trxName_IGNORED) throws Exception
-							{
-								// ignore the concrete trxName param,
-								// by default everything shall use the thread inherited trx
-								final Result result = processWorkpackage(ITrx.TRXNAME_ThreadInherited);
-								resultRef.setValue(result);
-							}
+						(TrxRunnable)trxName_IGNORED -> {
+							// ignore the concrete trxName param,
+							// by default everything shall use the thread inherited trx
+							final Result result = processWorkpackage(ITrx.TRXNAME_ThreadInherited);
+							resultRef.setValue(result);
 						});
 			}
 			//
@@ -487,7 +482,7 @@ import lombok.NonNull;
 		else
 		{
 			final I_C_Queue_PackageProcessor packageProcessor = queueBlock.getC_Queue_PackageProcessor();
-			processorName = Util.coalesce(packageProcessor.getInternalName(), packageProcessor.getClassname());
+			processorName = CoalesceUtil.coalesce(packageProcessor.getInternalName(), packageProcessor.getClassname());
 		}
 		final String msg = StringUtils.formatMessage("Skipped while processing workpackage by processor {}; workpackage={}", processorName, workPackage);
 

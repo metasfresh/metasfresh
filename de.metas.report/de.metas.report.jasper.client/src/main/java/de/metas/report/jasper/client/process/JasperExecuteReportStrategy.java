@@ -2,7 +2,6 @@ package de.metas.report.jasper.client.process;
 
 import javax.annotation.Nullable;
 
-import org.compiere.util.Util;
 import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.report.jasper.OutputType;
@@ -10,6 +9,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.report.ExecuteReportStrategy;
 import de.metas.report.jasper.client.JRClient;
 import de.metas.util.Check;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /*
@@ -47,7 +47,7 @@ public class JasperExecuteReportStrategy implements ExecuteReportStrategy
 			@Nullable final OutputType outputType)
 	{
 		final OutputType outputTypeEffective = Check.assumeNotNull(
-				Util.coalesce(
+				CoalesceUtil.coalesce(
 						outputType,
 						processInfo.getJRDesiredOutputType()),
 				"From the given parameters, either outputType or processInfo.getJRDesiredOutputType() need to be non-null; processInfo={}",

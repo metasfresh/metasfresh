@@ -24,14 +24,19 @@ package de.metas.inoutcandidate.api;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
@@ -173,4 +178,14 @@ public interface IShipmentScheduleBL extends ISingletonService
 	void resetCatchQtyOverride(I_M_ShipmentSchedule shipmentSchedule);
 
 	void updateCatchUoms(ProductId productId, long delayMs);
+
+	Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids);
+
+	BPartnerId getBPartnerId(I_M_ShipmentSchedule schedule);
+
+	WarehouseId getWarehouseId(I_M_ShipmentSchedule schedule);
+
+	ZonedDateTime getPreparationDate(I_M_ShipmentSchedule schedule);
+	
+	void applyUserChanges(ShipmentScheduleUserChangeRequestsList userChanges);
 }

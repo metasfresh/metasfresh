@@ -31,7 +31,7 @@ import de.metas.pricing.DiscountSchemaPOCopyRecordSupport;
  * #L%
  */
 @Interceptor(I_M_DiscountSchema.class)
-@Component("de.metas.pricing.interceptor.M_DiscountSchema")
+@Component
 public class M_DiscountSchema
 {
 	@Init

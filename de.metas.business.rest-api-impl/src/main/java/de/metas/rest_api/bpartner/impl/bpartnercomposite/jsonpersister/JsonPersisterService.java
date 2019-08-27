@@ -107,6 +107,8 @@ public class JsonPersisterService
 			@NonNull final JsonRequestComposite jsonBPartnerComposite,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
+		// TODO: add support to retrieve without changelog; we don't need changelog here; 
+		// but! make sure we don't screw up caching
 		final Optional<BPartnerComposite> optionalBPartnerComposite = jsonRetrieverService.retrieveBPartnerComposite(bpartnerIdentifierStr);
 
 		final SyncAdvise effectiveSyncAdvise = coalesce(jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
@@ -337,6 +339,10 @@ public class JsonPersisterService
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
 		final JsonRequestBPartner jsonBPartner = jsonBPartnerComposite.getBpartner();
+		if (jsonBPartner == null)
+		{
+			return; // the requests contains no bpartner to sync
+		}
 
 		// note that if the BPartner wouldn't exists, we weren't here
 		final SyncAdvise effCompositeSyncAdvise = coalesce(jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
@@ -835,7 +841,6 @@ public class JsonPersisterService
 		if (existingLocation != null)
 		{
 			location = existingLocation;
-			shortTermIndex.remove(existingLocation.getId());
 		}
 		else
 		{

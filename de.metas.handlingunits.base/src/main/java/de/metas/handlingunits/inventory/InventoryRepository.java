@@ -1,11 +1,11 @@
 
 package de.metas.handlingunits.inventory;
 
+import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.compiere.util.Util.coalesceSuppliers;
 
 import java.math.BigDecimal;
 import java.util.Collection;

@@ -1,7 +1,5 @@
 package de.metas.vertical.pharma.model.interceptor;
 
-import de.metas.vertical.pharma.PharmaBPartnerProductPermissionValidator;
-import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -20,7 +18,9 @@ import de.metas.order.OrderLineInputValidatorResults;
 import de.metas.order.OrderLineRepository;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import de.metas.vertical.pharma.PharmaBPartnerProductPermissionValidator;
 import de.metas.vertical.pharma.PharmaBPartnerRepository;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -45,7 +45,7 @@ import de.metas.vertical.pharma.PharmaBPartnerRepository;
  */
 @Callout(I_C_OrderLine.class)
 @Interceptor(I_C_OrderLine.class)
-@Component("de.metas.vertical.pharma.model.interceptor.C_OrderLine")
+@Component
 public class C_OrderLine
 {
 	@Autowired

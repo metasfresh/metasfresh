@@ -37,6 +37,7 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.Money;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -288,7 +289,7 @@ public class RefundInvoiceCandidateRepository
 				@NonNull final LocalDate invoicableFrom)
 		{
 			this.refundContract = refundContract;
-			this.invoicableFrom = coalesce(invoicableFrom, refundContract.getStartDate());
+			this.invoicableFrom = CoalesceUtil.coalesce(invoicableFrom, refundContract.getStartDate());
 		}
 	}
 }

@@ -14,7 +14,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Util;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
@@ -28,6 +27,7 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -225,7 +225,7 @@ public class AssignmentToRefundCandidateRepository
 							&& removeForAssignedCandidateId == null,
 					"At least one of the two invoiceCandidateId needs to be not-null");
 
-			this.onlyActive = Util.coalesce(onlyActive, true);
+			this.onlyActive = CoalesceUtil.coalesce(onlyActive, true);
 
 			this.removeForRefundCandidateId = removeForRefundCandidateId;
 			this.removeForAssignedCandidateId = removeForAssignedCandidateId;

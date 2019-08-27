@@ -97,12 +97,9 @@ public interface IProductBL extends ISingletonService
 	}
 
 	/**
-	 * If the product has an Attribute Set take it from there; If not, take it from the product category of the product
-	 *
-	 * @param product
-	 * @return
+	 * @return product/product category's attribute set or null
 	 */
-	I_M_AttributeSet getM_AttributeSet(I_M_Product product);
+	I_M_AttributeSet getAttributeSetOrNull(ProductId productId);
 
 	I_M_AttributeSetInstance getCreateASI(Properties ctx, int M_AttributeSetInstance_ID, int M_Product_ID);
 

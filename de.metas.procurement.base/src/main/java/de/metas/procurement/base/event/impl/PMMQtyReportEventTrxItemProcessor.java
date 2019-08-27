@@ -9,7 +9,6 @@ import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Issue;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -32,6 +31,7 @@ import de.metas.procurement.base.order.PMMPurchaseCandidateSegment;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 
 /*
  * #%L
@@ -259,7 +259,7 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 		event.setProcessed(true);
 
 		final AdempiereException metasfreshException = AdempiereException.wrapIfNeeded(ex);
-		final String errorMsg = Util.firstNotEmptyTrimmed(metasfreshException.getLocalizedMessage(), metasfreshException.getMessage());
+		final String errorMsg = CoalesceUtil.firstNotEmptyTrimmed(metasfreshException.getLocalizedMessage(), metasfreshException.getMessage());
 		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(null, metasfreshException);
 
 		event.setErrorMsg(errorMsg);

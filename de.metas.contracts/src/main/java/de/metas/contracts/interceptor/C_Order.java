@@ -61,7 +61,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 
 @Interceptor(I_C_Order.class)
-@Component("de.metas.contracts.interceptor.C_Order")
+@Component
 public class C_Order
 {
 	private static final Logger logger = LogManager.getLogger(C_Order.class);

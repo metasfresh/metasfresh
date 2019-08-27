@@ -34,7 +34,7 @@ import lombok.NonNull;
  */
 
 @Interceptor(I_AD_UI_Column.class)
-@Component("org.adempiere.ad.ui.model.interceptor.AD_UI_Column")
+@Component
 public class AD_UI_Column
 {
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)

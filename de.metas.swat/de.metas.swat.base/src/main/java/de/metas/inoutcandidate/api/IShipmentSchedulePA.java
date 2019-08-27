@@ -40,6 +40,8 @@ public interface IShipmentSchedulePA extends ISingletonService
 
 	<T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids, Class<T> modelClass);
 
+	Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIds(Set<ShipmentScheduleId> ids);
+
 	@Nullable
 	I_M_ShipmentSchedule getByOrderLineId(OrderLineId orderLineId);
 
@@ -119,4 +121,6 @@ public interface IShipmentSchedulePA extends ISingletonService
 	void deleteAllForReference(TableRecordReference referencedRecord);
 
 	Set<ProductId> getProductIdsByShipmentScheduleIds(Collection<ShipmentScheduleId> shipmentScheduleIds);
+
+	void save(I_M_ShipmentSchedule record);
 }

@@ -29,8 +29,8 @@ import java.util.concurrent.Future;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.concurrent.FutureValue;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ObjectUtils;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.lock.api.IUnlockCommand;
 import de.metas.lock.api.LockOwner;
@@ -156,7 +156,7 @@ public class UnlockCommand implements IUnlockCommand
 	}
 
 	@Override
-	public final Iterator<ITableRecordReference> getRecordsToUnlockIterator()
+	public final Iterator<TableRecordReference> getRecordsToUnlockIterator()
 	{
 		return _recordsToUnlock.getRecordsIterator();
 	}

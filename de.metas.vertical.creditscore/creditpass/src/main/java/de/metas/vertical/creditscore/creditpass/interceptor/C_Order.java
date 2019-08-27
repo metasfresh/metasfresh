@@ -1,5 +1,18 @@
 package de.metas.vertical.creditscore.creditpass.interceptor;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Optional;
+
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
+import org.apache.commons.lang3.StringUtils;
+import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Component;
+
 /*
  * #%L
  * de.metas.vertical.creditscore.creditpass.interceptor
@@ -35,21 +48,9 @@ import de.metas.vertical.creditscore.creditpass.model.CreditPassConfigPaymentRul
 import de.metas.vertical.creditscore.creditpass.model.extended.I_C_Order;
 import de.metas.vertical.creditscore.creditpass.repository.CreditPassConfigRepository;
 import lombok.NonNull;
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.exceptions.AdempiereException;
-import org.apache.commons.lang3.StringUtils;
-import org.compiere.model.ModelValidator;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Component;
-
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 
 @Interceptor(I_C_Order.class)
-@Component("de.metas.vertical.creditscore.creditpass.interceptor.C_Order")
+@Component
 public class C_Order
 {
 

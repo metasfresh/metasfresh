@@ -87,6 +87,7 @@ import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -361,7 +362,7 @@ public class ShipmentScheduleWithHU
 	 */
 	private I_M_HU getTopLevelHU()
 	{
-		return coalesce(luHU, tuHU, vhu);
+		return CoalesceUtil.coalesce(luHU, tuHU, vhu);
 	}
 
 	/**

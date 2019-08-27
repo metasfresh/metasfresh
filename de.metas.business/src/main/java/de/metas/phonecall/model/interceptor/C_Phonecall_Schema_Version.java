@@ -47,7 +47,7 @@ import de.metas.util.Services;
  */
 
 @Interceptor(I_C_Phonecall_Schema_Version.class)
-@Component("de.metas.phonecall.C_Phonecall_Schema_Version")
+@Component
 public class C_Phonecall_Schema_Version
 {
 

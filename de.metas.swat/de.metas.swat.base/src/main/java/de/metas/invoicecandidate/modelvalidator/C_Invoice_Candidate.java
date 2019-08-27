@@ -67,7 +67,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 
 @Interceptor(I_C_Invoice_Candidate.class)
-@Component("de.metas.invoicecandidate.modelvalidator.C_Invoice_Candidate")
+@Component
 public class C_Invoice_Candidate
 {
 	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(C_Invoice_Candidate.class);

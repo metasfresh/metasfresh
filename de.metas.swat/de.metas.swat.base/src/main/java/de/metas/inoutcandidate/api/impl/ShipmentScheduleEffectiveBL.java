@@ -1,7 +1,6 @@
 package de.metas.inoutcandidate.api.impl;
 
 
-
 import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 /*
@@ -25,6 +24,8 @@ import static de.metas.util.lang.CoalesceUtil.coalesce;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
