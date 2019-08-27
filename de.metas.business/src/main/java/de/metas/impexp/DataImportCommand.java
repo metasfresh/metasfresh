@@ -52,7 +52,7 @@ final class DataImportCommand
 	private final ImpFormat importFormat;
 	private final Resource data;
 
-	private int countImported = 0;
+	private int countImportPrepared = 0;
 	private int countError = 0;
 	private IAsyncImportProcessBuilder _asyncImportProcessBuilder;
 
@@ -80,12 +80,17 @@ final class DataImportCommand
 		this.data = data;
 	}
 
-	public String execute()
+	public DataImportResult execute()
 	{
 		streamImpDataLines().forEach(this::importLine);
 		completeAsyncImportProcessBuilder();
 
-		return "@IsImportScheduled@ #" + countImported + ", @IsError@ #" + countError;
+		return DataImportResult.builder()
+				.dataImportConfigId(dataImportConfigId)
+				.importFormatName(importFormat.getName())
+				.countImportPrepared(countImportPrepared)
+				.countError(countError)
+				.build();
 	}
 
 	private Stream<ImpDataLine> streamImpDataLines()
@@ -145,7 +150,7 @@ final class DataImportCommand
 		final ImpDataLineStatus importStatus = line.getImportStatus();
 		if (ImpDataLineStatus.ImportPrepared == importStatus)
 		{
-			countImported++;
+			countImportPrepared++;
 			scheduleToImport(line);
 		}
 		else if (ImpDataLineStatus.Error == importStatus)

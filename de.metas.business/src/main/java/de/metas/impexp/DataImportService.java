@@ -43,7 +43,7 @@ public class DataImportService
 		this.importFormatsRepo = importFormatsRepo;
 	}
 
-	public String importData(@NonNull final DataImportRequest request)
+	public DataImportResult importData(@NonNull final DataImportRequest request)
 	{
 		final DataImportConfigId dataImportConfigId = request.getDataImportConfigId();
 		final DataImportConfig dataImportConfig = dataImportConfigsRepo.getById(dataImportConfigId);
