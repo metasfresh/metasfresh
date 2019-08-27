@@ -313,3 +313,250 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
     ]
   }
 ]
+
+
+de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_ext=[
+  {
+    "metasfreshId": 30,
+    "externalId": "abcde",
+    "metasfreshBPartnerId": 20,
+    "active": true,
+    "name": "bpartnerRecord.name",
+    "firstName": "bpartnerRecord.firstName",
+    "lastName": "bpartnerRecord.lastName",
+    "email": "bpartnerRecord.email",
+    "phone": "bpartnerRecord.phone",
+    "newsletter": true,
+    "shipToDefault": false,
+    "billToDefault": false,
+    "defaultContact": false,
+    "salesDefault": false,
+    "purchase": false,
+    "purchaseDefault": false,
+    "subjectMatter": false,
+    "changeInfo": {
+      "createdMillis": 1561133544,
+      "createdBy": 30,
+      "lastUpdatedMillis": 1561133544,
+      "lastUpdatedBy": 30
+    },
+    "sales": false
+  }
+]
+
+
+de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_id=[
+  {
+    "metasfreshId": 30,
+    "externalId": "abcde",
+    "metasfreshBPartnerId": 20,
+    "active": true,
+    "name": "bpartnerRecord.name",
+    "firstName": "bpartnerRecord.firstName",
+    "lastName": "bpartnerRecord.lastName",
+    "email": "bpartnerRecord.email",
+    "phone": "bpartnerRecord.phone",
+    "newsletter": true,
+    "shipToDefault": false,
+    "billToDefault": false,
+    "defaultContact": false,
+    "salesDefault": false,
+    "purchase": false,
+    "purchaseDefault": false,
+    "subjectMatter": false,
+    "changeInfo": {
+      "createdMillis": 1561133544,
+      "createdBy": 30,
+      "lastUpdatedMillis": 1561133544,
+      "lastUpdatedBy": 30
+    },
+    "sales": false
+  }
+]
+
+
+de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_val=[
+  {
+    "metasfreshId": 30,
+    "externalId": "abcde",
+    "metasfreshBPartnerId": 20,
+    "active": true,
+    "name": "bpartnerRecord.name",
+    "firstName": "bpartnerRecord.firstName",
+    "lastName": "bpartnerRecord.lastName",
+    "email": "bpartnerRecord.email",
+    "phone": "bpartnerRecord.phone",
+    "newsletter": true,
+    "shipToDefault": false,
+    "billToDefault": false,
+    "defaultContact": false,
+    "salesDefault": false,
+    "purchase": false,
+    "purchaseDefault": false,
+    "subjectMatter": false,
+    "changeInfo": {
+      "createdMillis": 1561133544,
+      "createdBy": 30,
+      "lastUpdatedMillis": 1561133544,
+      "lastUpdatedBy": 30
+    },
+    "sales": false
+  }
+]
+
+
+de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=[
+  {
+    "resultTimestamp": 1561014385,
+    "totalSize": 5,
+    "pageSize": 2,
+    "nextPage": "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1_D",
+    "contacts": [
+      {
+        "metasfreshId": 30,
+        "externalId": "abcde",
+        "metasfreshBPartnerId": 20,
+        "active": true,
+        "name": "bpartnerRecord.name",
+        "firstName": "bpartnerRecord.firstName",
+        "lastName": "bpartnerRecord.lastName",
+        "email": "bpartnerRecord.email",
+        "phone": "bpartnerRecord.phone",
+        "newsletter": true,
+        "shipToDefault": false,
+        "billToDefault": false,
+        "defaultContact": false,
+        "salesDefault": false,
+        "purchase": false,
+        "purchaseDefault": false,
+        "subjectMatter": false,
+        "changeInfo": {
+          "createdMillis": 1561133544,
+          "createdBy": 30,
+          "lastUpdatedMillis": 1561133544,
+          "lastUpdatedBy": 30
+        },
+        "sales": false
+      },
+      {
+        "metasfreshId": 31,
+        "externalId": "abcde_1",
+        "metasfreshBPartnerId": 21,
+        "active": true,
+        "name": "bpartnerRecord.name_1",
+        "firstName": "bpartnerRecord.firstName_1",
+        "lastName": "bpartnerRecord.lastName_1",
+        "email": "bpartnerRecord.email_1",
+        "phone": "bpartnerRecord.phone_1",
+        "newsletter": true,
+        "shipToDefault": false,
+        "billToDefault": false,
+        "defaultContact": false,
+        "salesDefault": false,
+        "purchase": false,
+        "purchaseDefault": false,
+        "subjectMatter": false,
+        "changeInfo": {
+          "createdMillis": 1561133544,
+          "createdBy": 31,
+          "lastUpdatedMillis": 1561133544,
+          "lastUpdatedBy": 31
+        },
+        "sales": false
+      }
+    ]
+  },
+  {
+    "resultTimestamp": 1561014385,
+    "totalSize": 5,
+    "pageSize": 2,
+    "nextPage": "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1_E",
+    "contacts": [
+      {
+        "metasfreshId": 32,
+        "externalId": "abcde_2",
+        "metasfreshBPartnerId": 22,
+        "active": true,
+        "name": "bpartnerRecord.name_2",
+        "firstName": "bpartnerRecord.firstName_2",
+        "lastName": "bpartnerRecord.lastName_2",
+        "email": "bpartnerRecord.email_2",
+        "phone": "bpartnerRecord.phone_2",
+        "newsletter": true,
+        "shipToDefault": false,
+        "billToDefault": false,
+        "defaultContact": false,
+        "salesDefault": false,
+        "purchase": false,
+        "purchaseDefault": false,
+        "subjectMatter": false,
+        "changeInfo": {
+          "createdMillis": 1561133544,
+          "createdBy": 32,
+          "lastUpdatedMillis": 1561133544,
+          "lastUpdatedBy": 32
+        },
+        "sales": false
+      },
+      {
+        "metasfreshId": 33,
+        "externalId": "abcde_3",
+        "metasfreshBPartnerId": 23,
+        "active": true,
+        "name": "bpartnerRecord.name_3",
+        "firstName": "bpartnerRecord.firstName_3",
+        "lastName": "bpartnerRecord.lastName_3",
+        "email": "bpartnerRecord.email_3",
+        "phone": "bpartnerRecord.phone_3",
+        "newsletter": true,
+        "shipToDefault": false,
+        "billToDefault": false,
+        "defaultContact": false,
+        "salesDefault": false,
+        "purchase": false,
+        "purchaseDefault": false,
+        "subjectMatter": false,
+        "changeInfo": {
+          "createdMillis": 1561133544,
+          "createdBy": 33,
+          "lastUpdatedMillis": 1561133544,
+          "lastUpdatedBy": 33
+        },
+        "sales": false
+      }
+    ]
+  },
+  {
+    "resultTimestamp": 1561014385,
+    "totalSize": 5,
+    "pageSize": 1,
+    "contacts": [
+      {
+        "metasfreshId": 34,
+        "externalId": "abcde_4",
+        "metasfreshBPartnerId": 24,
+        "active": true,
+        "name": "bpartnerRecord.name_4",
+        "firstName": "bpartnerRecord.firstName_4",
+        "lastName": "bpartnerRecord.lastName_4",
+        "email": "bpartnerRecord.email_4",
+        "phone": "bpartnerRecord.phone_4",
+        "newsletter": true,
+        "shipToDefault": false,
+        "billToDefault": false,
+        "defaultContact": false,
+        "salesDefault": false,
+        "purchase": false,
+        "purchaseDefault": false,
+        "subjectMatter": false,
+        "changeInfo": {
+          "createdMillis": 1561133544,
+          "createdBy": 34,
+          "lastUpdatedMillis": 1561133544,
+          "lastUpdatedBy": 34
+        },
+        "sales": false
+      }
+    ]
+  }
+]

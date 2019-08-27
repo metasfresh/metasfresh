@@ -4,8 +4,6 @@ import static de.metas.rest_api.bpartner.SwaggerDocConstants.READ_ONLY_SYNC_ADVI
 import static de.metas.util.Check.isEmpty;
 import static de.metas.util.lang.CoalesceUtil.coalesce;
 
-import java.util.Objects;
-
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -15,14 +13,12 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.SyncAdvise;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -78,7 +74,7 @@ public final class JsonRequestComposite
 	@JsonCreator
 	private JsonRequestComposite(
 			@JsonProperty("orgCode") @Nullable final String orgCode,
-			@JsonProperty("bpartner") @NonNull final JsonRequestBPartner bpartner,
+			@JsonProperty("bpartner") @Nullable final JsonRequestBPartner bpartner,
 			@JsonProperty("locations") @Nullable final JsonRequestLocationUpsert locations,
 			@JsonProperty("contacts") @Nullable final JsonRequestContactUpsert contacts,
 			@JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
@@ -97,17 +93,6 @@ public final class JsonRequestComposite
 				.map(JsonRequestLocation::getGln)
 				.filter(gln -> !isEmpty(gln, true))
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	public JsonRequestComposite withExternalId(@NonNull final JsonExternalId externalId)
-	{
-		if (Objects.equals(externalId, bpartner.getExternalId()))
-		{
-			return this; // nothing to do
-		}
-		return toBuilder()
-				.bpartner(bpartner.toBuilder().externalId(externalId).build())
-				.build();
 	}
 
 	@JsonIgnore
