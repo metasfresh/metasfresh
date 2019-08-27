@@ -20,8 +20,7 @@
  * #L%
  */
 
-import { appendHumanReadableNow, getLanguageSpecific } from '../../support/utils/utils';
-import { Inventory, InventoryLine } from '../../support/utils/inventory';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 import { Builder } from '../../support/utils/builder';
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { ProductCategory } from '../../support/utils/product';
@@ -132,37 +131,7 @@ describe('Create test data', function() {
   });
 
   it('Create  single-HU inventory doc', function() {
-    let uomName;
-    cy.fixture('product/simple_product.json').then(productJson => {
-      uomName = getLanguageSpecific(productJson, 'c_uom');
-    });
-
-    cy.fixture('inventory/inventory.json').then(inventoryJson => {
-      const docTypeName = getLanguageSpecific(inventoryJson, 'singleHUInventoryDocTypeName');
-
-      const inventoryLine = new InventoryLine()
-        .setProductName(productName)
-        .setQuantity(productQty)
-        .setC_UOM_ID(uomName)
-        .setM_Locator_ID(locatorId)
-        .setIsCounted(true);
-
-      new Inventory()
-        .setWarehouse(inventoryJson.warehouseName)
-        .setDocType(docTypeName)
-        .addInventoryLine(inventoryLine)
-        .apply();
-    });
-  });
-
-  it('Save HU Value', function() {
-    cy.selectTab('M_InventoryLine');
-    cy.selectNthRow(0);
-    cy.openAdvancedEdit();
-    cy.getStringFieldValue('M_HU_ID').then(val => {
-      huValue = val.split('_')[0];
-    });
-    cy.pressDoneButton();
+    Builder.createHUWithStock(productName, productQty, locatorId).then(huVal => (huValue = huVal));
   });
 
   it('Create Sales Order', function() {
