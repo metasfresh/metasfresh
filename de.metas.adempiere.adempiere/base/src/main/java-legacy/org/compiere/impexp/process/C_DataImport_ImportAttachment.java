@@ -5,11 +5,9 @@ import org.compiere.impexp.DataImportConfigId;
 import org.compiere.impexp.DataImportRequest;
 import org.compiere.impexp.DataImportService;
 import org.compiere.model.I_AD_AttachmentEntry;
-import org.fusesource.hawtbuf.ByteArrayInputStream;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
 
 import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryDataResource;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.process.IProcessPrecondition;
@@ -66,8 +64,10 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 	@Override
 	protected String doIt()
 	{
+		final AttachmentEntryDataResource data = attachmentEntryService.retrieveDataResource(getAttachmentEntryId());
+
 		final String result = dataImportService.importData(DataImportRequest.builder()
-				.data(getData())
+				.data(data)
 				.dataImportConfigId(getDataImportConfigId())
 				.clientId(getClientId())
 				.orgId(getOrgId())
@@ -87,12 +87,6 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 	private DataImportConfigId getDataImportConfigId()
 	{
 		return DataImportConfigId.ofRepoId(getRecord_ID());
-	}
-
-	private Resource getData()
-	{
-		final byte[] data = attachmentEntryService.retrieveData(getAttachmentEntryId());
-		return new InputStreamResource(new ByteArrayInputStream(data));
 	}
 
 	private void deleteAttachmentEntry()
