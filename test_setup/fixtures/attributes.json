@@ -29,7 +29,8 @@
       "rowId": "2",
       "fieldName": "C_Location_ID",
       "tabIndex": 0,
-      "autoFocus": false
+      "autoFocus": false,
+      "entity": "window"
     },
     "instanceData": {
       "id": "66",
