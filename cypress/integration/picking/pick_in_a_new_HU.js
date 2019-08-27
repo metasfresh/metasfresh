@@ -50,18 +50,16 @@ let bPartnerName;
 // SO/HU
 let productQty;
 let soProductQuantity;
+// eslint-disable-next-line
 let expectedProductQtyAfterPicking;
 let locatorId;
 
 // test columns
-// todo @kuba: these should be somehow made translation independent!
-//   eg. add the columnId as a data object in the table header (data object instead of class coz it's free form text so it may contains spaces and periods);
-//      ref: https://docs.cypress.io/guides/references/best-practices.html#Selecting-Elements
-//   or something else?
-const pickingOrderColumn = 'Order';
-const huCodeColumn = 'Code';
-const qtyCUColumn = 'Qty CU';
-const productPartnerColumn = 'Product / Partner';
+const orderColumn = 'order';
+const huSelectionHuCodeColumn = 'Value';
+const productPartnerColumn = 'ProductOrBPartner';
+const pickingQtyCUColumn = 'huQtyCU';
+const pickingPackingInfoColumn = 'huPackingInfo';
 
 // test
 let soDocNumber;
@@ -189,28 +187,28 @@ describe('Pick the SO', function() {
   });
 
   it('Select first row and run action Pick', function() {
-    cy.selectRowByColumnAndValue(productPartnerColumn, productName);
+    cy.selectRowByColumnAndValue({ column: productPartnerColumn, value: productName });
     cy.executeQuickAction('WEBUI_Picking_Launcher');
   });
 
   it('Mark the HU as source', function() {
     cy.selectLeftTable().within(() => {
-      cy.selectRowByColumnAndValue(pickingOrderColumn, soDocNumber, false, true);
+      cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
     });
     cy.openPickingHUSelectionWindow();
     cy.selectRightTable().within(() => {
-      cy.selectRowByColumnAndValue(huCodeColumn, huValue, false, true);
+      cy.selectRowByColumnAndValue({ column: huSelectionHuCodeColumn, value: huValue }, false, true);
     });
     cy.executeQuickAction('WEBUI_Picking_HUEditor_Create_M_Source_HUs', true, false);
     cy.selectRightTable().within(() => {
       // expecting the HU to be here
-      cy.selectRowByColumnAndValue(huCodeColumn, huValue, false, true);
+      cy.selectRowByColumnAndValue({ column: huSelectionHuCodeColumn, value: huValue }, false, true);
     });
   });
 
   it('Run quick-action "Pick to new HU"', function() {
     cy.selectLeftTable().within(() => {
-      cy.selectRowByColumnAndValue(pickingOrderColumn, soDocNumber, false, true);
+      cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
     });
     cy.selectRightTable().within(() => {
       cy.selectNthRow(0, false, true);
@@ -225,10 +223,14 @@ describe('Pick the SO', function() {
 
   it('Confirm Pick', function() {
     cy.selectLeftTable().within(() => {
-      cy.selectRowByColumnAndValue(pickingOrderColumn, soDocNumber, false, true);
+      cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
     });
     cy.selectRightTable().within(() => {
-      cy.selectRowByColumnAndValue(qtyCUColumn, soProductQuantity, false, true);
+      const columnAndValue = [
+        { column: pickingPackingInfoColumn, value: packingInstructionsName },
+        { column: pickingQtyCUColumn, value: soProductQuantity },
+      ];
+      cy.selectRowByColumnAndValue(columnAndValue, false, true);
     });
     cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', true, false);
     cy.waitForSaveIndicator();

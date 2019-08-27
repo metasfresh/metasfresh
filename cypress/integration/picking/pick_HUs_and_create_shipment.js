@@ -18,13 +18,10 @@ let shipmentNotificationModalText;
 let expectedPackingStatus;
 
 // test columns
-// todo @kuba: these should be somehow made translation independent!
-//   eg. add the columnId as a data object in the table header (data object instead of class coz it's free form text so it may contains spaces and periods);
-//      ref: https://docs.cypress.io/guides/references/best-practices.html#Selecting-Elements
-//   or something else?
-const pickingOrderColumn = 'Order';
-const huCodeColumn = 'Code';
-const productPartnerColumn = 'Product / Partner';
+const orderColumn = 'order';
+const huSelectionHuCodeColumn = 'Value';
+const pickingHuCodeColumn = 'huCode';
+const productPartnerColumn = 'ProductOrBPartner';
 
 // test
 let soDocNumber;
@@ -137,47 +134,47 @@ describe('Pick the SO', function() {
   });
 
   it('Select first row and run action Pick', function() {
-    cy.selectRowByColumnAndValue(productPartnerColumn, productName);
+    cy.selectRowByColumnAndValue({ column: productPartnerColumn, value: productName });
     cy.executeQuickAction('WEBUI_Picking_Launcher');
   });
 
   it('Pick first HU', function() {
     cy.selectLeftTable().within(() => {
-      cy.selectRowByColumnAndValue(pickingOrderColumn, soDocNumber, false, true);
+      cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
     });
     cy.openPickingHUSelectionWindow();
     cy.selectRightTable().within(() => {
-      cy.selectRowByColumnAndValue(huCodeColumn, huValue1, false, true);
+      cy.selectRowByColumnAndValue({ column: huSelectionHuCodeColumn, value: huValue1 }, false, true);
     });
     cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', true, false);
   });
 
   it('Pick second HU', function() {
     cy.selectLeftTable().within(() => {
-      cy.selectRowByColumnAndValue(pickingOrderColumn, soDocNumber, false, true);
+      cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
     });
     cy.openPickingHUSelectionWindow();
     cy.selectRightTable().within(() => {
-      cy.selectRowByColumnAndValue(huCodeColumn, huValue2, false, true);
+      cy.selectRowByColumnAndValue({ column: huSelectionHuCodeColumn, value: huValue2 }, false, true);
     });
     cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', true, false);
   });
 
   it('Confirm Picks', function() {
     cy.selectLeftTable().within(() => {
-      cy.selectRowByColumnAndValue(pickingOrderColumn, soDocNumber, false, true);
+      cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
     });
     cy.selectRightTable().within(() => {
-      cy.selectRowByColumnAndValue(huCodeColumn, huValue2, false, true);
+      cy.selectRowByColumnAndValue({ column: pickingHuCodeColumn, value: huValue2 }, false, true);
     });
     cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', true, false);
     cy.waitForSaveIndicator();
 
     cy.selectLeftTable().within(() => {
-      cy.selectRowByColumnAndValue(pickingOrderColumn, soDocNumber, false, true);
+      cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
     });
     cy.selectRightTable().within(() => {
-      cy.selectRowByColumnAndValue(huCodeColumn, huValue1, false, true);
+      cy.selectRowByColumnAndValue({ column: pickingHuCodeColumn, value: huValue1 }, false, true);
     });
     cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', true, false);
     cy.waitForSaveIndicator();
@@ -224,8 +221,8 @@ describe('Generate the Shipment', function() {
     cy.getStringFieldValue('C_BPartner_ID').should('contain', businessPartnerName);
     cy.selectTab('M_HU_Assignment');
     cy.expectNumberOfRows(2);
-    cy.selectRowByColumnAndValue('Handling Units', huValue1);
-    cy.selectRowByColumnAndValue('Handling Units', huValue2);
+    cy.selectRowByColumnAndValue({ Column: 'Handling Units', value: huValue1 });
+    cy.selectRowByColumnAndValue({ Column: 'Handling Units', value: huValue2 });
   });
 
   it('Visit HU Editor and expect the 2 HUs have Packing Status Shipped', function() {
