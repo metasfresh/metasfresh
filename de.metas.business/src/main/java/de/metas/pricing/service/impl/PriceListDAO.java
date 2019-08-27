@@ -1,5 +1,6 @@
 package de.metas.pricing.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.copy;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
@@ -25,15 +26,18 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
+import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.product.ProductPriceCreateRequest;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -62,6 +66,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.PriceListsCollection;
 import de.metas.pricing.service.UpdateProductPriceRequest;
 import de.metas.product.ProductId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -303,13 +308,13 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public I_M_PriceList_Version retrieveNextVersionOrNull(final I_M_PriceList_Version plv)
+	public I_M_PriceList_Version retrieveNextVersionOrNull(final I_M_PriceList_Version plv, final boolean onlyProcessed)
 	{
 		// we want the PLV with the lowest ValidFrom that is just greater than plv's
 		final Operator validFromOperator = Operator.GREATER;
 		final boolean orderAscending = true;
 
-		return retrievePreviousOrNext(plv, validFromOperator, true /* TODO: MAKE SURE THIS IS OK> IT WAS LIKE THIS BEFORE */, orderAscending);
+		return retrievePreviousOrNext(plv, validFromOperator, onlyProcessed , orderAscending);
 	}
 
 	@Override
@@ -636,6 +641,92 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
+	public void mutateCustomerPrices(final PriceListVersionId newBasePLVId, final UserId userId)
+	{
+		final I_M_PriceList_Version newBasePLV = getPriceListVersionById(newBasePLVId);
+
+		final PriceListVersionId basePriceListVersionId = PriceListVersionId.ofRepoId(newBasePLV.getM_Pricelist_Version_Base_ID());
+		if (basePriceListVersionId == null)
+		{
+			// nothing to do
+			return;
+		}
+
+		I_M_PriceList_Version oldPLV = getPriceListVersionById(basePriceListVersionId);
+
+		final List<I_M_PriceList_Version> versionsForOldBase = retrieveCustomPLVsToMutate(oldPLV);
+
+		for (final I_M_PriceList_Version oldCustPLV : versionsForOldBase)
+		{
+			createNewPLV(oldCustPLV, newBasePLV, userId);
+		}
+
+	}
+
+	private void createNewPLV(final I_M_PriceList_Version oldCustomerPLV, final I_M_PriceList_Version newBasePLV, UserId userId)
+	{
+		final ISessionBL sessionBL = Services.get(ISessionBL.class);
+
+		final I_M_PriceList_Version newCustomerPLV = copy()
+				.setSkipCalculatedColumns(true)
+				.setFrom(oldCustomerPLV)
+				.copyToNew(I_M_PriceList_Version.class);
+
+		newCustomerPLV.setValidFrom(newBasePLV.getValidFrom());
+		saveRecord(newCustomerPLV);
+
+		final PriceListVersionId newCustomerPLVId = PriceListVersionId.ofRepoId(newCustomerPLV.getM_PriceList_Version_ID());
+
+		sessionBL.setDisableChangeLogsForThread(true);
+
+		try
+		{
+			DB.executeFunctionCallEx( //
+					ITrx.TRXNAME_ThreadInherited //
+					, "select M_PriceList_Version_CopyFromBase(p_M_PriceList_Version_ID:=?, p_AD_User_ID:=?)" //
+					, new Object[] { newCustomerPLVId, userId.getRepoId() } //
+			);
+
+			cloneASIs(newCustomerPLVId);
+
+			newCustomerPLV.setM_Pricelist_Version_Base_ID(newBasePLV.getM_Pricelist_Version_Base_ID());
+			save(newCustomerPLV);
+
+		}
+		finally
+		{
+			sessionBL.setDisableChangeLogsForThread(false);
+		}
+
+	}
+
+	private void cloneASIs(PriceListVersionId newPLVId)
+	{
+		Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_ProductPrice.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+				.addEqualsFilter(I_M_ProductPrice.COLUMN_M_PriceList_Version_ID, newPLVId)
+				.addEqualsFilter(I_M_ProductPrice.COLUMN_IsAttributeDependant, true)
+				.create()
+				.iterateAndStream()
+				.forEach(this::cloneASI);
+	}
+
+	private void cloneASI(final I_M_ProductPrice productPrice)
+	{
+		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+		if (!productPrice.isAttributeDependant())
+		{
+			return;
+		}
+
+		final I_M_AttributeSetInstance sourceASI = productPrice.getM_AttributeSetInstance();
+		final I_M_AttributeSetInstance targetASI = sourceASI == null ? null : attributeDAO.copy(sourceASI);
+
+		productPrice.setM_AttributeSetInstance(targetASI);
+		InterfaceWrapperHelper.save(productPrice);
+	}
+
+	@Override
 	public List<I_M_PriceList_Version> retrieveCustomPLVsToMutate(@NonNull final I_M_PriceList_Version basePLV)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -649,12 +740,11 @@ public class PriceListDAO implements IPriceListDAO
 				.list(I_M_PriceList_Version.class);
 
 		final ImmutableList<I_M_PriceList_Version> newestVersions = versionsForBase.stream()
-				.filter(version -> retrieveNextVersionOrNull(version) == null)
+				.filter(version -> retrieveNextVersionOrNull(version, false) == null)
 				.filter(version -> belongsToCustomerForMutation(version))
 				.collect(ImmutableList.toImmutableList());
 
 		return newestVersions;
-
 	}
 
 	private boolean belongsToCustomerForMutation(final I_M_PriceList_Version version)

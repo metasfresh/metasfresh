@@ -48,6 +48,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.ProductPriceId;
 import de.metas.pricing.exceptions.PriceListVersionNotFoundException;
 import de.metas.product.ProductId;
+import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 
 public interface IPriceListDAO extends ISingletonService
@@ -121,14 +122,6 @@ public interface IPriceListDAO extends ISingletonService
 		return priceListVersionId;
 	}
 
-	/**
-	 * Retrieve the price list version that has <code>Processed='Y'</code> and and was valid before after the the given <code>plv</code>.
-	 *
-	 * @param plv
-	 * @return
-	 */
-	I_M_PriceList_Version retrieveNextVersionOrNull(I_M_PriceList_Version plv);
-
 	// /**
 	// * Retrieve the price list version that has <code>Processed='Y'</code> and and was valid before before the the given <code>plv</code> .
 	// *
@@ -188,4 +181,8 @@ public interface IPriceListDAO extends ISingletonService
 	List<I_M_PriceList_Version> retrieveCustomPLVsToMutate(I_M_PriceList_Version basePLV);
 
 	I_M_PriceList_Version retrievePreviousVersionOrNull(I_M_PriceList_Version plv, boolean onlyProcessed);
+
+	I_M_PriceList_Version retrieveNextVersionOrNull(I_M_PriceList_Version plv, final boolean onlyProcessed);
+
+	void mutateCustomerPrices(PriceListVersionId priceListVersionId, UserId userId);
 }
