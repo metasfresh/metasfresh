@@ -102,7 +102,7 @@ final class ShipmentCandidateRowsRepository
 				.preparationDate(extractPreparationTime(record))
 				//
 				.qtyToDeliverInitial(qtyToDeliver)
-				.qtyToDeliver(qtyToDeliver.getAsBigDecimal())
+				.qtyToDeliver(qtyToDeliver.toBigDecimal())
 				//
 				.asiIdInitial(asiId)
 				.asi(toLookupValue(asiId))
