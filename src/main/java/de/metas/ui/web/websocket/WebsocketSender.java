@@ -208,12 +208,12 @@ public class WebsocketSender implements InitializingBean
 		private void enqueue(@NonNull final WebsocketEvent event)
 		{
 			events.add(event);
-			logger.info("[name={}] Enqueued event={}", name, event);
+			logger.debug("[name={}] Enqueued event={}", name, event);
 		}
 
 		public void sendEventsAndClear()
 		{
-			logger.info("Sending all queued events");
+			logger.debug("Sending all queued events");
 
 			final List<WebsocketEvent> eventsToSend = new ArrayList<>(events);
 			events.clear();
@@ -231,7 +231,7 @@ public class WebsocketSender implements InitializingBean
 
 		private void sendEvent(final String destination, final Object payload, final boolean converted)
 		{
-			logger.info("[name={}] Sending to destination={}: payload={}", name, destination, payload);
+			logger.debug("[name={}] Sending to destination={}: payload={}", name, destination, payload);
 
 			if (converted)
 			{

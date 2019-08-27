@@ -47,13 +47,6 @@ public final class DefaultViewsRepositoryStorage implements IViewsIndexStorage
 		throw new UnsupportedOperationException("windowId not available");
 	}
 
-	private void onViewRemoved(final RemovalNotification<Object, Object> notification)
-	{
-		final IView view = (IView)notification.getValue();
-		final ViewCloseReason closeReason = ViewCloseReason.fromCacheEvictedFlag(notification.wasEvicted());
-		view.close(closeReason);
-	}
-
 	@Override
 	public void put(@NonNull final IView view)
 	{
@@ -72,13 +65,27 @@ public final class DefaultViewsRepositoryStorage implements IViewsIndexStorage
 		// Don't remove the view if not allowed.
 		// Will be removed when it will expire.
 		final IView view = views.getIfPresent(viewId);
-		if (view != null && !view.isAllowClosingPerUserRequest())
+		if (view == null || !view.isAllowClosingPerUserRequest())
 		{
 			return;
 		}
 
+		//
+		// Notify the view that the user requested to be closed
+		// IMPORTANT: fire this event before removing the view from storage.
+		view.close(closeAction);
+
+		//
+		// Remove the view from storage
+		// => will fire #onViewRemoved
 		views.invalidate(viewId);
 		views.cleanUp(); // also cleanup to prevent views cache to grow.
+	}
+
+	private void onViewRemoved(final RemovalNotification<Object, Object> notification)
+	{
+		final IView view = (IView)notification.getValue();
+		view.afterDestroy();
 	}
 
 	@Override
@@ -91,7 +98,7 @@ public final class DefaultViewsRepositoryStorage implements IViewsIndexStorage
 		}
 
 		view.invalidateAll();
-		
+
 		ViewChangesCollector.getCurrentOrAutoflush()
 				.collectFullyChanged(view);
 	}

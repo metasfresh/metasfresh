@@ -15,15 +15,19 @@ import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Predicates;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
+import de.metas.process.BarcodeScannerType;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessClassInfo;
+import de.metas.process.ProcessClassParamInfo;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
@@ -63,9 +67,9 @@ import de.metas.util.GuavaCollectors;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-final class WebuiProcessClassInfo
+public final class WebuiProcessClassInfo
 {
-	public static final WebuiProcessClassInfo of(@Nullable final Class<?> processClass)
+	public static WebuiProcessClassInfo of(@Nullable final Class<?> processClass)
 	{
 		if (processClass == null)
 		{
@@ -74,7 +78,7 @@ final class WebuiProcessClassInfo
 		return cache.getUnchecked(processClass);
 	}
 
-	public static final WebuiProcessClassInfo of(@Nullable final String processClassname)
+	public static WebuiProcessClassInfo of(@Nullable final String processClassname)
 	{
 		if (Check.isEmpty(processClassname, true))
 		{
@@ -97,6 +101,13 @@ final class WebuiProcessClassInfo
 			logger.info("Could not load process class for {}. IGNORED", processClassname);
 			return NULL;
 		}
+	}
+
+	/** Reset {@link ProcessClassInfo} cache */
+	public static void resetCache()
+	{
+		cache.invalidateAll();
+		cache.cleanUp();
 	}
 
 	private static final Logger logger = LogManager.getLogger(WebuiProcessClassInfo.class);
@@ -124,7 +135,7 @@ final class WebuiProcessClassInfo
 	private static WebuiProcessClassInfo createWebuiProcessClassInfo(final Class<?> processClass) throws Exception
 	{
 		final ProcessClassInfo processClassInfo = ProcessClassInfo.of(processClass);
-		
+
 		final WebuiProcess webuiProcessAnn = processClass.getAnnotation(WebuiProcess.class);
 
 		@SuppressWarnings("unchecked")
@@ -162,7 +173,7 @@ final class WebuiProcessClassInfo
 	{
 		this.processClassInfo = processClassInfo;
 		this.paramLookupValuesProviders = paramLookupValuesProviders;
-		if(webuiProcessAnn != null)
+		if (webuiProcessAnn != null)
 		{
 			this.layoutType = webuiProcessAnn.layoutType();
 		}
@@ -180,7 +191,7 @@ final class WebuiProcessClassInfo
 				.add("processClassInfo", processClassInfo)
 				.toString();
 	}
-	
+
 	public PanelLayoutType getLayoutType()
 	{
 		return layoutType;
@@ -194,6 +205,28 @@ final class WebuiProcessClassInfo
 	public boolean isForwardValueToJavaProcessInstance(final String parameterName)
 	{
 		return !processClassInfo.getParameterInfos(parameterName).isEmpty();
+	}
+
+	public BarcodeScannerType getBarcodeScannerTypeOrNull(String parameterName)
+	{
+		final ImmutableSet<BarcodeScannerType> barcodeScannerTypes = processClassInfo.getParameterInfos(parameterName)
+				.stream()
+				.map(ProcessClassParamInfo::getBarcodeScannerType)
+				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
+		if (barcodeScannerTypes.isEmpty())
+		{
+			return null;
+		}
+		else if (barcodeScannerTypes.size() == 1)
+		{
+			return barcodeScannerTypes.iterator().next();
+		}
+		else
+		{
+			logger.warn("More than one BarcodeScannerType defined for '{}': {}. Returning null.", parameterName, barcodeScannerTypes);
+			return null;
+		}
 	}
 
 	//
@@ -228,7 +261,7 @@ final class WebuiProcessClassInfo
 				.collect(ImmutableList.toImmutableList());
 
 		final Method methodToInvoke = method; // FIXME: holding a hard reference to method may introduce ClassLoader memory leaks
-		
+
 		final LookupDescriptor lookupDescriptor = ListLookupDescriptor.builder()
 				.setLookupTableName(ann.lookupTableName())
 				.setDependsOnFieldNames(ann.dependsOn())
@@ -240,9 +273,9 @@ final class WebuiProcessClassInfo
 		return GuavaCollectors.entry(ann.parameterName(), lookupDescriptorProvider);
 	}
 
-	private static final LookupValuesList retriveLookupValues(
-			final Method method, 
-			final List<Function<LookupDataSourceContext, Object>> parameterValueProviders, 
+	private static LookupValuesList retriveLookupValues(
+			final Method method,
+			final List<Function<LookupDataSourceContext, Object>> parameterValueProviders,
 			final LookupDataSourceContext evalCtx)
 	{
 		Check.assumeNotNull(method, "Parameter method is not null");

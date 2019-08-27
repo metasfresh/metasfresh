@@ -30,7 +30,7 @@ import de.metas.ui.web.pickingslotsClearing.process.HUExtractedFromPickingSlotEv
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowOverrides;
-import de.metas.ui.web.view.ViewCloseReason;
+import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.ViewRowsOrderBy;
@@ -304,11 +304,11 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 		return packingHUsViewsCollection.computeIfAbsent(PackingHUsViewKey.ofPackingHUsViewId(packingHUsViewId), packingHUsViewFactory::createPackingHUsView);
 	}
 
-	public void closePackingHUsView(final ViewId packingHUsViewId)
+	void closePackingHUsView(final ViewId packingHUsViewId, final ViewCloseAction closeAction)
 	{
 		final PackingHUsViewKey key = PackingHUsViewKey.ofPackingHUsViewId(packingHUsViewId);
 		packingHUsViewsCollection.removeIfExists(key)
-				.ifPresent(packingHUsView -> packingHUsView.close(ViewCloseReason.USER_REQUEST));
+				.ifPresent(packingHUsView -> packingHUsView.close(closeAction));
 	}
 
 	public void handleEvent(final HUExtractedFromPickingSlotEvent event)

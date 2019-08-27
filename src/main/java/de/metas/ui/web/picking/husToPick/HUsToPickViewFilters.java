@@ -17,6 +17,7 @@ import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.process.BarcodeScannerType;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
@@ -29,7 +30,6 @@ import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Services;
-
 import lombok.experimental.UtilityClass;
 
 /*
@@ -90,7 +90,8 @@ class HUsToPickViewFilters
 						.setFieldName(PARAM_Barcode)
 						.setDisplayName(Services.get(IMsgBL.class).getTranslatableMsgText("webui.view.husToPick.filters.locatorBarcodeFilter"))
 						.setMandatory(true)
-						.setWidgetType(DocumentFieldWidgetType.Text))
+						.setWidgetType(DocumentFieldWidgetType.Text)
+						.barcodeScannerType(BarcodeScannerType.QRCode))
 				.build();
 	}
 

@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.ZoneId;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
 
@@ -330,6 +331,11 @@ public class UserSession
 	public UserId getLoggedUserId()
 	{
 		return getData().getLoggedUserId();
+	}
+
+	public Optional<UserId> getLoggedUserIdIfExists()
+	{
+		return getData().getLoggedUserIdIfExists();
 	}
 
 	public boolean isLoggedInAs(@NonNull final UserId userId)

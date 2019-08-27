@@ -84,6 +84,11 @@ public interface IViewRow
 		return getFieldNameAndJsonValues().getAsInt(fieldName, defaultValueIfNotFoundOrError);
 	}
 
+	default boolean getFieldValueAsBoolean(@NonNull final String fieldName, final boolean defaultValueIfNotFoundOrError)
+	{
+		return getFieldNameAndJsonValues().getAsBoolean(fieldName, defaultValueIfNotFoundOrError);
+	}
+
 	default Object getFieldValueAsJsonObject(@NonNull final String fieldName, final JSONOptions jsonOpts)
 	{
 		return getFieldNameAndJsonValues().getAsJsonObject(fieldName, jsonOpts);

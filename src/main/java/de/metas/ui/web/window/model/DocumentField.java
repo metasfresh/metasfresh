@@ -332,8 +332,8 @@ import lombok.NonNull;
 	}
 
 	private final <T> T convertToValueClass(
-			@Nullable final Object value, 
-			@Nullable final DocumentFieldWidgetType widgetType, 
+			@Nullable final Object value,
+			@Nullable final DocumentFieldWidgetType widgetType,
 			final Class<T> targetType)
 	{
 		return descriptor.convertToValueClass(value, widgetType, targetType, getLookupDataSourceOrNull());
@@ -366,12 +366,8 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public void setReadonly(final LogicExpressionResult readonly)
+	public void setReadonly(@NonNull final LogicExpressionResult readonly)
 	{
-		if (readonly == null)
-		{
-			throw new NullPointerException("readonly");
-		}
 		_readonly = readonly;
 	}
 
@@ -382,12 +378,8 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public void setDisplayed(final LogicExpressionResult displayed)
+	public void setDisplayed(@NonNull final LogicExpressionResult displayed)
 	{
-		if (displayed == null)
-		{
-			throw new NullPointerException("displayed");
-		}
 		_displayed = displayed;
 	}
 
