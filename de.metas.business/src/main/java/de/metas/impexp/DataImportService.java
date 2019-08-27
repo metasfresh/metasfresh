@@ -1,5 +1,7 @@
 package de.metas.impexp;
 
+import java.util.Optional;
+
 import org.adempiere.impexp.IImportProcessFactory;
 import org.springframework.stereotype.Service;
 
@@ -63,5 +65,10 @@ public class DataImportService
 				.build()
 				//
 				.execute();
+	}
+
+	public Optional<DataImportConfig> getDataImportConfigByInternalName(@NonNull final String internalName)
+	{
+		return dataImportConfigsRepo.getByInternalName(internalName);
 	}
 }
