@@ -185,7 +185,7 @@ public interface IPriceListDAO extends ISingletonService
 
 	void deleteProductPricesByIds(Set<ProductPriceId> productPriceIds);
 
-	List<I_M_PriceList_Version> retrieveCustomPLVsForBasePLV(I_M_PriceList_Version basePLV);
+	List<I_M_PriceList_Version> retrieveCustomPLVsToMutate(I_M_PriceList_Version basePLV);
 
 	I_M_PriceList_Version retrievePreviousVersionOrNull(I_M_PriceList_Version plv, boolean onlyProcessed);
 }

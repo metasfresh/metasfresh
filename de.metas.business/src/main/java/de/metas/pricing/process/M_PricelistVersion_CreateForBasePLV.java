@@ -1,7 +1,6 @@
 package de.metas.pricing.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.copyValues;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.copy;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.List;
@@ -70,14 +69,10 @@ public class M_PricelistVersion_CreateForBasePLV extends JavaProcess
 
 		I_M_PriceList_Version oldPLV = priceListsRepo.getPriceListVersionById(basePriceListVersionId);
 
-		final List<I_M_PriceList_Version> versionsForOldBase = priceListsRepo.retrieveCustomPLVsForBasePLV(oldPLV);
+		final List<I_M_PriceList_Version> versionsForOldBase = priceListsRepo.retrieveCustomPLVsToMutate(oldPLV);
 
 		for (final I_M_PriceList_Version oldCustPLV : versionsForOldBase)
 		{
-			// final PricingConditionsId oldCustomerPricingConditionsId = CoalesceUtil.coalesce(
-			// PricingConditionsId.ofDiscountSchemaIdOrNull(oldCustPLV.getM_DiscountSchema_ID()),
-			// PricingConditionsId.ofDiscountSchemaIdOrNull(oldPLV.getM_DiscountSchema_ID()));
-			// TODO: Cleanup
 
 			createNewPLV(oldCustPLV, newBasePLV);
 		}
@@ -88,21 +83,16 @@ public class M_PricelistVersion_CreateForBasePLV extends JavaProcess
 	{
 		final ISessionBL sessionBL = Services.get(ISessionBL.class);
 
-		final I_M_PriceList_Version newCustomerPLV = newInstance(I_M_PriceList_Version.class);
+		final I_M_PriceList_Version newCustomerPLV = copy()
+				.setSkipCalculatedColumns(true)
+				.setFrom(oldCustomerPLV)
+				.copyToNew(I_M_PriceList_Version.class);
 
-		copyValues(newBasePLV, newCustomerPLV);
-
-		// newInstance(I_M_PriceList_Version.class);
-		// newCustomerPLV.setM_Pricelist_Version_Base_ID(newBasePLVId.getRepoId());
-		newCustomerPLV.setM_DiscountSchema_ID(oldCustomerPLV.getM_DiscountSchema_ID());
-		newCustomerPLV.setM_PriceList_ID(oldCustomerPLV.getM_PriceList_ID());
-		newCustomerPLV.setM_Pricelist_Version_Base_ID(newBasePLV.getM_PriceList_Version_ID());
+		newCustomerPLV.setValidFrom(newBasePLV.getValidFrom());
 		saveRecord(newCustomerPLV);
 
 		final PriceListVersionId newCustomerPLVId = PriceListVersionId.ofRepoId(newCustomerPLV.getM_PriceList_Version_ID());
 
-		// Disabling change log creation because we might create and then update a huge amount of records.
-		// To avoid this huge performance issue we are disabling for this thread (08125)
 		sessionBL.setDisableChangeLogsForThread(true);
 
 		try
@@ -115,7 +105,8 @@ public class M_PricelistVersion_CreateForBasePLV extends JavaProcess
 
 			cloneASIs(newCustomerPLVId);
 
-			// newCustomerPLV.setM_Pricelist_Version_Base_ID(newBasePLV); TODO
+			newCustomerPLV.setM_Pricelist_Version_Base_ID(newBasePLV.getM_Pricelist_Version_Base_ID());
+
 		}
 		finally
 		{
@@ -142,8 +133,6 @@ public class M_PricelistVersion_CreateForBasePLV extends JavaProcess
 		{
 			return;
 		}
-
-		// NOTE: we assume the ASI was set when the initial copy function was executed
 
 		final I_M_AttributeSetInstance sourceASI = productPrice.getM_AttributeSetInstance();
 		final I_M_AttributeSetInstance targetASI = sourceASI == null ? null : attributeDAO.copy(sourceASI);

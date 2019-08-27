@@ -32,6 +32,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -341,9 +342,7 @@ public class PriceListDAO implements IPriceListDAO
 		}
 
 		// by validFrom, ascending.
-		return filter.orderBy()
-				.addColumn(I_M_PriceList_Version.COLUMNNAME_ValidFrom, orderAscending)
-				.endOrderBy()
+		return filter.orderBy(I_M_PriceList_Version.COLUMNNAME_ValidFrom)
 				.create()
 				.first();
 	}
@@ -637,14 +636,47 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public List<I_M_PriceList_Version> retrieveCustomPLVsForBasePLV(@NonNull final I_M_PriceList_Version basePLV)
+	public List<I_M_PriceList_Version> retrieveCustomPLVsToMutate(@NonNull final I_M_PriceList_Version basePLV)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList_Version.class)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final List<I_M_PriceList_Version> versionsForBase = queryBL.createQueryBuilder(I_M_PriceList_Version.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_Pricelist_Version_Base_ID, basePLV.getM_PriceList_Version_ID())
 				.addNotEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, basePLV.getM_PriceList_ID())
 				.create()
-				.list();
+				.list(I_M_PriceList_Version.class);
+
+		final ImmutableList<I_M_PriceList_Version> newestVersions = versionsForBase.stream()
+				.filter(version -> retrieveNextVersionOrNull(version) == null)
+				.filter(version -> belongsToCustomerForMutation(version))
+				.collect(ImmutableList.toImmutableList());
+
+		return newestVersions;
+
+	}
+
+	private boolean belongsToCustomerForMutation(final I_M_PriceList_Version version)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final List<I_C_BPartner> partnersAllowingPriceMutations = queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addOnlyContextClient()
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsCustomer, true)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsAllowPriceMutation, true)
+				.create()
+				.list(I_C_BPartner.class);
+
+		return partnersAllowingPriceMutations.stream()
+				.anyMatch(partner -> partner.getM_PricingSystem_ID() == getPricingSystemIdForVersion(version));
+	}
+
+	private int getPricingSystemIdForVersion(final I_M_PriceList_Version version)
+	{
+		final I_M_PriceList priceList = getById(version.getM_PriceList_ID());
+
+		return priceList.getM_PricingSystem_ID();
 	}
 }
