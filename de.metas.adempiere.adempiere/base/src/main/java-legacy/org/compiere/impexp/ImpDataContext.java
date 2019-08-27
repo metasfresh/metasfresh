@@ -34,8 +34,6 @@ import lombok.Value;
 @Builder
 public class ImpDataContext
 {
-//	final int AD_Client_ID = Env.getAD_Client_ID(ctx);
-	
 	@NonNull
 	ClientId clientId;
 	
