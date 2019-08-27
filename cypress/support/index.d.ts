@@ -559,8 +559,9 @@ declare namespace Cypress {
      * Expect the table to have a specific number of rows
      *
      * @param numberOfRows - the number of rows
+     * @param modal - optional, default = false - use true if the field is in a modal overlay
      */
-    expectNumberOfRows(numberOfRows: number): Chainable<any>
+    expectNumberOfRows(numberOfRows: number, modal?: boolean): Chainable<any>
 
     /**
      * Complete the current document
