@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.compiere.apps.form.fileimport;
+package de.metas.impexp;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,15 +9,9 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.List;
 
-import org.adempiere.test.AdempiereTestHelper;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-
-import de.metas.impexp.FileImportReader;
-import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -45,19 +39,12 @@ import de.metas.logging.LogManager;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class FileImportReadingTest
+public class FileImportReaderTest
 {
-	private static final transient Logger logger = LogManager.getLogger(FileImportReadingTest.class);
-	private static final String packagePath = "/org/compiere/apps/form/fileimport";
-
-	@Before
-	public void init()
-	{
-		AdempiereTestHelper.get().init();
-	}
+	private static final String packagePath = "/de/metas/impexp";
 
 	@Test
-	public void testMultipleLinesFieldFile()
+	public void testMultipleLinesFieldFile() throws IOException
 	{
 		final URL url = getClass().getResource(packagePath + "/multiplelines.csv");
 		Assert.assertNotNull("url null", url);
@@ -66,21 +53,14 @@ public class FileImportReadingTest
 
 		//
 		final Charset charset = Charset.forName("UTF-8");
-		try
-		{
-			final List<String> lines = FileImportReader.readMultiLines(file, charset);
+		final List<String> lines = FileImportReader.readMultiLines(file, charset);
 
-			Assert.assertNotNull("lines null", lines);
-			Assert.assertFalse(lines.isEmpty());
-			Assert.assertTrue(lines.size() == 2);
-			lines.forEach(l -> Assert.assertTrue(l.startsWith("G00")));
-			Assert.assertTrue(lines.get(0).endsWith("70"));
-			Assert.assertTrue(lines.get(1).endsWith("80"));
-		}
-		catch (IOException e)
-		{
-			logger.warn(e.getMessage());
-		}
+		Assert.assertNotNull("lines null", lines);
+		Assert.assertFalse(lines.isEmpty());
+		Assert.assertTrue(lines.size() == 2);
+		lines.forEach(l -> Assert.assertTrue(l.startsWith("G00")));
+		Assert.assertTrue(lines.get(0).endsWith("70"));
+		Assert.assertTrue(lines.get(1).endsWith("80"));
 	}
 
 	@Test
