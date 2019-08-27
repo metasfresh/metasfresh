@@ -7,7 +7,8 @@ import classnames from 'classnames';
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { getClassNames, generateMomentObj } from './RawWidgetHelpers';
 import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
-import { DATE_FORMAT } from '../../constants/Constants';
+import { DATE_FORMAT,   DATE_FIELD_TYPES,
+  DATE_FIELD_FORMATS, } from '../../constants/Constants';
 import ActionButton from './ActionButton';
 import Attributes from './Attributes/Attributes';
 import Checkbox from './Checkbox';
@@ -128,12 +129,16 @@ export class RawWidget extends Component {
   // Datepicker is checking the cached value in datepicker component itself
   // and send a patch request only if date is changed
   handlePatch = (property, value, id, valueTo, isForce) => {
-    const { handlePatch, inProgress } = this.props;
+    const { handlePatch, inProgress, widgetType } = this.props;
     const willPatch = this.willPatch(property, value, valueTo);
 
     // Do patch only when value is not equal state
     // or cache is set and it is not equal value
     if ((isForce || willPatch) && handlePatch && !inProgress) {
+      if (widgetType === 'ZonedDateTime') {
+        value = Moment(value).format(`YYYY-MM-DDTHH:mm:ss.SSSZ`);
+      }
+
       this.setState({
         cachedValue: value,
         clearedFieldWarning: false,
@@ -222,11 +227,11 @@ export class RawWidget extends Component {
       onHide,
       handleBackdropLock,
       subentity,
+      widgetType,
       subentityId,
       dropdownOpenCallback,
       autoFocus,
       fullScreen,
-      // widgetType,
       fields,
       windowType,
       dataId,
@@ -253,14 +258,10 @@ export class RawWidget extends Component {
       dateFormat,
       initialFocus,
     } = this.props;
-    let { widgetType } = this.props;
+    // let { widgetType } = this.props;
 
     let widgetValue = data != null ? data : widgetData[0].value;
     const { isEdited } = this.state;
-
-    if (widgetType === `DateTime`) {
-      widgetType = `ZonedDateTime`;
-    }
 
     // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
     const widgetField = filterWidget
@@ -336,10 +337,7 @@ export class RawWidget extends Component {
                   tabIndex: tabIndex,
                 }}
                 value={widgetValue || widgetData[0].value}
-                onChange={date => {
-                  const finalDate = date.utc ? date.utc(true) : date;
-                  return handleChange(widgetField, finalDate);
-                }}
+                onChange={date => handleChange(widgetField, date)}
                 patch={date =>
                   this.handlePatch(
                     widgetField,
@@ -362,7 +360,7 @@ export class RawWidget extends Component {
             <DatePicker
               key={1}
               field={fields[0].field}
-              timeFormat={false}
+              timeFormat={true}
               dateFormat={dateFormat || true}
               hasTimeZone={true}
               isOpenDatePicker={isOpenDatePicker}
@@ -372,10 +370,7 @@ export class RawWidget extends Component {
                 tabIndex: tabIndex,
               }}
               value={widgetValue || widgetData[0].value}
-              onChange={date => {
-                const finalDate = date.utc ? date.utc(true) : date;
-                return handleChange(widgetField, finalDate);
-              }}
+              onChange={date => handleChange(widgetField, date)}
               patch={date =>
                 this.handlePatch(
                   widgetField,

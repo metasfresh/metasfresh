@@ -45,6 +45,10 @@ class DatePicker extends Component {
     let { value } = nextProps;
 
     if (hasTimeZone && value) {
+      if (typeof value !== 'string') {
+        value = value.format();
+      }
+
       const timeZoneOffset = value.match(DatePicker.timeZoneRegex)[0];
 
       const timeZone = _.find(MomentTZ.tz.names(), timezoneName => {
