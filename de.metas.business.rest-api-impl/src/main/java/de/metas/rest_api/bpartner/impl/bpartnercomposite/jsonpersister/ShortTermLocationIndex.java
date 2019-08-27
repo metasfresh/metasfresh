@@ -82,7 +82,6 @@ public class ShortTermLocationIndex
 				return externalId2Location.get(locationIdentifier.asExternalId());
 			default:
 				throw new InvalidIdentifierException(locationIdentifier.toString());
-
 		}
 	}
 
@@ -126,11 +125,6 @@ public class ShortTermLocationIndex
 	public Collection<BPartnerLocation> getRemainingLocations()
 	{
 		return id2Location.values();
-	}
-
-	public void remove(@NonNull final BPartnerLocationId bpartnerLocationId)
-	{
-		id2Location.remove(bpartnerLocationId);
 	}
 
 	public void resetBillToDefaultFlags()

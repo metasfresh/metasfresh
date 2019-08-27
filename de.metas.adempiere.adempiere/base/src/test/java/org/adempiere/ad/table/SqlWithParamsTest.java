@@ -1,16 +1,16 @@
-package de.metas.bpartner.composite;
+package org.adempiere.ad.table;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import java.sql.Timestamp;
 
+import org.adempiere.ad.table.RecordChangeLogEntryLoader.SqlWithParams;
 import org.junit.jupiter.api.Test;
 
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
+import com.google.common.collect.ImmutableList;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -30,29 +30,19 @@ import de.metas.bpartner.BPartnerLocationId;
  * #L%
  */
 
-class BPartnerCompositeTest
+class SqlWithParamsTest
 {
-
 	@Test
 	void test()
 	{
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(10);
-		final BPartnerContactId bpartnerContactId = BPartnerContactId.ofRepoId(bpartnerId, 10);
+		final SqlWithParams result = SqlWithParams
+				.createEmpty()
+				.add(new SqlWithParams("string1", ImmutableList.of(1, 2, "3")))
+				.add(new SqlWithParams("string2", ImmutableList.of(4, 5, Timestamp.valueOf("2019-08-22 11:01:23"))))
+				.withFinalOrderByClause("ORDER BY whatever");
 
-		final BPartnerContact contact = BPartnerContact.builder()
-				.id(bpartnerContactId)
-				.build();
-
-		final BPartnerLocation location = BPartnerLocation.builder()
-				.id(BPartnerLocationId.ofRepoId(bpartnerId, 10))
-				.build();
-
-		final BPartnerComposite bpartnerComposite = BPartnerComposite.builder()
-				.contact(contact)
-				.location(location)
-				.build();
-
-		assertThat(bpartnerComposite.getContact(bpartnerContactId)).contains(contact);
+		assertThat(result.getSql()).isEqualTo("string1\n UNION\nstring2\nORDER BY whatever");
+		assertThat(result.getSqlParams()).containsExactly(1,2,"3",4,5,Timestamp.valueOf("2019-08-22 11:01:23"));
 	}
 
 }

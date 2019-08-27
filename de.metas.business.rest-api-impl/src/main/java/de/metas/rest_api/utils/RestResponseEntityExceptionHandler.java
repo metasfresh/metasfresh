@@ -96,5 +96,4 @@ public class RestResponseEntityExceptionHandler
 		logger.error(msg, e);
 		return new ResponseEntity<>(msg, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
-
 }
