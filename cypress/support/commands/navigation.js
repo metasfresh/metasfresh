@@ -99,13 +99,14 @@ Cypress.Commands.add('selectNthRow', (rowNumber, modal = false, force = false) =
     });
 });
 
-/**
- * Expect the table to have a specific number of rows
- *
- * @param numberOfRows - the number of rows
- */
-Cypress.Commands.add('expectNumberOfRows', numberOfRows => {
-  return cy.get('table tbody tr').should('have.length', numberOfRows);
+Cypress.Commands.add('expectNumberOfRows', (numberOfRows, modal = false) => {
+  let path = 'table tbody tr';
+
+  if (modal) {
+    path = '.modal-content-wrapper ' + path;
+  }
+
+  return cy.get(path).should('have.length', numberOfRows);
 });
 
 /**
@@ -119,33 +120,79 @@ Cypress.Commands.add('expectNumberOfRowsToBeGreaterThan', numberOfRows => {
   });
 });
 
-Cypress.Commands.add('selectRowByColumnAndValue', (columnName, expectedValue, modal = false, force = false) => {
-  cy.log(`Select row by columnName=${columnName} and expectedValue=${expectedValue}`);
+export class ColumnAndValue {
+  constructor(column, value) {
+    this.column = column;
+    this.value = value;
+  }
+}
+
+Cypress.Commands.add('selectRowByColumnAndValue', (columnAndValue, modal = false, force = false, single = true) => {
+  cy.log(`Select row by ${JSON.stringify(columnAndValue)}`);
+  const timeout = { timeout: 10000 };
+
   if (!force) {
     cy.waitForSaveIndicator();
   }
-  let path = '.table-flex-wrapper';
 
+  let path = '.table-flex-wrapper';
   if (modal) {
     path = '.modal-content-wrapper ' + path;
   }
 
-  // step 1: figure out from the thead what is the column index
+  // this makes searching for a single column and value easier to use (for the developer),
+  // by using a simple object instead of an array.
+  if (!Array.isArray(columnAndValue)) {
+    columnAndValue = [columnAndValue];
+  }
+
+  const $ = Cypress.$;
+
   return cy
-    .get(path)
-    .contains('thead tr th', columnName)
-    .invoke('index')
-    .then(columnIndex => {
-      // step 2: take the cell which contains the expectedValue in columnNumber from above
+    .get(path, timeout)
+    .should(table => {
+      // step: make sure the values exist and the page is loaded
+      columnAndValue.forEach(c => {
+        expect(table).to.contain(c.value);
+      });
+    })
+    // step: find all the columns' indexes
+    .then(() => {
+      columnAndValue.forEach(item => {
+        item.columnIndex = $(`[data-cy='cell-${item.column}']`).index();
+      });
+    })
+    .then(() => {
+      // step: iterate through all the table rows and return only the ones matching everything in the array
       return cy
-        .get(path)
-        .contains(`tbody td:nth-child(${columnIndex + 1})`, expectedValue)
-        .should('exist')
-        .click()
-        .then(td => {
-          // step 3: return the row containing that cell
-          const tr = td.parent();
-          return cy.wrap(tr).should('have.class', 'row-selected');
+        .get(`${path} tr`)
+        .then($tableRows => {
+          let matchingRows = [];
+
+          $tableRows.each((_, tr) => {
+            let ok = true;
+
+            columnAndValue.forEach(item => {
+              const realValue = $(tr)
+                .children()
+                .eq(item.columnIndex)
+                .text();
+              if (!realValue.includes(item.value)) {
+                ok = false;
+                return false;
+              }
+            });
+
+            if (ok) {
+              cy.wrap(tr).click();
+              matchingRows.push(tr);
+            }
+          });
+          cy.wrap(matchingRows).should('not.be.empty');
+          if (single && matchingRows.length > 1) {
+            return cy.wrap(matchingRows[0]).click();
+          }
+          return cy.wrap(matchingRows);
         });
     });
 });
