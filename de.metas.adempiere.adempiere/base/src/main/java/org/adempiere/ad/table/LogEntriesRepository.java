@@ -35,6 +35,9 @@ import lombok.Value;
  * #L%
  */
 
+/**
+ * Please update the technical note of the {@code C_Location} table in application dictionary if you move or rename this class.
+ */
 public interface LogEntriesRepository
 {
 	ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> getLogEntriesForRecordReferences(LogEntriesQuery logEntriesQuery);
@@ -70,6 +73,7 @@ public interface LogEntriesRepository
 		 * <li>{@code Created}, but note that the {@code C_Location} record's {@code Created} value is used in the {@link RecordChangeLogEntry}
 		 * <li>{@code CreatedBy} same as {@code Created}
  		 * <li>{@code Updated} and {@code UpdatedBy}: since {@code C_Location} is immutable, they don't matter anyways
+ 		 * <li>{@code IsActive}, because it's generally not accessible via UI and we don't want it to be confused with e.g. {@code C_BPartner_Location.IsActive}.
 		 * <li>{@code C_Location_ID}
   		 * <li>Every {@code C_Location}-column with {@code IsAllowLogging='N'}
   		 * <p/>
