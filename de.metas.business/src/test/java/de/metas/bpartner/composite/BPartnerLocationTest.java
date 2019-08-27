@@ -1,10 +1,8 @@
 package de.metas.bpartner.composite;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
 import org.junit.jupiter.api.Test;
 
-import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 
@@ -30,29 +28,33 @@ import de.metas.bpartner.BPartnerLocationId;
  * #L%
  */
 
-class BPartnerCompositeTest
+class BPartnerLocationTest
 {
 
+	/**
+	 * Verifies that we can use {@link BPartnerLocation#getOriginalOrSelf()} and {@link BPartnerLocation#equals(Object)}
+	 * to figure out if a {@link BPartnerLocation} was changed since its isntantiation.
+	 */
 	@Test
-	void test()
+	void getOriginalOrSelf()
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(10);
-		final BPartnerContactId bpartnerContactId = BPartnerContactId.ofRepoId(bpartnerId, 10);
-
-		final BPartnerContact contact = BPartnerContact.builder()
-				.id(bpartnerContactId)
-				.build();
 
 		final BPartnerLocation location = BPartnerLocation.builder()
 				.id(BPartnerLocationId.ofRepoId(bpartnerId, 10))
+				.address1("address1")
 				.build();
 
-		final BPartnerComposite bpartnerComposite = BPartnerComposite.builder()
-				.contact(contact)
-				.location(location)
-				.build();
+		assertThat(location.getOriginalOrSelf()).isEqualTo(location);
+		assertThat(location.deepCopy().getOriginalOrSelf()).isEqualTo(location.deepCopy());
 
-		assertThat(bpartnerComposite.getContact(bpartnerContactId)).contains(contact);
+		location.setAddress1("address1_mod");
+		assertThat(location.getOriginalOrSelf().getAddress1()).isEqualTo("address1");
+		assertThat(location.getOriginalOrSelf()).isNotEqualTo(location);
+		assertThat(location.deepCopy().getOriginalOrSelf()).isNotEqualTo(location.deepCopy());
+
+		location.setAddress1("address1");
+		assertThat(location.getOriginalOrSelf()).isEqualTo(location);
+		assertThat(location.deepCopy().getOriginalOrSelf()).isEqualTo(location.deepCopy());
 	}
-
 }
