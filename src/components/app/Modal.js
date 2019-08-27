@@ -681,8 +681,6 @@ class Modal extends Component {
  * @prop {*} triggerField
  * @prop {*} viewId
  * @prop {*} windowType
- * @category Components
- * @extends {Component<Props>}
  */
 Modal.propTypes = {
   dispatch: PropTypes.func.isRequired,
@@ -694,7 +692,7 @@ Modal.propTypes = {
   childViewSelectedIds: PropTypes.any,
   data: PropTypes.oneOfType([PropTypes.shape(), PropTypes.array]), // TODO: type here should point to a hidden issue?
   dataId: PropTypes.string,
-  indicator: PropTypes.any,
+  indicator: PropTypes.string,
   layout: PropTypes.shape(),
   isAdvanced: PropTypes.bool,
   isDocumentNotSaved: PropTypes.any,
