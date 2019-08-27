@@ -42,6 +42,7 @@ public class DataImportConfigRepository
 	{
 		return DataImportConfig.builder()
 				.id(DataImportConfigId.ofRepoId(record.getC_DataImport_ID()))
+				.internalName(record.getInternalName())
 				.impFormatId(ImpFormatId.ofRepoId(record.getAD_ImpFormat_ID()))
 				.build();
 	}

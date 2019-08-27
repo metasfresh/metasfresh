@@ -1,5 +1,7 @@
 package de.metas.impexp;
 
+import javax.annotation.Nullable;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -32,6 +34,9 @@ public class DataImportConfig
 {
 	@NonNull
 	DataImportConfigId id;
+	
+	@Nullable
+	String internalName;
 
 	@NonNull
 	ImpFormatId impFormatId;
