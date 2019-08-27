@@ -49,6 +49,11 @@ class Modal extends Component {
     };
   }
 
+  /**
+   * @async
+   * @method componentDidMount
+   * @summary ToDo: Describe the method.
+   */
   async componentDidMount() {
     this.mounted = true;
 
@@ -68,6 +73,10 @@ class Modal extends Component {
     this.initEventListeners();
   }
 
+  /**
+   * @method componentWillUnmount
+   * @summary ToDo: Describe the method.
+   */
   componentWillUnmount() {
     this.mounted = false;
 
@@ -105,10 +114,19 @@ class Modal extends Component {
     }
   }
 
+  /**
+   * @method toggleTooltip
+   * @summary ToDo: Describe the method.
+   * @param {*} key
+   */
   toggleTooltip = (key = null) => {
     this.setState({ isTooltipShow: key });
   };
 
+  /**
+   * @method initEventListeners
+   * @summary ToDo: Describe the method.
+   */
   initEventListeners = () => {
     const modalContent = document.querySelector('.js-panel-modal-content');
 
@@ -117,6 +135,10 @@ class Modal extends Component {
     }
   };
 
+  /**
+   * @method removeEventListeners
+   * @summary ToDo: Describe the method.
+   */
   removeEventListeners = () => {
     const modalContent = document.querySelector('.js-panel-modal-content');
 
@@ -125,6 +147,11 @@ class Modal extends Component {
     }
   };
 
+  /**
+   * @async
+   * @method init
+   * @summary ToDo: Describe the method.
+   */
   init = async () => {
     const {
       dispatch,
@@ -228,6 +255,10 @@ class Modal extends Component {
     }
   };
 
+  /**
+   * @method closeModal
+   * @summary ToDo: Describe the method.
+   */
   closeModal = () => {
     // TODO: parentDataId (formerly relativeDataId) is not passed in as prop
     const {
