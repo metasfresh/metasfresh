@@ -85,7 +85,7 @@ class Header extends Component {
   }
 
   /**
-   * @method handleScroll
+   * @method componentDidUpdate
    * @summary ToDo: Describe the method
    * @param {object} prevProps
    * @param {object} prevState
@@ -258,7 +258,7 @@ class Header extends Component {
   };
 
   /**
-   * @method handleScroll
+   * @method toggleTooltip
    * @summary ToDo: Describe the method
    * @param {object} event
    */
@@ -370,7 +370,7 @@ class Header extends Component {
   };
 
   /**
-   * @method handleScroll
+   * @method handleClone
    * @summary ToDo: Describe the method
    * @param {string} windowId
    * @param {string} docId
@@ -460,7 +460,7 @@ class Header extends Component {
   };
 
   /**
-   * @method handleScroll
+   * @method handleDocStatusToggle
    * @summary ToDo: Describe the method
    * @param {object} event
    */
