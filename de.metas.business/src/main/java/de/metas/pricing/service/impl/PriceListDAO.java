@@ -47,6 +47,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -314,11 +315,11 @@ public class PriceListDAO implements IPriceListDAO
 		final Operator validFromOperator = Operator.GREATER;
 		final boolean orderAscending = true;
 
-		return retrievePreviousOrNext(plv, validFromOperator, onlyProcessed , orderAscending);
+		return retrievePreviousOrNext(plv, validFromOperator, onlyProcessed, orderAscending);
 	}
 
 	@Override
-	public I_M_PriceList_Version retrievePreviousVersionOrNull(final I_M_PriceList_Version plv, final boolean onlyProcessed /* TODO:DROP IF NOT NEEDED */)
+	public I_M_PriceList_Version retrievePreviousVersionOrNull(final I_M_PriceList_Version plv, final boolean onlyProcessed)
 	{
 		// we want the PLV with the highest ValidFrom that is just less than plv's
 		final Operator validFromOperator = Operator.LESS;
@@ -328,7 +329,7 @@ public class PriceListDAO implements IPriceListDAO
 
 	private I_M_PriceList_Version retrievePreviousOrNext(final I_M_PriceList_Version plv,
 			final Operator validFromOperator,
-			final boolean onlyProcessed, // TODO: Make sure it's needed or drop it if not
+			final boolean onlyProcessed,
 			final boolean orderAscending)
 	{
 		final IQueryBuilder<I_M_PriceList_Version> filter = Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList_Version.class, plv)
@@ -521,7 +522,7 @@ public class PriceListDAO implements IPriceListDAO
 		save(plv);
 
 		// now set the previous one as base list
-		final I_M_PriceList_Version previousPlv = Services.get(IPriceListDAO.class).retrievePreviousVersionOrNull(plv, true /* TODO CHECKIF THIS IS OK> IT WAS LIKE THIS BEFORE */);
+		final I_M_PriceList_Version previousPlv = Services.get(IPriceListDAO.class).retrievePreviousVersionOrNull(plv, true);
 		if (previousPlv != null)
 		{
 			plv.setM_Pricelist_Version_Base(previousPlv);
@@ -665,7 +666,6 @@ public class PriceListDAO implements IPriceListDAO
 
 	private void createNewPLV(final I_M_PriceList_Version oldCustomerPLV, final I_M_PriceList_Version newBasePLV, UserId userId)
 	{
-		final ISessionBL sessionBL = Services.get(ISessionBL.class);
 
 		final I_M_PriceList_Version newCustomerPLV = copy()
 				.setSkipCalculatedColumns(true)
@@ -677,8 +677,21 @@ public class PriceListDAO implements IPriceListDAO
 
 		final PriceListVersionId newCustomerPLVId = PriceListVersionId.ofRepoId(newCustomerPLV.getM_PriceList_Version_ID());
 
-		sessionBL.setDisableChangeLogsForThread(true);
+		createProductPricesForPLV(userId, newCustomerPLVId);
 
+		cloneASIs(newCustomerPLVId);
+
+		newCustomerPLV.setM_Pricelist_Version_Base_ID(newBasePLV.getM_Pricelist_Version_Base_ID());
+		save(newCustomerPLV);
+
+	}
+
+	@VisibleForTesting
+	protected void createProductPricesForPLV(UserId userId, final PriceListVersionId newCustomerPLVId)
+	{
+		final ISessionBL sessionBL = Services.get(ISessionBL.class);
+
+		sessionBL.setDisableChangeLogsForThread(true);
 		try
 		{
 			DB.executeFunctionCallEx( //
@@ -687,17 +700,11 @@ public class PriceListDAO implements IPriceListDAO
 					, new Object[] { newCustomerPLVId, userId.getRepoId() } //
 			);
 
-			cloneASIs(newCustomerPLVId);
-
-			newCustomerPLV.setM_Pricelist_Version_Base_ID(newBasePLV.getM_Pricelist_Version_Base_ID());
-			save(newCustomerPLV);
-
 		}
 		finally
 		{
 			sessionBL.setDisableChangeLogsForThread(false);
 		}
-
 	}
 
 	private void cloneASIs(PriceListVersionId newPLVId)

@@ -23,3 +23,8 @@ UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Preislisten mutieren',Updated=
 UPDATE AD_Process_Trl SET Name='Preislisten mutieren',Updated=TO_TIMESTAMP('2019-08-27 13:24:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=541180
 ;
 
+-- 2019-08-27T11:52:27.742Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET ShowHelp='Y',Updated=TO_TIMESTAMP('2019-08-27 14:52:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=541180
+;
+
