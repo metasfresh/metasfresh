@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import MomentTZ from 'moment-timezone';
+import Moment from 'moment';
 import onClickOutside from 'react-onclickoutside';
 import _ from 'lodash';
 
@@ -57,11 +58,17 @@ class DatePicker extends Component {
 
       value = value.replace(DatePicker.timeZoneRegex, '');
       value = MomentTZ.tz(value, timeZone);
+    } else {
+      if (!value) value = this.props.value;
 
-      this.setState({
-        value,
-      });
+      if (!Moment.isMoment(value)) {
+        value = new Date(value);
+      }
     }
+
+    this.setState({
+      value,
+    });
   }
 
   handleBlur = date => {

@@ -384,7 +384,7 @@ TablePagination.propTypes = {
   rowLength: PropTypes.number.isRequired,
   compressed: PropTypes.any, // TODO: Looks like it's not used
   size: PropTypes.number.isRequired,
-  queryLimitHit: PropTypes.number,
+  queryLimitHit: PropTypes.bool,
   pageLength: PropTypes.number.isRequired,
   disablePaginationShortcuts: PropTypes.bool,
   page: PropTypes.number.isRequired,
