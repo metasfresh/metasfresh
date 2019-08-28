@@ -1,19 +1,34 @@
 import { Product, ProductCategory, ProductPrice } from '../../support/utils/product';
 import { SalesOrder, SalesOrderLine } from '../../support/utils/sales_order';
 import { BPartner } from '../../support/utils/bpartner';
-import { BPartnerLocation } from '../../support/utils/bpartner_ui';
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 
 describe('Change Product Price', function() {
-  const date = humanReadableNow();
-  const productName = `ProductName ${date}`;
-  const productCategoryName = `ProductCategory ${date}`;
-  const bpName = `Customer ${date}`;
+  let productName;
+  let productCategoryName;
+  let bpName;
 
-  const priceList = `Testpreise Kunden (Deutschland)_Germany - Deutschland_EUR_2015-01-01`;
-  const taxCatergory = `Regular Tax Rate 19% (Germany)`;
+  let priceList;
+  let taxCatergory;
+  let amount;
+  let paymentTerm;
   let salesOrderRecordID;
   let productRecordID;
+  let customerPricingSystem;
+
+  it('Read fixture and prepare the names', function() {
+    cy.fixture('product/change_product_price_spec.json').then(f => {
+      productName = appendHumanReadableNow(f['productName']);
+      productCategoryName = appendHumanReadableNow(f['productCategoryName']);
+      bpName = appendHumanReadableNow(f['bpName']);
+
+      priceList = f['priceList'];
+      taxCatergory = f['taxCatergory'];
+      amount = f['amount'];
+      paymentTerm = f['paymentTerm'];
+      customerPricingSystem = f['customerPricingSystem'];
+    });
+  });
 
   it('Create a Product Category', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
@@ -27,9 +42,9 @@ describe('Change Product Price', function() {
     const productPrice = new ProductPrice()
       .setPriceList(priceList)
       .setTaxCategory(taxCatergory)
-      .setListPriceAmount(`0`)
-      .setStandardPriceAmount(`0`)
-      .setLimitPriceAmount(`0`);
+      .setListPriceAmount(amount)
+      .setStandardPriceAmount(amount)
+      .setLimitPriceAmount(amount);
 
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
@@ -48,8 +63,8 @@ describe('Change Product Price', function() {
   it('Create Business Partner', function() {
     cy.fixture('sales/simple_customer.json').then(customerJson => {
       new BPartner({ ...customerJson, name: bpName })
-        .setPaymentTerm('Immediatlely')
-        .setCustomerPricingSystem(`Testpreisliste Kunden`)
+        .setPaymentTerm(paymentTerm)
+        .setCustomerPricingSystem(customerPricingSystem)
         .apply();
     });
   });

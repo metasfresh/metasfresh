@@ -150,6 +150,7 @@ describe('Create a purchase order and Material Receipts', function() {
     applyFilters();
 
     cy.selectNthRow(0).click();
+    cy.waitForSaveIndicator();
     cy.executeQuickAction('WEBUI_M_HU_MoveToDirectWarehouse', false, false);
 
     clearNotFrequentFilters();

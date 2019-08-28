@@ -1,11 +1,17 @@
 import { PriceList, PriceListVersion } from '../../support/utils/pricelist';
 import { Pricesystem } from '../../support/utils/pricesystem';
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 
 describe('Create Pricelist for Automatic End2End Tests with cypress https://github.com/metasfresh/metasfresh-e2e/issues/95', function() {
-  const date = humanReadableNow();
-  const priceSystemName = `Test Preissystem ${date}`;
-  const priceListName = `Test Preisliste DEU EUR ${date}`;
+  let priceSystemName;
+  let priceListName;
+
+  it('Read fixture and prepare the names', function() {
+    cy.fixture('price/pricelist_setup_spec.json').then(f => {
+      priceSystemName = appendHumanReadableNow(f['priceSystemName']);
+      priceListName = appendHumanReadableNow(f['priceListName']);
+    });
+  });
   it('Create new Pricesystem', function() {
     cy.fixture('price/pricesystem.json').then(priceSystemJson => {
       Object.assign(

@@ -1,15 +1,15 @@
-describe('Create new Parzelle/Allotment', function() {
-  before(function() {
-    cy.visit('/window/540210');
+describe('Create new Parzelle/Allotment(a plot of land rented for growing vegetables or flowers.)', function() {
+  let name;
+  it('Read fixture and prepare the names', function() {
+    cy.fixture('settings/create_new_parzelle_spec.json').then(f => {
+      name = f['name'];
+    });
   });
-
-  it('open new parzelle', function() {
-    cy.clickHeaderNav('new');
-  });
-
-  it('create it', function() {
-    cy.writeIntoStringField('Value', 'Industriestrasse');
-    cy.writeIntoStringField('Name', 'Industriestrasse');
-    cy.get(':nth-child(4) > .header-btn > .header-item-container > .header-item').click();
+  it('Create new parzelle', function() {
+    cy.visitWindow(540210, 'NEW');
+    cy.writeIntoStringField('Value', name);
+    cy.writeIntoStringField('Name', name);
+    /*show newly created parzelle in the grid view*/
+    cy.visitWindow(540210);
   });
 });

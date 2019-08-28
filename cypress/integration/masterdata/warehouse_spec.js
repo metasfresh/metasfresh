@@ -1,11 +1,15 @@
 import { Warehouse } from '../../support/utils/warehouse';
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 
 describe('Create test: warehouse', function() {
-  const date = humanReadableNow();
-  const warehouseName = `TestWarehouseName ${date}`;
-  const warehouseValue = `TestWarehouseValue ${date}`;
-
+  let warehouseName;
+  let warehouseValue;
+  it('Read the fixture', function() {
+    cy.fixture('masterdata/warehouse_spec.json').then(f => {
+      warehouseName = appendHumanReadableNow(f['warehouseName']);
+      warehouseValue = appendHumanReadableNow(f['warehouseValue']);
+    });
+  });
   it('Create a new warehouse', function() {
     cy.fixture('misc/warehouse.json').then(warehouseJson => {
       Object.assign(new Warehouse(), warehouseJson)

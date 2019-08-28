@@ -1,10 +1,16 @@
 import { Product, ProductCategory } from '../../support/utils/product';
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 
 describe('Create Test: set packing item in product window https://github.com/metasfresh/metasfresh-e2e/issues/26', function() {
-  const date = humanReadableNow();
-  const productName = `ProductName ${date}`;
-  const productCategoryName = `ProductCategoryName ${date}`;
+  let productName;
+  let productCategoryName;
+
+  it('Read fixture and prepare the names', function() {
+    cy.fixture('product/product_packing_item_setup.json').then(f => {
+      productName = appendHumanReadableNow(f['productName']);
+      productCategoryName = appendHumanReadableNow(f['productCategoryName']);
+    });
+  });
 
   it('Create a new ProductCategory', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {

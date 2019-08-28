@@ -1,15 +1,23 @@
 import { BPartner } from '../../support/utils/bpartner';
 import { Product, ProductCategory } from '../../support/utils/product';
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 
+let customerName;
+let packingMaterialInstruction;
+let productName;
+let packingMaterial;
+let productCategoryName;
+
+it('Read fixture and prepare the names', function() {
+  cy.fixture('logistics/create_new_packing_instructions_spec.json').then(f => {
+    customerName = appendHumanReadableNow(f['customerName']);
+    packingMaterialInstruction = appendHumanReadableNow(f['packingMaterialInstruction']);
+    productName = appendHumanReadableNow(f['productName']);
+    packingMaterial = appendHumanReadableNow(f['packingMaterial']);
+    productCategoryName = appendHumanReadableNow(f['productCategoryName']);
+  });
+});
 describe('create new packing instructions ', function() {
-  const date = humanReadableNow();
-  const customerName = `TestBPartnerPackingMaterial ${date}`;
-  const packingMaterialInstruction = `TestPackingMaterialInstruction ${date}`;
-  const productName = `TestProductPackingMaterial ${date}`;
-  const packingMaterial = `TestPackingMaterial ${date}`;
-  const productCategoryName = `ProductCategoryName ${date}`;
-
   it('Set up product and partner', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
