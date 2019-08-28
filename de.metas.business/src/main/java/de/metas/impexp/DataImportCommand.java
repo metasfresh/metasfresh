@@ -6,14 +6,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.IImportProcessFactory;
-import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.springframework.core.io.Resource;
 
+import de.metas.impexp.processing.IImportProcessFactory;
+import de.metas.impexp.processing.spi.IAsyncImportProcessBuilder;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import lombok.Builder;

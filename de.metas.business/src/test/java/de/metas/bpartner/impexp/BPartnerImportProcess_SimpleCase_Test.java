@@ -2,7 +2,6 @@ package de.metas.bpartner.impexp;
 
 import java.util.Properties;
 
-import org.adempiere.impexp.DBFunctionsRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_I_BPartner;
@@ -17,6 +16,7 @@ import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.impexp.processing.DBFunctionsRepository;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 

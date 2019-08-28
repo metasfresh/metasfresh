@@ -5,13 +5,13 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.impexp.AbstractImportProcess;
-import org.adempiere.impexp.IImportInterceptor;
-import org.adempiere.impexp.product.MProductImportTableSqlUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.ModelValidationEngine;
 
+import de.metas.impexp.processing.AbstractImportProcess;
+import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.product.MProductImportTableSqlUpdater;
 import de.metas.product.IProductDAO;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.model.I_I_Pharma_Product;

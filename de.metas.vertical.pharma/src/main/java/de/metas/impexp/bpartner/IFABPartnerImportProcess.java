@@ -7,10 +7,10 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 
+import de.metas.impexp.processing.AbstractImportProcess;
 import de.metas.vertical.pharma.model.I_C_BPartner;
 import de.metas.vertical.pharma.model.I_I_Pharma_BPartner;
 import de.metas.vertical.pharma.model.X_I_Pharma_BPartner;

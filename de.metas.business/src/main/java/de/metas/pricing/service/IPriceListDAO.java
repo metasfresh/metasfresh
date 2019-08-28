@@ -33,13 +33,13 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.impexp.product.ProductPriceCreateRequest;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_ProductPrice;
 
+import de.metas.impexp.processing.product.ProductPriceCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.pricing.PriceListId;

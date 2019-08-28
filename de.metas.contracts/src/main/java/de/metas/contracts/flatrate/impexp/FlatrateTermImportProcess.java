@@ -6,7 +6,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.PO;
@@ -15,6 +14,7 @@ import org.compiere.util.DB;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.model.X_I_Flatrate_Term;
+import de.metas.impexp.processing.AbstractImportProcess;
 
 /*
  * #%L

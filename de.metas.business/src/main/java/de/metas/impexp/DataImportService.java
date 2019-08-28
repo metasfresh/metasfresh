@@ -2,9 +2,9 @@ package de.metas.impexp;
 
 import java.util.Optional;
 
-import org.adempiere.impexp.IImportProcessFactory;
 import org.springframework.stereotype.Service;
 
+import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
 

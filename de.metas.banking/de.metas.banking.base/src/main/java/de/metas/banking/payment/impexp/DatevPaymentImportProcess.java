@@ -6,8 +6,6 @@ import java.time.LocalDate;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.impexp.AbstractImportProcess;
-import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_C_Payment;
@@ -17,6 +15,8 @@ import org.compiere.util.TimeUtil;
 import de.metas.banking.model.I_I_Datev_Payment;
 import de.metas.banking.model.X_I_Datev_Payment;
 import de.metas.bpartner.BPartnerId;
+import de.metas.impexp.processing.AbstractImportProcess;
+import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.organization.OrgId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;

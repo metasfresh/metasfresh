@@ -1,8 +1,7 @@
 package org.compiere.process;
 
-import org.adempiere.impexp.IImportProcess;
-import org.adempiere.impexp.IImportProcessFactory;
-
+import de.metas.impexp.processing.IImportProcess;
+import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;

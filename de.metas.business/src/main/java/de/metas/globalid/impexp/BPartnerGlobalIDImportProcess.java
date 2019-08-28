@@ -5,13 +5,13 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_BPartner_GlobalID;
 import org.compiere.model.X_I_BPartner_GlobalID;
 
+import de.metas.impexp.processing.AbstractImportProcess;
 import de.metas.util.Check;
 
 /*

@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.impexp.DBFunctionsRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
@@ -27,6 +26,7 @@ import de.metas.StartupListener;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.impexp.processing.DBFunctionsRepository;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 

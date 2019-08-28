@@ -6,7 +6,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_I_Replenish;
@@ -15,6 +14,7 @@ import org.compiere.model.X_I_Replenish;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.impexp.processing.AbstractImportProcess;
 import de.metas.util.Services;
 import lombok.NonNull;
 

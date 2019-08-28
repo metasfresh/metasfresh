@@ -12,7 +12,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_GL_Journal;
@@ -27,6 +26,7 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.impexp.processing.AbstractImportProcess;
 
 /*
  * #%L
