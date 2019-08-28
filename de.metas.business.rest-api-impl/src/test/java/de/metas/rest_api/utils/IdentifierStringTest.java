@@ -1,8 +1,11 @@
 package de.metas.rest_api.utils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import org.junit.jupiter.api.Test;
 
+import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.utils.IdentifierString.Type;
 import de.metas.util.rest.ExternalId;
 
@@ -30,15 +33,48 @@ import de.metas.util.rest.ExternalId;
 
 class IdentifierStringTest
 {
-
 	@Test
-	void of_externalId()
+	void of_ExternalId()
 	{
 		final IdentifierString testee = IdentifierString.of("ext-abcd");
 
 		assertThat(testee.getType()).isEqualTo(Type.EXTERNAL_ID);
-		assertThat(testee.getValue()).isEqualTo("abcd");
 		assertThat(testee.asExternalId()).isEqualTo(ExternalId.of("abcd"));
+	}
+
+	@Test
+	void of_Value()
+	{
+		final IdentifierString testee = IdentifierString.of("val-abcd");
+
+		assertThat(testee.getType()).isEqualTo(Type.VALUE);
+		assertThat(testee.asValue()).isEqualTo("abcd");
+	}
+
+	@Test
+	void of_GLN()
+	{
+		final IdentifierString testee = IdentifierString.of("gln-abcd");
+
+		assertThat(testee.getType()).isEqualTo(Type.GLN);
+		assertThat(testee.asGLN()).isEqualTo("abcd");
+	}
+
+	@Test
+	void of_MetasfreshId()
+	{
+		final IdentifierString testee = IdentifierString.of("12345");
+
+		assertThat(testee.getType()).isEqualTo(Type.METASFRESH_ID);
+		assertThat(testee.asMetasfreshId()).isEqualTo(MetasfreshId.of(12345));
+	}
+
+	@Test
+	void invalidIdentifier()
+	{
+		assertThatThrownBy(() -> IdentifierString.of("12345x"))
+				.isInstanceOf(InvalidIdentifierException.class)
+				.hasMessageContaining("12345x");
 	}
 
 }
