@@ -248,22 +248,19 @@ export function parseToDisplay(fieldsByName) {
   return parseDateToReadable(nullToEmptyStrings(fieldsByName));
 }
 
-// i.e 2018-01-27T17:00:00.000-06:00
+// This doesn't set the TZ anymore, as we're handling this globally/in datepicker
 export function parseDateWithCurrenTimezone(value) {
   if (value) {
-    if (value instanceof Date) {
+    if (Moment.isMoment(value)) {
       return value;
-    } else if (Moment.isMoment(value)) {
-      return new Date(value);
-    } else {
-      return new Date(value);
     }
+    return Moment(value);
   }
   return '';
 }
 
 function parseDateToReadable(fieldsByName) {
-  const dateParse = ['Date', 'DateTime', 'Time'];
+  const dateParse = ['Date', 'ZonedDateTime'];
 
   return Object.keys(fieldsByName).reduce((acc, fieldName) => {
     const field = fieldsByName[fieldName];

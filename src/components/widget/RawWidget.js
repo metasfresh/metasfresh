@@ -339,10 +339,7 @@ export class RawWidget extends Component {
                   tabIndex: tabIndex,
                 }}
                 value={widgetValue || widgetData[0].value}
-                onChange={date => {
-                  date = Moment(date).format(DATE_FORMAT);
-                  handleChange(widgetField, date);
-                }}
+                onChange={date => handleChange(widgetField, date)}
                 patch={date =>
                   this.handlePatch(
                     widgetField,
@@ -396,7 +393,7 @@ export class RawWidget extends Component {
           <div className={this.getClassNames({ icon: true })}>
             <DatePicker
               field={fields[0].field}
-              timeFormat={true}
+              timeFormat={TIME_FORMAT}
               dateFormat={false}
               inputProps={{
                 placeholder: fields[0].emptyText,

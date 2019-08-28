@@ -11,6 +11,7 @@ import {
   AMOUNT_FIELD_FORMATS_BY_PRECISION,
   SPECIAL_FIELD_TYPES,
   DATE_FIELD_TYPES,
+  TIME_FIELD_TYPES,
   DATE_FIELD_FORMATS,
 } from '../../constants/Constants';
 import WidgetTooltip from '../widget/WidgetTooltip';
@@ -23,8 +24,7 @@ class TableCell extends PureComponent {
       ? AMOUNT_FIELD_FORMATS_BY_PRECISION[precision]
       : null;
 
-  static getDateFormat = fieldType =>
-    DATE_FIELD_FORMATS[fieldType] || DATE_FIELD_FORMATS.Date;
+  static getDateFormat = fieldType => DATE_FIELD_FORMATS[fieldType];
 
   static createDate = (fieldValue, fieldType) =>
     fieldValue
@@ -92,7 +92,8 @@ class TableCell extends PureComponent {
             .join(' - ');
         }
 
-        return DATE_FIELD_TYPES.includes(fieldType)
+        return DATE_FIELD_TYPES.includes(fieldType) ||
+          TIME_FIELD_TYPES.includes(fieldType)
           ? TableCell.createDate(fieldValue, fieldType)
           : fieldValue.caption;
       }
@@ -104,7 +105,10 @@ class TableCell extends PureComponent {
         );
       }
       case 'string': {
-        if (DATE_FIELD_TYPES.includes(fieldType)) {
+        if (
+          DATE_FIELD_TYPES.includes(fieldType) ||
+          TIME_FIELD_TYPES.includes(fieldType)
+        ) {
           return TableCell.createDate(fieldValue, fieldType);
         } else if (AMOUNT_FIELD_TYPES.includes(fieldType)) {
           return TableCell.createAmount(fieldValue, precision, isGerman);
