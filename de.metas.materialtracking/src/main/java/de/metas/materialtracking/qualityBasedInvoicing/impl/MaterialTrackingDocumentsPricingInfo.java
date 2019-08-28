@@ -39,6 +39,7 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionOrder;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -69,7 +70,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
  */
 /* package */final class MaterialTrackingDocumentsPricingInfo
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -87,18 +88,16 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 		plvs = ImmutableMap.copyOf(builder.plvs);
 	}
 
-	public final Collection<I_M_PriceList_Version> getPriceListVersions()
+	public Collection<I_M_PriceList_Version> getPriceListVersions()
 	{
 		return plvs.values();
 	}
 
 	/**
-	 * @param plv
 	 * @return those {@link IQualityInspectionOrder}s that are not yet invoiced.
 	 */
-	public final List<IQualityInspectionOrder> getQualityInspectionOrdersForPLV(final I_M_PriceList_Version plv)
+	public List<IQualityInspectionOrder> getQualityInspectionOrdersForPLV(@NonNull final I_M_PriceList_Version plv)
 	{
-		Check.assumeNotNull(plv, "Param plv not null");
 		return plvId2qiOrders.get(plv.getM_PriceList_Version_ID());
 	}
 
@@ -223,6 +222,12 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 			final List<I_M_InOutLine> issuedInOutLinesForPPOrder = materialTrackingPPOrderBL.retrieveIssuedInOutLines(ppOrder);
 			for (final I_M_InOutLine inOutLine : issuedInOutLinesForPPOrder)
 			{
+				if(inOutLine.getM_Material_Tracking_ID() != _materialTracking.getM_Material_Tracking_ID())
+				{
+					// someone issued stuff from an unrelated inoutLine to our ppOrder => ignore that iol
+					continue;
+				}
+
 				final I_M_PriceList_Version inOutLinePLV = retrivePLV(inOutLine);
 				Check.errorIf(inOutLinePLV == null, "Unable to retrieve a plv for inOutLine {} and pricingSystem {}.", inOutLine, getM_PricingSystem());
 
@@ -235,7 +240,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 					// note that this shall actually be prevented by the system in the first place
 					Check.errorIf(
 							true,
-							"For an earlier inOutLine the priceListVersion {} was retreived, but for inOutLine {}, the priceListVersion {} was retrieved;\npricingSystem: {};\nppOrder",
+							"For an earlier inOutLine the PLV {} was retrieved, but for inOutLine {}, the PVL {} was retrieved;\npricingSystem: {};\nppOrder: {}",
 							plv, inOutLine, inOutLinePLV, getM_PricingSystem(), ppOrder);
 				}
 			}
@@ -275,7 +280,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 		 * @param plv
 		 * @return
 		 */
-		private final IVendorReceipt<I_M_InOutLine> createVendorReceipt(final I_M_PriceList_Version plv)
+		private IVendorReceipt<I_M_InOutLine> createVendorReceipt(final I_M_PriceList_Version plv)
 		{
 			//
 			// now get *all* the receipt lines that took place while the PLV was valid
@@ -330,7 +335,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 			return setM_PricingSystem(pricingSystem);
 		}
 
-		private final I_M_PricingSystem getM_PricingSystem()
+		private I_M_PricingSystem getM_PricingSystem()
 		{
 			Check.assumeNotNull(_pricingSystem, "_pricingSystem not null");
 			return _pricingSystem;
@@ -342,7 +347,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 			return this;
 		}
 
-		private final int getM_Material_Tracking_ID()
+		private int getM_Material_Tracking_ID()
 		{
 			Check.assumeNotNull(_materialTracking, "_materialTracking not null");
 			return _materialTracking.getM_Material_Tracking_ID();

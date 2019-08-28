@@ -205,6 +205,10 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 			{
 				continue;
 			}
+			if(productionMaterial.getM_Product().getM_Product_ID() != _materialTracking.getM_Product_ID())
+			{
+				continue; // beware of unrelated products that could have been issued together with "our" raw materials
+			}
 
 			rawProductionMaterials.add(productionMaterial);
 		}

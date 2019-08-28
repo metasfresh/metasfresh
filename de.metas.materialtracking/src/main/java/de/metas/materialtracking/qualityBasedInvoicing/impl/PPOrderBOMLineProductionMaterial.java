@@ -10,12 +10,12 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,6 +38,7 @@ import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.model.I_PP_Order_BOMLine;
 import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
+import lombok.NonNull;
 
 /* package */class PPOrderBOMLineProductionMaterial extends AbstractProductionMaterial implements IModelWrapper
 {
@@ -54,12 +55,9 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 	private final I_M_Product mainComponentProduct;
 
 	public PPOrderBOMLineProductionMaterial(
-			final org.eevolution.model.I_PP_Order_BOMLine ppOrderBOMLine,
+			@NonNull final org.eevolution.model.I_PP_Order_BOMLine ppOrderBOMLine,
 			final I_M_Product mainComponentProduct)
 	{
-		super();
-
-		Check.assumeNotNull(ppOrderBOMLine, "ppOrderBOMLine not null");
 		this.ppOrderBOMLine = InterfaceWrapperHelper.create(ppOrderBOMLine, I_PP_Order_BOMLine.class);
 		this.mainComponentProduct = mainComponentProduct;
 

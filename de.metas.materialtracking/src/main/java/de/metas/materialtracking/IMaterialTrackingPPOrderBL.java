@@ -67,7 +67,6 @@ public interface IMaterialTrackingPPOrderBL extends ISingletonService
 	/**
 	 * Retrieve the inout lines that were issued with the given PP_Order.
 	 *
-	 * @param ppOrder
 	 * @return the found inout lines
 	 */
 	List<I_M_InOutLine> retrieveIssuedInOutLines(I_PP_Order ppOrder);
