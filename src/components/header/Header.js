@@ -71,7 +71,7 @@ class Header extends Component {
   /**
    * @method UNSAFE_componentWillUpdate
    * @summary ToDo: Describe the method
-   * @prop {object} nextProps#
+   * @prop {object} nextProps
    */
   UNSAFE_componentWillUpdate(nextProps) {
     const { dropzoneFocused } = this.props;
@@ -530,11 +530,20 @@ class Header extends Component {
     }
   };
 
+  /**
+   * @method redirect
+   * @summary ToDo: Describe the method
+   * @param {*} where
+   */
   redirect = where => {
     const { dispatch } = this.props;
     dispatch(push(where));
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   */
   render() {
     const {
       docSummaryData,
@@ -885,9 +894,9 @@ class Header extends Component {
  * @prop {*} entity
  * @prop {*} handleDeletedStatus
  * @prop {*} handleEditModeToggle
- * @prop {object} [inbox]
+ * @prop {object} inbox
  * @prop {bool} isDocumentNotSaved
- * @prop {object} [me]
+ * @prop {object} me
  * @prop {*} notfound
  * @prop {*} plugins
  * @prop {*} query
@@ -923,6 +932,11 @@ Header.propTypes = {
   windowId: PropTypes.string,
 };
 
+/**
+ * @method mapStateToProps
+ * @summary ToDo: Describe the method
+ * @param {object} state
+ */
 const mapStateToProps = state => ({
   inbox: state.appHandler.inbox,
   me: state.appHandler.me,
