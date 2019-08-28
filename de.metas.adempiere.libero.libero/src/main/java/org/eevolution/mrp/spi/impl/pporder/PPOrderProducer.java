@@ -31,6 +31,7 @@ import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -150,11 +151,18 @@ public class PPOrderProducer
 		// I_PP_Order_BOM and I_PP_Order_BOMLines are created via a model interceptor
 		ppOrdersRepo.save(ppOrderRecord);
 
+		Loggables.addLog(
+				"Created ppOrder; PP_Order_ID={}; DocumentNo={}",
+				ppOrderRecord.getPP_Order_ID(), ppOrderRecord.getDocumentNo());
+
 		//
 		// Complete if requested
 		if (productPlanning.isDocComplete())
 		{
 			Services.get(IDocumentBL.class).processEx(ppOrderRecord, ACTION_Complete, STATUS_Completed);
+			Loggables.addLog(
+					"Completed ppOrder; PP_Order_ID={}; DocumentNo={}",
+					ppOrderRecord.getPP_Order_ID(), ppOrderRecord.getDocumentNo());
 		}
 
 		//

@@ -164,7 +164,7 @@ public class EventLogUserService
 			request.getInvokaction().run();
 
 			newLogEntry(request.getHandlerClass())
-					.formattedMessage("This handler is done")
+					.formattedMessage("this handler is done")
 					.processed(true)
 					.createAndStore();
 		}
