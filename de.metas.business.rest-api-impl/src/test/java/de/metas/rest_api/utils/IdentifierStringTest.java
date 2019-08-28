@@ -43,12 +43,30 @@ class IdentifierStringTest
 	}
 
 	@Test
+	void invalid_ExternalId()
+	{
+		assertThatThrownBy(() -> IdentifierString.of("ext-"))
+				.hasMessage("Invalid external ID: `ext-`");
+		assertThatThrownBy(() -> IdentifierString.of("ext-      "))
+				.hasMessage("Invalid external ID: `ext-      `");
+	}
+
+	@Test
 	void of_Value()
 	{
 		final IdentifierString testee = IdentifierString.of("val-abcd");
 
 		assertThat(testee.getType()).isEqualTo(Type.VALUE);
 		assertThat(testee.asValue()).isEqualTo("abcd");
+	}
+
+	@Test
+	void invalid_Value()
+	{
+		assertThatThrownBy(() -> IdentifierString.of("val-"))
+				.hasMessage("Invalid value: `val-`");
+		assertThatThrownBy(() -> IdentifierString.of("val-      "))
+				.hasMessage("Invalid value: `val-      `");
 	}
 
 	@Test
@@ -61,6 +79,15 @@ class IdentifierStringTest
 	}
 
 	@Test
+	void invalid_GLN()
+	{
+		assertThatThrownBy(() -> IdentifierString.of("gln-"))
+				.hasMessage("Invalid GLN: `gln-`");
+		assertThatThrownBy(() -> IdentifierString.of("gln-      "))
+				.hasMessage("Invalid GLN: `gln-      `");
+	}
+
+	@Test
 	void of_MetasfreshId()
 	{
 		final IdentifierString testee = IdentifierString.of("12345");
@@ -70,7 +97,7 @@ class IdentifierStringTest
 	}
 
 	@Test
-	void invalidIdentifier()
+	void invalid_MetasfreshId()
 	{
 		assertThatThrownBy(() -> IdentifierString.of("12345x"))
 				.isInstanceOf(InvalidIdentifierException.class)

@@ -2,6 +2,8 @@ package de.metas.rest_api.utils;
 
 import static de.metas.util.Check.assumeNotEmpty;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.util.Check;
@@ -60,17 +62,29 @@ public class IdentifierString
 		assumeNotEmpty("Parameter may not be empty", value);
 		if (value.toLowerCase().startsWith(PREFIX_EXTERNAL_ID))
 		{
-			final String externalId = value.substring(4);
+			final String externalId = value.substring(4).trim();
+			if (externalId.isEmpty())
+			{
+				throw new AdempiereException("Invalid external ID: `" + value + "`");
+			}
 			return new IdentifierString(Type.EXTERNAL_ID, externalId);
 		}
 		else if (value.toLowerCase().startsWith(PREFIX_VALUE))
 		{
-			final String valueString = value.substring(4);
+			final String valueString = value.substring(4).trim();
+			if (valueString.isEmpty())
+			{
+				throw new AdempiereException("Invalid value: `" + value + "`");
+			}
 			return new IdentifierString(Type.VALUE, valueString);
 		}
 		else if (value.toLowerCase().startsWith(PREFIX_GLN))
 		{
-			final String glnString = value.substring(4);
+			final String glnString = value.substring(4).trim();
+			if (glnString.isEmpty())
+			{
+				throw new AdempiereException("Invalid GLN: `" + value + "`");
+			}
 			return new IdentifierString(Type.GLN, glnString);
 		}
 		else
