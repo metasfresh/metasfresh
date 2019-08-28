@@ -646,7 +646,10 @@ declare namespace Cypress {
      */
     selectRowByColumnAndValue(columnName: string, expectedValue: string | number, modal ?: boolean, force ?: boolean): Chainable<any>
 
-
+  /**
+     * Select all rows on the current page
+     */
+    selectAllRowsOnCurrentPage(): Chainable<any>
   }
 
 }

@@ -149,3 +149,10 @@ Cypress.Commands.add('selectRowByColumnAndValue', (columnName, expectedValue, mo
         });
     });
 });
+/**
+ * Select all rows on the current page
+ *
+ */
+Cypress.Commands.add('selectAllRowsOnCurrentPage', () => {
+  cy.get('body').type('{alt}a');
+});
