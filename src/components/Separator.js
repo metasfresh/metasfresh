@@ -3,17 +3,10 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
 /**
- * __Separator for element groups__.
- * The separator component allows to create collapsible sections in the window component.
- * The separator can  have a title. It is used as layout and grouping element in WebUI.
- * @param {object} props Component props
- * @param {string} props.title Separator title
- * @param {bool} props.collapsible Separator collapsible
- * @param {bool} props.sectionCollapsed Separator collapsed
- * @param {number} props.idx Index parameter for onClick Handler
- * @param {function} props.onClick Callback function for onClick Handler
- * @param {string} props.tabId Tab ID for onClick Handler
- * @category Components
+ * @file Function based component. The separator component allows to create collapsible sections
+ * in the window component. The separator can  have a title. It is used as layout and grouping
+ * element in WebUI.
+ * @module Separator
  */
 const Separator = props => {
   const { title, collapsible, sectionCollapsed, idx, onClick, tabId } = props;
@@ -48,6 +41,15 @@ const Separator = props => {
   );
 };
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {string} title
+ * @prop {bool} collapsible
+ * @prop {bool} sectionCollapsed
+ * @prop {number} idx
+ * @prop {string} tabId
+ * @prop {func} onClick
+ */
 Separator.propTypes = {
   title: PropTypes.string,
   collapsible: PropTypes.bool,
