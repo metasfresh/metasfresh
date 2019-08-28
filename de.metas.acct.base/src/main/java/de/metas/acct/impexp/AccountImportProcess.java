@@ -274,7 +274,7 @@ public class AccountImportProcess extends AbstractImportProcess<I_I_ElementValue
 
 	private AccountDimension newAccountDimension(@NonNull final I_I_ElementValue importRecord)
 	{
-		final AcctSchemaId acctSchemaId = Services.get(IAcctSchemaDAO.class).getAcctSchemaIdByClientAndOrg(ClientId.ofRepoId(getAD_Client_ID()), OrgId.ofRepoId(importRecord.getAD_Org_ID()));
+		final AcctSchemaId acctSchemaId = Services.get(IAcctSchemaDAO.class).getAcctSchemaIdByClientAndOrg(ClientId.ofRepoId(importRecord.getAD_Client_ID()), OrgId.ofRepoId(importRecord.getAD_Org_ID()));
 
 		return AccountDimension.builder()
 				.setAcctSchemaId(acctSchemaId)
