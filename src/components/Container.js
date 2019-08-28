@@ -14,6 +14,10 @@ import Header from './header/Header';
  * @extends Component
  */
 class Container extends Component {
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const {
       docActionElem,
@@ -306,6 +310,11 @@ Container.propTypes = {
   windowType: PropTypes.any,
 };
 
+/**
+ * @method mapStateToProps
+ * @summary ToDo: Describe the method.
+ * @param {object} state
+ */
 const mapStateToProps = state => ({
   connectionError: state.windowHandler.connectionError || false,
   pluginComponents: state.pluginsHandler.components,
