@@ -27,36 +27,11 @@ import Subheader from './SubHeader';
 import UserDropdown from './UserDropdown';
 
 /**
- * __Application Header__.
- * The Header component is shown in every view besides Modal or RawModal in frontend. It defines
+ * @file The Header component is shown in every view besides Modal or RawModal in frontend. It defines
  * the top bar with different menus and icons in metasfresh WebUI. It hosts the action menu,
  * breadcrumb, logo, notification menu, avatar and sidelist menu.
- * @param {object} props Component props
- * @param {*} props.activeTab
- * @param {*} props.breadcrumb
- * @param {*} props.dataId
- * @param {function} props.dispatch
- * @param {*} props.docId
- * @param {*} props.docNoData
- * @param {*} props.docStatus
- * @param {*} props.docStatusData
- * @param {*} props.docSummaryData
- * @param {*} props.dropzoneFocused
- * @param {*} props.editmode
- * @param {*} props.entity
- * @param {*} props.handleDeletedStatus
- * @param {*} props.handleEditModeToggle
- * @param {object} props.inbox
- * @param {*} props.isDocumentNotSaved
- * @param {object} props.me
- * @param {*} props.notfound
- * @param {*} props.plugins
- * @param {*} props.query
- * @param {*} props.showIndicator
- * @param {*} props.showSidelist
- * @param {*} props.siteName
- * @param {*} props.windowId
- * @category Components
+ * @module Header
+ * @extends Component
  */
 class Header extends Component {
   state = {
@@ -75,12 +50,6 @@ class Header extends Component {
 
   udRef = React.createRef();
   inboxRef = React.createRef();
-
-  static propTypes = {
-    dispatch: PropTypes.func.isRequired,
-    inbox: PropTypes.object.isRequired,
-    me: PropTypes.object.isRequired,
-  };
 
   componentDidMount() {
     this.initEventListeners();
@@ -749,6 +718,66 @@ class Header extends Component {
     );
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} activeTabId
+ * @prop {*} breadcrumb
+ * @prop {string} dataId
+ * @prop {func} dispatch Dispatch function
+ * @prop {object} inbox
+ * @prop {func} me
+ * @prop {*} childViewId
+ * @prop {*} closeCallback
+ * @prop {*} childViewSelectedIds
+ * @prop {shape} data
+ * @prop {*} docId
+ * @prop {*} docNoData
+ * @prop {*} docStatus
+ * @prop {*} docStatusData
+ * @prop {*} docSummaryData
+ * @prop {*} dropzoneFocused
+ * @prop {*} dataId
+ * @prop {*} editmode
+ * @prop {*} entity
+ * @prop {*} handleDeletedStatus
+ * @prop {*} handleEditModeToggle
+ * @prop {string} indicator
+ * @prop {shape} layout
+ * @prop {bool} isAdvanced
+ * @prop {bool} isDocumentNotSaved
+ * @prop {bool} isNewDoc
+ * @prop {string} staticModalType
+ * @prop {*} modalTitle
+ * @prop {*} modalType
+ * @prop {*} modalSaveStatus
+ * @prop {*} modalViewId
+ * @prop {*} modalViewDocumentIds
+ * @prop {*} notfound
+ * @prop {string} staticModalType
+ * @prop {string} tabId
+ * @prop {*} parentSelection
+ * @prop {*} parentType
+ * @prop {*} parentViewId
+ * @prop {*} parentViewSelectedIds
+ * @prop {*} plugins
+ * @prop {*} query
+ * @prop {*} siteName
+ * @prop {*} showIndicator
+ * @prop {*} showSidelist
+ * @prop {*} rawModalVisible
+ * @prop {string} rowId
+ * @prop {*} triggerField
+ * @prop {*} viewId
+ * @prop {*} windowId
+ * @prop {*} windowType
+ *  * @param {object} props Component props
+ */
+Header.propTypes = {
+  dispatch: PropTypes.func.isRequired,
+  inbox: PropTypes.object.isRequired,
+  me: PropTypes.object.isRequired,
+};
 
 const mapStateToProps = state => ({
   inbox: state.appHandler.inbox,

@@ -3,11 +3,21 @@ import React, { Component } from 'react';
 import classnames from 'classnames';
 import { connect } from 'react-redux';
 
+/**
+ * @file Indicator is a component that shows the save status to user in form of a save progress
+ * line beneath the Header.
+ * @module Indicator
+ * @extends Component
+ */
 class Indicator extends Component {
   constructor(props) {
     super(props);
   }
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   */
   render() {
     // TODO: We should be using indicator from the state instead of another variable
     const { indicator, isDocumentNotSaved } = this.props;
@@ -24,6 +34,11 @@ class Indicator extends Component {
   }
 }
 
+/**
+ * @method mapStateToProps
+ * @summary ToDo: Describe the method
+ * @param {object} state
+ */
 function mapStateToProps(state) {
   const { windowHandler } = state;
 
@@ -36,6 +51,11 @@ function mapStateToProps(state) {
   };
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {string} indicator
+ * @prop {bool} isDocumentNotSaved
+ */
 Indicator.propTypes = {
   indicator: PropTypes.string.isRequired,
   isDocumentNotSaved: PropTypes.bool,
