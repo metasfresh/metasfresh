@@ -24,7 +24,6 @@ export const DATE_FIELD_TYPES = [
   'Date',
   'DateTime',
   'ZonedDateTime',
-  'Time',
   'Timestamp',
 ];
 export const DATE_FIELD_FORMATS = {

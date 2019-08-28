@@ -73,9 +73,6 @@ class InlineFilterItem extends Component {
     }
   };
 
-  // TODO: Fix the timezone issue
-  // Right now, it's ignoring the returning timezone from back-end
-  // and use the browser's default timezone
   parseDateToReadable = (widgetType, value) => {
     if (DATE_FIELDS.indexOf(widgetType) > -1) {
       return parseDateWithCurrenTimezone(value);

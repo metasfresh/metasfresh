@@ -31,7 +31,7 @@ class DatePicker extends Component {
     handleBackdropLock && handleBackdropLock(true);
 
     this.setState({
-      value,
+      value: value || null,
     });
 
     if (isOpenDatePicker) {
@@ -59,9 +59,9 @@ class DatePicker extends Component {
       value = value.replace(DatePicker.timeZoneRegex, '');
       value = MomentTZ.tz(value, timeZone);
     } else {
-      if (!value) value = this.props.value;
+      if (!value) value = null;
 
-      if (!Moment.isMoment(value)) {
+      if (value && !Moment.isMoment(value) && this.props.dateFormat) {
         value = new Date(value);
       }
     }
@@ -185,6 +185,7 @@ DatePicker.propTypes = {
   value: PropTypes.any,
   isOpenDatePicker: PropTypes.bool,
   hasTimeZone: PropTypes.bool,
+  dateFormat: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
 };
 
 export default connect()(onClickOutside(DatePicker));
