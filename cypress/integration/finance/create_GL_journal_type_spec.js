@@ -1,11 +1,11 @@
-let description="test";
-let category="Standard";
-let postingType1="Statistical";
-let currency="CHF";
-let docType="Journal";
-let postingType2="Budget";
-let postingType3="Ist (Jahr Ende)";
-let postingType4="Statistical";
+let description;
+let category;
+let postingType1;
+let currency;
+let docType;
+let postingType2;
+let postingType3;
+let postingType4;
 
 it('Read fixture and prepare the names', function() {
   cy.fixture('finance/create_GL_journal_type_spec.json').then(f => {

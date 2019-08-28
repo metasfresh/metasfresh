@@ -4,7 +4,7 @@ import { appendHumanReadableNow } from '../../support/utils/utils';
 let groupTestPartnerName;
 let groupName;
 let groupDocumentId;
-let bpartnerID = null;
+let bpartnerID;
 
 it('Read fixture and prepare the names', function() {
   cy.fixture('masterdata/bpartner_group_spec.json').then(f => {

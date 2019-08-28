@@ -44,11 +44,7 @@ describe('Creating GL journal entry and change posting type', function() {
     cy.writeIntoLookupListField('Account_CR_ID', account, account, false /*typeList*/, true /*modal*/);
     cy.selectInListField('C_Activity_ID', activity, true /*modal*/);
     cy.pressDoneButton();
-  });
 
-  it('complete', function() {
-    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      cy.completeDocument();
-    });
+    cy.completeDocument();
   });
 });

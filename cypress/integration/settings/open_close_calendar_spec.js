@@ -47,7 +47,7 @@ describe('Filter calendar periods', function() {
 describe('Actions on selected item', function() {
   it('open/close action - close periods', function() {
     cy.executeHeaderActionWithDialog('C_Period_Process');
-    cy.selectInListField('PeriodAction', closePeriod, true, '/rest/api/process/');
+    cy.selectInListField('PeriodAction', closePeriod, true);
     cy.pressStartButton();
   });
 

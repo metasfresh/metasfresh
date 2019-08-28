@@ -122,7 +122,6 @@ describe('Create a purchase order and Material Receipts', function() {
 
   it('Visit referenced Material Receipt Candidates', function() {
     cy.openReferencedDocuments('M_ReceiptSchedule');
-    cy.waitForSaveIndicator();
     cy.expectNumberOfRows(2);
   });
 
