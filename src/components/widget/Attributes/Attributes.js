@@ -25,28 +25,48 @@ export default class Attributes extends Component {
       dataId,
       tabId,
       rowId,
+      viewId,
       fieldName,
       attributeType,
       widgetData,
       entity,
     } = this.props;
-    const tmpId = widgetData.value.key;
+
+    const templateId = widgetData.value.key
+      ? parseInt(widgetData.value.key, 10) // assume 'value' is a key/caption lookup value
+      : parseInt(widgetData.value, 10); // assume 'value' is string or int
+
+    let source;
+    if (entity === 'window') {
+      source = {
+        windowId: docType,
+        documentId: dataId,
+        tabId: tabId,
+        rowId: rowId,
+        fieldName: fieldName,
+      };
+    } else if (entity === 'documentView') {
+      source = {
+        viewId: viewId,
+        rowId: rowId,
+        fieldName: fieldName,
+      };
+    } else if (entity === 'process') {
+      source = {
+        processId: docType,
+        documentId: dataId,
+        fieldName: fieldName,
+      };
+    } else {
+      throw new Error('Unknown entity: ' + entity);
+    }
 
     this.setState(
       {
         loading: true,
       },
       () => {
-        return getAttributesInstance(
-          attributeType,
-          tmpId,
-          docType,
-          dataId,
-          tabId,
-          rowId,
-          fieldName,
-          entity
-        )
+        return getAttributesInstance(attributeType, templateId, source)
           .then(response => {
             const { id, fieldsByName } = response.data;
 
