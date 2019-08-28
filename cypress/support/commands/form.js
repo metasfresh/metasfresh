@@ -224,26 +224,32 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
  * @param {string} stringValue - value to put into field
  * @param {boolean} modal - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
  * @param {string} rewriteUrl - use custom url for the request
+ * @param {boolean} skipRequest - if set to true, the PATCH request will be skipped
  */
-Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal, rewriteUrl) => {
-  cy.log(`writeIntoTextField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}`);
+Cypress.Commands.add(
+  'writeIntoTextField',
+  (fieldName, stringValue, modal = false, rewriteUrl = null, skipRequest = false) => {
+    cy.log(`writeIntoTextField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}`);
 
-  const aliasName = `writeIntoTextField-${fieldName}-${new Date().getTime()}`;
-  const expectedPatchValue = removeSubstringsWithCurlyBrackets(stringValue);
-  // in the default pattern we want to match URLs that do *not* end with "/NEW"
-  const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
+    const aliasName = `writeIntoTextField-${fieldName}-${new Date().getTime()}`;
+    const expectedPatchValue = removeSubstringsWithCurlyBrackets(stringValue);
+    // in the default pattern we want to match URLs that do *not* end with "/NEW"
+    const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
 
-  // here we want to match URLs that don *not* end with "/NEW"
-  cy.server();
-  cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
+    // here we want to match URLs that don *not* end with "/NEW"
+    cy.server();
+    cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
 
-  const path = createFieldPath(fieldName, modal);
+    const path = createFieldPath(fieldName, modal);
 
-  cy.get(path)
-    .find('textarea')
-    .type(`${stringValue}{enter}`);
-  cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
-});
+    cy.get(path)
+      .find('textarea')
+      .type(`${stringValue}{enter}`);
+    if (!skipRequest) {
+      cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
+    }
+  }
+);
 
 /**
  * @param modal - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
