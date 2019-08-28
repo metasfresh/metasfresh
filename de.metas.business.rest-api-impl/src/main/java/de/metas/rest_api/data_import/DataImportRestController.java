@@ -56,7 +56,7 @@ public class DataImportRestController
 		this.dataImportService = dataImportService;
 	}
 
-	@PostMapping("/")
+	@PostMapping
 	public ResponseEntity<JsonDataImportResponse> importFile(
 			@RequestParam("dataImport") @NonNull final String dataImportInternalName,
 			@RequestParam("file") @NonNull final MultipartFile file)
