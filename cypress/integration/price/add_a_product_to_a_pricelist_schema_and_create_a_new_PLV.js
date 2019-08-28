@@ -86,12 +86,10 @@ describe('Create Price and Products', function() {
   });
 
   it('Create Product1 and Category', function() {
-    // eslint-disable-next-line prettier/prettier
     Builder.createBasicProductEntities(categoryName, categoryName, priceListName, productName1, productName1, productType);
   });
 
   it('Create Product2', function() {
-    // eslint-disable-next-line prettier/prettier
     Builder.createProductWithPriceUsingExistingCategory(priceListName, productName2, productName2, productType, categoryName);
   });
 });
@@ -100,7 +98,6 @@ describe('Create Price List Schema for Product', function() {
   it('Create Price List Schema', function() {
     new PriceListSchema()
       .setName(priceListSchemaName)
-      // eslint-disable-next-line prettier/prettier
       .addLine(new PriceListSchemaLine().setProduct(productName1).setStandardPriceSurchargeAmount(surchargeAmount))
       .apply();
   });

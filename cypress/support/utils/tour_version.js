@@ -65,10 +65,9 @@ function applyLine(tourVersionLine) {
   cy.selectTab('M_TourVersionLine');
   cy.pressAddNewButton();
   cy.writeIntoLookupListField('C_BPartner_ID', tourVersionLine.bPartner, tourVersionLine.bPartner, false, true);
-  // eslint-disable-next-line
-  if(tourVersionLine.bPartnerAddress) {
+  if (tourVersionLine.bPartnerAddress) {
     cy.log('Sorry but typing in the address field is too fiddly. Nothing will be typed. Please see: https://github.com/metasfresh/metasfresh-e2e/issues/260');
-  // cy.writeIntoLookupListField('C_BPartner_Location_ID', tourVersionLine.bPartnerAddress, tourVersionLine.bPartnerAddress, false, true);
+    // cy.writeIntoLookupListField('C_BPartner_Location_ID', tourVersionLine.bPartnerAddress, tourVersionLine.bPartnerAddress, false, true);
   }
   cy.writeIntoStringField('BufferHours', tourVersionLine.buffer, true);
   cy.pressDoneButton();

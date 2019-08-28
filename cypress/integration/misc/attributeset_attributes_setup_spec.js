@@ -16,9 +16,6 @@ describe('Create Attribute Masterdata for Automatic End2End Tests with cypress h
   });
 
   it('Create AttributeSet', function() {
-    // eslint-disable-next-line
-    new AttributeSet(attributeSetName)
-      .addAttribute(`${attributeName}`)
-      .apply();
+    new AttributeSet(attributeSetName).addAttribute(attributeName).apply();
   });
 });

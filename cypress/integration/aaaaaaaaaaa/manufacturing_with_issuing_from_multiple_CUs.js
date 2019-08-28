@@ -25,7 +25,6 @@ import { appendHumanReadableNow } from '../../support/utils/utils';
 import { BillOfMaterial, BillOfMaterialLine } from '../../support/utils/billOfMaterial';
 import { Builder } from '../../support/utils/builder';
 import { ColumnAndValue } from '../../support/commands/navigation';
-import { RewriteURL } from '../../support/utils/constants';
 import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
 
 let date = null;
@@ -150,11 +149,11 @@ describe('Create test data', function() {
       Object.assign(new BillOfMaterial(), billMaterialJson)
         .setProduct(finishedProductName)
         .setIsVerified(true)
-        // eslint-disable-next-line
+        // eslint-disable-next-line prettier/prettier
         .addLine(new BillOfMaterialLine().setProduct(productComponentName1).setQuantity(productComponentQty1).setIssueMethod(bomIssueMethod))
-        // eslint-disable-next-line
+        // eslint-disable-next-line prettier/prettier
         .addLine(new BillOfMaterialLine().setProduct(productComponentName2).setQuantity(productComponentQty2).setIssueMethod(bomIssueMethod))
-        // eslint-disable-next-line
+        // eslint-disable-next-line prettier/prettier
         .addLine(new BillOfMaterialLine().setProduct(productComponentName3).setQuantity(productComponentQty3).setIssueMethod(bomIssueMethod))
         .apply();
     });
@@ -205,11 +204,8 @@ describe('Test', function() {
     cy.expectNumberOfRows(4, true);
 
     cy.selectRowByColumnAndValue(createColumnAndValue(finishedProductName, undefined, 'MP', manufacturingQtyEntered), true);
-    // eslint-disable-next-line
     cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName1, undefined, 'CO', productComponentQty1), true);
-    // eslint-disable-next-line
     cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName2, undefined, 'CO', productComponentQty2), true);
-    // eslint-disable-next-line
     cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName3, undefined, 'CO', productComponentQty3), true);
   });
 
@@ -288,13 +284,12 @@ describe('Test', function() {
 function selectHuAsSource(productValue, huValue) {
   cy.selectRowByColumnAndValue({ column: productColumn, value: productValue }, true);
   cy.log('after row selection');
-  cy.aa('WEBUI_PP_Order_HUEditor_Launcher');
+  cy.executeQuickActionWithRightSideTable('WEBUI_PP_Order_HUEditor_Launcher');
   cy.selectRightTable().within(() => {
     cy.selectRowByColumnAndValue({ column: huSelectionCodeColumn, value: huValue }, false, true);
   });
   cy.executeQuickAction('WEBUI_PP_Order_HUEditor_Create_M_Source_HUs', true, false);
   cy.selectLeftTable().within(() => {
-    // eslint-disable-next-line
     cy.selectRowByColumnAndValue(createColumnAndValue(productValue, huValue, 'CU', null, huQty, packingStatusActive), false, true);
   });
   // used to close the right table

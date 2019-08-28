@@ -107,21 +107,12 @@ describe('Create test data', function() {
   });
 
   it('Create packing related entities', function() {
-    // eslint-disable-next-line
-    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productForPackingMaterial, productType, "24_Gebinde");
+    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productForPackingMaterial, productType, '24_Gebinde');
     Builder.createPackingMaterial(productForPackingMaterial, packingInstructionsName);
   });
 
   it('Create product', function() {
-    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(
-      productCategoryName,
-      productCategoryName,
-      priceListName,
-      productName,
-      productName,
-      productType,
-      packingInstructionsName
-    );
+    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(productCategoryName, productCategoryName, priceListName, productName, productName, productType, packingInstructionsName);
   });
 
   it('Create bPartner', function() {
@@ -195,10 +186,7 @@ describe('Pick the SO', function() {
       cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
     });
     cy.selectRightTable().within(() => {
-      const columnAndValue = [
-        { column: pickingPackingInfoColumn, value: packingInstructionsName },
-        { column: pickingQtyCUColumn, value: soProductQuantity },
-      ];
+      const columnAndValue = [{ column: pickingPackingInfoColumn, value: packingInstructionsName }, { column: pickingQtyCUColumn, value: soProductQuantity }];
       cy.selectRowByColumnAndValue(columnAndValue, false, true);
     });
     cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', true, false);

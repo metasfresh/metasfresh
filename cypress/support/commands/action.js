@@ -41,7 +41,6 @@ Cypress.Commands.add('executeHeaderActionWithDialog', actionName => {
   });
 });
 
-// eslint-disable-next-line prettier/prettier
 Cypress.Commands.add('executeQuickAction', (actionName, modal = false, isDialogExpected = true) => {
   cy.log(`executeQuickAction ${actionName}`);
   let path = `:not(.disabled) > .quick-actions-wrapper`; // default action

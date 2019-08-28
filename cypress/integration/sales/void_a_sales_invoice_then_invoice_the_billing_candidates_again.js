@@ -32,6 +32,7 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
   let businessPartnerName;
   let productName;
   let originalQuantity;
+  // eslint-disable-next-line
   let shipmentNotificationInboxText;
   let shipmentNotificationModalText;
   let shipmentQuantityTypeOption;
@@ -216,25 +217,14 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
     });
 
     it('Sales Invoice checks', function() {
-      salesInvoiceChecks(
-        DocumentStatusKey.Completed,
-        salesInvoiceDocumentType,
-        businessPartnerName,
-        false,
-        productName,
-        originalQuantity,
-        totalAmountToPay
-      );
+      salesInvoiceChecks(DocumentStatusKey.Completed, salesInvoiceDocumentType, businessPartnerName, false, productName, originalQuantity, totalAmountToPay);
     });
   });
 
   describe('Void the first Sales Invoice and check', function() {
     it('Void current Sales Invoice', function() {
       cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-        cy.processDocument(
-          getLanguageSpecific(miscDictionary, DocumentActionKey.Void),
-          getLanguageSpecific(miscDictionary, DocumentStatusKey.Reversed)
-        );
+        cy.processDocument(getLanguageSpecific(miscDictionary, DocumentActionKey.Void), getLanguageSpecific(miscDictionary, DocumentStatusKey.Reversed));
       });
     });
 
@@ -248,30 +238,14 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
       const expectedNoRows = 2;
 
       visitSpecificReferencedSalesInvoice(whichSI, expectedNoRows);
-      salesInvoiceChecks(
-        DocumentStatusKey.Reversed,
-        salesInvoiceDocumentType,
-        businessPartnerName,
-        true,
-        productName,
-        originalQuantity,
-        totalAmountToPay
-      );
+      salesInvoiceChecks(DocumentStatusKey.Reversed, salesInvoiceDocumentType, businessPartnerName, true, productName, originalQuantity, totalAmountToPay);
     });
     it('Check Second Sales Invoice after Void', function() {
       const whichSI = 1; // 0 indexed
       const expectedNoRows = 2;
 
       visitSpecificReferencedSalesInvoice(whichSI, expectedNoRows);
-      salesInvoiceChecks(
-        DocumentStatusKey.Reversed,
-        salesInvoiceDocumentType,
-        businessPartnerName,
-        true,
-        productName,
-        -1 * originalQuantity,
-        -1 * totalAmountToPay
-      );
+      salesInvoiceChecks(DocumentStatusKey.Reversed, salesInvoiceDocumentType, businessPartnerName, true, productName, -1 * originalQuantity, -1 * totalAmountToPay);
     });
   });
 
@@ -313,15 +287,7 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
     });
 
     it('Check the new Sales Invoice', function() {
-      salesInvoiceChecks(
-        DocumentStatusKey.Completed,
-        salesInvoiceDocumentType,
-        businessPartnerName,
-        false,
-        productName,
-        originalQuantity,
-        totalAmountToPay
-      );
+      salesInvoiceChecks(DocumentStatusKey.Completed, salesInvoiceDocumentType, businessPartnerName, false, productName, originalQuantity, totalAmountToPay);
     });
   });
 

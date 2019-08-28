@@ -1,10 +1,6 @@
 import { BPartner } from '../../support/utils/bpartner';
-import { BPartnerLocation } from '../../support/utils/bpartner_ui';
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { ProductCategory } from '../../support/utils/product';
-import { PackingMaterial } from '../../support/utils/packing_material';
-import { PackingInstructions } from '../../support/utils/packing_instructions';
-import { PackingInstructionsVersion } from '../../support/utils/packing_instructions_version';
 import { Builder } from '../../support/utils/builder';
 import { humanReadableNow } from '../../support/utils/utils';
 import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_order';
@@ -25,8 +21,7 @@ const priceListName = `PriceList_${date}`;
 const priceListVersionName = `PriceListVersion_${date}`;
 const productType = 'Item';
 const vendorName = `Vendor_${date}`;
-const generateInvoicesNotificationModalText =
-  'Fakturlauf mit 1 Rechnungen eingeplant. Es sind bereits 0 zu erstellende Rechnungen in der Warteschlange, die vorher verarbeitet werden.';
+const generateInvoicesNotificationModalText = 'Fakturlauf mit 1 Rechnungen eingeplant. Es sind bereits 0 zu erstellende Rechnungen in der Warteschlange, die vorher verarbeitet werden.';
 
 // test
 let purchaseOrderRecordId;
@@ -42,8 +37,7 @@ describe('Create test data', function() {
     });
   });
   it('Create packing related entities', function() {
-    // eslint-disable-next-line
-    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productForPackingMaterial, productType, "24_Gebinde");
+    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productForPackingMaterial, productType, '24_Gebinde');
     Builder.createPackingMaterial(productForPackingMaterial, packingInstructionsName);
   });
 
@@ -56,28 +50,12 @@ describe('Create test data', function() {
   });
 
   it('Create product1', function() {
-    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(
-      productCategoryName,
-      productCategoryName,
-      priceListName,
-      productName1,
-      productName1,
-      productType,
-      packingInstructionsName
-    );
+    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(productCategoryName, productCategoryName, priceListName, productName1, productName1, productType, packingInstructionsName);
   });
 
   it('Create product2', function() {
     // these are split into multiple "it" blocks as maybe this fixes some stupid ` Cannot read property 'body' of null` error
-    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(
-      productCategoryName,
-      productCategoryName,
-      priceListName,
-      productName2,
-      productName2,
-      productType,
-      packingInstructionsName
-    );
+    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(productCategoryName, productCategoryName, priceListName, productName2, productName2, productType, packingInstructionsName);
   });
   it('Create vendor', function() {
     cy.fixture('sales/simple_vendor.json').then(vendorJson => {
