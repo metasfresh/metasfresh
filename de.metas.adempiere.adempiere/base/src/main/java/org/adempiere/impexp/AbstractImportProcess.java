@@ -40,6 +40,7 @@ import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.Adempiere;
+import org.compiere.model.I_C_DataImport;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -80,7 +81,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	public static final String COLUMNNAME_I_ErrorMsg = "I_ErrorMsg";
 	public static final String COLUMNNAME_Processed = "Processed";
 	public static final String COLUMNNAME_Processing = "Processing";
-	public static final String COLUMNNAME_C_DataImport_ID = "C_DataImport_ID";
+	public static final String COLUMNNAME_C_DataImport_ID = I_C_DataImport.COLUMNNAME_C_DataImport_ID;
 
 	// services
 	protected final transient Logger log = LogManager.getLogger(getClass());
@@ -212,14 +213,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		//
 		// Update and validate
 		ModelValidationEngine.get().fireImportValidate(this, null, null, IImportInterceptor.TIMING_BEFORE_VALIDATE);
-		trxManager.run(new TrxRunnableAdapter()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				updateAndValidateImportRecords();
-			}
-		});
+		trxManager.runInNewTrx(() -> updateAndValidateImportRecords());
 		ModelValidationEngine.get().fireImportValidate(this, null, null, IImportInterceptor.TIMING_AFTER_VALIDATE);
 		if (isValidateOnly())
 		{
