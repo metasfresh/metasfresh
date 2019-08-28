@@ -20,6 +20,7 @@ import de.metas.impexp.DataImportRequest;
 import de.metas.impexp.DataImportResult;
 import de.metas.impexp.DataImportService;
 import de.metas.util.rest.MetasfreshRestAPIConstants;
+import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 
 /*
@@ -58,7 +59,10 @@ public class DataImportRestController
 
 	@PostMapping
 	public ResponseEntity<JsonDataImportResponse> importFile(
+			@ApiParam("Data Import internal name (i.e. `C_DataImport.InternalName`)") //
 			@RequestParam("dataImport") @NonNull final String dataImportInternalName,
+
+			@ApiParam("The text file you are importing") //
 			@RequestParam("file") @NonNull final MultipartFile file)
 	{
 		final DataImportConfig dataImportConfig = dataImportService.getDataImportConfigByInternalName(dataImportInternalName)
@@ -72,12 +76,13 @@ public class DataImportRestController
 				.userId(Env.getLoggedUserId())
 				.build());
 
-		return ResponseEntity.ok(JsonDataImportResponse.builder()
-				.dataImportConfigId(result.getDataImportConfigId().getRepoId())
-				.importFormatName(result.getImportFormatName())
-				.countImportPrepared(result.getCountImportPrepared())
-				.countError(result.getCountError())
-				.build());
+		return ResponseEntity.accepted()
+				.body(JsonDataImportResponse.builder()
+						.dataImportConfigId(result.getDataImportConfigId().getRepoId())
+						.importFormatName(result.getImportFormatName())
+						.countImportPrepared(result.getCountImportPrepared())
+						.countError(result.getCountError())
+						.build());
 	}
 
 	private static Resource toResource(final MultipartFile file)
