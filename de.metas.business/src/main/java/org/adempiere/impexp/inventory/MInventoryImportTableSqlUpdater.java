@@ -180,23 +180,48 @@ final class MInventoryImportTableSqlUpdater
 		return locator;
 	}
 
-	private void dbUpdateProducts(@NonNull final String whereClause)
+	private void dbUpdateProducts(@NonNull final String sqlImportTableWhereClause)
 	{
-		StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
-				.append("SET M_Product_ID=(SELECT MAX(M_Product_ID) FROM M_Product p ")
-				.append(" WHERE i.Value=p.Value AND i.AD_Client_ID=p.AD_Client_ID) ")
-				.append("WHERE M_Product_ID IS NULL AND Value IS NOT NULL ")
-				.append("AND I_IsImported<>'Y'  ")
-				.append(whereClause);
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		// Match by product value
+		dbUpdateProducts(
+				sqlImportTableWhereClause,
+				"i.Value LIKE 'val-%'",
+				"p.Value = substr(i.Value, 5)");
 
-		sql = new StringBuilder("UPDATE I_Inventory i ")
-				.append("SET M_Product_ID=(SELECT MAX(M_Product_ID) FROM M_Product p ")
-				.append(" WHERE i.UPC=p.UPC AND i.AD_Client_ID=p.AD_Client_ID) ")
-				.append("WHERE M_Product_ID IS NULL AND UPC IS NOT NULL ")
-				.append("AND I_IsImported<>'Y' ")
-				.append(whereClause);
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		// Match by M_Product_ID
+		dbUpdateProducts(
+				sqlImportTableWhereClause,
+				"i.Value ~ E'^\\\\d+$'",
+				"p.M_Product_ID = i.Value::numeric");
+
+		// Match by UPC
+		dbUpdateProducts(
+				sqlImportTableWhereClause,
+				"i.UPC IS NOT NULL",
+				"p.UPC = i.UPC");
+	}
+
+	private static int dbUpdateProducts(
+			@NonNull final String importTableWhereClause,
+			@NonNull final String importValueFormatMatcher,
+			@NonNull final String importValueMatchCondition)
+	{
+		final String sqlProductId = "SELECT MAX(M_Product_ID)"
+				+ " FROM M_Product p"
+				+ " WHERE"
+				+ " i.AD_Client_ID=p.AD_Client_ID"
+				+ " AND (" + importValueMatchCondition + ")";
+
+		final String sql = "UPDATE I_Inventory i "
+				+ " SET M_Product_ID=(" + sqlProductId + ")"
+				+ " WHERE"
+				+ " I_IsImported<>'Y'"
+				+ " AND M_Product_ID IS NULL"
+				+ " AND i.Value IS NOT NULL"
+				+ " AND (" + importValueFormatMatcher + ")"
+				+ " " + importTableWhereClause;
+
+		return DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateSubProducer(@NonNull final String whereClause)
