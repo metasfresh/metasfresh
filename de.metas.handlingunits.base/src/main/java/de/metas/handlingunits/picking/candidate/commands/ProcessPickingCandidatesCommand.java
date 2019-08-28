@@ -42,7 +42,6 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.OrderLineId;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
@@ -82,7 +81,6 @@ public class ProcessPickingCandidatesCommand
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IInvoiceCandDAO invoiceCandidatesRepo = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceCandBL invoiceCandidatesService = Services.get(IInvoiceCandBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final PickingCandidateRepository pickingCandidateRepository;

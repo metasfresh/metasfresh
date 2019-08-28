@@ -202,9 +202,6 @@ public class M_MatchInv_RecreateForInvoiceLine extends JavaProcess
 			inoutLines.put(inoutLineId, inoutLine);
 		}
 
-		final ProductId productId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
-		final UomId uomId = UomId.ofRepoId(invoiceLine.getC_UOM_ID());
-
 		//
 		// Set all M_MatchInv to ZERO
 		for (final I_M_MatchInv matchInv : existingMatchInvs)

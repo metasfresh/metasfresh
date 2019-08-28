@@ -167,39 +167,37 @@ public class DD_OrderLine
 		// Storage
 		if (M_Product_ID > 0
 				&& QtyOrdered.signum() > 0		// no negative (returns)
-				&& ddOrderLine.getDD_Order().isSOTrx())
+				&& ddOrderLine.getDD_Order().isSOTrx()
+				&& Services.get(IProductBL.class).isStocked(ProductId.ofRepoIdOrNull(M_Product_ID)))
 		{
-			if (Services.get(IProductBL.class).isStocked(ProductId.ofRepoIdOrNull(M_Product_ID)))
-			{
-				final int M_Locator_ID = ddOrderLine.getM_Locator_ID();
-				int M_AttributeSetInstance_ID = ddOrderLine.getM_AttributeSetInstance_ID();
-				final WarehouseId warehouseId = Services.get(IWarehouseDAO.class).getWarehouseIdByLocatorRepoId(M_Locator_ID);
+			final int M_Locator_ID = ddOrderLine.getM_Locator_ID();
+			int M_AttributeSetInstance_ID = ddOrderLine.getM_AttributeSetInstance_ID();
+			final WarehouseId warehouseId = Services.get(IWarehouseDAO.class).getWarehouseIdByLocatorRepoId(M_Locator_ID);
 
-				BigDecimal qtyAvailable = MStorage.getQtyAvailable(warehouseId.getRepoId(), 0, M_Product_ID, M_AttributeSetInstance_ID, ITrx.TRXNAME_None);
-				if (qtyAvailable == null)
-					qtyAvailable = BigDecimal.ZERO;
-				if (qtyAvailable.signum() == 0)
+			BigDecimal qtyAvailable = MStorage.getQtyAvailable(warehouseId.getRepoId(), 0, M_Product_ID, M_AttributeSetInstance_ID, ITrx.TRXNAME_None);
+			if (qtyAvailable == null)
+				qtyAvailable = BigDecimal.ZERO;
+			if (qtyAvailable.signum() == 0)
+			{
+				field.fireDataStatusEEvent("NoQtyAvailable", "0", false);
+			}
+			else if (qtyAvailable.compareTo(QtyOrdered) < 0)
+			{
+				field.fireDataStatusEEvent("InsufficientQtyAvailable", qtyAvailable.toString(), false);
+			}
+			else
+			{
+				final int DD_OrderLine_ID = ddOrderLine.getDD_OrderLine_ID();
+				BigDecimal qtyNotReserved = MDDOrderLine.getNotReserved(ctx,
+						M_Locator_ID, M_Product_ID, M_AttributeSetInstance_ID,
+						DD_OrderLine_ID);
+				if (qtyNotReserved == null)
+					qtyNotReserved = BigDecimal.ZERO;
+				final BigDecimal total = qtyAvailable.subtract(qtyNotReserved);
+				if (total.compareTo(QtyOrdered) < 0)
 				{
-					field.fireDataStatusEEvent("NoQtyAvailable", "0", false);
-				}
-				else if (qtyAvailable.compareTo(QtyOrdered) < 0)
-				{
-					field.fireDataStatusEEvent("InsufficientQtyAvailable", qtyAvailable.toString(), false);
-				}
-				else
-				{
-					final int DD_OrderLine_ID = ddOrderLine.getDD_OrderLine_ID();
-					BigDecimal qtyNotReserved = MDDOrderLine.getNotReserved(ctx,
-							M_Locator_ID, M_Product_ID, M_AttributeSetInstance_ID,
-							DD_OrderLine_ID);
-					if (qtyNotReserved == null)
-						qtyNotReserved = BigDecimal.ZERO;
-					final BigDecimal total = qtyAvailable.subtract(qtyNotReserved);
-					if (total.compareTo(QtyOrdered) < 0)
-					{
-						final String info = Msg.parseTranslation(ctx, "@QtyAvailable@=" + qtyAvailable + "  -  @QtyNotReserved@=" + qtyNotReserved + "  =  " + total);
-						field.fireDataStatusEEvent("InsufficientQtyAvailable", info, false);
-					}
+					final String info = Msg.parseTranslation(ctx, "@QtyAvailable@=" + qtyAvailable + "  -  @QtyNotReserved@=" + qtyNotReserved + "  =  " + total);
+					field.fireDataStatusEEvent("InsufficientQtyAvailable", info, false);
 				}
 			}
 		}

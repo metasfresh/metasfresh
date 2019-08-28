@@ -3,8 +3,6 @@ package de.metas.contracts.refund;
 import static de.metas.contracts.refund.RefundTestTools.extractSingleConfig;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
@@ -13,7 +11,6 @@ import java.time.LocalDate;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_UOM;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -70,8 +67,6 @@ public class RefundInvoiceCandidateService_exceed_config_qty_Test
 
 	private RefundConfigRepository refundConfigRepository;
 
-	private I_C_UOM uomRecord;
-
 	@Before
 	public void init()
 	{
@@ -88,9 +83,6 @@ public class RefundInvoiceCandidateService_exceed_config_qty_Test
 		refundInvoiceCandidateService = new RefundInvoiceCandidateService(
 				refundInvoiceCandidateRepository,
 				moneyService);
-
-		uomRecord = newInstance(I_C_UOM.class);
-		saveRecord(uomRecord);
 	}
 
 	@Test

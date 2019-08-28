@@ -90,7 +90,7 @@ class InvoiceCandidateRecordServiceTest
 	}
 
 	@Test
-	void getById()
+	void ofRecord()
 	{
 		final I_C_UOM stockUomRecord = uomConversionHelper.createUOM(2);
 		stockUomRecord.setC_UOM_ID(STOCK_UOM_ID.getRepoId());

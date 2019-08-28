@@ -100,7 +100,6 @@ public class CandidateAssignmentServiceTest
 	private RefundTestTools refundTestTools;
 	private RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
 	private RefundContractRepository refundContractRepository;
-	private I_C_UOM uomRecord;
 
 	@Before
 	public void init()
@@ -140,9 +139,6 @@ public class CandidateAssignmentServiceTest
 				refundConfigChangeService);
 
 		refundTestTools = RefundTestTools.newInstance();
-
-		uomRecord = newInstance(I_C_UOM.class);
-		saveRecord(uomRecord);
 	}
 
 	@Test
