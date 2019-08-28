@@ -112,7 +112,7 @@ public final class PurchaseCandidateAdvisedHandler
 		final Candidate createdCandidate = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
 		if (event.isDirectlyCreatePurchaseCandidate())
 		{
-			requestMaterialOrderService.requestMaterialOrder(createdCandidate.getGroupId());
+			requestMaterialOrderService.requestMaterialOrderForCandidates(createdCandidate.getGroupId());
 		}
 	}
 }

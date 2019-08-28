@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
-import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
@@ -18,11 +17,14 @@ import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.AbstractPPOrderEvent;
-import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
+import de.metas.material.event.pporder.PPOrderRequestedEvent;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*
@@ -53,7 +55,7 @@ public final class PPOrderAdvisedHandler
 		extends PPOrderAdvisedOrCreatedHandler<PPOrderAdvisedEvent>
 {
 
-	private final RequestMaterialOrderService requestMaterialOrderService;
+	private final PostMaterialEventService materialEventService;
 
 	/**
 	 * @param candidateService needed in case we directly request a {@link PpOrderSuggestedEvent}'s proposed PP_Order to be created.
@@ -61,11 +63,11 @@ public final class PPOrderAdvisedHandler
 	public PPOrderAdvisedHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
-			@NonNull final RequestMaterialOrderService requestMaterialOrderService)
+			@NonNull final PostMaterialEventService materialEventService)
 	{
 		super(candidateChangeHandler, candidateRepositoryRetrieval);
 
-		this.requestMaterialOrderService = requestMaterialOrderService;
+		this.materialEventService = materialEventService;
 	}
 
 	@Override
@@ -83,11 +85,17 @@ public final class PPOrderAdvisedHandler
 	@Override
 	public void handleEvent(@NonNull final PPOrderAdvisedEvent event)
 	{
-		final MaterialDispoGroupId groupId = handleAbstractPPOrderEvent(event);
+		handleAbstractPPOrderEvent(event); // creates on the supply-candidate
 
 		if (event.isDirectlyCreatePPOrder())
 		{
-			requestMaterialOrderService.requestMaterialOrder(groupId);
+			final PPOrderRequestedEvent ppOrderRequestEvent = PPOrderRequestedEvent
+					.builder()
+					.eventDescriptor(EventDescriptor.ofClientAndOrg(event.getEventDescriptor().getClientAndOrgId()))
+					.dateOrdered(SystemTime.asInstant())
+					.ppOrder(event.getPpOrder())
+					.build();
+			materialEventService.postEventNow(ppOrderRequestEvent);
 		}
 	}
 

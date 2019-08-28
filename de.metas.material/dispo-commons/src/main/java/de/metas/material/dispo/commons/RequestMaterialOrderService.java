@@ -70,8 +70,12 @@ public class RequestMaterialOrderService
 		this.candidateRepository = candidateRepository;
 	}
 
-	/** Creates and fires an event to request the creation of a particular material order (production, distribution or purchase). */
-	public void requestMaterialOrder(@NonNull final MaterialDispoGroupId groupId)
+	/**
+	 * Creates and fires an event to request the creation of a particular material order (production, distribution or purchase).
+	 *
+	 * @param groupId of the candidates that are used to derive the material order to be requested.
+	 */
+	public void requestMaterialOrderForCandidates(@NonNull final MaterialDispoGroupId groupId)
 	{
 		List<Candidate> groupOfCandidates = null;
 		try
@@ -123,7 +127,7 @@ public class RequestMaterialOrderService
 	@VisibleForTesting
 	PPOrderRequestedEvent createPPOrderRequestedEvent(@NonNull final List<Candidate> group)
 	{
-		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' is an empty list");
+		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' may not be an empty list");
 
 		final PPOrderBuilder ppOrderBuilder = PPOrder.builder();
 
