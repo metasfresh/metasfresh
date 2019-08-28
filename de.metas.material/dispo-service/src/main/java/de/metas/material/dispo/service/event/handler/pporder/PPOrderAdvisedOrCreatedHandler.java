@@ -64,13 +64,13 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 	}
 
 	/**
-	 * @return candidateGroupId
+	 * Create a supply candidate for the given event's {@link PPOrder}'s header.
+	 *
+	 * NOTE: candidates for PPOrderLines will be created when the manufacturing order is completed
 	 */
 	protected final MaterialDispoGroupId handleAbstractPPOrderEvent(@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
 		final Candidate headerCandidate = createHeaderCandidate(ppOrderEvent);
-
-		// NOTE: candidates for PPOrderLines will be created when the manufacturing order is completed
 
 		return headerCandidate.getGroupId();
 	}
@@ -111,7 +111,7 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 	}
 
 	protected abstract CandidatesQuery createPreExistingCandidatesQuery(
-			PPOrder ppOrder,
+			@NonNull PPOrder ppOrder,
 			@Nullable SupplyRequiredDescriptor supplyRequiredDescriptor);
 
 	private static MaterialDescriptor createMaterialDescriptorForPPOrder(final PPOrder ppOrder)
