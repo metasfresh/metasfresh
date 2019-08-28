@@ -49,7 +49,7 @@ import lombok.experimental.UtilityClass;
  *
  */
 @UtilityClass
-public class MInventoryImportTableSqlUpdater
+final class MInventoryImportTableSqlUpdater
 {
 	private static final transient Logger logger = LogManager.getLogger(MInventoryImportTableSqlUpdater.class);
 
@@ -82,7 +82,7 @@ public class MInventoryImportTableSqlUpdater
 	{
 		// Set M_Warehouse_ID
 		final StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
-				.append("SET M_Warehouse_ID=(SELECT M_Warehouse_ID FROM M_Warehouse w WHERE i.warehouseValue=w.value) ")
+				.append("SET M_Warehouse_ID=(SELECT M_Warehouse_ID FROM M_Warehouse w WHERE i.WarehouseValue=w.Value) ")
 				.append("WHERE M_Warehouse_ID IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
@@ -110,10 +110,10 @@ public class MInventoryImportTableSqlUpdater
 				.append("SET DateLastInventory=(SELECT DateLastInventory FROM I_Inventory i ")
 				.append("WHERE i.LocatorValue=l.Value AND i.AD_Client_ID=l.AD_Client_ID ")
 				.append("AND I_IsImported<>'Y' ")
-				.append("ORDER BY i.DateLastInventory DESC LIMIT 1 ) ") 
+				.append("ORDER BY i.DateLastInventory DESC LIMIT 1 ) ")
 				.append("WHERE 1=1  ");
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		
+
 		try
 		{
 			DB.commit(true, ITrx.TRXNAME_ThreadInherited);
@@ -148,10 +148,10 @@ public class MInventoryImportTableSqlUpdater
 	private I_M_Locator getCreateNewMLocator(@NonNull final I_I_Inventory importRecord)
 	{
 		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-		
+
 		//
-		//check if exists, because might be created meanwhile
-		if (importRecord.getM_Warehouse_ID() <=0)
+		// check if exists, because might be created meanwhile
+		if (importRecord.getM_Warehouse_ID() <= 0)
 		{
 			return null;
 		}
@@ -166,7 +166,7 @@ public class MInventoryImportTableSqlUpdater
 		{
 			locator = InterfaceWrapperHelper.newInstance(I_M_Locator.class);
 		}
-		
+
 		locator.setAD_Org_ID(importRecord.getAD_Org_ID());
 		locator.setM_Warehouse_ID(warehouseId.getRepoId());
 		locator.setValue(importRecord.getLocatorValue());
@@ -176,7 +176,7 @@ public class MInventoryImportTableSqlUpdater
 		locator.setX1(importRecord.getX1());
 		locator.setDateLastInventory(importRecord.getDateLastInventory());
 		InterfaceWrapperHelper.save(locator);
-		
+
 		return locator;
 	}
 
