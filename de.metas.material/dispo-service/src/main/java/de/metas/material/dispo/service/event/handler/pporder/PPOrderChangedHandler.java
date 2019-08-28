@@ -24,6 +24,7 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.event.pporder.PPOrderChangedEvent.ChangedPPOrderLineDescriptor;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 
 /*
@@ -61,7 +62,6 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 	{
 		this.candidateChangeService = candidateChangeService;
 		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
-
 	}
 
 	@Override
@@ -91,6 +91,8 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 		// Line candidates (demands, supplies)
 		if (event.isJustCompleted())
 		{
+			Loggables.addLog("PPOrder is just completed; create the demand and supply candidates for ppOrder lines");
+
 			PPOrderLineCandidatesCreateCommand.builder()
 					.candidateChangeService(candidateChangeService)
 					.candidateRepositoryRetrieval(candidateRepositoryRetrieval)

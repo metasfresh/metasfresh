@@ -21,6 +21,7 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.AbstractPPOrderEvent;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
@@ -85,15 +86,20 @@ public final class PPOrderAdvisedHandler
 	@Override
 	public void handleEvent(@NonNull final PPOrderAdvisedEvent event)
 	{
-		handleAbstractPPOrderEvent(event); // creates on the supply-candidate
+		final MaterialDispoGroupId groupId = handleAbstractPPOrderEvent(event); // creates on the supply-candidate
 
 		if (event.isDirectlyCreatePPOrder())
 		{
+			final PPOrder ppOrderWithGroupId = event.getPpOrder()
+					.toBuilder()
+					.materialDispoGroupId(groupId) // without it we won't be able to assign the new PPOrder to the candidate that we just made
+					.build();
+
 			final PPOrderRequestedEvent ppOrderRequestEvent = PPOrderRequestedEvent
 					.builder()
 					.eventDescriptor(EventDescriptor.ofClientAndOrg(event.getEventDescriptor().getClientAndOrgId()))
 					.dateOrdered(SystemTime.asInstant())
-					.ppOrder(event.getPpOrder())
+					.ppOrder(ppOrderWithGroupId)
 					.build();
 			materialEventService.postEventNow(ppOrderRequestEvent);
 		}
