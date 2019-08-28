@@ -1,35 +1,15 @@
-package de.metas.impexp.processing;
+package de.metas.impexp.processing.impl;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_I_BPartner;
-import org.compiere.model.I_I_BPartner_GlobalID;
-import org.compiere.model.I_I_DiscountSchema;
-import org.compiere.model.I_I_Inventory;
-import org.compiere.model.I_I_Postal;
-import org.compiere.model.I_I_Product;
-import org.compiere.model.I_I_Replenish;
-import org.compiere.model.I_I_Request;
-import org.compiere.model.I_I_User;
 import org.slf4j.Logger;
 
-import de.metas.bpartner.impexp.BPartnerImportProcess;
-import de.metas.dataentry.data.impexp.DataEntryRecordsImportProcess;
-import de.metas.dataentry.model.I_I_DataEntry_Record;
-import de.metas.globalid.impexp.BPartnerGlobalIDImportProcess;
 import de.metas.impexp.processing.IAsyncImportProcessBuilderFactory;
 import de.metas.impexp.processing.IImportProcess;
 import de.metas.impexp.processing.IImportProcessFactory;
-import de.metas.impexp.processing.inventory.InventoryImportProcess;
-import de.metas.impexp.processing.product.ProductImportProcess;
-import de.metas.impexp.processing.request.RequestImportProcess;
 import de.metas.impexp.processing.spi.IAsyncImportProcessBuilder;
-import de.metas.impexp.processing.user.ADUserImportProcess;
-import de.metas.location.impexp.PostalCodeImportProcess;
 import de.metas.logging.LogManager;
-import de.metas.pricing.impexp.DiscountSchemaImportProcess;
-import de.metas.replenishment.impexp.ReplenishmentImportProcess;
 import lombok.NonNull;
 
 public class ImportProcessFactory implements IImportProcessFactory
@@ -39,21 +19,6 @@ public class ImportProcessFactory implements IImportProcessFactory
 	private final ImportProcessDescriptorsMap importProcessDescriptorsMap = new ImportProcessDescriptorsMap();
 	private final ImportTablesRelatedProcessesRegistry relatedProcessesRegistry = new ImportTablesRelatedProcessesRegistry();
 	private IAsyncImportProcessBuilderFactory asyncImportProcessBuilderFactory;
-
-	public ImportProcessFactory()
-	{
-		// Register standard import processes
-		registerImportProcess(I_I_BPartner.class, BPartnerImportProcess.class);
-		registerImportProcess(I_I_User.class, ADUserImportProcess.class);
-		registerImportProcess(I_I_Product.class, ProductImportProcess.class);
-		registerImportProcess(I_I_Request.class, RequestImportProcess.class);
-		registerImportProcess(I_I_Inventory.class, InventoryImportProcess.class);
-		registerImportProcess(I_I_DiscountSchema.class, DiscountSchemaImportProcess.class);
-		registerImportProcess(I_I_BPartner_GlobalID.class, BPartnerGlobalIDImportProcess.class);
-		registerImportProcess(I_I_Replenish.class, ReplenishmentImportProcess.class);
-		registerImportProcess(I_I_Postal.class, PostalCodeImportProcess.class);
-		registerImportProcess(I_I_DataEntry_Record.class, DataEntryRecordsImportProcess.class);
-	}
 
 	@Override
 	public <ImportRecordType> void registerImportProcess(

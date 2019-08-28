@@ -1,4 +1,4 @@
-package de.metas.impexp.processing;
+package de.metas.impexp.processing.impl;
 
 import org.adempiere.util.reflect.ClassReference;
 
