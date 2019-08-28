@@ -52,25 +52,28 @@ import lombok.Value;
 public final class JsonRequestComposite
 {
 	// TODO if an org is given, then verify whether the current user has access to the given org
-	@ApiModelProperty(required = false)
+	@ApiModelProperty(position = 10)
 	@JsonInclude(Include.NON_NULL)
 	String orgCode;
 
+	@ApiModelProperty(position = 20)
 	JsonRequestBPartner bpartner;
 
-	@ApiModelProperty(required = false, value = "The location's GLN can be used to lookup the whole bpartner; if multiple locations with GLN are provided, then only the first one is used")
+	@ApiModelProperty(value = "The location's GLN can be used to lookup the whole bpartner; if multiple locations with GLN are provided, then only the first one is used", //
+			position = 30)
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonProperty("locations")
 	@Getter(AccessLevel.PRIVATE)
 	JsonRequestLocationUpsert locations;
 
+	@ApiModelProperty(position = 40)
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonProperty("contacts")
 	@Getter(AccessLevel.PRIVATE)
 	JsonRequestContactUpsert contacts;
 
-	@ApiModelProperty(required = false, value = "Ths advise is applied to this composite's bpartner or any of its contacts\n"
-			+ READ_ONLY_SYNC_ADVISE_DOC)
+	@ApiModelProperty(value = "Ths advise is applied to this composite's bpartner or any of its contacts\n"
+			+ READ_ONLY_SYNC_ADVISE_DOC, position = 50)
 	@JsonInclude(Include.NON_NULL)
 	SyncAdvise syncAdvise;
 
