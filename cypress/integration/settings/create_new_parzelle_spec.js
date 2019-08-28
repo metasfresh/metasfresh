@@ -10,6 +10,6 @@ describe('Create new Parzelle/Allotment(a plot of land rented for growing vegeta
     cy.writeIntoStringField('Value', name);
     cy.writeIntoStringField('Name', name);
     /*show newly created parzelle in the grid view*/
-    cy.get(':nth-child(4) > .header-btn > .header-item-container > .header-item').click();
+    cy.visitWindow(540210);
   });
 });

@@ -36,7 +36,7 @@ describe('Create new bpartner group', function() {
   //create bpartner
   it('Create Testpartner', function() {
     cy.visitWindow('123', bpartnerID);
-    cy.selectInListField('C_BP_Group_ID', groupName, false /*modal*/, '/rest/api/window/.*' /*rewriteUrl*/);
+    cy.selectInListField('C_BP_Group_ID', groupName, false);
   });
 
   //check bpartnergroup

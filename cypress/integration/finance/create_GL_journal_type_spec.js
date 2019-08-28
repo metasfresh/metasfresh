@@ -21,12 +21,8 @@ it('Read fixture and prepare the names', function() {
 });
 
 describe('Creating GL journal entry and change posting type', function() {
-  before(function() {
-    cy.visit('/window/540356');
-  });
-
-  it('create tour', function() {
-    cy.clickHeaderNav(Cypress.messages.window.new.caption);
+  it('create journal', function() {
+    cy.visitWindow('540356', 'NEW');
 
     cy.writeIntoStringField('Description', description);
     cy.selectInListField('GL_Category_ID', category);

@@ -21,13 +21,8 @@ it('Read fixture and prepare the names', function() {
 });
 
 describe('Creating GL journal entry and change posting type', function() {
-  before(function() {
-    cy.visit('/window/540356');
-  });
-
   it('create journal', function() {
-    cy.clickHeaderNav(Cypress.messages.window.new.caption);
-
+    cy.visitWindow('540356', 'NEW');
     cy.writeIntoStringField('Description', description);
     cy.selectInListField('GL_Category_ID', category);
     cy.selectInListField('PostingType', postingType);
@@ -38,11 +33,11 @@ describe('Creating GL journal entry and change posting type', function() {
 
   it('add new entry line', function() {
     cy.pressAddNewButton();
-    cy.writeIntoStringField('Description', description, true /*modal*/);
-    cy.writeIntoLookupListField('Account_DR_ID', account, account, false /*typeList*/, true /*modal*/);
-    cy.writeIntoStringField('AmtSourceDr', amountSource, true /*modal*/);
-    cy.writeIntoLookupListField('Account_CR_ID', account, account, false /*typeList*/, true /*modal*/);
-    cy.selectInListField('C_Activity_ID', activity, true /*modal*/);
+    cy.writeIntoStringField('Description', description, true);
+    cy.writeIntoLookupListField('Account_DR_ID', account, account, false, true);
+    cy.writeIntoStringField('AmtSourceDr', amountSource, true);
+    cy.writeIntoLookupListField('Account_CR_ID', account, account, false, true);
+    cy.selectInListField('C_Activity_ID', activity, true);
     cy.pressDoneButton();
 
     cy.completeDocument();
