@@ -650,6 +650,11 @@ declare namespace Cypress {
      * Select all rows on the current page
      */
     selectAllRowsOnCurrentPage(): Chainable<any>
+      /**
+     * Count all rows from all pages
+     * @param windowId - the window for which the rows will be counted
+     */
+    countAllRows(windowID: string | number): Chainable<any>
   }
 
 }
