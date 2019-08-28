@@ -27,19 +27,16 @@ import { Builder } from '../../support/utils/builder';
 import { ColumnAndValue } from '../../support/commands/navigation';
 import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
 
-let date = null;
-// date = '28T09_52_21_149';
-
 // testdata
-let categoryName1 = appendHumanReadableNow('Category1', date);
-let categoryName2 = appendHumanReadableNow('Category2', date);
-let productComponentName1 = appendHumanReadableNow('Product Component 1', date);
-let productComponentName2 = appendHumanReadableNow('Product Component 2', date);
-let productComponentName3 = appendHumanReadableNow('Product Component 3', date);
+let categoryName1 = appendHumanReadableNow('Category1');
+let categoryName2 = appendHumanReadableNow('Category2');
+let productComponentName1 = appendHumanReadableNow('Product Component 1');
+let productComponentName2 = appendHumanReadableNow('Product Component 2');
+let productComponentName3 = appendHumanReadableNow('Product Component 3');
 let productComponentQty1 = 25;
 let productComponentQty2 = 20;
 let productComponentQty3 = 50;
-let finishedProductName = appendHumanReadableNow('Finished Product', date);
+let finishedProductName = appendHumanReadableNow('Finished Product');
 const bomIssueMethod = 'Issue only for what was received';
 
 // HU
@@ -80,23 +77,9 @@ let huValue1;
 let huValue2;
 let huValue3;
 
-// describe('adletethis', function() {
-//   it('adletethis', () => {
-//     cy.visitWindow('53009', '1000004');
-//     huValue1 = '1000053';
-//     huValue2 = '1000054';
-//     huValue3 = '1000055';
-//
-//     cy.selectTab('Window-53009-AD_Tab-53039');
-//     cy.expectNumberOfRows(3);
-//     cy.selectRowByColumnAndValue({ column: manufacturingOrderComponentsProductColumn, value: productComponentName1 });
-//     cy.selectRowByColumnAndValue({ column: manufacturingOrderComponentsProductColumn, value: productComponentName2 });
-//     cy.selectRowByColumnAndValue({ column: manufacturingOrderComponentsProductColumn, value: productComponentName3 });
-//   });
-// });
-
 describe('Create test data', function() {
-  it('Create product component 1', function() {
+  it('Create product components', function() {
+    // first component
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(categoryName1)
@@ -109,9 +92,8 @@ describe('Create test data', function() {
         .setProductCategory(categoryName1)
         .apply();
     });
-  });
 
-  it('Create product component 2', function() {
+    // second component
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(categoryName2)
@@ -124,9 +106,8 @@ describe('Create test data', function() {
         .setProductCategory(categoryName2)
         .apply();
     });
-  });
 
-  it('Create product component 3', function() {
+    // third component
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productComponentName3)
@@ -166,7 +147,7 @@ describe('Create test data', function() {
   });
 });
 
-describe('Create Manufacturing Order', function() {
+describe('Case 1: Process the manufacturing order **after** the components are issued', function() {
   it('Create Manufacturing Order Doc', function() {
     cy.visitWindow('53009', 'NEW');
 
@@ -193,16 +174,11 @@ describe('Create Manufacturing Order', function() {
 
     cy.completeDocument();
   });
-});
 
-describe('Test', function() {
   it('Run action "Issue/Receipt" and expect 4 rows', function() {
     cy.executeHeaderAction('WEBUI_PP_Order_IssueReceipt_Launcher');
-  });
 
-  it('Checks, move to previous it', function() {
     cy.expectNumberOfRows(4, true);
-
     cy.selectRowByColumnAndValue(createColumnAndValue(finishedProductName, undefined, 'MP', manufacturingQtyEntered), true);
     cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName1, undefined, 'CO', productComponentQty1), true);
     cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName2, undefined, 'CO', productComponentQty2), true);
@@ -238,13 +214,13 @@ describe('Test', function() {
   });
 
   it('Run action "Issue CUs from source HUs" when both component 2 and 3 are selected', function() {
-    // multiple selection by pressing shift and clicking
+    // multiple selection by pressing control and clicking
     cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName2, null, 'CO'), true)
       .get('body')
-      .type('{shift}', { release: false })
+      .type('{control}', { release: false })
       .selectRowByColumnAndValue(createColumnAndValue(productComponentName3, null, 'CO'), true)
       .get('body')
-      .type('{shift}');
+      .type('{control}');
 
     cy.executeQuickAction('WEBUI_PP_Order_M_Source_HU_IssueCUQty', true);
     // i have the feeling this 500ms sleep may in certain cases not be enough, however currently i have no idea how "not to need" it.
@@ -269,7 +245,7 @@ describe('Test', function() {
     cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName3, undefined, 'CU', null, productComponentQty3, packingStatusDestroyed), true);
   });
 
-  it('Go to Handling Unit Editor and expect 1 qty of finished product', function() {
+  it('Go to Handling Unit Editor and check expected qty of finished product', function() {
     cy.visitWindow('540189');
     toggleNotFrequentFilters();
     selectNotFrequentFilterWidget('default');
@@ -278,6 +254,111 @@ describe('Test', function() {
 
     cy.expectNumberOfRows(1);
     cy.selectRowByColumnAndValue({ column: qtyCuColumn, value: manufacturingQtyEntered });
+  });
+});
+
+describe('Case 2: Process the manufacturing order **before** the components are issued', function() {
+  it('Create Manufacturing Order Doc', function() {
+    cy.visitWindow('53009', 'NEW');
+
+    cy.writeIntoLookupListField('M_Product_ID', finishedProductName, finishedProductName);
+    cy.getStringFieldValue('PP_Product_BOM_ID').should('contain', finishedProductName);
+    cy.selectInListField('S_Resource_ID', manufacturingResource);
+    cy.writeIntoLookupListField('AD_Workflow_ID', manufacturingWorkflow, manufacturingWorkflow);
+
+    cy.getStringFieldValue('C_DocTypeTarget_ID').should('contain', expectedManufacturingTargetDocType);
+    cy.getStringFieldValue('PriorityRule').should('contain', expectedManufacturingPriorityRule);
+    cy.getStringFieldValue('QtyEntered').should('contain', manufacturingQtyEntered);
+    cy.getStringFieldValue('C_UOM_ID').should('contain', eachUOM);
+
+    cy.writeIntoStringField('DateOrdered', manufacturingDateOrdered, false, null, true);
+    cy.writeIntoStringField('DatePromised', manufacturingDatePromised, false, null, true);
+    cy.selectInListField('M_Warehouse_ID', stdWarehouse);
+
+    // expect 3 lines in tab, 1 for each product inside the bom
+    cy.selectTab('Window-53009-AD_Tab-53039');
+    cy.expectNumberOfRows(3);
+    cy.selectRowByColumnAndValue({ column: manufacturingOrderComponentsProductColumn, value: productComponentName1 });
+    cy.selectRowByColumnAndValue({ column: manufacturingOrderComponentsProductColumn, value: productComponentName2 });
+    cy.selectRowByColumnAndValue({ column: manufacturingOrderComponentsProductColumn, value: productComponentName3 });
+
+    cy.completeDocument();
+  });
+
+  it('Run action "Issue/Receipt" and expect 7 rows', function() {
+    cy.executeHeaderAction('WEBUI_PP_Order_IssueReceipt_Launcher');
+
+    cy.expectNumberOfRows(7, true);
+    // 1 finished product
+    cy.selectRowByColumnAndValue(createColumnAndValue(finishedProductName, undefined, 'MP', manufacturingQtyEntered), true);
+    // 3 components
+    cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName1, undefined, 'CO', productComponentQty1), true);
+    cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName2, undefined, 'CO', productComponentQty2), true);
+    cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName3, undefined, 'CO', productComponentQty3), true);
+    // 3 source HUs already marked as source in the previous Case
+    cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName1, huValue1, 'CU', null, huQty - productComponentQty1, packingStatusActive), false, true);
+    cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName2, huValue2, 'CU', null, huQty - productComponentQty2, packingStatusActive), false, true);
+    cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName3, huValue3, 'CU', null, huQty - productComponentQty3, packingStatusActive), false, true);
+  });
+
+  it('Receive the finished product', function() {
+    cy.selectRowByColumnAndValue({ column: productColumn, value: finishedProductName }, true);
+    cy.executeQuickAction('WEBUI_PP_Order_Receipt', true);
+    cy.getStringFieldValue('M_HU_PI_Item_Product_ID').should('contain', expectNoPackingItem);
+    cy.writeIntoStringField('QtyCU', manufacturingQtyEntered, true);
+    cy.pressStartButton();
+    cy.selectRowByColumnAndValue(createColumnAndValue(finishedProductName, undefined, 'CU', null, manufacturingQtyEntered, packingStatusPlanning), true);
+  });
+
+  it('Process the finished product', function() {
+    cy.selectRowByColumnAndValue(createColumnAndValue(finishedProductName, undefined, 'MP'), true);
+    cy.executeQuickAction('WEBUI_PP_Order_ChangePlanningStatus_Complete', true, false);
+
+    cy.selectRowByColumnAndValue(createColumnAndValue(finishedProductName, undefined, 'CU', null, manufacturingQtyEntered, packingStatusActive), true);
+  });
+
+  it('Run action "Issue CUs from source HUs" when both component 1 and 3 are selected', function() {
+    cy.expectNumberOfRows(8, true);
+    // multiple selection by pressing control and clicking
+    cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName1, null, 'CO'), true)
+      .get('body')
+      .type('{control}', { release: false })
+      .selectRowByColumnAndValue(createColumnAndValue(productComponentName3, null, 'CO'), true)
+      .get('body')
+      .type('{control}');
+
+    cy.executeQuickAction('WEBUI_PP_Order_M_Source_HU_IssueCUQty', true);
+    // i have the feeling this 500ms sleep may in certain cases not be enough, however currently i have no idea how "not to need" it.
+    // note in case you want to wait for a `RewriteURL.DocumentLayout`: that's not gonna work, i have already tried that.
+    // there are some cases where a new layout is not needed, even though something new appears onscreen. ¯\_(ツ)_/¯
+    cy.pressStartButton(500);
+
+    cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName1, undefined, 'CU', null, productComponentQty1, packingStatusDestroyed), true);
+    cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName1, undefined, 'CU', null, huQty - 2 * productComponentQty1, packingStatusActive), true);
+
+    cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName3, undefined, 'CU', null, productComponentQty3, packingStatusDestroyed), true);
+    // component 3 has qty=0 so it is deleted and it is missing from the dialog. because of this instead of 10 we only have 9 rows remaining
+    cy.expectNumberOfRows(9, true);
+  });
+
+  it('Run action "Issue CUs from source HUs" when only component 2 is selected', function() {
+    cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName2, null, 'CO'), true);
+    cy.executeQuickAction('WEBUI_PP_Order_M_Source_HU_IssueCUQty', true);
+    cy.getStringFieldValue('QtyCU').should('equals', productComponentQty2.toString(10));
+    cy.pressStartButton();
+    cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName2, undefined, 'CU', null, productComponentQty2, packingStatusDestroyed), true);
+    cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName2, undefined, 'CU', null, huQty - 2 * productComponentQty2, packingStatusActive), true);
+  });
+
+  it('Go to Handling Unit Editor and check expected qty of finished product', function() {
+    cy.visitWindow('540189');
+    toggleNotFrequentFilters();
+    selectNotFrequentFilterWidget('default');
+    cy.writeIntoLookupListField('M_Product_ID', finishedProductName, finishedProductName, false, false, null, true);
+    applyFilters();
+
+    cy.expectNumberOfRows(2);
+    cy.selectRowByColumnAndValue({ column: qtyCuColumn, value: manufacturingQtyEntered }, false, false, false).should('have.length', 2);
   });
 });
 
