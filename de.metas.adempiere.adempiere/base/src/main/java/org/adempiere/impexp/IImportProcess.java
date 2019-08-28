@@ -49,10 +49,6 @@ public interface IImportProcess<ImportRecordType>
 	/** Sets the processing context */
 	IImportProcess<ImportRecordType> setCtx(Properties ctx);
 
-	/** @return processing context */
-	@Deprecated
-	Properties getCtx();
-
 	/** Sets process parameters to be used */
 	IImportProcess<ImportRecordType> setParameters(IParams params);
 

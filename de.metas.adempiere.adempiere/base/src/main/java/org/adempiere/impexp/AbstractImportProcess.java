@@ -36,6 +36,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
@@ -104,22 +105,20 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		return this;
 	}
 
-	@Override
 	public final Properties getCtx()
 	{
 		Check.assumeNotNull(_ctx, "_ctx not null");
 		return _ctx;
 	}
 
-	protected final int getAD_Client_ID()
+	private final ClientId getClientId()
 	{
-		return Env.getAD_Client_ID(getCtx());
+		return Env.getClientId(getCtx());
 	}
 
 	@Override
-	public final AbstractImportProcess<ImportRecordType> setParameters(final IParams params)
+	public final AbstractImportProcess<ImportRecordType> setParameters(@NonNull final IParams params)
 	{
-		Check.assumeNotNull(params, "params not null");
 		this._parameters = params;
 		return this;
 	}
@@ -175,7 +174,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		StringBuilder whereClause = new StringBuilder();
 
 		// AD_Client
-		whereClause.append(" AND AD_Client_ID=").append(getAD_Client_ID());
+		whereClause.append(" AND AD_Client_ID=").append(getClientId().getRepoId());
 
 		// Selection_ID
 		final int selectionId = getParameters().getParameterAsInt(PARAM_Selection_ID, -1);
@@ -292,7 +291,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	protected void resetStandardColumns()
 	{
 		final StringBuilder sql = new StringBuilder("UPDATE " + getImportTableName()
-				+ " SET AD_Client_ID = COALESCE (AD_Client_ID, ").append(getAD_Client_ID()).append("),"
+				+ " SET AD_Client_ID = COALESCE (AD_Client_ID, ").append(getClientId().getRepoId()).append("),"
 						+ " AD_Org_ID = COALESCE (AD_Org_ID, 0),"
 						+ " IsActive = COALESCE (IsActive, 'Y'),"
 						+ " Created = COALESCE (Created, now()),"
@@ -332,7 +331,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	 */
 	protected final void importData(final ImportProcessResult importResult)
 	{
-		final Properties ctx = getCtx();
+		final Properties ctx = Env.getCtx();
 
 		//
 		// Build SQL
