@@ -3,6 +3,7 @@ package de.metas.event.remote;
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventListener;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 
 /**
@@ -30,5 +31,7 @@ class EventBus2RemoteEndpointHandler implements IEventListener
 	{
 		final String topicName = eventBus.getTopicName();
 		remoteEndpoint.sendEvent(topicName, event);
+
+		Loggables.get().addLog("Send event with UUID={} to remoteEndpoint={}", event.getUuid(), remoteEndpoint);
 	}
 }

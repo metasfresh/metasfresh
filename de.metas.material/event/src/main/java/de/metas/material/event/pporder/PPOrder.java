@@ -1,5 +1,6 @@
 package de.metas.material.event.pporder;
 
+import static de.metas.util.Check.assume;
 import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
@@ -145,6 +146,8 @@ public class PPOrder
 		this.lines = lines;
 
 		this.materialDispoGroupId = materialDispoGroupId;
+
+		// validate();
 	}
 
 	public OrgId getOrgId()
@@ -155,5 +158,22 @@ public class PPOrder
 	public BigDecimal getQtyOpen()
 	{
 		return getQtyRequired().subtract(getQtyDelivered());
+	}
+
+	/** not sure we really need to have lines with receipts*/
+	private void validate()
+	{
+		if (!lines.isEmpty()) // for now we allow and empty PPOrder; it's simpler for the code that builds them
+		{
+			boolean hasReceipt = false;
+			boolean hasIssue = false;
+			for (final PPOrderLine line : lines)
+			{
+				hasReceipt = hasReceipt || line.isReceipt();
+				hasIssue = hasIssue || !line.isReceipt();
+			}
+
+			assume(hasIssue && hasReceipt, "This PPOrder needs to have lines with both issues and receipts; this={}", this);
+		}
 	}
 }

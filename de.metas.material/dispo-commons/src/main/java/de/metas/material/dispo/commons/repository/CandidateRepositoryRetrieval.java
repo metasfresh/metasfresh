@@ -104,9 +104,7 @@ public class CandidateRepositoryRetrieval
 	}
 
 	/**
-	 *
-	 * @param groupId
-	 * @return
+	 * @return never {@code null}
 	 */
 	public List<Candidate> retrieveGroup(final MaterialDispoGroupId groupId)
 	{
