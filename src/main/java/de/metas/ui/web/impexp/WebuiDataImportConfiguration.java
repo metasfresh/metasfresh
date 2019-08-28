@@ -1,9 +1,9 @@
 package de.metas.ui.web.impexp;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.impexp.IImportProcessFactory;
 import org.springframework.stereotype.Component;
 
+import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.util.Services;
 
 /*
