@@ -474,6 +474,7 @@ Cypress.Commands.add('openNotificationContaining', (expectedValue, destinationWi
 });
 
 Cypress.Commands.add('selectLeftTable', function() {
+  cy.log('Select left table');
   cy.waitForSaveIndicator();
   cy.get('.modal-content-wrapper .table-flex-wrapper .document-list-table').within(el => {
     el = el[0].parentElement;
@@ -482,12 +483,10 @@ Cypress.Commands.add('selectLeftTable', function() {
 });
 
 Cypress.Commands.add('selectRightTable', function() {
+  cy.log('Select right table');
   cy.waitForSaveIndicator();
   cy.get('.modal-content-wrapper .table-flex-wrapper .document-list-table').within(el => {
     el = el[1].parentElement;
     return cy.wrap(el);
   });
 });
-
-
-
