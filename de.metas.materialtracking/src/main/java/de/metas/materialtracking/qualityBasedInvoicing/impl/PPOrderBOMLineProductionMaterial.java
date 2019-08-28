@@ -39,6 +39,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /* package */class PPOrderBOMLineProductionMaterial extends AbstractProductionMaterial implements IModelWrapper
 {
@@ -55,12 +56,9 @@ import de.metas.util.Services;
 	private final I_M_Product mainComponentProduct;
 
 	public PPOrderBOMLineProductionMaterial(
-			final org.eevolution.model.I_PP_Order_BOMLine ppOrderBOMLine,
+			@NonNull final org.eevolution.model.I_PP_Order_BOMLine ppOrderBOMLine,
 			final I_M_Product mainComponentProduct)
 	{
-		super();
-
-		Check.assumeNotNull(ppOrderBOMLine, "ppOrderBOMLine not null");
 		this.ppOrderBOMLine = InterfaceWrapperHelper.create(ppOrderBOMLine, I_PP_Order_BOMLine.class);
 		this.mainComponentProduct = mainComponentProduct;
 

@@ -16,11 +16,11 @@ import static org.compiere.util.TimeUtil.getDay;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -271,6 +271,7 @@ public class WaschprobeStandardMasterData
 	{
 		final I_M_Material_Tracking materialTracking = InterfaceWrapperHelper.newInstance(I_M_Material_Tracking.class, context);
 		materialTracking.setQtyReceived(qtyReceived);
+		materialTracking.setM_Product_ID(pCarrot_Unwashed.getM_Product_ID());
 		InterfaceWrapperHelper.save(materialTracking);
 		return materialTracking;
 	}
