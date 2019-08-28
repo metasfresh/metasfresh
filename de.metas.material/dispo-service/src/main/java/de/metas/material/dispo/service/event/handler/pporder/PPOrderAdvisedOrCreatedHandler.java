@@ -80,8 +80,6 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 		final PPOrder ppOrder = ppOrderEvent.getPpOrder();
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = ppOrderEvent.getSupplyRequiredDescriptor();
 
-		// final CandidateStatus candidateStatus = getCandidateStatus(ppOrder);
-
 		final CandidatesQuery preExistingSupplyQuery = createPreExistingCandidatesQuery(ppOrder, supplyRequiredDescriptor);
 		final Candidate existingCandidateOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(preExistingSupplyQuery);
 
@@ -126,22 +124,6 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 				// .customerId(ppOrder.getBPartnerId()) not 100% sure if the ppOrder's bPartner is the customer this is made for
 				.build();
 	}
-
-	// private static CandidateStatus getCandidateStatus(@NonNull final PPOrder ppOrder)
-	// {
-	// final CandidateStatus candidateStatus;
-	// final String docStatus = ppOrder.getDocStatus();
-	//
-	// if (ppOrder.getPpOrderId() <= 0)
-	// {
-	// candidateStatus = CandidateStatus.doc_planned;
-	// }
-	// else
-	// {
-	// candidateStatus = EventUtil.getCandidateStatus(docStatus);
-	// }
-	// return candidateStatus;
-	// }
 
 	private ProductionDetail createProductionDetailForPPOrder(
 			@NonNull final AbstractPPOrderEvent ppOrderEvent,

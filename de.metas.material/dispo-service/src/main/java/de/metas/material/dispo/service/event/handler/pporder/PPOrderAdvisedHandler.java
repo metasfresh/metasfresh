@@ -56,8 +56,6 @@ public final class PPOrderAdvisedHandler
 	private final RequestMaterialOrderService requestMaterialOrderService;
 
 	/**
-	 *
-	 * @param candidateChangeHandler
 	 * @param candidateService needed in case we directly request a {@link PpOrderSuggestedEvent}'s proposed PP_Order to be created.
 	 */
 	public PPOrderAdvisedHandler(
