@@ -44,7 +44,7 @@ Cypress.Commands.add('pressStartButton', waitBeforePress => {
     cy.server();
     cy.route('GET', new RegExp(RewriteURL.QUICKACTION)).as(startAlias);
 
-    // fail if there is a confirm dialog because it's the "do you really want to leave" confrimation which means that the record can not be saved
+    // fail if there is a confirm dialog because it's the "do you really want to leave" confirmation which means that the record can not be saved
     // https://docs.cypress.io/api/events/catalog-of-events.html#To-catch-a-single-uncaught-exception
     cy.on('window:confirm', str => {
       expect(str).to.eq('Everything is awesome and the process has started');
