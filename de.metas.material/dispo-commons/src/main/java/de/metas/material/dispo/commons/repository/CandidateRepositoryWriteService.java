@@ -276,8 +276,8 @@ public class CandidateRepositoryWriteService
 		// add a log message to be shown in the event log
 		final String verb = oldCandidateRecord == null ? "created" : "updated";
 		Loggables.addLog(
-				"addOrUpdate - {} candidate={}; singleCandidateOrNullQuery={}; preserveExistingSeqNoAndParentId={}",
-				verb, savedCandidate, singleCandidateOrNullQuery, preserveExistingSeqNoAndParentId);
+				"addOrUpdate - {} candidateId={};\n singleCandidateOrNullQuery={};\n preserveExistingSeqNoAndParentId={};\n candidate={}",
+				verb, savedCandidate.getId().getRepoId(), singleCandidateOrNullQuery, preserveExistingSeqNoAndParentId, savedCandidate);
 
 		return SaveResult
 				.builder()
