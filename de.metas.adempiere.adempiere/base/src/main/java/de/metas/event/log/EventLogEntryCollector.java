@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
 import de.metas.event.Event;
 import de.metas.event.log.EventLogUserService.EventLogEntryRequest;
@@ -101,7 +102,7 @@ public class EventLogEntryCollector implements IAutoCloseable
 			return;
 		}
 
-		final EventLogService eventStoreService = Adempiere.getBean(EventLogService.class);
+		final EventLogService eventStoreService = SpringContextHolder.instance.getBean(EventLogService.class);
 		eventStoreService.saveEventLogEntries(eventLogEntries);
 	}
 }
