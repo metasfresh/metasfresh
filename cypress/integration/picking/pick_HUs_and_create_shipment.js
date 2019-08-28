@@ -81,7 +81,7 @@ describe('Pick the SO', function() {
     cy.selectLeftTable().within(() => {
       cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
     });
-    cy.openPickingHUSelectionWindow();
+    cy.executeQuickActionWithRightSideTable('WEBUI_Picking_HUEditor_Launcher');
     cy.selectRightTable().within(() => {
       cy.selectRowByColumnAndValue({ column: huSelectionHuCodeColumn, value: huValue1 }, false, true);
     });
@@ -92,7 +92,7 @@ describe('Pick the SO', function() {
     cy.selectLeftTable().within(() => {
       cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
     });
-    cy.openPickingHUSelectionWindow();
+    cy.executeQuickActionWithRightSideTable('WEBUI_Picking_HUEditor_Launcher');
     cy.selectRightTable().within(() => {
       cy.selectRowByColumnAndValue({ column: huSelectionHuCodeColumn, value: huValue2 }, false, true);
     });

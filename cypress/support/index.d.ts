@@ -34,6 +34,15 @@ declare namespace Cypress {
     executeQuickAction(actionName: string, modal?: boolean, isDialogExpected ?: boolean): Chainable<any>
 
     /**
+     * Run a quickAction inside a modal which opens a table on the right side.
+     *
+     * Example: Runs the action "Open HU selection" window inside the window Picking Terminal (Prototype).
+     *
+     * @param actionName - internal name of the action to be executed
+     */
+    executeQuickActionWithRightSideTable(actionName: string): Chainable<any>
+
+    /**
      * @param fieldName - name of the field is question
      * @param modal - optional, default = false - use true if the field is in a modal overlay
      *
@@ -619,12 +628,6 @@ declare namespace Cypress {
      * Select the right table from a modal dialog with 2 tables side by side.
      */
     selectRightTable(): Chainable<any>
-
-
-    /**
-     * Runs the action "Open HU selection" window inside the window Picking Terminal (Prototype)
-     */
-    openPickingHUSelectionWindow(): Chainable<any>
 
 
     /**

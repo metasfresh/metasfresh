@@ -321,13 +321,3 @@ function createColumnAndValue(productValue, codeValue, typeValue, qtyPlanValue, 
   }
   return colAndVal;
 }
-
-Cypress.Commands.add('aa', actionName => {
-  cy.log(`aa ${actionName}`);
-  const layoutAlias = 'layout_' + new Date().getTime();
-  cy.waitForSaveIndicator();
-  cy.server();
-  cy.route('GET', new RegExp(RewriteURL.DocumentLayout)).as(layoutAlias);
-  cy.executeQuickAction(actionName, true, false);
-  cy.wait(`@${layoutAlias}`);
-});

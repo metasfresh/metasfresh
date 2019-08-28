@@ -43,6 +43,7 @@ Cypress.Commands.add('executeHeaderActionWithDialog', actionName => {
 
 // eslint-disable-next-line prettier/prettier
 Cypress.Commands.add('executeQuickAction', (actionName, modal = false, isDialogExpected = true) => {
+  cy.log(`executeQuickAction ${actionName}`);
   let path = `:not(.disabled) > .quick-actions-wrapper`; // default action
   const requestAlias = `quickAction-${actionName}-${humanReadableNow()}`;
 
@@ -82,11 +83,12 @@ Cypress.Commands.add('executeQuickAction', (actionName, modal = false, isDialogE
   cy.waitForSaveIndicator();
 });
 
-Cypress.Commands.add('openPickingHUSelectionWindow', function() {
+Cypress.Commands.add('executeQuickActionWithRightSideTable', actionName => {
+  cy.log(`executeQuickActionWithRightSideTable ${actionName}`);
   const layoutAlias = 'layout_' + new Date().getTime();
   cy.waitForSaveIndicator();
   cy.server();
   cy.route('GET', new RegExp(RewriteURL.DocumentLayout)).as(layoutAlias);
-  cy.executeQuickAction('WEBUI_Picking_HUEditor_Launcher', true, false);
+  cy.executeQuickAction(actionName, true, false);
   cy.wait(`@${layoutAlias}`);
 });
