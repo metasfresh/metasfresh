@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.DispoTestUtils;
-import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
@@ -122,14 +121,10 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 						stockRepository,
 						stockCandidateService)));
 
-		final RequestMaterialOrderService requestMaterialOrderService = new RequestMaterialOrderService(
-				candidateRepositoryRetrieval,
-				postMaterialEventService);
-
 		ppOrderAdvisedHandler = new PPOrderAdvisedHandler(
 				candidateChangeHandler,
 				candidateRepositoryRetrieval,
-				requestMaterialOrderService);
+				postMaterialEventService);
 
 		ppOrderCreatedHandler = new PPOrderCreatedHandler(
 				candidateChangeHandler,
