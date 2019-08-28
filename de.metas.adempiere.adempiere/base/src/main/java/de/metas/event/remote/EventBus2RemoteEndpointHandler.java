@@ -32,6 +32,6 @@ class EventBus2RemoteEndpointHandler implements IEventListener
 		final String topicName = eventBus.getTopicName();
 		remoteEndpoint.sendEvent(topicName, event);
 
-		Loggables.get().addLog("Send event with UUID={} to remoteEndpoint={}", event.getUuid(), remoteEndpoint);
+		Loggables.addLog("Send event with UUID={} to remoteEndpoint={}", event.getUuid(), remoteEndpoint);
 	}
 }

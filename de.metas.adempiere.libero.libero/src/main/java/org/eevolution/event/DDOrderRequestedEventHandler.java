@@ -84,12 +84,15 @@ public class DDOrderRequestedEventHandler implements MaterialEventHandler<DDOrde
 		final I_DD_Order ddOrderRecord = ddOrderProducer.createDDOrder(ddOrder, dateOrdered);
 
 		Loggables.addLog(
-				"Created ddOrder; DDOrder_ID={}; DocumentNo={}",
+				"Created ddOrder; DD_Order_ID={}; DocumentNo={}",
 				ddOrderRecord.getDD_Order_ID(), ddOrderRecord.getDocumentNo());
 
 		if (ddOrderRecord.getPP_Product_Planning().isDocComplete())
 		{
 			Services.get(IDocumentBL.class).processEx(ddOrderRecord, ACTION_Complete, STATUS_Completed);
+			Loggables.addLog(
+					"Completed ddOrder; DD_Order_ID={}; DocumentNo={}",
+					ddOrderRecord.getDD_Order_ID(), ddOrderRecord.getDocumentNo());
 		}
 		return ddOrderRecord;
 	}

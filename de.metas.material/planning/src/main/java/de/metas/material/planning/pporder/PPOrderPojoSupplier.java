@@ -164,7 +164,7 @@ public class PPOrderPojoSupplier
 				.qtyRequired(ppOrderQuantity.getAsBigDecimal())
 
 				.orderLineId(request.getMrpDemandOrderLineSOId())
-				.bpartnerId(BPartnerId.ofRepoId(request.getMrpDemandBPartnerId()))
+				.bpartnerId(BPartnerId.ofRepoIdOrNull(request.getMrpDemandBPartnerId()))
 				.build();
 	}
 
