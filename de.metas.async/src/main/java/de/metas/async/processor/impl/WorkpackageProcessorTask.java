@@ -215,9 +215,9 @@ import lombok.NonNull;
 				markError(workPackage, e);
 			}
 		}
-		catch (final Exception e)
+		catch (final Throwable ex)
 		{
-			final IWorkpackageSkipRequest skipRequest = getWorkpackageSkipRequest(e);
+			final IWorkpackageSkipRequest skipRequest = getWorkpackageSkipRequest(ex);
 			if (skipRequest != null)
 			{
 				finallyReleaseElementLockIfAny = false; // task 08999: don't release the lock yet, because we are going to retry later
@@ -225,7 +225,7 @@ import lombok.NonNull;
 			}
 			else
 			{
-				markError(workPackage, AdempiereException.wrapIfNeeded(e));
+				markError(workPackage, AdempiereException.wrapIfNeeded(ex));
 			}
 		}
 		finally
