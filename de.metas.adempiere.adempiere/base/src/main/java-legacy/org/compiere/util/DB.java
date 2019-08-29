@@ -61,6 +61,7 @@ import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.sql.IStatementsFactory;
 import org.adempiere.sql.impl.StatementsFactory;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.db.AdempiereDatabase;
@@ -844,7 +845,7 @@ public final class DB
 		else if (param instanceof ReferenceListAwareEnum)
 		{
 			pstmt.setString(index, ((ReferenceListAwareEnum)param).getCode());
-		//
+			//
 		}
 		else
 		{
@@ -2345,6 +2346,22 @@ public final class DB
 	{
 		final ImmutableList<Integer> ids = RepoIdAwares.asRepoIds(selection);
 		return createT_Selection(ids, trxName);
+	}
+
+	public static PInstanceId createT_Selection(@NonNull final TableRecordReferenceSet recordRefs, final String trxName)
+	{
+		final Set<Integer> ids = recordRefs.toIntSet();
+		return createT_Selection(ids, trxName);
+	}
+
+	public static String createT_Selection_SqlWhereClause(
+			@NonNull final PInstanceId selectionId,
+			@NonNull final String sqlJoinColumn)
+	{
+		Check.assumeNotEmpty(sqlJoinColumn, "sqlJoinColumn is not empty");
+
+		return "EXISTS (SELECT 1 FROM T_SELECTION zz WHERE zz.AD_PInstance_ID=" + selectionId.getRepoId()
+				+ " AND zz.T_Selection_ID=" + sqlJoinColumn + ")";
 	}
 
 	/**
