@@ -109,8 +109,8 @@ public class AsyncImportWorkpackageProcessor extends WorkpackageProcessorAdapter
 							.topic(USER_NOTIFICATIONS_TOPIC)
 							.recipientUserId(recipientUserId)
 							.contentADMessage(MSG_Event_RecordsImported)
-							.contentADMessageParam(result.getInsertCount())
-							.contentADMessageParam(result.getUpdateCount())
+							.contentADMessageParam(result.getCountInsertsIntoTargetTableString())
+							.contentADMessageParam(result.getCountUpdatesIntoTargetTableString())
 							.contentADMessageParam(windowName)
 							.build());
 		}

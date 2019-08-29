@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import org.adempiere.service.ClientId;
 import org.adempiere.util.api.IParams;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import de.metas.util.ILoggable;
 
@@ -57,6 +58,8 @@ public interface IImportProcess<ImportRecordType>
 
 	/** Sets the {@link ILoggable} where status notices shall be reported */
 	IImportProcess<ImportRecordType> setLoggable(ILoggable loggable);
+
+	IImportProcess<ImportRecordType> selectedRecords(TableRecordReferenceSet selectedRecordRefs);
 
 	IImportProcess<ImportRecordType> validateOnly(boolean validateOnly);
 

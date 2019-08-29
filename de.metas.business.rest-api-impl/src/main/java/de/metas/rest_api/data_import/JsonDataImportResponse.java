@@ -35,7 +35,17 @@ public class JsonDataImportResponse
 	@NonNull
 	String importFormatName;
 
-	int countImportPrepared;
-	int countError;
+	//
+	// Source file
+	int countSourceFileValidLines;
+	int countSourceFileErrorLines;
 
+	//
+	// Import table
+	String importTableName;
+	int countImportRecordsWithErrors;
+
+	//
+	// Target table
+	String targetTableName;
 }

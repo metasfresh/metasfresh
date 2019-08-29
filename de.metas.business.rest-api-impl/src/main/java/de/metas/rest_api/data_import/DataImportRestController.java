@@ -33,12 +33,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -77,12 +77,7 @@ public class DataImportRestController
 				.build());
 
 		return ResponseEntity.accepted()
-				.body(JsonDataImportResponse.builder()
-						.dataImportConfigId(result.getDataImportConfigId().getRepoId())
-						.importFormatName(result.getImportFormatName())
-						.countImportPrepared(result.getCountImportPrepared())
-						.countError(result.getCountError())
-						.build());
+				.body(toJsonDataImportResponse(result));
 	}
 
 	private static Resource toResource(final MultipartFile file)
@@ -94,11 +89,28 @@ public class DataImportRestController
 		{
 			data = file.getBytes();
 		}
-		catch (IOException ex)
+		catch (final IOException ex)
 		{
 			throw AdempiereException.wrapIfNeeded(ex);
 		}
 
 		return new ByteArrayResource(data, filename);
+	}
+
+	private static JsonDataImportResponse toJsonDataImportResponse(final DataImportResult result)
+	{
+		return JsonDataImportResponse.builder()
+				.dataImportConfigId(result.getDataImportConfigId().getRepoId())
+				.importFormatName(result.getImportFormatName())
+				//
+				.countSourceFileValidLines(result.getCountSourceFileValidLines())
+				.countSourceFileErrorLines(result.getCountSourceFileErrorLines())
+				//
+				.importTableName(result.getImportTableName())
+				.countImportRecordsWithErrors(result.getCountImportRecordsWithErrors())
+				//
+				.targetTableName(result.getTargetTableName())
+				//
+				.build();
 	}
 }

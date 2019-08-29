@@ -40,6 +40,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_DataImport;
 import org.compiere.model.ModelValidationEngine;
@@ -54,13 +55,13 @@ import com.google.common.collect.ImmutableMap;
 import ch.qos.logback.classic.Level;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.impexp.processing.ImportProcessResult.ImportProcessResultCollector;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import lombok.Getter;
 import lombok.NonNull;
 
 /**
@@ -96,15 +97,28 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	private ClientId clientId;
 	private IParams _parameters = IParams.NULL;
 	private ILoggable loggable = Loggables.logback(log, Level.INFO);
-	private PInstanceId selectionId;
+	private TableRecordReferenceSet selectedRecordRefs;
 	private Boolean validateOnly;
 
-	@Getter(lazy = true)
-	private final DBFunctions dbFunctions = createDBFunctions();
+	private ImportProcessResultCollector resultCollector;
+
+	private DBFunctions dbFunctions; // lazy
+	private PInstanceId selectionId; // lazy
+	private String whereClause; // lazy
+
+	private void assertNotStarted()
+	{
+		if (resultCollector != null)
+		{
+			throw new AdempiereException("Cannot change parameters after process is started: " + this);
+		}
+	}
 
 	@Override
 	public final AbstractImportProcess<ImportRecordType> setCtx(final Properties ctx)
 	{
+		assertNotStarted();
+
 		this._ctx = ctx;
 		return this;
 	}
@@ -118,6 +132,8 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	@Override
 	public final AbstractImportProcess<ImportRecordType> clientId(@NonNull ClientId clientId)
 	{
+		assertNotStarted();
+
 		this.clientId = clientId;
 		return this;
 	}
@@ -135,6 +151,8 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	@Override
 	public final AbstractImportProcess<ImportRecordType> setParameters(@NonNull final IParams params)
 	{
+		assertNotStarted();
+
 		this._parameters = params;
 		return this;
 	}
@@ -147,18 +165,27 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	@Override
 	public final AbstractImportProcess<ImportRecordType> validateOnly(final boolean validateOnly)
 	{
+		assertNotStarted();
+
 		this.validateOnly = validateOnly;
 		return this;
 	}
 
-	private DBFunctions createDBFunctions()
+	private DBFunctions getDbFunctions()
 	{
-		return dbFunctionsRepo.retrieveByTableName(getImportTableName());
+		DBFunctions dbFunctions = this.dbFunctions;
+		if (dbFunctions == null)
+		{
+			dbFunctions = this.dbFunctions = dbFunctionsRepo.retrieveByTableName(getImportTableName());
+		}
+		return dbFunctions;
 	}
 
 	@Override
 	public final AbstractImportProcess<ImportRecordType> setLoggable(@NonNull final ILoggable loggable)
 	{
+		assertNotStarted();
+
 		this.loggable = loggable;
 		return this;
 	}
@@ -179,18 +206,32 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		return getParameters().getParameterAsBool(PARAM_IsValidateOnly);
 	}
 
-	public final AbstractImportProcess<ImportRecordType> selectionId(@NonNull final PInstanceId selectionId)
+	@Override
+	public final AbstractImportProcess<ImportRecordType> selectedRecords(@NonNull final TableRecordReferenceSet selectedRecordRefs)
 	{
-		this.selectionId = selectionId;
+		assertNotStarted();
+
+		if (selectedRecordRefs.isEmpty())
+		{
+			throw new AdempiereException("No import records: " + selectedRecordRefs);
+		}
+		this.selectedRecordRefs = selectedRecordRefs;
 		return this;
 	}
 
-	private final PInstanceId getSelectionId()
+	private final PInstanceId getOrCreateSelectionId()
 	{
 		if (selectionId != null)
 		{
 			return selectionId;
 		}
+
+		if (selectedRecordRefs != null)
+		{
+			selectionId = DB.createT_Selection(selectedRecordRefs, ITrx.TRXNAME_None);
+			return selectionId;
+		}
+
 		return PInstanceId.ofRepoIdOrNull(getParameters().getParameterAsInt(PARAM_Selection_ID, -1));
 	}
 
@@ -214,24 +255,52 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	/** @return SQL WHERE clause to filter records that are candidates for import; <b>please prefix your where clause with " AND "</b> */
 	protected final String getWhereClause()
 	{
-		StringBuilder whereClause = new StringBuilder();
+		String whereClause = this.whereClause;
+		if (whereClause == null)
+		{
+			whereClause = this.whereClause = buildWhereClause();
+			log.debug("Using where clause: {}", whereClause);
+		}
+		return whereClause;
+	}
+
+	private final String buildWhereClause()
+	{
+		final StringBuilder whereClause = new StringBuilder();
 
 		// AD_Client
-		whereClause.append(" AND AD_Client_ID=").append(getClientId().getRepoId());
+		final ClientId clientId = getClientId();
+		whereClause.append(" AND AD_Client_ID=").append(clientId.getRepoId());
 
 		// Selection_ID
-		final PInstanceId selectionId = getSelectionId();
+		final PInstanceId selectionId = getOrCreateSelectionId();
 		if (selectionId != null)
 		{
-			whereClause.append(" AND EXISTS (SELECT 1 FROM T_SELECTION s WHERE s.AD_PInstance_ID=" + selectionId.getRepoId() + " AND s.T_Selection_ID=" + getImportKeyColumnName() + ")");
+			whereClause.append(" AND ").append(DB.createT_Selection_SqlWhereClause(selectionId, getImportKeyColumnName()));
 		}
 
 		return whereClause.toString();
 	}
 
+	protected final ImportProcessResultCollector getResultCollector()
+	{
+		if (resultCollector == null)
+		{
+			throw new AdempiereException("Import not started yet");
+		}
+		return resultCollector;
+	}
+
 	@Override
 	public final ImportProcessResult run()
 	{
+		if (resultCollector != null)
+		{
+			throw new AdempiereException("Process already started: " + this);
+		}
+		resultCollector = ImportProcessResult.newCollector(getTargetTableName())
+				.importTableName(getImportTableName());
+
 		// Assume we are not running in another transaction because that could introduce deadlocks,
 		// because we are creating the transactions here.
 		trxManager.assertThreadInheritedTrxNotExists();
@@ -240,17 +309,16 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		// Delete old imported records (out of trx)
 		if (isDeleteOldImported())
 		{
-			final int deletedCount = deleteImportRecords(ImportDataDeleteRequest.builder()
+			final int countImportRecordsDeleted = deleteImportRecords(ImportDataDeleteRequest.builder()
 					.mode(ImportDataDeleteMode.ONLY_IMPORTED)
 					.build());
-			loggable.addLog("Deleted Old Imported =" + deletedCount);
+			resultCollector.setCountImportRecordsDeleted(countImportRecordsDeleted);
+			loggable.addLog("Deleted Old Imported =" + countImportRecordsDeleted);
 		}
 
 		//
 		// Reset standard columns (out of trx)
 		resetStandardColumns();
-
-		final ImportProcessResult importResult = ImportProcessResult.newInstance(getTargetTableName());
 
 		//
 		// Update and validate
@@ -259,16 +327,16 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		ModelValidationEngine.get().fireImportValidate(this, null, null, IImportInterceptor.TIMING_AFTER_VALIDATE);
 		if (isValidateOnly())
 		{
-			return importResult;
+			return resultCollector.toResult();
 		}
 
 		//
 		// Actual import (allow the method to manage the transaction)
-		importData(importResult);
+		importData(resultCollector);
 
-		loggable.addLog("" + importResult);
+		loggable.addLog("" + resultCollector);
 
-		return importResult;
+		return resultCollector.toResult();
 	}
 
 	@Override
@@ -358,7 +426,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		final int no = DB.executeUpdateEx(sql.toString(),
 				sqlParams.toArray(),
 				ITrx.TRXNAME_ThreadInherited);
-		log.debug("Reset=" + no);
+		log.debug("Reset={}", no);
 
 	}
 
@@ -369,10 +437,8 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 
 	/**
 	 * Actual data import.
-	 *
-	 * @param importResult
 	 */
-	protected final void importData(final ImportProcessResult importResult)
+	private final void importData(final ImportProcessResultCollector resultCollector)
 	{
 		final Properties ctx = Env.getCtx();
 
@@ -436,18 +502,17 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 						}
 						else if (recordImportResult == ImportRecordResult.Inserted)
 						{
-							importResult.incrementInsertCounter();
+							resultCollector.incrementInsertsIntoTargetTable();
 						}
 						else if (recordImportResult == ImportRecordResult.Updated)
 						{
-							importResult.incrementUpdateCounter();
+							resultCollector.incrementUpdatesIntoTargetTable();
 						}
 					}
 				});
 			}
 
 			afterImport();
-
 		}
 		catch (final SQLException e)
 		{
@@ -460,7 +525,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 			pstmt = null;
 
 			final int noErrors = markNotImportedAllWithErrors();
-			importResult.setErrorCount(noErrors);
+			resultCollector.setCountImportRecordsWithErrors(noErrors);
 		}
 	}
 
@@ -497,11 +562,12 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 
 	protected final int markNotImportedAllWithErrors()
 	{
-		final StringBuilder sql = new StringBuilder("UPDATE " + getImportTableName()
+		final String sql = "UPDATE " + getImportTableName()
 				+ " SET " + COLUMNNAME_I_IsImported + "='N', Updated=now() "
-				+ " WHERE " + COLUMNNAME_I_IsImported + "<>'Y' ").append(getWhereClause());
-		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		return no >= 0 ? no : 0;
+				+ " WHERE " + COLUMNNAME_I_IsImported + "<>'Y' "
+				+ " " + getWhereClause();
+		final int countNotImported = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		return countNotImported >= 0 ? countNotImported : 0;
 	}
 
 	protected void markImported(final ImportRecordType importRecord)

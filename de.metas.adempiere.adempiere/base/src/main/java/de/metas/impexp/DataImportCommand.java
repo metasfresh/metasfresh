@@ -2,18 +2,21 @@ package de.metas.impexp;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.springframework.core.io.Resource;
 
+import de.metas.impexp.DataImportResult.DataImportResultBuilder;
 import de.metas.impexp.processing.IImportProcessFactory;
-import de.metas.impexp.processing.spi.IAsyncImportProcessBuilder;
+import de.metas.impexp.processing.ImportProcessResult;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import lombok.Builder;
@@ -52,9 +55,9 @@ final class DataImportCommand
 	private final ImpFormat importFormat;
 	private final Resource data;
 
-	private int countImportPrepared = 0;
-	private int countError = 0;
-	private IAsyncImportProcessBuilder _asyncImportProcessBuilder;
+	private int sourceFile_validLines = 0;
+	private int sourceFile_linesWithErrors = 0;
+	private final HashSet<TableRecordReference> recordRefsToImport = new HashSet<>();
 
 	@Builder
 	private DataImportCommand(
@@ -82,15 +85,39 @@ final class DataImportCommand
 
 	public DataImportResult execute()
 	{
-		streamImpDataLines().forEach(this::importLine);
-		completeAsyncImportProcessBuilder();
+		streamImpDataLines().forEach(this::createImportRecord);
 
-		return DataImportResult.builder()
+		final DataImportResultBuilder resultCollector = DataImportResult.builder()
 				.dataImportConfigId(dataImportConfigId)
 				.importFormatName(importFormat.getName())
-				.countImportPrepared(countImportPrepared)
-				.countError(countError)
-				.build();
+				.countSourceFileValidLines(sourceFile_validLines)
+				.countSourceFileErrorLines(sourceFile_linesWithErrors);
+
+		final TableRecordReferenceSet selectedRecordRefs = TableRecordReferenceSet.of(recordRefsToImport);
+		if (!selectedRecordRefs.isEmpty())
+		{
+			final ImportProcessResult validateResult = validateImportRecords(selectedRecordRefs);
+			resultCollector
+					.importTableName(validateResult.getImportTableName())
+					.countImportRecordsWithErrors(validateResult.getCountImportRecordsWithErrors().orElse(-1))
+					.targetTableName(validateResult.getTargetTableName());
+
+			completeAsyncImportProcessBuilder();
+		}
+
+		return resultCollector.build();
+	}
+
+	private ImportProcessResult validateImportRecords(final TableRecordReferenceSet selectedRecordRefs)
+	{
+		return importProcessFactory.newImportProcessForTableName(importFormat.getTableName())
+				.setCtx(Env.getCtx())
+				.clientId(ctx.getClientId())
+				.validateOnly(true)
+				.selectedRecords(selectedRecordRefs)
+				// .setLoggable(loggable)
+				// .setParameters(params)
+				.run();
 	}
 
 	private Stream<ImpDataLine> streamImpDataLines()
@@ -137,7 +164,7 @@ final class DataImportCommand
 		}
 	}
 
-	private void importLine(@NonNull final ImpDataLine line)
+	private void createImportRecord(@NonNull final ImpDataLine line)
 	{
 		line.importToDB(ctx);
 
@@ -150,19 +177,19 @@ final class DataImportCommand
 		final ImpDataLineStatus importStatus = line.getImportStatus();
 		if (ImpDataLineStatus.ImportPrepared == importStatus)
 		{
-			countImportPrepared++;
+			sourceFile_validLines++;
 			scheduleToImport(line);
 		}
 		else if (ImpDataLineStatus.Error == importStatus)
 		{
-			countError++;
+			sourceFile_linesWithErrors++;
 		}
 	}
 
 	private void scheduleToImport(final ImpDataLine line)
 	{
 		// Skip those which were not prepared yet
-		final ITableRecordReference importRecordRef = line.getImportRecordRef();
+		final TableRecordReference importRecordRef = line.getImportRecordRef();
 		if (importRecordRef == null)
 		{
 			return;
@@ -174,26 +201,24 @@ final class DataImportCommand
 			return;
 		}
 
-		//
-		if (_asyncImportProcessBuilder == null)
-		{
-			_asyncImportProcessBuilder = importProcessFactory
-					.newAsyncImportProcessBuilder()
-					.setCtx(Env.getCtx())
-					.setImportTableName(importRecordRef.getTableName());
-		}
-		_asyncImportProcessBuilder.addImportRecord(importRecordRef);
+		recordRefsToImport.add(importRecordRef);
 	}
 
 	private void completeAsyncImportProcessBuilder()
 	{
-		final IAsyncImportProcessBuilder asyncImportProcessBuilder = _asyncImportProcessBuilder;
-		if (asyncImportProcessBuilder != null)
+		if (recordRefsToImport.isEmpty())
 		{
-			asyncImportProcessBuilder.buildAndEnqueue();
+			return;
 		}
 
-		_asyncImportProcessBuilder = null;
+		final String importTableName = importFormat.getTableName();
+
+		importProcessFactory
+				.newAsyncImportProcessBuilder()
+				.setCtx(Env.getCtx())
+				.setImportTableName(importTableName)
+				.addImportRecords(recordRefsToImport)
+				.buildAndEnqueue();
 	}
 
 }
