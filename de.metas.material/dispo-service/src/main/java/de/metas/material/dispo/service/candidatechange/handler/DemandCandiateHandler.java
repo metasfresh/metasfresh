@@ -24,6 +24,7 @@ import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseReposito
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 
 /*
@@ -168,7 +169,7 @@ public class DemandCandiateHandler implements CandidateHandler
 				.forDescriptorAndAllPossibleBPartnerIds(demandCandidateWithId.getMaterialDescriptor());
 
 		final BigDecimal availableQuantityAfterDemandWasApplied = availableToPromiseRepository.retrieveAvailableStockQtySum(query);
-
+		Loggables.addLog("Quantity after demand applied is {}", availableQuantityAfterDemandWasApplied);
 		if (availableQuantityAfterDemandWasApplied.signum() < 0)
 		{
 			final BigDecimal requiredQty = availableQuantityAfterDemandWasApplied.negate();
@@ -176,6 +177,7 @@ public class DemandCandiateHandler implements CandidateHandler
 			final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator //
 					.createSupplyRequiredEvent(demandCandidateWithId, requiredQty);
 			materialEventService.postEventAfterNextCommit(supplyRequiredEvent);
+			Loggables.addLog("Fire supplyRequiredEvent after next commit; event={}", supplyRequiredEvent);
 		}
 	}
 }
