@@ -1,10 +1,12 @@
-package de.metas.ui.web.view;
+package de.metas.ui.web.pattribute;
+
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,15 +24,8 @@ package de.metas.ui.web.view;
  * #L%
  */
 
-public enum ViewCloseReason
+@FunctionalInterface
+public interface WebuiASIEditingInfoAware
 {
-	/** Closed because user requested it */
-	USER_REQUEST,
-	/** Closed because it was removed automatically from cache (expired, cache size exceeded etc) */
-	CLEANUP;
-
-	public static ViewCloseReason fromCacheEvictedFlag(final boolean wasEvicted)
-	{
-		return wasEvicted ? ViewCloseReason.CLEANUP : ViewCloseReason.USER_REQUEST;
-	}
+	WebuiASIEditingInfo getWebuiASIEditingInfo(AttributeSetInstanceId asiId);
 }

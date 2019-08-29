@@ -31,7 +31,6 @@ import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.IView;
-import de.metas.ui.web.view.ViewCloseReason;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.ViewRowsOrderBy;
@@ -175,7 +174,7 @@ public class HUEditorView implements IView
 	}
 
 	@Override
-	public void close(final ViewCloseReason reason)
+	public void afterDestroy()
 	{
 		invalidateAllNoNotify();
 	}

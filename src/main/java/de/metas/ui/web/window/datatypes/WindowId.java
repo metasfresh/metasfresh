@@ -7,7 +7,6 @@ import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.base.Preconditions;
 
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
@@ -38,18 +37,15 @@ import lombok.NonNull;
 @EqualsAndHashCode
 public final class WindowId
 {
-	public static WindowId fromJson(final String json)
+	@JsonCreator
+	public static WindowId fromJson(@NonNull final String json)
 	{
 		return new WindowId(json);
 	}
 
-	public static WindowId fromNullableJson(final String json)
+	public static WindowId fromNullableJson(@Nullable final String json)
 	{
-		if (json == null)
-		{
-			return null;
-		}
-		return new WindowId(json);
+		return json != null ? fromJson(json) : null;
 	}
 
 	public static WindowId of(final int windowIdInt)
@@ -82,7 +78,6 @@ public final class WindowId
 	private final String value;
 	private transient int valueInt = -1; // lazy
 
-	@JsonCreator
 	private WindowId(final String value)
 	{
 		Check.assumeNotEmpty(value, "value is not empty");
@@ -91,7 +86,7 @@ public final class WindowId
 
 	private WindowId(final int valueInt)
 	{
-		Preconditions.checkArgument(valueInt > 0, "invalid valueInt: %s", valueInt);
+		Check.assumeGreaterThanZero(valueInt, "valueInt");
 		this.valueInt = valueInt;
 		value = String.valueOf(valueInt);
 	}

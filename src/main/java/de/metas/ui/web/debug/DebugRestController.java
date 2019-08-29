@@ -52,6 +52,7 @@ import de.metas.notification.UserNotificationTargetType;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.debug.JSONCacheResetResult.JSONCacheResetResultBuilder;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.process.ProcessRestController;
@@ -153,18 +154,56 @@ public class DebugRestController
 
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "cache reset done") })
 	@RequestMapping(value = "/cacheReset", method = RequestMethod.GET)
-	public void cacheReset()
+	public JSONCacheResetResult cacheReset(
+			@RequestParam(name = "forgetNotSavedDocuments", defaultValue = "false", required = false) final boolean forgetNotSavedDocuments)
 	{
 		userSession.assertLoggedIn();
 
-		CacheMgt.get().reset();
-		documentCollection.cacheReset();
-		menuTreeRepo.cacheReset();
-		processesController.cacheReset();
-		ViewColumnHelper.cacheReset();
-		Services.get(IUserRolePermissionsDAO.class).resetLocalCache();
+		final JSONCacheResetResultBuilder result = JSONCacheResetResult.builder();
 
-		System.gc();
+		//
+		{
+			final long count = CacheMgt.get().reset();
+			result.log("CacheMgt: invalidate " + count + " items");
+		}
+
+		//
+		{
+			final String documentsResult = documentCollection.cacheReset(forgetNotSavedDocuments);
+			result.log("documents: " + documentsResult);
+		}
+
+		//
+		{
+			menuTreeRepo.cacheReset();
+			result.log("menuTreeRepo: cache invalidated");
+		}
+
+		//
+		{
+			processesController.cacheReset();
+			result.log("processesController: cache invalidated");
+		}
+
+		//
+		{
+			ViewColumnHelper.cacheReset();
+			result.log("viewColumnHelper: cache invalidated");
+		}
+
+		//
+		{
+			Services.get(IUserRolePermissionsDAO.class).resetLocalCache();
+			result.log("user/role permissions: cache invalidated");
+		}
+
+		//
+		{
+			System.gc();
+			result.log("system: garbage collected");
+		}
+
+		return result.build();
 	}
 
 	// NOTE: using String parameter because when using boolean parameter, we get following error in swagger-ui:
@@ -175,7 +214,9 @@ public class DebugRestController
 		userSession.assertLoggedIn();
 
 		userSession.setShowColumnNamesForCaption(DisplayType.toBoolean(showColumnNamesForCaptionStr));
-		cacheReset();
+		
+		final boolean forgetNotSavedDocuments = true;
+		cacheReset(forgetNotSavedDocuments);
 	}
 
 	@RequestMapping(value = "/allowDeprecatedRestAPI", method = RequestMethod.PUT)

@@ -3,6 +3,7 @@ package de.metas.ui.web.session;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.service.ClientId;
@@ -215,6 +216,11 @@ import de.metas.user.UserId;
 		return Env.getLoggedUserId(getCtx());
 	}
 
+	public Optional<UserId> getLoggedUserIdIfExists()
+	{
+		return Env.getLoggedUserIdIfExists(getCtx());
+	}
+
 	public RoleId getLoggedRoleId()
 	{
 		return Env.getLoggedRoleId(getCtx());
@@ -258,7 +264,7 @@ import de.metas.user.UserId;
 		final String adLanguageNew = validLang.getAD_Language();
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, adLanguageNew);
 		this.locale = validLang.getLocale();
-		UserSession.logger.info("Changed AD_Language: {} -> {}, {}", adLanguageOld, adLanguageNew, validLang);
+		UserSession.logger.debug("Changed AD_Language: {} -> {}, {}", adLanguageOld, adLanguageNew, validLang);
 
 		return adLanguageOld;
 	}

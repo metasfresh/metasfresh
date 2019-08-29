@@ -2176,20 +2176,17 @@ public final class Document
 
 		public Document initializeAsNewDocument(final DocumentId newDocumentId, final String version)
 		{
-			initializeAsNewDocument(new SimpleDocumentValuesSupplier(newDocumentId, version));
-			return build();
+			return initializeAsNewDocument(new SimpleDocumentValuesSupplier(newDocumentId, version));
 		}
 
-		public Builder initializeAsNewDocument(final Supplier<DocumentId> newDocumentIdSupplier, final String version)
+		public Document initializeAsNewDocument(final Supplier<DocumentId> newDocumentIdSupplier, final String version)
 		{
-			initializeAsNewDocument(new SimpleDocumentValuesSupplier(newDocumentIdSupplier, version));
-			return this;
+			return initializeAsNewDocument(new SimpleDocumentValuesSupplier(newDocumentIdSupplier, version));
 		}
 
-		public Builder initializeAsNewDocument(final IntSupplier newDocumentIdSupplier, final String version)
+		public Document initializeAsNewDocument(final IntSupplier newDocumentIdSupplier, final String version)
 		{
-			initializeAsNewDocument(new SimpleDocumentValuesSupplier(DocumentId.supplier(newDocumentIdSupplier), version));
-			return this;
+			return initializeAsNewDocument(new SimpleDocumentValuesSupplier(DocumentId.supplier(newDocumentIdSupplier), version));
 		}
 
 		public Document initializeAsExistingRecord(@NonNull final DocumentValuesSupplier documentValuesSupplier)
