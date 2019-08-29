@@ -276,8 +276,8 @@ public class CandidateRepositoryWriteService
 		// add a log message to be shown in the event log
 		final String verb = oldCandidateRecord == null ? "created" : "updated";
 		Loggables.addLog(
-				"addOrUpdate - {} candidateId={};\n singleCandidateOrNullQuery={};\n preserveExistingSeqNoAndParentId={};\n candidate={}",
-				verb, savedCandidate.getId().getRepoId(), singleCandidateOrNullQuery, preserveExistingSeqNoAndParentId, savedCandidate);
+				"addOrUpdate - {} candidateId={}; type={};\nsingleCandidateOrNullQuery={};\n\npreserveExistingSeqNoAndParentId={};\n\ncandidate={}",
+				verb, savedCandidate.getId().getRepoId(), savedCandidate.getType().toString(), singleCandidateOrNullQuery, preserveExistingSeqNoAndParentId, savedCandidate);
 
 		return SaveResult
 				.builder()
@@ -290,8 +290,6 @@ public class CandidateRepositoryWriteService
 	/**
 	 * Writes the given {@code candidate}'s properties to the given {@code candidateRecord}, but does not save that record.
 	 *
-	 * @param candidateRecord
-	 * @param candidate
 	 * @return either returns the record contained in the given candidateRecord (but updated) or a new record.
 	 */
 	private I_MD_Candidate updateOrCreateCandidateRecord(

@@ -185,7 +185,6 @@ public class Candidate
 			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final CandidateType type,
 			final CandidateBusinessCase businessCase,
-			// final CandidateStatus status,
 			final CandidateId id,
 			final CandidateId parentId,
 			final MaterialDispoGroupId groupId,
@@ -198,7 +197,6 @@ public class Candidate
 		this.clientAndOrgId = clientAndOrgId;
 		this.type = type;
 		this.businessCase = businessCase;
-		// this.status = status;
 
 		this.id = CoalesceUtil.coalesce(id, CandidateId.NULL);
 		Check.errorIf(this.id.isUnspecified(), "The given id may be null or CandidateId.NULL, but not unspecified");
