@@ -2555,16 +2555,6 @@ public abstract class PO
 	}	// getUpdatedBy
 
 	/**
-	 * Set UpdatedBy
-	 *
-	 * @param AD_User_ID user
-	 */
-	final protected void setUpdatedBy(final int AD_User_ID)
-	{
-		set_ValueNoCheck("UpdatedBy", AD_User_ID);
-	}	// setAD_User_ID
-
-	/**
 	 * Get Translation of column (if needed).
 	 * It checks if the base language is used or the column is not translated.
 	 * If there is no translation then it fallback to original value.

@@ -3,6 +3,8 @@ package org.adempiere.ad.table;
 import java.time.Instant;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+
 import com.google.common.collect.ImmutableList;
 
 import de.metas.user.UserId;
@@ -34,27 +36,21 @@ import lombok.Value;
  */
 
 @Value
-@Builder
+
 public class RecordChangeLog
 {
-
-	@NonNull
 	String tableName;
-	@NonNull
+
 	ComposedRecordId recordId;
 
-	@NonNull
 	UserId createdByUserId;
-	@NonNull
+
 	Instant createdTimestamp;
 
-	@NonNull
 	UserId lastChangedByUserId;
-	@NonNull
+
 	Instant lastChangedTimestamp;
 
-	@NonNull
-	@Singular
 	ImmutableList<RecordChangeLogEntry> entries;
 
 	public boolean hasChanges()
@@ -63,4 +59,28 @@ public class RecordChangeLog
 				|| !Objects.equals(createdTimestamp, lastChangedTimestamp)
 				|| !entries.isEmpty();
 	}
+
+	/**
+	 * Both {@code createdByUserId} and {@code lastChangedByUserId} can be {@code null} if the respective DB columns have a value less than zero.
+	 * This happens if there is no user-id in the context while a DB record is saved.
+	 */
+	@Builder
+	private RecordChangeLog(
+			@NonNull String tableName,
+			@NonNull ComposedRecordId recordId,
+			@Nullable UserId createdByUserId,
+			@NonNull Instant createdTimestamp,
+			@Nullable UserId lastChangedByUserId,
+			@NonNull Instant lastChangedTimestamp,
+			@NonNull @Singular ImmutableList<RecordChangeLogEntry> entries)
+	{
+		this.tableName = tableName;
+		this.recordId = recordId;
+		this.createdByUserId = createdByUserId;
+		this.createdTimestamp = createdTimestamp;
+		this.lastChangedByUserId = lastChangedByUserId;
+		this.lastChangedTimestamp = lastChangedTimestamp;
+		this.entries = entries;
+	}
+
 }
