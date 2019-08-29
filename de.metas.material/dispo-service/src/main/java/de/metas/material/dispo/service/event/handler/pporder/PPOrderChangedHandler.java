@@ -95,7 +95,7 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 		// Line candidates (demands, supplies)
 		if (event.isJustCompleted())
 		{
-			Loggables.addLog("PPOrder is just completed; create the demand and supply candidates for ppOrder lines");
+			Loggables.addLog("PPOrder was just completed; create the demand and supply candidates for ppOrder lines");
 
 			PPOrderLineCandidatesCreateCommand.builder()
 					.candidateChangeService(candidateChangeService)
@@ -105,7 +105,7 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 					.groupId(headerCandidate.getGroupId())
 					.headerCandidateSeqNo(headerCandidate.getSeqNo())
 					.advised(headerProductionDetail.getAdvised())
-					.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE) // only the ppOrder's header supply product can be picked directly because only there might know the shipment schedule ID
+					.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE) // only the ppOrder's header supply product can be picked directly because only there we might know the shipment schedule ID
 					.create();
 		}
 		else

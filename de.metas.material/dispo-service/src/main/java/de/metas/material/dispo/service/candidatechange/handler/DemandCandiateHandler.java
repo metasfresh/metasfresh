@@ -169,7 +169,7 @@ public class DemandCandiateHandler implements CandidateHandler
 				.forDescriptorAndAllPossibleBPartnerIds(demandCandidateWithId.getMaterialDescriptor());
 
 		final BigDecimal availableQuantityAfterDemandWasApplied = availableToPromiseRepository.retrieveAvailableStockQtySum(query);
-		Loggables.addLog("Quantity after demand applied is {}", availableQuantityAfterDemandWasApplied);
+		Loggables.addLog("Quantity after demand applied: {}", availableQuantityAfterDemandWasApplied);
 		if (availableQuantityAfterDemandWasApplied.signum() < 0)
 		{
 			final BigDecimal requiredQty = availableQuantityAfterDemandWasApplied.negate();

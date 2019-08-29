@@ -32,6 +32,8 @@ class EventBus2RemoteEndpointHandler implements IEventListener
 		final String topicName = eventBus.getTopicName();
 		remoteEndpoint.sendEvent(topicName, event);
 
+		// doesn't hurt, but note that oftentimes this send is done in an "after-commit" listener;
+		// therefore the thread-local Logaable that you as a dev have in mind might already be gone when this is executed
 		Loggables.addLog("Send event with UUID={} to remoteEndpoint={}", event.getUuid(), remoteEndpoint);
 	}
 }
