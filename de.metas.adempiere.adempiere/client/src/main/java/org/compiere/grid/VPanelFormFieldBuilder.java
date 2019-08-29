@@ -96,6 +96,7 @@ public final class VPanelFormFieldBuilder
 				(AdWindowId)null, // AD_Window_ID
 				0, // AD_Tab_ID
 				false, // tabReadOnly
+				true, // applyRolePermissions
 				false, // isCreated
 				false // isTimestamp
 				);
