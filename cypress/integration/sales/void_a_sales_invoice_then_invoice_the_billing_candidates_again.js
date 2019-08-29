@@ -54,7 +54,6 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
       shipmentQuantityTypeOption = f['shipmentQuantityTypeOption'];
       generateInvoicesNotificationModalText = f['generateInvoicesNotificationModalText'];
       salesInvoiceDocumentType = f['salesInvoiceDocumentType'];
-      totalAmountToPay = f['totalAmountToPay'];
     });
   });
 
