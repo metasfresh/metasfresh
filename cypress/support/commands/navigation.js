@@ -149,3 +149,29 @@ Cypress.Commands.add('selectRowByColumnAndValue', (columnName, expectedValue, mo
         });
     });
 });
+/**
+ * Select all rows on the current page
+ *
+ */
+Cypress.Commands.add('selectAllRowsOnCurrentPage', () => {
+  cy.get('body').type('{alt}a');
+});
+/**
+ * Select all rows from all pages
+ * This function only works on a list window, and not on a single view window
+ * @param windowId - the window for which the rows will be counted
+ */
+Cypress.Commands.add('countAllRows', windowId => {
+  cy.visitWindow(windowId);
+  cy.get('.pagination-row .pagination-part .hidden-sm-down').then(totalString => {
+    const totalRows = parseInt(
+      totalString
+        .text()
+        .split(' ')
+        .pop(),
+      10
+    );
+    cy.log(`Total number of rows is: ${totalRows}`);
+    return cy.wrap(totalRows);
+  });
+});
