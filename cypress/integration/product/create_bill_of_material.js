@@ -1,13 +1,22 @@
 import { Product, ProductCategory } from '../../support/utils/product';
 import { BillOfMaterial, BillOfMaterialLine } from '../../support/utils/billOfMaterial';
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 
 describe('Create Product and BOM', function() {
-  const date = humanReadableNow();
-  const productName = `ProductName ${date}`;
+  let productName;
+  let productCategoryName;
+  let productComponentName;
 
-  const productCategoryName = `ProductCategoryName ${date}`;
-  const productComponentName = `ProductComponentName ${date}`;
+  // test
+  let mainProductId;
+
+  it('Read the fixture', function() {
+    cy.fixture('product/create_bill_of_material.json').then(f => {
+      productName = appendHumanReadableNow(f['productName']);
+      productCategoryName = appendHumanReadableNow(f['productCategoryName']);
+      productComponentName = appendHumanReadableNow(f['productComponentName']);
+    });
+  });
 
   it('Create a new ProductCategory', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
@@ -17,16 +26,11 @@ describe('Create Product and BOM', function() {
     });
   });
 
-  let mainProductId;
-
   it('Create main product', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)
-        .setProductCategory(productCategoryName + '_' + productCategoryName)
-        .setStocked(true)
-        .setPurchased(true)
-        .setSold(true)
+        .setProductCategory(productCategoryName)
         .apply();
     });
     cy.getCurrentWindowRecordId().then(id => {
@@ -38,10 +42,7 @@ describe('Create Product and BOM', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productComponentName)
-        .setProductCategory(productCategoryName + '_' + productCategoryName)
-        .setStocked(true)
-        .setPurchased(true)
-        .setSold(true)
+        .setProductCategory(productCategoryName)
         .apply();
     });
   });
