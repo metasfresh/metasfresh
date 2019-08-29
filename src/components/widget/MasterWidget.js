@@ -1,11 +1,9 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import Moment from 'moment';
 
 import * as windowActions from '../../actions/WindowActions';
 import RawWidget from './RawWidget';
-import { DATE_FIELDS, DATE_FORMAT } from '../../constants/Constants';
 
 function isNumberField(widgetType) {
   switch (widgetType) {
@@ -72,16 +70,6 @@ class MasterWidget extends Component {
     clearTimeout(this.timeout);
   }
 
-  // i.e 2018-01-27T17:00:00.000-06:00
-  parseDateBeforePatch = (widgetType, value) => {
-    if (DATE_FIELDS.indexOf(widgetType) > -1) {
-      if (value) {
-        return Moment(value).format(DATE_FORMAT);
-      }
-    }
-    return value;
-  };
-
   handlePatch = (property, value) => {
     const {
       isModal,
@@ -107,7 +95,6 @@ class MasterWidget extends Component {
     let currRowId = rowId;
     let ret = null;
     let isEdit = false;
-    let parseValue = this.parseDateBeforePatch(widgetType, value);
 
     if (rowId === 'NEW') {
       currRowId = relativeDocId;
@@ -129,7 +116,7 @@ class MasterWidget extends Component {
       tabId,
       currRowId,
       property,
-      parseValue,
+      value,
       isModal,
       isAdvanced,
       viewId,
@@ -159,7 +146,13 @@ class MasterWidget extends Component {
       widgetType,
       entity,
     } = this.props;
-    const dateParse = ['Date', 'DateTime', 'Time'];
+    const dateParse = [
+      'Date',
+      'DateTime',
+      'ZonedDateTime',
+      'Timestamp',
+      'Time',
+    ];
     let currRowId = rowId;
 
     this.setState(

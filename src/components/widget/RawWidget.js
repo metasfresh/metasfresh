@@ -7,7 +7,11 @@ import classnames from 'classnames';
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { getClassNames, generateMomentObj } from './RawWidgetHelpers';
 import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
-import { DATE_FORMAT } from '../../constants/Constants';
+import {
+  DATE_FORMAT,
+  TIME_FORMAT,
+  DATE_TIMEZONE_FORMAT,
+} from '../../constants/Constants';
 import ActionButton from './ActionButton';
 import Attributes from './Attributes/Attributes';
 import Checkbox from './Checkbox';
@@ -128,12 +132,16 @@ export class RawWidget extends Component {
   // Datepicker is checking the cached value in datepicker component itself
   // and send a patch request only if date is changed
   handlePatch = (property, value, id, valueTo, isForce) => {
-    const { handlePatch, inProgress } = this.props;
+    const { handlePatch, inProgress, widgetType } = this.props;
     const willPatch = this.willPatch(property, value, valueTo);
 
     // Do patch only when value is not equal state
     // or cache is set and it is not equal value
     if ((isForce || willPatch) && handlePatch && !inProgress) {
+      if (widgetType === 'ZonedDateTime' && Moment.isMoment(value)) {
+        value = Moment(value).format(DATE_TIMEZONE_FORMAT);
+      }
+
       this.setState({
         cachedValue: value,
         clearedFieldWarning: false,
@@ -222,11 +230,11 @@ export class RawWidget extends Component {
       onHide,
       handleBackdropLock,
       subentity,
+      widgetType,
       subentityId,
       dropdownOpenCallback,
       autoFocus,
       fullScreen,
-      widgetType,
       fields,
       windowType,
       dataId,
@@ -331,14 +339,11 @@ export class RawWidget extends Component {
                   tabIndex: tabIndex,
                 }}
                 value={widgetValue || widgetData[0].value}
-                onChange={date => {
-                  const finalDate = date.utc ? date.utc(true) : date;
-                  return handleChange(widgetField, finalDate);
-                }}
+                onChange={date => handleChange(widgetField, date)}
                 patch={date =>
                   this.handlePatch(
                     widgetField,
-                    this.generateMomentObj(date),
+                    this.generateMomentObj(date, DATE_FORMAT),
                     null,
                     null,
                     true
@@ -351,60 +356,94 @@ export class RawWidget extends Component {
             </div>
           );
         }
-      case 'DateTime':
-        if (range) {
-          // Watch out! The datetimerange widget as exception,
-          // is non-controlled input! For further usage, needs
-          // upgrade.
-          return (
-            <DatetimeRange
-              onChange={(value, valueTo) =>
+      case 'ZonedDateTime':
+        return (
+          <div className={this.getClassNames({ icon: true })}>
+            <DatePicker
+              key={1}
+              field={fields[0].field}
+              timeFormat={true}
+              dateFormat={dateFormat || true}
+              hasTimeZone={true}
+              isOpenDatePicker={isOpenDatePicker}
+              inputProps={{
+                placeholder: fields[0].emptyText,
+                disabled: readonly,
+                tabIndex: tabIndex,
+              }}
+              value={widgetValue || widgetData[0].value}
+              onChange={date => handleChange(widgetField, date)}
+              patch={date =>
                 this.handlePatch(
                   widgetField,
-                  value ? Moment(value).format(DATE_FORMAT) : null,
+                  this.generateMomentObj(date, DATE_TIMEZONE_FORMAT),
                   null,
-                  valueTo ? Moment(valueTo).format(DATE_FORMAT) : null
+                  null,
+                  true
                 )
               }
-              mandatory={widgetData[0].mandatory}
-              validStatus={widgetData[0].validStatus}
-              onShow={onShow}
-              onHide={onHide}
-              value={widgetData[0].value}
-              valueTo={widgetData[0].valueTo}
-              tabIndex={tabIndex}
-              timePicker={true}
+              {...{
+                handleBackdropLock,
+              }}
             />
-          );
-        } else {
-          return (
-            <div className={this.getClassNames({ icon: true })}>
-              <DatePicker
-                field={fields[0].field}
-                timeFormat={dateFormat ? false : true}
-                dateFormat={dateFormat || true}
-                inputProps={{
-                  placeholder: fields[0].emptyText,
-                  disabled: readonly,
-                  tabIndex: tabIndex,
-                }}
-                value={widgetValue}
-                onChange={date => handleChange(widgetField, date)}
-                patch={date =>
-                  this.handlePatch(
-                    widgetField,
-                    this.generateMomentObj(date),
-                    null,
-                    null,
-                    true
-                  )
-                }
-                tabIndex={tabIndex}
-                handleBackdropLock={handleBackdropLock}
-              />
-            </div>
-          );
-        }
+          </div>
+        );
+      case 'Time':
+        return (
+          <div className={this.getClassNames({ icon: true })}>
+            <DatePicker
+              field={fields[0].field}
+              timeFormat={TIME_FORMAT}
+              dateFormat={false}
+              inputProps={{
+                placeholder: fields[0].emptyText,
+                disabled: readonly,
+                tabIndex: tabIndex,
+              }}
+              value={widgetValue}
+              onChange={date => handleChange(widgetField, date)}
+              patch={date =>
+                this.handlePatch(
+                  widgetField,
+                  this.generateMomentObj(date, TIME_FORMAT),
+                  null,
+                  null,
+                  true
+                )
+              }
+              tabIndex={tabIndex}
+              handleBackdropLock={handleBackdropLock}
+            />
+          </div>
+        );
+      case 'Timestamp':
+        return (
+          <div className={this.getClassNames({ icon: true })}>
+            <DatePicker
+              field={fields[0].field}
+              timeFormat={false}
+              dateFormat={`x`}
+              inputProps={{
+                placeholder: fields[0].emptyText,
+                disabled: readonly,
+                tabIndex: tabIndex,
+              }}
+              value={widgetValue}
+              onChange={date => handleChange(widgetField, date)}
+              patch={date =>
+                this.handlePatch(
+                  widgetField,
+                  this.generateMomentObj(date, `x`),
+                  null,
+                  null,
+                  true
+                )
+              }
+              tabIndex={tabIndex}
+              handleBackdropLock={handleBackdropLock}
+            />
+          </div>
+        );
       case 'DateRange': {
         return (
           <DatetimeRange
@@ -424,34 +463,6 @@ export class RawWidget extends Component {
           />
         );
       }
-      case 'Time':
-        return (
-          <div className={this.getClassNames({ icon: true })}>
-            <DatePicker
-              field={fields[0].field}
-              timeFormat={true}
-              dateFormat={false}
-              inputProps={{
-                placeholder: fields[0].emptyText,
-                disabled: readonly,
-                tabIndex: tabIndex,
-              }}
-              value={widgetValue}
-              onChange={date => handleChange(widgetField, date)}
-              patch={date =>
-                this.handlePatch(
-                  widgetField,
-                  this.generateMomentObj(date),
-                  null,
-                  null,
-                  true
-                )
-              }
-              tabIndex={tabIndex}
-              handleBackdropLock={handleBackdropLock}
-            />
-          </div>
-        );
       case 'Lookup':
         return (
           <Lookup
