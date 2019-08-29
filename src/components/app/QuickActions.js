@@ -204,7 +204,7 @@ export class QuickActions extends Component {
     reject
   ) {
     if (!this.mounted) {
-      resolve();
+      return resolve();
     }
 
     if (windowId && viewId && childView && parentView) {
@@ -217,29 +217,35 @@ export class QuickActions extends Component {
         parentView
       )
         .then(response => {
-          return this.setState(
-            {
-              actions: response.data.actions,
-              loading: false,
-            },
-            () => resolve()
-          );
+          if (this.mounted) {
+            return this.setState(
+              {
+                actions: response.data.actions,
+                loading: false,
+              },
+              () => resolve()
+            );
+          }
         })
         .catch(() => {
-          return this.setState(
-            {
-              loading: false,
-            },
-            () => reject()
-          );
+          if (this.mounted) {
+            return this.setState(
+              {
+                loading: false,
+              },
+              () => reject()
+            );
+          }
         });
     } else {
-      return this.setState(
-        {
-          loading: false,
-        },
-        () => resolve()
-      );
+      if (this.mounted) {
+        return this.setState(
+          {
+            loading: false,
+          },
+          () => resolve()
+        );
+      }
     }
   }
 
