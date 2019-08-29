@@ -1,7 +1,12 @@
 package de.metas.security.permissions;
 
+import java.util.Properties;
+
 import org.adempiere.ad.persistence.EntityTypesCache;
 import org.compiere.util.Env;
+
+import de.metas.security.IUserRolePermissions;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -16,11 +21,11 @@ import org.compiere.util.Env;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -46,15 +51,26 @@ public final class UIDisplayedEntityTypes extends Constraint
 	 * Convenient method to check if role allows a given entity type to be displayed in UI.
 	 * 
 	 * @param entityType entity type or <code>null</code>
-	 * @return <ul>
+	 * @return
+	 *         <ul>
 	 *         <li>true/false if current role has {@link UIDisplayedEntityTypes} constraint and the constraint allows or disallow it (see {@link #isDisplayedInUI(String)})
 	 *         <li>true if current role does not have the {@link UIDisplayedEntityTypes} constraint.
 	 *         </ul>
 	 */
-	public static final boolean isEntityTypeDisplayedInUIOrTrueIfNull(final String entityType)
+	public static boolean isEntityTypeDisplayedInUIOrTrueIfNull(
+			@NonNull final Properties ctx,
+			@NonNull final String entityType)
 	{
 		// Get the constraint of current logged in role.
-		final UIDisplayedEntityTypes constraint = Env.getUserRolePermissions()
+		final IUserRolePermissions role = Env.getUserRolePermissions(ctx);
+		return isEntityTypeDisplayedInUIOrTrueIfNull(role, entityType);
+	}
+
+	public static boolean isEntityTypeDisplayedInUIOrTrueIfNull(
+			@NonNull final IUserRolePermissions role,
+			@NonNull final String entityType)
+	{
+		final UIDisplayedEntityTypes constraint = role
 				.getConstraint(UIDisplayedEntityTypes.class)
 				.orNull();
 

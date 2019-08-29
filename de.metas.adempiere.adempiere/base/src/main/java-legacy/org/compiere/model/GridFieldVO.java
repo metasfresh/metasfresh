@@ -161,11 +161,12 @@ public class GridFieldVO implements Serializable
 			final int AD_Tab_ID,
 			final boolean readOnly,
 			final boolean loadAllLanguages,
+			final boolean applyRolePermissions,
 			final ResultSet rs)
 	{
 		final IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
 		
-		final GridFieldVO vo = new GridFieldVO (ctx, WindowNo, TabNo, AD_Window_ID, AD_Tab_ID, readOnly);
+		final GridFieldVO vo = new GridFieldVO (ctx, WindowNo, TabNo, AD_Window_ID, AD_Tab_ID, readOnly, applyRolePermissions);
 		
 		String columnName = "ColumnName";
 		try
@@ -479,7 +480,10 @@ public class GridFieldVO implements Serializable
 	public static GridFieldVO createParameter (final Properties ctx, final int WindowNo, final int tabNo, final ResultSet rs)
 	{
 		final AdWindowId adWindowId = null;
-		final GridFieldVO vo = new GridFieldVO (ctx, WindowNo, tabNo, adWindowId, 0, false);
+		final int adTabId = 0;
+		final boolean tabReadOnly = false;
+		final boolean applyRolePermissions = true; // because it's used only in Swing UI
+		final GridFieldVO vo = new GridFieldVO (ctx, WindowNo, tabNo, adWindowId, adTabId, tabReadOnly, applyRolePermissions);
 		vo.isProcess = true;
 		vo.isProcessParameterTo = false;
 		vo.IsDisplayed = true;
@@ -598,10 +602,11 @@ public class GridFieldVO implements Serializable
 			final AdWindowId AD_Window_ID,
 			final int AD_Tab_ID,
 			final boolean tabReadOnly,
+			final boolean applyRolePermissions,
 			final boolean isCreated,
 			final boolean isTimestamp)
 	{
-		GridFieldVO vo = new GridFieldVO (ctx, WindowNo, TabNo, AD_Window_ID, AD_Tab_ID, tabReadOnly);
+		GridFieldVO vo = new GridFieldVO (ctx, WindowNo, TabNo, AD_Window_ID, AD_Tab_ID, tabReadOnly, applyRolePermissions);
 		vo.ColumnName = isCreated ? "Created" : "Updated";
 		if (!isTimestamp)
 		{
@@ -622,24 +627,22 @@ public class GridFieldVO implements Serializable
 		return vo;
 	}   //  initStdField
 
-	/**************************************************************************
-	 *  Private constructor.
-	 *  @param ctx context
-	 *  @param windowNo window
-	 *  @param tabNo tab
-	 *  @param ad_Window_ID window
-	 *  @param ad_Tab_ID tab
-	 *  @param TabReadOnly tab read only
-	 */
-	private GridFieldVO (final Properties ctx, final int windowNo, final int tabNo, final AdWindowId ad_Window_ID, final int ad_Tab_ID, final boolean TabReadOnly)
+	private GridFieldVO (
+			final Properties ctx,
+			final int windowNo,
+			final int tabNo,
+			final AdWindowId adWindowId,
+			final int adTabId,
+			final boolean tabReadOnly,
+			final boolean applyRolePermissions)
 	{
-		super();
 		this.ctx = ctx;
-		WindowNo = windowNo;
-		TabNo = tabNo;
-		adWindowId = ad_Window_ID;
-		AD_Tab_ID = ad_Tab_ID;
-		tabReadOnly = TabReadOnly;
+		this.WindowNo = windowNo;
+		this.TabNo = tabNo;
+		this.adWindowId = adWindowId;
+		this.AD_Tab_ID = adTabId;
+		this.tabReadOnly = tabReadOnly;
+		this.applyRolePermissions  = applyRolePermissions;
 	}   //  MFieldVO
 
 	static final long serialVersionUID = 4385061125114436797L;
@@ -793,6 +796,8 @@ public class GridFieldVO implements Serializable
 	
 	private boolean useDocSequence = false;
 
+	private final boolean applyRolePermissions;
+
 	/**
 	 *  Set Context including contained elements
 	 *  @param newCtx new context
@@ -847,7 +852,9 @@ public class GridFieldVO implements Serializable
 
 		//
 		// If EntityType is not displayed, hide this field
-		if (!Check.isEmpty(fieldEntityType, true) && !UIDisplayedEntityTypes.isEntityTypeDisplayedInUIOrTrueIfNull(fieldEntityType))
+		if (applyRolePermissions
+				&& !Check.isEmpty(fieldEntityType, true)
+				&& !UIDisplayedEntityTypes.isEntityTypeDisplayedInUIOrTrueIfNull(Env.getCtx(), fieldEntityType))
 		{
 			this.isHiddenFromUI = true;
 			this.IsDisplayed = false;
@@ -926,7 +933,7 @@ public class GridFieldVO implements Serializable
 			final int ad_Tab_ID,
 			final boolean TabReadOnly)
 	{
-		final GridFieldVO clone = new GridFieldVO(Ctx, windowNo, tabNo,  ad_Window_ID, ad_Tab_ID, TabReadOnly);
+		final GridFieldVO clone = new GridFieldVO(Ctx, windowNo, tabNo,  ad_Window_ID, ad_Tab_ID, TabReadOnly, applyRolePermissions);
 		//
 		clone.isProcess = false;
 		clone.isProcessParameterTo = false;
