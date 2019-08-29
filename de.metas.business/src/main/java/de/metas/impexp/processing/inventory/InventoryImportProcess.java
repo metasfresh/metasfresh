@@ -5,7 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Map;
 import java.util.Objects;
@@ -102,34 +101,31 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 	@Override
 	protected String getImportOrderBySql()
 	{
-		return I_I_Inventory.COLUMNNAME_WarehouseValue;
+		return I_I_Inventory.COLUMNNAME_WarehouseValue
+				+ ", " + I_I_Inventory.COLUMNNAME_MovementDate;
 	}
 
 	@Override
-	protected I_I_Inventory retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
+	protected I_I_Inventory retrieveImportRecord(final Properties ctx, final ResultSet rs)
 	{
 		return new X_I_Inventory(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	@Override
 	protected ImportRecordResult importRecord(
-			@NonNull final IMutable<Object> state,
+			@NonNull final IMutable<Object> stateHolder,
 			@NonNull final I_I_Inventory importRecord,
 			final boolean isInsertOnly)
 	{
+		final MInventoryImportContext state = (MInventoryImportContext)stateHolder.computeIfNull(MInventoryImportContext::new);
+
 		//
 		// Get previous values
-		MInventoryImportContext context = (MInventoryImportContext)state.getValue();
-		if (context == null)
-		{
-			context = new MInventoryImportContext();
-			state.setValue(context);
-		}
-		final I_I_Inventory previousImportRecord = context.getPreviousImportRecord();
-		final int previousMInventoryId = context.getPreviousM_Inventory_ID();
-		final String previousWarehouseValue = context.getPreviousWarehouseValue();
-		final Timestamp previousMovementDate = context.getPreviousMovementDate();
-		context.setPreviousImportRecord(importRecord);
+		final I_I_Inventory previousImportRecord = state.getPreviousImportRecord();
+		final int previousMInventoryId = state.getPreviousM_Inventory_ID();
+		final String previousWarehouseValue = state.getPreviousWarehouseValue();
+		final Timestamp previousMovementDate = state.getPreviousMovementDate();
+		state.setPreviousImportRecord(importRecord);
 
 		final ImportRecordResult inventoryImportResult;
 
@@ -146,7 +142,7 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 		if (firstImportRecordOrNewMInventory)
 		{
 			// create a new list because we are passing to a new inventory
-			context.clearPreviousRecordsForSameInventory();
+			state.clearPreviousRecordsForSameInventory();
 			inventoryImportResult = importInventory(importRecord);
 		}
 		else
@@ -166,7 +162,7 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 		}
 
 		importInventoryLine(importRecord);
-		context.collectImportRecordForSameInventory(importRecord);
+		state.collectImportRecordForSameInventory(importRecord);
 
 		return inventoryImportResult;
 	}
