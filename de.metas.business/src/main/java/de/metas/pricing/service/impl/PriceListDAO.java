@@ -743,6 +743,7 @@ public class PriceListDAO implements IPriceListDAO
 				.addOnlyContextClient()
 				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_Pricelist_Version_Base_ID, basePLV.getM_PriceList_Version_ID())
 				.addNotEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, basePLV.getM_PriceList_ID())
+				.addNotNull(I_M_PriceList_Version.COLUMNNAME_M_DiscountSchema_ID)
 				.create()
 				.list(I_M_PriceList_Version.class);
 
