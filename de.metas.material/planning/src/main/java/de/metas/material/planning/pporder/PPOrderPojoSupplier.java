@@ -8,6 +8,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Product;
@@ -84,6 +85,20 @@ public class PPOrderPojoSupplier
 
 	public PPOrder supplyPPOrderPojoWithLines(@NonNull final IMaterialRequest request)
 	{
+		try
+		{
+			return supplyPPOrderPojoWithLines0(request);
+		}
+		catch (final RuntimeException e)
+		{
+			throw new AdempiereException("Caught " + e.getClass().getSimpleName() + " trying to create PPOrder instance for an IMaterialRequest", e)
+					.appendParametersToMessage()
+					.setParameter("request", request);
+		}
+	}
+
+	public PPOrder supplyPPOrderPojoWithLines0(@NonNull final IMaterialRequest request)
+	{
 		final PPOrder ppOrder = supplyPPOrderPojo(request);
 
 		final PPOrder ppOrderWithLines = ppOrder.toBuilder()
@@ -149,8 +164,7 @@ public class PPOrderPojoSupplier
 				.qtyRequired(ppOrderQuantity.getAsBigDecimal())
 
 				.orderLineId(request.getMrpDemandOrderLineSOId())
-				.bpartnerId(BPartnerId.ofRepoId(request.getMrpDemandBPartnerId()))
-				//
+				.bpartnerId(BPartnerId.ofRepoIdOrNull(request.getMrpDemandBPartnerId()))
 				.build();
 	}
 
@@ -239,7 +253,6 @@ public class PPOrderPojoSupplier
 
 			result.add(ppOrderLine);
 		}
-
 		return result;
 	}
 

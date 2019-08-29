@@ -64,13 +64,13 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 	}
 
 	/**
-	 * @return candidateGroupId
+	 * Create a supply candidate for the given event's {@link PPOrder}'s header.
+	 *
+	 * NOTE: candidates for PPOrderLines will be created when the manufacturing order is completed
 	 */
 	protected final MaterialDispoGroupId handleAbstractPPOrderEvent(@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
 		final Candidate headerCandidate = createHeaderCandidate(ppOrderEvent);
-
-		// NOTE: candidates for PPOrderLines will be created when the manufacturing order is completed
 
 		return headerCandidate.getGroupId();
 	}
@@ -79,8 +79,6 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 	{
 		final PPOrder ppOrder = ppOrderEvent.getPpOrder();
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = ppOrderEvent.getSupplyRequiredDescriptor();
-
-		// final CandidateStatus candidateStatus = getCandidateStatus(ppOrder);
 
 		final CandidatesQuery preExistingSupplyQuery = createPreExistingCandidatesQuery(ppOrder, supplyRequiredDescriptor);
 		final Candidate existingCandidateOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(preExistingSupplyQuery);
@@ -113,7 +111,7 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 	}
 
 	protected abstract CandidatesQuery createPreExistingCandidatesQuery(
-			PPOrder ppOrder,
+			@NonNull PPOrder ppOrder,
 			@Nullable SupplyRequiredDescriptor supplyRequiredDescriptor);
 
 	private static MaterialDescriptor createMaterialDescriptorForPPOrder(final PPOrder ppOrder)
@@ -126,22 +124,6 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 				// .customerId(ppOrder.getBPartnerId()) not 100% sure if the ppOrder's bPartner is the customer this is made for
 				.build();
 	}
-
-	// private static CandidateStatus getCandidateStatus(@NonNull final PPOrder ppOrder)
-	// {
-	// final CandidateStatus candidateStatus;
-	// final String docStatus = ppOrder.getDocStatus();
-	//
-	// if (ppOrder.getPpOrderId() <= 0)
-	// {
-	// candidateStatus = CandidateStatus.doc_planned;
-	// }
-	// else
-	// {
-	// candidateStatus = EventUtil.getCandidateStatus(docStatus);
-	// }
-	// return candidateStatus;
-	// }
 
 	private ProductionDetail createProductionDetailForPPOrder(
 			@NonNull final AbstractPPOrderEvent ppOrderEvent,
