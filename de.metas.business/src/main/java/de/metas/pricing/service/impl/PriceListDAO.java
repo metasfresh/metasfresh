@@ -653,7 +653,7 @@ public class PriceListDAO implements IPriceListDAO
 			return;
 		}
 
-		I_M_PriceList_Version oldPLV = getPriceListVersionById(basePriceListVersionId);
+		final I_M_PriceList_Version oldPLV = getPriceListVersionById(basePriceListVersionId);
 
 		final List<I_M_PriceList_Version> versionsForOldBase = retrieveCustomPLVsToMutate(oldPLV);
 
@@ -664,7 +664,7 @@ public class PriceListDAO implements IPriceListDAO
 
 	}
 
-	private void createNewPLV(final I_M_PriceList_Version oldCustomerPLV, final I_M_PriceList_Version newBasePLV, UserId userId)
+	private void createNewPLV(final I_M_PriceList_Version oldCustomerPLV, final I_M_PriceList_Version newBasePLV, final UserId userId)
 	{
 
 		final I_M_PriceList_Version newCustomerPLV = copy()
@@ -687,7 +687,7 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@VisibleForTesting
-	protected void createProductPricesForPLV(UserId userId, final PriceListVersionId newCustomerPLVId)
+	protected void createProductPricesForPLV(final UserId userId, final PriceListVersionId newCustomerPLVId)
 	{
 		final ISessionBL sessionBL = Services.get(ISessionBL.class);
 
@@ -707,7 +707,7 @@ public class PriceListDAO implements IPriceListDAO
 		}
 	}
 
-	private void cloneASIs(PriceListVersionId newPLVId)
+	private void cloneASIs(final PriceListVersionId newPLVId)
 	{
 		Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_ProductPrice.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
@@ -730,7 +730,7 @@ public class PriceListDAO implements IPriceListDAO
 		final I_M_AttributeSetInstance targetASI = sourceASI == null ? null : attributeDAO.copy(sourceASI);
 
 		productPrice.setM_AttributeSetInstance(targetASI);
-		InterfaceWrapperHelper.save(productPrice);
+		save(productPrice);
 	}
 
 	@Override
