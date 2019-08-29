@@ -547,32 +547,66 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 
 			// FIXME: metas: i think this is not needed because the AD_Field_v is returning also the missing fields
 			// Add Standard Fields
+			final boolean tabReadOnly = false;
+			final boolean applyRolePermissions = m_vo.isApplyRolePermissions();
 			if (m_mTable.getField("Created") == null)
 			{
-				final GridField created = new GridField(GridFieldVO.createStdField(ctx,
-						m_vo.getWindowNo(), m_vo.getTabNo(),
-						m_vo.getAdWindowId(), m_vo.getAD_Tab_ID(), false, true, true));
+				final GridField created = new GridField(GridFieldVO.createStdField(
+						ctx,
+						m_vo.getWindowNo(),
+						m_vo.getTabNo(),
+						m_vo.getAdWindowId(),
+						m_vo.getAD_Tab_ID(),
+						tabReadOnly,
+						applyRolePermissions,
+						true, // isCreated
+						true // isTimestamp
+				));
 				m_mTable.addField(created);
 			}
 			if (m_mTable.getField("CreatedBy") == null)
 			{
-				final GridField createdBy = new GridField(GridFieldVO.createStdField(ctx,
-						m_vo.getWindowNo(), m_vo.getTabNo(),
-						m_vo.getAdWindowId(), m_vo.getAD_Tab_ID(), false, true, false));
+				final GridField createdBy = new GridField(GridFieldVO.createStdField(
+						ctx,
+						m_vo.getWindowNo(),
+						m_vo.getTabNo(),
+						m_vo.getAdWindowId(),
+						m_vo.getAD_Tab_ID(),
+						tabReadOnly,
+						applyRolePermissions,
+						true, // isCreated
+						false // isTimestamp
+				));
 				m_mTable.addField(createdBy);
 			}
 			if (m_mTable.getField("Updated") == null)
 			{
-				final GridField updated = new GridField(GridFieldVO.createStdField(ctx,
-						m_vo.getWindowNo(), m_vo.getTabNo(),
-						m_vo.getAdWindowId(), m_vo.getAD_Tab_ID(), false, false, true));
+				final GridField updated = new GridField(GridFieldVO.createStdField(
+						ctx,
+						m_vo.getWindowNo(), 
+						m_vo.getTabNo(),
+						m_vo.getAdWindowId(), 
+						m_vo.getAD_Tab_ID(),
+						tabReadOnly, 
+						applyRolePermissions,
+						false, // isCreated
+						true // isTimestamp
+				));
 				m_mTable.addField(updated);
 			}
 			if (m_mTable.getField("UpdatedBy") == null)
 			{
-				final GridField updatedBy = new GridField(GridFieldVO.createStdField(ctx,
-						m_vo.getWindowNo(), m_vo.getTabNo(),
-						m_vo.getAdWindowId(), m_vo.getAD_Tab_ID(), false, false, false));
+				final GridField updatedBy = new GridField(GridFieldVO.createStdField(
+						ctx,
+						m_vo.getWindowNo(),
+						m_vo.getTabNo(),
+						m_vo.getAdWindowId(),
+						m_vo.getAD_Tab_ID(),
+						tabReadOnly,
+						applyRolePermissions,
+						false, // isCreated
+						false // isTimestamp
+				));
 				m_mTable.addField(updatedBy);
 			}
 		}
