@@ -3,10 +3,13 @@
  */
 package de.metas.impexp.processing;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import de.metas.impexp.DataImportConfigId;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -40,9 +43,12 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class DBFunctionHelper
 {
-	private static final transient Logger log = LogManager.getLogger(DBFunctionHelper.class);
+	private static final transient Logger logger = LogManager.getLogger(DBFunctionHelper.class);
 
-	final public void doDBFunctionCall(@NonNull final DBFunction function, final int dataImportId, final int recordId)
+	public static void doDBFunctionCall(
+			@NonNull final DBFunction function,
+			@Nullable final DataImportConfigId dataImportConfigId,
+			final int recordId)
 	{
 		final String sql = new StringBuilder()
 				.append("SELECT ")
@@ -52,7 +58,11 @@ public class DBFunctionHelper
 				.append("(?,?)")
 				.toString();
 
-		DB.executeFunctionCallEx(ITrx.TRXNAME_ThreadInherited, sql, new Object[] { dataImportId, recordId });
-		log.info("\nCalling {}", function);
+		final Object[] sqlParams = new Object[] {
+				DataImportConfigId.toRepoId(dataImportConfigId),
+				recordId };
+
+		DB.executeFunctionCallEx(ITrx.TRXNAME_ThreadInherited, sql, sqlParams);
+		logger.debug("\nExecuted {} with params: {}", function, sqlParams);
 	}
 }

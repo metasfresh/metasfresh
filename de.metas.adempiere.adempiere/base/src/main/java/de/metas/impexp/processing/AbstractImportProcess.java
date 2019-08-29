@@ -55,6 +55,7 @@ import com.google.common.collect.ImmutableMap;
 import ch.qos.logback.classic.Level;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.impexp.DataImportConfigId;
 import de.metas.impexp.processing.ImportProcessResult.ImportProcessResultCollector;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
@@ -586,8 +587,19 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	private final void runSQLAfterRowImport(@NonNull final ImportRecordType importRecord)
 	{
 		final List<DBFunction> functions = getDbFunctions().getAvailableAfterRowFunctions();
-		final Optional<Integer> dataImportId = Optional.ofNullable(InterfaceWrapperHelper.getValueOrNull(importRecord, COLUMNNAME_C_DataImport_ID));
+		if (functions.isEmpty())
+		{
+			return;
+		}
+
+		final DataImportConfigId dataImportConfigId = extractDataImportConfigIdOrNull(importRecord);
 		final Optional<Integer> recordId = InterfaceWrapperHelper.getValue(importRecord, getImportKeyColumnName());
-		functions.forEach(function -> DBFunctionHelper.doDBFunctionCall(function, dataImportId.orElse(0), recordId.orElse(0)));
+		functions.forEach(function -> DBFunctionHelper.doDBFunctionCall(function, dataImportConfigId, recordId.orElse(0)));
+	}
+
+	private DataImportConfigId extractDataImportConfigIdOrNull(@NonNull final ImportRecordType importRecord)
+	{
+		final Optional<Integer> value = InterfaceWrapperHelper.getValue(importRecord, COLUMNNAME_C_DataImport_ID);
+		return value.map(DataImportConfigId::ofRepoIdOrNull).orElse(null);
 	}
 }
