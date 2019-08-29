@@ -20,7 +20,7 @@
  * #L%
  */
 
-import { DocumentStatusKey, DocumentActionKey } from '../../support/utils/constants';
+import { DocumentActionKey, DocumentStatusKey } from '../../support/utils/constants';
 import { BillingCandidates } from '../../page_objects/billing_candidates';
 import { salesOrders } from '../../page_objects/sales_orders';
 import { ShipmentDispositions } from '../../page_objects/shipment_dispositions';

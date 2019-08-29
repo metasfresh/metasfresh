@@ -13,16 +13,6 @@ export class SalesInvoice {
     return this;
   }
 
-  setDocumentAction(documentAction) {
-    this.documentAction = documentAction;
-    return this;
-  }
-
-  setDocumentStatus(documentStatus) {
-    this.documentStatus = documentStatus;
-    return this;
-  }
-
   setPriceList(priceList) {
     this.priceList = priceList;
     return this;
@@ -58,14 +48,6 @@ export class SalesInvoice {
       salesInvoice.lines.forEach(line => {
         SalesInvoice.applyLine(line);
       });
-
-      if (salesInvoice.documentAction) {
-        if (salesInvoice.documentStatus) {
-          cy.processDocument(salesInvoice.documentAction, salesInvoice.documentStatus);
-        } else {
-          cy.processDocument(salesInvoice.documentAction);
-        }
-      }
     });
   }
 
@@ -80,35 +62,17 @@ export class SalesInvoice {
     cy.selectTab('C_InvoiceLine');
     cy.pressAddNewButton();
 
-    cy.writeIntoStringField(
-      'QtyEntered',
-      salesInvoiceLine.quantity,
-      true /*modal*/,
-      null /*rewriteUrl*/,
-      true /*noRequest, bc the patch response is e.g. 20 and we would be waiting for e.g. '20' */
-    );
+    cy.writeIntoStringField('QtyEntered', salesInvoiceLine.quantity, true /*modal*/, null /*rewriteUrl*/, true /*noRequest, bc the patch response is e.g. 20 and we would be waiting for e.g. '20' */);
     // instead of waiting for the patch in writeIntoStringField, we wait for the "pending" indicator to go away
     cy.get('.indicator-pending').should('not.exist');
 
-    cy.writeIntoLookupListField(
-      'M_Product_ID',
-      salesInvoiceLine.product,
-      salesInvoiceLine.product,
-      false /*typeList*/,
-      true /*modal*/
-    );
+    cy.writeIntoLookupListField('M_Product_ID', salesInvoiceLine.product, salesInvoiceLine.product, false /*typeList*/, true /*modal*/);
 
     if (salesInvoiceLine.tuQuantity) {
       cy.writeIntoStringField('QtyEnteredTU', salesInvoiceLine.tuQuantity, true /*modal*/);
     }
     if (salesInvoiceLine.packingItem) {
-      cy.writeIntoLookupListField(
-        'M_HU_PI_Item_Product_ID',
-        salesInvoiceLine.packingItem,
-        salesInvoiceLine.packingItem,
-        false /*typeList*/,
-        true /*modal*/
-      );
+      cy.writeIntoLookupListField('M_HU_PI_Item_Product_ID', salesInvoiceLine.packingItem, salesInvoiceLine.packingItem, false /*typeList*/, true /*modal*/);
     }
     cy.pressDoneButton();
   }

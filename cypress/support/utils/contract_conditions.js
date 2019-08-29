@@ -1,4 +1,3 @@
-import { DocumentActionKey, DocumentStatusKey } from '../../support/utils/constants';
 import { getLanguageSpecific } from '../../support/utils/utils';
 
 export class ContractConditions {
@@ -51,9 +50,9 @@ export class ContractConditions {
   }
 
   apply() {
-    cy.log(`ContractConditions - apply - START (name=${this.name})`);
+    cy.log(`ContractConditions - apply - START (baseName=${this.baseName})`);
     applyConditions(this);
-    cy.log(`ContractConditions - apply - END (name=${this.name})`);
+    cy.log(`ContractConditions - apply - END (baseName=${this.baseName})`);
     return this;
   }
 }
@@ -92,7 +91,7 @@ function applyConditions(conditions) {
     });
   });
 
-  if (conditions.conditionsType == ConditionsType.QualityBased) {
+  if (conditions.conditionsType === ConditionsType.QualityBased) {
     cy.selectInListField('M_QualityInsp_LagerKonf_ID', conditions.lagerKonferenz);
   }
 
@@ -109,13 +108,6 @@ function applyConditions(conditions) {
 
     cy.get('table tbody tr').should('have.length', conditions.productAllocations.length);
   }
-
-  cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-    cy.processDocument(
-      getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
-      getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
-    );
-  });
 }
 
 function applyProductAllocation(productAllocation) {

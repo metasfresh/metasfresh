@@ -1,4 +1,3 @@
-import { DocumentActionKey, DocumentStatusKey } from '../../support/utils/constants';
 import { getLanguageSpecific } from '../../support/utils/utils';
 
 export class ContractTransition {
@@ -108,12 +107,5 @@ function applyTransition(transition) {
     cy.selectInListField('ContractStatus', 'Gekündigt', true /*modal*/);
 
     cy.pressDoneButton();
-
-    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      cy.processDocument(
-        getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
-        getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
-      );
-    });
   });
 }

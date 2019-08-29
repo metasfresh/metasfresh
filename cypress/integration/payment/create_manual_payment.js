@@ -5,7 +5,7 @@ import { SalesInvoice, SalesInvoiceLine } from '../../support/utils/sales_invoic
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { Bank } from '../../support/utils/bank';
 import { Builder } from '../../support/utils/builder';
-import { getLanguageSpecific, appendHumanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 
 describe('Create a manual Payment for a Sales Invoice', function() {
   let salesInvoiceTargetDocumentType;
@@ -24,7 +24,7 @@ describe('Create a manual Payment for a Sales Invoice', function() {
 
   // product
   let productCategoryName;
-  let productCategoryValue = productCategoryName;
+  let productCategoryValue;
   let productName;
   let productValue;
   let productType;
@@ -57,14 +57,7 @@ describe('Create a manual Payment for a Sales Invoice', function() {
   it('Prepare product and pricing', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
 
-    Builder.createBasicProductEntities(
-      productCategoryName,
-      productCategoryValue,
-      priceListName,
-      productName,
-      productValue,
-      productType
-    );
+    Builder.createBasicProductEntities(productCategoryName, productCategoryValue, priceListName, productName, productValue, productType);
 
     cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
       Object.assign(new DiscountSchema(), discountSchemaJson)
@@ -84,17 +77,13 @@ describe('Create a manual Payment for a Sales Invoice', function() {
   });
 
   it('Create a Sales Invoice', function() {
-    cy.fixture('sales/sales_invoice.json').then(salesInvoiceJson => {
-      new SalesInvoice(bPartnerName, salesInvoiceTargetDocumentType)
-        .addLine(new SalesInvoiceLine().setProduct(productName).setQuantity(20))
-        .setPriceList(priceListName)
-        .setDocumentAction(getLanguageSpecific(salesInvoiceJson, 'docActionComplete'))
-        .setDocumentStatus(getLanguageSpecific(salesInvoiceJson, 'docStatusCompleted'))
-        .apply();
-
-      cy.getCurrentWindowRecordId().then(id => {
-        salesInvoiceID = id;
-      });
+    new SalesInvoice(bPartnerName, salesInvoiceTargetDocumentType)
+      .addLine(new SalesInvoiceLine().setProduct(productName).setQuantity(20))
+      .setPriceList(priceListName)
+      .apply();
+    cy.completeDocument();
+    cy.getCurrentWindowRecordId().then(id => {
+      salesInvoiceID = id;
     });
   });
 
