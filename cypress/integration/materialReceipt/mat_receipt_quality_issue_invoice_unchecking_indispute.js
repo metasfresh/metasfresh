@@ -1,4 +1,3 @@
-import { QualityNote } from '../../support/utils/qualityNote';
 import { ProductCategory } from '../../support/utils/product';
 import { Builder } from '../../support/utils/builder';
 import { BPartner } from '../../support/utils/bpartner';
@@ -7,9 +6,6 @@ import { appendHumanReadableNow } from '../../support/utils/utils';
 import { Warehouse, WarehouseRoute } from '../../support/utils/warehouse';
 import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_order';
 import { purchaseOrders } from '../../page_objects/purchase_orders';
-
-// describe('Create material receipt with quality issue', function() {
-// const date = humanReadableNow();
 
 let qualityNoteName;
 let qualityDiscountPercent;
