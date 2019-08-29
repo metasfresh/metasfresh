@@ -138,7 +138,7 @@ export class RawWidget extends Component {
     // Do patch only when value is not equal state
     // or cache is set and it is not equal value
     if ((isForce || willPatch) && handlePatch && !inProgress) {
-      if (widgetType === 'ZonedDateTime') {
+      if (widgetType === 'ZonedDateTime' && Moment.isMoment(value)) {
         value = Moment(value).format(DATE_TIMEZONE_FORMAT);
       }
 
