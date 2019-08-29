@@ -286,6 +286,7 @@ public class RecordChangeLogEntryLoader
 		return result.build();
 	}
 
+	/** please keep in sync with the javadoc of {@link LogEntriesRepository.LogEntriesQuery}. */
 	private static boolean isSkipLocationColumnName(@NonNull final String columnName)
 	{
 		final POInfo poInfo = POInfo.getPOInfo(I_C_Location.Table_Name);
@@ -295,7 +296,8 @@ public class RecordChangeLogEntryLoader
 				|| I_C_Location.COLUMNNAME_Created.equals(columnName)
 				|| I_C_Location.COLUMNNAME_CreatedBy.equals(columnName)
 				|| I_C_Location.COLUMNNAME_Updated.equals(columnName)
-				|| I_C_Location.COLUMNNAME_UpdatedBy.equals(columnName))
+				|| I_C_Location.COLUMNNAME_UpdatedBy.equals(columnName)
+				|| I_C_Location.COLUMNNAME_IsActive.equals(columnName))
 		{
 			return true;
 		}
