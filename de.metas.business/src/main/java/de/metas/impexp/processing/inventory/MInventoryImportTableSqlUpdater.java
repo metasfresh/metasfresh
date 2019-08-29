@@ -235,54 +235,69 @@ final class MInventoryImportTableSqlUpdater
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
+	public int countRecordsWithErrors(@NonNull final String whereClause)
+	{
+		final String sql = "SELECT COUNT(1) FROM I_Inventory "
+				+ "WHERE I_IsImported='E'"
+				+ " " + whereClause;
+		return DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql);
+	}
+
 	private void dbUpdateErrorMessages(@NonNull final String whereClause)
 	{
-		StringBuilder sql;
-		int no;
-
-		sql = new StringBuilder("UPDATE I_Inventory ")
-				.append("SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Locator, ' ")
-				.append("WHERE M_Locator_ID IS NULL ")
-				.append("AND I_IsImported<>'Y' ")
-				.append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		if (no != 0)
+		//
+		// No locator
 		{
-			logger.warn("No Locator = {}", no);
+			final StringBuilder sql = new StringBuilder("UPDATE I_Inventory ")
+					.append("SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Locator, ' ")
+					.append("WHERE M_Locator_ID IS NULL ")
+					.append("AND I_IsImported<>'Y' ")
+					.append(whereClause);
+			final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+			if (no != 0)
+			{
+				logger.warn("No Locator = {}", no);
+			}
 		}
 
-		sql = new StringBuilder("UPDATE I_Inventory ")
-				.append("SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Warehouse, ' ")
-				.append("WHERE M_Warehouse_ID IS NULL ")
-				.append("AND I_IsImported<>'Y' ")
-				.append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		if (no != 0)
 		{
-			logger.warn("No Warehouse = {}", no);
+			final StringBuilder sql = new StringBuilder("UPDATE I_Inventory ")
+					.append("SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Warehouse, ' ")
+					.append("WHERE M_Warehouse_ID IS NULL ")
+					.append("AND I_IsImported<>'Y' ")
+					.append(whereClause);
+			final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+			if (no != 0)
+			{
+				logger.warn("No Warehouse = {}", no);
+			}
 		}
 
-		sql = new StringBuilder("UPDATE I_Inventory ")
-				.append("SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Product, ' ")
-				.append("WHERE M_Product_ID IS NULL ")
-				.append("AND I_IsImported<>'Y' ")
-				.append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		if (no != 0)
 		{
-			logger.warn("No Product = {}", no);
+			final StringBuilder sql = new StringBuilder("UPDATE I_Inventory ")
+					.append("SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Product, ' ")
+					.append("WHERE M_Product_ID IS NULL ")
+					.append("AND I_IsImported<>'Y' ")
+					.append(whereClause);
+			final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+			if (no != 0)
+			{
+				logger.warn("No Product = {}", no);
+			}
 		}
 
 		// No QtyCount
-		sql = new StringBuilder("UPDATE I_Inventory ")
-				.append("SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No qtycount, ' ")
-				.append("WHERE qtycount IS NULL ")
-				.append("AND I_IsImported<>'Y' ")
-				.append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		if (no != 0)
 		{
-			logger.warn("No qtycount = {}", no);
+			final StringBuilder sql = new StringBuilder("UPDATE I_Inventory ")
+					.append("SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No qtycount, ' ")
+					.append("WHERE qtycount IS NULL ")
+					.append("AND I_IsImported<>'Y' ")
+					.append(whereClause);
+			final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+			if (no != 0)
+			{
+				logger.warn("No qtycount = {}", no);
+			}
 		}
 
 	}

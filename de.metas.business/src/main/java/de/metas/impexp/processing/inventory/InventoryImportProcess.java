@@ -92,7 +92,11 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
-		MInventoryImportTableSqlUpdater.updateInventoryImportTable(getWhereClause());
+		final String whereClause = getWhereClause();
+		MInventoryImportTableSqlUpdater.updateInventoryImportTable(whereClause);
+
+		final int countErrorRecords = MInventoryImportTableSqlUpdater.countRecordsWithErrors(whereClause);
+		getResultCollector().setCountImportRecordsWithErrors(countErrorRecords);
 	}
 
 	@Override
