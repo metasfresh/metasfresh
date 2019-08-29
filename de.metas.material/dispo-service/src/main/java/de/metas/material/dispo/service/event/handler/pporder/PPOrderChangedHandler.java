@@ -116,8 +116,8 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 							event.getNewDocStatus(),
 							event.getPpOrderLineChanges()));
 			// TODO: handle delete and creation of new lines
-			updatedCandidatesToPersist.forEach(candidateChangeService::onCandidateNewOrChange);
 		}
+		updatedCandidatesToPersist.forEach(candidateChangeService::onCandidateNewOrChange);
 	}
 
 	private static Candidate extractHeaderCandidate(final List<Candidate> candidates)
