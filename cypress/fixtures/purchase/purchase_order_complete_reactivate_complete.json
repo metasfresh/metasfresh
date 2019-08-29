@@ -1,0 +1,13 @@
+{
+  "productForPackingMaterial": "ProductPackingMaterial",
+  "packingInstructionsName": "ProductPackingInstrutions",
+  "productName1": "ProductTest",
+  "productCategoryName": "ProductCategoryName",
+  "discountSchemaName": "DiscountSchemaTest",
+  "priceSystemName": "PriceSystem",
+  "priceListName": "PriceList",
+  "priceListVersionName": "PriceListVersion",
+  "productType": "Item",
+  "vendorName": "Vendor",
+  "poQty": 5
+}
