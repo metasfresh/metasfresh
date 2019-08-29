@@ -7,12 +7,7 @@ import { PackingInstructionsVersion } from '../../support/utils/packing_instruct
 import { Builder } from '../../support/utils/builder';
 import { appendHumanReadableNow } from '../../support/utils/utils';
 import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_order';
-import {
-  applyFilters,
-  selectNotFrequentFilterWidget,
-  toggleNotFrequentFilters,
-  clearNotFrequentFilters,
-} from '../../support/functions';
+import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
 
 let productForPackingMaterial;
 let packingInstructionsName;
@@ -162,12 +157,9 @@ describe('Create a purchase order and Material Receipts', function() {
     cy.selectAllRowsOnCurrentPage();
     cy.get('.table tbody tr').then(el => {
       countOnPage = parseInt(el.length);
-      cy.log('########################################CountOnPage' + countOnPage);
       countAfterMoving = parseInt(totalHUs) - parseInt(countOnPage);
     });
     cy.executeQuickAction('WEBUI_M_HU_MoveToDirectWarehouse', false, false);
-    cy.log('####################TotalHUs:' + totalHUs);
-    cy.log(totalHUs - countOnPage);
     /**Filter to check if HUs have been moved - the number of HUs to be moved is the total number
      * minus those moved earlier
      */
