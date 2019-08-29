@@ -1,12 +1,19 @@
 import { Bank } from '../../support/utils/bank';
 import { BPartner } from '../../support/utils/bpartner';
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 
 describe('Create Bank', function() {
-  const date = humanReadableNow();
-  const bankName = `Bank ${date}`;
-  const BLZ = '80027';
-  const customer1Name = `Customer ${date}`;
+  let bankName;
+  let customerName;
+  let BLZ;
+
+  it('Read the fixture', function() {
+    cy.fixture('settings/create_bank_and_set_it_to_bpartner.json').then(f => {
+      bankName = appendHumanReadableNow(f['bankName']);
+      customerName = appendHumanReadableNow(f['customerName']);
+      BLZ = f['BLZ'];
+    });
+  });
 
   it('Create Bank', function() {
     cy.fixture('finance/bank.json').then(productJson => {
@@ -20,8 +27,7 @@ describe('Create Bank', function() {
   let bpartnerID = null;
   it('Create customer', function() {
     cy.fixture('sales/simple_customer.json').then(customerJson => {
-      const bpartner = new BPartner({ ...customerJson, name: customer1Name })
-        .setCustomer(true)
+      const bpartner = new BPartner({ ...customerJson, name: customerName })
         .clearLocations()
         .clearContacts()
         .setBank(bankName);
@@ -39,8 +45,8 @@ describe('Create Bank', function() {
       .selectSingleTabRow()
       .openAdvancedEdit()
       .getStringFieldValue('C_Bank_ID', true)
-      .then(bankNameFieldvalue => {
-        expect(bankNameFieldvalue).to.eq(`${bankName}_${BLZ}`);
+      .then(bankNameFieldValue => {
+        expect(bankNameFieldValue).to.eq(`${bankName}_${BLZ}`);
       });
   });
 });
