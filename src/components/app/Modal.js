@@ -29,49 +29,8 @@ import OverlayField from './OverlayField';
  * @module Modal
  * @extends Component
  */
-
 class Modal extends Component {
   mounted = false;
-
-  /**
-   * @typedef {object} Props Component props
-   * @prop {*} activeTabId
-   * @prop {*} childViewId
-   * @prop {*} closeCallback
-   * @prop {*} childViewSelectedIds
-   * @prop {*} data
-   * @prop {*} dataId
-   * @prop {function} dispatch Dispatch function
-   * @prop {*} indicator
-   * @prop {*} layout
-   * @prop {boolean} isAdvanced
-   * @prop {boolean} isDocumentNotSaved
-   * @prop {boolean} isNewDoc
-   * @prop {string} staticModalType
-   * @prop {*} modalTitle
-   * @prop {*} modalType
-   * @prop {*} modalSaveStatus
-   * @prop {*} modalViewId
-   * @prop {*} modalViewDocumentIds
-   * @prop {*} staticModalType
-   * @prop {*} tabId
-   * @prop {*} parentSelection
-   * @prop {*} parentType
-   * @prop {*} parentViewId
-   * @prop {*} parentViewSelectedIds
-   * @prop {*} rawModalVisible
-   * @prop {*} rowId
-   * @prop {*} triggerField
-   * @prop {*} viewId
-   * @prop {*} windowType
-   * @category Components
-   * @extends {Component<Props>}
-   */
-  static propTypes = {
-    dispatch: PropTypes.func.isRequired,
-    isNewDoc: PropTypes.bool,
-    staticModalType: PropTypes.string,
-  };
 
   constructor(props) {
     super(props);
@@ -89,6 +48,11 @@ class Modal extends Component {
     };
   }
 
+  /**
+   * @async
+   * @method componentDidMount
+   * @summary ToDo: Describe the method.
+   */
   async componentDidMount() {
     this.mounted = true;
 
@@ -108,6 +72,10 @@ class Modal extends Component {
     this.initEventListeners();
   }
 
+  /**
+   * @method componentWillUnmount
+   * @summary ToDo: Describe the method.
+   */
   componentWillUnmount() {
     this.mounted = false;
 
@@ -145,10 +113,19 @@ class Modal extends Component {
     }
   }
 
+  /**
+   * @method toggleTooltip
+   * @summary ToDo: Describe the method.
+   * @param {*} key
+   */
   toggleTooltip = (key = null) => {
     this.setState({ isTooltipShow: key });
   };
 
+  /**
+   * @method initEventListeners
+   * @summary ToDo: Describe the method.
+   */
   initEventListeners = () => {
     const modalContent = document.querySelector('.js-panel-modal-content');
 
@@ -157,6 +134,10 @@ class Modal extends Component {
     }
   };
 
+  /**
+   * @method removeEventListeners
+   * @summary ToDo: Describe the method.
+   */
   removeEventListeners = () => {
     const modalContent = document.querySelector('.js-panel-modal-content');
 
@@ -165,6 +146,11 @@ class Modal extends Component {
     }
   };
 
+  /**
+   * @async
+   * @method init
+   * @summary ToDo: Describe the method.
+   */
   init = async () => {
     const {
       dispatch,
@@ -268,6 +254,10 @@ class Modal extends Component {
     }
   };
 
+  /**
+   * @method closeModal
+   * @summary ToDo: Describe the method.
+   */
   closeModal = () => {
     // TODO: parentDataId (formerly relativeDataId) is not passed in as prop
     const {
@@ -689,6 +679,70 @@ class Modal extends Component {
     );
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} activeTabId
+ * @prop {*} childViewId
+ * @prop {*} closeCallback
+ * @prop {*} childViewSelectedIds
+ * @prop {shape} data
+ * @prop {string} dataId
+ * @prop {func} dispatch Dispatch function
+ * @prop {string} indicator
+ * @prop {shape} layout
+ * @prop {bool} isAdvanced
+ * @prop {bool} isDocumentNotSaved
+ * @prop {bool} isNewDoc
+ * @prop {string} staticModalType
+ * @prop {*} modalTitle
+ * @prop {*} modalType
+ * @prop {*} modalSaveStatus
+ * @prop {*} modalViewId
+ * @prop {*} modalViewDocumentIds
+ * @prop {string} staticModalType
+ * @prop {string} tabId
+ * @prop {*} parentSelection
+ * @prop {*} parentType
+ * @prop {*} parentViewId
+ * @prop {*} parentViewSelectedIds
+ * @prop {*} rawModalVisible
+ * @prop {string} rowId
+ * @prop {*} triggerField
+ * @prop {*} viewId
+ * @prop {*} windowType
+ */
+Modal.propTypes = {
+  dispatch: PropTypes.func.isRequired,
+  isNewDoc: PropTypes.bool,
+  staticModalType: PropTypes.string,
+  activeTabId: PropTypes.any,
+  childViewId: PropTypes.any,
+  closeCallback: PropTypes.any,
+  childViewSelectedIds: PropTypes.any,
+  data: PropTypes.oneOfType([PropTypes.shape(), PropTypes.array]), // TODO: type here should point to a hidden issue?
+  dataId: PropTypes.string,
+  indicator: PropTypes.string,
+  layout: PropTypes.shape(),
+  isAdvanced: PropTypes.bool,
+  isDocumentNotSaved: PropTypes.any,
+  modalTitle: PropTypes.any,
+  modalType: PropTypes.any,
+  modalSaveStatus: PropTypes.any,
+  modalViewId: PropTypes.any,
+  modalViewDocumentIds: PropTypes.any,
+  tabId: PropTypes.string,
+  parentDataId: PropTypes.any,
+  parentSelection: PropTypes.any,
+  parentType: PropTypes.any,
+  parentViewId: PropTypes.any,
+  parentViewSelectedIds: PropTypes.any,
+  rawModalVisible: PropTypes.any,
+  rowId: PropTypes.string,
+  triggerField: PropTypes.any,
+  viewId: PropTypes.any,
+  windowType: PropTypes.any,
+};
 
 /**
  * @method mapStateToProps
