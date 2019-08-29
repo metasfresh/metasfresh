@@ -16,6 +16,7 @@ import com.google.common.collect.Maps;
 import de.metas.Profiles;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
@@ -87,6 +88,9 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 			updatedCandidatesToPersist.add(headerCandidate);
 		}
 
+		final ProductionDetail headerProductionDetail = ProductionDetail.cast(headerCandidate.getBusinessCaseDetail());
+		final DemandDetail headerDemandDetail = headerCandidate.getDemandDetail();
+
 		//
 		// Line candidates (demands, supplies)
 		if (event.isJustCompleted())
@@ -96,13 +100,12 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 			PPOrderLineCandidatesCreateCommand.builder()
 					.candidateChangeService(candidateChangeService)
 					.candidateRepositoryRetrieval(candidateRepositoryRetrieval)
-					//
 					.ppOrder(event.getPpOrderAfterChanges())
-					// .supplyRequiredDescriptor(ppOrderEvent.getSupplyRequiredDescriptor())
+					.headerDemandDetail(headerDemandDetail)
 					.groupId(headerCandidate.getGroupId())
 					.headerCandidateSeqNo(headerCandidate.getSeqNo())
-					.advised(Flag.FALSE_DONT_UPDATE)
-					.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE)
+					.advised(headerProductionDetail.getAdvised())
+					.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE) // only the ppOrder's header supply product can be picked directly because only there might know the shipment schedule ID
 					.create();
 		}
 		else
@@ -149,11 +152,12 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 		final ProductionDetail productionDetailToUpdate = ProductionDetail.cast(candidateToUpdate.getBusinessCaseDetail());
 		if (!productionDetailToUpdate.isFinishedGoodsCandidate())
 		{
-			throw new AdempiereException("Invalid order PP Order header candidate: " + candidateToUpdate);
+			throw new AdempiereException("Parameter candidateToUpdate needs to have finishedGoodsCandidate=true")
+					.appendParametersToMessage()
+					.setParameter("candidateToUpdate", candidateToUpdate);
 		}
 
 		final DocStatus newDocStatusFromEvent = ppOrderChangedEvent.getNewDocStatus();
-		// final CandidateStatus newCandidateStatus = CandidateStatus.ofDocStatus(newDocStatusFromEvent);
 		final BigDecimal newPlannedQty = ppOrderChangedEvent.getNewQtyRequired();
 
 		final ProductionDetail updatedProductionDetail = productionDetailToUpdate.toBuilder()
@@ -164,7 +168,6 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 		final BigDecimal newCandidateQty = newPlannedQty.max(candidateToUpdate.computeActualQty());
 
 		final Candidate updatedCandidate = candidateToUpdate.toBuilder()
-				// .status(newCandidateStatus)
 				.businessCaseDetail(updatedProductionDetail)
 				.materialDescriptor(candidateToUpdate.getMaterialDescriptor().withQuantity(newCandidateQty))
 				.build();
@@ -205,11 +208,12 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 		final ProductionDetail productionDetailToUpdate = ProductionDetail.cast(candidateToUpdate.getBusinessCaseDetail());
 		if (!productionDetailToUpdate.isBOMLine())
 		{
-			throw new AdempiereException("Invalid order BOM line candidate: " + candidateToUpdate);
+			throw new AdempiereException("Parameter candidateToUpdate needs to have bomLine=true")
+					.appendParametersToMessage()
+					.setParameter("candidateToUpdate", candidateToUpdate);
 		}
 
 		final BigDecimal newPlannedQty = ppOrderLineChange.getNewQtyRequired();
-		// final CandidateStatus newCandidateStatus = CandidateStatus.ofDocStatus(newDocStatusFromEvent);
 
 		final ProductionDetail updatedProductionDetail = productionDetailToUpdate.toBuilder()
 				.ppOrderDocStatus(ppOrderDocStatus)
@@ -220,7 +224,6 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 		final BigDecimal newCandidateQty = newPlannedQty.max(candidateToUpdate.computeActualQty());
 
 		final Candidate updatedCandidate = candidateToUpdate.toBuilder()
-				// .status(newCandidateStatus)
 				.businessCaseDetail(updatedProductionDetail)
 				.materialDescriptor(candidateToUpdate.getMaterialDescriptor().withQuantity(newCandidateQty))
 				.build();
