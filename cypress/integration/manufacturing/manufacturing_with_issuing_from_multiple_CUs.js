@@ -28,32 +28,32 @@ import { ColumnAndValue } from '../../support/commands/navigation';
 import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
 
 // testdata
-let categoryName1 = appendHumanReadableNow('Category1');
-let categoryName2 = appendHumanReadableNow('Category2');
-let productComponentName1 = appendHumanReadableNow('Product Component 1');
-let productComponentName2 = appendHumanReadableNow('Product Component 2');
-let productComponentName3 = appendHumanReadableNow('Product Component 3');
-let productComponentQty1 = 25;
-let productComponentQty2 = 20;
-let productComponentQty3 = 50;
-let finishedProductName = appendHumanReadableNow('Finished Product');
-const bomIssueMethod = 'Issue only for what was received';
+let categoryName1;
+let categoryName2;
+let productComponentName1;
+let productComponentName2;
+let productComponentName3;
+let finishedProductName;
+let productComponentQty1;
+let productComponentQty2;
+let productComponentQty3;
 
 // HU
-let huQty = 100;
-const locatorId = 'Hauptlager_StdWarehouse_Hauptlager_0_0_0';
+let huQty;
+let locatorId;
 
 // manufacturing order
-let manufacturingResource = 'test';
-let manufacturingWorkflow = 'test';
-let stdWarehouse = 'Hauptlager_StdWarehouse';
-const expectedManufacturingPriorityRule = 'Medium';
-const manufacturingQtyEntered = '1';
-const eachUOM = 'Each';
-const manufacturingDateOrdered = '08/22/2019 10:00 A';
-const manufacturingDatePromised = '08/23/2019 10:00 A';
+let manufacturingResource;
+let manufacturingWorkflow;
+let stdWarehouse;
+let manufacturingQtyEntered;
+let manufacturingDateOrdered;
+let manufacturingDatePromised;
 
 // static
+const expectedManufacturingPriorityRule = 'Medium';
+const eachUOM = 'Each';
+const bomIssueMethod = 'Issue only for what was received';
 const expectedManufacturingTargetDocType = 'Produktionsauftrag';
 const packingStatusActive = 'Active';
 const packingStatusDestroyed = 'Destroyed';
@@ -78,6 +78,33 @@ let huValue2;
 let huValue3;
 
 describe('Create test data', function() {
+  it('Read the fixture', function() {
+    cy.fixture('manufacturing/manufacturing_with_issuing_from_multiple_CUs.json').then(f => {
+      // testdata
+      categoryName1 = appendHumanReadableNow(f['categoryName1']);
+      categoryName2 = appendHumanReadableNow(f['categoryName2']);
+      productComponentName1 = appendHumanReadableNow(f['productComponentName1']);
+      productComponentName2 = appendHumanReadableNow(f['productComponentName2']);
+      productComponentName3 = appendHumanReadableNow(f['productComponentName3']);
+      finishedProductName = appendHumanReadableNow(f['finishedProductName']);
+      productComponentQty1 = f['productComponentQty1'];
+      productComponentQty2 = f['productComponentQty2'];
+      productComponentQty3 = f['productComponentQty3'];
+
+      // HU
+      huQty = f['huQty'];
+      locatorId = f['locatorId'];
+
+      // manufacturing order
+      manufacturingResource = f['manufacturingResource'];
+      manufacturingWorkflow = f['manufacturingWorkflow'];
+      stdWarehouse = f['stdWarehouse'];
+      manufacturingQtyEntered = f['manufacturingQtyEntered'];
+      manufacturingDateOrdered = f['manufacturingDateOrdered'];
+      manufacturingDatePromised = f['manufacturingDatePromised'];
+    });
+  });
+
   it('Create product components', function() {
     // first component
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
