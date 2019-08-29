@@ -111,8 +111,7 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 
 		for (final File fileToImport : filesToImport)
 		{
-			trxManager.run(() -> {
-
+			trxManager.runInNewTrx(() -> {
 				final boolean currentFileImported = importSingleFile(fileToImport.toPath(), outputDirectory.toPath());
 				allFilesImported.setValue(allFilesImported.getValue() && currentFileImported);
 			});

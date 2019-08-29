@@ -43,7 +43,7 @@ public class ErrorManager implements IErrorManager
 	{
 		final I_AD_Issue[] issue = new I_AD_Issue[1];
 
-		Services.get(ITrxManager.class).run(new TrxRunnableAdapter()
+		Services.get(ITrxManager.class).runInNewTrx(new TrxRunnableAdapter()
 		{
 			@Override
 			public void run(String localTrxName) throws Exception

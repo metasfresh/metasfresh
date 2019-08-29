@@ -471,7 +471,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 			while (rs.next())
 			{
 				final ImportRecordType importRecord = retrieveImportRecord(ctx, rs);
-				trxManager.run(new TrxRunnableAdapter()
+				trxManager.runInNewTrx(new TrxRunnableAdapter()
 				{
 					private ImportRecordResult recordImportResult;
 					private Throwable error;
@@ -512,7 +512,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 				});
 			}
 
-			afterImport();
+			trxManager.runInNewTrx(() -> afterImport(state));
 		}
 		catch (final SQLException e)
 		{
@@ -578,12 +578,12 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		InterfaceWrapperHelper.save(importRecord);
 	}
 
-	protected void afterImport()
+	protected void afterImport(final IMutable<Object> state)
 	{
 		// nothing to do here
 	}
 
-	protected final void runSQLAfterRowImport(@NonNull final ImportRecordType importRecord)
+	private final void runSQLAfterRowImport(@NonNull final ImportRecordType importRecord)
 	{
 		final List<DBFunction> functions = getDbFunctions().getAvailableAfterRowFunctions();
 		final Optional<Integer> dataImportId = Optional.ofNullable(InterfaceWrapperHelper.getValueOrNull(importRecord, COLUMNNAME_C_DataImport_ID));

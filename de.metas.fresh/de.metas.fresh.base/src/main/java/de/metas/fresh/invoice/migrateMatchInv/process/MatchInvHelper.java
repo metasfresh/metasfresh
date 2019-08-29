@@ -343,7 +343,7 @@ import de.metas.util.Services;
 			incrementCounterAndGet(COUNTER_ALL);
 
 			// now do the actual work, in a dedicated transaction
-			trxManager.run(new TrxRunnable()
+			trxManager.runInNewTrx(new TrxRunnable()
 			{
 				@Override
 				public void run(final String localTrxName) throws Exception

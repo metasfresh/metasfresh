@@ -81,7 +81,7 @@ public class FlatrateTermCreator
 		for (final I_C_BPartner partner : bPartners)
 		{
 			// create each term in its own transaction
-			trxManager.run(new TrxRunnableAdapter()
+			trxManager.runInNewTrx(new TrxRunnableAdapter()
 			{
 				@Override
 				public void run(final String localTrxName)

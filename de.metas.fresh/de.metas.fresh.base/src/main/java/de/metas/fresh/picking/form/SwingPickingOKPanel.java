@@ -388,7 +388,7 @@ public class SwingPickingOKPanel extends TerminalSubPanel
 	 */
 	private final void unlockShipmentSchedules()
 	{
-		trxManager.run(this::updateShipmentSchedulesInTrx);
+		trxManager.runInNewTrx(this::updateShipmentSchedulesInTrx);
 	}
 
 	private void updateShipmentSchedulesInTrx()

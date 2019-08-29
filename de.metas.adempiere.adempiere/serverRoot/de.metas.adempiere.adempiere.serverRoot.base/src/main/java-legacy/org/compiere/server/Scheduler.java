@@ -138,7 +138,7 @@ public class Scheduler extends AdempiereServer
 	 */
 	private void setSchedulerStatus(final String status, final PInstanceId pinstanceId)
 	{
-		Services.get(ITrxManager.class).run(new TrxRunnableAdapter()
+		Services.get(ITrxManager.class).runInNewTrx(new TrxRunnableAdapter()
 		{
 			@Override
 			public void run(final String localTrxName) throws Exception
@@ -270,7 +270,7 @@ public class Scheduler extends AdempiereServer
 				}
 				else
 				{
-					trxManager.run(processRunner);
+					trxManager.runInNewTrx(processRunner);
 				}
 				log.debug("Executed {} in {}", process, stopwatch);
 			}

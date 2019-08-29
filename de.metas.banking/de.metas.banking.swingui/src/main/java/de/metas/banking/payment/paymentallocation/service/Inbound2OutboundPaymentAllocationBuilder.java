@@ -40,7 +40,6 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.TrxRunnable;
 
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.banking.payment.paymentallocation.model.IPaymentRow;
@@ -87,14 +86,7 @@ public class Inbound2OutboundPaymentAllocationBuilder
 			throw new AdempiereException("@Select@ @C_Payment_ID@");
 		}
 
-		trxManager.run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				buildInTrx();
-			}
-		});
+		trxManager.runInNewTrx(this::buildInTrx);
 
 		return countPaymentsProcessed > 0;
 	}

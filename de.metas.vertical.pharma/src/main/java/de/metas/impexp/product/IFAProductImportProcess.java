@@ -134,7 +134,7 @@ public class IFAProductImportProcess extends AbstractImportProcess<I_I_Pharma_Pr
 	}
 
 	@Override
-	protected void afterImport()
+	protected void afterImport(final IMutable<Object> state)
 	{
 		final List<I_M_PriceList_Version> versions = retrieveLatestPriceListVersion();
 		versions.stream()

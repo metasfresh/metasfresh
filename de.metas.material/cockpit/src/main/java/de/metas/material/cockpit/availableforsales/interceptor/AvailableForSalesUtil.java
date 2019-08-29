@@ -207,7 +207,7 @@ public class AvailableForSalesUtil
 		// We cannot use a thread-inherited transaction that would otherwise be used by default.
 		// Because when this method is called, it means that the thread-inherited transaction is already committed
 		// Therefore, let's create our own trx to work in
-		final Runnable runnable = () -> Services.get(ITrxManager.class).run(innerTrx -> retrieveDataAndUpdateOrderLines(requests, config));
+		final Runnable runnable = () -> Services.get(ITrxManager.class).runInNewTrx(innerTrx -> retrieveDataAndUpdateOrderLines(requests, config));
 
 		final ExecutorService executor = Executors.newSingleThreadExecutor();
 		final Future<?> future = executor.submit(runnable);

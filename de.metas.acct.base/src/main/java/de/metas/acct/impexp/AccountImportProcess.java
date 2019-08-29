@@ -285,7 +285,7 @@ public class AccountImportProcess extends AbstractImportProcess<I_I_ElementValue
 	}
 
 	@Override
-	protected void afterImport()
+	protected void afterImport(final IMutable<Object> state)
 	{
 		AccountImportTableSqlUpdater.dbUpdateParentElementValue(getWhereClause());
 		retrieveImportedAdTrees().forEach(AccountImportTableSqlUpdater::dbUpdateParentElementValueId);
