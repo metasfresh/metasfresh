@@ -35,7 +35,6 @@ describe('Create Empties Receive', function() {
 
   let productCategory;
   let productName;
-  let productType;
 
   it('Read the fixture', function() {
     cy.fixture('empties/create_empties_receive.json').then(f => {
@@ -49,7 +48,6 @@ describe('Create Empties Receive', function() {
 
       productCategory = appendHumanReadableNow(f['productCategory']);
       productName = appendHumanReadableNow(f['productName']);
-      productType = f['productType'];
     });
   });
 
@@ -57,14 +55,7 @@ describe('Create Empties Receive', function() {
     it('Create Price and Product', function() {
       Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
 
-      Builder.createBasicProductEntities(
-        productCategory,
-        productCategory,
-        priceListName,
-        productName,
-        productName,
-        productType
-      );
+      Builder.createBasicProductEntities(productCategory, productCategory, priceListName, productName, productName);
     });
 
     it('Add Product to Packing Material', function() {

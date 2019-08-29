@@ -38,7 +38,6 @@ describe('Create Empties Return', function() {
   let productName1;
   let productName2;
   let productName3;
-  let productType;
 
   it('Read the fixture', function() {
     cy.fixture('empties/create_empties_return.json').then(f => {
@@ -54,7 +53,6 @@ describe('Create Empties Return', function() {
       productName1 = appendHumanReadableNow(f['productName1']);
       productName2 = appendHumanReadableNow(f['productName2']);
       productName3 = appendHumanReadableNow(f['productName3']);
-      productType = f['productType'];
     });
   });
 
@@ -62,11 +60,11 @@ describe('Create Empties Return', function() {
     it('Create Price and Product', function() {
       Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
 
-      Builder.createBasicProductEntities(productCategory1, productCategory1, priceListName, productName1, productName1, productType);
+      Builder.createBasicProductEntities(productCategory1, productCategory1, priceListName, productName1, productName1);
 
-      Builder.createProductWithPriceUsingExistingCategory(priceListName, productName2, productName2, productType, productCategory1);
+      Builder.createProductWithPriceUsingExistingCategory(priceListName, productName2, productName2, null, productCategory1);
 
-      Builder.createProductWithPriceUsingExistingCategory(priceListName, productName3, productName3, productType, productCategory1);
+      Builder.createProductWithPriceUsingExistingCategory(priceListName, productName3, productName3, null, productCategory1);
     });
 
     it('Add Product to Packing Material', function() {

@@ -22,7 +22,6 @@ describe('Create material receipt with quality issue', function() {
   let priceSystemName;
   let priceListName;
   let priceListVersionName;
-  let productType;
   let vendorName;
 
   let purchaseOrderLineQuantity;
@@ -45,7 +44,6 @@ describe('Create material receipt with quality issue', function() {
       priceSystemName = appendHumanReadableNow(f['priceSystemName']);
       priceListName = appendHumanReadableNow(f['priceListName']);
       priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
-      productType = f['productType'];
       vendorName = appendHumanReadableNow(f['vendorName']);
       purchaseOrderLineQuantity = f['purchaseOrderLineQuantity'];
     });
@@ -109,7 +107,7 @@ describe('Create material receipt with quality issue', function() {
   });
 
   it('Create product and vendor', function() {
-    Builder.createProductWithPriceUsingExistingCategory(priceListName, productName, productName, productType, productCategoryName);
+    Builder.createProductWithPriceUsingExistingCategory(priceListName, productName, productName, null, productCategoryName);
     cy.fixture('sales/simple_vendor.json').then(vendorJson => {
       new BPartner({ ...vendorJson, name: vendorName })
         .setVendorPricingSystem(priceSystemName)

@@ -42,7 +42,6 @@ let priceListVersionNameSearch2; // magic from fixture (PLV doesnt have standard
 let categoryName;
 let productName1;
 let productName2;
-let productType;
 
 // Price List Schema
 let priceListSchemaName;
@@ -71,7 +70,6 @@ it('Read fixture and prepare the names', function() {
     categoryName = appendHumanReadableNow(f['categoryName']);
     productName1 = appendHumanReadableNow(f['productName1']);
     productName2 = appendHumanReadableNow(f['productName2']);
-    productType = f['productType'];
 
     priceListSchemaName = appendHumanReadableNow(f['priceListSchemaName']);
     surchargeAmount = f['surchargeAmount'];
@@ -86,11 +84,11 @@ describe('Create Price and Products', function() {
   });
 
   it('Create Product1 and Category', function() {
-    Builder.createBasicProductEntities(categoryName, categoryName, priceListName, productName1, productName1, productType);
+    Builder.createBasicProductEntities(categoryName, categoryName, priceListName, productName1, productName1);
   });
 
   it('Create Product2', function() {
-    Builder.createProductWithPriceUsingExistingCategory(priceListName, productName2, productName2, productType, categoryName);
+    Builder.createProductWithPriceUsingExistingCategory(priceListName, productName2, productName2, null, categoryName);
   });
 });
 

@@ -14,7 +14,6 @@ describe('Create Purchase order - complete - reactivate - complete', function() 
   let priceSystemName;
   let priceListName;
   let priceListVersionName;
-  let productType;
   let vendorName;
   let poQty;
 
@@ -28,7 +27,6 @@ describe('Create Purchase order - complete - reactivate - complete', function() 
       priceSystemName = appendHumanReadableNow(f['priceSystemName']);
       priceListName = appendHumanReadableNow(f['priceListName']);
       priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
-      productType = f['productType'];
       vendorName = appendHumanReadableNow(f['vendorName']);
       poQty = f['poQty'];
     });
@@ -42,7 +40,7 @@ describe('Create Purchase order - complete - reactivate - complete', function() 
         .apply();
     });
 
-    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productForPackingMaterial, productType, '24_Gebinde');
+    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productForPackingMaterial, null, '24_Gebinde');
   });
 
   it('Create packing entities', function() {
@@ -56,7 +54,7 @@ describe('Create Purchase order - complete - reactivate - complete', function() 
         .apply();
     });
 
-    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(productCategoryName, productCategoryName, priceListName, productName1, productName1, productType, packingInstructionsName);
+    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(productCategoryName, productCategoryName, priceListName, productName1, productName1, null, packingInstructionsName);
   });
 
   it('Create vendor', function() {

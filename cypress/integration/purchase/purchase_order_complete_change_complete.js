@@ -18,7 +18,6 @@ describe('Create Purchase order - complete - change - complete', function() {
   let priceSystemName;
   let priceListName;
   let priceListVersionName;
-  let productType;
   let vendorName;
 
   let initialPoQty;
@@ -36,7 +35,6 @@ describe('Create Purchase order - complete - change - complete', function() {
       priceSystemName = appendHumanReadableNow(f['priceSystemName']);
       priceListName = appendHumanReadableNow(f['priceListName']);
       priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
-      productType = f['productType'];
       vendorName = appendHumanReadableNow(f['vendorName']);
 
       initialPoQty = f['initialPoQty'];
@@ -53,7 +51,7 @@ describe('Create Purchase order - complete - change - complete', function() {
         .setName(discountSchemaName)
         .apply();
     });
-    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productForPackingMaterial, productType, '24_Gebinde');
+    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productForPackingMaterial, null, '24_Gebinde');
     cy.fixture('product/packing_material.json').then(packingMaterialJson => {
       Object.assign(new PackingMaterial(), packingMaterialJson)
         .setName(productForPackingMaterial)
@@ -82,7 +80,7 @@ describe('Create Purchase order - complete - change - complete', function() {
         .apply();
     });
 
-    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(productCategoryName, productCategoryName, priceListName, productName1, productName1, productType, packingInstructionsName);
+    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(productCategoryName, productCategoryName, priceListName, productName1, productName1, null, packingInstructionsName);
   });
   it('Create vendor', function() {
     cy.fixture('sales/simple_vendor.json').then(vendorJson => {

@@ -1,10 +1,7 @@
 import { BPartner } from '../../support/utils/bpartner';
-import { BPartnerLocation } from '../../support/utils/bpartner_ui';
 import { DiscountSchema } from '../../support/utils/discountschema';
-import { ProductCategory } from '../../support/utils/product';
 import { Builder } from '../../support/utils/builder';
-import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
-import { DocumentStatusKey } from '../../support/utils/constants';
+import { humanReadableNow } from '../../support/utils/utils';
 import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_order';
 import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
 
@@ -16,7 +13,6 @@ describe('Create Purchase order - complete - change - complete', function() {
   const priceSystemName = `PriceSystem ${date}`;
   const priceListName = `PriceList ${date}`;
   const priceListVersionName = `PriceListVersion ${date}`;
-  const productType = 'Item';
   const vendorName = `Vendor ${date}`;
 
   it('Create price and product entities to be used in purchase order', function() {
@@ -28,14 +24,7 @@ describe('Create Purchase order - complete - change - complete', function() {
     });
   });
   it('Create product to be used in purchase order', function() {
-    Builder.createBasicProductEntities(
-      productCategoryName,
-      productCategoryName,
-      priceListName,
-      productName1,
-      productName1,
-      productType
-    );
+    Builder.createBasicProductEntities(productCategoryName, productCategoryName, priceListName, productName1, productName1);
   });
   it('Create vendor', function() {
     cy.fixture('sales/simple_vendor.json').then(vendorJson => {

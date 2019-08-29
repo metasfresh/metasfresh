@@ -8,6 +8,5 @@
     "priceListVersionName" : "PriceListVersion",
 
     "productCategory" : "ProductCategory",
-    "productName" : "Product",
-    "productType" : "Item"
+    "productName" : "Product"
 }

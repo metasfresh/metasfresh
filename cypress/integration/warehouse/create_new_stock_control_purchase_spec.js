@@ -11,7 +11,6 @@ describe('Create new Stock Control Purchase', function() {
   let priceListName;
   let priceSystemName;
   let priceListVersionName;
-  let productType;
 
   // test
   let productPrice;
@@ -26,7 +25,6 @@ describe('Create new Stock Control Purchase', function() {
       productName2 = appendHumanReadableNow(f['productName2']);
       productName3 = appendHumanReadableNow(f['productName3']);
       productCategoryName = appendHumanReadableNow(f['productCategoryName']);
-      productType = f['productType'];
     });
   });
 
@@ -48,7 +46,6 @@ describe('Create new Stock Control Purchase', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName1)
-        .setProductType(productType)
         .setProductCategory(productCategoryName + '_' + productCategoryName)
         .addProductPrice(productPrice)
         .apply();
@@ -59,7 +56,6 @@ describe('Create new Stock Control Purchase', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName2)
-        .setProductType(productType)
         .setProductCategory(productCategoryName + '_' + productCategoryName)
         .addProductPrice(productPrice)
         .apply();
@@ -70,7 +66,6 @@ describe('Create new Stock Control Purchase', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName3)
-        .setProductType(productType)
         .setProductCategory(productCategoryName + '_' + productCategoryName)
         .addProductPrice(productPrice)
         .apply();

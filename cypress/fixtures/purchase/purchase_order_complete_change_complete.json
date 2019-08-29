@@ -7,7 +7,6 @@
 "priceSystemName": "PriceSystem",
 "priceListName": "PriceList",
 "priceListVersionName": "PriceListVersion",
-"productType": "Item",
 "vendorName": "Vendor",
 
 "initialPoQty": 5,
