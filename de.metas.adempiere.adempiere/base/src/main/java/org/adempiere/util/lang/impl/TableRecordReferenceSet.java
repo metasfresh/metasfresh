@@ -14,6 +14,7 @@ import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -162,6 +163,35 @@ public final class TableRecordReferenceSet implements Iterable<TableRecordRefere
 		return streamByTableName(tableName)
 				.mapToInt(TableRecordReference::getRecord_ID)
 				.mapToObj(idMapper);
+	}
+
+	public String getSingleTableName()
+	{
+		final ImmutableSet<String> tableNames = recordRefs.stream()
+				.map(TableRecordReference::getTableName)
+				.collect(ImmutableSet.toImmutableSet());
+		if (tableNames.isEmpty())
+		{
+			throw new AdempiereException("No tablename");
+		}
+		else if (tableNames.size() == 1)
+		{
+			return tableNames.iterator().next();
+		}
+		else
+		{
+			throw new AdempiereException("More than one tablename found: " + tableNames);
+		}
+	}
+
+	public Set<Integer> toIntSet()
+	{
+		// just to make sure that our records are from a single table
+		getSingleTableName();
+
+		return recordRefs.stream()
+				.map(TableRecordReference::getRecord_ID)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 }
