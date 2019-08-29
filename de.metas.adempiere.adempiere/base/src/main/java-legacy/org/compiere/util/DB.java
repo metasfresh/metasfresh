@@ -2844,7 +2844,7 @@ public final class DB
 		}
 		catch (SQLException ex)
 		{
-			throw new DBException(sql);
+			throw new DBException(ex, sql, sqlParams);
 		}
 		finally
 		{
