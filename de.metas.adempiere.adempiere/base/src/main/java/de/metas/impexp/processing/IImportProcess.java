@@ -27,6 +27,7 @@ package de.metas.impexp.processing;
 
 import java.util.Properties;
 
+import org.adempiere.service.ClientId;
 import org.adempiere.util.api.IParams;
 
 import de.metas.util.ILoggable;
@@ -49,11 +50,15 @@ public interface IImportProcess<ImportRecordType>
 	/** Sets the processing context */
 	IImportProcess<ImportRecordType> setCtx(Properties ctx);
 
+	IImportProcess<ImportRecordType> clientId(ClientId clientId);
+
 	/** Sets process parameters to be used */
 	IImportProcess<ImportRecordType> setParameters(IParams params);
 
 	/** Sets the {@link ILoggable} where status notices shall be reported */
 	IImportProcess<ImportRecordType> setLoggable(ILoggable loggable);
+
+	IImportProcess<ImportRecordType> validateOnly(boolean validateOnly);
 
 	/** @return import table model class */
 	Class<ImportRecordType> getImportModelClass();

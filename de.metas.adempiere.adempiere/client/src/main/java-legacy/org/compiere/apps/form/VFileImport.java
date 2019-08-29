@@ -45,7 +45,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.form.fileimport.FileImportPreviewColumnFactory;
@@ -610,7 +610,7 @@ public class VFileImport extends CPanel
 			for (final ImpDataLine line : lines)
 			{
 				// Skip those which were not prepared yet
-				final ITableRecordReference importRecordRef = line.getImportRecordRef();
+				final TableRecordReference importRecordRef = line.getImportRecordRef();
 				if (importRecordRef == null)
 				{
 					continue;

@@ -265,7 +265,7 @@ public final class ImpFormat
 	 * @param line line
 	 * @return reference to import table record
 	 */
-	public ITableRecordReference updateDB(
+	public TableRecordReference updateDB(
 			@NonNull final ImpDataContext ctx,
 			@NonNull final ImpDataLine line)
 	{

@@ -5,7 +5,7 @@ import java.util.Objects;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.TrxRunnableAdapter;
 
 import com.google.common.collect.ImmutableList;
@@ -35,7 +35,7 @@ public class ImpDataLine
 	// Import status
 	private ImpDataLineStatus importStatus = ImpDataLineStatus.New;
 	private Throwable importError = null;
-	private ITableRecordReference importRecordRef;
+	private TableRecordReference importRecordRef;
 	private boolean toImport = true;
 
 	@Builder
@@ -185,7 +185,7 @@ public class ImpDataLine
 		this.toImport = getImpFormat() != null;
 	}
 
-	private void setImportStatus_ImportPrepared(final ITableRecordReference importRecordRef)
+	private void setImportStatus_ImportPrepared(final TableRecordReference importRecordRef)
 	{
 		this.importStatus = ImpDataLineStatus.ImportPrepared;
 		this.importError = null;
@@ -256,7 +256,7 @@ public class ImpDataLine
 		return importError.getLocalizedMessage();
 	}
 
-	public ITableRecordReference getImportRecordRef()
+	public TableRecordReference getImportRecordRef()
 	{
 		return importRecordRef;
 	}
@@ -268,7 +268,7 @@ public class ImpDataLine
 		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, new TrxRunnableAdapter()
 		{
 			private Throwable error = null;
-			private ITableRecordReference importRecordRef;
+			private TableRecordReference importRecordRef;
 
 			@Override
 			public void run(String localTrxName)

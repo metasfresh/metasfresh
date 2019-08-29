@@ -1,5 +1,7 @@
 package de.metas.impexp.processing.spi;
 
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,19 +15,18 @@ package de.metas.impexp.processing.spi;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Properties;
 
-import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.impexp.processing.IImportProcess;
 
@@ -55,9 +56,11 @@ public interface IAsyncImportProcessBuilder
 
 	/**
 	 * Enqueues an import table record that needs to be imported.
-	 * 
-	 * @param importRecordRef
 	 */
-	IAsyncImportProcessBuilder addImportRecord(ITableRecordReference importRecordRef);
+	IAsyncImportProcessBuilder addImportRecord(TableRecordReference importRecordRef);
 
+	/**
+	 * Enqueues import table records that needs to be imported.
+	 */
+	IAsyncImportProcessBuilder addImportRecords(Collection<TableRecordReference> importRecordRefs);
 }

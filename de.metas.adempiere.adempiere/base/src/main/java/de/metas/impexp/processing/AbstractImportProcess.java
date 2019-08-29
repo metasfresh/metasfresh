@@ -55,6 +55,7 @@ import ch.qos.logback.classic.Level;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.logging.LogManager;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -92,8 +93,11 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	//
 	// Parameters
 	private Properties _ctx;
+	private ClientId clientId;
 	private IParams _parameters = IParams.NULL;
 	private ILoggable loggable = Loggables.logback(log, Level.INFO);
+	private PInstanceId selectionId;
+	private Boolean validateOnly;
 
 	@Getter(lazy = true)
 	private final DBFunctions dbFunctions = createDBFunctions();
@@ -111,8 +115,20 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		return _ctx;
 	}
 
+	@Override
+	public final AbstractImportProcess<ImportRecordType> clientId(@NonNull ClientId clientId)
+	{
+		this.clientId = clientId;
+		return this;
+	}
+
 	private final ClientId getClientId()
 	{
+		if (clientId != null)
+		{
+			return clientId;
+		}
+
 		return Env.getClientId(getCtx());
 	}
 
@@ -128,15 +144,21 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		return _parameters;
 	}
 
+	@Override
+	public final AbstractImportProcess<ImportRecordType> validateOnly(final boolean validateOnly)
+	{
+		this.validateOnly = validateOnly;
+		return this;
+	}
+
 	private DBFunctions createDBFunctions()
 	{
 		return dbFunctionsRepo.retrieveByTableName(getImportTableName());
 	}
 
 	@Override
-	public final AbstractImportProcess<ImportRecordType> setLoggable(final ILoggable loggable)
+	public final AbstractImportProcess<ImportRecordType> setLoggable(@NonNull final ILoggable loggable)
 	{
-		Check.assumeNotNull(loggable, "loggable not null");
 		this.loggable = loggable;
 		return this;
 	}
@@ -148,7 +170,28 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 
 	private final boolean isValidateOnly()
 	{
+		final Boolean validateOnly = this.validateOnly;
+		if (validateOnly != null)
+		{
+			return validateOnly;
+		}
+
 		return getParameters().getParameterAsBool(PARAM_IsValidateOnly);
+	}
+
+	public final AbstractImportProcess<ImportRecordType> selectionId(@NonNull final PInstanceId selectionId)
+	{
+		this.selectionId = selectionId;
+		return this;
+	}
+
+	private final PInstanceId getSelectionId()
+	{
+		if (selectionId != null)
+		{
+			return selectionId;
+		}
+		return PInstanceId.ofRepoIdOrNull(getParameters().getParameterAsInt(PARAM_Selection_ID, -1));
 	}
 
 	protected final boolean isInsertOnly()
@@ -177,10 +220,10 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		whereClause.append(" AND AD_Client_ID=").append(getClientId().getRepoId());
 
 		// Selection_ID
-		final int selectionId = getParameters().getParameterAsInt(PARAM_Selection_ID, -1);
-		if (selectionId > 0)
+		final PInstanceId selectionId = getSelectionId();
+		if (selectionId != null)
 		{
-			whereClause.append(" AND EXISTS (SELECT 1 FROM T_SELECTION s WHERE s.AD_PInstance_ID=" + selectionId + " AND s.T_Selection_ID=" + getImportKeyColumnName() + ")");
+			whereClause.append(" AND EXISTS (SELECT 1 FROM T_SELECTION s WHERE s.AD_PInstance_ID=" + selectionId.getRepoId() + " AND s.T_Selection_ID=" + getImportKeyColumnName() + ")");
 		}
 
 		return whereClause.toString();
