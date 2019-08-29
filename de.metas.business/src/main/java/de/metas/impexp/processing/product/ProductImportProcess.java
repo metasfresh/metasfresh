@@ -44,8 +44,8 @@ import org.compiere.util.DB;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.impexp.processing.AbstractImportProcess;
 import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.IProductPlanningSchemaBL;
 import de.metas.product.ProductId;
@@ -58,7 +58,7 @@ import lombok.NonNull;
  *
  * @author tsa
  */
-public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
+public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Product>
 {
 	private static final String PARAM_M_PriceList_Version_ID = "M_PriceList_Version_ID";
 
@@ -113,9 +113,10 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(final IMutable<Object> state,
+	protected ImportRecordResult importRecord(
+			final IMutable<Object> state_NOTUSED,
 			final I_I_Product importRecord,
-			final boolean isInsertOnly) throws Exception
+			final boolean isInsertOnly)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 

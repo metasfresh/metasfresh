@@ -41,7 +41,7 @@ import org.compiere.model.X_I_Request;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.impexp.processing.AbstractImportProcess;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
 
 /**
  * Imports {@link I_I_Request} records to {@link I_R_Request}.
@@ -49,7 +49,7 @@ import de.metas.impexp.processing.AbstractImportProcess;
  * @author cg
  *
  */
-public class RequestImportProcess extends AbstractImportProcess<I_I_Request>
+public class RequestImportProcess extends SimpleImportProcessTemplate<I_I_Request>
 {
 
 	@Override
@@ -185,9 +185,10 @@ public class RequestImportProcess extends AbstractImportProcess<I_I_Request>
 	 * @param isInsertOnly ignored. This import is only for updates.
 	 */
 	@Override
-	protected ImportRecordResult importRecord(final IMutable<Object> state,
+	protected ImportRecordResult importRecord(
+			final IMutable<Object> state_NOTUSED,
 			final I_I_Request importRecord,
-			final boolean isInsertOnly) throws Exception
+			final boolean isInsertOnly_NOTUSED)
 	{
 		//
 		// Create a new request

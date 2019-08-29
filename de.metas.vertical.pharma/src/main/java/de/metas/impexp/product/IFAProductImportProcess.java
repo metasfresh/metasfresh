@@ -23,8 +23,9 @@ import org.compiere.model.ModelValidationEngine;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.impexp.processing.AbstractImportProcess;
 import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult;
 import de.metas.impexp.processing.product.MProductImportTableSqlUpdater;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -36,7 +37,7 @@ import de.metas.vertical.pharma.model.I_M_Product;
 import de.metas.vertical.pharma.model.X_I_Pharma_Product;
 import lombok.NonNull;
 
-public class IFAProductImportProcess extends AbstractImportProcess<I_I_Pharma_Product>
+public class IFAProductImportProcess extends SimpleImportProcessTemplate<I_I_Pharma_Product>
 {
 	private final String DEACTIVATE_OPERATION_CODE = "2";
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);

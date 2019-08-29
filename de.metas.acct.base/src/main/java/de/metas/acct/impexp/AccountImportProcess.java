@@ -33,8 +33,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.impexp.processing.AbstractImportProcess;
 import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
@@ -67,7 +68,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class AccountImportProcess extends AbstractImportProcess<I_I_ElementValue>
+public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_ElementValue>
 {
 
 	@Override

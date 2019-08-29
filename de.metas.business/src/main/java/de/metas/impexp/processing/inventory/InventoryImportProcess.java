@@ -5,13 +5,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -27,18 +25,23 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
-import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_I_Inventory;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.impexp.processing.AbstractImportProcess;
-import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.ImportGroupKey;
+import de.metas.impexp.processing.ImportGroupResult;
 import de.metas.inventory.IInventoryBL;
+import de.metas.inventory.InventoryId;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -61,6 +64,7 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 	private final ILotNumberDateAttributeDAO lotNumberDateAttributeDAO = Services.get(ILotNumberDateAttributeDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	@Override
 	public Class<I_I_Inventory> getImportModelClass()
@@ -106,174 +110,91 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 	}
 
 	@Override
+	protected ImportGroupKey extractImportGroupKey(final I_I_Inventory importRecord)
+	{
+		return ImportGroupKey.builder()
+				.value("warehouse", importRecord.getWarehouseValue())
+				.value("movementDate", TimeUtil.asLocalDate(importRecord.getMovementDate()).toString())
+				.build();
+	}
+
+	@Override
 	protected I_I_Inventory retrieveImportRecord(final Properties ctx, final ResultSet rs)
 	{
 		return new X_I_Inventory(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(
-			@NonNull final IMutable<Object> stateHolder,
-			@NonNull final I_I_Inventory importRecord,
-			final boolean isInsertOnly)
+	protected ImportGroupResult importRecords(
+			@NonNull final List<I_I_Inventory> importRecords,
+			@NonNull final IMutable<Object> stateHolder)
 	{
-		final MInventoryImportContext state = (MInventoryImportContext)stateHolder.computeIfNull(MInventoryImportContext::new);
+		final I_M_Inventory inventory = createInventoryHeader(importRecords.get(0));
+		final InventoryId inventoryId = InventoryId.ofRepoId(inventory.getM_Inventory_ID());
 
-		//
-		// Get previous values
-		final I_I_Inventory previousImportRecord = state.getPreviousImportRecord();
-		final int previousMInventoryId = state.getPreviousM_Inventory_ID();
-		final String previousWarehouseValue = state.getPreviousWarehouseValue();
-		final Timestamp previousMovementDate = state.getPreviousMovementDate();
-		state.setPreviousImportRecord(importRecord);
-
-		final ImportRecordResult inventoryImportResult;
-
-		final boolean firstImportRecordOrNewMInventory = previousImportRecord == null
-				|| !Objects.equals(importRecord.getWarehouseValue(), previousWarehouseValue)
-				|| !Objects.equals(importRecord.getMovementDate(), previousMovementDate);
-
-		if (!firstImportRecordOrNewMInventory && isInsertOnly)
+		for (final I_I_Inventory importRecord : importRecords)
 		{
-			// #4994 do not update
-			return ImportRecordResult.Nothing;
+			createInventoryLine(importRecord, inventoryId);
 		}
 
-		if (firstImportRecordOrNewMInventory)
+		if (isCompleteDocuments())
 		{
-			// create a new list because we are passing to a new inventory
-			state.clearPreviousRecordsForSameInventory();
-			inventoryImportResult = importInventory(importRecord);
-		}
-		else
-		{
-			if (previousMInventoryId <= 0)
-			{
-				inventoryImportResult = importInventory(importRecord);
-			}
-			else if (importRecord.getM_Inventory_ID() <= 0 || importRecord.getM_Inventory_ID() == previousMInventoryId)
-			{
-				inventoryImportResult = doNothingAndUsePreviousInventory(importRecord, previousImportRecord);
-			}
-			else
-			{
-				throw new AdempiereException("Same value or movement date as previous line but not same Inventory linked");
-			}
+			documentBL.processEx(inventory, IDocument.ACTION_Complete);
 		}
 
-		importInventoryLine(importRecord);
-		state.collectImportRecordForSameInventory(importRecord);
-
-		return inventoryImportResult;
+		return ImportGroupResult.countInserted(importRecords.size());
 	}
 
-	private ImportRecordResult importInventory(@NonNull final I_I_Inventory importRecord)
+	private I_M_Inventory createInventoryHeader(@NonNull final I_I_Inventory importRecord)
 	{
-		final ImportRecordResult inventoryImportResult;
-		inventoryImportResult = importRecord.getM_Inventory_ID() <= 0 ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
+		final DocTypeId docTypeId = getDocTypeId(importRecord);
 
-		final I_M_Inventory inventory;
-		if (importRecord.getM_Inventory_ID() <= 0)	// Insert new Inventory
-		{
-			inventory = createNewMInventory(importRecord);
-		}
-		else
-		{
-			inventory = importRecord.getM_Inventory();
-		}
-
-		ModelValidationEngine.get().fireImportValidate(this, importRecord, inventory, IImportInterceptor.TIMING_AFTER_IMPORT);
-		InterfaceWrapperHelper.save(inventory);
-		importRecord.setM_Inventory_ID(inventory.getM_Inventory_ID());
-		return inventoryImportResult;
-	}
-
-	private I_M_Inventory createNewMInventory(@NonNull final I_I_Inventory importRecord)
-	{
-		final I_M_Inventory inventory;
-		inventory = InterfaceWrapperHelper.create(getCtx(), I_M_Inventory.class, ITrx.TRXNAME_ThreadInherited);
+		final I_M_Inventory inventory = newInstance(I_M_Inventory.class);
 		inventory.setAD_Org_ID(importRecord.getAD_Org_ID());
 		inventory.setDescription("I " + importRecord.getM_Warehouse_ID() + " " + importRecord.getMovementDate());
-		inventory.setC_DocType_ID(getDocTypeIdForInternalUseInventory(importRecord));
+		inventory.setC_DocType_ID(docTypeId.getRepoId());
 		inventory.setM_Warehouse_ID(importRecord.getM_Warehouse_ID());
+		inventory.setMovementDate(importRecord.getMovementDate());
 		return inventory;
 	}
 
-	private int getDocTypeIdForInternalUseInventory(@NonNull final I_I_Inventory importRecord)
+	private DocTypeId getDocTypeId(@NonNull final I_I_Inventory importRecord)
 	{
-		final DocTypeQuery query = DocTypeQuery.builder()
+		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
 				.adClientId(importRecord.getAD_Client_ID())
 				.adOrgId(importRecord.getAD_Org_ID())
-				.build();
-		return docTypeDAO.getDocTypeId(query).getRepoId();
+				.build());
 	}
 
-	/**
-	 * reuse previous inventory
-	 *
-	 * @param importRecord
-	 * @param previousImportRecord
-	 * @return {@link ImportRecordResult#Nothing}
-	 */
-	private ImportRecordResult doNothingAndUsePreviousInventory(@NonNull final I_I_Inventory importRecord, @NonNull final I_I_Inventory previousImportRecord)
+	private void createInventoryLine(
+			@NonNull final I_I_Inventory importRecord,
+			@NonNull final InventoryId inventoryId)
 	{
-		importRecord.setM_Inventory_ID(previousImportRecord.getM_Inventory_ID());
-		return ImportRecordResult.Nothing;
-	}
+		final I_M_InventoryLine inventoryLine = InterfaceWrapperHelper.newInstance(I_M_InventoryLine.class);
+		inventoryLine.setQtyCount(importRecord.getQtyCount());
+		inventoryLine.setM_Inventory_ID(inventoryId.getRepoId());
+		inventoryLine.setM_Locator_ID(importRecord.getM_Locator_ID());
 
-	private I_M_InventoryLine importInventoryLine(@NonNull final I_I_Inventory importRecord)
-	{
-		final I_M_Inventory inventory = importRecord.getM_Inventory();
+		final ProductId productId = ProductId.ofRepoId(importRecord.getM_Product_ID());
+		final UomId uomId = productBL.getStockingUOMId(productId);
+		inventoryLine.setM_Product_ID(productId.getRepoId());
+		inventoryLine.setC_UOM_ID(uomId.getRepoId());
 
-		I_M_InventoryLine inventoryLine = importRecord.getM_InventoryLine();
-		if (inventoryLine != null)
-		{
-			if (inventoryLine.getM_Inventory_ID() <= 0)
-			{
-				inventoryLine.setM_Inventory(inventory);
-			}
-			else if (inventoryLine.getM_Inventory_ID() != inventory.getM_Inventory_ID())
-			{
-				throw new AdempiereException("Inventory of Inventory Line <> Inventory");
-			}
+		final AttributeSetInstanceId asiId = extractASI(importRecord);
+		inventoryLine.setM_AttributeSetInstance_ID(asiId.getRepoId());
 
-			inventoryLine.setM_Locator_ID(importRecord.getM_Locator_ID());
-			inventoryLine.setM_Product_ID(importRecord.getM_Product_ID());
-			inventoryLine.setQtyCount(importRecord.getQtyCount());
-			inventoryLine.setIsCounted(true);
+		final int chargeId = inventoryBL.getDefaultInternalChargeId();
+		inventoryLine.setC_Charge_ID(chargeId);
 
-			ModelValidationEngine.get().fireImportValidate(this, importRecord, inventoryLine, IImportInterceptor.TIMING_AFTER_IMPORT);
-			InterfaceWrapperHelper.save(inventoryLine);
-		}
-		else
-		{
-			inventoryLine = InterfaceWrapperHelper.newInstance(I_M_InventoryLine.class);
-			inventoryLine.setQtyCount(importRecord.getQtyCount());
-			inventoryLine.setM_Inventory(inventory);
-			inventoryLine.setM_Locator_ID(importRecord.getM_Locator_ID());
+		inventoryLine.setIsCounted(true);
 
-			final ProductId productId = ProductId.ofRepoId(importRecord.getM_Product_ID());
-			final UomId uomId = productBL.getStockingUOMId(productId);
-			inventoryLine.setM_Product_ID(productId.getRepoId());
-			inventoryLine.setC_UOM_ID(uomId.getRepoId());
+		InterfaceWrapperHelper.saveRecord(inventoryLine);
+		logger.trace("Insert inventory line - {}", inventoryLine);
 
-			final AttributeSetInstanceId asiId = extractASI(importRecord);
-			inventoryLine.setM_AttributeSetInstance_ID(asiId.getRepoId());
-
-			final int chargeId = inventoryBL.getDefaultInternalChargeId();
-			inventoryLine.setC_Charge_ID(chargeId);
-
-			inventoryLine.setIsCounted(true);
-
-			ModelValidationEngine.get().fireImportValidate(this, importRecord, inventoryLine, IImportInterceptor.TIMING_AFTER_IMPORT);
-			InterfaceWrapperHelper.save(inventoryLine);
-			logger.trace("Insert inventory line - {}", inventoryLine);
-
-			importRecord.setM_InventoryLine_ID(inventoryLine.getM_InventoryLine_ID());
-		}
-
-		return inventoryLine;
+		//
+		importRecord.setM_Inventory_ID(inventoryId.getRepoId());
+		importRecord.setM_InventoryLine_ID(inventoryLine.getM_InventoryLine_ID());
 	}
 
 	private AttributeSetInstanceId extractASI(@NonNull final I_I_Inventory importRecord)

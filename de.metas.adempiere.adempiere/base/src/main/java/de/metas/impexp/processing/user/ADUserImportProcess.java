@@ -40,7 +40,7 @@ import org.compiere.model.X_I_User;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.model.I_AD_Role;
-import de.metas.impexp.processing.AbstractImportProcess;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.security.IRoleDAO;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
@@ -54,7 +54,7 @@ import lombok.NonNull;
  * @author cg
  *
  */
-public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
+public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 {
 
 	@Override

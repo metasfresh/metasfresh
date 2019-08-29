@@ -45,6 +45,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
+import lombok.NonNull;
 
 /**
  * Default executor for {@link ITrxItemChunkProcessor}.
@@ -91,18 +92,13 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 	private ITrxItemProcessorContext chunkCtx;
 
 	TrxItemChunkProcessorExecutor(
-			final ITrxItemProcessorContext processorCtx,
-			final ITrxItemChunkProcessor<IT, RT> processor,
-			final ITrxItemExceptionHandler exceptionHandler,
-			final OnItemErrorPolicy onItemErrorPolicy,
+			@NonNull final ITrxItemProcessorContext processorCtx,
+			@NonNull final ITrxItemChunkProcessor<IT, RT> processor,
+			@NonNull final ITrxItemExceptionHandler exceptionHandler,
+			@NonNull final OnItemErrorPolicy onItemErrorPolicy,
 			final boolean useTrxSavePoints)
 	{
-		super();
-
-		Check.assumeNotNull(processorCtx, "processorCtx not null");
 		this.processorCtx = processorCtx;
-
-		Check.assumeNotNull(processor, "processor not null");
 		this.processor = processor;
 
 		this.exceptionHandler = exceptionHandler;

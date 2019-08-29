@@ -20,8 +20,9 @@ import org.compiere.model.X_I_BankStatement;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.service.IBankStatementDAO;
-import de.metas.impexp.processing.AbstractImportProcess;
 import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
@@ -49,7 +50,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class BankStatementImportProcess extends AbstractImportProcess<I_I_BankStatement>
+public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_BankStatement>
 {
 
 	private int p_C_BP_BankAccount_ID = 0;

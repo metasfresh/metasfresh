@@ -100,9 +100,19 @@ public final class ImportProcessResult
 			countInsertsIntoTargetTable.increment();
 		}
 
+		public void addInsertsIntoTargetTable(final int count)
+		{
+			countInsertsIntoTargetTable.add(count);
+		}
+
 		public void incrementUpdatesIntoTargetTable()
 		{
 			countUpdatesIntoTargetTable.increment();
+		}
+
+		public void addUpdatesIntoTargetTable(final int count)
+		{
+			countUpdatesIntoTargetTable.add(count);
 		}
 
 		public void setCountImportRecordsDeleted(final int countImportRecordsDeleted)
@@ -139,6 +149,12 @@ public final class ImportProcessResult
 			}
 			this.value = value;
 			this.unknownValue = false;
+		}
+
+		public void add(final int valueToAdd)
+		{
+			Check.assumeGreaterOrEqualToZero(valueToAdd, "valueToAdd");
+			set(this.value + valueToAdd);
 		}
 
 		public OptionalInt toOptionalInt()

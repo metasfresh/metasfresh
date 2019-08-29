@@ -14,7 +14,8 @@ import org.compiere.util.DB;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.model.X_I_Flatrate_Term;
-import de.metas.impexp.processing.AbstractImportProcess;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult;
 
 /*
  * #%L
@@ -38,7 +39,7 @@ import de.metas.impexp.processing.AbstractImportProcess;
  * #L%
  */
 
-public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrate_Term>
+public class FlatrateTermImportProcess extends SimpleImportProcessTemplate<I_I_Flatrate_Term>
 {
 	private final FlatrateTermImporter flatRateImporter;
 

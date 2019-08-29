@@ -47,6 +47,7 @@ public interface IImportProcess<ImportRecordType>
 	String PARAM_IsValidateOnly = "IsValidateOnly";
 	String PARAM_Selection_ID = "Selection_ID";
 	String PARAM_IsInsertOnly = "IsInsertOnly";
+	String PARAM_IsDocComplete = "IsDocComplete";
 
 	/** Sets the processing context */
 	IImportProcess<ImportRecordType> setCtx(Properties ctx);

@@ -1,40 +1,25 @@
 package de.metas.impexp.processing;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
+import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder.OnItemErrorPolicy;
+import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
+import org.adempiere.ad.trx.processor.spi.TrxItemChunkProcessorAdapter;
+import org.adempiere.db.util.AbstractPreparedStatementBlindIterator;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.api.IParams;
@@ -47,7 +32,6 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.ISqlUpdateReturnProcessor;
-import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableMap;
@@ -63,6 +47,7 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
 
 /**
@@ -76,11 +61,6 @@ import lombok.NonNull;
  */
 public abstract class AbstractImportProcess<ImportRecordType> implements IImportProcess<ImportRecordType>
 {
-	public enum ImportRecordResult
-	{
-		Inserted, Updated, Nothing,
-	}
-
 	public static final String COLUMNNAME_I_IsImported = "I_IsImported";
 	public static final String COLUMNNAME_I_ErrorMsg = "I_ErrorMsg";
 	public static final String COLUMNNAME_Processed = "Processed";
@@ -131,7 +111,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	}
 
 	@Override
-	public final AbstractImportProcess<ImportRecordType> clientId(@NonNull ClientId clientId)
+	public final AbstractImportProcess<ImportRecordType> clientId(@NonNull final ClientId clientId)
 	{
 		assertNotStarted();
 
@@ -205,6 +185,11 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		}
 
 		return getParameters().getParameterAsBool(PARAM_IsValidateOnly);
+	}
+
+	protected final boolean isCompleteDocuments()
+	{
+		return getParameters().getParameterAsBool(PARAM_IsDocComplete);
 	}
 
 	@Override
@@ -333,11 +318,11 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 
 		//
 		// Actual import (allow the method to manage the transaction)
-		importData(resultCollector);
+		importData();
 
+		final ImportProcessResult result = resultCollector.toResult();
 		loggable.addLog("" + resultCollector);
-
-		return resultCollector.toResult();
+		return result;
 	}
 
 	@Override
@@ -436,17 +421,129 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	 */
 	protected abstract void updateAndValidateImportRecords();
 
+	protected abstract ImportGroupKey extractImportGroupKey(final ImportRecordType importRecord);
+
 	/**
 	 * Actual data import.
 	 */
-	private final void importData(final ImportProcessResultCollector resultCollector)
+	private final void importData()
+	{
+		final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
+
+		final IMutable<Object> stateHolder = new Mutable<>();
+		final Mutable<ImportGroup<ImportRecordType>> currentImportGroupHolder = new Mutable<>();
+
+		trxItemProcessorExecutorService
+				.<ImportRecordType, Void> createExecutor()
+				.setOnItemErrorPolicy(OnItemErrorPolicy.CancelChunkAndRollBack)
+				.setExceptionHandler(new FailTrxItemExceptionHandler()
+				{
+					@Override
+					public void onCompleteChunkError(final Throwable ex)
+					{
+						final ImportGroup<ImportRecordType> currentGroup = currentImportGroupHolder.getValue();
+						markAsError(currentGroup, ex);
+					}
+				})
+				.setProcessor(new TrxItemChunkProcessorAdapter<ImportRecordType, Void>()
+				{
+					@Override
+					public void newChunk(final ImportRecordType importRecord)
+					{
+						final ImportGroupKey groupKey = extractImportGroupKey(importRecord);
+						currentImportGroupHolder.setValue(ImportGroup.newInstance(groupKey));
+					}
+
+					@Override
+					public boolean isSameChunk(final ImportRecordType importRecord)
+					{
+						final ImportGroup<ImportRecordType> currentGroup = currentImportGroupHolder.getValue();
+						final ImportGroupKey groupKey = extractImportGroupKey(importRecord);
+						return Objects.equals(currentGroup.getGroupKey(), groupKey);
+					}
+
+					@Override
+					public void process(final ImportRecordType importRecord)
+					{
+						final ImportGroup<ImportRecordType> currentGroup = currentImportGroupHolder.getValue();
+						currentGroup.addImportRecord(importRecord);
+					}
+
+					@Override
+					public void completeChunk()
+					{
+						final ImportGroup<ImportRecordType> currentGroup = currentImportGroupHolder.getValue();
+						importGroup(currentGroup, stateHolder);
+					}
+
+					@Override
+					public void cancelChunk()
+					{
+						// nothing
+					}
+				})
+				//
+				.process(retrieveRecordsToImport());
+	}
+
+	private Iterator<ImportRecordType> retrieveRecordsToImport()
 	{
 		final Properties ctx = Env.getCtx();
+		final String sql = buildSqlSelectRecordsToImport();
 
-		//
-		// Build SQL
+		return IteratorUtils.asIterator(new AbstractPreparedStatementBlindIterator<ImportRecordType>()
+		{
+
+			@Override
+			protected PreparedStatement createPreparedStatement() throws SQLException
+			{
+				return DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			}
+
+			@Override
+			protected ImportRecordType fetch(final ResultSet rs) throws SQLException
+			{
+				return retrieveImportRecord(ctx, rs);
+			}
+		});
+	}
+
+	private void importGroup(
+			@NonNull final ImportGroup<ImportRecordType> importGroup,
+			@NonNull final IMutable<Object> stateHolder)
+	{
+		// shall not happen
+		if (importGroup.isEmpty())
+		{
+			log.warn("Skip importing empty group: {}", importGroup);
+			return;
+		}
+
+		try
+		{
+			final ImportGroupResult importGroupResult = importRecords(importGroup.getImportRecords(), stateHolder);
+
+			for (final ImportRecordType importRecord : importGroup.getImportRecords())
+			{
+				markImported(importRecord);
+				runSQLAfterRowImport(importRecord); // run after markImported because we need the recordId saved
+			}
+
+			final ImportProcessResultCollector overallResultCollector = getResultCollector();
+			overallResultCollector.addInsertsIntoTargetTable(importGroupResult.getCountInserted());
+			overallResultCollector.addUpdatesIntoTargetTable(importGroupResult.getCountUpdated());
+		}
+		catch (Exception ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
+	}
+
+	private String buildSqlSelectRecordsToImport()
+	{
 		final String whereClause = getWhereClause();
 		final StringBuilder sql = new StringBuilder("SELECT * FROM " + getImportTableName() + " WHERE " + COLUMNNAME_I_IsImported + "='N' ").append(whereClause);
+
 		// ORDER BY
 		sql.append(" ORDER BY ");
 		final String sqlOrderBy = getImportOrderBySql();
@@ -459,106 +556,49 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 			sql.append(getImportKeyColumnName());
 		}
 
-		//
-		// Go through Records
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_None); // i.e. out of transaction
-			rs = pstmt.executeQuery();
-
-			final IMutable<Object> state = new Mutable<>();
-			while (rs.next())
-			{
-				final ImportRecordType importRecord = retrieveImportRecord(ctx, rs);
-				trxManager.runInNewTrx(new TrxRunnableAdapter()
-				{
-					private ImportRecordResult recordImportResult;
-					private Throwable error;
-
-					@Override
-					public void run(final String localTrxName) throws Exception
-					{
-						this.recordImportResult = importRecord(state, importRecord, isInsertOnly());
-						//
-						markImported(importRecord);
-						//
-						runSQLAfterRowImport(importRecord); // run after markImported because we need the recordId saved
-					}
-
-					@Override
-					public boolean doCatch(final Throwable e) throws Throwable
-					{
-						this.error = e;
-						return true; // rollback
-					}
-
-					@Override
-					public void doFinally()
-					{
-						if (error != null)
-						{
-							reportError(importRecord, error.getLocalizedMessage());
-						}
-						else if (recordImportResult == ImportRecordResult.Inserted)
-						{
-							resultCollector.incrementInsertsIntoTargetTable();
-						}
-						else if (recordImportResult == ImportRecordResult.Updated)
-						{
-							resultCollector.incrementUpdatesIntoTargetTable();
-						}
-					}
-				});
-			}
-
-			trxManager.runInNewTrx(() -> afterImport(state));
-		}
-		catch (final SQLException e)
-		{
-			throw new DBException(e, sql.toString());
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-
-			final int noErrors = markNotImportedAllWithErrors();
-			resultCollector.setCountImportRecordsWithErrors(noErrors);
-		}
+		return sql.toString();
 	}
 
 	protected abstract String getImportOrderBySql();
 
 	protected abstract ImportRecordType retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException;
 
-	protected abstract ImportRecordResult importRecord(final IMutable<Object> state, final ImportRecordType importRecord, final boolean isInsertOnly) throws Exception;
+	protected abstract ImportGroupResult importRecords(
+			final List<ImportRecordType> importRecords,
+			final IMutable<Object> stateHolder) throws Exception;
 
-	private final void reportError(final ImportRecordType importRecord, final String errorMsg)
+	private final void markAsError(
+			@NonNull final ImportGroup<ImportRecordType> importGroup,
+			@NonNull final Throwable exception)
 	{
-		final String tableName = InterfaceWrapperHelper.getModelTableName(importRecord);
-		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
-		final int importRecordId = InterfaceWrapperHelper.getId(importRecord);
+		final String trxName = ITrx.TRXNAME_None;
+		final String errorMsg = AdempiereException.extractMessage(exception);
 
-		final StringBuilder sql = new StringBuilder("UPDATE " + tableName + " SET " + COLUMNNAME_I_IsImported + "=?, " + COLUMNNAME_I_ErrorMsg + "=I_ErrorMsg || ?")
-				.append(" WHERE " + keyColumnName + "=?");
+		final String importTableName = getImportTableName();
+		final String keyColumnName = getImportKeyColumnName();
+		final Set<Integer> importRecordIds = importGroup.getImportRecordIds();
+
+		final String sql = "UPDATE " + importTableName + " SET"
+				+ "  " + COLUMNNAME_I_IsImported + "=?"
+				+ ", " + COLUMNNAME_I_ErrorMsg + "=I_ErrorMsg || ?"
+				+ " WHERE " + DB.buildSqlList(keyColumnName, importRecordIds);
 		final Object[] sqlParams = new Object[] {
-				"E" // I_IsImported
-				, Check.isEmpty(errorMsg, true) ? "" : errorMsg + ", " // ErrorMsg
-				, importRecordId // record Id
+				"E", // I_IsImported
+				Check.isEmpty(errorMsg, true) ? "" : errorMsg + ", " // ErrorMsg
 		};
 
-		DB.executeUpdateEx(sql.toString(),
+		DB.executeUpdateEx(sql,
 				sqlParams,
 				ITrx.TRXNAME_ThreadInherited,
 				0, // no timeOut
 				(ISqlUpdateReturnProcessor)null);
 
-		InterfaceWrapperHelper.markStaled(importRecord); // just in case some BL wants to get values from it
+		// just in case some BL wants to get values from it
+		importGroup.getImportRecords().forEach(InterfaceWrapperHelper::markStaled);
 
-		CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(ITrx.TRXNAME_ThreadInherited, CacheInvalidateMultiRequest.fromTableNameAndRecordId(tableName, importRecordId));
+		CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(
+				ITrx.TRXNAME_ThreadInherited,
+				CacheInvalidateMultiRequest.fromTableNameAndRecordIds(importTableName, importRecordIds));
 	}
 
 	protected final int markNotImportedAllWithErrors()

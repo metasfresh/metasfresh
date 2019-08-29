@@ -11,7 +11,8 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_BPartner_GlobalID;
 import org.compiere.model.X_I_BPartner_GlobalID;
 
-import de.metas.impexp.processing.AbstractImportProcess;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult;
 import de.metas.util.Check;
 
 /*
@@ -36,7 +37,7 @@ import de.metas.util.Check;
  * #L%
  */
 
-public class BPartnerGlobalIDImportProcess extends AbstractImportProcess<I_I_BPartner_GlobalID>
+public class BPartnerGlobalIDImportProcess extends SimpleImportProcessTemplate<I_I_BPartner_GlobalID>
 {
 
 	@Override

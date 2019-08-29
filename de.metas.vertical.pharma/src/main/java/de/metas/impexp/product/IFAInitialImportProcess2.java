@@ -9,8 +9,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.ModelValidationEngine;
 
-import de.metas.impexp.processing.AbstractImportProcess;
 import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.impexp.processing.product.MProductImportTableSqlUpdater;
 import de.metas.product.IProductDAO;
 import de.metas.util.Services;
@@ -19,7 +19,7 @@ import de.metas.vertical.pharma.model.I_M_Product;
 import de.metas.vertical.pharma.model.X_I_Pharma_Product;
 import lombok.NonNull;
 
-public class IFAInitialImportProcess2 extends AbstractImportProcess<I_I_Pharma_Product>
+public class IFAInitialImportProcess2 extends SimpleImportProcessTemplate<I_I_Pharma_Product>
 {
 	// AbstractImportJavaProcess
 	private final String DEACTIVATE_OPERATION_CODE = "2";

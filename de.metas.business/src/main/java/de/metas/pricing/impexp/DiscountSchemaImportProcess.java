@@ -17,8 +17,9 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_DiscountSchema;
 import org.compiere.model.X_M_DiscountSchema;
 
-import de.metas.impexp.processing.AbstractImportProcess;
 import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -26,7 +27,7 @@ import lombok.NonNull;
  * Import {@link I_I_DiscountSchema} to {@link I_M_DiscountSchema}.
  *
  */
-public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_DiscountSchema>
+public class DiscountSchemaImportProcess extends SimpleImportProcessTemplate<I_I_DiscountSchema>
 {
 	@Override
 	public Class<I_I_DiscountSchema> getImportModelClass()
