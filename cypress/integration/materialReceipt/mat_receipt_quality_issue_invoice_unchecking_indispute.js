@@ -36,17 +36,17 @@ it('Read the fixture', function() {
     qtyToInvoice1 = f['qtyToInvoice1'];
     qtyToInvoice2 = f['qtyToInvoice2'];
 
-    warehouseName = appendHumanReadableNow(['warehouseName']);
-    productName1 = appendHumanReadableNow(['productName1']);
-    productName2 = appendHumanReadableNow(['productName2']);
-    productCategoryName = appendHumanReadableNow(['productCategoryName']);
-    discountSchemaName = appendHumanReadableNow(['discountSchemaName']);
+    warehouseName = appendHumanReadableNow(f['warehouseName']);
+    productName1 = appendHumanReadableNow(f['productName1']);
+    productName2 = appendHumanReadableNow(f['productName2']);
+    productCategoryName = appendHumanReadableNow(f['productCategoryName']);
+    discountSchemaName = appendHumanReadableNow(f['discountSchemaName']);
 
-    priceSystemName = appendHumanReadableNow(['priceSystemName']);
-    priceListName = appendHumanReadableNow(['priceListName']);
-    priceListVersionName = appendHumanReadableNow(['priceListVersionName']);
+    priceSystemName = appendHumanReadableNow(f['priceSystemName']);
+    priceListName = appendHumanReadableNow(f['priceListName']);
+    priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
     productType = f['productType'];
-    vendorName = appendHumanReadableNow(['vendorName']);
+    vendorName = appendHumanReadableNow(f['vendorName']);
     product1Quantity = f['product1Quantity'];
     product2Quantity = f['product2Quantity'];
     docBaseType = f['docBaseType'];
@@ -152,6 +152,7 @@ it('Select the first row and Receive the CUs', function() {
 });
 it('Select the row and create material receipt for it', function() {
   cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', true, false);
+  cy.waitForSaveIndicator();
   cy.pressDoneButton();
 });
 
@@ -174,6 +175,7 @@ it('Go to the referenced Material Receipt and check the one with 5% alteration',
 it('Go to Invoice Disposition and check the billing candidates', function() {
   cy.visitWindow(purchaseOrders.windowId, purchaseOrderRecordId);
   cy.openReferencedDocuments('C_Invoice_Candidate');
+  cy.expectNumberOfRows(2);
   cy.selectNthRow(1).dblclick();
   cy.expectCheckboxValue('IsInDispute', true);
   cy.getStringFieldValue('QtyToInvoice').should('equal', qtyToInvoice1.toString());
