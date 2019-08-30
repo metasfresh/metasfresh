@@ -33,7 +33,7 @@ let categoryName2;
 let productComponentName1;
 let productComponentName2;
 let productComponentName3;
-let finishedProductName;
+let finishedGoodName;
 let productComponentQty1;
 let productComponentQty2;
 let productComponentQty3;
@@ -86,7 +86,7 @@ describe('Create test data', function() {
       productComponentName1 = appendHumanReadableNow(f['productComponentName1']);
       productComponentName2 = appendHumanReadableNow(f['productComponentName2']);
       productComponentName3 = appendHumanReadableNow(f['productComponentName3']);
-      finishedProductName = appendHumanReadableNow(f['finishedProductName']);
+      finishedGoodName = appendHumanReadableNow(f['finishedGoodName']);
       productComponentQty1 = f['productComponentQty1'];
       productComponentQty2 = f['productComponentQty2'];
       productComponentQty3 = f['productComponentQty3'];
@@ -143,10 +143,10 @@ describe('Create test data', function() {
     });
   });
 
-  it('Create finished product', function() {
+  it('Create finished good', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
-        .setName(finishedProductName)
+        .setName(finishedGoodName)
         .setProductCategory(categoryName1)
         .apply();
     });
@@ -155,7 +155,7 @@ describe('Create test data', function() {
   it('Create a BOM for the product', function() {
     cy.fixture('product/bill_of_material.json').then(billMaterialJson => {
       Object.assign(new BillOfMaterial(), billMaterialJson)
-        .setProduct(finishedProductName)
+        .setProduct(finishedGoodName)
         .setIsVerified(true)
         // eslint-disable-next-line prettier/prettier
         .addLine(new BillOfMaterialLine().setProduct(productComponentName1).setQuantity(productComponentQty1).setIssueMethod(bomIssueMethod))
@@ -178,8 +178,8 @@ describe('Case 1: Process the manufacturing order **after** the components are i
   it('Create Manufacturing Order Doc', function() {
     cy.visitWindow('53009', 'NEW');
 
-    cy.writeIntoLookupListField('M_Product_ID', finishedProductName, finishedProductName);
-    cy.getStringFieldValue('PP_Product_BOM_ID').should('contain', finishedProductName);
+    cy.writeIntoLookupListField('M_Product_ID', finishedGoodName, finishedGoodName);
+    cy.getStringFieldValue('PP_Product_BOM_ID').should('contain', finishedGoodName);
     cy.selectInListField('S_Resource_ID', manufacturingResource);
     cy.writeIntoLookupListField('AD_Workflow_ID', manufacturingWorkflow, manufacturingWorkflow);
 
@@ -206,7 +206,7 @@ describe('Case 1: Process the manufacturing order **after** the components are i
     cy.executeHeaderAction('WEBUI_PP_Order_IssueReceipt_Launcher');
 
     cy.expectNumberOfRows(4, true);
-    cy.selectRowByColumnAndValue(createColumnAndValue(finishedProductName, undefined, 'MP', manufacturingQtyEntered), true);
+    cy.selectRowByColumnAndValue(createColumnAndValue(finishedGoodName, undefined, 'MP', manufacturingQtyEntered), true);
     cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName1, undefined, 'CO', productComponentQty1), true);
     cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName2, undefined, 'CO', productComponentQty2), true);
     cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName3, undefined, 'CO', productComponentQty3), true);
@@ -222,13 +222,13 @@ describe('Case 1: Process the manufacturing order **after** the components are i
     selectHuAsSource(productComponentName3, huValue3);
   });
 
-  it('Receive the finished product', function() {
-    cy.selectRowByColumnAndValue({ column: productColumn, value: finishedProductName }, true);
+  it('Receive the finished good', function() {
+    cy.selectRowByColumnAndValue({ column: productColumn, value: finishedGoodName }, true);
     cy.executeQuickAction('WEBUI_PP_Order_Receipt', true);
     cy.getStringFieldValue('M_HU_PI_Item_Product_ID').should('contain', expectNoPackingItem);
     cy.writeIntoStringField('QtyCU', manufacturingQtyEntered, true);
     cy.pressStartButton();
-    cy.selectRowByColumnAndValue(createColumnAndValue(finishedProductName, undefined, 'CU', null, manufacturingQtyEntered, packingStatusPlanning), true);
+    cy.selectRowByColumnAndValue(createColumnAndValue(finishedGoodName, undefined, 'CU', null, manufacturingQtyEntered, packingStatusPlanning), true);
   });
 
   it('Run action "Issue CUs from source HUs" when only component 1 is selected', function() {
@@ -262,21 +262,21 @@ describe('Case 1: Process the manufacturing order **after** the components are i
     cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName3, undefined, 'CU', null, huQty - productComponentQty3, packingStatusActive), true);
   });
 
-  it('Process the finished product', function() {
-    cy.selectRowByColumnAndValue(createColumnAndValue(finishedProductName, undefined, 'MP'), true);
+  it('Process the finished good', function() {
+    cy.selectRowByColumnAndValue(createColumnAndValue(finishedGoodName, undefined, 'MP'), true);
     cy.executeQuickAction('WEBUI_PP_Order_ChangePlanningStatus_Complete', true, false);
 
-    cy.selectRowByColumnAndValue(createColumnAndValue(finishedProductName, undefined, 'CU', null, manufacturingQtyEntered, packingStatusActive), true);
+    cy.selectRowByColumnAndValue(createColumnAndValue(finishedGoodName, undefined, 'CU', null, manufacturingQtyEntered, packingStatusActive), true);
     cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName1, undefined, 'CU', null, productComponentQty1, packingStatusDestroyed), true);
     cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName2, undefined, 'CU', null, productComponentQty2, packingStatusDestroyed), true);
     cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName3, undefined, 'CU', null, productComponentQty3, packingStatusDestroyed), true);
   });
 
-  it('Go to Handling Unit Editor and check expected qty of finished product', function() {
+  it('Go to Handling Unit Editor and check expected qty of finished good', function() {
     cy.visitWindow('540189');
     toggleNotFrequentFilters();
     selectNotFrequentFilterWidget('default');
-    cy.writeIntoLookupListField('M_Product_ID', finishedProductName, finishedProductName, false, false, null, true);
+    cy.writeIntoLookupListField('M_Product_ID', finishedGoodName, finishedGoodName, false, false, null, true);
     applyFilters();
 
     cy.expectNumberOfRows(1);
@@ -288,8 +288,8 @@ describe('Case 2: Process the manufacturing order **before** the components are 
   it('Create Manufacturing Order Doc', function() {
     cy.visitWindow('53009', 'NEW');
 
-    cy.writeIntoLookupListField('M_Product_ID', finishedProductName, finishedProductName);
-    cy.getStringFieldValue('PP_Product_BOM_ID').should('contain', finishedProductName);
+    cy.writeIntoLookupListField('M_Product_ID', finishedGoodName, finishedGoodName);
+    cy.getStringFieldValue('PP_Product_BOM_ID').should('contain', finishedGoodName);
     cy.selectInListField('S_Resource_ID', manufacturingResource);
     cy.writeIntoLookupListField('AD_Workflow_ID', manufacturingWorkflow, manufacturingWorkflow);
 
@@ -316,8 +316,8 @@ describe('Case 2: Process the manufacturing order **before** the components are 
     cy.executeHeaderAction('WEBUI_PP_Order_IssueReceipt_Launcher');
 
     cy.expectNumberOfRows(7, true);
-    // 1 finished product
-    cy.selectRowByColumnAndValue(createColumnAndValue(finishedProductName, undefined, 'MP', manufacturingQtyEntered), true);
+    // 1 finished good
+    cy.selectRowByColumnAndValue(createColumnAndValue(finishedGoodName, undefined, 'MP', manufacturingQtyEntered), true);
     // 3 components
     cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName1, undefined, 'CO', productComponentQty1), true);
     cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName2, undefined, 'CO', productComponentQty2), true);
@@ -328,20 +328,20 @@ describe('Case 2: Process the manufacturing order **before** the components are 
     cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName3, huValue3, 'CU', null, huQty - productComponentQty3, packingStatusActive), false, true);
   });
 
-  it('Receive the finished product', function() {
-    cy.selectRowByColumnAndValue({ column: productColumn, value: finishedProductName }, true);
+  it('Receive the finished good', function() {
+    cy.selectRowByColumnAndValue({ column: productColumn, value: finishedGoodName }, true);
     cy.executeQuickAction('WEBUI_PP_Order_Receipt', true);
     cy.getStringFieldValue('M_HU_PI_Item_Product_ID').should('contain', expectNoPackingItem);
     cy.writeIntoStringField('QtyCU', manufacturingQtyEntered, true);
     cy.pressStartButton();
-    cy.selectRowByColumnAndValue(createColumnAndValue(finishedProductName, undefined, 'CU', null, manufacturingQtyEntered, packingStatusPlanning), true);
+    cy.selectRowByColumnAndValue(createColumnAndValue(finishedGoodName, undefined, 'CU', null, manufacturingQtyEntered, packingStatusPlanning), true);
   });
 
-  it('Process the finished product', function() {
-    cy.selectRowByColumnAndValue(createColumnAndValue(finishedProductName, undefined, 'MP'), true);
+  it('Process the finished good', function() {
+    cy.selectRowByColumnAndValue(createColumnAndValue(finishedGoodName, undefined, 'MP'), true);
     cy.executeQuickAction('WEBUI_PP_Order_ChangePlanningStatus_Complete', true, false);
 
-    cy.selectRowByColumnAndValue(createColumnAndValue(finishedProductName, undefined, 'CU', null, manufacturingQtyEntered, packingStatusActive), true);
+    cy.selectRowByColumnAndValue(createColumnAndValue(finishedGoodName, undefined, 'CU', null, manufacturingQtyEntered, packingStatusActive), true);
   });
 
   it('Run action "Issue CUs from source HUs" when both component 1 and 3 are selected', function() {
@@ -377,11 +377,11 @@ describe('Case 2: Process the manufacturing order **before** the components are 
     cy.selectRowByColumnAndValue(createColumnAndValue(productComponentName2, undefined, 'CU', null, huQty - 2 * productComponentQty2, packingStatusActive), true);
   });
 
-  it('Go to Handling Unit Editor and check expected qty of finished product', function() {
+  it('Go to Handling Unit Editor and check expected qty of finished good', function() {
     cy.visitWindow('540189');
     toggleNotFrequentFilters();
     selectNotFrequentFilterWidget('default');
-    cy.writeIntoLookupListField('M_Product_ID', finishedProductName, finishedProductName, false, false, null, true);
+    cy.writeIntoLookupListField('M_Product_ID', finishedGoodName, finishedGoodName, false, false, null, true);
     applyFilters();
 
     cy.expectNumberOfRows(2);

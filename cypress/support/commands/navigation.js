@@ -170,7 +170,7 @@ Cypress.Commands.add('selectRowByColumnAndValue', (columnAndValue, modal = false
           let matchingRows = [];
 
           $tableRows.each((_, tr) => {
-            let ok = true;
+            let trMatchesAllColumns = true;
 
             columnAndValue.forEach(item => {
               const realValue = $(tr)
@@ -178,12 +178,12 @@ Cypress.Commands.add('selectRowByColumnAndValue', (columnAndValue, modal = false
                 .eq(item.columnIndex)
                 .text();
               if (!realValue.includes(item.value)) {
-                ok = false;
+                trMatchesAllColumns = false;
                 return false;
               }
             });
 
-            if (ok) {
+            if (trMatchesAllColumns) {
               cy.wrap(tr).click();
               matchingRows.push(tr);
             }
