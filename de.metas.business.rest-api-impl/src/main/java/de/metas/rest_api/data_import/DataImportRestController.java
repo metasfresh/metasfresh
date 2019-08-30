@@ -60,7 +60,7 @@ public class DataImportRestController
 	@PostMapping
 	public ResponseEntity<JsonDataImportResponse> importFile(
 			@ApiParam("Data Import internal name (i.e. `C_DataImport.InternalName`)") //
-			@RequestParam("dataImport") @NonNull final String dataImportInternalName,
+			@RequestParam("dataImportConfig") @NonNull final String dataImportConfigInternalName,
 
 			@ApiParam("Try complete documents in case it applies") //
 			@RequestParam(name = "completeDocuments", required = false, defaultValue = "false") final boolean completeDocuments,
@@ -68,8 +68,8 @@ public class DataImportRestController
 			@ApiParam("The text file you are importing") //
 			@RequestParam("file") @NonNull final MultipartFile file)
 	{
-		final DataImportConfig dataImportConfig = dataImportService.getDataImportConfigByInternalName(dataImportInternalName)
-				.orElseThrow(() -> new AdempiereException("No data import configuration found for: " + dataImportInternalName));
+		final DataImportConfig dataImportConfig = dataImportService.getDataImportConfigByInternalName(dataImportConfigInternalName)
+				.orElseThrow(() -> new AdempiereException("No data import configuration found for: " + dataImportConfigInternalName));
 
 		final DataImportResult result = dataImportService.importData(DataImportRequest.builder()
 				.data(toResource(file))
