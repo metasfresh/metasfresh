@@ -2,14 +2,25 @@ import { Product } from '../../support/utils/product';
 
 import { Inventory, InventoryLine } from '../../support/utils/inventory';
 
-import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow, getLanguageSpecific } from '../../support/utils/utils';
 
-const date = humanReadableNow();
-const productName = `SingleHUInventory_${date}`;
-const productQty = 20;
-const locatorId = 'Hauptlager_StdWarehouse_Hauptlager_0_0_0';
+let productName;
+let productQty;
+let locatorId;
+let isCounted;
+let inventoryDoctypeKey;
 
 describe('Create a single HU', function() {
+  it('Read the fixture', function() {
+    cy.fixture('inventory/inventory_singleHU_spec.json').then(f => {
+      productName = appendHumanReadableNow(f['productName']);
+      productQty = f['productQty'];
+      locatorId = f['locatorId'];
+      isCounted = f['isCounted'];
+      inventoryDoctypeKey = f['inventoryDoctypeKey'];
+    });
+  });
+
   it('Create Product', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
@@ -25,14 +36,14 @@ describe('Create a single HU', function() {
     });
 
     cy.fixture('inventory/inventory.json').then(inventoryJson => {
-      const docTypeName = getLanguageSpecific(inventoryJson, 'singleHUInventoryDocTypeName');
+      const docTypeName = getLanguageSpecific(inventoryJson, inventoryDoctypeKey);
 
       const inventoryLine = new InventoryLine()
         .setProductName(productName)
         .setQuantity(productQty)
         .setC_UOM_ID(uomName)
         .setM_Locator_ID(locatorId)
-        .setIsCounted(true);
+        .setIsCounted(isCounted);
 
       new Inventory()
         .setWarehouse(inventoryJson.warehouseName)

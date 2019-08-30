@@ -1,0 +1,7 @@
+{
+  "productName": "SingleHUInventory",
+  "productQty": 20,
+  "locatorId": "Hauptlager_StdWarehouse_Hauptlager_0_0_0",
+  "isCounted": true,
+  "inventoryDoctypeKey": "singleHUInventoryDocTypeName"
+}
