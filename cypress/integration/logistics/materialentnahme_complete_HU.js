@@ -1,5 +1,4 @@
 import { BPartner } from '../../support/utils/bpartner';
-import { BPartnerLocation } from '../../support/utils/bpartner_ui';
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { ProductCategory } from '../../support/utils/product';
 import { PackingMaterial } from '../../support/utils/packing_material';
@@ -8,12 +7,7 @@ import { PackingInstructionsVersion } from '../../support/utils/packing_instruct
 import { Builder } from '../../support/utils/builder';
 import { appendHumanReadableNow } from '../../support/utils/utils';
 import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_order';
-import {
-  applyFilters,
-  selectNotFrequentFilterWidget,
-  toggleNotFrequentFilters,
-  clearNotFrequentFilters,
-} from '../../support/functions';
+import { applyFilters, clearNotFrequentFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
 
 let productForPackingMaterial;
 let packingInstructionsName;
@@ -55,8 +49,7 @@ describe('Change warehouse to Materialentnahmelager', function() {
     });
   });
   it('Create packing related entities', function() {
-    // eslint-disable-next-line
-    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productForPackingMaterial, productType, "24_Gebinde");
+    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productForPackingMaterial, productType, '24_Gebinde');
     cy.fixture('product/packing_material.json').then(packingMaterialJson => {
       Object.assign(new PackingMaterial(), packingMaterialJson)
         .setName(productForPackingMaterial)
@@ -86,15 +79,7 @@ describe('Change warehouse to Materialentnahmelager', function() {
   });
 
   it('Create product1', function() {
-    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(
-      productCategoryName,
-      productCategoryName,
-      priceListName,
-      productName1,
-      productName1,
-      productType,
-      packingInstructionsName
-    );
+    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(productCategoryName, productCategoryName, priceListName, productName1, productName1, productType, packingInstructionsName);
   });
 
   it('Create vendor', function() {

@@ -1,9 +1,8 @@
-import { getLanguageSpecific } from '../../support/utils/utils';
 import { salesOrders } from '../../page_objects/sales_orders';
 import { SalesOrder, SalesOrderLine } from '../../support/utils/sales_order';
-import { Inventory, InventoryLine } from '../../support/utils/inventory';
 import { DocumentStatusKey } from '../../support/utils/constants';
 import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
+import { Builder } from '../../support/utils/builder';
 
 let productName;
 let productQty;
@@ -18,13 +17,10 @@ let shipmentNotificationModalText;
 let expectedPackingStatus;
 
 // test columns
-// todo @kuba: these should be somehow made translation independent!
-//   eg. add the columnId as a data object in the table header (data object instead of class coz it's free form text so it may contains spaces and periods);
-//      ref: https://docs.cypress.io/guides/references/best-practices.html#Selecting-Elements
-//   or something else?
-const pickingOrderColumn = 'Order';
-const huCodeColumn = 'Code';
-const productPartnerColumn = 'Product / Partner';
+const orderColumn = 'order';
+const huSelectionHuCodeColumn = 'Value';
+const pickingHuCodeColumn = 'huCode';
+const productPartnerColumn = 'ProductOrBPartner';
 
 // test
 let soDocNumber;
@@ -49,71 +45,11 @@ describe('Create test data', function() {
   });
 
   it('Create first single-HU inventory doc', function() {
-    let uomName;
-    cy.fixture('product/simple_product.json').then(productJson => {
-      uomName = getLanguageSpecific(productJson, 'c_uom');
-    });
-
-    cy.fixture('inventory/inventory.json').then(inventoryJson => {
-      const docTypeName = getLanguageSpecific(inventoryJson, 'singleHUInventoryDocTypeName');
-
-      const inventoryLine = new InventoryLine()
-        .setProductName(productName)
-        .setQuantity(productQty)
-        .setC_UOM_ID(uomName)
-        .setM_Locator_ID(locatorId)
-        .setIsCounted(true);
-
-      new Inventory()
-        .setWarehouse(inventoryJson.warehouseName)
-        .setDocType(docTypeName)
-        .addInventoryLine(inventoryLine)
-        .apply();
-    });
-  });
-
-  it('Save HU Value 1', function() {
-    cy.selectTab('M_InventoryLine');
-    cy.selectNthRow(0);
-    cy.openAdvancedEdit();
-    cy.getStringFieldValue('M_HU_ID').then(val => {
-      huValue1 = val.split('_')[0];
-    });
-    cy.pressDoneButton();
+    Builder.createHUWithStock(productName, productQty, locatorId).then(huVal => (huValue1 = huVal));
   });
 
   it('Create second single-HU inventory doc', function() {
-    let uomName;
-    cy.fixture('product/simple_product.json').then(productJson => {
-      uomName = getLanguageSpecific(productJson, 'c_uom');
-    });
-
-    cy.fixture('inventory/inventory.json').then(inventoryJson => {
-      const docTypeName = getLanguageSpecific(inventoryJson, 'singleHUInventoryDocTypeName');
-
-      const inventoryLine = new InventoryLine()
-        .setProductName(productName)
-        .setQuantity(productQty)
-        .setC_UOM_ID(uomName)
-        .setM_Locator_ID(locatorId)
-        .setIsCounted(true);
-
-      new Inventory()
-        .setWarehouse(inventoryJson.warehouseName)
-        .setDocType(docTypeName)
-        .addInventoryLine(inventoryLine)
-        .apply();
-    });
-  });
-
-  it('Save HU Value 2', function() {
-    cy.selectTab('M_InventoryLine');
-    cy.selectNthRow(0);
-    cy.openAdvancedEdit();
-    cy.getStringFieldValue('M_HU_ID').then(val => {
-      huValue2 = val.split('_')[0];
-    });
-    cy.pressDoneButton();
+    Builder.createHUWithStock(productName, productQty, locatorId).then(huVal => (huValue2 = huVal));
   });
 
   it('Create Sales Order', function() {
@@ -137,47 +73,47 @@ describe('Pick the SO', function() {
   });
 
   it('Select first row and run action Pick', function() {
-    cy.selectRowByColumnAndValue(productPartnerColumn, productName);
+    cy.selectRowByColumnAndValue({ column: productPartnerColumn, value: productName });
     cy.executeQuickAction('WEBUI_Picking_Launcher');
   });
 
   it('Pick first HU', function() {
     cy.selectLeftTable().within(() => {
-      cy.selectRowByColumnAndValue(pickingOrderColumn, soDocNumber, false, true);
+      cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
     });
-    cy.openPickingHUSelectionWindow();
+    cy.executeQuickActionWithRightSideTable('WEBUI_Picking_HUEditor_Launcher');
     cy.selectRightTable().within(() => {
-      cy.selectRowByColumnAndValue(huCodeColumn, huValue1, false, true);
+      cy.selectRowByColumnAndValue({ column: huSelectionHuCodeColumn, value: huValue1 }, false, true);
     });
     cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', true, false);
   });
 
   it('Pick second HU', function() {
     cy.selectLeftTable().within(() => {
-      cy.selectRowByColumnAndValue(pickingOrderColumn, soDocNumber, false, true);
+      cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
     });
-    cy.openPickingHUSelectionWindow();
+    cy.executeQuickActionWithRightSideTable('WEBUI_Picking_HUEditor_Launcher');
     cy.selectRightTable().within(() => {
-      cy.selectRowByColumnAndValue(huCodeColumn, huValue2, false, true);
+      cy.selectRowByColumnAndValue({ column: huSelectionHuCodeColumn, value: huValue2 }, false, true);
     });
     cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', true, false);
   });
 
   it('Confirm Picks', function() {
     cy.selectLeftTable().within(() => {
-      cy.selectRowByColumnAndValue(pickingOrderColumn, soDocNumber, false, true);
+      cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
     });
     cy.selectRightTable().within(() => {
-      cy.selectRowByColumnAndValue(huCodeColumn, huValue2, false, true);
+      cy.selectRowByColumnAndValue({ column: pickingHuCodeColumn, value: huValue2 }, false, true);
     });
     cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', true, false);
     cy.waitForSaveIndicator();
 
     cy.selectLeftTable().within(() => {
-      cy.selectRowByColumnAndValue(pickingOrderColumn, soDocNumber, false, true);
+      cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
     });
     cy.selectRightTable().within(() => {
-      cy.selectRowByColumnAndValue(huCodeColumn, huValue1, false, true);
+      cy.selectRowByColumnAndValue({ column: pickingHuCodeColumn, value: huValue1 }, false, true);
     });
     cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', true, false);
     cy.waitForSaveIndicator();
@@ -224,8 +160,8 @@ describe('Generate the Shipment', function() {
     cy.getStringFieldValue('C_BPartner_ID').should('contain', businessPartnerName);
     cy.selectTab('M_HU_Assignment');
     cy.expectNumberOfRows(2);
-    cy.selectRowByColumnAndValue('Handling Units', huValue1);
-    cy.selectRowByColumnAndValue('Handling Units', huValue2);
+    cy.selectRowByColumnAndValue({ column: 'Handling Units', value: huValue1 });
+    cy.selectRowByColumnAndValue({ column: 'Handling Units', value: huValue2 });
   });
 
   it('Visit HU Editor and expect the 2 HUs have Packing Status Shipped', function() {

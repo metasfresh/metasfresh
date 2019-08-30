@@ -1,7 +1,6 @@
 {
   "name": "ProductName",
-  "description": "TestProduct1",
-  "value": "TestProduct1",
+  "description": "Test Product",
   "productCategory": "06_Kartoffeln",
   "c_uom": "Each",
   "de_DE__c_uom": "Stück",

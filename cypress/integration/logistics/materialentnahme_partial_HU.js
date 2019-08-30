@@ -3,19 +3,12 @@ import { DiscountSchema } from '../../support/utils/discountschema';
 import { ProductCategory } from '../../support/utils/product';
 import { PackingMaterial } from '../../support/utils/packing_material';
 import { PackingInstructions } from '../../support/utils/packing_instructions';
-import {
-  PackingInstructionsVersion,
-  PackingInstructionsVersionPosition,
-} from '../../support/utils/packing_instructions_version';
+import { PackingInstructionsVersion } from '../../support/utils/packing_instructions_version';
 import { Builder } from '../../support/utils/builder';
 import { appendHumanReadableNow } from '../../support/utils/utils';
 import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_order';
-import {
-  applyFilters,
-  selectNotFrequentFilterWidget,
-  toggleNotFrequentFilters,
-  clearNotFrequentFilters,
-} from '../../support/functions';
+import { applyFilters, clearNotFrequentFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
+
 describe('Partial material withdrawal in handling unit editor with Materialentnahmelager', function() {
   let productForPackingMaterialTU;
   let productForPackingMaterialLU;
@@ -68,17 +61,10 @@ describe('Partial material withdrawal in handling unit editor with Materialentna
     });
   });
   it('create product from 24_Gebinde category in order to use it for packing material for transport unit', function() {
-    // eslint-disable-next-line
-    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterialTU, productForPackingMaterialTU, productType, "24_Gebinde");
+    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterialTU, productForPackingMaterialTU, productType, '24_Gebinde');
   });
   it('create product from 24_Gebinde category in order to use it for packing material for loading unit', function() {
-    Builder.createProductWithPriceUsingExistingCategory(
-      priceListName,
-      productForPackingMaterialLU,
-      productForPackingMaterialLU,
-      productType,
-      '24_Gebinde'
-    );
+    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterialLU, productForPackingMaterialLU, productType, '24_Gebinde');
   });
   it('create packing material for handling unit - Transport unit', function() {
     cy.fixture('product/packing_material.json').then(packingMaterialJson => {

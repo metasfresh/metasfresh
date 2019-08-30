@@ -74,8 +74,7 @@ describe('Create  a new pricelist version using pricelist schema', function() {
     });
 
     it('Create Product and Category', function() {
-      // eslint-disable-next-line prettier/prettier
-    Builder.createBasicProductEntities(categoryName, categoryName, priceListName, productName, productName, productType);
+      Builder.createBasicProductEntities(categoryName, categoryName, priceListName, productName, productName, productType);
     });
   });
 
@@ -83,8 +82,7 @@ describe('Create  a new pricelist version using pricelist schema', function() {
     it('Create Price List Schema', function() {
       new PriceListSchema()
         .setName(priceListSchemaName)
-        // eslint-disable-next-line prettier/prettier
-      .addLine(new PriceListSchemaLine().setProductCategory(categoryName).setStandardPriceSurchargeAmount(surchargeAmount))
+        .addLine(new PriceListSchemaLine().setProductCategory(categoryName).setStandardPriceSurchargeAmount(surchargeAmount))
         .apply();
     });
 

@@ -20,8 +20,7 @@
  * #L%
  */
 
-import { appendHumanReadableNow, getLanguageSpecific } from '../../support/utils/utils';
-import { Inventory, InventoryLine } from '../../support/utils/inventory';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 import { Builder } from '../../support/utils/builder';
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { ProductCategory } from '../../support/utils/product';
@@ -50,18 +49,16 @@ let bPartnerName;
 // SO/HU
 let productQty;
 let soProductQuantity;
+// eslint-disable-next-line
 let expectedProductQtyAfterPicking;
 let locatorId;
 
 // test columns
-// todo @kuba: these should be somehow made translation independent!
-//   eg. add the columnId as a data object in the table header (data object instead of class coz it's free form text so it may contains spaces and periods);
-//      ref: https://docs.cypress.io/guides/references/best-practices.html#Selecting-Elements
-//   or something else?
-const pickingOrderColumn = 'Order';
-const huCodeColumn = 'Code';
-const qtyCUColumn = 'Qty CU';
-const productPartnerColumn = 'Product / Partner';
+const orderColumn = 'order';
+const huSelectionHuCodeColumn = 'Value';
+const productPartnerColumn = 'ProductOrBPartner';
+const pickingQtyCUColumn = 'huQtyCU';
+const pickingPackingInfoColumn = 'huPackingInfo';
 
 // test
 let soDocNumber;
@@ -110,21 +107,12 @@ describe('Create test data', function() {
   });
 
   it('Create packing related entities', function() {
-    // eslint-disable-next-line
-    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productForPackingMaterial, productType, "24_Gebinde");
+    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productForPackingMaterial, productType, '24_Gebinde');
     Builder.createPackingMaterial(productForPackingMaterial, packingInstructionsName);
   });
 
   it('Create product', function() {
-    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(
-      productCategoryName,
-      productCategoryName,
-      priceListName,
-      productName,
-      productName,
-      productType,
-      packingInstructionsName
-    );
+    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(productCategoryName, productCategoryName, priceListName, productName, productName, productType, packingInstructionsName);
   });
 
   it('Create bPartner', function() {
@@ -134,37 +122,7 @@ describe('Create test data', function() {
   });
 
   it('Create  single-HU inventory doc', function() {
-    let uomName;
-    cy.fixture('product/simple_product.json').then(productJson => {
-      uomName = getLanguageSpecific(productJson, 'c_uom');
-    });
-
-    cy.fixture('inventory/inventory.json').then(inventoryJson => {
-      const docTypeName = getLanguageSpecific(inventoryJson, 'singleHUInventoryDocTypeName');
-
-      const inventoryLine = new InventoryLine()
-        .setProductName(productName)
-        .setQuantity(productQty)
-        .setC_UOM_ID(uomName)
-        .setM_Locator_ID(locatorId)
-        .setIsCounted(true);
-
-      new Inventory()
-        .setWarehouse(inventoryJson.warehouseName)
-        .setDocType(docTypeName)
-        .addInventoryLine(inventoryLine)
-        .apply();
-    });
-  });
-
-  it('Save HU Value', function() {
-    cy.selectTab('M_InventoryLine');
-    cy.selectNthRow(0);
-    cy.openAdvancedEdit();
-    cy.getStringFieldValue('M_HU_ID').then(val => {
-      huValue = val.split('_')[0];
-    });
-    cy.pressDoneButton();
+    Builder.createHUWithStock(productName, productQty, locatorId).then(huVal => (huValue = huVal));
   });
 
   it('Create Sales Order', function() {
@@ -189,28 +147,28 @@ describe('Pick the SO', function() {
   });
 
   it('Select first row and run action Pick', function() {
-    cy.selectRowByColumnAndValue(productPartnerColumn, productName);
+    cy.selectRowByColumnAndValue({ column: productPartnerColumn, value: productName });
     cy.executeQuickAction('WEBUI_Picking_Launcher');
   });
 
   it('Mark the HU as source', function() {
     cy.selectLeftTable().within(() => {
-      cy.selectRowByColumnAndValue(pickingOrderColumn, soDocNumber, false, true);
+      cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
     });
-    cy.openPickingHUSelectionWindow();
+    cy.executeQuickActionWithRightSideTable('WEBUI_Picking_HUEditor_Launcher');
     cy.selectRightTable().within(() => {
-      cy.selectRowByColumnAndValue(huCodeColumn, huValue, false, true);
+      cy.selectRowByColumnAndValue({ column: huSelectionHuCodeColumn, value: huValue }, false, true);
     });
     cy.executeQuickAction('WEBUI_Picking_HUEditor_Create_M_Source_HUs', true, false);
     cy.selectRightTable().within(() => {
       // expecting the HU to be here
-      cy.selectRowByColumnAndValue(huCodeColumn, huValue, false, true);
+      cy.selectRowByColumnAndValue({ column: huSelectionHuCodeColumn, value: huValue }, false, true);
     });
   });
 
   it('Run quick-action "Pick to new HU"', function() {
     cy.selectLeftTable().within(() => {
-      cy.selectRowByColumnAndValue(pickingOrderColumn, soDocNumber, false, true);
+      cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
     });
     cy.selectRightTable().within(() => {
       cy.selectNthRow(0, false, true);
@@ -225,10 +183,11 @@ describe('Pick the SO', function() {
 
   it('Confirm Pick', function() {
     cy.selectLeftTable().within(() => {
-      cy.selectRowByColumnAndValue(pickingOrderColumn, soDocNumber, false, true);
+      cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
     });
     cy.selectRightTable().within(() => {
-      cy.selectRowByColumnAndValue(qtyCUColumn, soProductQuantity, false, true);
+      const columnAndValue = [{ column: pickingPackingInfoColumn, value: packingInstructionsName }, { column: pickingQtyCUColumn, value: soProductQuantity }];
+      cy.selectRowByColumnAndValue(columnAndValue, false, true);
     });
     cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', true, false);
     cy.waitForSaveIndicator();

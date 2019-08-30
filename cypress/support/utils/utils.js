@@ -15,8 +15,9 @@
  * 
  */
 const getLanguageSpecific = (data, key) => {
-  const _ = getLanguageSpecificWorkaround();
+  getLanguageSpecificWorkaround();
 
+  // noinspection JSUnresolvedVariable
   const lang = Cypress.reduxStore.getState().appHandler.me.language.key;
   if (lang !== 'en_US') {
     key = `${lang}__${key}`;
@@ -73,7 +74,10 @@ const humanReadableNow = () => {
 };
 
 let date;
-const appendHumanReadableNow = str => {
+const appendHumanReadableNow = (str, dateOverride) => {
+  if (dateOverride) {
+    date = dateOverride;
+  }
   if (!date) {
     date = humanReadableNow();
   }
@@ -87,7 +91,6 @@ const getLanguageSpecificWorkaround = () => {
     const now = new Date();
     const delta = now - getLanguageSpecificWorkaround_date;
     if (delta < TIME_TO_WAIT) {
-      // eslint-disable-next-line
       cy.log(`getLanguageSpecificWorkaround sleeping: date=${getLanguageSpecificWorkaround_date.getTime()}, now=${now.getTime()}, delta=${delta}ms`);
       // eslint-disable-next-line
       return cy.wait(5000);

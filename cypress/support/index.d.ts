@@ -1,6 +1,7 @@
 /// <reference types="cypress" />
 
 import {DocumentStatusKey, RewriteURL} from "./utils/constants";
+import {ColumnAndValue} from "./commands/navigation";
 
 declare namespace Cypress {
 
@@ -33,7 +34,21 @@ declare namespace Cypress {
     executeQuickAction(actionName: string, modal?: boolean, isDialogExpected ?: boolean): Chainable<any>
 
     /**
-     * @param fieldName - name of the field is question
+     * Run a quickAction inside a modal which opens a table on the right side.
+     *
+     * @param actionName - internal name of the action to be executed
+     *
+     * @example
+     *
+     * // Run the action "Open HU selection" window inside the window Picking Terminal (Prototype)
+     * cy.executeQuickActionWithRightSideTable('WEBUI_PP_Order_HUEditor_Launcher');
+     */
+    executeQuickActionWithRightSideTable(actionName: string): Chainable<any>
+
+    /**
+     * Get the value of a field as a string.
+     *
+     * @param fieldName - name of the field
      * @param modal - optional, default = false - use true if the field is in a modal overlay
      *
      * @example
@@ -558,8 +573,9 @@ declare namespace Cypress {
      * Expect the table to have a specific number of rows
      *
      * @param numberOfRows - the number of rows
+     * @param modal - optional, default = false - use true if the table is in a modal overlay
      */
-    expectNumberOfRows(numberOfRows: number): Chainable<any>
+    expectNumberOfRows(numberOfRows: number, modal?: boolean): Chainable<any>
 
     /**
      * Complete the current document
@@ -598,7 +614,8 @@ declare namespace Cypress {
      * @param destinationWindowID - the expected window where the notification redirects
      */
     openNotificationContaining(expectedValue: string | RegExp, destinationWindowID: string | number): Chainable<any>
-   /**
+
+    /**
      * Expect the table rows to be greater than a given number
      *
      * @param numberOfRows - the number of rows
@@ -619,32 +636,41 @@ declare namespace Cypress {
 
 
     /**
-     * Runs the action "Open HU selection" window inside the window Picking Terminal (Prototype)
-     */
-    openPickingHUSelectionWindow(): Chainable<any>
-
-
-    /**
-     * Searches and selects a specific row cell of a table by using column name and the expected value of that column.
+     * Searches and selects one or multiple rows of a table by using column's `data-cy` attribute and the expected value of that column.
      *
-     * @param columnName - name of the column
-     * @param expectedValue - expected value of the column in any row
-     * @param modal - optional, default = false - use true if the field is in a modal overlay
+     * @param columnAndValue - object or array of objects having 2 fields: `{ column: 'Value', value: 'P002753' }`
+     * @param modal - optional, default = false - use true if the table is in a modal overlay
      * @param force - optional, default = false - use true when no checks should be done if the selection was successful
+     * @param single - optional, default = true - use  false when expecting multiple rows
      *
      * @example
      * // normal usage
-     * cy.selectRowByColumnAndValue('Code', huValue);
+     * cy.visitWindow('140'); // Product window
+     * const columnAndValue =  { column: 'Value', value: 'P002753' }; // using a simple object
+     * cy.selectRowByColumnAndValue(columnAndValue).dblclick();
+     *
+     * @example
+     * // multiple values for the same row
+     * cy.visitWindow('140'); // Product window
+     * const columnAndValue = [ // using an array of simple objects
+     *   { column: 'Value', value: 'P002753' },
+     *   { column: 'Name', value: 'Abzug für Beitrag Basic-Linie' },
+     * ];
+     * cy.selectRowByColumnAndValue(columnAndValue).dblclick();
      *
      * @example
      * // usage when inside a left/right table (eg. during Picking)
      * // note that we're using `.within()`
      * // also note that we're setting `modal=false`, and `force=true` because of within
+     * const columnAndValue = [ // using an array of Class objects
+     *   new ColumnAndValue('M_Product_ID', 'Convenience Salat 250g'),
+     *   new ColumnAndValue('QtyOrdered', 20)
+     * ];
      * cy.selectRightTable().within(() => {
-     *   cy.selectRowByColumnAndValue(huCodeColumnName, huValue, false, true);
+     *   cy.selectRowByColumnAndValue(columnAndValue, false, true).click();
      * });
      */
-    selectRowByColumnAndValue(columnName: string, expectedValue: string | number, modal ?: boolean, force ?: boolean): Chainable<any>
+    selectRowByColumnAndValue(columnAndValue: ColumnAndValue | ColumnAndValue[], modal ?: boolean, force ?: boolean, single ?: boolean): Chainable<any>
 
 
   }

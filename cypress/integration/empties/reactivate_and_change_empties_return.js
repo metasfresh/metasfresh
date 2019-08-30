@@ -63,30 +63,11 @@ describe('Reactivate and change Empties Return', function() {
     it('Create Price and Product', function() {
       Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
 
-      Builder.createBasicProductEntities(
-        productCategory1,
-        productCategory1,
-        priceListName,
-        productName1,
-        productName1,
-        productType
-      );
+      Builder.createBasicProductEntities(productCategory1, productCategory1, priceListName, productName1, productName1, productType);
 
-      Builder.createProductWithPriceUsingExistingCategory(
-        priceListName,
-        productName2,
-        productName2,
-        productType,
-        productCategory1
-      );
+      Builder.createProductWithPriceUsingExistingCategory(priceListName, productName2, productName2, productType, productCategory1);
 
-      Builder.createProductWithPriceUsingExistingCategory(
-        priceListName,
-        productName3,
-        productName3,
-        productType,
-        productCategory1
-      );
+      Builder.createProductWithPriceUsingExistingCategory(priceListName, productName3, productName3, productType, productCategory1);
     });
 
     it('Add Product to Packing Material', function() {
@@ -158,7 +139,6 @@ describe('Reactivate and change Empties Return', function() {
 
   describe('Cannot Create Negative Empties Return', function() {
     it('Cannot Create Negative Empties Return', function() {
-      // eslint-disable-next-line
       cy.log(`cannot test due to cypress bug: https://github.com/cypress-io/cypress/issues/2173#issuecomment-512776378 (cypress cannot write minus ('-') for negative numbers)`);
     });
   });

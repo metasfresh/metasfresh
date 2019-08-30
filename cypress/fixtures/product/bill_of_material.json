@@ -1,5 +1,5 @@
 {
-    "product": "Product Test1",
-    "no": "X",
-    "productComponent": "Product Test2"
+  "product": "Product Test1",
+  "name": "Product Test1_BOM",
+  "documentNo": "X"
 }

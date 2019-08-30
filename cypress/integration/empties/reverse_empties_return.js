@@ -75,30 +75,11 @@ describe('Reverse Empties Return', function() {
     it('Create Price and Products', function() {
       Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
 
-      Builder.createBasicProductEntities(
-        productCategory,
-        productCategory,
-        priceListName,
-        productName1,
-        productName1,
-        productType
-      );
+      Builder.createBasicProductEntities(productCategory, productCategory, priceListName, productName1, productName1, productType);
 
-      Builder.createProductWithPriceUsingExistingCategory(
-        priceListName,
-        productName2,
-        productName2,
-        productType,
-        productCategory
-      );
+      Builder.createProductWithPriceUsingExistingCategory(priceListName, productName2, productName2, productType, productCategory);
 
-      Builder.createProductWithPriceUsingExistingCategory(
-        priceListName,
-        productName3,
-        productName3,
-        productType,
-        productCategory
-      );
+      Builder.createProductWithPriceUsingExistingCategory(priceListName, productName3, productName3, productType, productCategory);
     });
 
     it('Add Products to Packing Materials', function() {

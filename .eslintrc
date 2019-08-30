@@ -16,7 +16,7 @@
           "singleQuote": true,
           "trailingComma": "es5",
           "tabWidth": 2,
-          "printWidth": 120,
+          "printWidth": 200,
           "endOfLine":"auto"
         }],
         "no-unused-expressions": 0,
