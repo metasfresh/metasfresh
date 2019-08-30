@@ -1,13 +1,15 @@
 import { BPartner } from '../../support/utils/bpartner';
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { ProductCategory } from '../../support/utils/product';
-import { PackingMaterial } from '../../support/utils/packing_material';
-import { PackingInstructions } from '../../support/utils/packing_instructions';
-import { PackingInstructionsVersion } from '../../support/utils/packing_instructions_version';
 import { Builder } from '../../support/utils/builder';
 import { appendHumanReadableNow } from '../../support/utils/utils';
 import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_order';
-import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
+import {
+  applyFilters,
+  selectNotFrequentFilterWidget,
+  toggleNotFrequentFilters,
+  clearNotFrequentFilters,
+} from '../../support/functions';
 
 let productForPackingMaterial;
 let packingInstructionsName;
@@ -21,13 +23,14 @@ let productType;
 let vendorName;
 let materialentnahme;
 let warehouseName;
+let quantity;
 
 let totalHUs;
 let countOnPage;
 let countAfterMoving;
 
 it('Read the fixture', function() {
-  cy.fixture('logistics/materialentnahme_complete_HU.json').then(f => {
+  cy.fixture('logistics/materialentnahme_complete_HUs.json').then(f => {
     productForPackingMaterial = appendHumanReadableNow(f['productForPackingMaterial']);
     packingInstructionsName = appendHumanReadableNow(f['packingInstructionsName']);
     productName1 = appendHumanReadableNow(f['productName1']);
@@ -40,6 +43,7 @@ it('Read the fixture', function() {
     vendorName = appendHumanReadableNow(f['vendorName']);
     materialentnahme = f['materialentnahme'];
     warehouseName = f['warehouseName'];
+    quantity = f['quantity'];
   });
 });
 
@@ -52,27 +56,15 @@ describe('Change warehouse to Materialentnahmelager', function() {
         .apply();
     });
   });
-  it('Create packing related entities', function() {
-    // eslint-disable-next-line
-    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productForPackingMaterial, productType, "24_Gebinde");
-    cy.fixture('product/packing_material.json').then(packingMaterialJson => {
-      Object.assign(new PackingMaterial(), packingMaterialJson)
-        .setName(productForPackingMaterial)
-        .setProduct(productForPackingMaterial)
-        .apply();
-    });
-    cy.fixture('product/packing_instructions.json').then(packingInstructionsJson => {
-      Object.assign(new PackingInstructions(), packingInstructionsJson)
-        .setName(packingInstructionsName)
-        .apply();
-    });
-    cy.fixture('product/packing_instructions_version.json').then(pivJson => {
-      Object.assign(new PackingInstructionsVersion(), pivJson)
-        .setName(packingInstructionsName)
-        .setPackingInstructions(packingInstructionsName)
-        .setPackingMaterial(productForPackingMaterial)
-        .apply();
-    });
+  it('Create product and packing related entities', function() {
+    Builder.createProductWithPriceUsingExistingCategory(
+      priceListName,
+      productForPackingMaterial,
+      productForPackingMaterial,
+      productType,
+      '24_Gebinde'
+    );
+    Builder.createPackingMaterial(productForPackingMaterial, packingInstructionsName);
   });
 
   it('Create category', function() {
@@ -113,7 +105,7 @@ describe('Create a purchase order and Material Receipts', function() {
       .setBPartner(vendorName)
       .setPriceSystem(priceSystemName)
       .setPoReference('test')
-      .addLine(new PurchaseOrderLine().setProduct(productName1).setQuantity(1))
+      .addLine(new PurchaseOrderLine().setProduct(productName1).setQuantity(quantity))
       .apply();
     cy.completeDocument();
   });
@@ -127,7 +119,7 @@ describe('Create a purchase order and Material Receipts', function() {
     cy.selectNthRow(0).click();
     cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults');
     cy.selectNthRow(0, true);
-    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams');
+    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', true, false);
     cy.pressDoneButton();
   });
   it('Check if Materialentnahmelager warehouse exists', function() {
@@ -148,7 +140,7 @@ describe('Create a purchase order and Material Receipts', function() {
     applyFilters();
   });
   it('Count all rows with the warehouseName=Hauptlager and status=Active', function() {
-    cy.countAllRows('540189').then(rows => {
+    cy.countAllRows().then(rows => {
       cy.log(rows);
       totalHUs = parseInt(rows);
     });
@@ -163,6 +155,7 @@ describe('Create a purchase order and Material Receipts', function() {
     /**Filter to check if HUs have been moved - the number of HUs to be moved is the total number
      * minus those moved earlier
      */
+    clearNotFrequentFilters();
     toggleNotFrequentFilters();
     selectNotFrequentFilterWidget('default');
     cy.writeIntoLookupListField('M_Locator_ID', warehouseName, warehouseName, false, false, null, true);
@@ -171,7 +164,7 @@ describe('Create a purchase order and Material Receipts', function() {
     /**currently this fails because "Handling Unit 1000178 is currently selected in the picking as source HU
      * and must therefore not be moved. (SourceHuMayNotBeRemovedException)"
      * see: https://chat.metasfresh.org/metasfresh/pl/61sw4n5z5ib8te8ibne6ckrtxy*/
-    cy.countAllRows('540189').then(el => {
+    cy.countAllRows().then(el => {
       expect(el).to.equals(countAfterMoving);
     });
   });

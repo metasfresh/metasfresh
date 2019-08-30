@@ -159,10 +159,8 @@ Cypress.Commands.add('selectAllRowsOnCurrentPage', () => {
 /**
  * Select all rows from all pages
  * This function only works on a list window, and not on a single view window
- * @param windowId - the window for which the rows will be counted
  */
-Cypress.Commands.add('countAllRows', windowId => {
-  cy.visitWindow(windowId);
+Cypress.Commands.add('countAllRows', () => {
   cy.get('.pagination-row .pagination-part .hidden-sm-down').then(totalString => {
     const totalRows = parseInt(
       totalString
@@ -171,7 +169,7 @@ Cypress.Commands.add('countAllRows', windowId => {
         .pop(),
       10
     );
-    cy.log(`Total number of rows is: ${totalRows}`);
+    cy.log(`Total number of rows on all pages is: ${totalRows}`);
     return cy.wrap(totalRows);
   });
 });
