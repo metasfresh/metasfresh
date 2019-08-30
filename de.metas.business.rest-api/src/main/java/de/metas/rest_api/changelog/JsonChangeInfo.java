@@ -41,15 +41,18 @@ import lombok.Value;
 @Value
 public class JsonChangeInfo
 {
+	@ApiModelProperty(position = 10)
 	Long createdMillis;
 
-	@ApiModelProperty(dataType = "java.lang.Integer")
+	@ApiModelProperty(value = "Might be empty if no `#AD_User_ID` was in the application context while the record was saved", dataType = "java.lang.Integer", position = 20)
+	@JsonInclude(Include.NON_NULL)
 	MetasfreshId createdBy;
 
+	@ApiModelProperty(position = 30)
 	@JsonInclude(Include.NON_NULL)
 	Long lastUpdatedMillis;
 
-	@ApiModelProperty(allowEmptyValue = true, dataType = "java.lang.Integer")
+	@ApiModelProperty(allowEmptyValue = true, dataType = "java.lang.Integer", position = 30)
 	@JsonInclude(Include.NON_NULL)
 	MetasfreshId lastUpdatedBy;
 
@@ -60,7 +63,7 @@ public class JsonChangeInfo
 	@JsonCreator
 	private JsonChangeInfo(
 			@JsonProperty("createdMillis") @NonNull Long createdMillis,
-			@JsonProperty("createdBy") @NonNull MetasfreshId createdBy,
+			@JsonProperty("createdBy") @Nullable MetasfreshId createdBy,
 			@JsonProperty("lastUpdatedMillis") @Nullable Long lastUpdatedMillis,
 			@JsonProperty("lastUpdatedBy") @Nullable MetasfreshId lastUpdatedBy,
 			@JsonProperty("changeLog") @Singular List<JsonChangeLogItem> changeLogs)

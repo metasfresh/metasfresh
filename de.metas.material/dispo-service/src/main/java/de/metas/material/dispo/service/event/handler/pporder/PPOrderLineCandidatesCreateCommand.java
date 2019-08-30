@@ -13,7 +13,6 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -30,12 +29,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -49,7 +48,7 @@ final class PPOrderLineCandidatesCreateCommand
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
 	private final PPOrder ppOrder;
-	private final SupplyRequiredDescriptor supplyRequiredDescriptor;
+	private final DemandDetail headerDemandDetail;
 	private final MaterialDispoGroupId groupId;
 	private final int headerCandidateSeqNo;
 	private final Flag advised;
@@ -61,7 +60,7 @@ final class PPOrderLineCandidatesCreateCommand
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
 			//
 			@NonNull final PPOrder ppOrder,
-			@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor,
+			@Nullable final DemandDetail headerDemandDetail,
 			@NonNull final MaterialDispoGroupId groupId,
 			@NonNull final Integer headerCandidateSeqNo,
 			@NonNull final Flag advised,
@@ -71,7 +70,7 @@ final class PPOrderLineCandidatesCreateCommand
 		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
 
 		this.ppOrder = ppOrder;
-		this.supplyRequiredDescriptor = supplyRequiredDescriptor;
+		this.headerDemandDetail = headerDemandDetail;
 
 		this.groupId = groupId;
 		this.headerCandidateSeqNo = headerCandidateSeqNo;
@@ -107,17 +106,13 @@ final class PPOrderLineCandidatesCreateCommand
 
 		final CandidateType candidateType = PPOrderHandlerUtils.extractCandidateType(ppOrderLine);
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(ppOrderLine);
-		final DemandDetail lineCandidateDemandDetail = PPOrderHandlerUtils.computeDemandDetailOrNull(
-				candidateType,
-				supplyRequiredDescriptor,
-				materialDescriptor);
+		final DemandDetail lineCandidateDemandDetail = headerDemandDetail;
 
 		final ProductionDetail productionDetail = createProductionDetail(ppOrderLine);
 
 		candidateBuilder
 				.type(candidateType)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
-				// .status(candidateStatus)
 				.groupId(groupId)
 				.seqNo(headerCandidateSeqNo + 1)
 				.businessCaseDetail(productionDetail)
@@ -126,10 +121,9 @@ final class PPOrderLineCandidatesCreateCommand
 
 		// in case of CandidateType.DEMAND this might trigger further demand events
 
-		//
 		return candidateBuilder.build();
 	}
-	
+
 	private static CandidatesQuery createPreExistingCandidatesQuery(
 			@NonNull final PPOrder ppOrder,
 			@NonNull final PPOrderLine ppOrderLine)
@@ -137,7 +131,7 @@ final class PPOrderLineCandidatesCreateCommand
 		final MaterialDispoGroupId groupId = ppOrder.getMaterialDispoGroupId();
 		if (groupId == null)
 		{
-			// returned false, but don't write another log message; we already logged in the other createQuery() method
+			// return false, but don't write another log message; we already logged in the other createQuery() method
 			return CandidatesQuery.FALSE;
 		}
 

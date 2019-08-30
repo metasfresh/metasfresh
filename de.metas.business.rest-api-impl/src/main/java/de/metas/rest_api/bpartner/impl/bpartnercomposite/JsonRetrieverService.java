@@ -281,9 +281,9 @@ public class JsonRetrieverService
 		}
 
 		final JsonChangeInfoBuilder jsonChangeInfo = JsonChangeInfo.builder()
-				.createdBy(MetasfreshId.of(recordChangeLog.getCreatedByUserId()))
+				.createdBy(MetasfreshId.ofOrNull(recordChangeLog.getCreatedByUserId()))
 				.createdMillis(recordChangeLog.getCreatedTimestamp().toEpochMilli())
-				.lastUpdatedBy(MetasfreshId.of(recordChangeLog.getLastChangedByUserId()))
+				.lastUpdatedBy(MetasfreshId.ofOrNull(recordChangeLog.getLastChangedByUserId()))
 				.lastUpdatedMillis(recordChangeLog.getLastChangedTimestamp().toEpochMilli());
 
 		for (final RecordChangeLogEntry entry : recordChangeLog.getEntries())
@@ -296,7 +296,7 @@ public class JsonRetrieverService
 
 			final JsonChangeLogItemBuilder jsonChangeLogItem = JsonChangeLogItem.builder()
 					.fieldName(columnMap.get(columnName))
-					.updatedBy(MetasfreshId.of(entry.getChangedByUserId()))
+					.updatedBy(MetasfreshId.ofOrNull(entry.getChangedByUserId()))
 					.updatedMillis(entry.getChangedTimestamp().toEpochMilli())
 					.newValue(String.valueOf(entry.getValueNew()))
 					.oldValue(String.valueOf(entry.getValueOld()));
