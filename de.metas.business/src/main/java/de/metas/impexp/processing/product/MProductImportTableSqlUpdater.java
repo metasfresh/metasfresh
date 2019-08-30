@@ -1,7 +1,7 @@
 package de.metas.impexp.processing.product;
 
-import static de.metas.impexp.processing.AbstractImportProcess.COLUMNNAME_I_ErrorMsg;
-import static de.metas.impexp.processing.AbstractImportProcess.COLUMNNAME_I_IsImported;
+import static de.metas.impexp.processing.ImportProcessTemplate.COLUMNNAME_I_ErrorMsg;
+import static de.metas.impexp.processing.ImportProcessTemplate.COLUMNNAME_I_IsImported;
 
 import java.util.Properties;
 

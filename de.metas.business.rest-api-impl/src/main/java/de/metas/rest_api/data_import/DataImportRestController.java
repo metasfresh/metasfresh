@@ -62,6 +62,9 @@ public class DataImportRestController
 			@ApiParam("Data Import internal name (i.e. `C_DataImport.InternalName`)") //
 			@RequestParam("dataImport") @NonNull final String dataImportInternalName,
 
+			@ApiParam("Try complete documents in case it applies") //
+			@RequestParam(name = "completeDocuments", required = false, defaultValue = "false") final boolean completeDocuments,
+
 			@ApiParam("The text file you are importing") //
 			@RequestParam("file") @NonNull final MultipartFile file)
 	{
@@ -74,6 +77,7 @@ public class DataImportRestController
 				.clientId(Env.getClientId())
 				.orgId(Env.getOrgId())
 				.userId(Env.getLoggedUserId())
+				.completeDocuments(completeDocuments)
 				.build());
 
 		return ResponseEntity.accepted()

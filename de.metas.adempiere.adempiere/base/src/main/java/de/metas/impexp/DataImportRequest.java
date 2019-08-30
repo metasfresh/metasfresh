@@ -1,11 +1,13 @@
 package de.metas.impexp;
 
 import org.adempiere.service.ClientId;
+import org.adempiere.util.api.IParams;
 import org.springframework.core.io.Resource;
 
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -49,4 +51,10 @@ public class DataImportRequest
 
 	@NonNull
 	UserId userId;
+
+	boolean completeDocuments;
+
+	@NonNull
+	@Default
+	IParams additionalParameters = IParams.NULL;
 }

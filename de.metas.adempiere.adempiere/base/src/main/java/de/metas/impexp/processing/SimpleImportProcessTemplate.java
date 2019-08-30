@@ -30,7 +30,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public abstract class SimpleImportProcessTemplate<ImportRecordType> extends AbstractImportProcess<ImportRecordType>
+public abstract class SimpleImportProcessTemplate<ImportRecordType> extends ImportProcessTemplate<ImportRecordType>
 {
 	@Override
 	protected final ImportGroupKey extractImportGroupKey(final ImportRecordType importRecord)

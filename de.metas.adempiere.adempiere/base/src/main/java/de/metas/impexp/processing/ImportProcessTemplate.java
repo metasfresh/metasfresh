@@ -59,7 +59,7 @@ import lombok.NonNull;
  *
  * @param <ImportRecordType> import table model (e.g. I_I_BPartner).
  */
-public abstract class AbstractImportProcess<ImportRecordType> implements IImportProcess<ImportRecordType>
+public abstract class ImportProcessTemplate<ImportRecordType> implements IImportProcess<ImportRecordType>
 {
 	public static final String COLUMNNAME_I_IsImported = "I_IsImported";
 	public static final String COLUMNNAME_I_ErrorMsg = "I_ErrorMsg";
@@ -76,10 +76,11 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	// Parameters
 	private Properties _ctx;
 	private ClientId clientId;
-	private IParams _parameters = IParams.NULL;
-	private ILoggable loggable = Loggables.logback(log, Level.INFO);
-	private TableRecordReferenceSet selectedRecordRefs;
 	private Boolean validateOnly;
+	private boolean completeDocuments;
+	private IParams _parameters = IParams.NULL;
+	private ILoggable loggable = Loggables.getLoggableOrLogger(log, Level.INFO);
+	private TableRecordReferenceSet selectedRecordRefs;
 
 	private ImportProcessResultCollector resultCollector;
 
@@ -96,7 +97,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	}
 
 	@Override
-	public final AbstractImportProcess<ImportRecordType> setCtx(final Properties ctx)
+	public final ImportProcessTemplate<ImportRecordType> setCtx(final Properties ctx)
 	{
 		assertNotStarted();
 
@@ -111,7 +112,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	}
 
 	@Override
-	public final AbstractImportProcess<ImportRecordType> clientId(@NonNull final ClientId clientId)
+	public final ImportProcessTemplate<ImportRecordType> clientId(@NonNull final ClientId clientId)
 	{
 		assertNotStarted();
 
@@ -130,7 +131,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	}
 
 	@Override
-	public final AbstractImportProcess<ImportRecordType> setParameters(@NonNull final IParams params)
+	public final ImportProcessTemplate<ImportRecordType> setParameters(@NonNull final IParams params)
 	{
 		assertNotStarted();
 
@@ -144,11 +145,20 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	}
 
 	@Override
-	public final AbstractImportProcess<ImportRecordType> validateOnly(final boolean validateOnly)
+	public final ImportProcessTemplate<ImportRecordType> validateOnly(final boolean validateOnly)
 	{
 		assertNotStarted();
 
 		this.validateOnly = validateOnly;
+		return this;
+	}
+
+	@Override
+	public final ImportProcessTemplate<ImportRecordType> completeDocuments(final boolean completeDocuments)
+	{
+		assertNotStarted();
+
+		this.completeDocuments = completeDocuments;
 		return this;
 	}
 
@@ -163,7 +173,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	}
 
 	@Override
-	public final AbstractImportProcess<ImportRecordType> setLoggable(@NonNull final ILoggable loggable)
+	public final ImportProcessTemplate<ImportRecordType> setLoggable(@NonNull final ILoggable loggable)
 	{
 		assertNotStarted();
 
@@ -189,11 +199,15 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 
 	protected final boolean isCompleteDocuments()
 	{
+		if (this.completeDocuments)
+		{
+			return true;
+		}
 		return getParameters().getParameterAsBool(PARAM_IsDocComplete);
 	}
 
 	@Override
-	public final AbstractImportProcess<ImportRecordType> selectedRecords(@NonNull final TableRecordReferenceSet selectedRecordRefs)
+	public final ImportProcessTemplate<ImportRecordType> selectedRecords(@NonNull final TableRecordReferenceSet selectedRecordRefs)
 	{
 		assertNotStarted();
 
@@ -441,6 +455,13 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 					@Override
 					public void onCompleteChunkError(final Throwable ex)
 					{
+						// do nothing.
+						// the error will be handled in "afterCompleteChunkError" method
+					}
+
+					@Override
+					public void afterCompleteChunkError(final Throwable ex)
+					{
 						final ImportGroup<ImportRecordType> currentGroup = currentImportGroupHolder.getValue();
 						markAsError(currentGroup, ex);
 					}
@@ -571,7 +592,8 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 			@NonNull final ImportGroup<ImportRecordType> importGroup,
 			@NonNull final Throwable exception)
 	{
-		final String trxName = ITrx.TRXNAME_None;
+		log.warn("Failed processing {}", importGroup, exception);
+
 		final String errorMsg = AdempiereException.extractMessage(exception);
 
 		final String importTableName = getImportTableName();

@@ -73,6 +73,7 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 				.clientId(getClientId())
 				.orgId(getOrgId())
 				.userId(getUserId())
+				.additionalParameters(getParameterAsIParams())
 				.build());
 
 		deleteAttachmentEntry();

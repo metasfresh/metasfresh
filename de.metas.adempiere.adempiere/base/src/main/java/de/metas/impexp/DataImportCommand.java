@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Env;
@@ -19,6 +20,7 @@ import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.impexp.processing.ImportProcessResult;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -50,7 +52,12 @@ final class DataImportCommand
 
 	private static final Charset CHARSET = Charset.forName("UTF-8");
 
-	private final ImpDataContext ctx;
+	private final ClientId clientId;
+	private final OrgId orgId;
+	private final UserId userId;
+	private final boolean completeDocuments;
+	private final IParams additionalParameters;
+
 	private final DataImportConfigId dataImportConfigId;
 	private final ImpFormat importFormat;
 	private final Resource data;
@@ -66,6 +73,8 @@ final class DataImportCommand
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId,
 			@NonNull final UserId userId,
+			final boolean completeDocuments,
+			final IParams additionalParameters,
 			//
 			@NonNull final DataImportConfigId dataImportConfigId,
 			@NonNull final ImpFormat importFormat,
@@ -73,11 +82,11 @@ final class DataImportCommand
 			@NonNull final Resource data)
 	{
 		this.importProcessFactory = importProcessFactory;
-		ctx = ImpDataContext.builder()
-				.clientId(clientId)
-				.orgId(orgId)
-				.userId(userId)
-				.build();
+		this.clientId = clientId;
+		this.orgId = orgId;
+		this.userId = userId;
+		this.completeDocuments = completeDocuments;
+		this.additionalParameters = CoalesceUtil.coalesce(additionalParameters, IParams.NULL);
 		this.dataImportConfigId = dataImportConfigId;
 		this.importFormat = importFormat;
 		this.data = data;
@@ -85,7 +94,7 @@ final class DataImportCommand
 
 	public DataImportResult execute()
 	{
-		streamImpDataLines().forEach(this::createImportRecord);
+		createImportRecordsFromSource();
 
 		final DataImportResultBuilder resultCollector = DataImportResult.builder()
 				.dataImportConfigId(dataImportConfigId)
@@ -108,19 +117,30 @@ final class DataImportCommand
 		return resultCollector.build();
 	}
 
+	private void createImportRecordsFromSource()
+	{
+		final ImpDataContext ctx = ImpDataContext.builder()
+				.clientId(clientId)
+				.orgId(orgId)
+				.userId(userId)
+				.build();
+		streamSourceLines().forEach(line -> createImportRecord(ctx, line));
+	}
+
 	private ImportProcessResult validateImportRecords(final TableRecordReferenceSet selectedRecordRefs)
 	{
 		return importProcessFactory.newImportProcessForTableName(importFormat.getTableName())
 				.setCtx(Env.getCtx())
-				.clientId(ctx.getClientId())
+				.clientId(clientId)
 				.validateOnly(true)
+				.completeDocuments(completeDocuments)
+				.setParameters(additionalParameters)
 				.selectedRecords(selectedRecordRefs)
 				// .setLoggable(loggable)
-				// .setParameters(params)
 				.run();
 	}
 
-	private Stream<ImpDataLine> streamImpDataLines()
+	private Stream<ImpDataLine> streamSourceLines()
 	{
 		final AtomicInteger nextLineNo = new AtomicInteger(1);
 
@@ -164,7 +184,9 @@ final class DataImportCommand
 		}
 	}
 
-	private void createImportRecord(@NonNull final ImpDataLine line)
+	private void createImportRecord(
+			@NonNull final ImpDataContext ctx,
+			@NonNull final ImpDataLine line)
 	{
 		line.importToDB(ctx);
 

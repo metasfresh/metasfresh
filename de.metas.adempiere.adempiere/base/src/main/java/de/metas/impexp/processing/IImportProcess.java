@@ -36,7 +36,7 @@ import de.metas.util.ILoggable;
 /**
  * All processes that are importing data should implement this interface.
  *
- * NOTE to developers: instead of implementing this class, please consider extending {@link AbstractImportProcess}.
+ * NOTE to developers: instead of implementing this class, please consider extending {@link ImportProcessTemplate}.
  *
  * @author Teo Sarca, www.arhipac.ro
  *         <li>FR [ 2788276 ] Data Import Validator https://sourceforge.net/tracker/?func=detail&aid=2788276&group_id=176962&atid=879335
@@ -63,6 +63,8 @@ public interface IImportProcess<ImportRecordType>
 	IImportProcess<ImportRecordType> selectedRecords(TableRecordReferenceSet selectedRecordRefs);
 
 	IImportProcess<ImportRecordType> validateOnly(boolean validateOnly);
+
+	IImportProcess<ImportRecordType> completeDocuments(boolean completeDocuments);
 
 	/** @return import table model class */
 	Class<ImportRecordType> getImportModelClass();
