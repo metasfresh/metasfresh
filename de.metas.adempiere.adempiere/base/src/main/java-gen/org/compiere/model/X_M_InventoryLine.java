@@ -15,7 +15,7 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -409190062L;
+	private static final long serialVersionUID = 1086288062L;
 
     /** Standard Constructor */
     public X_M_InventoryLine (Properties ctx, int M_InventoryLine_ID, String trxName)
@@ -70,7 +70,7 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	}
 
 	@Override
-	public org.compiere.model.I_C_Charge getC_Charge() throws RuntimeException
+	public org.compiere.model.I_C_Charge getC_Charge()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Charge_ID, org.compiere.model.I_C_Charge.class);
 	}
@@ -104,18 +104,6 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
 	}
 
 	/** Set Maßeinheit.
@@ -157,6 +145,22 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set External ID.
+		@param ExternalId External ID	  */
+	@Override
+	public void setExternalId (java.lang.String ExternalId)
+	{
+		set_ValueNoCheck (COLUMNNAME_ExternalId, ExternalId);
+	}
+
+	/** Get External ID.
+		@return External ID	  */
+	@Override
+	public java.lang.String getExternalId () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExternalId);
 	}
 
 	/** 
@@ -237,7 +241,7 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	}
 
 	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
 	}
@@ -274,7 +278,7 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	}
 
 	@Override
-	public org.compiere.model.I_M_InOutLine getM_InOutLine() throws RuntimeException
+	public org.compiere.model.I_M_InOutLine getM_InOutLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class);
 	}
@@ -311,7 +315,7 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	}
 
 	@Override
-	public org.compiere.model.I_M_Inventory getM_Inventory() throws RuntimeException
+	public org.compiere.model.I_M_Inventory getM_Inventory()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Inventory_ID, org.compiere.model.I_M_Inventory.class);
 	}
@@ -372,18 +376,6 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Locator getM_Locator() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class);
-	}
-
-	@Override
-	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class, M_Locator);
-	}
-
 	/** Set Lagerort.
 		@param M_Locator_ID 
 		Warehouse Locator
@@ -407,18 +399,6 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.
@@ -558,7 +538,7 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	}
 
 	@Override
-	public org.compiere.model.I_M_InventoryLine getReversalLine() throws RuntimeException
+	public org.compiere.model.I_M_InventoryLine getReversalLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_ReversalLine_ID, org.compiere.model.I_M_InventoryLine.class);
 	}

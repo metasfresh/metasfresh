@@ -151,6 +151,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 		final DocTypeId docTypeId = getDocTypeId(importRecord);
 
 		final I_M_Inventory inventory = newInstance(I_M_Inventory.class);
+		inventory.setExternalId(importRecord.getExternalHeaderId());
 		inventory.setAD_Org_ID(importRecord.getAD_Org_ID());
 		inventory.setDescription("I " + importRecord.getM_Warehouse_ID() + " " + importRecord.getMovementDate());
 		inventory.setC_DocType_ID(docTypeId.getRepoId());
@@ -174,6 +175,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 			@NonNull final InventoryId inventoryId)
 	{
 		final I_M_InventoryLine inventoryLine = InterfaceWrapperHelper.newInstance(I_M_InventoryLine.class);
+		inventoryLine.setExternalId(importRecord.getExternalLineId());
 		inventoryLine.setQtyCount(importRecord.getQtyCount());
 		inventoryLine.setM_Inventory_ID(inventoryId.getRepoId());
 		inventoryLine.setM_Locator_ID(importRecord.getM_Locator_ID());

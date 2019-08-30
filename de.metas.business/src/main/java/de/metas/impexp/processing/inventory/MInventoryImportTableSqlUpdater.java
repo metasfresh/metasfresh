@@ -137,16 +137,16 @@ final class MInventoryImportTableSqlUpdater
 				.list(I_I_Inventory.class);
 
 		unmatchedLocator.forEach(importRecord -> {
-			final I_M_Locator locator = getCreateNewMLocator(importRecord);
-			if (locator != null)
+			final LocatorId locatorId = getCreateNewMLocator(importRecord);
+			if (locatorId != null)
 			{
-				importRecord.setM_Locator(locator);
+				importRecord.setM_Locator_ID(locatorId.getRepoId());
 				InterfaceWrapperHelper.save(importRecord);
 			}
 		});
 	}
 
-	private I_M_Locator getCreateNewMLocator(@NonNull final I_I_Inventory importRecord)
+	private LocatorId getCreateNewMLocator(@NonNull final I_I_Inventory importRecord)
 	{
 		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 
@@ -176,9 +176,9 @@ final class MInventoryImportTableSqlUpdater
 		locator.setZ(importRecord.getZ());
 		locator.setX1(importRecord.getX1());
 		locator.setDateLastInventory(importRecord.getDateLastInventory());
-		InterfaceWrapperHelper.save(locator);
+		InterfaceWrapperHelper.saveRecord(locator);
 
-		return locator;
+		return LocatorId.ofRepoId(warehouseId, locator.getM_Locator_ID());
 	}
 
 	private void dbUpdateProducts(@NonNull final String sqlImportTableWhereClause)
