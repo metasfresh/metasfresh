@@ -1,9 +1,9 @@
 import { BPartner } from '../../support/utils/bpartner';
 import { humanReadableNow } from '../../support/utils/utils';
 
-describe('Create new BPartner', function() {
+describe('Create new BPartner via API', function() {
   const date = humanReadableNow();
-  const customerName = `Sales Order Test ${date}`;
+  const customerName = `Bpartner via API${date}`;
   let bpartnerID = null;
 
   before(function() {
@@ -21,9 +21,7 @@ describe('Create new BPartner', function() {
     });
   });
 
-  describe('Create a new sales order', function() {
-    it('Check new Business Partner', function() {
-      cy.visit(`/window/123/${bpartnerID}`);
-    });
+  it('Check new Business Partner', function() {
+    cy.visitWindow(123, bpartnerID);
   });
 });
