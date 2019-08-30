@@ -1,8 +1,8 @@
 {
  "qualityNoteName" : "unreif",
- "qualityDiscountPercent" : "5",
- "qtyToInvoice1" : "95",
- "qtyToInvoice2" : "250",
+ "qualityDiscountPercent" : 5,
+ "qtyToInvoice1" : 95,
+ "qtyToInvoice2" : 250,
 
  "warehouseName" : "TestWarehouseName",
 
@@ -14,5 +14,8 @@
  "priceListName" : "PriceList",
  "priceListVersionName" : "PriceListVersion",
  "productType" : "Item",
- "vendorName" : "Vendor"
+ "vendorName" : "Vendor",
+ "product1Quantity" : 100,
+ "product2Quantity" : 250,
+ "docBaseType": "Match PO"
 }

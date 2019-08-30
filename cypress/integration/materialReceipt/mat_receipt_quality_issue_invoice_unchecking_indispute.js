@@ -23,6 +23,9 @@ let priceListName;
 let priceListVersionName;
 let productType;
 let vendorName;
+let product1Quantity;
+let product2Quantity;
+let docBaseType;
 
 let purchaseOrderRecordId;
 
@@ -44,6 +47,9 @@ it('Read the fixture', function() {
     priceListVersionName = appendHumanReadableNow(['priceListVersionName']);
     productType = f['productType'];
     vendorName = appendHumanReadableNow(['vendorName']);
+    product1Quantity = f['product1Quantity'];
+    product2Quantity = f['product2Quantity'];
+    docBaseType = f['docBaseType'];
   });
 });
 it('Disable all other quality issue warehouses', function() {
@@ -77,7 +83,7 @@ it('Create quality issue warehouse', function() {
       .setName(warehouseName)
       .setValue(warehouseName)
       .setIsQualityIssueWarehouse(true)
-      .addRoute(new WarehouseRoute().setDocBaseType('Match PO'))
+      .addRoute(new WarehouseRoute().setDocBaseType(docBaseType))
       .apply();
   });
 });
@@ -122,8 +128,8 @@ it('Create purchase order - material receipt with quality issue', function() {
   new PurchaseOrder()
     .setBPartner(vendorName)
     .setPriceSystem(priceSystemName)
-    .addLine(new PurchaseOrderLine().setProduct(productName1).setQuantity(100))
-    .addLine(new PurchaseOrderLine().setProduct(productName2).setQuantity(250))
+    .addLine(new PurchaseOrderLine().setProduct(productName1).setQuantity(product1Quantity))
+    .addLine(new PurchaseOrderLine().setProduct(productName2).setQuantity(product2Quantity))
     .apply();
 
   cy.completeDocument();
@@ -170,11 +176,11 @@ it('Go to Invoice Disposition and check the billing candidates', function() {
   cy.openReferencedDocuments('C_Invoice_Candidate');
   cy.selectNthRow(1).dblclick();
   cy.expectCheckboxValue('IsInDispute', true);
-  cy.getStringFieldValue('QtyToInvoice').should('equal', qtyToInvoice1);
+  cy.getStringFieldValue('QtyToInvoice').should('equal', qtyToInvoice1.toString());
   cy.go('back');
   cy.selectNthRow(0).dblclick();
   cy.expectCheckboxValue('IsInDispute', false);
-  cy.getStringFieldValue('QtyToInvoice').should('equal', qtyToInvoice2);
+  cy.getStringFieldValue('QtyToInvoice').should('equal', qtyToInvoice2.toString());
   cy.go('back');
 });
 
@@ -188,5 +194,5 @@ it('Select both rows and generate invoices', function() {
   cy.expectNumberOfRows(1);
   cy.selectSingleTabRow();
   cy.openAdvancedEdit();
-  cy.getStringFieldValue('QtyEntered', true).should('equals', qtyToInvoice2);
+  cy.getStringFieldValue('QtyEntered', true).should('equals', qtyToInvoice2.toString());
 });
