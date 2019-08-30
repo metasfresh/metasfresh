@@ -36,14 +36,19 @@ declare namespace Cypress {
     /**
      * Run a quickAction inside a modal which opens a table on the right side.
      *
-     * Example: Runs the action "Open HU selection" window inside the window Picking Terminal (Prototype).
-     *
      * @param actionName - internal name of the action to be executed
+     *
+     * @example
+     *
+     * // Run the action "Open HU selection" window inside the window Picking Terminal (Prototype)
+     * cy.executeQuickActionWithRightSideTable('WEBUI_PP_Order_HUEditor_Launcher');
      */
     executeQuickActionWithRightSideTable(actionName: string): Chainable<any>
 
     /**
-     * @param fieldName - name of the field is question
+     * Get the value of a field as a string.
+     *
+     * @param fieldName - name of the field
      * @param modal - optional, default = false - use true if the field is in a modal overlay
      *
      * @example
@@ -568,7 +573,7 @@ declare namespace Cypress {
      * Expect the table to have a specific number of rows
      *
      * @param numberOfRows - the number of rows
-     * @param modal - optional, default = false - use true if the field is in a modal overlay
+     * @param modal - optional, default = false - use true if the table is in a modal overlay
      */
     expectNumberOfRows(numberOfRows: number, modal?: boolean): Chainable<any>
 
@@ -634,7 +639,7 @@ declare namespace Cypress {
      * Searches and selects one or multiple rows of a table by using column's `data-cy` attribute and the expected value of that column.
      *
      * @param columnAndValue - object or array of objects having 2 fields: `{ column: 'Value', value: 'P002753' }`
-     * @param modal - optional, default = false - use true if the field is in a modal overlay
+     * @param modal - optional, default = false - use true if the table is in a modal overlay
      * @param force - optional, default = false - use true when no checks should be done if the selection was successful
      * @param single - optional, default = true - use  false when expecting multiple rows
      *
