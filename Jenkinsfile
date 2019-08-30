@@ -51,13 +51,13 @@ timestamps
 node('agent && linux') // shall only run on a jenkins agent with linux
 {
 
-		final String BUILD_ARTIFACT_URL
+final String BUILD_ARTIFACT_URL
 
-		stage('Set versions and build metasfresh-webui-frontend')
-		{
-			final def scmVars = checkout scm
-			BUILD_GIT_SHA1 = scmVars.GIT_COMMIT
-			sh 'git clean -d --force -x' // clean the workspace
+stage('Set versions and build metasfresh-webui-frontend')
+{
+	final def scmVars = checkout scm
+	BUILD_GIT_SHA1 = scmVars.GIT_COMMIT
+	sh 'git clean -d --force -x' // clean the workspace
 
 
 	sh "if [ -d ~/.npm ]; then rm -r ~/.npm; fi" // make sure the .npm folder isn't there. it caused us problems in the past when it contained "stale files".
@@ -75,10 +75,8 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 	}
 	else 
 	{
-		withEnv(["JEST_JUNIT_OUTPUT=./jest-test-results.xml"]) {
-			sh 'yarn test --ci --reporters="default" --reporters="jest-junit"'
-		}
-		junit 'jest-test-results.xml'
+		sh 'yarn test --ci --reporters="default" --reporters="jest-junit"'
+		junit 'junit.xml'
 	}
 				
 	sh "webpack --config webpack.prod.js --bail --display-error-details"

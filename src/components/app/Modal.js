@@ -24,14 +24,13 @@ import Tooltips from '../tooltips/Tooltips.js';
 import Indicator from './Indicator';
 import OverlayField from './OverlayField';
 
+/**
+ * @file Modal is an overlay view that can be opened over the main view.
+ * @module Modal
+ * @extends Component
+ */
 class Modal extends Component {
   mounted = false;
-
-  static propTypes = {
-    dispatch: PropTypes.func.isRequired,
-    isNewDoc: PropTypes.bool,
-    staticModalType: PropTypes.string,
-  };
 
   constructor(props) {
     super(props);
@@ -49,6 +48,11 @@ class Modal extends Component {
     };
   }
 
+  /**
+   * @async
+   * @method componentDidMount
+   * @summary ToDo: Describe the method.
+   */
   async componentDidMount() {
     this.mounted = true;
 
@@ -68,12 +72,25 @@ class Modal extends Component {
     this.initEventListeners();
   }
 
+  /**
+   * @method componentWillUnmount
+   * @summary ToDo: Describe the method.
+   */
   componentWillUnmount() {
     this.mounted = false;
 
     this.removeEventListeners();
   }
 
+  /**
+   * @async
+   * @method componentDidUpdate
+   * @summary ToDo: Describe the method.
+   * @param {object} prevProps
+   * @prop {*} windowType
+   * @prop {*} viewId
+   * @prop {*} indicator
+   */
   async componentDidUpdate(prevProps) {
     const { windowType, viewId, indicator } = this.props;
     const { waitingFetch } = this.state;
@@ -96,10 +113,19 @@ class Modal extends Component {
     }
   }
 
+  /**
+   * @method toggleTooltip
+   * @summary ToDo: Describe the method.
+   * @param {*} key
+   */
   toggleTooltip = (key = null) => {
     this.setState({ isTooltipShow: key });
   };
 
+  /**
+   * @method initEventListeners
+   * @summary ToDo: Describe the method.
+   */
   initEventListeners = () => {
     const modalContent = document.querySelector('.js-panel-modal-content');
 
@@ -108,6 +134,10 @@ class Modal extends Component {
     }
   };
 
+  /**
+   * @method removeEventListeners
+   * @summary ToDo: Describe the method.
+   */
   removeEventListeners = () => {
     const modalContent = document.querySelector('.js-panel-modal-content');
 
@@ -116,6 +146,11 @@ class Modal extends Component {
     }
   };
 
+  /**
+   * @async
+   * @method init
+   * @summary ToDo: Describe the method.
+   */
   init = async () => {
     const {
       dispatch,
@@ -219,6 +254,10 @@ class Modal extends Component {
     }
   };
 
+  /**
+   * @method closeModal
+   * @summary ToDo: Describe the method.
+   */
   closeModal = () => {
     // TODO: parentDataId (formerly relativeDataId) is not passed in as prop
     const {
@@ -265,6 +304,10 @@ class Modal extends Component {
     }
   };
 
+  /**
+   * @method removeModal
+   * @summary ToDo: Describe the method
+   */
   removeModal = () => {
     const { dispatch, rawModalVisible } = this.props;
 
@@ -275,6 +318,10 @@ class Modal extends Component {
     }
   };
 
+  /**
+   * @method handleClose
+   * @summary ToDo: Describe the method
+   */
   handleClose = () => {
     const { modalSaveStatus, modalType } = this.props;
 
@@ -287,6 +334,11 @@ class Modal extends Component {
     }
   };
 
+  /**
+   * @method handleScroll
+   * @summary ToDo: Describe the method
+   * @param {object} event
+   */
   handleScroll = event => {
     this.setState(prevState => {
       const scrolled = event.target.scrollTop > 0;
@@ -298,6 +350,10 @@ class Modal extends Component {
     });
   };
 
+  /**
+   * @method handleStart
+   * @summary ToDo: Describe the method
+   */
   handleStart = () => {
     const { dispatch, layout, windowType, indicator } = this.props;
 
@@ -339,6 +395,10 @@ class Modal extends Component {
     );
   };
 
+  /**
+   * @method renderModalBody
+   * @summary ToDo: Describe the method
+   */
   renderModalBody = () => {
     const {
       data,
@@ -395,6 +455,10 @@ class Modal extends Component {
     }
   };
 
+  /**
+   * @method renderPanel
+   * @summary ToDo: Describe the method
+   */
   renderPanel = () => {
     const { modalTitle, modalType, isDocumentNotSaved, layout } = this.props;
     const { scrolled, pending, isNewDoc, isTooltipShow } = this.state;
@@ -526,6 +590,10 @@ class Modal extends Component {
     );
   };
 
+  /**
+   * @method renderOverlay
+   * @summary ToDo: Describe the method
+   */
   renderOverlay = () => {
     const { data, layout, windowType, modalType, isNewDoc } = this.props;
     const { pending } = this.state;
@@ -580,6 +648,10 @@ class Modal extends Component {
     );
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   */
   render() {
     const { layout, modalType } = this.props;
     let renderedContent = null;
@@ -608,6 +680,76 @@ class Modal extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} activeTabId
+ * @prop {*} childViewId
+ * @prop {*} closeCallback
+ * @prop {*} childViewSelectedIds
+ * @prop {shape} data
+ * @prop {string} dataId
+ * @prop {func} dispatch Dispatch function
+ * @prop {string} indicator
+ * @prop {shape} layout
+ * @prop {bool} isAdvanced
+ * @prop {bool} isDocumentNotSaved
+ * @prop {bool} isNewDoc
+ * @prop {string} staticModalType
+ * @prop {*} modalTitle
+ * @prop {*} modalType
+ * @prop {*} modalSaveStatus
+ * @prop {*} modalViewId
+ * @prop {*} modalViewDocumentIds
+ * @prop {string} staticModalType
+ * @prop {string} tabId
+ * @prop {*} parentSelection
+ * @prop {*} parentType
+ * @prop {*} parentViewId
+ * @prop {*} parentViewSelectedIds
+ * @prop {*} rawModalVisible
+ * @prop {string} rowId
+ * @prop {*} triggerField
+ * @prop {*} viewId
+ * @prop {*} windowType
+ */
+Modal.propTypes = {
+  dispatch: PropTypes.func.isRequired,
+  isNewDoc: PropTypes.bool,
+  staticModalType: PropTypes.string,
+  activeTabId: PropTypes.any,
+  childViewId: PropTypes.any,
+  closeCallback: PropTypes.any,
+  childViewSelectedIds: PropTypes.any,
+  data: PropTypes.oneOfType([PropTypes.shape(), PropTypes.array]), // TODO: type here should point to a hidden issue?
+  dataId: PropTypes.string,
+  indicator: PropTypes.string,
+  layout: PropTypes.shape(),
+  isAdvanced: PropTypes.bool,
+  isDocumentNotSaved: PropTypes.any,
+  modalTitle: PropTypes.any,
+  modalType: PropTypes.any,
+  modalSaveStatus: PropTypes.any,
+  modalViewId: PropTypes.any,
+  modalViewDocumentIds: PropTypes.any,
+  tabId: PropTypes.string,
+  parentDataId: PropTypes.any,
+  parentSelection: PropTypes.any,
+  parentType: PropTypes.any,
+  parentViewId: PropTypes.any,
+  parentViewSelectedIds: PropTypes.any,
+  rawModalVisible: PropTypes.any,
+  rowId: PropTypes.string,
+  triggerField: PropTypes.any,
+  viewId: PropTypes.any,
+  windowType: PropTypes.any,
+};
+
+/**
+ * @method mapStateToProps
+ * @summary ToDo: Describe the method
+ * @param {object} state
+ * @param {object} props
+ */
 const mapStateToProps = (state, props) => ({
   parentSelection: getSelectionInstant(
     state,

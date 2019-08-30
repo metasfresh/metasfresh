@@ -180,6 +180,7 @@ class TableCell extends PureComponent {
       windowId,
       rowId,
       tabId,
+      property,
       handleDoubleClick,
       handleKeyDown,
       updatedRow,
@@ -198,6 +199,7 @@ class TableCell extends PureComponent {
       onClickOutside,
       isGerman,
     } = this.props;
+
     const docId = `${this.props.docId}`;
     const { tooltipToggled } = this.state;
     const tdValue = !isEdited
@@ -244,6 +246,15 @@ class TableCell extends PureComponent {
       };
     }
 
+    let entityEffective;
+    if (viewId) {
+      entityEffective = 'documentView';
+    } else if (mainTable) {
+      entityEffective = 'window';
+    } else {
+      entityEffective = entity;
+    }
+
     return (
       <td
         tabIndex={modalVisible ? -1 : tabIndex}
@@ -264,11 +275,12 @@ class TableCell extends PureComponent {
             'pulse-off': !updatedRow,
           }
         )}
+        data-cy={`cell-${property}`}
       >
         {isEdited ? (
           <MasterWidget
             {...item}
-            entity={mainTable ? 'window' : entity}
+            entity={entityEffective}
             dateFormat={isDateField}
             dataId={mainTable ? null : docId}
             widgetData={widgetData}
@@ -321,6 +333,7 @@ class TableCell extends PureComponent {
 TableCell.propTypes = {
   cellExtended: PropTypes.bool,
   extendLongText: PropTypes.number,
+  property: PropTypes.string,
   handleRightClick: PropTypes.func,
   handleKeyDown: PropTypes.func,
   handleDoubleClick: PropTypes.func,
