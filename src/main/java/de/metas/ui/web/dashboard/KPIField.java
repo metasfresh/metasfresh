@@ -18,6 +18,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
@@ -211,21 +212,24 @@ public class KPIField
 			{
 				if (value instanceof String)
 				{
-					final Date date = TimeUtil.asDate(DateTimeConverters.fromObjectToLocalDate(value));
-					return DisplayType.getDateFormat(DisplayType.Date)
+					final Date date = TimeUtil.asDate(DateTimeConverters.fromObjectToZonedDateTime(value));
+					final Language language = Language.getLanguage(jsonOpts.getAdLanguage());
+					return DisplayType.getDateFormat(DisplayType.Date, language)
 							.format(date);
 				}
 				else if (value instanceof Date)
 				{
 					final Date date = (Date)value;
-					return DisplayType.getDateFormat(DisplayType.Date)
+					final Language language = Language.getLanguage(jsonOpts.getAdLanguage());
+					return DisplayType.getDateFormat(DisplayType.Date, language)
 							.format(date);
 				}
 				else if (value instanceof Number)
 				{
 					final long millis = ((Number)value).longValue();
 					final Date date = new Date(millis);
-					return DisplayType.getDateFormat(DisplayType.Date)
+					final Language language = Language.getLanguage(jsonOpts.getAdLanguage());
+					return DisplayType.getDateFormat(DisplayType.Date, language)
 							.format(date);
 				}
 				else
@@ -238,20 +242,23 @@ public class KPIField
 				if (value instanceof String)
 				{
 					final Date date = TimeUtil.asDate(DateTimeConverters.fromObjectToZonedDateTime(value));
-					return DisplayType.getDateFormat(DisplayType.DateTime)
+					final Language language = Language.getLanguage(jsonOpts.getAdLanguage());
+					return DisplayType.getDateFormat(DisplayType.DateTime, language)
 							.format(date);
 				}
 				else if (value instanceof Date)
 				{
 					final Date date = (Date)value;
-					return DisplayType.getDateFormat(DisplayType.DateTime)
+					final Language language = Language.getLanguage(jsonOpts.getAdLanguage());
+					return DisplayType.getDateFormat(DisplayType.DateTime, language)
 							.format(date);
 				}
 				else if (value instanceof Number)
 				{
 					final long millis = ((Number)value).longValue();
 					final Date date = new Date(millis);
-					return DisplayType.getDateFormat(DisplayType.DateTime)
+					final Language language = Language.getLanguage(jsonOpts.getAdLanguage());
+					return DisplayType.getDateFormat(DisplayType.DateTime, language)
 							.format(date);
 				}
 				else
