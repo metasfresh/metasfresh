@@ -7,6 +7,9 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_DataImport;
+import org.compiere.model.I_I_ElementValue;
+import org.compiere.model.I_I_Product;
+import org.compiere.model.I_I_ReportLine;
 import org.compiere.model.POInfo;
 import org.springframework.stereotype.Repository;
 
@@ -86,27 +89,22 @@ public class ImportTableDescriptorRepository
 		String tableUniqueParent = "";
 		String tableUniqueChild = "";
 
-		if (adTableId.getRepoId() == 532)		// I_Product
+		if (I_I_Product.Table_Name.equals(tableName))
 		{
-			tableUnique1 = "UPC";						// UPC = unique
-			tableUnique2 = "Value";
-			tableUniqueChild = "VendorProductNo";		// Vendor No may not be unique !
-			tableUniqueParent = "BPartner_Value";		// Makes it unique
+			tableUnique1 = I_I_Product.COLUMNNAME_UPC; // UPC = unique
+			tableUnique2 = I_I_Product.COLUMNNAME_Value;
+			tableUniqueParent = I_I_Product.COLUMNNAME_BPartner_Value; // Makes it unique
+			tableUniqueChild = I_I_Product.COLUMNNAME_VendorProductNo; // Vendor No may not be unique !
 		}
-		else if (adTableId.getRepoId() == 533)		// I_BPartner
+		else if (I_I_ElementValue.Table_Name.equals(tableName))
 		{
-			// gody: 20070113 to allow multiple contacts per BP
-			// m_tableUnique1 = "Value"; // the key
+			tableUniqueParent = I_I_ElementValue.COLUMNNAME_ElementName; // the parent key
+			tableUniqueChild = I_I_ElementValue.COLUMNNAME_Value; // the key
 		}
-		else if (adTableId.getRepoId() == 534)		// I_ElementValue
+		else if (I_I_ReportLine.Table_Name.equals(tableName))
 		{
-			tableUniqueParent = "ElementName";			// the parent key
-			tableUniqueChild = "Value";					// the key
-		}
-		else if (adTableId.getRepoId() == 535)		// I_ReportLine
-		{
-			tableUniqueParent = "ReportLineSetName";		// the parent key
-			tableUniqueChild = "Name";					// the key
+			tableUniqueParent = I_I_ReportLine.COLUMNNAME_ReportLineSetName; // the parent key
+			tableUniqueChild = I_I_ReportLine.COLUMNNAME_Name; // the key
 		}
 
 		return ImportTableDescriptor.builder()
