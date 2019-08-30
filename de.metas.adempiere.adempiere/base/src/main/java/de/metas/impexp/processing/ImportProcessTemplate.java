@@ -12,7 +12,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
@@ -28,7 +27,6 @@ import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_DataImport;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.DB;
@@ -41,6 +39,8 @@ import com.google.common.collect.ImmutableMap;
 import ch.qos.logback.classic.Level;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.impexp.DataImportConfigId;
 import de.metas.impexp.ImportTableDescriptor;
 import de.metas.impexp.ImportTableDescriptorRepository;
@@ -632,8 +632,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 		// AD_Issue_ID
 		if (importTableDescriptor.getAdIssueIdColumnName() != null)
 		{
-			final I_AD_Issue adIssue = errorManager.createIssue(exception);
-			final int adIssueId = adIssue.getAD_Issue_ID();
+			final AdIssueId adIssueId = errorManager.createIssue(exception);
 
 			sql.append(", " + importTableDescriptor.getAdIssueIdColumnName() + "=?");
 			sqlParams.add(adIssueId);

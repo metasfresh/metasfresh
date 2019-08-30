@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.CCache;
+import de.metas.error.AdIssueId;
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.model.I_AD_EventLog;
@@ -145,7 +146,7 @@ public class EventLogService
 		eventLogEntryRecord.setAD_Org_ID(eventLogEntry.getOrgId());
 
 		eventLogEntryRecord.setAD_EventLog_ID(eventLogId.getRepoId());
-		eventLogEntryRecord.setAD_Issue_ID(eventLogEntry.getAdIssueId());
+		eventLogEntryRecord.setAD_Issue_ID(AdIssueId.toRepoId(eventLogEntry.getAdIssueId()));
 		eventLogEntryRecord.setIsError(eventLogEntry.isError());
 		eventLogEntryRecord.setProcessed(eventLogEntry.isProcessed());
 		eventLogEntryRecord.setMsgText(eventLogEntry.getMessage());

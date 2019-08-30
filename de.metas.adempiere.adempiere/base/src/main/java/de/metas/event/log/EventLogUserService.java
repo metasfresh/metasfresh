@@ -4,14 +4,14 @@ import java.util.Collection;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.model.I_AD_Issue;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -60,7 +60,7 @@ public class EventLogUserService
 	{
 		boolean processed;
 		boolean error;
-		int adIssueId;
+		AdIssueId adIssueId;
 		String message;
 		Class<?> eventHandlerClass;
 
@@ -71,7 +71,7 @@ public class EventLogUserService
 		public EventLogEntryRequest(
 				final boolean processed,
 				final boolean error,
-				final int adIssueId,
+				final AdIssueId adIssueId,
 				@Nullable final String message, Class<?> eventHandlerClass)
 		{
 			this.processed = processed;
@@ -125,13 +125,13 @@ public class EventLogUserService
 			@NonNull final Class<?> handlerClass,
 			@NonNull final Exception e)
 	{
-		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(e);
+		final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(e);
 
 		return EventLogEntryRequest.builder()
 				.error(true)
 				.eventHandlerClass(handlerClass)
 				.message(e.getMessage())
-				.adIssueId(issue.getAD_Issue_ID());
+				.adIssueId(issueId);
 	}
 
 	@Value

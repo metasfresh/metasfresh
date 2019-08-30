@@ -14,7 +14,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -35,6 +34,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 
 import de.metas.Profiles;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfig;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesMultiQuery;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesMultiResult;
@@ -224,11 +225,11 @@ public class AvailableForSalesUtil
 	private void handleAsyncException(@NonNull final UserId errorNotificationRecipient, @NonNull Exception e1)
 	{
 		final Throwable cause = AdempiereException.extractCause(e1);
-		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(cause);
+		final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(cause);
 
 		final TargetRecordAction targetAction = TargetRecordAction
 				.ofRecordAndWindow(
-						TableRecordReference.of(I_AD_Issue.Table_Name, issue.getAD_Issue_ID()),
+						TableRecordReference.of(I_AD_Issue.Table_Name, issueId),
 						IErrorManager.AD_ISSUE_WINDOW_ID.getRepoId());
 
 		final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
