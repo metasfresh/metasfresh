@@ -192,11 +192,6 @@ export class Product {
 }
 
 export class ProductCategory {
-  constructor(name) {
-    cy.log(`Product Category - set name = ${name}`);
-    this.name = name;
-  }
-
   setName(name) {
     cy.log(`Product Category - set name = ${name}`);
     this.name = name;
