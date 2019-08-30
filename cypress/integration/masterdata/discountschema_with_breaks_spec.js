@@ -1,11 +1,30 @@
 import { Product, ProductCategory } from '../../support/utils/product';
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 
 describe('New discount schema Test', function() {
-  const date = humanReadableNow();
-  const discountschemaName = `dscschema_with_breaks-${date}`;
-  const productCategoryName = `dscschema_with_breaks-${date}`;
-  const productName = `dscschema_with_breaks-${date}`;
+  let discountschemaName;
+  let productCategoryName;
+  let productName;
+  let serviceProductType;
+
+  let breakValue1;
+  let breakValue2;
+  let breakDiscount1;
+  let breakDiscount2;
+
+  it('Read the fixture', function() {
+    cy.fixture('masterdata/discountschema_with_breaks_spec.json').then(f => {
+      discountschemaName = appendHumanReadableNow(f['discountschemaName']);
+      productCategoryName = appendHumanReadableNow(f['productCategoryName']);
+      productName = appendHumanReadableNow(f['productName']);
+      serviceProductType = f['serviceProductType'];
+
+      breakValue1 = f['breakValue1'];
+      breakValue2 = f['breakValue2'];
+      breakDiscount1 = f['breakDiscount1'];
+      breakDiscount2 = f['breakDiscount2'];
+    });
+  });
 
   it('Create a product to test with', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
@@ -17,7 +36,7 @@ describe('New discount schema Test', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)
-        .setProductType('Service')
+        .setProductType(serviceProductType)
         .apply();
     });
   });
@@ -27,13 +46,13 @@ describe('New discount schema Test', function() {
       cy.visitWindow('233', 'NEW');
       cy.writeIntoStringField('Name', discountschemaName, false);
       cy.selectInListField('DiscountType', 'Breaks');
-      cy.writeIntoStringField('ValidFrom', '01/01/2019', false, '', true);
+      cy.writeIntoStringField('ValidFrom', '01/01/2019', false, null, true);
       cy.writeIntoStringField('Description', `Description for ${discountschemaName}`, false);
     });
 
     describe(`Create new break records for ${discountschemaName}`, function() {
-      addBreakRecord(productName, '1', '10');
-      addBreakRecord(productName, '50', '20');
+      addBreakRecord(productName, breakValue1, breakDiscount1);
+      addBreakRecord(productName, breakValue2, breakDiscount2);
     });
   });
 });
