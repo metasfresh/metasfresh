@@ -1,0 +1,10 @@
+{
+  "dunningTypeName":  "Dunning",
+
+  "businessPartnerName": "Customer Dunning",
+  "paymentTerm": "immediately",
+
+  "salesInvoiceTargetDocumentType": "Sales Invoice",
+  "productName": "Convenience Salat 250g",
+  "originalQuantity":  200
+}

@@ -1,7 +1,7 @@
 /// <reference types="Cypress" />
 
 import { SalesInvoice, SalesInvoiceLine } from '../../support/utils/sales_invoice';
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 import { BPartner } from '../../support/utils/bpartner';
 import { DunningCandidates } from '../../page_objects/dunning_candidates';
 import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
@@ -10,21 +10,33 @@ import { DunningDocuments } from '../../page_objects/dunning_documents';
 import { salesInvoices } from '../../page_objects/sales_invoices';
 
 describe('Create Dunning Documents', function() {
-  const date = humanReadableNow();
+  let dunningTypeName;
 
-  const dunningTypeName = `Dunning ${date}`;
+  let businessPartnerName;
+  let paymentTerm;
 
-  const businessPartnerName = `Customer Dunning ${date}`;
-  const paymentTerm = 'immediately';
+  let salesInvoiceTargetDocumentType;
+  let productName;
+  let originalQuantity;
 
-  const salesInvoiceTargetDocumentType = 'Sales Invoice';
-  const productName = 'Convenience Salat 250g';
-  const originalQuantity = 200;
-
+  // test
   let siDocumentNumber;
   let dunningTypeRecordId;
   let siRecordId;
   let dunningDocId;
+
+  it('Read the fixture', function() {
+    cy.fixture('dunning/change_text_dunning_doc.json').then(f => {
+      dunningTypeName = appendHumanReadableNow(f['dunningTypeName']);
+
+      businessPartnerName = appendHumanReadableNow(f['businessPartnerName']);
+      paymentTerm = f['paymentTerm'];
+
+      salesInvoiceTargetDocumentType = f['salesInvoiceTargetDocumentType'];
+      productName = f['productName'];
+      originalQuantity = f['originalQuantity'];
+    });
+  });
 
   it('Create dunning type', function() {
     cy.fixture('settings/dunning_type.json').then(dunningType => {
@@ -39,20 +51,18 @@ describe('Create Dunning Documents', function() {
 
   it('Create bpartner', function() {
     cy.fixture('sales/simple_customer.json').then(customerJson => {
-      const bpartner = new BPartner({ ...customerJson, name: businessPartnerName })
+      new BPartner({ ...customerJson, name: businessPartnerName })
         .setDunning(dunningTypeName)
-        .setPaymentTerm(paymentTerm);
-
-      bpartner.apply();
+        .setPaymentTerm(paymentTerm)
+        .apply();
     });
   });
 
   it('Create sales invoice', function() {
-    cy.fixture('sales/sales_invoice.json').then(salesInvoiceJson => {
-      new SalesInvoice(businessPartnerName, salesInvoiceTargetDocumentType)
-        .addLine(new SalesInvoiceLine().setProduct(productName).setQuantity(originalQuantity))
-        .apply();
-    });
+    // eslint-disable-next-line
+    new SalesInvoice(businessPartnerName, salesInvoiceTargetDocumentType)
+      .addLine(new SalesInvoiceLine().setProduct(productName).setQuantity(originalQuantity))
+      .apply();
     cy.completeDocument();
   });
   it('Sales Invoice is not paid', function() {
@@ -104,11 +114,11 @@ describe('Create Dunning Documents', function() {
     cy.getCurrentWindowRecordId().then(function(record) {
       dunningDocId = record;
     });
-    /**open header action 'Print' to check pdf report initial text 
-    cy.clickHeaderNav('print');
-    *The test is partialy implemented as for the moment(8/8/2019)
-    * we cannot verify text inside pdf reports using cypress)
-    */
+    /**open header action 'Print' to check pdf report initial text
+     cy.clickHeaderNav('print');
+     *The test is partialy implemented as for the moment(8/8/2019)
+     * we cannot verify text inside pdf reports using cypress)
+     */
   });
 
   it('Change text in dunning type - level 2', function() {
@@ -121,7 +131,7 @@ describe('Create Dunning Documents', function() {
   });
   it('Compare text in pdf report from dunning doc with the newly changed text in dunning type - level 2', function() {
     cy.visitWindow('540155', dunningDocId);
-    /**open header action 'Print' to check pdf report initial text 
-    cy.clickHeaderNav('print');*/
+    /**open header action 'Print' to check pdf report initial text
+     cy.clickHeaderNav('print');*/
   });
 });
