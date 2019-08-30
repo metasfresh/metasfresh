@@ -784,6 +784,7 @@ export class RawWidget extends Component {
         return (
           <Attributes
             attributeType="address"
+            entity={entity}
             fields={fields}
             dataId={dataId}
             widgetData={widgetData[0]}
