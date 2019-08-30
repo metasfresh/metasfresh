@@ -19,6 +19,15 @@ describe('Create a Tour, a Tour Version and Delivery Days', function() {
     });
   });
 
+  it('Read the fixture', function() {
+    cy.fixture('logistics/create_delivery_days.json').then(f => {
+      customerName = appendHumanReadableNow(f['customerName']);
+
+      tourName = appendHumanReadableNow(f['tourName']);
+      tourVersionName = appendHumanReadableNow(f['tourVersionName']);
+    });
+  });
+
   it('Create customer for which we will create a tour', function() {
     cy.fixture('sales/simple_customer.json').then(customerJson => {
       new BPartner({ ...customerJson, name: customerName }).setCustomer(true).apply();
