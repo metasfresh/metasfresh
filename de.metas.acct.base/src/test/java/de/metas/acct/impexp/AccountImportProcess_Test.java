@@ -16,6 +16,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
+import de.metas.impexp.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctionsRepository;
 
 /*
@@ -41,7 +42,8 @@ import de.metas.impexp.processing.DBFunctionsRepository;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-		DBFunctionsRepository.class})
+		DBFunctionsRepository.class,
+		ImportTableDescriptorRepository.class })
 public class AccountImportProcess_Test
 {
 	private Properties ctx;
@@ -62,9 +64,9 @@ public class AccountImportProcess_Test
 		final AccountImportProcess importProcess = new AccountImportProcess();
 		importProcess.setCtx(ctx);
 
-		ievs.forEach(iElelemntValue -> importProcess.importRecord(new Mutable<>(), iElelemntValue, false /*isInsertOnly*/));
+		ievs.forEach(iElelemntValue -> importProcess.importRecord(new Mutable<>(), iElelemntValue, false /* isInsertOnly */));
 
-		ievs.forEach(iElelemntValue ->AccountImportTestHelper.assertImported(iElelemntValue));
+		ievs.forEach(iElelemntValue -> AccountImportTestHelper.assertImported(iElelemntValue));
 	}
 
 	/**
