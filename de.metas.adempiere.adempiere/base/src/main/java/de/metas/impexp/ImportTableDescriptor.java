@@ -1,6 +1,7 @@
 package de.metas.impexp;
 
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -27,10 +28,13 @@ import lombok.Value;
 
 @Value
 @Builder
-class ImportTableDescriptor
+public class ImportTableDescriptor
 {
+	@NonNull
 	String tableName;
-	String tablePK;
+	@NonNull
+	String keyColumnName;
+
 	String tableUnique1;
 	String tableUnique2;
 	String tableUniqueParent;

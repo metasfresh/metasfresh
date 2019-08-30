@@ -294,7 +294,7 @@ public final class ImpFormat
 		final UserId userId = ctx.getUserId();
 
 		final String tableName = importTableDescriptor.getTableName();
-		final String tablePK = importTableDescriptor.getTablePK();
+		final String keyColumnName = importTableDescriptor.getKeyColumnName();
 		final String tableUnique1 = importTableDescriptor.getTableUnique1();
 		final String tableUnique2 = importTableDescriptor.getTableUnique2();
 		final String tableUniqueParent = importTableDescriptor.getTableUniqueParent();
@@ -311,7 +311,7 @@ public final class ImpFormat
 			final int recordId = importRecordRef.getRecord_ID();
 
 			// make sure it still exists
-			final int count = DB.getSQLValue(ITrx.TRXNAME_ThreadInherited, "SELECT COUNT(1) FROM " + tableName + " WHERE " + tablePK + "=" + recordId);
+			final int count = DB.getSQLValue(ITrx.TRXNAME_ThreadInherited, "SELECT COUNT(1) FROM " + tableName + " WHERE " + keyColumnName + "=" + recordId);
 			if (count == 1)
 			{
 				importRecordId = recordId;
@@ -323,7 +323,7 @@ public final class ImpFormat
 		if (importRecordId <= 0)
 		{
 			final StringBuilder sql = new StringBuilder("SELECT COUNT(*), MAX(")
-					.append(tablePK).append(") FROM ").append(tableName)
+					.append(keyColumnName).append(") FROM ").append(tableName)
 					.append(" WHERE AD_Client_ID=").append(clientId.getRepoId()).append(" AND (");
 			//
 			String where1 = null;
@@ -423,7 +423,7 @@ public final class ImpFormat
 			}
 
 			final StringBuilder sql = new StringBuilder("INSERT INTO ")
-					.append(tableName).append("(").append(tablePK).append(",")
+					.append(tableName).append("(").append(keyColumnName).append(",")
 					.append("AD_Client_ID,AD_Org_ID,Created,CreatedBy,Updated,UpdatedBy,IsActive")	// StdFields
 					.append(") VALUES (").append(importRecordId).append(",")
 					.append(clientId.getRepoId()).append(",").append(orgId.getRepoId())
@@ -463,7 +463,7 @@ public final class ImpFormat
 			}
 
 			sqlUpdate.append("IsActive='Y',Processed='N',I_IsImported='N',Updated=now(),UpdatedBy=").append(userId.getRepoId());
-			sqlUpdate.append(" WHERE ").append(tablePK).append("=").append(importRecordId);
+			sqlUpdate.append(" WHERE ").append(keyColumnName).append("=").append(importRecordId);
 			//
 			final int no = DB.executeUpdateEx(sqlUpdate.toString(), ITrx.TRXNAME_ThreadInherited);
 			if (no != 1)

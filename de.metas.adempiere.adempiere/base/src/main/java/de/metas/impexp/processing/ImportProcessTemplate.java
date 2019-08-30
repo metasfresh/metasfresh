@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
@@ -26,7 +27,8 @@ import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_DataImport;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.DB;
@@ -40,6 +42,8 @@ import ch.qos.logback.classic.Level;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.impexp.DataImportConfigId;
+import de.metas.impexp.ImportTableDescriptor;
+import de.metas.impexp.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.ImportProcessResult.ImportProcessResultCollector;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
@@ -69,8 +73,10 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 
 	// services
 	protected final transient Logger log = LogManager.getLogger(getClass());
-	protected final ITrxManager trxManager = Services.get(ITrxManager.class);
-	protected final DBFunctionsRepository dbFunctionsRepo = Adempiere.getBean(DBFunctionsRepository.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	private final DBFunctionsRepository dbFunctionsRepo = SpringContextHolder.instance.getBean(DBFunctionsRepository.class);
+	private final ImportTableDescriptorRepository importTableDescriptorRepo = SpringContextHolder.instance.getBean(ImportTableDescriptorRepository.class);
 
 	//
 	// Parameters
@@ -84,6 +90,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 
 	private ImportProcessResultCollector resultCollector;
 
+	private ImportTableDescriptor _importTableDescriptor; // lazy
 	private DBFunctions dbFunctions; // lazy
 	private PInstanceId selectionId; // lazy
 	private String whereClause; // lazy
@@ -245,9 +252,19 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 		return getParameters().getParameterAsBool(PARAM_DeleteOldImported);
 	}
 
+	private ImportTableDescriptor getImportTableDescriptor()
+	{
+		ImportTableDescriptor importTableDescriptor = this._importTableDescriptor;
+		if (importTableDescriptor == null)
+		{
+			importTableDescriptor = this._importTableDescriptor = importTableDescriptorRepo.getByTableName(getImportTableName());
+		}
+		return importTableDescriptor;
+	}
+
 	protected final String getImportKeyColumnName()
 	{
-		return getImportTableName() + "_ID";
+		return getImportTableDescriptor().getKeyColumnName();
 	}
 
 	protected abstract String getTargetTableName();
@@ -592,25 +609,45 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 			@NonNull final ImportGroup<ImportRecordType> importGroup,
 			@NonNull final Throwable exception)
 	{
-		log.warn("Failed processing {}", importGroup, exception);
-
-		final String errorMsg = AdempiereException.extractMessage(exception);
-
-		final String importTableName = getImportTableName();
-		final String keyColumnName = getImportKeyColumnName();
+		final ImportTableDescriptor importTableDescriptor = getImportTableDescriptor();
+		final String importTableName = importTableDescriptor.getTableName();
+		final String keyColumnName = importTableDescriptor.getKeyColumnName();
 		final Set<Integer> importRecordIds = importGroup.getImportRecordIds();
 
-		final String sql = "UPDATE " + importTableName + " SET"
-				+ "  " + COLUMNNAME_I_IsImported + "=?"
-				+ ", " + COLUMNNAME_I_ErrorMsg + "=I_ErrorMsg || ?"
-				+ " WHERE " + DB.buildSqlList(keyColumnName, importRecordIds);
-		final Object[] sqlParams = new Object[] {
-				"E", // I_IsImported
-				Check.isEmpty(errorMsg, true) ? "" : errorMsg + ", " // ErrorMsg
-		};
+		final ArrayList<Object> sqlParams = new ArrayList<>();
+		final StringBuilder sql = new StringBuilder("UPDATE " + importTableName + " SET ");
 
-		DB.executeUpdateEx(sql,
-				sqlParams,
+		// I_IsImported
+		sql.append(COLUMNNAME_I_IsImported + "=?");
+		sqlParams.add("E");
+
+		// I_ErrorMsg
+		{
+			final String errorMsg = AdempiereException.extractMessage(exception);
+
+			sql.append(", " + COLUMNNAME_I_ErrorMsg + "=I_ErrorMsg || ?");
+			sqlParams.add(Check.isEmpty(errorMsg, true) ? "" : errorMsg + ", ");
+		}
+
+		// AD_Issue_ID
+		if (importTableDescriptor.getAdIssueIdColumnName() != null)
+		{
+			final I_AD_Issue adIssue = errorManager.createIssue(exception);
+			final int adIssueId = adIssue.getAD_Issue_ID();
+
+			sql.append(", " + importTableDescriptor.getAdIssueIdColumnName() + "=?");
+			sqlParams.add(adIssueId);
+		}
+
+		//
+		// WHERE clause
+		sql.append(" WHERE " + DB.buildSqlList(keyColumnName, importRecordIds));
+
+		//
+		// Execute
+		DB.executeUpdateEx(
+				sql.toString(),
+				sqlParams.toArray(),
 				ITrx.TRXNAME_ThreadInherited,
 				0, // no timeOut
 				(ISqlUpdateReturnProcessor)null);

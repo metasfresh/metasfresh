@@ -1,6 +1,7 @@
 package de.metas.impexp;
 
 import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Issue;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import de.metas.cache.CCache;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -49,6 +51,14 @@ public class ImportTableDescriptorRepository
 		return importTableDescriptors.getOrLoad(adTableId, this::retrieveByTableId);
 	}
 
+	public ImportTableDescriptor getByTableName(@NonNull final String tableName)
+	{
+		final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
+		final AdTableId adTableId = AdTableId.ofRepoId(adTablesRepo.retrieveTableId(tableName));
+
+		return getByTableId(adTableId);
+	}
+
 	private ImportTableDescriptor retrieveByTableId(@NonNull final AdTableId adTableId)
 	{
 		final POInfo poInfo = POInfo.getPOInfo(adTableId);
@@ -56,8 +66,8 @@ public class ImportTableDescriptorRepository
 
 		final String tableName = poInfo.getTableName();
 
-		final String tablePK = poInfo.getKeyColumnName();
-		if (tablePK == null)
+		final String keyColumnName = poInfo.getKeyColumnName();
+		if (keyColumnName == null)
 		{
 			throw new AdempiereException("Table " + tableName + " has not primary key");
 		}
@@ -101,7 +111,7 @@ public class ImportTableDescriptorRepository
 
 		return ImportTableDescriptor.builder()
 				.tableName(tableName)
-				.tablePK(tablePK)
+				.keyColumnName(keyColumnName)
 				//
 				.tableUnique1(tableUnique1)
 				.tableUnique2(tableUnique2)
