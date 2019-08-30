@@ -672,7 +672,14 @@ declare namespace Cypress {
      */
     selectRowByColumnAndValue(columnAndValue: ColumnAndValue | ColumnAndValue[], modal ?: boolean, force ?: boolean, single ?: boolean): Chainable<any>
 
-
+  /**
+     * Select all rows on the current page
+     */
+    selectAllRowsOnCurrentPage(): Chainable<any>
+      /**
+     * Count all rows from all pages
+     */
+    countAllRows(): Chainable<any>
   }
 
 }

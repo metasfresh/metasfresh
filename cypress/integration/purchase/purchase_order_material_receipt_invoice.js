@@ -129,7 +129,7 @@ describe('Create a purchase order and Material Receipts', function() {
   });
 
   it('Select all candidates and run action "Generate Invoices"', function() {
-    cy.get('body').type('{alt}a'); // select all on this page
+    cy.selectAllRowsOnCurrentPage();
     cy.readAllNotifications();
     cy.executeHeaderActionWithDialog('C_Invoice_Candidate_EnqueueSelectionForInvoicing');
     // no parameters are changed for this process
