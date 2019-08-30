@@ -78,7 +78,7 @@ public interface IWarehouseDAO extends ISingletonService
 	I_M_Locator getLocatorById(final LocatorId locatorId);
 
 	<T extends I_M_Locator> T getLocatorById(final LocatorId locatorId, Class<T> modelClass);
-	
+
 	<T extends I_M_Locator> T getLocatorByIdInTrx(LocatorId locatorId, Class<T> modelClass);
 
 	List<I_M_Locator> getLocators(WarehouseId warehouseId);
@@ -111,6 +111,8 @@ public interface IWarehouseDAO extends ISingletonService
 
 	OrgId retrieveOrgIdByLocatorId(int locatorId);
 
+	LocatorId createOrUpdateLocator(CreateOrUpdateLocatorRequest request);
+
 	LocatorId retrieveLocatorIdByValueAndWarehouseId(String locatorValue, WarehouseId warehouseId);
 
 	I_M_Locator getOrCreateLocatorByCoordinates(WarehouseId warehouseId, String value, String x, String y, String z);
@@ -118,4 +120,5 @@ public interface IWarehouseDAO extends ISingletonService
 	LocatorId createDefaultLocator(WarehouseId warehouseId);
 
 	WarehouseType getWarehouseTypeById(WarehouseTypeId id);
+
 }

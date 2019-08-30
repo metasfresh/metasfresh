@@ -8,10 +8,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.CreateOrUpdateLocatorRequest;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_I_Inventory;
-import org.compiere.model.I_M_Locator;
 import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -148,37 +149,25 @@ final class MInventoryImportTableSqlUpdater
 
 	private LocatorId getCreateNewMLocator(@NonNull final I_I_Inventory importRecord)
 	{
-		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-
 		//
 		// check if exists, because might be created meanwhile
-		if (importRecord.getM_Warehouse_ID() <= 0)
+		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(importRecord.getM_Warehouse_ID());
+		if (warehouseId == null)
 		{
 			return null;
 		}
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(importRecord.getM_Warehouse_ID());
-		final LocatorId locatorId = warehousesRepo.retrieveLocatorIdByValueAndWarehouseId(importRecord.getLocatorValue(), warehouseId);
-		final I_M_Locator locator;
-		if (locatorId != null)
-		{
-			locator = warehousesRepo.getLocatorByIdInTrx(locatorId, I_M_Locator.class);
-		}
-		else
-		{
-			locator = InterfaceWrapperHelper.newInstance(I_M_Locator.class);
-		}
 
-		locator.setAD_Org_ID(importRecord.getAD_Org_ID());
-		locator.setM_Warehouse_ID(warehouseId.getRepoId());
-		locator.setValue(importRecord.getLocatorValue());
-		locator.setX(importRecord.getX());
-		locator.setY(importRecord.getY());
-		locator.setZ(importRecord.getZ());
-		locator.setX1(importRecord.getX1());
-		locator.setDateLastInventory(importRecord.getDateLastInventory());
-		InterfaceWrapperHelper.saveRecord(locator);
-
-		return LocatorId.ofRepoId(warehouseId, locator.getM_Locator_ID());
+		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+		return warehousesRepo.createOrUpdateLocator(CreateOrUpdateLocatorRequest.builder()
+				.warehouseId(warehouseId)
+				.locatorValue(importRecord.getLocatorValue())
+				.orgId(OrgId.ofRepoId(importRecord.getAD_Org_ID()))
+				.x(importRecord.getX())
+				.y(importRecord.getY())
+				.z(importRecord.getZ())
+				.x1(importRecord.getX1())
+				.dateLastInventory(TimeUtil.asZonedDateTime(importRecord.getDateLastInventory()))
+				.build());
 	}
 
 	private void dbUpdateProducts(@NonNull final String sqlImportTableWhereClause)
