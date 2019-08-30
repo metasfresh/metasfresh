@@ -15,6 +15,7 @@ import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -199,6 +200,12 @@ final class MInventoryImportTableSqlUpdater
 				sqlImportTableWhereClause,
 				"i.UPC IS NOT NULL",
 				"p.UPC = i.UPC");
+
+		// Fallback/backwards compatibility: Match by product value, without using the 'val-' prefix
+		dbUpdateProducts(
+				sqlImportTableWhereClause,
+				"i.Value IS NOT NULL",
+				"p.Value = i.Value");
 	}
 
 	private static int dbUpdateProducts(
@@ -238,7 +245,7 @@ final class MInventoryImportTableSqlUpdater
 	public int countRecordsWithErrors(@NonNull final String whereClause)
 	{
 		final String sql = "SELECT COUNT(1) FROM I_Inventory "
-				+ "WHERE I_IsImported='E'"
+				+ " WHERE I_IsImported='E'"
 				+ " " + whereClause;
 		return DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql);
 	}
@@ -246,12 +253,27 @@ final class MInventoryImportTableSqlUpdater
 	private void dbUpdateErrorMessages(@NonNull final String whereClause)
 	{
 		//
-		// No locator
+		// No Organization
+		{
+			final String sql = "UPDATE I_Inventory "
+					+ " SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Organization, ' "
+					+ " WHERE (AD_Org_ID IS NULL OR AD_Org_ID=" + OrgId.ANY.getRepoId() + ")"
+					+ " AND I_IsImported<>'Y' "
+					+ " " + whereClause;
+			final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+			if (no != 0)
+			{
+				logger.warn("No Organization = {}", no);
+			}
+		}
+
+		//
+		// No Locator
 		{
 			final StringBuilder sql = new StringBuilder("UPDATE I_Inventory ")
-					.append("SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Locator, ' ")
-					.append("WHERE M_Locator_ID IS NULL ")
-					.append("AND I_IsImported<>'Y' ")
+					.append(" SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Locator, ' ")
+					.append(" WHERE M_Locator_ID IS NULL ")
+					.append(" AND I_IsImported<>'Y' ")
 					.append(whereClause);
 			final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 			if (no != 0)
@@ -260,11 +282,13 @@ final class MInventoryImportTableSqlUpdater
 			}
 		}
 
+		//
+		// No Warehouse
 		{
 			final StringBuilder sql = new StringBuilder("UPDATE I_Inventory ")
-					.append("SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Warehouse, ' ")
-					.append("WHERE M_Warehouse_ID IS NULL ")
-					.append("AND I_IsImported<>'Y' ")
+					.append(" SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Warehouse, ' ")
+					.append(" WHERE M_Warehouse_ID IS NULL ")
+					.append(" AND I_IsImported<>'Y' ")
 					.append(whereClause);
 			final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 			if (no != 0)
@@ -273,11 +297,13 @@ final class MInventoryImportTableSqlUpdater
 			}
 		}
 
+		//
+		// No Product
 		{
 			final StringBuilder sql = new StringBuilder("UPDATE I_Inventory ")
-					.append("SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Product, ' ")
-					.append("WHERE M_Product_ID IS NULL ")
-					.append("AND I_IsImported<>'Y' ")
+					.append(" SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Product, ' ")
+					.append(" WHERE M_Product_ID IS NULL ")
+					.append(" AND I_IsImported<>'Y' ")
 					.append(whereClause);
 			final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 			if (no != 0)
@@ -289,9 +315,9 @@ final class MInventoryImportTableSqlUpdater
 		// No QtyCount
 		{
 			final StringBuilder sql = new StringBuilder("UPDATE I_Inventory ")
-					.append("SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No qtycount, ' ")
-					.append("WHERE qtycount IS NULL ")
-					.append("AND I_IsImported<>'Y' ")
+					.append(" SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No qtycount, ' ")
+					.append(" WHERE qtycount IS NULL ")
+					.append(" AND I_IsImported<>'Y' ")
 					.append(whereClause);
 			final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 			if (no != 0)

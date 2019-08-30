@@ -37,9 +37,9 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.impexp.processing.AbstractImportProcess;
 import de.metas.impexp.processing.ImportGroupKey;
 import de.metas.impexp.processing.ImportGroupResult;
+import de.metas.impexp.processing.ImportProcessTemplate;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryId;
 import de.metas.logging.LogManager;
@@ -55,7 +55,7 @@ import lombok.NonNull;
  * Import {@link I_I_Inventory} to {@link I_M_Inventory}.
  *
  */
-public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
+public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 {
 	private static final Logger logger = LogManager.getLogger(InventoryImportProcess.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -106,7 +106,8 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 	protected String getImportOrderBySql()
 	{
 		return I_I_Inventory.COLUMNNAME_WarehouseValue
-				+ ", " + I_I_Inventory.COLUMNNAME_MovementDate;
+				+ ", " + I_I_Inventory.COLUMNNAME_MovementDate
+				+ ", " + I_I_Inventory.COLUMNNAME_I_Inventory_ID;
 	}
 
 	@Override
@@ -155,6 +156,7 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 		inventory.setC_DocType_ID(docTypeId.getRepoId());
 		inventory.setM_Warehouse_ID(importRecord.getM_Warehouse_ID());
 		inventory.setMovementDate(importRecord.getMovementDate());
+		saveRecord(inventory);
 		return inventory;
 	}
 
@@ -241,11 +243,12 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 
 		//
 		// SubProducerBPartner_Value
-		if (!Check.isEmpty(importRecord.getSubProducerBPartner_Value(), true))
 		{
-			final I_M_Attribute subProducerBPartnettr = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_SubProducerBPartner_Value);
-			final I_M_AttributeValue subProducerBPartneValue = getOrCreateSubproducerAttributeValue(subProducerBPartnettr, importRecord);
-			getCreateAttributeInstanceForSubproducer(asi, subProducerBPartneValue);
+			final I_M_AttributeValue subProducerBPartneValue = getOrCreateSubproducerAttributeValue(importRecord);
+			if (subProducerBPartneValue != null)
+			{
+				getCreateAttributeInstanceForSubproducer(asi, subProducerBPartneValue);
+			}
 		}
 
 		attributeSetInstanceBL.setDescription(asi);
@@ -254,21 +257,34 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 		return AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 	}
 
-	private I_M_AttributeValue getOrCreateSubproducerAttributeValue(
-			@NonNull final I_M_Attribute attribute,
-			@NonNull final I_I_Inventory importRecord)
+	private I_M_AttributeValue getOrCreateSubproducerAttributeValue(@NonNull final I_I_Inventory importRecord)
 	{
-		final String subproducerBPartnerIdString = String.valueOf(importRecord.getSubProducer_BPartner_ID());
-		I_M_AttributeValue attributeValue = attributeDAO.retrieveAttributeValueOrNull(attribute, subproducerBPartnerIdString);
+		final String subproducerBPartnerValue = importRecord.getSubProducerBPartner_Value();
+		if (Check.isEmpty(subproducerBPartnerValue, true))
+		{
+			return null;
+		}
+
+		final int subproducerBPartnerId = importRecord.getSubProducer_BPartner_ID();
+		if (subproducerBPartnerId <= 0)
+		{
+			return null;
+		}
+
+		final I_M_Attribute subProducerAttribute = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_SubProducerBPartner_Value);
+
+		final String subproducerBPartnerIdString = String.valueOf(subproducerBPartnerId);
+		I_M_AttributeValue attributeValue = attributeDAO.retrieveAttributeValueOrNull(subProducerAttribute, subproducerBPartnerIdString);
 		if (attributeValue != null)
 		{
 			return attributeValue;
 		}
 
-		attributeValue = InterfaceWrapperHelper.newInstance(I_M_AttributeValue.class);
-		attributeValue.setM_Attribute_ID(attribute.getM_Attribute_ID());
+		// search is done out of transaction because
+		attributeValue = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_AttributeValue.class);
+		attributeValue.setM_Attribute_ID(subProducerAttribute.getM_Attribute_ID());
 		attributeValue.setValue(subproducerBPartnerIdString);
-		attributeValue.setName(importRecord.getSubProducerBPartner_Value());
+		attributeValue.setName(subproducerBPartnerValue);
 		attributeValue.setIsActive(true);
 		InterfaceWrapperHelper.saveRecord(attributeValue);
 		return attributeValue;
