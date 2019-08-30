@@ -122,15 +122,6 @@ public interface IPriceListDAO extends ISingletonService
 		return priceListVersionId;
 	}
 
-	// /**
-	// * Retrieve the price list version that has <code>Processed='Y'</code> and and was valid before before the the given <code>plv</code> .
-	// *
-	// * @param plv
-	// * @return
-	// */
-	// I_M_PriceList_Version retrievePreviousVersionOrNull(I_M_PriceList_Version plv);
-	// TODO CLEAN THIS UP
-
 	/** @return next product price's MatchSeqNo */
 	int retrieveNextMatchSeqNo(final I_M_ProductPrice productPrice);
 
@@ -177,8 +168,6 @@ public interface IPriceListDAO extends ISingletonService
 	void updateProductPrice(UpdateProductPriceRequest request);
 
 	void deleteProductPricesByIds(Set<ProductPriceId> productPriceIds);
-
-	List<I_M_PriceList_Version> retrieveCustomPLVsToMutate(I_M_PriceList_Version basePLV);
 
 	I_M_PriceList_Version retrievePreviousVersionOrNull(I_M_PriceList_Version plv, boolean onlyProcessed);
 

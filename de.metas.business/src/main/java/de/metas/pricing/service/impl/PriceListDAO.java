@@ -733,8 +733,7 @@ public class PriceListDAO implements IPriceListDAO
 		save(productPrice);
 	}
 
-	@Override
-	public List<I_M_PriceList_Version> retrieveCustomPLVsToMutate(@NonNull final I_M_PriceList_Version basePLV)
+	private List<I_M_PriceList_Version> retrieveCustomPLVsToMutate(@NonNull final I_M_PriceList_Version basePLV)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
