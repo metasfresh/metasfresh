@@ -1,51 +1,46 @@
+-- View: public.edi_cctop_invoic_500_v
 
---
--- Don't select VendorProductNo (it's deprecated), but ProductNo if a record with UsedForCustomer=Y
---
--- View: edi_cctop_invoic_500_v
+-- DROP VIEW public.edi_cctop_invoic_500_v;
 
-DROP VIEW IF EXISTS edi_cctop_invoic_500_v;
-
-CREATE OR REPLACE VIEW edi_cctop_invoic_500_v AS 
-SELECT 
-	SUM(il.qtyentered) AS qtyinvoiced, -- we output the Qty in the customer's UOM (i.e. QtyEntered)
-	MIN(il.c_invoiceline_id) AS edi_cctop_invoic_500_v_id, 
-	SUM(il.linenetamt) AS linenetamt, 
-	MIN(il.line) AS line, 
-	il.c_invoice_id,
-	il.c_invoice_id AS edi_cctop_invoic_v_id,
-	il.priceactual,
-	il.pricelist, 
-	pp.upc, -- in the invoic the customer expects the CU-EANs, not the TU-EANs (so we don't select upc_TU here)
-	p.value, 
-	pp.productno AS vendorproductno, 
-	substr(p.name, 1, 35) AS name, 
-	substr(p.name, 36, 70) AS name2, 
-	t.rate, 
-	CASE
-		WHEN u.x12de355::text = 'TU'::text THEN 'PCE'::character varying
-		ELSE u.x12de355
-	END AS eancom_uom, 
-	CASE
-		WHEN u_price.x12de355::text = 'TU'::text THEN 'PCE'::character varying
-		ELSE u_price.x12de355
-	END AS eancom_price_uom, 
-	CASE
-		WHEN t.rate = 0::numeric THEN 'Y'::text
-		ELSE ''::text
-	END AS taxfree, 
-	c.iso_code, 
-	il.ad_client_id, 
-	il.ad_org_id, 
-	MIN(il.created) AS created, 
-	MIN(il.createdby)::numeric(10,0) AS createdBy, 
-	MAX(il.updated) AS updated, 
-	MAX(il.updatedby)::numeric(10,0) AS updatedby, 
-	il.isactive, 
-	CASE pc.value
-		WHEN 'Leergut'::text THEN 'P'::text
-		ELSE ''::text
-	END AS leergut, 
+CREATE OR REPLACE VIEW public.edi_cctop_invoic_500_v AS
+ SELECT sum(il.qtyentered) AS qtyinvoiced,
+    min(il.c_invoiceline_id) AS edi_cctop_invoic_500_v_id,
+    sum(il.linenetamt) AS linenetamt,
+    min(il.line) AS line,
+    il.c_invoice_id,
+    il.c_invoice_id AS edi_cctop_invoic_v_id,
+    il.priceactual,
+    il.pricelist,
+    pp.upc,
+    p.value,
+    pp.productno AS vendorproductno,
+    substr(p.name, 1, 35) AS name,
+    substr(p.name, 36, 70) AS name2,
+    t.rate,
+        CASE
+            WHEN u.x12de355 = 'TU' THEN 'PCE'::character varying
+            ELSE u.x12de355
+        END AS eancom_uom,
+        CASE
+            WHEN u_price.x12de355 = 'TU' THEN 'PCE'::character varying
+            ELSE u_price.x12de355
+        END AS eancom_price_uom,
+        CASE
+            WHEN t.rate = 0::numeric THEN 'Y'
+            ELSE ''
+        END AS taxfree,
+    c.iso_code,
+    il.ad_client_id,
+    il.ad_org_id,
+    min(il.created) AS created,
+    min(il.createdby)::numeric(10,0) AS createdby,
+    max(il.updated) AS updated,
+    max(il.updatedby)::numeric(10,0) AS updatedby,
+    il.isactive,
+        CASE pc.value
+            WHEN 'Leergut' THEN 'P'
+            ELSE ''
+        END AS leergut,
     COALESCE(NULLIF(pp.productdescription, ''), NULLIF(pp.description, ''), NULLIF(p.description, ''), p.name)::character varying AS productdescription,
     COALESCE(NULLIF(o.poreference, ''), i.poreference)::character varying(40) AS orderporeference,
     COALESCE(ol.line, il.line) AS orderline,
@@ -96,7 +91,6 @@ SELECT
 	il.c_orderline_id
   ORDER BY (COALESCE(ol.line, il.line));
 
-;
 COMMENT ON VIEW edi_cctop_invoic_500_v IS 'Notes:
 we output the Qty in the customer''s UOM (i.e. QtyEntered), but we call it QtyInvoiced for historical reasons.
 task 08878: Note: we try to aggregate ils which have the same order line. Grouping by C_OrderLine_ID to make sure that we don''t aggregate too much;
