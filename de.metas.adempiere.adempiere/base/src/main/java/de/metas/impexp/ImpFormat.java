@@ -42,7 +42,7 @@ public final class ImpFormat
 	private final boolean manualImport;
 
 	/** The Table to be imported */
-	private final ImpFormatTableInfo tableInfo;
+	private final ImportTableDescriptor importTableDescriptor;
 
 	private final ImmutableList<ImpFormatColumn> columns;
 
@@ -52,7 +52,7 @@ public final class ImpFormat
 			@NonNull final ImpFormatType formatType,
 			final boolean multiLine,
 			final boolean manualImport,
-			@NonNull final ImpFormatTableInfo tableInfo,
+			@NonNull final ImportTableDescriptor importTableDescriptor,
 			@NonNull final List<ImpFormatColumn> columns)
 	{
 		Check.assumeNotEmpty(name, "name is not empty");
@@ -62,13 +62,13 @@ public final class ImpFormat
 		this.formatType = formatType;
 		this.multiLine = multiLine;
 		this.manualImport = manualImport;
-		this.tableInfo = tableInfo;
+		this.importTableDescriptor = importTableDescriptor;
 		this.columns = ImmutableList.copyOf(columns);
 	}
 
 	public String getTableName()
 	{
-		return tableInfo.getTableName();
+		return importTableDescriptor.getTableName();
 	}
 
 	/**
@@ -293,12 +293,12 @@ public final class ImpFormat
 		}
 		final UserId userId = ctx.getUserId();
 
-		final String tableName = tableInfo.getTableName();
-		final String tablePK = tableInfo.getTablePK();
-		final String tableUnique1 = tableInfo.getTableUnique1();
-		final String tableUnique2 = tableInfo.getTableUnique2();
-		final String tableUniqueParent = tableInfo.getTableUniqueParent();
-		final String tableUniqueChild = tableInfo.getTableUniqueChild();
+		final String tableName = importTableDescriptor.getTableName();
+		final String tablePK = importTableDescriptor.getTablePK();
+		final String tableUnique1 = importTableDescriptor.getTableUnique1();
+		final String tableUnique2 = importTableDescriptor.getTableUnique2();
+		final String tableUniqueParent = importTableDescriptor.getTableUniqueParent();
+		final String tableUniqueChild = importTableDescriptor.getTableUniqueChild();
 
 		//
 		// Re-use the same ID if we already imported this record
@@ -456,7 +456,7 @@ public final class ImpFormat
 				sqlUpdate.append(node.getColumnNameEqualsValueSql()).append(",");		// column=value
 			}
 
-			final String dataImportConfigIdColumnName = tableInfo.getDataImportConfigIdColumnName();
+			final String dataImportConfigIdColumnName = importTableDescriptor.getDataImportConfigIdColumnName();
 			if (!Check.isEmpty(dataImportConfigIdColumnName, true) && line.getDataImportConfigId() != null)
 			{
 				sqlUpdate.append(dataImportConfigIdColumnName).append("=").append(line.getDataImportConfigId().getRepoId()).append(",");

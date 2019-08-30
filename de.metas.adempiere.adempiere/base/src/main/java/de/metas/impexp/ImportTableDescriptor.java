@@ -27,7 +27,7 @@ import lombok.Value;
 
 @Value
 @Builder
-class ImpFormatTableInfo
+class ImportTableDescriptor
 {
 	String tableName;
 	String tablePK;
@@ -35,6 +35,7 @@ class ImpFormatTableInfo
 	String tableUnique2;
 	String tableUniqueParent;
 	String tableUniqueChild;
-	
+
 	String dataImportConfigIdColumnName;
+	String adIssueIdColumnName;
 }
