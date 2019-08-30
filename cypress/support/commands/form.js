@@ -63,6 +63,7 @@ Cypress.Commands.add('getCheckboxValue', (fieldName, modal) => {
   const path = createFieldPath(fieldName, modal);
 
   return cy.get(path).then(el => {
+    // noinspection RedundantIfStatementJS
     if (el.find('checked').length || el.find('.checked').length) {
       return true;
     }
@@ -120,30 +121,28 @@ Cypress.Commands.add('clickOnIsActive', modal => {
  * @param modal - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
  * @param {boolean} skipPatch - if true - the patch request will be skipped
  */
-Cypress.Commands.add(
-  'clickOnCheckBox',
-  (fieldName, expectedPatchValue, modal, rewriteUrl = null, skipPatch = false) => {
-    cy.log(`clickOnCheckBox - fieldName=${fieldName}`);
+Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal, rewriteUrl = null, skipPatch = false) => {
+  cy.log(`clickOnCheckBox - fieldName=${fieldName}`);
 
-    const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
-    const patchCheckBoxAliasName = `patchCheckBox-${fieldName}-${new Date().getTime()}`;
-    if (!skipPatch) {
-      cy.server();
-      cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchCheckBoxAliasName);
-    }
-    cy.log(`clickOnCheckBox - fieldName=${fieldName}; modal=${modal};`);
-
-    const path = createFieldPath(fieldName, modal);
-
-    cy.get(path)
-      .find('.input-checkbox-tick')
-      .click({ force: true }); // we don't care if the checkbox scrolled out of view
-    if (!skipPatch) {
-      cy.waitForFieldValue(`@${patchCheckBoxAliasName}`, fieldName, expectedPatchValue);
-    }
+  const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
+  const patchCheckBoxAliasName = `patchCheckBox-${fieldName}-${new Date().getTime()}`;
+  if (!skipPatch) {
+    cy.server();
+    cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchCheckBoxAliasName);
   }
-);
-/*
+  cy.log(`clickOnCheckBox - fieldName=${fieldName}; modal=${modal};`);
+
+  const path = createFieldPath(fieldName, modal);
+
+  cy.get(path)
+    .find('.input-checkbox-tick')
+    .click({ force: true }); // we don't care if the checkbox scrolled out of view
+  if (!skipPatch) {
+    cy.waitForFieldValue(`@${patchCheckBoxAliasName}`, fieldName, expectedPatchValue);
+  }
+});
+
+/**
  * Right now it can only select the current date
  * @param {string} fieldName - name of the field
  * @param {boolean} modal - use true, if the field is in a modal overlay
@@ -160,6 +159,7 @@ Cypress.Commands.add('selectDateViaPicker', (fieldName, modal) => {
     .find('.form-control-label')
     .click();
 });
+
 /**Selects a date in the picker
  * should not be used for offsets larger than a couple of days
  * @param {string} fieldName - name of the field
@@ -181,6 +181,7 @@ Cypress.Commands.add('selectOffsetDateViaPicker', (fieldName, dayOffset, modal) 
     .find('.form-control-label')
     .click();
 });
+
 /**
  * Function to fill in text inputs
  *
@@ -194,9 +195,7 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
   const aliasName = `writeIntoStringField-${fieldName}-${new Date().getTime()}`;
   const expectedPatchValue = removeSubstringsWithCurlyBrackets(stringValue);
   const patchUrlPattern = rewriteUrl || RewriteURL.Generic; // todo @TheBestPessimist: get rid of rewriteUrl parameter everywhere and just use "generic". it's useless in the way we're using it now.
-  cy.log(
-    `writeIntoStringField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}; patchUrlPattern=${patchUrlPattern}`
-  );
+  cy.log(`writeIntoStringField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}; patchUrlPattern=${patchUrlPattern}`);
 
   if (!noRequest) {
     cy.server();
@@ -225,30 +224,27 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
  * @param {string} rewriteUrl - use custom url for the request
  * @param {boolean} skipRequest - if set to true, the PATCH request will be skipped
  */
-Cypress.Commands.add(
-  'writeIntoTextField',
-  (fieldName, stringValue, modal = false, rewriteUrl = null, skipRequest = false) => {
-    cy.log(`writeIntoTextField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}`);
+Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal = false, rewriteUrl = null, skipRequest = false) => {
+  cy.log(`writeIntoTextField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}`);
 
-    const aliasName = `writeIntoTextField-${fieldName}-${new Date().getTime()}`;
-    const expectedPatchValue = removeSubstringsWithCurlyBrackets(stringValue);
-    // in the default pattern we want to match URLs that do *not* end with "/NEW"
-    const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
+  const aliasName = `writeIntoTextField-${fieldName}-${new Date().getTime()}`;
+  const expectedPatchValue = removeSubstringsWithCurlyBrackets(stringValue);
+  // in the default pattern we want to match URLs that do *not* end with "/NEW"
+  const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
 
-    // here we want to match URLs that don *not* end with "/NEW"
-    cy.server();
-    cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
+  // here we want to match URLs that don *not* end with "/NEW"
+  cy.server();
+  cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
 
-    const path = createFieldPath(fieldName, modal);
+  const path = createFieldPath(fieldName, modal);
 
-    cy.get(path)
-      .find('textarea')
-      .type(`${stringValue}{enter}`);
-    if (!skipRequest) {
-      cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
-    }
+  cy.get(path)
+    .find('textarea')
+    .type(`${stringValue}{enter}`);
+  if (!skipRequest) {
+    cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
   }
-);
+});
 
 /**
  * @param modal - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
@@ -256,57 +252,47 @@ Cypress.Commands.add(
  *                   responses for different fields.
  * @param {boolean} skipRequest - if set to true, the PATCH request will be skipped
  */
-Cypress.Commands.add(
-  'writeIntoLookupListField',
-  (
-    fieldName,
-    partialValue,
-    expectedListValue,
-    typeList = false,
-    modal = false,
-    rewriteUrl = null,
-    skipRequest = false
-  ) => {
-    let path = `#lookup_${fieldName}`;
-    if (modal) {
-      path = `.panel-modal ${path}`;
-    }
-
-    const aliasName = `writeIntoLookupListField-${fieldName}-${new Date().getTime()}`;
-    //the value to wait for would not be e.g. "Letter", but {key: "540408", caption: "Letter"}
-    const expectedPatchValue = removeSubstringsWithCurlyBrackets(partialValue);
-    // in the default pattern we want to match URLs that do *not* end with "/NEW"
-    const patchUrlPattern = rewriteUrl || '/rest/api/window';
-    if (!skipRequest) {
-      cy.server();
-      cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
-    }
-    cy.get(path).within(el => {
-      if (el.find('.lookup-widget-wrapper input').length) {
-        return (
-          cy
-            .get('input')
-            // we can't use `clear` here as sometimes it triggers request to the server
-            // and then the whole flow becomes flaky
-            .type('{selectall}')
-            .type(partialValue)
-        );
-      }
-
-      // this is extremely fiddly when selecting from a combo field such as bpartner address.
-      // it will work locally, but most of the times will fail in jenkins.
-      // Please create the tests such that adding an address in a combo field is not mandatory!
-      return cy.get('.lookup-dropdown').click();
-    });
-
-    cy.get('.input-dropdown-list').should('exist');
-    cy.contains('.input-dropdown-list-option', expectedListValue).click(/*{ force: true }*/);
-    if (!skipRequest) {
-      cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue, typeList /*expectEmptyRequest*/);
-    }
-    cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
+Cypress.Commands.add('writeIntoLookupListField', (fieldName, partialValue, expectedListValue, typeList = false, modal = false, rewriteUrl = null, skipRequest = false) => {
+  let path = `#lookup_${fieldName}`;
+  if (modal) {
+    path = `.panel-modal ${path}`;
   }
-);
+
+  const aliasName = `writeIntoLookupListField-${fieldName}-${new Date().getTime()}`;
+  //the value to wait for would not be e.g. "Letter", but {key: "540408", caption: "Letter"}
+  const expectedPatchValue = removeSubstringsWithCurlyBrackets(partialValue);
+  // in the default pattern we want to match URLs that do *not* end with "/NEW"
+  const patchUrlPattern = rewriteUrl || '/rest/api/window';
+  if (!skipRequest) {
+    cy.server();
+    cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
+  }
+  cy.get(path).within(el => {
+    if (el.find('.lookup-widget-wrapper input').length) {
+      return (
+        cy
+          .get('input')
+          // we can't use `clear` here as sometimes it triggers request to the server
+          // and then the whole flow becomes flaky
+          .type('{selectall}')
+          .type(partialValue)
+      );
+    }
+
+    // this is extremely fiddly when selecting from a combo field such as bpartner address.
+    // it will work locally, but most of the times will fail in jenkins.
+    // Please create the tests such that adding an address in a combo field is not mandatory!
+    return cy.get('.lookup-dropdown').click();
+  });
+
+  cy.get('.input-dropdown-list').should('exist');
+  cy.contains('.input-dropdown-list-option', expectedListValue).click(/*{ force: true }*/);
+  if (!skipRequest) {
+    cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue, typeList /*expectEmptyRequest*/);
+  }
+  cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
+});
+
 /**
  * Select the given list value in a static list.
  *
@@ -363,25 +349,27 @@ Cypress.Commands.add('selectNthInListField', (fieldName, index, modal) => {
   });
 });
 
-Cypress.Commands.add(
-  'setCheckBoxValue',
-  (fieldName, isChecked, modal = false, rewriteUrl = null, skipRequest = false) => {
-    cy.log(`Set the Checkbox value ${fieldName} to ${isChecked}`);
+Cypress.Commands.add('setCheckBoxValue', (fieldName, isChecked, modal = false, rewriteUrl = null, skipRequest = false) => {
+  cy.log(`Set the Checkbox value ${fieldName} to ${isChecked}`);
 
-    // the expected value is the same as the checked state
-    // (used only for verification if the checkbox has the correct value)
-    const expectedPatchValue = isChecked;
+  // the expected value is the same as the checked state
+  // (used only for verification if the checkbox has the correct value)
+  const expectedPatchValue = isChecked;
 
-    cy.getCheckboxValue(fieldName, modal).then(theCheckboxValue => {
-      if (isChecked) {
-        if (!theCheckboxValue) {
-          cy.clickOnCheckBox(fieldName, expectedPatchValue, modal, rewriteUrl, skipRequest);
-        }
-      } else {
-        if (theCheckboxValue) {
-          cy.clickOnCheckBox(fieldName, expectedPatchValue, modal, rewriteUrl, skipRequest);
-        }
-      }
-    });
+  // only allow true or false values
+  if (!(isChecked === true || isChecked === false)) {
+    return;
   }
-);
+
+  cy.getCheckboxValue(fieldName, modal).then(theCheckboxValue => {
+    if (isChecked) {
+      if (!theCheckboxValue) {
+        cy.clickOnCheckBox(fieldName, expectedPatchValue, modal, rewriteUrl, skipRequest);
+      }
+    } else {
+      if (theCheckboxValue) {
+        cy.clickOnCheckBox(fieldName, expectedPatchValue, modal, rewriteUrl, skipRequest);
+      }
+    }
+  });
+});
