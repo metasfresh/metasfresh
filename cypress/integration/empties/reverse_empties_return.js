@@ -28,8 +28,6 @@ import { PackingMaterial } from '../../support/utils/packing_material';
 import { EmptiesReturn } from '../../page_objects/empties_returns';
 import { DocumentStatusKey } from '../../support/utils/constants';
 
-// task: https://github.com/metasfresh/metasfresh-e2e/issues/213
-
 describe('Reverse Empties Return', function() {
   let businessPartnerName;
   let productQuantity;

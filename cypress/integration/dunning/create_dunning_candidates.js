@@ -65,19 +65,18 @@ describe('Create Dunning Candidates', function() {
 
   it('Prepare customer bpartner (via api)', function() {
     cy.fixture('sales/simple_customer.json').then(customerJson => {
-      const bpartner = new BPartner({ ...customerJson, name: businessPartnerName })
+      new BPartner({ ...customerJson, name: businessPartnerName })
         .setDunning(dunningTypeName)
-        .setPaymentTerm(paymentTerm);
-      bpartner.apply();
+        .setPaymentTerm(paymentTerm)
+        .apply();
     });
   });
 
   it('Prepare sales invoice', function() {
-    cy.fixture('sales/sales_invoice.json').then(salesInvoiceJson => {
-      new SalesInvoice(businessPartnerName, salesInvoiceTargetDocumentType)
-        .addLine(new SalesInvoiceLine().setProduct(productName).setQuantity(originalQuantity))
-        .apply();
-    });
+    // eslint-disable-next-line
+    new SalesInvoice(businessPartnerName, salesInvoiceTargetDocumentType)
+      .addLine(new SalesInvoiceLine().setProduct(productName).setQuantity(originalQuantity))
+      .apply();
     cy.completeDocument();
   });
 
