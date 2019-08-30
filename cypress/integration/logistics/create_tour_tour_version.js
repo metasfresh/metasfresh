@@ -1,14 +1,20 @@
 import { BPartner } from '../../support/utils/bpartner';
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 import { Tour } from '../../support/utils/tour';
 import { TourVersion, TourVersionLine } from '../../support/utils/tour_version';
 
 describe('Create a tour and a tour version', function() {
-  const date = humanReadableNow();
-  const customerName = `Customer ${date}`;
+  let customerName;
+  let tourName;
+  let tourVersionName;
 
-  const tourName = `TestTour_${date}`;
-  const tourVersionName = `TestTourVersion_${date}`;
+  it('Read the fixture', function() {
+    cy.fixture('logistics/create_tour_tour_version.json').then(f => {
+      customerName = appendHumanReadableNow(f['customerName']);
+      tourName = appendHumanReadableNow(f['tourName']);
+      tourVersionName = appendHumanReadableNow(f['tourVersionName']);
+    });
+  });
 
   it('Create customer for which we will create a tour', function() {
     cy.fixture('sales/simple_customer.json').then(customerJson => {
