@@ -157,9 +157,7 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 			// Close last chunk if any
 			if (chunkOpen)
 			{
-				if (chunkHasErrors
-						&& (onItemErrorPolicy == OnItemErrorPolicy.CancelChunkAndRollBack
-								|| onItemErrorPolicy == OnItemErrorPolicy.CancelChunkAndCommit))
+				if (chunkHasErrors && onItemErrorPolicy.isCancel())
 				{
 					final boolean processItemFailed = true;
 					cancelChunk(processItemFailed);
@@ -301,15 +299,15 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 	{
 		//
 		// Ask processor to complete the chunk
-		boolean completed = false;
+		Throwable completeError = null;
 		try
 		{
 			processor.completeChunk();
-			completed = true;
 		}
-		catch (final Throwable e)
+		catch (final Throwable ex)
 		{
-			exceptionHandler.onCompleteChunkError(e);
+			completeError = ex;
+			exceptionHandler.onCompleteChunkError(ex);
 		}
 		finally
 		{
@@ -319,39 +317,42 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 
 		//
 		// Completing chunk failed
-		if (!completed)
+		if (completeError != null)
 		{
 			logger.debug("Processor failed to complete current chunk => cancel chunk");
 
 			final boolean processItemFailed = false; // it's the completion that failed, not processeItem
 			cancelChunk(processItemFailed);
-			return;
-		}
 
-		//
-		//
-		logger.debug("Processor succeeded to complete the chunk => commit transaction");
-		try
-		{
-			commitChunkTrx();
+			exceptionHandler.afterCompleteChunkError(completeError);
 		}
-		catch (final Throwable commitEx)
+		//
+		// Completing chunk success
+		else
 		{
-			boolean rollbackOK = false;
+			logger.debug("Processor succeeded to complete the chunk => commit transaction");
 			try
 			{
-				rollbackChunkTrx();
-				rollbackOK = true;
+				commitChunkTrx();
 			}
-			finally
+			catch (final Throwable commitEx)
 			{
-				if (!rollbackOK)
+				boolean rollbackOK = false;
+				try
 				{
-					logger.error("Got rollback failed and exception will be thrown, while handling a commit exception. Below see the commit exception.", commitEx);
+					rollbackChunkTrx();
+					rollbackOK = true;
 				}
-			}
+				finally
+				{
+					if (!rollbackOK)
+					{
+						logger.error("Got rollback failed and exception will be thrown, while handling a commit exception. Below see the commit exception.", commitEx);
+					}
+				}
 
-			exceptionHandler.onCommitChunkError(commitEx);
+				exceptionHandler.onCommitChunkError(commitEx);
+			}
 		}
 	}
 
@@ -369,9 +370,9 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 		{
 			processor.cancelChunk();
 		}
-		catch (final Throwable e)
+		catch (final Throwable ex)
 		{
-			exceptionHandler.onCancelChunkError(e);
+			exceptionHandler.onCancelChunkError(ex);
 
 			// If canceling fails, we need to throw the exception right away because
 			// it means that the processor is in inconsistent state
@@ -379,7 +380,7 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 			// Also we can do nothing here, processor is compromised.
 			//
 			// NOTE: no need to restore/reset thread transaction because "execute" method will restore it anyways at the end
-			throw new AdempiereException("Failed canceling current chunk", e);
+			throw new AdempiereException("Failed canceling current chunk", ex);
 		}
 		finally
 		{
