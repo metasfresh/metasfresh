@@ -2,14 +2,27 @@ import { Product } from '../../support/utils/product';
 
 import { Inventory, InventoryLine } from '../../support/utils/inventory';
 
-import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow, getLanguageSpecific } from '../../support/utils/utils';
 
 describe('Aggregated-HUs inventory test', function() {
-  const date = humanReadableNow();
-  const productName = `AggregatedHUsInventory ${date}`;
-  const productValue = `${date}`;
+  let productName;
+  let locatorId;
+  let isCounted;
+  let quantity;
 
-  before(function() {
+  // static
+  let docTypeKey = 'aggregatedHUsInventoryDocTypeName';
+
+  it('Read the fixture', function() {
+    cy.fixture('inventory/inventory_aggregatedHUs_spec.json').then(f => {
+      productName = appendHumanReadableNow(f['productName']);
+      locatorId = f['locatorId'];
+      isCounted = f['isCounted'];
+      quantity = f['quantity'];
+    });
+  });
+
+  it('Create test data', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)
@@ -21,14 +34,14 @@ describe('Aggregated-HUs inventory test', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       const uomName = getLanguageSpecific(productJson, 'c_uom');
       cy.fixture('inventory/inventory.json').then(inventoryJson => {
-        const docTypeName = getLanguageSpecific(inventoryJson, `aggregatedHUsInventoryDocTypeName`);
+        const docTypeName = getLanguageSpecific(inventoryJson, docTypeKey);
 
         const inventoryLine = new InventoryLine()
           .setProductName(productName)
-          .setQuantity(`20`)
+          .setQuantity(quantity)
           .setC_UOM_ID(uomName)
-          .setM_Locator_ID('0_0_0')
-          .setIsCounted(true);
+          .setM_Locator_ID(locatorId)
+          .setIsCounted(isCounted);
 
         new Inventory()
           .setWarehouse(inventoryJson.warehouseName)
@@ -38,13 +51,4 @@ describe('Aggregated-HUs inventory test', function() {
       });
     });
   });
-
-  //check if snapshots match
-  /*
-  it('Check snapshots', function() {
-    cy.get('@newInventoryRecord').then(newInventoryRecord => {
-      inventory.toMatchSnapshots(newInventoryRecord, 'inventory_aggregatedHUs');
-    });
-  });
-  */
 });
