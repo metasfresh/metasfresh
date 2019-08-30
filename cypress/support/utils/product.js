@@ -3,9 +3,7 @@
 import { getLanguageSpecific } from './utils';
 
 export class Product {
-  constructor(name) {
-    cy.log(`Product - set name = ${name}`);
-    this.name = name;
+  constructor() {
     this.attributeValues = [];
     this.productPrices = [];
     this.packingInstructions = [];
@@ -96,32 +94,11 @@ export class Product {
   static applyProduct(product) {
     cy.log(`Create new Product ${product.name}`);
     cy.visitWindow('140', 'NEW');
-    cy.writeIntoStringField('Name', product.name);
 
-    cy.selectInListField('M_Product_Category_ID', product.productCategory);
-
-    cy.writeIntoStringField('Description', product.description);
-
-    cy.getCheckboxValue('IsStocked').then(isIsStockedValue => {
-      if (product.isStocked && !isIsStockedValue) {
-        cy.clickOnCheckBox('IsStocked');
-      }
-    });
-    cy.getCheckboxValue('IsPurchased').then(isPurchasedValue => {
-      if (product.isPurchased && !isPurchasedValue) {
-        cy.clickOnCheckBox('IsPurchased');
-      }
-    });
-    cy.getCheckboxValue('IsSold').then(isSoldValue => {
-      if (product.isSold && !isSoldValue) {
-        cy.clickOnCheckBox('IsSold');
-      }
-    });
-    cy.getCheckboxValue('IsDiverse').then(isDiverseValue => {
-      if (product.isDiverse && !isDiverseValue) {
-        cy.clickOnCheckBox('IsDiverse');
-      }
-    });
+    cy.setCheckBoxValue('IsStocked', product.isStocked);
+    cy.setCheckBoxValue('IsPurchased', product.isPurchased);
+    cy.setCheckBoxValue('IsSold', product.isSold);
+    cy.setCheckBoxValue('IsDiverse', product.isDiverse);
 
     cy.getStringFieldValue('ProductType').then(productTypeValue => {
       const productType = getLanguageSpecific(product, 'productType');
@@ -131,6 +108,12 @@ export class Product {
         cy.selectInListField('ProductType', productType);
       }
     });
+
+    cy.writeIntoStringField('Name', product.name);
+
+    cy.selectInListField('M_Product_Category_ID', product.productCategory);
+
+    cy.writeIntoStringField('Description', product.description);
 
     cy.getStringFieldValue('C_UOM_ID').then(uomValue => {
       const c_uom = getLanguageSpecific(product, 'c_uom');
@@ -175,13 +158,7 @@ export class Product {
 
     cy.writeIntoLookupListField('M_PriceList_Version_ID', productPrice.priceList, productPrice.priceList, true, true);
     cy.writeIntoStringField('PriceList', productPrice.listPriceAmount, true, null, true);
-    cy.writeIntoStringField(
-      'PriceStd',
-      productPrice.standardPriceAmount,
-      true /*modal*/,
-      null /*rewriteUrl*/,
-      true /*noRequest*/
-    );
+    cy.writeIntoStringField('PriceStd', productPrice.standardPriceAmount, true /*modal*/, null /*rewriteUrl*/, true /*noRequest*/);
     cy.writeIntoStringField('PriceLimit', productPrice.limitPriceAmount, true, null, true);
 
     const taxCategory = getLanguageSpecific(productPrice, 'taxCategory');
