@@ -35,7 +35,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList;
@@ -51,6 +50,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.currency.ICurrencyBL;
 import de.metas.lang.SOTrx;
@@ -736,6 +736,7 @@ public class PriceListDAO implements IPriceListDAO
 	private List<I_M_PriceList_Version> retrieveCustomPLVsToMutate(@NonNull final I_M_PriceList_Version basePLV)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 
 		final List<I_M_PriceList_Version> versionsForBase = queryBL.createQueryBuilder(I_M_PriceList_Version.class)
 				.addOnlyActiveRecordsFilter()
@@ -748,32 +749,16 @@ public class PriceListDAO implements IPriceListDAO
 
 		final ImmutableList<I_M_PriceList_Version> newestVersions = versionsForBase.stream()
 				.filter(version -> retrieveNextVersionOrNull(version, false) == null)
-				.filter(version -> belongsToCustomerForMutation(version))
+				.filter(version -> partnerDAO.pricingSystemBelongsToCustomerForPriceMutation(getPricingSystemIdForVersion(version)))
 				.collect(ImmutableList.toImmutableList());
 
 		return newestVersions;
 	}
 
-	private boolean belongsToCustomerForMutation(final I_M_PriceList_Version version)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final List<I_C_BPartner> partnersAllowingPriceMutations = queryBL.createQueryBuilder(I_C_BPartner.class)
-				.addOnlyContextClient()
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsCustomer, true)
-				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsAllowPriceMutation, true)
-				.create()
-				.list(I_C_BPartner.class);
-
-		return partnersAllowingPriceMutations.stream()
-				.anyMatch(partner -> partner.getM_PricingSystem_ID() == getPricingSystemIdForVersion(version));
-	}
-
-	private int getPricingSystemIdForVersion(final I_M_PriceList_Version version)
+	private PricingSystemId getPricingSystemIdForVersion(@NonNull final I_M_PriceList_Version version)
 	{
 		final I_M_PriceList priceList = getById(version.getM_PriceList_ID());
 
-		return priceList.getM_PricingSystem_ID();
+		return PricingSystemId.ofRepoId(priceList.getM_PricingSystem_ID());
 	}
 }

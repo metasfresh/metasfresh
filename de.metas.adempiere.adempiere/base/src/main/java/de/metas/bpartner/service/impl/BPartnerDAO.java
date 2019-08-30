@@ -1272,4 +1272,21 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		return bpartner.isAllowActionPrice();
 	}
+
+	@Override
+	public boolean pricingSystemBelongsToCustomerForPriceMutation(final PricingSystemId pricingSystemId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final boolean belongsToCustomerForMutation = queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addOnlyContextClient()
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsCustomer, true)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsAllowPriceMutation, true)
+				.addEqualsFilter(I_C_BPartner.COLUMN_M_PricingSystem_ID, pricingSystemId.getRepoId())
+				.create()
+				.match();
+
+		return belongsToCustomerForMutation;
+	}
 }
