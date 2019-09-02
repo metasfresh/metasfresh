@@ -8,11 +8,15 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_DiscountSchemaLine;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.pricing.PriceListVersionId;
@@ -147,6 +151,41 @@ public class PlainPriceListDAO extends PriceListDAO
 				.create()
 				.list(I_M_DiscountSchemaLine.class);
 
+	}
+
+	@Override
+	protected List<I_M_PriceList_Version> retrieveCustomPLVsToMutate(@NonNull final I_M_PriceList_Version basePLV)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQuery<I_C_BPartner> customerQuery = queryBL.createQueryBuilder(I_C_BPartner.class)
+
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsCustomer, true)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsAllowPriceMutation, true)
+				.create();
+
+		final List<I_M_PriceList_Version> customerVersions = queryBL.createQueryBuilder(I_M_PriceList.class)
+
+				.addInSubQueryFilter()
+				.matchingColumnNames(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, I_C_BPartner.COLUMNNAME_M_PricingSystem_ID)
+				.subQuery(customerQuery)
+				.end()
+				.andCollectChildren(I_M_PriceList_Version.COLUMN_M_PriceList_ID)
+				.addOnlyActiveRecordsFilter()
+
+				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_Pricelist_Version_Base_ID, basePLV.getM_PriceList_Version_ID())
+				.addNotEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, basePLV.getM_PriceList_ID())
+				.addNotNull(I_M_PriceList_Version.COLUMNNAME_M_DiscountSchema_ID)
+				.create()
+
+				.list(I_M_PriceList_Version.class);
+
+		final ImmutableList<I_M_PriceList_Version> newestVersions = customerVersions.stream()
+				.filter(version -> retrieveNextVersionOrNull(version, false) == null)
+				.collect(ImmutableList.toImmutableList());
+
+		return newestVersions;
 	}
 
 }

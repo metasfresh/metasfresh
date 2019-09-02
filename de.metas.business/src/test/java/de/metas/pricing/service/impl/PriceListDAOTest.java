@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_User;
@@ -42,6 +43,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import de.metas.util.time.FixedTimeSource;
 import de.metas.util.time.SystemTime;
 
@@ -930,9 +932,17 @@ public class PriceListDAOTest
 
 		final Timestamp intermediateValidFrom = TimeUtil.asTimestamp(LocalDate.of(2019, 5, 1));
 
+		final I_M_DiscountSchema customerIntermediateSchema = createSchema(intermediateValidFrom);
+
+		createSchemaLine(customerIntermediateSchema, -1, product1.getM_Product_ID(), customerSurcharge1);
+
+		createSchemaLine(customerIntermediateSchema, -1, product2.getM_Product_ID(), customerSurcharge2);
+
+		createSchemaLine(customerIntermediateSchema, -1, product3.getM_Product_ID(), customerSurcharge3);
+
 		final I_M_PriceList_Version customerIntermediatePLV = createPLV(customerPriceList.getM_PriceList_ID(),
 				intermediateValidFrom,
-				customerSchema.getM_DiscountSchema_ID(),
+				customerIntermediateSchema.getM_DiscountSchema_ID(),
 				originalBasePLV.getM_PriceList_Version_ID());
 
 		final BigDecimal intermediateCustomPriceProduct1 = new BigDecimal(4);
@@ -959,15 +969,21 @@ public class PriceListDAOTest
 
 		priceListDAO.mutateCustomerPrices(PriceListVersionId.ofRepoId(newBasePLV.getM_PriceList_Version_ID()), UserId.ofRepoId(user.getAD_User_ID()));
 
+
+		final int versionsCount = countPLVs(customerPriceList);
+
+		assertThat(versionsCount).isEqualByComparingTo(3);
 		final I_M_PriceList_Version newestPriceListVersion = priceListDAO.retrieveNewestPriceListVersion(PriceListId.ofRepoId(customerPriceList.getM_PriceList_ID()));
 
 		assertThat(newestPriceListVersion).isNotNull();
 
 		assertThat(newestPriceListVersion.getM_PriceList_Version_ID()).isNotEqualByComparingTo(customerOldPLV.getM_PriceList_Version_ID());
 
-		assertThat(newestPriceListVersion.getM_Pricelist_Version_Base_ID()).isEqualByComparingTo(originalBasePLV.getM_PriceList_Version_ID());
+		assertThat(newestPriceListVersion.getM_PriceList_Version_ID()).isNotEqualByComparingTo(customerIntermediatePLV.getM_PriceList_Version_ID());
 
-		assertThat(newestPriceListVersion.getM_DiscountSchema_ID()).isEqualByComparingTo(customerSchema.getM_DiscountSchema_ID());
+		assertThat(newestPriceListVersion.getM_DiscountSchema_ID()).isEqualByComparingTo(customerIntermediatePLV.getM_DiscountSchema_ID());
+
+		assertThat(newestPriceListVersion.getM_Pricelist_Version_Base_ID()).isEqualByComparingTo(originalBasePLV.getM_PriceList_Version_ID());
 
 		assertThat(newestPriceListVersion.getValidFrom()).isEqualTo(SystemTime.asDayTimestamp());
 
@@ -1007,6 +1023,17 @@ public class PriceListDAOTest
 		final I_M_ProductPrice productPrice3 = productPrice3OrNull.get();
 
 		assertThat(productPrice3.getPriceStd()).isEqualByComparingTo(basePriceProduct3.add(customerSurcharge3));
+
+	}
+
+	private int countPLVs(final I_M_PriceList priceList)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(I_M_PriceList_Version.class)
+		.addEqualsFilter(I_M_PriceList_Version.COLUMN_M_PriceList_ID, priceList.getM_PriceList_ID())
+		.create()
+		.count();
 
 	}
 
@@ -1330,7 +1357,7 @@ public class PriceListDAOTest
 		final I_AD_User user = newInstance(I_AD_User.class);
 		user.setName(userName);
 		save(user);
-	
+
 		return user;
 	}
 

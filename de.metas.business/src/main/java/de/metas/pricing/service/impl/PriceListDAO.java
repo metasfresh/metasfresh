@@ -23,9 +23,11 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -35,6 +37,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList;
@@ -50,7 +53,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.currency.ICurrencyBL;
 import de.metas.lang.SOTrx;
@@ -733,32 +735,55 @@ public class PriceListDAO implements IPriceListDAO
 		save(productPrice);
 	}
 
-	private List<I_M_PriceList_Version> retrieveCustomPLVsToMutate(@NonNull final I_M_PriceList_Version basePLV)
+	@VisibleForTesting
+	protected List<I_M_PriceList_Version> retrieveCustomPLVsToMutate(@NonNull final I_M_PriceList_Version basePLV)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 
-		final List<I_M_PriceList_Version> versionsForBase = queryBL.createQueryBuilder(I_M_PriceList_Version.class)
+		final StringBuilder maxValidFromTypedFilter = new StringBuilder()
+				.append(I_M_PriceList_Version.Table_Name)
+				.append(".")
+				.append(I_M_PriceList_Version.COLUMNNAME_ValidFrom)
+				.append(" = ( SELECT max (v.")
+				.append(I_M_PriceList_Version.COLUMNNAME_ValidFrom)
+				.append(") FROM ")
+				.append(I_M_PriceList_Version.Table_Name).append(" v ")
+				.append(" WHERE ")
+				.append(I_M_PriceList_Version.Table_Name)
+				.append(".")
+				.append(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID)
+				.append(" = v.")
+				.append(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID)
+				.append(") ");
+
+		final IQueryFilter<I_M_PriceList_Version> maxValidFromFilter = TypedSqlQueryFilter.of(maxValidFromTypedFilter.toString());
+
+		final IQuery<I_C_BPartner> customerQuery = queryBL.createQueryBuilder(I_C_BPartner.class)
+
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsCustomer, true)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsAllowPriceMutation, true)
+				.create();
+
+		final List<I_M_PriceList_Version> newestVersions = queryBL.createQueryBuilder(I_M_PriceList.class)
+
+				.addInSubQueryFilter()
+				.matchingColumnNames(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, I_C_BPartner.COLUMNNAME_M_PricingSystem_ID)
+				.subQuery(customerQuery)
+				.end()
+				.andCollectChildren(I_M_PriceList_Version.COLUMN_M_PriceList_ID)
+				.addOnlyActiveRecordsFilter()
+
 				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_Pricelist_Version_Base_ID, basePLV.getM_PriceList_Version_ID())
 				.addNotEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, basePLV.getM_PriceList_ID())
 				.addNotNull(I_M_PriceList_Version.COLUMNNAME_M_DiscountSchema_ID)
-				.create()
-				.list(I_M_PriceList_Version.class);
 
-		final ImmutableList<I_M_PriceList_Version> newestVersions = versionsForBase.stream()
-				.filter(version -> retrieveNextVersionOrNull(version, false) == null)
-				.filter(version -> partnerDAO.pricingSystemBelongsToCustomerForPriceMutation(getPricingSystemIdForVersion(version)))
-				.collect(ImmutableList.toImmutableList());
+				.filter(maxValidFromFilter)
+				.create()
+
+				.list(I_M_PriceList_Version.class);
 
 		return newestVersions;
 	}
 
-	private PricingSystemId getPricingSystemIdForVersion(@NonNull final I_M_PriceList_Version version)
-	{
-		final I_M_PriceList priceList = getById(version.getM_PriceList_ID());
-
-		return PricingSystemId.ofRepoId(priceList.getM_PricingSystem_ID());
-	}
 }
