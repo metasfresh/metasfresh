@@ -13,6 +13,7 @@ let priceSystemName;
 let priceListName;
 let priceListVersionName;
 let productType;
+const productPartnerColumn = 'ProductOrBPartner';
 
 it('Read the fixture', function() {
   cy.fixture('sales/open_picking_terminal_and_filter.json').then(f => {
@@ -65,6 +66,5 @@ it('Open Picking terminal', function() {
   cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
   cy.writeIntoLookupListField('C_BPartner_Customer_ID', customer1, customer1, false, false, null, true);
   applyFilters();
-  cy.get('.meta-icon-plus.indent-collapse-icon').click();
-  cy.expectNumberOfRows(2);
+  cy.selectRowByColumnAndValue({ column: productPartnerColumn, value: productName1 });
 });
