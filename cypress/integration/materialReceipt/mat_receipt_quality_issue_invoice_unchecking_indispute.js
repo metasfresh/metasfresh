@@ -190,7 +190,7 @@ it('Select both rows and generate invoices', function() {
   cy.selectAllRowsOnCurrentPage();
   cy.executeQuickAction('C_Invoice_Candidate_EnqueueSelectionForInvoicing', false, true);
   cy.pressStartButton();
-  cy.waitForSaveIndicator();
+  cy.waitUntilProcessIsFinished();
   cy.openInboxNotificationWithText(vendorName);
   cy.selectTab('C_InvoiceLine');
   cy.expectNumberOfRows(1);
