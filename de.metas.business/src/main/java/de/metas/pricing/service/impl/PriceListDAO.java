@@ -32,6 +32,7 @@ import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.product.ProductPriceCreateRequest;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
@@ -39,7 +40,6 @@ import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -723,15 +723,18 @@ public class PriceListDAO implements IPriceListDAO
 	private void cloneASI(final I_M_ProductPrice productPrice)
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
 		if (!productPrice.isAttributeDependant())
 		{
 			return;
 		}
 
-		final I_M_AttributeSetInstance sourceASI = productPrice.getM_AttributeSetInstance();
-		final I_M_AttributeSetInstance targetASI = sourceASI == null ? null : attributeDAO.copy(sourceASI);
+		final AttributeSetInstanceId asiSourceId = AttributeSetInstanceId.ofRepoId(productPrice.getM_AttributeSetInstance_ID());
 
-		productPrice.setM_AttributeSetInstance(targetASI);
+		final AttributeSetInstanceId asiTargetId = attributeDAO.copyASI(asiSourceId);
+
+		productPrice.setM_AttributeSetInstance_ID(asiTargetId.getRepoId());
+
 		save(productPrice);
 	}
 
