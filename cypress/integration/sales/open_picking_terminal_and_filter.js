@@ -1,6 +1,3 @@
-/** todo The test is done but is failing due to https://github.com/metasfresh/me03/issues/2381.
- * After this issue will be fixed, the test will pass.
- *  It will need to be moved from integration/defunct dir. */
 import { BPartner } from '../../support/utils/bpartner';
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { Builder } from '../../support/utils/builder';
@@ -62,15 +59,12 @@ it('Open Picking terminal', function() {
     .should('contain', 'Today')
     .click();
   applyFilters();
-  /**Even though the date selected is today, the filter label will show yesterday's date due to: https://github.com/metasfresh/me03/issues/2381
-   * that's the reason why the test is failing currently
-   */
 
   toggleNotFrequentFilters();
   selectNotFrequentFilterWidget('default');
   cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
   cy.writeIntoLookupListField('C_BPartner_Customer_ID', customer1, customer1, false, false, null, true);
   applyFilters();
-
+  cy.get('.meta-icon-plus.indent-collapse-icon').click();
   cy.expectNumberOfRows(2);
 });

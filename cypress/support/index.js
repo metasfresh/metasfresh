@@ -45,12 +45,10 @@ before(function() {
 });
 
 Cypress.on('scrolled', $el => {
-  if ($el.get(0)) {
-    $el.get(0).scrollIntoView({
-      block: 'center',
-      inline: 'center',
-    });
-  }
+  $el.get(0).scrollIntoView({
+    block: 'center',
+    inline: 'center',
+  });
 });
 
 // This adds a delay between cypress commands for easier debugging
