@@ -14,6 +14,7 @@ Here come the actual release notes:
 
 # Features
 * metasfresh
+  * [#5423](https://github.com/metasfresh/metasfresh/issues/5423) Drafted PP Orders shall not create demands
   * [#5440](https://github.com/metasfresh/metasfresh/issues/5440) Easy shipment candidate recording (Modal Overlay)
   * [#5447](https://github.com/metasfresh/metasfresh/issues/5447) Optionally include C_Location changes in parent record's changelog
   * [#5457](https://github.com/metasfresh/metasfresh/issues/5457) MaterialTracking - Support regular PP_Orders with heterogenous components
