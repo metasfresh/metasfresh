@@ -3,6 +3,7 @@ package de.metas.pricing.rules.campaign_price;
 import org.compiere.Adempiere;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.logging.LogManager;
@@ -46,17 +47,27 @@ public class CampaignPricingRule implements IPricingRule
 	@Override
 	public boolean applies(@NonNull final IPricingContext pricingCtx, @NonNull final IPricingResult result)
 	{
+
 		if (result.isCalculated())
 		{
 			logger.debug("Not applying because already calculated");
 			return false;
 		}
 
-		if (pricingCtx.getBPartnerId() == null)
+		final BPartnerId bpartnerId = pricingCtx.getBPartnerId();
+
+		if (bpartnerId == null)
 		{
 			logger.debug("Not applying because there is no BPartner specified in context");
 			return false;
 		}
+
+		if (!bpartnersRepo.isActionPriceAllowed(bpartnerId))
+		{
+			logger.debug("Not applying because the partner is not allowed to receive campaign prices");
+			return false;
+		}
+
 		if (pricingCtx.getProductId() == null)
 		{
 			logger.debug("Not applying because there is no Product specified in context");

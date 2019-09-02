@@ -3,6 +3,7 @@ package de.metas.material.dispo.commons;
 import java.time.Instant;
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -69,27 +70,45 @@ public class RequestMaterialOrderService
 		this.candidateRepository = candidateRepository;
 	}
 
-	public void requestMaterialOrder(@NonNull final MaterialDispoGroupId groupId)
+	/**
+	 * Creates and fires an event to request the creation of a particular material order (production, distribution or purchase).
+	 *
+	 * @param groupId of the candidates that are used to derive the material order to be requested.
+	 */
+	public void requestMaterialOrderForCandidates(@NonNull final MaterialDispoGroupId groupId)
 	{
-		final List<Candidate> group = candidateRepository.retrieveGroup(groupId);
-		if (group.isEmpty())
+		List<Candidate> groupOfCandidates = null;
+		try
 		{
-			return;
-		}
+			groupOfCandidates = candidateRepository.retrieveGroup(groupId);
+			if (groupOfCandidates.isEmpty())
+			{
+				return;
+			}
 
-		switch (group.get(0).getBusinessCase())
+			final CandidateBusinessCase businessCase = CollectionUtils.extractSingleElement(groupOfCandidates, Candidate::getBusinessCase);
+			switch (businessCase)
+			{
+				case PRODUCTION:
+					createAndFirePPOrderRequestedEvent(groupOfCandidates);
+					break;
+				case DISTRIBUTION:
+					createAndFireDDOrderRequestedEvent(groupOfCandidates);
+					break;
+				case PURCHASE:
+					createAndFirePurchaseCandidateRequestedEvent(groupOfCandidates);
+					break;
+				default:
+					break;
+			}
+		}
+		catch (final RuntimeException e)
 		{
-			case PRODUCTION:
-				createAndFirePPOrderRequestedEvent(group);
-				break;
-			case DISTRIBUTION:
-				createAndFireDDOrderRequestedEvent(group);
-				break;
-			case PURCHASE:
-				createAndFirePurchaseCandidateRequestedEvent(group);
-				break;
-			default:
-				break;
+			throw AdempiereException
+					.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("groupId", groupId)
+					.setParameter("groupOfCandidates", groupOfCandidates);
 		}
 	}
 
@@ -98,9 +117,7 @@ public class RequestMaterialOrderService
 	 * @param group a non-empty list of candidates that all have {@link CandidateBusinessCase#PRODUCTION},
 	 *            all have the same {@link Candidate#getGroupId()}
 	 *            and all have appropriate not-null {@link Candidate#getProductionDetail()}s.
-	 * @return
 	 */
-
 	private void createAndFirePPOrderRequestedEvent(@NonNull final List<Candidate> group)
 	{
 		final PPOrderRequestedEvent ppOrderRequestEvent = createPPOrderRequestedEvent(group);
@@ -110,7 +127,7 @@ public class RequestMaterialOrderService
 	@VisibleForTesting
 	PPOrderRequestedEvent createPPOrderRequestedEvent(@NonNull final List<Candidate> group)
 	{
-		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' is an empty list");
+		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' may not be an empty list");
 
 		final PPOrderBuilder ppOrderBuilder = PPOrder.builder();
 
