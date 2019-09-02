@@ -17,18 +17,18 @@ CREATE OR REPLACE VIEW public.edi_cctop_invoic_500_v AS
     substr(p.name, 1, 35) AS name,
     substr(p.name, 36, 70) AS name2,
     t.rate,
-        CASE
+    CASE
             WHEN u.x12de355 = 'TU' THEN 'PCE'::character varying
             ELSE u.x12de355
-        END AS eancom_uom,
-        CASE
+    END AS eancom_uom,
+    CASE
             WHEN u_price.x12de355 = 'TU' THEN 'PCE'::character varying
             ELSE u_price.x12de355
-        END AS eancom_price_uom,
-        CASE
+    END AS eancom_price_uom,
+    CASE
             WHEN t.rate = 0::numeric THEN 'Y'
             ELSE ''
-        END AS taxfree,
+    END AS taxfree,
     c.iso_code,
     il.ad_client_id,
     il.ad_org_id,
@@ -43,7 +43,7 @@ CREATE OR REPLACE VIEW public.edi_cctop_invoic_500_v AS
         END AS leergut,
     COALESCE(NULLIF(pp.productdescription, ''), NULLIF(pp.description, ''), NULLIF(p.description, ''), p.name)::character varying AS productdescription,
     COALESCE(ol.line, il.line) AS orderline,
-	COALESCE(NULLIF(o.poreference, ''), i.poreference)::character varying(40) AS orderporeference,
+    COALESCE(NULLIF(o.poreference, ''), i.poreference)::character varying(40) AS orderporeference,
     il.c_orderline_id,
     sum(il.taxamtinfo) AS taxamtinfo
    FROM c_invoiceline il

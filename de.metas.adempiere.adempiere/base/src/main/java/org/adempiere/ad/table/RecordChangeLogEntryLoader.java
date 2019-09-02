@@ -272,7 +272,7 @@ public class RecordChangeLogEntryLoader
 				final ITranslatableString columnTrl = adColumnTrlMap.getColumnTrl(I_AD_Column.COLUMNNAME_Name, columnInfo.getColumnName());
 
 				final RecordChangeLogEntry logEntry = RecordChangeLogEntry.builder()
-						.changedByUserId(UserId.ofRepoId(newRecord.getCreatedBy()))
+						.changedByUserId(UserId.ofRepoIdOrNull(newRecord.getCreatedBy()))
 						.changedTimestamp(TimeUtil.asInstant(newRecord.getCreated()))
 						.columnDisplayName(columnTrl)
 						.columnName(columnInfo.getColumnName())
@@ -468,7 +468,7 @@ public class RecordChangeLogEntryLoader
 		final String columnName = rs.getString("ColumnName");
 		final ITranslatableString columnDisplayName = retrieveColumnDisplayName(rs, adColumnTrlInfo);
 		final Instant changeTimestamp = TimeUtil.asInstant(rs.getTimestamp("Updated"));
-		final UserId changedByUserId = UserId.ofRepoId(rs.getInt("UpdatedBy"));
+		final UserId changedByUserId = UserId.ofRepoIdOrNull(rs.getInt("UpdatedBy"));
 		final int displayType = rs.getInt("AD_Reference_ID");
 		final Object valueOld = valueResolver.convertToDisplayValue(rs.getString("OldValue"), columnName);
 		final Object valueNew = valueResolver.convertToDisplayValue(rs.getString("NewValue"), columnName);

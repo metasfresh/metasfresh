@@ -95,7 +95,7 @@ public final class PPOrderCreatedHandler
 		final MaterialDispoGroupId groupId = ppOrder.getMaterialDispoGroupId();
 		if (groupId == null)
 		{
-			Loggables.addLog("The given ppOrderCreatedEvent has no groupId, so it was created by a user and not via material-dispo. Going to create new candidate records.");
+			Loggables.addLog("The given ppOrderCreatedEvent has no groupId, so it was created manually by a user and not via material-dispo. Going to create new candidate records.");
 			return CandidatesQuery.FALSE;
 		}
 
