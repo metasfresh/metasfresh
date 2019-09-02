@@ -13,6 +13,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Evaluatee;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -95,6 +96,14 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 		this.rowsData = rowsData;
 
 		this.viewFilterDescriptors = viewFilterDescriptors;
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("viewId", getViewId())
+				.toString();
 	}
 
 	@Override
@@ -231,8 +240,8 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	 */
 	@Override
 	public final ViewResult getPage(
-			final int firstRow, 
-			final int pageLength, 
+			final int firstRow,
+			final int pageLength,
 			@NonNull final ViewRowsOrderBy orderBys)
 	{
 		final ViewRowsOrderBy orderBysEffective = !orderBys.isEmpty()

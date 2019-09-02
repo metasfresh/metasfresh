@@ -274,7 +274,7 @@ public final class DataTypes
 		}
 	}
 
-	private static Integer convertToInteger(final Object value)
+	public static Integer convertToInteger(final Object value)
 	{
 		if (value == null)
 		{
@@ -303,6 +303,10 @@ public final class DataTypes
 		{
 			return ((LookupValue)value).getIdAsInt();
 		}
+		else if (value instanceof JSONLookupValue)
+		{
+			return ((JSONLookupValue)value).getKeyAsInt();
+		}
 		else if (value instanceof Map)
 		{
 			@SuppressWarnings("unchecked")
@@ -316,7 +320,9 @@ public final class DataTypes
 		}
 		else
 		{
-			throw new ValueConversionException();
+			throw new ValueConversionException()
+					.setFromValue(value)
+					.setTargetType(Integer.class);
 		}
 	}
 
@@ -376,7 +382,15 @@ public final class DataTypes
 		}
 	}
 
-	private static IntegerLookupValue convertToIntegerLookupValue(final Object value, final LookupValueByIdSupplier lookupDataSource)
+	public static IntegerLookupValue convertToIntegerLookupValue(@Nullable final Object value)
+	{
+		final LookupValueByIdSupplier lookupDataSource = null;
+		return convertToIntegerLookupValue(value, lookupDataSource);
+	}
+
+	private static IntegerLookupValue convertToIntegerLookupValue(
+			@Nullable final Object value,
+			@Nullable final LookupValueByIdSupplier lookupDataSource)
 	{
 		if (value == null)
 		{
@@ -386,6 +400,11 @@ public final class DataTypes
 		{
 			final LookupValue lookupValue = (LookupValue)value;
 			return toIntegerLookupValue(lookupValue);
+		}
+		else if (value instanceof JSONLookupValue)
+		{
+			final JSONLookupValue json = (JSONLookupValue)value;
+			return json.toIntegerLookupValue();
 		}
 		else if (value instanceof Map)
 		{
@@ -436,12 +455,18 @@ public final class DataTypes
 			}
 			else
 			{
-				throw new ValueConversionException();
+				throw new ValueConversionException()
+						.setFromValue(value)
+						.setTargetType(IntegerLookupValue.class)
+						.setLookupDataSource(lookupDataSource);
 			}
 		}
 		else
 		{
-			throw new ValueConversionException();
+			throw new ValueConversionException()
+					.setFromValue(value)
+					.setTargetType(IntegerLookupValue.class)
+					.setLookupDataSource(lookupDataSource);
 		}
 	}
 
@@ -467,7 +492,15 @@ public final class DataTypes
 		}
 	}
 
-	private static StringLookupValue convertToStringLookupValue(final Object value, final LookupValueByIdSupplier lookupDataSource)
+	public static StringLookupValue convertToStringLookupValue(final Object value)
+	{
+		final LookupValueByIdSupplier lookupDataSource = null;
+		return convertToStringLookupValue(value, lookupDataSource);
+	}
+
+	private static StringLookupValue convertToStringLookupValue(
+			@Nullable final Object value,
+			@Nullable final LookupValueByIdSupplier lookupDataSource)
 	{
 		if (value == null)
 		{
@@ -478,7 +511,12 @@ public final class DataTypes
 			final LookupValue lookupValue = (LookupValue)value;
 			return toStringLookupValue(lookupValue);
 		}
-		if (value instanceof Map)
+		else if (value instanceof JSONLookupValue)
+		{
+			final JSONLookupValue json = (JSONLookupValue)value;
+			return json.toStringLookupValue();
+		}
+		else if (value instanceof Map)
 		{
 			@SuppressWarnings("unchecked")
 			final Map<String, Object> map = (Map<String, Object>)value;
@@ -513,12 +551,18 @@ public final class DataTypes
 			}
 			else
 			{
-				throw new ValueConversionException();
+				throw new ValueConversionException()
+						.setFromValue(value)
+						.setTargetType(IntegerLookupValue.class)
+						.setLookupDataSource(lookupDataSource);
 			}
 		}
 		else
 		{
-			throw new ValueConversionException();
+			throw new ValueConversionException()
+					.setFromValue(value)
+					.setTargetType(IntegerLookupValue.class)
+					.setLookupDataSource(lookupDataSource);
 		}
 	}
 

@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -44,18 +45,24 @@ import lombok.NonNull;
 @EqualsAndHashCode
 public final class ViewId
 {
-	public static final ViewId of(@Nullable final String windowIdStr, @NonNull final String viewIdStr)
+	public static ViewId of(@Nullable final String windowIdStr, @NonNull final String viewIdStr)
 	{
 		final WindowId expectedWindowId = windowIdStr == null ? null : WindowId.fromJson(windowIdStr);
 		return ofViewIdString(viewIdStr, expectedWindowId);
 	}
 
-	/** @return ViewId from given viewId string; the WindowId will be extracted from viewId string */
 	@JsonCreator
+	public static ViewId fromJson(@NonNull final String json)
+	{
+		final WindowId expectedWindowId = null; // N/A
+		return ofViewIdString(json, expectedWindowId);
+	}
+
+	/** @return ViewId from given viewId string; the WindowId will be extracted from viewId string */
 	public static ViewId ofViewIdString(@NonNull final String viewIdStr)
 	{
-		final WindowId windowId = null; // N/A
-		return ofViewIdString(viewIdStr, windowId);
+		final WindowId expectedWindowId = null; // N/A
+		return ofViewIdString(viewIdStr, expectedWindowId);
 	}
 
 	public static ViewId ofViewIdString(@NonNull final String viewIdStr, @Nullable final WindowId expectedWindowId)
@@ -121,7 +128,7 @@ public final class ViewId
 			@NonNull final WindowId windowId)
 	{
 		this.windowId = windowId;
-		this.viewId = viewIdStr;
+		viewId = viewIdStr;
 		this.parts = parts;
 	}
 
@@ -177,26 +184,27 @@ public final class ViewId
 	}
 
 	/** @return other parts (those which come after viewId part) */
+	@JsonIgnore // IMPORTANT: for some reason, without this annotation the json deserialization does not work even if we have toJson() method annotated with @JsonValue
 	public ImmutableList<String> getOtherParts()
 	{
 		return parts.size() > 2 ? parts.subList(2, parts.size()) : ImmutableList.of();
 	}
 
-	public ViewId deriveWithWindowId(@NonNull final WindowId windowId)
+	public ViewId deriveWithWindowId(@NonNull final WindowId newWindowId)
 	{
-		if (this.windowId.equals(windowId))
+		if (windowId.equals(newWindowId))
 		{
 			return this;
 		}
 
-		final ImmutableList<String> parts = ImmutableList.<String> builder()
-				.add(windowId.toJson())
-				.addAll(this.parts.subList(1, this.parts.size()))
+		final ImmutableList<String> newParts = ImmutableList.<String> builder()
+				.add(newWindowId.toJson())
+				.addAll(parts.subList(1, parts.size()))
 				.build();
 
-		final String viewId = JOINER.join(parts);
+		final String newViewId = JOINER.join(newParts);
 
-		return new ViewId(viewId, parts, windowId);
+		return new ViewId(newViewId, newParts, newWindowId);
 	}
 
 	public void assertWindowId(@NonNull final WindowId expectedWindowId)

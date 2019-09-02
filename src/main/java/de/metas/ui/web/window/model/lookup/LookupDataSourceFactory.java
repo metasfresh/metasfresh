@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.slf4j.Logger;
 
 import com.google.common.base.Predicates;
@@ -61,7 +62,22 @@ public final class LookupDataSourceFactory
 
 	public LookupDataSource searchInTableLookup(final String tableName)
 	{
-		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.searchInTable(tableName)
+		if (I_M_AttributeSetInstance.Table_Name.equals(tableName))
+		{
+			return productAttributes();
+		}
+		else
+		{
+			final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.searchInTable(tableName)
+					.provide()
+					.get();
+			return getLookupDataSource(lookupDescriptor);
+		}
+	}
+
+	public LookupDataSource productAttributes()
+	{
+		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.productAttributes()
 				.provide()
 				.get();
 		return getLookupDataSource(lookupDescriptor);
