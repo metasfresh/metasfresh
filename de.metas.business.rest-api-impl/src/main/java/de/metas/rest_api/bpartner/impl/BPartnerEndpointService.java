@@ -122,7 +122,7 @@ class BPartnerEndpointService
 				.findAny();
 	}
 
-	private boolean isJsonContactMatches(
+	private static boolean isJsonContactMatches(
 			@NonNull final JsonResponseContact jsonContact,
 			@NonNull final IdentifierString contactIdentifier)
 	{
