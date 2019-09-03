@@ -15,7 +15,7 @@ public class X_M_Inventory extends org.compiere.model.PO implements I_M_Inventor
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1559462458L;
+	private static final long serialVersionUID = 1636437880L;
 
     /** Standard Constructor */
     public X_M_Inventory (Properties ctx, int M_Inventory_ID, String trxName)
@@ -29,9 +29,8 @@ public class X_M_Inventory extends org.compiere.model.PO implements I_M_Inventor
 			setDocumentNo (null);
 			setIsApproved (false);
 			setM_Inventory_ID (0);
-			setM_Warehouse_ID (0);
 			setMovementDate (new Timestamp( System.currentTimeMillis() )); // @#Date@
-			setPosted (false);
+			setPosted (false); // N
 			setProcessed (false);
         } */
     }
@@ -50,18 +49,6 @@ public class X_M_Inventory extends org.compiere.model.PO implements I_M_Inventor
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_AD_Org getAD_OrgTrx() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_OrgTrx_ID, org.compiere.model.I_AD_Org.class);
-	}
-
-	@Override
-	public void setAD_OrgTrx(org.compiere.model.I_AD_Org AD_OrgTrx)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_OrgTrx_ID, org.compiere.model.I_AD_Org.class, AD_OrgTrx);
-	}
 
 	/** Set Buchende Organisation.
 		@param AD_OrgTrx_ID 
@@ -111,7 +98,7 @@ public class X_M_Inventory extends org.compiere.model.PO implements I_M_Inventor
 	}
 
 	@Override
-	public org.compiere.model.I_C_Activity getC_Activity() throws RuntimeException
+	public org.compiere.model.I_C_Activity getC_Activity()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class);
 	}
@@ -148,7 +135,7 @@ public class X_M_Inventory extends org.compiere.model.PO implements I_M_Inventor
 	}
 
 	@Override
-	public org.compiere.model.I_C_Campaign getC_Campaign() throws RuntimeException
+	public org.compiere.model.I_C_Campaign getC_Campaign()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class);
 	}
@@ -184,18 +171,6 @@ public class X_M_Inventory extends org.compiere.model.PO implements I_M_Inventor
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class);
-	}
-
-	@Override
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType)
-	{
-		set_ValueFromPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class, C_DocType);
-	}
-
 	/** Set Belegart.
 		@param C_DocType_ID 
 		Document type or rules
@@ -219,18 +194,6 @@ public class X_M_Inventory extends org.compiere.model.PO implements I_M_Inventor
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Project getC_Project() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class);
-	}
-
-	@Override
-	public void setC_Project(org.compiere.model.I_C_Project C_Project)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class, C_Project);
 	}
 
 	/** Set Projekt.
@@ -307,6 +270,8 @@ public class X_M_Inventory extends org.compiere.model.PO implements I_M_Inventor
 	public static final String DOCACTION_Unlock = "XL";
 	/** WaitComplete = WC */
 	public static final String DOCACTION_WaitComplete = "WC";
+	/** UnClose = UC */
+	public static final String DOCACTION_UnClose = "UC";
 	/** Set Belegverarbeitung.
 		@param DocAction 
 		The targeted status of the document
@@ -376,7 +341,7 @@ public class X_M_Inventory extends org.compiere.model.PO implements I_M_Inventor
 		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
-	/** Set Beleg Nr..
+	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
@@ -386,13 +351,29 @@ public class X_M_Inventory extends org.compiere.model.PO implements I_M_Inventor
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Beleg Nr..
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
 	@Override
 	public java.lang.String getDocumentNo () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
+	}
+
+	/** Set External ID.
+		@param ExternalId External ID	  */
+	@Override
+	public void setExternalId (java.lang.String ExternalId)
+	{
+		set_ValueNoCheck (COLUMNNAME_ExternalId, ExternalId);
+	}
+
+	/** Get External ID.
+		@return External ID	  */
+	@Override
+	public java.lang.String getExternalId () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExternalId);
 	}
 
 	/** Set Generate List.
@@ -466,7 +447,7 @@ public class X_M_Inventory extends org.compiere.model.PO implements I_M_Inventor
 	}
 
 	@Override
-	public org.compiere.model.I_M_PerpetualInv getM_PerpetualInv() throws RuntimeException
+	public org.compiere.model.I_M_PerpetualInv getM_PerpetualInv()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_PerpetualInv_ID, org.compiere.model.I_M_PerpetualInv.class);
 	}
@@ -502,18 +483,6 @@ public class X_M_Inventory extends org.compiere.model.PO implements I_M_Inventor
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class);
-	}
-
-	@Override
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class, M_Warehouse);
 	}
 
 	/** Set Lager.
@@ -655,7 +624,7 @@ public class X_M_Inventory extends org.compiere.model.PO implements I_M_Inventor
 	}
 
 	@Override
-	public org.compiere.model.I_M_Inventory getReversal() throws RuntimeException
+	public org.compiere.model.I_M_Inventory getReversal()
 	{
 		return get_ValueAsPO(COLUMNNAME_Reversal_ID, org.compiere.model.I_M_Inventory.class);
 	}
@@ -666,7 +635,7 @@ public class X_M_Inventory extends org.compiere.model.PO implements I_M_Inventor
 		set_ValueFromPO(COLUMNNAME_Reversal_ID, org.compiere.model.I_M_Inventory.class, Reversal);
 	}
 
-	/** Set Reversal ID.
+	/** Set Storno-Gegenbeleg.
 		@param Reversal_ID 
 		ID of document reversal
 	  */
@@ -679,7 +648,7 @@ public class X_M_Inventory extends org.compiere.model.PO implements I_M_Inventor
 			set_Value (COLUMNNAME_Reversal_ID, Integer.valueOf(Reversal_ID));
 	}
 
-	/** Get Reversal ID.
+	/** Get Storno-Gegenbeleg.
 		@return ID of document reversal
 	  */
 	@Override
@@ -708,7 +677,7 @@ public class X_M_Inventory extends org.compiere.model.PO implements I_M_Inventor
 	}
 
 	@Override
-	public org.compiere.model.I_C_ElementValue getUser1() throws RuntimeException
+	public org.compiere.model.I_C_ElementValue getUser1()
 	{
 		return get_ValueAsPO(COLUMNNAME_User1_ID, org.compiere.model.I_C_ElementValue.class);
 	}
@@ -745,7 +714,7 @@ public class X_M_Inventory extends org.compiere.model.PO implements I_M_Inventor
 	}
 
 	@Override
-	public org.compiere.model.I_C_ElementValue getUser2() throws RuntimeException
+	public org.compiere.model.I_C_ElementValue getUser2()
 	{
 		return get_ValueAsPO(COLUMNNAME_User2_ID, org.compiere.model.I_C_ElementValue.class);
 	}

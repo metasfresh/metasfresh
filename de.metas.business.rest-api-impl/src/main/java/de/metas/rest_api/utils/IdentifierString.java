@@ -2,10 +2,14 @@ package de.metas.rest_api.utils;
 
 import static de.metas.util.Check.assumeNotEmpty;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.util.Check;
 import de.metas.util.rest.ExternalId;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -35,6 +39,7 @@ import lombok.Value;
 @Value
 public class IdentifierString
 {
+
 	public enum Type
 	{
 		/** Every metasfresh ressource can be identifies via its metasfresh-ID (i.e. the PK of its data base record) */
@@ -45,24 +50,41 @@ public class IdentifierString
 
 	Type type;
 
+	@Getter(AccessLevel.NONE)
 	String value;
+
+	public static final String PREFIX_EXTERNAL_ID = "ext-";
+	public static final String PREFIX_VALUE = "val-";
+	public static final String PREFIX_GLN = "gln-";
 
 	public static final IdentifierString of(@NonNull final String value)
 	{
 		assumeNotEmpty("Parameter may not be empty", value);
-		if (value.toLowerCase().startsWith("ext-"))
+		if (value.toLowerCase().startsWith(PREFIX_EXTERNAL_ID))
 		{
-			final String externalId = value.substring(4);
+			final String externalId = value.substring(4).trim();
+			if (externalId.isEmpty())
+			{
+				throw new AdempiereException("Invalid external ID: `" + value + "`");
+			}
 			return new IdentifierString(Type.EXTERNAL_ID, externalId);
 		}
-		else if (value.toLowerCase().startsWith("val-"))
+		else if (value.toLowerCase().startsWith(PREFIX_VALUE))
 		{
-			final String valueString = value.substring(4);
+			final String valueString = value.substring(4).trim();
+			if (valueString.isEmpty())
+			{
+				throw new AdempiereException("Invalid value: `" + value + "`");
+			}
 			return new IdentifierString(Type.VALUE, valueString);
 		}
-		else if (value.toLowerCase().startsWith("gln-"))
+		else if (value.toLowerCase().startsWith(PREFIX_GLN))
 		{
-			final String glnString = value.substring(4);
+			final String glnString = value.substring(4).trim();
+			if (glnString.isEmpty())
+			{
+				throw new AdempiereException("Invalid GLN: `" + value + "`");
+			}
 			return new IdentifierString(Type.GLN, glnString);
 		}
 		else
@@ -74,12 +96,13 @@ public class IdentifierString
 				{
 					throw new InvalidIdentifierException(value);
 				}
+
+				return new IdentifierString(Type.METASFRESH_ID, value);
 			}
 			catch (final NumberFormatException e)
 			{
 				throw new InvalidIdentifierException(value);
 			}
-			return new IdentifierString(Type.METASFRESH_ID, value);
 		}
 	}
 
@@ -113,4 +136,17 @@ public class IdentifierString
 		return MetasfreshId.of(repoId);
 	}
 
+	public String asGLN()
+	{
+		Check.assume(Type.GLN.equals(type), "The type of this instace needs to be {}; this={}", Type.GLN, this);
+
+		return value;
+	}
+
+	public String asValue()
+	{
+		Check.assume(Type.VALUE.equals(type), "The type of this instace needs to be {}; this={}", Type.VALUE, this);
+
+		return value;
+	}
 }

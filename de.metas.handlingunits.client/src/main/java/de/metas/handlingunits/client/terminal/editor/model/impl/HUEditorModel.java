@@ -1176,7 +1176,7 @@ public class HUEditorModel implements IDisposable
 		if (updateHUAllocationsOnSave)
 		{
 			final IHUKeyFactory keyFactory = rootHUKey.getKeyFactory();
-			trxManager.run(new TrxRunnable()
+			trxManager.runInNewTrx(new TrxRunnable()
 			{
 				@Override
 				public void run(final String localTrxName)

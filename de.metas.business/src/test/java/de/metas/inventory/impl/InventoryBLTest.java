@@ -193,7 +193,7 @@ public class InventoryBLTest
 	{
 		final I_M_InventoryLine inventoryLine = newInstance(I_M_InventoryLine.class);
 
-		inventoryLine.setM_Locator(locator);
+		inventoryLine.setM_Locator_ID(locator.getM_Locator_ID());
 
 		save(inventoryLine);
 

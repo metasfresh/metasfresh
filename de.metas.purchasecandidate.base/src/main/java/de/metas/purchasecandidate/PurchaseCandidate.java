@@ -17,6 +17,7 @@ import org.adempiere.warehouse.WarehouseId;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.error.AdIssueId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -324,7 +325,7 @@ public class PurchaseCandidate
 			return this;
 		}
 
-		public ErrorItemBuilder adIssueId(final int adIssueId)
+		public ErrorItemBuilder adIssueId(final AdIssueId adIssueId)
 		{
 			innerBuilder.adIssueId(adIssueId);
 			return this;

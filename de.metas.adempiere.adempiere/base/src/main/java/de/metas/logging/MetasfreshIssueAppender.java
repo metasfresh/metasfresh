@@ -25,6 +25,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
+import de.metas.error.AdIssueId;
 import de.metas.util.Services;
 
 /*
@@ -323,9 +324,8 @@ public class MetasfreshIssueAppender extends UnsynchronizedAppenderBase<ILogging
 					final StringBuilder errorTrace = new StringBuilder();
 					final StackTraceElement[] tes = throwable.getStackTrace();
 					int count = 0;
-					for (int i = 0; i < tes.length; i++)
+					for (final StackTraceElement element : tes)
 					{
-						final StackTraceElement element = tes[i];
 						final String s = element.toString();
 						if (s.indexOf("adempiere") != -1)
 						{
@@ -362,7 +362,11 @@ public class MetasfreshIssueAppender extends UnsynchronizedAppenderBase<ILogging
 				InterfaceWrapperHelper.save(issue);
 			}
 
-			IssueReportableExceptions.markReportedIfPossible(throwable, issue.getAD_Issue_ID());
+			if (throwable != null)
+			{
+				final AdIssueId adIssueId = AdIssueId.ofRepoId(issue.getAD_Issue_ID());
+				IssueReportableExceptions.markReportedIfPossible(throwable, adIssueId);
+			}
 		}
 		finally
 		{

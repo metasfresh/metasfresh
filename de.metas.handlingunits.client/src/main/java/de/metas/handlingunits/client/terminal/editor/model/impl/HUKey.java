@@ -317,7 +317,7 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 			{
 				//
 				// Always run removal in transaction (thread needs a transaction)
-				Services.get(ITrxManager.class).run(new TrxRunnable()
+				Services.get(ITrxManager.class).runInNewTrx(new TrxRunnable()
 				{
 					@Override
 					public void run(final String localTrxName) throws Exception

@@ -4,16 +4,16 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Issue;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
 import de.metas.procurement.base.IPMMContractsBL;
@@ -260,10 +260,10 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 
 		final AdempiereException metasfreshException = AdempiereException.wrapIfNeeded(ex);
 		final String errorMsg = CoalesceUtil.firstNotEmptyTrimmed(metasfreshException.getLocalizedMessage(), metasfreshException.getMessage());
-		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(null, metasfreshException);
+		final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(metasfreshException);
 
 		event.setErrorMsg(errorMsg);
-		event.setAD_Issue(issue);
+		event.setAD_Issue_ID(issueId.getRepoId());
 
 		InterfaceWrapperHelper.save(event);
 		Loggables.addLog("Event marked as isError='Y' with message: {}; event={}", errorMsg, event);

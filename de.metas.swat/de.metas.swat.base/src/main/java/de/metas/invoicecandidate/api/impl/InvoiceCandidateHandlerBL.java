@@ -134,7 +134,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	@Override
 	public void createMissingCandidates(@NonNull final List<I_C_ILCandHandler> handlerRecords)
 	{
-		Services.get(ITrxManager.class).run(trxName -> createInvoiceCandidates(handlerRecords, InvoiceCandidateHandlerBL.NO_MODEL));
+		Services.get(ITrxManager.class).runInNewTrx(() -> createInvoiceCandidates(handlerRecords, InvoiceCandidateHandlerBL.NO_MODEL));
 	}
 
 	@Override

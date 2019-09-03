@@ -98,7 +98,7 @@ public class BPartnerEndpointService
 			case EXTERNAL_ID:
 				return Objects.equals(jsonBPartnerLocation.getExternalId(), locationIdentifier.asJsonExternalId());
 			case GLN:
-				return Objects.equals(jsonBPartnerLocation.getGln(), locationIdentifier.getValue());
+				return Objects.equals(jsonBPartnerLocation.getGln(), locationIdentifier.asGLN());
 			case METASFRESH_ID:
 				return Objects.equals(locationIdentifier.asMetasfreshId(), jsonBPartnerLocation.getMetasfreshId());
 			default:

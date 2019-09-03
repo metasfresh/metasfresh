@@ -51,8 +51,6 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.IImportInterceptor;
-import org.adempiere.impexp.IImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.processing.model.MADProcessablePO;
 import org.adempiere.processing.service.IProcessingService;
@@ -70,6 +68,8 @@ import org.springframework.context.ApplicationContext;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.IImportProcess;
 import de.metas.logging.LogManager;
 import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;

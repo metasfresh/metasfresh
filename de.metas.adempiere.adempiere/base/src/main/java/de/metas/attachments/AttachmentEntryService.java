@@ -1,8 +1,5 @@
 package de.metas.attachments;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
 import java.io.File;
 import java.net.URI;
 import java.util.Collection;
@@ -12,11 +9,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_AttachmentEntry;
-import org.compiere.model.X_AD_AttachmentEntry;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -93,7 +86,7 @@ public class AttachmentEntryService
 			@NonNull final RecordToReferenceProviderService attachmentHandlerRegistry)
 	{
 		this.attachmentEntryRepository = attachmentEntryRepository;
-		this.attachmentLogRepository=attachmentLogRepository;
+		this.attachmentLogRepository = attachmentLogRepository;
 		this.attachmentEntryFactory = attachmentEntryFactory;
 		this.attachmentMigrationService = attachmentMigrationService;
 		this.attachmentHandlerRegistry = attachmentHandlerRegistry;
@@ -145,7 +138,7 @@ public class AttachmentEntryService
 	}
 
 	/**
-	 * @param referencedRecords may be a single model object, a a single {@link ITableRecordReference} or a collection of both.
+	 * @param referencedRecords may be a single model object, a a single {@link TableRecordReference} or a collection of both.
 	 */
 	@SuppressWarnings("unchecked")
 	public AttachmentEntry createNewAttachment(
@@ -190,7 +183,7 @@ public class AttachmentEntryService
 		return CollectionUtils.singleElement(entryWithReferencedRecords);
 	}
 
-	/** Note: the given objects may be "record" models or {@link ITableRecordReference}s. */
+	/** Note: the given objects may be "record" models or {@link TableRecordReference}s. */
 	public Collection<AttachmentEntry> createAttachmentLinks(
 			@NonNull final Collection<AttachmentEntry> entries,
 			@NonNull final Collection<? extends Object> referencedRecords)
@@ -200,7 +193,7 @@ public class AttachmentEntryService
 		return expandAndSave(referencedRecords, unsavedAttachmentsWithLinks);
 	}
 
-	/** Note: the given objects may be "record" models or {@link ITableRecordReference}s. */
+	/** Note: the given objects may be "record" models or {@link TableRecordReference}s. */
 	public Collection<AttachmentEntry> shareAttachmentLinks(
 			@NonNull final Collection<? extends Object> referencedRecordsSource,
 			@NonNull final Collection<? extends Object> referencedRecordsDest)
@@ -271,9 +264,9 @@ public class AttachmentEntryService
 		if (withRemovedLinkedRecordAndId.getLinkedRecords().isEmpty())
 		{
 			final AttachmentLog attachmentLog = AttachmentLog.builder()
-					                                         .attachmentEntry(attachment)
-					                                         .recordRef(tableRecordReference)
-					                                         .build();
+					.attachmentEntry(attachment)
+					.recordRef(tableRecordReference)
+					.build();
 			attachmentLogRepository.save(attachmentLog);
 			attachmentEntryRepository.delete(withRemovedLinkedRecordAndId);
 		}
@@ -319,8 +312,12 @@ public class AttachmentEntryService
 
 	public byte[] retrieveData(@NonNull final AttachmentEntryId attachmentEntryId)
 	{
-		final I_AD_AttachmentEntry record = load(attachmentEntryId, I_AD_AttachmentEntry.class);
-		return record.getBinaryData();
+		return attachmentEntryRepository.retrieveAttachmentEntryData(attachmentEntryId);
+	}
+
+	public AttachmentEntryDataResource retrieveDataResource(@NonNull final AttachmentEntryId attachmentEntryId)
+	{
+		return attachmentEntryRepository.retrieveAttachmentEntryDataResource(attachmentEntryId);
 	}
 
 	public AttachmentEntry getByFilenameOrNull(
@@ -341,14 +338,7 @@ public class AttachmentEntryService
 			@NonNull final AttachmentEntryId attachmentEntryId,
 			@NonNull final byte[] data)
 	{
-		final I_AD_AttachmentEntry entryRecord = load(attachmentEntryId, I_AD_AttachmentEntry.class);
-		if (X_AD_AttachmentEntry.TYPE_Data.equals(entryRecord.getType()))
-		{
-			throw new AdempiereException("Only entries of type Data support attaching data").setParameter("entryRecord", entryRecord);
-		}
-
-		entryRecord.setBinaryData(data);
-		saveRecord(entryRecord);
+		attachmentEntryRepository.updateAttachmentEntryData(attachmentEntryId, data);
 	}
 
 	/**
