@@ -60,12 +60,12 @@ import lombok.NonNull;
  */
 public final class ImmutableAttributeSet implements IAttributeSet
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
 
-	public static final ImmutableAttributeSet ofValuesByAttributeIdMap(@Nullable final Map<Object, Object> valuesByAttributeIdMap)
+	public static ImmutableAttributeSet ofValuesByAttributeIdMap(@Nullable final Map<Object, Object> valuesByAttributeIdMap)
 	{
 		if (valuesByAttributeIdMap == null || valuesByAttributeIdMap.isEmpty())
 		{
@@ -183,7 +183,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		return attributesById.containsKey(attributeId);
 	}
 
-	private final void assertAttributeExists(final String attributeKey)
+	private void assertAttributeExists(final String attributeKey)
 	{
 		if (!hasAttribute(attributeKey))
 		{
@@ -191,7 +191,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		}
 	}
 
-	private final void assertAttributeExists(final AttributeId attributeId)
+	private void assertAttributeExists(final AttributeId attributeId)
 	{
 		if (!hasAttribute(attributeId))
 		{
@@ -292,9 +292,17 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		{
 			return null;
 		}
+		else if (valueObj instanceof Date)
+		{
+			return (Date)valueObj;
+		}
 		else if (valueObj instanceof Number)
 		{
 			return new Date(((Number)valueObj).longValue());
+		}
+		else if (TimeUtil.isDateOrTimeObject(valueObj))
+		{
+			return TimeUtil.asDate(valueObj);
 		}
 		else
 		{
@@ -304,10 +312,21 @@ public final class ImmutableAttributeSet implements IAttributeSet
 				return null;
 			}
 
-			return Env.parseTimestamp(valueStr);
+			try
+			{
+				return Env.parseTimestamp(valueStr);
+			}
+			catch (Exception ex)
+			{
+				throw AdempiereException.wrapIfNeeded(ex)
+						.setParameter("valueObj", valueObj)
+						.setParameter("valueObj.class", valueObj != null ? valueObj.getClass() : null)
+						.appendParametersToMessage();
+			}
 		}
 	}
 
+	@Override
 	public LocalDate getValueAsLocalDate(final String attributeKey)
 	{
 		return TimeUtil.asLocalDate(getValueAsDate(attributeKey));
