@@ -901,7 +901,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	private I_M_AttributeSetInstance saveSelection()
 	{
 		final IMutable<I_M_AttributeSetInstance> asiRef = new Mutable<>();
-		trxManager.run(new TrxRunnableAdapter()
+		trxManager.runInNewTrx(new TrxRunnableAdapter()
 		{
 			@Override
 			public void run(String localTrxName) throws Exception

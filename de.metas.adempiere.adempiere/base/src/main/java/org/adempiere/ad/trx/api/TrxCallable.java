@@ -49,7 +49,7 @@ public interface TrxCallable<ResultType> extends Callable<ResultType>
 	}
 
 	/**
-	 * Method called after {@link #run(String)} runs.
+	 * Method called after {@link #call()} runs.
 	 * 
 	 * Please note, this method is called AFTER transaction is rolled-back or savepoint is released
 	 */

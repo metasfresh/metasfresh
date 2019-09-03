@@ -39,7 +39,6 @@ import org.adempiere.ad.persistence.IModelClassInfo;
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.ad.persistence.ModelClassIntrospector;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -58,7 +57,6 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
-import org.compiere.model.I_AD_Issue;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.Env;
@@ -69,6 +67,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.model.IModelCacheService;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
 import de.metas.logging.LogManager;
@@ -638,8 +638,8 @@ public class InterfaceWrapperHelper
 		else
 		{
 			final AdempiereException ex = new AdempiereException("Model not handled: " + modelToSave + "(class=" + modelToSave.getClass() + "). Ignored.");
-			final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(ex);
-			logger.warn("Could not save the given model; message={}; AD_Issue_ID={}", ex.getLocalizedMessage(), issue.getAD_Issue_ID());
+			final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(ex);
+			logger.warn("Could not save the given model; message={}; AD_Issue_ID={}", ex.getLocalizedMessage(), issueId);
 		}
 	}
 

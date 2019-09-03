@@ -189,7 +189,7 @@ public class DDOrderLinesAllocator
 	 */
 	public void processWithinOwnTrx()
 	{
-		Services.get(ITrxManager.class).run(localTrx -> process());
+		Services.get(ITrxManager.class).runInNewTrx(localTrx -> process());
 	}
 
 	private void process()

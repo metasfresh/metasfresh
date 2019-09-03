@@ -1,12 +1,14 @@
 package org.compiere.apps.form.fileimport;
 
-import org.compiere.impexp.CellErrorMessage;
-import org.compiere.impexp.ImpDataLine;
-import org.compiere.impexp.ImpFormatRow;
+import java.util.Objects;
+
 import org.compiere.model.I_AD_ImpFormat_Row;
 import org.compiere.util.Env;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.impexp.CellErrorMessage;
+import de.metas.impexp.ImpDataLine;
+import de.metas.impexp.ImpFormatColumn;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -16,14 +18,14 @@ class ImpDataLineRowTableColumnModel extends TableColumnModel
 	// services
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	private final ImpFormatRow impFormatRow;
-	private final int impFormatRowIdx;
+	private final ImpFormatColumn impFormatColumn;
+	private final int impFormatColumnIdx;
 
-	public ImpDataLineRowTableColumnModel(final ImpFormatRow impFormatRow, final int impFormatRowIdx, final int columnIndex)
+	public ImpDataLineRowTableColumnModel(final ImpFormatColumn impFormatColumn, final int impFormatColumnIdx, final int columnIndex)
 	{
 		super(columnIndex);
-		this.impFormatRow = impFormatRow;
-		this.impFormatRowIdx = impFormatRowIdx;
+		this.impFormatColumn = impFormatColumn;
+		this.impFormatColumnIdx = impFormatColumnIdx;
 	}
 
 	@Override
@@ -34,14 +36,14 @@ class ImpDataLineRowTableColumnModel extends TableColumnModel
 
 		// Name
 		{
-			final String name = impFormatRow.getName();
+			final String name = impFormatColumn.getName();
 			displayName.append("<b>").append(StringUtils.maskHTML(name)).append("</b>");
 		}
 
 		// Data format
-		if (impFormatRow.isDate() || impFormatRow.isNumber())
+		if (impFormatColumn.isDate() || impFormatColumn.isNumber())
 		{
-			final String dataFormat = impFormatRow.getDataFormat();
+			final String dataFormat = impFormatColumn.getDataFormat();
 			if (!Check.isEmpty(dataFormat))
 			{
 				displayName.append("<br>").append(StringUtils.maskHTML(dataFormat));
@@ -49,15 +51,15 @@ class ImpDataLineRowTableColumnModel extends TableColumnModel
 		}
 
 		// Decimal separator
-		if (impFormatRow.isNumber())
+		if (impFormatColumn.isNumber())
 		{
 			final String decimalPointName = msgBL.translate(Env.getCtx(), I_AD_ImpFormat_Row.COLUMNNAME_DecimalPoint);
-			final String decimalPoint = impFormatRow.getDecimalPoint();
+			final String decimalPoint = impFormatColumn.getDecimalSeparator().getSymbol();
 			displayName.append("<br>").append(StringUtils.maskHTML(decimalPointName)).append(": ").append(StringUtils.maskHTML(decimalPoint));
 		}
 
 		// Divide by 100
-		if (impFormatRow.isNumber() && impFormatRow.isDivideBy100())
+		if (impFormatColumn.isNumber() && impFormatColumn.isDivideBy100())
 		{
 			final String divideBy100 = msgBL.translate(Env.getCtx(), I_AD_ImpFormat_Row.COLUMNNAME_DivideBy100);
 			displayName.append("<br>").append(StringUtils.maskHTML(divideBy100));
@@ -83,20 +85,20 @@ class ImpDataLineRowTableColumnModel extends TableColumnModel
 	@Override
 	public Object getValue(final ImpDataLine dataLine)
 	{
-		return dataLine.getValueOrNull(impFormatRowIdx);
+		return dataLine.getValueOrNull(impFormatColumnIdx);
 	}
 
 	@Override
 	public void setValue(final ImpDataLine dataLine, final Object value)
 	{
 		final Object valueOld = getValue(dataLine);
-		final boolean flagToImport = !Check.equals(valueOld, value);
-		dataLine.setValue(impFormatRowIdx, value, flagToImport);
+		final boolean flagToImport = !Objects.equals(valueOld, value);
+		dataLine.setValue(impFormatColumnIdx, value, flagToImport);
 	}
 
 	@Override
 	public CellErrorMessage getCellErrorMessage(ImpDataLine dataLine)
 	{
-		return dataLine.getCellErrorMessage(impFormatRowIdx);
+		return dataLine.getCellErrorMessage(impFormatColumnIdx);
 	}
 }

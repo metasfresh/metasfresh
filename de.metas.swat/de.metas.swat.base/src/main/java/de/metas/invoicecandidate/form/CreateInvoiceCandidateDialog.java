@@ -518,7 +518,7 @@ public class CreateInvoiceCandidateDialog
 	 */
 	private void onDialogOk()
 	{
-		Services.get(ITrxManager.class).run(new TrxRunnable2()
+		Services.get(ITrxManager.class).runInNewTrx(new TrxRunnable2()
 		{
 			@Override
 			public void run(final String localTrxName) throws Exception

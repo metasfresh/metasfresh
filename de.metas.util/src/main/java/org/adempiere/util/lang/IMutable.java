@@ -1,6 +1,9 @@
 package org.adempiere.util.lang;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
+
+import lombok.NonNull;
 
 /*
  * #%L
@@ -15,15 +18,14 @@ import java.util.function.Function;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 /**
  * Defines a mutable value reference
@@ -46,15 +48,30 @@ public interface IMutable<T> extends IReference<T>
 	 * @param value
 	 */
 	void setValue(T value);
-	
+
 	/**
 	 * @param remappingFunction function which takes the current value as input and which shall return the new value
 	 */
-	default T compute(final Function<T, T> remappingFunction)
+	default T compute(@NonNull final Function<T, T> remappingFunction)
 	{
-		final T value = getValue();
-		final T valueNew = remappingFunction.apply(value);
+		final T valueOld = getValue();
+		final T valueNew = remappingFunction.apply(valueOld);
 		setValue(valueNew);
 		return valueNew;
+	}
+
+	default T computeIfNull(@NonNull final Supplier<T> supplier)
+	{
+		final T valueOld = getValue();
+		if (valueOld == null)
+		{
+			final T valueNew = supplier.get();
+			setValue(valueNew);
+			return valueNew;
+		}
+		else
+		{
+			return valueOld;
+		}
 	}
 }

@@ -183,7 +183,7 @@ public class PurchaseOrderFromItemFactoryTest
 				.transactionReference(TableRecordReference.of("tableName", 20))
 				.buildAndAddToParent();
 
-		Services.get(ITrxManager.class).run(() -> {
+		Services.get(ITrxManager.class).runInNewTrx(() -> {
 
 			final PurchaseOrderFromItemFactory purchaseOrderFromItemFactory = PurchaseOrderFromItemFactory.builder()
 					.orderAggregationKey(PurchaseOrderAggregationKey.fromPurchaseOrderItem(pruchaseOrderItem))

@@ -83,7 +83,7 @@ public class Add_Tables_to_DLM
 				continue;
 			}
 
-			trxManager.run(new TrxRunnable()
+			trxManager.runInNewTrx(new TrxRunnable()
 			{
 				@Override
 				public void run(String localTrxName) throws Exception

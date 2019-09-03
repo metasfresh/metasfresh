@@ -199,7 +199,7 @@ public class JsonPersisterService
 				contactQuery.userId(userId);
 				break;
 			case VALUE:
-				contactQuery.value(contactIdentifier.getValue());
+				contactQuery.value(contactIdentifier.asValue());
 				break;
 			default:
 				throw new InvalidIdentifierException(contactIdentifierStr);
