@@ -293,9 +293,17 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		{
 			return null;
 		}
+		else if (valueObj instanceof Date)
+		{
+			return (Date)valueObj;
+		}
 		else if (valueObj instanceof Number)
 		{
 			return new Date(((Number)valueObj).longValue());
+		}
+		else if (TimeUtil.isDateOrTimeObject(valueObj))
+		{
+			return invokeWithAttributeKey(attributeKey, () -> TimeUtil.asDate(valueObj));
 		}
 		else
 		{
