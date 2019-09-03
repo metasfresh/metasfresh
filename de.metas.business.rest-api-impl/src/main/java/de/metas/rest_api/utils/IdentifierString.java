@@ -2,11 +2,14 @@ package de.metas.rest_api.utils;
 
 import static de.metas.util.Check.assumeNotEmpty;
 
+import java.util.function.IntFunction;
+
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import de.metas.util.rest.ExternalId;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -134,6 +137,14 @@ public class IdentifierString
 
 		final int repoId = Integer.parseInt(value);
 		return MetasfreshId.of(repoId);
+	}
+
+	public <T extends RepoIdAware> T asMetasfreshId(@NonNull final IntFunction<T> mapper)
+	{
+		Check.assume(Type.METASFRESH_ID.equals(type), "The type of this instace needs to be {}; this={}", Type.METASFRESH_ID, this);
+
+		final int repoId = Integer.parseInt(value);
+		return mapper.apply(repoId);
 	}
 
 	public String asGLN()
