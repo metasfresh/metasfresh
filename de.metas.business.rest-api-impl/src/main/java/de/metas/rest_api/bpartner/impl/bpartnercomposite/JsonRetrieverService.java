@@ -58,10 +58,8 @@ import de.metas.rest_api.changelog.JsonChangeLogItem;
 import de.metas.rest_api.changelog.JsonChangeLogItem.JsonChangeLogItemBuilder;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonConverters;
-import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.util.lang.RepoIdAware;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
@@ -191,12 +189,12 @@ public class JsonRetrieverService
 		this.cache = new BPartnerCompositeCache(identifier);
 	}
 
-	public Optional<JsonResponseComposite> retrieveJsonBPartnerComposite(@NonNull final IdentifierString bpartnerIdentifier)
+	public Optional<JsonResponseComposite> getJsonBPartnerComposite(@NonNull final IdentifierString bpartnerIdentifier)
 	{
-		return retrieveBPartnerComposite(bpartnerIdentifier).map(this::toJson);
+		return getBPartnerComposite(bpartnerIdentifier).map(this::toJson);
 	}
 
-	public Optional<QueryResultPage<JsonResponseComposite>> retrieveJsonBPartnerComposites(
+	public Optional<QueryResultPage<JsonResponseComposite>> getJsonBPartnerComposites(
 			@Nullable final NextPageQuery nextPageQuery,
 			@Nullable final SinceQuery sinceRequest)
 	{
@@ -257,12 +255,12 @@ public class JsonRetrieverService
 				.companyName(bpartner.getCompanyName())
 				.externalId(JsonConverters.toJsonOrNull(bpartner.getExternalId()))
 				.group(convertIdToGroupName(bpartner.getGroupId()))
-				.language(convertLanguageToString(bpartner.getLanguage()))
+				.language(Language.asLanguageStringOrNull(bpartner.getLanguage()))
 				.metasfreshId(MetasfreshId.ofOrNull(bpartner.getId()))
 				.name(bpartner.getName())
 				.name2(bpartner.getName2())
 				.name3(bpartner.getName3())
-				.parentId(convertIdToMetasFreshId(bpartner.getParentId()))
+				.parentId(MetasfreshId.ofNullable(bpartner.getParentId()))
 				.phone(bpartner.getPhone())
 				.url(bpartner.getUrl())
 				.url2(bpartner.getUrl2())
@@ -271,7 +269,7 @@ public class JsonRetrieverService
 				.build();
 	}
 
-	private JsonChangeInfo createJsonChangeInfo(
+	private static JsonChangeInfo createJsonChangeInfo(
 			@Nullable final RecordChangeLog recordChangeLog,
 			@NonNull final ImmutableMap<String, String> columnMap)
 	{
@@ -315,24 +313,6 @@ public class JsonRetrieverService
 		final BPGroup bpGroup = bpGroupRepository.getbyId(bpGroupId);
 		final String groupName = bpGroup.getName();
 		return groupName;
-	}
-
-	private MetasfreshId convertIdToMetasFreshId(@Nullable final RepoIdAware repoIdAware)
-	{
-		if (repoIdAware == null)
-		{
-			return null;
-		}
-		return MetasfreshId.of(repoIdAware);
-	}
-
-	private String convertLanguageToString(@Nullable final Language language)
-	{
-		if (language == null)
-		{
-			return null;
-		}
-		return Language.asLanguageString(language);
 	}
 
 	private JsonResponseContact toJson(
@@ -379,7 +359,7 @@ public class JsonRetrieverService
 				.build();
 	}
 
-	private JsonResponseLocation toJson(@NonNull final BPartnerLocation location)
+	private static JsonResponseLocation toJson(@NonNull final BPartnerLocation location)
 	{
 		final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(location.getChangeLog(), LOCATION_FIELD_MAP);
 
@@ -409,19 +389,16 @@ public class JsonRetrieverService
 				.build();
 	}
 
-	public Optional<BPartnerComposite> retrieveBPartnerComposite(@NonNull final IdentifierString bpartnerIdentifier)
+	public Optional<BPartnerComposite> getBPartnerComposite(@NonNull final IdentifierString bpartnerIdentifier)
 	{
 		final BPartnerCompositeLookupKey bpartnerIdLookupKey = BPartnerCompositeLookupKey.ofIdentifierString(bpartnerIdentifier);
-		return retrieveBPartnerComposite(ImmutableList.of(bpartnerIdLookupKey));
+		return getBPartnerComposite(ImmutableList.of(bpartnerIdLookupKey));
 	}
 
-	public Optional<BPartnerComposite> retrieveBPartnerComposite(@NonNull final ImmutableList<BPartnerCompositeLookupKey> bpartnerLookupKeys)
+	Optional<BPartnerComposite> getBPartnerComposite(@NonNull final ImmutableList<BPartnerCompositeLookupKey> bpartnerLookupKeys)
 	{
-		final Collection<BPartnerComposite> allOrLoad = cache.getAllOrLoad(
-				bpartnerLookupKeys,
-				this::lookupBPartnerByKeys0);
-
-		return extractResult(allOrLoad);
+		final Collection<BPartnerComposite> bpartnerComposites = cache.getAllOrLoad(bpartnerLookupKeys, this::retrieveBPartnerComposites);
+		return extractResult(bpartnerComposites);
 	}
 
 	private static Optional<BPartnerComposite> extractResult(@NonNull final Collection<BPartnerComposite> bpartnerComposites)
@@ -434,17 +411,16 @@ public class JsonRetrieverService
 
 	/** Used to verify that changing actually works the way we expect it to (=> performance) */
 	@VisibleForTesting
-	Optional<BPartnerComposite> retrieveBPartnerCompositeAssertCacheHit(@NonNull final ImmutableList<BPartnerCompositeLookupKey> bpartnerLookupKeys)
+	Optional<BPartnerComposite> getBPartnerCompositeAssertCacheHit(@NonNull final ImmutableList<BPartnerCompositeLookupKey> bpartnerLookupKeys)
 	{
-		final Collection<BPartnerComposite> allOrLoad = cache.getAssertAllCached(bpartnerLookupKeys);
-
-		return extractResult(allOrLoad);
+		final Collection<BPartnerComposite> bpartnerComposites = cache.getAssertAllCached(bpartnerLookupKeys);
+		return extractResult(bpartnerComposites);
 	}
 
-	private ImmutableMap<BPartnerCompositeLookupKey, BPartnerComposite> lookupBPartnerByKeys0(
-			@NonNull final Collection<BPartnerCompositeLookupKey> queryLookupKeys)
+	private ImmutableMap<BPartnerCompositeLookupKey, BPartnerComposite> retrieveBPartnerComposites(@NonNull final Collection<BPartnerCompositeLookupKey> queryLookupKeys)
 	{
-		final BPartnerCompositeQuery query = createBPartnerQuery(queryLookupKeys);
+		final OrgId onlyOrgId = Env.getOrgId(); // FIXME avoid using Env.getOrgId();
+		final BPartnerCompositeQuery query = createBPartnerQuery(queryLookupKeys, onlyOrgId);
 
 		final List<BPartnerComposite> byQuery = bpartnerCompositeRepository.getByQuery(query);
 		if (byQuery.size() > 1)
@@ -471,10 +447,12 @@ public class JsonRetrieverService
 		return result.build();
 	}
 
-	private static BPartnerCompositeQuery createBPartnerQuery(@NonNull final Collection<BPartnerCompositeLookupKey> bpartnerLookupKeys)
+	private static BPartnerCompositeQuery createBPartnerQuery(
+			@NonNull final Collection<BPartnerCompositeLookupKey> bpartnerLookupKeys,
+			@NonNull final OrgId onlyOrgId)
 	{
 		final BPartnerCompositeQueryBuilder query = BPartnerCompositeQuery.builder()
-				.onlyOrgId(OrgId.ofRepoIdOrAny(Env.getAD_Org_ID(Env.getCtx())));
+				.onlyOrgId(onlyOrgId);
 
 		for (final BPartnerCompositeLookupKey bpartnerLookupKey : bpartnerLookupKeys)
 		{
@@ -502,7 +480,7 @@ public class JsonRetrieverService
 				query.bPartnerId(BPartnerId.ofRepoId(metasfreshId.getValue()));
 			}
 		}
-		
+
 		return query.build();
 	}
 
@@ -515,11 +493,11 @@ public class JsonRetrieverService
 		{
 			if (bpartner.getId() != null)
 			{
-				result.add(BPartnerCompositeLookupKey.ofMetasfreshId(MetasfreshId.of(bpartner.getId())));
+				result.add(BPartnerCompositeLookupKey.ofMetasfreshId(bpartner.getId()));
 			}
 			if (bpartner.getExternalId() != null)
 			{
-				result.add(BPartnerCompositeLookupKey.ofJsonExternalId(JsonExternalIds.of(bpartner.getExternalId())));
+				result.add(BPartnerCompositeLookupKey.ofExternalId(bpartner.getExternalId()));
 			}
 			if (!isEmpty(bpartner.getValue(), true))
 			{
@@ -538,7 +516,7 @@ public class JsonRetrieverService
 		return result.build();
 	}
 
-	public Optional<JsonResponseContact> retrieveContact(@NonNull final IdentifierString contactIdentifier)
+	public Optional<JsonResponseContact> getContact(@NonNull final IdentifierString contactIdentifier)
 	{
 		final BPartnerContactQuery contactQuery = createContactQuery(contactIdentifier);
 
@@ -557,7 +535,7 @@ public class JsonRetrieverService
 				.map(c -> toJson(c, bpartnerComposite.getBpartner().getLanguage()));
 	}
 
-	private BPartnerContactQuery createContactQuery(@NonNull final IdentifierString identifier)
+	private static BPartnerContactQuery createContactQuery(@NonNull final IdentifierString identifier)
 	{
 		final BPartnerContactQueryBuilder query = BPartnerContactQuery.builder();
 
@@ -570,12 +548,13 @@ public class JsonRetrieverService
 				query.value(identifier.asValue());
 				break;
 			case METASFRESH_ID:
-				final int repoId = identifier.asMetasfreshId().getValue();
-				query.userId(UserId.ofRepoId(repoId));
+				final UserId userId = identifier.asMetasfreshId(UserId::ofRepoId);
+				query.userId(userId);
 				break;
 			default:
 				throw new AdempiereException("Unexpected type=" + identifier.getType());
 		}
+
 		return query.build();
 	}
 }

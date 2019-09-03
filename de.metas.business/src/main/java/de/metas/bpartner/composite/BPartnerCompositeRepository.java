@@ -810,7 +810,7 @@ public class BPartnerCompositeRepository
 		bpartnerRecord.setC_BP_Group_ID(bpartner.getGroupId().getRepoId()); // since we validated, we know it's set
 		// bpartner.getId() used only for lookup
 
-		bpartnerRecord.setAD_Language(Language.asLanguageString(bpartner.getLanguage()));
+		bpartnerRecord.setAD_Language(Language.asLanguageStringOrNull(bpartner.getLanguage()));
 		bpartnerRecord.setName(bpartner.getName());
 		bpartnerRecord.setName2(bpartner.getName2());
 		bpartnerRecord.setName3(bpartner.getName3());

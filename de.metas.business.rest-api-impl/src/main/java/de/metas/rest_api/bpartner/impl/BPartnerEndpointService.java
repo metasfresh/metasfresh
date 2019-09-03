@@ -65,7 +65,7 @@ class BPartnerEndpointService
 
 	public Optional<JsonResponseComposite> retrieveBPartner(@NonNull final IdentifierString bpartnerIdentifier)
 	{
-		final Optional<JsonResponseComposite> optBpartnerComposite = jsonRetriever.retrieveJsonBPartnerComposite(bpartnerIdentifier);
+		final Optional<JsonResponseComposite> optBpartnerComposite = jsonRetriever.getJsonBPartnerComposite(bpartnerIdentifier);
 		return optBpartnerComposite;
 	}
 
@@ -73,7 +73,7 @@ class BPartnerEndpointService
 			@NonNull final IdentifierString bpartnerIdentifier,
 			@NonNull final IdentifierString locationIdentifier)
 	{
-		final Optional<JsonResponseComposite> optBpartnerComposite = jsonRetriever.retrieveJsonBPartnerComposite(bpartnerIdentifier);
+		final Optional<JsonResponseComposite> optBpartnerComposite = jsonRetriever.getJsonBPartnerComposite(bpartnerIdentifier);
 		if (!optBpartnerComposite.isPresent())
 		{
 			return Optional.empty();
@@ -109,7 +109,7 @@ class BPartnerEndpointService
 			@NonNull final IdentifierString bpartnerIdentifier,
 			@NonNull final IdentifierString contactIdentifier)
 	{
-		final Optional<JsonResponseComposite> optBPartnerComposite = jsonRetriever.retrieveJsonBPartnerComposite(bpartnerIdentifier);
+		final Optional<JsonResponseComposite> optBPartnerComposite = jsonRetriever.getJsonBPartnerComposite(bpartnerIdentifier);
 		if (!optBPartnerComposite.isPresent())
 		{
 			return Optional.empty();
@@ -150,7 +150,7 @@ class BPartnerEndpointService
 
 		final NextPageQuery nextPageQuery = NextPageQuery.anyEntityOrNull(nextPageId);
 
-		final Optional<QueryResultPage<JsonResponseComposite>> optionalPage = jsonRetriever.retrieveJsonBPartnerComposites(nextPageQuery, sinceQuery);
+		final Optional<QueryResultPage<JsonResponseComposite>> optionalPage = jsonRetriever.getJsonBPartnerComposites(nextPageQuery, sinceQuery);
 		if (!optionalPage.isPresent())
 		{
 			return Optional.empty();
@@ -183,7 +183,7 @@ class BPartnerEndpointService
 
 		final NextPageQuery nextPageQuery = NextPageQuery.onlyContactsOrNull(nextPageId);
 
-		final Optional<QueryResultPage<JsonResponseComposite>> optionalPage = jsonRetriever.retrieveJsonBPartnerComposites(nextPageQuery, sinceQuery);
+		final Optional<QueryResultPage<JsonResponseComposite>> optionalPage = jsonRetriever.getJsonBPartnerComposites(nextPageQuery, sinceQuery);
 		if (!optionalPage.isPresent())
 		{
 			return Optional.empty();
@@ -228,6 +228,6 @@ class BPartnerEndpointService
 
 	public Optional<JsonResponseContact> retrieveContact(@NonNull final IdentifierString contactIdentifier)
 	{
-		return jsonRetriever.retrieveContact(contactIdentifier);
+		return jsonRetriever.getContact(contactIdentifier);
 	}
 }

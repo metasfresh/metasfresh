@@ -109,7 +109,7 @@ public class JsonPersisterService
 	{
 		// TODO: add support to retrieve without changelog; we don't need changelog here; 
 		// but! make sure we don't screw up caching
-		final Optional<BPartnerComposite> optionalBPartnerComposite = jsonRetrieverService.retrieveBPartnerComposite(bpartnerIdentifier);
+		final Optional<BPartnerComposite> optionalBPartnerComposite = jsonRetrieverService.getBPartnerComposite(bpartnerIdentifier);
 
 		final SyncAdvise effectiveSyncAdvise = coalesce(jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
 
@@ -213,7 +213,7 @@ public class JsonPersisterService
 			@NonNull final JsonRequestLocationUpsert jsonBPartnerLocations,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.retrieveBPartnerComposite(bpartnerIdentifier);
+		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.getBPartnerComposite(bpartnerIdentifier);
 		if (!optBPartnerComposite.isPresent())
 		{
 			return Optional.empty(); // 404
@@ -254,7 +254,7 @@ public class JsonPersisterService
 			@NonNull final JsonRequestContactUpsert jsonContactUpsert,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.retrieveBPartnerComposite(bpartnerIdentifier);
+		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.getBPartnerComposite(bpartnerIdentifier);
 		if (!optBPartnerComposite.isPresent())
 		{
 			return Optional.empty(); // 404

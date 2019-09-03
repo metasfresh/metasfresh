@@ -7,6 +7,9 @@ import org.adempiere.exceptions.AdempiereException;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.utils.IdentifierString;
+import de.metas.rest_api.utils.JsonExternalIds;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.rest.ExternalId;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -40,9 +43,19 @@ public class BPartnerCompositeLookupKey
 		return new BPartnerCompositeLookupKey(metasfreshId, null, null, null);
 	}
 
+	public static <T extends RepoIdAware> BPartnerCompositeLookupKey ofMetasfreshId(@NonNull final T id)
+	{
+		return ofMetasfreshId(MetasfreshId.of(id));
+	}
+
 	public static BPartnerCompositeLookupKey ofJsonExternalId(@NonNull final JsonExternalId jsonExternalId)
 	{
 		return new BPartnerCompositeLookupKey(null, jsonExternalId, null, null);
+	}
+
+	public static BPartnerCompositeLookupKey ofExternalId(@NonNull final ExternalId externalId)
+	{
+		return ofJsonExternalId(JsonExternalIds.of(externalId));
 	}
 
 	public static BPartnerCompositeLookupKey ofCode(@NonNull final String code)
