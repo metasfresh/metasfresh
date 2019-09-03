@@ -99,7 +99,7 @@ public class I18NRestController
 		}
 
 		Services.get(ITrxManager.class)
-				.run(() -> {
+				.runInNewTrx(() -> {
 					flatMessagesToUpload.entrySet().forEach(this::importMessage);
 				});
 
