@@ -103,13 +103,13 @@ public class JsonPersisterService
 	}
 
 	public BPartnerComposite persist(
-			@NonNull final String bpartnerIdentifierStr,
+			@NonNull final IdentifierString bpartnerIdentifier,
 			@NonNull final JsonRequestComposite jsonBPartnerComposite,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
 		// TODO: add support to retrieve without changelog; we don't need changelog here; 
 		// but! make sure we don't screw up caching
-		final Optional<BPartnerComposite> optionalBPartnerComposite = jsonRetrieverService.retrieveBPartnerComposite(bpartnerIdentifierStr);
+		final Optional<BPartnerComposite> optionalBPartnerComposite = jsonRetrieverService.retrieveBPartnerComposite(bpartnerIdentifier);
 
 		final SyncAdvise effectiveSyncAdvise = coalesce(jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
 
@@ -124,7 +124,7 @@ public class JsonPersisterService
 			if (effectiveSyncAdvise.isFailIfNotExists())
 			{
 				throw new MissingResourceException(
-						"Did not find an existing partner with identifier '" + bpartnerIdentifierStr + "'",
+						"Did not find an existing partner with identifier '" + bpartnerIdentifier + "'",
 						jsonBPartnerComposite)
 								.setParameter("effectiveSyncAdvise", effectiveSyncAdvise);
 			}
@@ -209,11 +209,11 @@ public class JsonPersisterService
 
 	/** Adds or update a given location. Leaves all unrelated location of the same bpartner untouched */
 	public Optional<JsonResponseUpsert> persistForBPartner(
-			@NonNull final String bpartnerIdentifierStr,
+			@NonNull final IdentifierString bpartnerIdentifier,
 			@NonNull final JsonRequestLocationUpsert jsonBPartnerLocations,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.retrieveBPartnerComposite(bpartnerIdentifierStr);
+		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.retrieveBPartnerComposite(bpartnerIdentifier);
 		if (!optBPartnerComposite.isPresent())
 		{
 			return Optional.empty(); // 404
@@ -250,11 +250,11 @@ public class JsonPersisterService
 	}
 
 	public Optional<JsonResponseUpsert> persistForBPartner(
-			@NonNull final String bpartnerIdentifierStr,
+			@NonNull final IdentifierString bpartnerIdentifier,
 			@NonNull final JsonRequestContactUpsert jsonContactUpsert,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.retrieveBPartnerComposite(bpartnerIdentifierStr);
+		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.retrieveBPartnerComposite(bpartnerIdentifier);
 		if (!optBPartnerComposite.isPresent())
 		{
 			return Optional.empty(); // 404

@@ -31,10 +31,11 @@ import de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister.JsonPersi
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonResponseUpsert;
-import de.metas.rest_api.bpartner.request.JsonResponseUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonResponseUpsert.JsonResponseUpsertBuilder;
+import de.metas.rest_api.bpartner.request.JsonResponseUpsertItem;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseContactList;
+import de.metas.rest_api.utils.IdentifierString;
 import de.metas.util.rest.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -70,14 +71,14 @@ import lombok.NonNull;
 public class ContactRestController implements ContactRestEndpoint
 {
 
-	private final BPartnerEndpointService bPartnerEndpointservice;
+	private final BPartnerEndpointService bpartnerEndpointService;
 	private final JsonServiceFactory jsonServiceFactory;
 
 	public ContactRestController(
 			@NonNull final BPartnerEndpointService bpIbPartnerEndpointservice,
 			@NonNull final JsonServiceFactory jsonServiceFactory)
 	{
-		this.bPartnerEndpointservice = bpIbPartnerEndpointservice;
+		this.bpartnerEndpointService = bpIbPartnerEndpointservice;
 		this.jsonServiceFactory = jsonServiceFactory;
 	}
 
@@ -92,16 +93,12 @@ public class ContactRestController implements ContactRestEndpoint
 	public ResponseEntity<JsonResponseContact> retrieveContact(
 			@ApiParam(required = true, value = CONTACT_IDENTIFIER_DOC) //
 			@PathVariable("contactIdentifier") //
-			@NonNull final String contactIdentifier)
+			@NonNull final String contactIdentifierStr)
 	{
-		final Optional<JsonResponseContact> contact = bPartnerEndpointservice.retrieveContact(contactIdentifier);
-		if (contact.isPresent())
-		{
-			return ResponseEntity.ok(contact.get());
-		}
-		return new ResponseEntity<JsonResponseContact>(
-				(JsonResponseContact)null,
-				HttpStatus.NOT_FOUND);
+		final IdentifierString contactIdentifier = IdentifierString.of(contactIdentifierStr);
+
+		final Optional<JsonResponseContact> contact = bpartnerEndpointService.retrieveContact(contactIdentifier);
+		return toResponseEntity(contact);
 	}
 
 	@ApiResponses(value = {
@@ -122,14 +119,8 @@ public class ContactRestController implements ContactRestEndpoint
 			@RequestParam(name = "next", required = false) //
 			@Nullable final String next)
 	{
-		final Optional<JsonResponseContactList> list = bPartnerEndpointservice.retrieveContactsSince(epochTimestampMillis, next);
-		if (list.isPresent())
-		{
-			return ResponseEntity.ok(list.get());
-		}
-		return new ResponseEntity<JsonResponseContactList>(
-				(JsonResponseContactList)null,
-				HttpStatus.NOT_FOUND);
+		final Optional<JsonResponseContactList> list = bpartnerEndpointService.retrieveContactsSince(epochTimestampMillis, next);
+		return toResponseEntity(list);
 	}
 
 	@ApiResponses(value = {
@@ -165,5 +156,12 @@ public class ContactRestController implements ContactRestEndpoint
 			response.responseItem(responseItem);
 		}
 		return new ResponseEntity<>(response.build(), HttpStatus.CREATED);
+	}
+
+	private static <T> ResponseEntity<T> toResponseEntity(@NonNull final Optional<T> optionalResult)
+	{
+		return optionalResult
+				.map(result -> ResponseEntity.ok(result))
+				.orElseGet(() -> ResponseEntity.notFound().build());
 	}
 }

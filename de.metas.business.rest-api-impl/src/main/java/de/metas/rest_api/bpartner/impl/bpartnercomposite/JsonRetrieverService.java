@@ -191,9 +191,9 @@ public class JsonRetrieverService
 		this.cache = new BPartnerCompositeCache(identifier);
 	}
 
-	public Optional<JsonResponseComposite> retrieveJsonBPartnerComposite(@NonNull final String bpartnerIdentifierStr)
+	public Optional<JsonResponseComposite> retrieveJsonBPartnerComposite(@NonNull final IdentifierString bpartnerIdentifier)
 	{
-		return retrieveBPartnerComposite(bpartnerIdentifierStr).map(this::toJson);
+		return retrieveBPartnerComposite(bpartnerIdentifier).map(this::toJson);
 	}
 
 	public Optional<QueryResultPage<JsonResponseComposite>> retrieveJsonBPartnerComposites(
@@ -409,28 +409,27 @@ public class JsonRetrieverService
 				.build();
 	}
 
-	public Optional<BPartnerComposite> retrieveBPartnerComposite(@NonNull final String bpartnerIdentifierStr)
+	public Optional<BPartnerComposite> retrieveBPartnerComposite(@NonNull final IdentifierString bpartnerIdentifier)
 	{
-		final BPartnerCompositeLookupKey bpartnerIdLookupKey = createBPartnerIdLookupKey(bpartnerIdentifierStr);
+		final BPartnerCompositeLookupKey bpartnerIdLookupKey = createBPartnerIdLookupKey(bpartnerIdentifier);
 
 		return retrieveBPartnerComposite(ImmutableList.of(bpartnerIdLookupKey));
 	}
 
-	private BPartnerCompositeLookupKey createBPartnerIdLookupKey(@NonNull final String bpartnerIdentifier)
+	private static BPartnerCompositeLookupKey createBPartnerIdLookupKey(@NonNull final IdentifierString bpartnerIdentifier)
 	{
-		final IdentifierString identifier = IdentifierString.of(bpartnerIdentifier);
-		switch (identifier.getType())
+		switch (bpartnerIdentifier.getType())
 		{
 			case EXTERNAL_ID:
-				return BPartnerCompositeLookupKey.ofJsonExternalId(identifier.asJsonExternalId());
+				return BPartnerCompositeLookupKey.ofJsonExternalId(bpartnerIdentifier.asJsonExternalId());
 			case VALUE:
-				return BPartnerCompositeLookupKey.ofCode(identifier.asValue());
+				return BPartnerCompositeLookupKey.ofCode(bpartnerIdentifier.asValue());
 			case GLN:
-				return BPartnerCompositeLookupKey.ofGln(identifier.asGLN());
+				return BPartnerCompositeLookupKey.ofGln(bpartnerIdentifier.asGLN());
 			case METASFRESH_ID:
-				return BPartnerCompositeLookupKey.ofMetasfreshId(identifier.asMetasfreshId());
+				return BPartnerCompositeLookupKey.ofMetasfreshId(bpartnerIdentifier.asMetasfreshId());
 			default:
-				throw new AdempiereException("Unexpected type=" + identifier.getType());
+				throw new AdempiereException("Unexpected type=" + bpartnerIdentifier.getType());
 		}
 	}
 
@@ -443,7 +442,7 @@ public class JsonRetrieverService
 		return extractResult(allOrLoad);
 	}
 
-	private Optional<BPartnerComposite> extractResult(@NonNull final Collection<BPartnerComposite> allOrLoad)
+	private static Optional<BPartnerComposite> extractResult(@NonNull final Collection<BPartnerComposite> allOrLoad)
 	{
 		final ImmutableList<BPartnerComposite> distinctComposites = CollectionUtils.extractDistinctElements(allOrLoad, Function.identity());
 
@@ -490,7 +489,7 @@ public class JsonRetrieverService
 		return result.build();
 	}
 
-	private BPartnerCompositeQuery createBPartnerQuery(@NonNull final Collection<BPartnerCompositeLookupKey> bpartnerLookupKeys)
+	private static BPartnerCompositeQuery createBPartnerQuery(@NonNull final Collection<BPartnerCompositeLookupKey> bpartnerLookupKeys)
 	{
 		final BPartnerCompositeQueryBuilder query = BPartnerCompositeQuery
 				.builder()
@@ -525,7 +524,7 @@ public class JsonRetrieverService
 		return query.build();
 	}
 
-	private final Collection<BPartnerCompositeLookupKey> extractBPartnerLookupKeys(@NonNull final BPartnerComposite bPartnerComposite)
+	private static final Collection<BPartnerCompositeLookupKey> extractBPartnerLookupKeys(@NonNull final BPartnerComposite bPartnerComposite)
 	{
 		final ImmutableList.Builder<BPartnerCompositeLookupKey> result = ImmutableList.builder();
 
@@ -557,10 +556,8 @@ public class JsonRetrieverService
 		return result.build();
 	}
 
-	public Optional<JsonResponseContact> retrieveContact(@NonNull final String contactIdentifierStr)
+	public Optional<JsonResponseContact> retrieveContact(@NonNull final IdentifierString contactIdentifier)
 	{
-		final IdentifierString contactIdentifier = IdentifierString.of(contactIdentifierStr);
-
 		final BPartnerContactQuery contactQuery = createContactQuery(contactIdentifier);
 
 		final Optional<ContactIdAndBPartner> optionalContactIdAndBPartner = bpartnerCompositeRepository.getByContact(contactQuery);

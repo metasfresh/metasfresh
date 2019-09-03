@@ -53,7 +53,7 @@ import lombok.NonNull;
  */
 
 @Service
-public class BPartnerEndpointService
+class BPartnerEndpointService
 {
 	public static final String SYSCFG_BPARTNER_PAGE_SIZE = "de.metas.rest_api.bpartner.PageSize";
 	private final JsonRetrieverService jsonRetriever;
@@ -63,23 +63,21 @@ public class BPartnerEndpointService
 		this.jsonRetriever = jsonServiceFactory.createRetriever(); // we can have one long-term-instance
 	}
 
-	public Optional<JsonResponseComposite> retrieveBPartner(@NonNull final String bpartnerIdentifierStr)
+	public Optional<JsonResponseComposite> retrieveBPartner(@NonNull final IdentifierString bpartnerIdentifier)
 	{
-		final Optional<JsonResponseComposite> optBpartnerComposite = jsonRetriever.retrieveJsonBPartnerComposite(bpartnerIdentifierStr);
+		final Optional<JsonResponseComposite> optBpartnerComposite = jsonRetriever.retrieveJsonBPartnerComposite(bpartnerIdentifier);
 		return optBpartnerComposite;
 	}
 
 	public Optional<JsonResponseLocation> retrieveBPartnerLocation(
-			@NonNull final String bpartnerIdentifierStr,
-			@NonNull final String locationIdentifierStr)
+			@NonNull final IdentifierString bpartnerIdentifier,
+			@NonNull final IdentifierString locationIdentifier)
 	{
-		final Optional<JsonResponseComposite> optBpartnerComposite = jsonRetriever.retrieveJsonBPartnerComposite(bpartnerIdentifierStr);
+		final Optional<JsonResponseComposite> optBpartnerComposite = jsonRetriever.retrieveJsonBPartnerComposite(bpartnerIdentifier);
 		if (!optBpartnerComposite.isPresent())
 		{
 			return Optional.empty();
 		}
-
-		final IdentifierString locationIdentifier = IdentifierString.of(locationIdentifierStr);
 
 		final Optional<JsonResponseLocation> result = optBpartnerComposite.get()
 				.getLocations()
@@ -108,23 +106,20 @@ public class BPartnerEndpointService
 	}
 
 	public Optional<JsonResponseContact> retrieveBPartnerContact(
-			@NonNull final String bpartnerIdentifierStr,
-			@NonNull final String contactIdentifierStr)
+			@NonNull final IdentifierString bpartnerIdentifier,
+			@NonNull final IdentifierString contactIdentifier)
 	{
-		final Optional<JsonResponseComposite> optBPartnerComposite = jsonRetriever.retrieveJsonBPartnerComposite(bpartnerIdentifierStr);
+		final Optional<JsonResponseComposite> optBPartnerComposite = jsonRetriever.retrieveJsonBPartnerComposite(bpartnerIdentifier);
 		if (!optBPartnerComposite.isPresent())
 		{
 			return Optional.empty();
 		}
 
-		final IdentifierString contactIdentifier = IdentifierString.of(contactIdentifierStr);
-
-		final Optional<JsonResponseContact> result = optBPartnerComposite.get()
+		return optBPartnerComposite.get()
 				.getContacts()
 				.stream()
 				.filter(l -> isJsonContactMatches(l, contactIdentifier))
 				.findAny();
-		return result;
 	}
 
 	private boolean isJsonContactMatches(
@@ -231,8 +226,8 @@ public class BPartnerEndpointService
 				Env.getOrgId().getRepoId());
 	}
 
-	public Optional<JsonResponseContact> retrieveContact(@NonNull final String contactIdentifierStr)
+	public Optional<JsonResponseContact> retrieveContact(@NonNull final IdentifierString contactIdentifier)
 	{
-		return jsonRetriever.retrieveContact(contactIdentifierStr);
+		return jsonRetriever.retrieveContact(contactIdentifier);
 	}
 }
