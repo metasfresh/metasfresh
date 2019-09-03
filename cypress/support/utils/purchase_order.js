@@ -34,6 +34,12 @@ export class PurchaseOrder {
     return this;
   }
 
+  setWarehouse(warehouse) {
+    cy.log(`PurchaseOrder - warehouse = ${warehouse}`);
+    this.warehouse = warehouse;
+    return this;
+  }
+
   addLine(purchaseOrderLine) {
     cy.log(`PurchaseOrder - addLine = ${JSON.stringify(purchaseOrderLine)}`);
     this.lines.push(purchaseOrderLine);
@@ -80,6 +86,9 @@ function applyPurchaseOrder(purchaseOrder) {
 
     if (purchaseOrder.isDropShip) {
       cy.setCheckBoxValue('IsDropShip', purchaseOrder.isDropShip);
+    }
+    if (purchaseOrder.warehouse) {
+      cy.selectInListField('M_Warehouse_ID', purchaseOrder.warehouse);
     }
 
     purchaseOrder.lines.forEach(function(purchaseOrderLine) {

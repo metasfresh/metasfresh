@@ -13,8 +13,9 @@
 
     "productType": "Item",
     "vendorName": "Vendor",
-    
     "materialentnahme": "Materialentnahmelager",
-    "warehouseName": "Hauptlager_StdWarehouse_Hauptlager_0_0_0",
-    "quantity": 1
+    "warehouseName": "TestWarehouse",
+    "quantity": 1,
+    "quantityTu": 20,
+    "husAfterMoving": 40
 }
