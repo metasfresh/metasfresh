@@ -77,15 +77,15 @@ import lombok.NonNull;
 public class BpartnerRestController implements BPartnerRestEndpoint
 {
 
-	private final BPartnerEndpointService bPartnerEndpointservice;
+	private final BPartnerEndpointService bpartnerEndpointService;
 	private final JsonServiceFactory jsonServiceFactory;
 
-	public BpartnerRestController(@NonNull final BPartnerEndpointService bpIbPartnerEndpointservice,
+	public BpartnerRestController(
+			@NonNull final BPartnerEndpointService bpartnerEndpointService,
 			@NonNull final JsonServiceFactory jsonServiceFactory)
 	{
 		this.jsonServiceFactory = jsonServiceFactory;
-		this.bPartnerEndpointservice = bpIbPartnerEndpointservice;
-
+		this.bpartnerEndpointService = bpartnerEndpointService;
 	}
 
 	//
@@ -103,12 +103,12 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifier)
 	{
-		final Optional<JsonResponseComposite> result = bPartnerEndpointservice.retrieveBPartner(bpartnerIdentifier);
+		final Optional<JsonResponseComposite> result = bpartnerEndpointService.retrieveBPartner(bpartnerIdentifier);
 		if (result.isPresent())
 		{
 			return ResponseEntity.ok(result.get());
 		}
-		return new ResponseEntity<JsonResponseComposite>(
+		return new ResponseEntity<>(
 				(JsonResponseComposite)null,
 				HttpStatus.NOT_FOUND);
 	}
@@ -132,12 +132,12 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@PathVariable("locationIdentifier") //
 			@NonNull final String locationIdentifier)
 	{
-		final Optional<JsonResponseLocation> location = bPartnerEndpointservice.retrieveBPartnerLocation(bpartnerIdentifier, locationIdentifier);
+		final Optional<JsonResponseLocation> location = bpartnerEndpointService.retrieveBPartnerLocation(bpartnerIdentifier, locationIdentifier);
 		if (location.isPresent())
 		{
 			return ResponseEntity.ok(location.get());
 		}
-		return new ResponseEntity<JsonResponseLocation>(
+		return new ResponseEntity<>(
 				(JsonResponseLocation)null,
 				HttpStatus.NOT_FOUND);
 	}
@@ -160,12 +160,12 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@PathVariable("contactIdentifier") //
 			@NonNull final String contactIdentifier)
 	{
-		final Optional<JsonResponseContact> contact = bPartnerEndpointservice.retrieveBPartnerContact(bpartnerIdentifier, contactIdentifier);
+		final Optional<JsonResponseContact> contact = bpartnerEndpointService.retrieveBPartnerContact(bpartnerIdentifier, contactIdentifier);
 		if (contact.isPresent())
 		{
 			return ResponseEntity.ok(contact.get());
 		}
-		return new ResponseEntity<JsonResponseContact>(
+		return new ResponseEntity<>(
 				(JsonResponseContact)null,
 				HttpStatus.NOT_FOUND);
 	}
@@ -188,12 +188,12 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@RequestParam(name = "next", required = false) //
 			@Nullable final String next)
 	{
-		final Optional<JsonResponseCompositeList> result = bPartnerEndpointservice.retrieveBPartnersSince(epochTimestampMillis, next);
+		final Optional<JsonResponseCompositeList> result = bpartnerEndpointService.retrieveBPartnersSince(epochTimestampMillis, next);
 		if (result.isPresent())
 		{
 			return ResponseEntity.ok(result.get());
 		}
-		return new ResponseEntity<JsonResponseCompositeList>(
+		return new ResponseEntity<>(
 				(JsonResponseCompositeList)null,
 				HttpStatus.NOT_FOUND);
 	}
@@ -258,12 +258,12 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 
 		if (!jsonLocationId.isPresent())
 		{
-			return new ResponseEntity<JsonResponseUpsert>(
+			return new ResponseEntity<>(
 					(JsonResponseUpsert)null,
 					HttpStatus.NOT_FOUND);
 		}
 
-		return new ResponseEntity<JsonResponseUpsert>(
+		return new ResponseEntity<>(
 				jsonLocationId.get(),
 				HttpStatus.CREATED);
 	}
@@ -293,12 +293,12 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 
 		if (!jsonContactId.isPresent())
 		{
-			return new ResponseEntity<JsonResponseUpsert>(
+			return new ResponseEntity<>(
 					(JsonResponseUpsert)null,
 					HttpStatus.NOT_FOUND);
 		}
 
-		return new ResponseEntity<JsonResponseUpsert>(
+		return new ResponseEntity<>(
 				jsonContactId.get(),
 				HttpStatus.CREATED);
 	}
