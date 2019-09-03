@@ -18,6 +18,7 @@ Here come the actual release notes:
   * [#5440](https://github.com/metasfresh/metasfresh/issues/5440) Easy shipment candidate recording (Modal Overlay)
   * [#5447](https://github.com/metasfresh/metasfresh/issues/5447) Optionally include C_Location changes in parent record's changelog
   * [#5457](https://github.com/metasfresh/metasfresh/issues/5457) MaterialTracking - Support regular PP_Orders with heterogenous components
+  * [#5471](https://github.com/metasfresh/metasfresh/issues/5471) Date Filter in Payment Window
 
 * metasfresh-webui-api
   * [#1245](https://github.com/metasfresh/metasfresh-webui-api/issues/1245) webui cache reset: don't invalidate new/changed documents
