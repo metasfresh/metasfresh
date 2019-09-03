@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
+import de.metas.bpartner.GLN;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.utils.IdentifierString.Type;
 import de.metas.util.rest.ExternalId;
@@ -75,7 +76,7 @@ class IdentifierStringTest
 		final IdentifierString testee = IdentifierString.of("gln-abcd");
 
 		assertThat(testee.getType()).isEqualTo(Type.GLN);
-		assertThat(testee.asGLN()).isEqualTo("abcd");
+		assertThat(testee.asGLN()).isEqualTo(GLN.ofString("abcd"));
 	}
 
 	@Test

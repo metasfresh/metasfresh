@@ -6,6 +6,7 @@ import java.util.function.IntFunction;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.bpartner.GLN;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.util.Check;
@@ -147,11 +148,11 @@ public class IdentifierString
 		return mapper.apply(repoId);
 	}
 
-	public String asGLN()
+	public GLN asGLN()
 	{
 		Check.assume(Type.GLN.equals(type), "The type of this instace needs to be {}; this={}", Type.GLN, this);
 
-		return value;
+		return GLN.ofString(value);
 	}
 
 	public String asValue()

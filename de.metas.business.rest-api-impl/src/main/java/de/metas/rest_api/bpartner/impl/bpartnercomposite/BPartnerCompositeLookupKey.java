@@ -4,6 +4,7 @@ import static de.metas.util.Check.assumeNotEmpty;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.bpartner.GLN;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.utils.IdentifierString;
@@ -64,9 +65,8 @@ public class BPartnerCompositeLookupKey
 		return new BPartnerCompositeLookupKey(null, null, code.trim(), null);
 	}
 
-	public static BPartnerCompositeLookupKey ofGln(@NonNull final String gln)
+	public static BPartnerCompositeLookupKey ofGln(@NonNull final GLN gln)
 	{
-		assumeNotEmpty(gln, "Given parameter 'gln' may not be empty");
 		return new BPartnerCompositeLookupKey(null, null, null, gln);
 	}
 
@@ -88,18 +88,15 @@ public class BPartnerCompositeLookupKey
 	}
 
 	MetasfreshId metasfreshId;
-
 	JsonExternalId jsonExternalId;
-
 	String code;
-
-	String gln;
+	GLN gln;
 
 	private BPartnerCompositeLookupKey(
 			MetasfreshId metasfreshId,
 			JsonExternalId jsonExternalId,
 			String code,
-			String gln)
+			GLN gln)
 	{
 		this.metasfreshId = metasfreshId;
 		this.jsonExternalId = jsonExternalId;

@@ -43,6 +43,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
+import de.metas.bpartner.GLN;
 import de.metas.email.EMailAddress;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -91,7 +92,7 @@ public interface IBPartnerDAO extends ISingletonService
 
 	Optional<BPartnerLocationId> getBPartnerLocationIdByExternalId(BPartnerId bpartnerId, ExternalId externalId);
 
-	Optional<BPartnerLocationId> getBPartnerLocationIdByGln(BPartnerId bpartnerId, String gln);
+	Optional<BPartnerLocationId> getBPartnerLocationIdByGln(BPartnerId bpartnerId, GLN gln);
 
 	I_C_BPartner_Location getBPartnerLocationById(BPartnerLocationId bpartnerLocationId);
 
@@ -275,6 +276,8 @@ public interface IBPartnerDAO extends ISingletonService
 	List<String> getBPartnerNamesByIds(Collection<BPartnerId> bpartnerIds);
 
 	Optional<BPartnerId> retrieveBPartnerIdBy(BPartnerQuery query);
+
+	ImmutableSet<BPartnerId> retrieveBPartnerIdsBy(BPartnerQuery query);
 
 	I_C_BPartner_Location retrieveBPartnerLocation(BPartnerLocationQuery query);
 

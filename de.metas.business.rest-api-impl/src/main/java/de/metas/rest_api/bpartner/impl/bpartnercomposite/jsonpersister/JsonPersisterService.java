@@ -13,6 +13,7 @@ import de.metas.bpartner.BPGroup;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerCompositeRepository;
@@ -107,7 +108,7 @@ public class JsonPersisterService
 			@NonNull final JsonRequestComposite jsonBPartnerComposite,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		// TODO: add support to retrieve without changelog; we don't need changelog here; 
+		// TODO: add support to retrieve without changelog; we don't need changelog here;
 		// but! make sure we don't screw up caching
 		final Optional<BPartnerComposite> optionalBPartnerComposite = jsonRetrieverService.getBPartnerComposite(bpartnerIdentifier);
 
@@ -965,9 +966,10 @@ public class JsonPersisterService
 		}
 
 		// gln
-		if (!isEmpty(jsonBPartnerLocation.getGln(), true))
+		final GLN gln = GLN.ofNullableString(jsonBPartnerLocation.getGln());
+		if (gln != null)
 		{
-			location.setGln(jsonBPartnerLocation.getGln().trim());
+			location.setGln(gln);
 		}
 		else if (isUpdateRemove)
 		{

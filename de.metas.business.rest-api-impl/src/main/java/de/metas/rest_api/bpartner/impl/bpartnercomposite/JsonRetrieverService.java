@@ -25,10 +25,9 @@ import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerComposite;
-import de.metas.bpartner.composite.BPartnerCompositeQuery;
-import de.metas.bpartner.composite.BPartnerCompositeQuery.BPartnerCompositeQueryBuilder;
 import de.metas.bpartner.composite.BPartnerCompositeRepository;
 import de.metas.bpartner.composite.BPartnerCompositeRepository.ContactIdAndBPartner;
 import de.metas.bpartner.composite.BPartnerCompositeRepository.NextPageQuery;
@@ -39,6 +38,7 @@ import de.metas.bpartner.composite.BPartnerContactQuery.BPartnerContactQueryBuil
 import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
+import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.dao.selection.pagination.UnknownPageIdentifierException;
 import de.metas.greeting.Greeting;
@@ -376,7 +376,7 @@ public class JsonRetrieverService
 				.countryCode(location.getCountryCode())
 				.district(location.getDistrict())
 				.externalId(JsonConverters.toJsonOrNull(location.getExternalId()))
-				.gln(location.getGln())
+				.gln(GLN.toCode(location.getGln()))
 				.metasfreshId(MetasfreshId.of(location.getId()))
 				.poBox(location.getPoBox())
 				.postal(location.getPostal())
@@ -420,7 +420,7 @@ public class JsonRetrieverService
 	private ImmutableMap<BPartnerCompositeLookupKey, BPartnerComposite> retrieveBPartnerComposites(@NonNull final Collection<BPartnerCompositeLookupKey> queryLookupKeys)
 	{
 		final OrgId onlyOrgId = Env.getOrgId(); // FIXME avoid using Env.getOrgId();
-		final BPartnerCompositeQuery query = createBPartnerQuery(queryLookupKeys, onlyOrgId);
+		final BPartnerQuery query = createBPartnerQuery(queryLookupKeys, onlyOrgId);
 
 		final List<BPartnerComposite> byQuery = bpartnerCompositeRepository.getByQuery(query);
 		if (byQuery.size() > 1)
@@ -447,11 +447,11 @@ public class JsonRetrieverService
 		return result.build();
 	}
 
-	private static BPartnerCompositeQuery createBPartnerQuery(
+	private static BPartnerQuery createBPartnerQuery(
 			@NonNull final Collection<BPartnerCompositeLookupKey> bpartnerLookupKeys,
 			@NonNull final OrgId onlyOrgId)
 	{
-		final BPartnerCompositeQueryBuilder query = BPartnerCompositeQuery.builder()
+		final BPartnerQuery.BPartnerQueryBuilder query = BPartnerQuery.builder()
 				.onlyOrgId(onlyOrgId);
 
 		for (final BPartnerCompositeLookupKey bpartnerLookupKey : bpartnerLookupKeys)
@@ -468,10 +468,10 @@ public class JsonRetrieverService
 				query.bpartnerValue(value);
 			}
 
-			final String gln = bpartnerLookupKey.getGln();
-			if (!isEmpty(gln, true))
+			final GLN gln = bpartnerLookupKey.getGln();
+			if (gln != null)
 			{
-				query.locationGln(gln);
+				query.gln(gln);
 			}
 
 			final MetasfreshId metasfreshId = bpartnerLookupKey.getMetasfreshId();
@@ -507,9 +507,9 @@ public class JsonRetrieverService
 
 		for (final BPartnerLocation location : bPartnerComposite.getLocations())
 		{
-			if (!isEmpty(location.getGln(), true))
+			if (location.getGln() != null)
 			{
-				result.add(BPartnerCompositeLookupKey.ofGln(location.getGln().trim()));
+				result.add(BPartnerCompositeLookupKey.ofGln(location.getGln()));
 			}
 		}
 

@@ -24,6 +24,7 @@ import com.google.common.collect.HashBiMap;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.GLN;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -242,7 +243,7 @@ public class BPartnerMasterDataProvider
 		final JsonRequestLocation jsonLocation = jsonBPartnerInfo.getLocation();
 		if (jsonLocation != null && jsonLocation.getGln() != null)
 		{
-			query.locationGln(jsonLocation.getGln());
+			query.gln(GLN.ofString(jsonLocation.getGln()));
 		}
 
 		return bpartnersRepo
@@ -275,7 +276,7 @@ public class BPartnerMasterDataProvider
 			existingBPLocationId = bpartnersRepo
 					.getBPartnerLocationIdByGln(
 							bpartnerId,
-							jsonBPartnerLocation.getGln())
+							GLN.ofString(jsonBPartnerLocation.getGln()))
 					.orElse(null);
 		}
 
