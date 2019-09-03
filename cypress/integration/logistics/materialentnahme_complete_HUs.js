@@ -125,7 +125,7 @@ it('Visit referenced Material Receipt Candidates', function() {
 it('Receive HUs and create Material Receipt for all of the records created', function() {
   cy.selectNthRow(0).click();
   /**Receive HUs with a quantity of 20, that would mean that in HU - husAfterMoving=40 records will appear. */
-  cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingConfig');
+  cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingConfig', false, true);
   cy.writeIntoStringField('QtyTU', quantityTu, false, null, true);
   cy.pressStartButton();
   cy.waitUntilProcessIsFinished();
