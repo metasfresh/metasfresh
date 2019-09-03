@@ -312,8 +312,17 @@ public final class ImmutableAttributeSet implements IAttributeSet
 			{
 				return null;
 			}
-
-			return invokeWithAttributeKey(attributeKey, () -> Env.parseTimestamp(valueStr));
+			try
+			{
+				return invokeWithAttributeKey(attributeKey, () -> Env.parseTimestamp(valueStr));
+			}
+			catch (final Exception ex)
+			{
+				throw AdempiereException.wrapIfNeeded(ex)
+						.setParameter("valueObj", valueObj)
+						.setParameter("valueObj.class", valueObj != null ? valueObj.getClass() : null)
+						.appendParametersToMessage();
+			}
 		}
 	}
 
@@ -331,12 +340,12 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		{
 			return supplier.get();
 		}
-		catch (final RuntimeException e)
+		catch (final Exception e)
 		{
 			throw AdempiereException
 					.wrapIfNeeded(e)
 					.setParameter("immutableAttributeSet", this)
-					.setParameter("attributeKey", Check.isEmpty(attributeKey, true) ? "<EMPPTY>" : attributeKey);
+					.setParameter("attributeKey", Check.isEmpty(attributeKey, true) ? "<EMPTY>" : attributeKey);
 		}
 	}
 
@@ -348,7 +357,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		{
 			return supplier.get();
 		}
-		catch (final RuntimeException e)
+		catch (final Exception e)
 		{
 			throw AdempiereException
 					.wrapIfNeeded(e)
