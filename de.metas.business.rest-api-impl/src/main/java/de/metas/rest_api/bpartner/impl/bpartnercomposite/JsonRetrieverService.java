@@ -411,26 +411,8 @@ public class JsonRetrieverService
 
 	public Optional<BPartnerComposite> retrieveBPartnerComposite(@NonNull final IdentifierString bpartnerIdentifier)
 	{
-		final BPartnerCompositeLookupKey bpartnerIdLookupKey = createBPartnerIdLookupKey(bpartnerIdentifier);
-
+		final BPartnerCompositeLookupKey bpartnerIdLookupKey = BPartnerCompositeLookupKey.ofIdentifierString(bpartnerIdentifier);
 		return retrieveBPartnerComposite(ImmutableList.of(bpartnerIdLookupKey));
-	}
-
-	private static BPartnerCompositeLookupKey createBPartnerIdLookupKey(@NonNull final IdentifierString bpartnerIdentifier)
-	{
-		switch (bpartnerIdentifier.getType())
-		{
-			case EXTERNAL_ID:
-				return BPartnerCompositeLookupKey.ofJsonExternalId(bpartnerIdentifier.asJsonExternalId());
-			case VALUE:
-				return BPartnerCompositeLookupKey.ofCode(bpartnerIdentifier.asValue());
-			case GLN:
-				return BPartnerCompositeLookupKey.ofGln(bpartnerIdentifier.asGLN());
-			case METASFRESH_ID:
-				return BPartnerCompositeLookupKey.ofMetasfreshId(bpartnerIdentifier.asMetasfreshId());
-			default:
-				throw new AdempiereException("Unexpected type=" + bpartnerIdentifier.getType());
-		}
 	}
 
 	public Optional<BPartnerComposite> retrieveBPartnerComposite(@NonNull final ImmutableList<BPartnerCompositeLookupKey> bpartnerLookupKeys)
@@ -442,9 +424,9 @@ public class JsonRetrieverService
 		return extractResult(allOrLoad);
 	}
 
-	private static Optional<BPartnerComposite> extractResult(@NonNull final Collection<BPartnerComposite> allOrLoad)
+	private static Optional<BPartnerComposite> extractResult(@NonNull final Collection<BPartnerComposite> bpartnerComposites)
 	{
-		final ImmutableList<BPartnerComposite> distinctComposites = CollectionUtils.extractDistinctElements(allOrLoad, Function.identity());
+		final ImmutableList<BPartnerComposite> distinctComposites = CollectionUtils.extractDistinctElements(bpartnerComposites, Function.identity());
 
 		final BPartnerComposite result = CollectionUtils.singleElementOrNull(distinctComposites); // we made sure there's not more than one in lookupBPartnerByKeys0
 		return result == null ? Optional.empty() : Optional.of(result.deepCopy());
@@ -491,8 +473,7 @@ public class JsonRetrieverService
 
 	private static BPartnerCompositeQuery createBPartnerQuery(@NonNull final Collection<BPartnerCompositeLookupKey> bpartnerLookupKeys)
 	{
-		final BPartnerCompositeQueryBuilder query = BPartnerCompositeQuery
-				.builder()
+		final BPartnerCompositeQueryBuilder query = BPartnerCompositeQuery.builder()
 				.onlyOrgId(OrgId.ofRepoIdOrAny(Env.getAD_Org_ID(Env.getCtx())));
 
 		for (final BPartnerCompositeLookupKey bpartnerLookupKey : bpartnerLookupKeys)
@@ -521,6 +502,7 @@ public class JsonRetrieverService
 				query.bPartnerId(BPartnerId.ofRepoId(metasfreshId.getValue()));
 			}
 		}
+		
 		return query.build();
 	}
 

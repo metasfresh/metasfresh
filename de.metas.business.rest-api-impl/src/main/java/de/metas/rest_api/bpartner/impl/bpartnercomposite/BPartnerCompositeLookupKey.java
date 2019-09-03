@@ -2,8 +2,11 @@ package de.metas.rest_api.bpartner.impl.bpartnercomposite;
 
 import static de.metas.util.Check.assumeNotEmpty;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
+import de.metas.rest_api.utils.IdentifierString;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -54,6 +57,23 @@ public class BPartnerCompositeLookupKey
 		return new BPartnerCompositeLookupKey(null, null, null, gln);
 	}
 
+	public static BPartnerCompositeLookupKey ofIdentifierString(@NonNull final IdentifierString bpartnerIdentifier)
+	{
+		switch (bpartnerIdentifier.getType())
+		{
+			case EXTERNAL_ID:
+				return BPartnerCompositeLookupKey.ofJsonExternalId(bpartnerIdentifier.asJsonExternalId());
+			case VALUE:
+				return BPartnerCompositeLookupKey.ofCode(bpartnerIdentifier.asValue());
+			case GLN:
+				return BPartnerCompositeLookupKey.ofGln(bpartnerIdentifier.asGLN());
+			case METASFRESH_ID:
+				return BPartnerCompositeLookupKey.ofMetasfreshId(bpartnerIdentifier.asMetasfreshId());
+			default:
+				throw new AdempiereException("Unexpected type=" + bpartnerIdentifier.getType());
+		}
+	}
+
 	MetasfreshId metasfreshId;
 
 	JsonExternalId jsonExternalId;
@@ -73,6 +93,5 @@ public class BPartnerCompositeLookupKey
 		this.code = code;
 		this.gln = gln;
 	}
-
 
 }
