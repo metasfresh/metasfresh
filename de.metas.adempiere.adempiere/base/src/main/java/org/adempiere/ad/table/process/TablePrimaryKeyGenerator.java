@@ -144,7 +144,7 @@ class TablePrimaryKeyGenerator
 
 	private TablePrimaryKeyGenerator generateForTableIfPossible(final I_AD_Table adTable)
 	{
-		trxManager.run(new TrxRunnableAdapter()
+		trxManager.runInNewTrx(new TrxRunnableAdapter()
 		{
 
 			@Override

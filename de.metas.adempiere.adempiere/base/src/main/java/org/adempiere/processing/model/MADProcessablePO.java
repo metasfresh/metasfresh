@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.processing.exception.ProcessingException;
 import org.adempiere.processing.interfaces.IProcessablePO;
 import org.compiere.model.MTable;
@@ -35,12 +36,12 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
-import org.compiere.util.Trx;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 public class MADProcessablePO extends X_AD_ProcessablePO implements IProcessablePO
 {
@@ -90,14 +91,9 @@ public class MADProcessablePO extends X_AD_ProcessablePO implements IProcessable
 		{
 			// attempting to create the new MADProcessablePO in a local trx, because we want to commit it right after
 			// creation.
-			Trx.run(null, new TrxRunnable()
-			{
-				@Override
-				public void run(final String trxName)
-				{
-					newOne[0] = new MADProcessablePO(po, validator, trxName);
-					newOne[0].saveEx();
-				}
+			Services.get(ITrxManager.class).runInNewTrx((TrxRunnable)trxName -> {
+				newOne[0] = new MADProcessablePO(po, validator, trxName);
+				newOne[0].saveEx();
 			});
 		}
 		catch (RuntimeException e)
@@ -168,7 +164,7 @@ public class MADProcessablePO extends X_AD_ProcessablePO implements IProcessable
 	public static MADProcessablePO retrieveOldest(final Properties ctx, final int adTableId, int minAdProcessablePoId, final String trxName)
 	{
 		final StringBuffer whereClause = new StringBuffer();
-		final List<Object> params = new ArrayList<Object>();
+		final List<Object> params = new ArrayList<>();
 		
 		whereClause.append(I_AD_ProcessablePO.COLUMNNAME_Processed).append("=?");
 		params.add(false);
@@ -221,9 +217,13 @@ public class MADProcessablePO extends X_AD_ProcessablePO implements IProcessable
 		final MTable table = MTable.get(getCtx(), tableId);
 		final String[] keyColumns = table.getKeyColumns();
 		if (keyColumns == null || keyColumns.length == 0)
+		{
 			throw new ProcessingException("Table "+table+" has no key columns defined", null, null);
+		}
 		if (keyColumns.length > 1)
+		{
 			throw new ProcessingException("Table "+table+" has more then one key column defined", null, null);
+		}
 		final String keyColumn = keyColumns[0];
 		
 		PO po = new Query(getCtx(), table.getTableName(), keyColumn+"=?", get_TrxName())

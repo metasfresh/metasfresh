@@ -205,8 +205,8 @@ public class HUInternalUseInventoryProducerTests
 				.findFirst()
 				.get();
 
-		assertThat(luInventoryLine.getM_Product()).isEqualTo(data.helper.pTomato);
-		assertThat(luInventoryLine.getC_UOM()).isEqualTo(data.helper.uomKg);
+		assertThat(luInventoryLine.getM_Product_ID()).isEqualTo(data.helper.pTomato.getM_Product_ID());
+		assertThat(luInventoryLine.getC_UOM_ID()).isEqualTo(data.helper.uomKg.getC_UOM_ID());
 		assertThat(luInventoryLine.getQtyInternalUse()).isEqualByComparingTo(new BigDecimal(50));
 
 		final I_M_InventoryLine cuWithTUInventoryLine = linesForInventoryId.stream()
@@ -214,8 +214,8 @@ public class HUInternalUseInventoryProducerTests
 				.findFirst()
 				.get();
 
-		assertThat(cuWithTUInventoryLine.getM_Product()).isEqualTo(data.helper.pTomato);
-		assertThat(cuWithTUInventoryLine.getC_UOM()).isEqualTo(data.helper.uomKg);
+		assertThat(cuWithTUInventoryLine.getM_Product_ID()).isEqualTo(data.helper.pTomato.getM_Product_ID());
+		assertThat(cuWithTUInventoryLine.getC_UOM_ID()).isEqualTo(data.helper.uomKg.getC_UOM_ID());
 		assertThat(cuWithTUInventoryLine.getQtyInternalUse()).isEqualByComparingTo(BigDecimal.TEN);
 
 		final I_M_InventoryLine cuInventoryLine = linesForInventoryId.stream()
@@ -223,8 +223,8 @@ public class HUInternalUseInventoryProducerTests
 				.findFirst()
 				.get();
 
-		assertThat(cuInventoryLine.getM_Product()).isEqualTo(data.helper.pTomato);
-		assertThat(cuInventoryLine.getC_UOM()).isEqualTo(data.helper.uomKg);
+		assertThat(cuInventoryLine.getM_Product_ID()).isEqualTo(data.helper.pTomato.getM_Product_ID());
+		assertThat(cuInventoryLine.getC_UOM_ID()).isEqualTo(data.helper.uomKg.getC_UOM_ID());
 		assertThat(cuInventoryLine.getQtyInternalUse()).isEqualByComparingTo(new BigDecimal(15));
 	}
 
@@ -270,8 +270,8 @@ public class HUInternalUseInventoryProducerTests
 
 		final I_M_InventoryLine inventoryLine = linesForInventoryId.get(0);
 
-		assertThat(inventoryLine.getM_Product()).isEqualTo(data.helper.pTomato);
-		assertThat(inventoryLine.getC_UOM()).isEqualTo(data.helper.uomKg);
+		assertThat(inventoryLine.getM_Product_ID()).isEqualTo(data.helper.pTomato.getM_Product_ID());
+		assertThat(inventoryLine.getC_UOM_ID()).isEqualTo(data.helper.uomKg.getC_UOM_ID());
 		assertThat(inventoryLine.getQtyInternalUse()).isEqualByComparingTo(new BigDecimal(50));
 
 	}
@@ -330,8 +330,8 @@ public class HUInternalUseInventoryProducerTests
 				.findFirst()
 				.get();
 
-		assertThat(luInventoryLine.getM_Product()).isEqualTo(data.helper.pTomato);
-		assertThat(luInventoryLine.getC_UOM()).isEqualTo(data.helper.uomKg);
+		assertThat(luInventoryLine.getM_Product_ID()).isEqualTo(data.helper.pTomato.getM_Product_ID());
+		assertThat(luInventoryLine.getC_UOM_ID()).isEqualTo(data.helper.uomKg.getC_UOM_ID());
 		assertThat(luInventoryLine.getQtyInternalUse()).isEqualByComparingTo(new BigDecimal(50));
 
 		final I_M_InventoryLine cuWithTUInventoryLine = linesForInventoryId.stream()
@@ -339,8 +339,8 @@ public class HUInternalUseInventoryProducerTests
 				.findFirst()
 				.get();
 
-		assertThat(cuWithTUInventoryLine.getM_Product()).isEqualTo(data.helper.pTomato);
-		assertThat(cuWithTUInventoryLine.getC_UOM()).isEqualTo(data.helper.uomKg);
+		assertThat(cuWithTUInventoryLine.getM_Product_ID()).isEqualTo(data.helper.pTomato.getM_Product_ID());
+		assertThat(cuWithTUInventoryLine.getC_UOM_ID()).isEqualTo(data.helper.uomKg.getC_UOM_ID());
 		assertThat(cuWithTUInventoryLine.getQtyInternalUse()).isEqualByComparingTo(BigDecimal.TEN);
 
 		final I_M_InventoryLine cuInventoryLine = linesForInventoryId.stream()
@@ -348,8 +348,8 @@ public class HUInternalUseInventoryProducerTests
 				.findFirst()
 				.get();
 
-		assertThat(cuInventoryLine.getM_Product()).isEqualTo(data.helper.pTomato);
-		assertThat(cuInventoryLine.getC_UOM()).isEqualTo(data.helper.uomKg);
+		assertThat(cuInventoryLine.getM_Product_ID()).isEqualTo(data.helper.pTomato.getM_Product_ID());
+		assertThat(cuInventoryLine.getC_UOM_ID()).isEqualTo(data.helper.uomKg.getC_UOM_ID());
 		assertThat(cuInventoryLine.getQtyInternalUse()).isEqualByComparingTo(new BigDecimal(15));
 
 		final I_M_InventoryLine receiptInventoryLine = linesForInventoryId.stream()
@@ -357,8 +357,8 @@ public class HUInternalUseInventoryProducerTests
 				.findFirst()
 				.get();
 
-		assertThat(receiptInventoryLine.getM_Product()).isEqualTo(data.helper.pTomato);
-		assertThat(receiptInventoryLine.getC_UOM()).isEqualTo(data.helper.uomKg);
+		assertThat(receiptInventoryLine.getM_Product_ID()).isEqualTo(data.helper.pTomato.getM_Product_ID());
+		assertThat(receiptInventoryLine.getC_UOM_ID()).isEqualTo(data.helper.uomKg.getC_UOM_ID());
 		assertThat(receiptInventoryLine.getQtyInternalUse()).isEqualByComparingTo(new BigDecimal(50));
 
 	}

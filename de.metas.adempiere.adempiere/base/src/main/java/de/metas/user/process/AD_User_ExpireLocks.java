@@ -80,7 +80,7 @@ public class AD_User_ExpireLocks extends JavaProcess
 	{
 		final int result[] = { 0 };
 		
-		Services.get(ITrxManager.class).run(new TrxRunnable()
+		Services.get(ITrxManager.class).runInNewTrx(new TrxRunnable()
 		{
 			@Override
 			public void run(final String localTrxName) throws Exception

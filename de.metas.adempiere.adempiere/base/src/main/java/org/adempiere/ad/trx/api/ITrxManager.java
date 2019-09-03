@@ -49,12 +49,6 @@ public interface ITrxManager extends ISingletonService
 {
 	/**
 	 *
-	 * @return array of current active transactions
-	 */
-	ITrx[] getActiveTransactions();
-
-	/**
-	 *
 	 * @return list of current active transactions
 	 */
 	List<ITrx> getActiveTransactionsList();
@@ -201,11 +195,6 @@ public interface ITrxManager extends ISingletonService
 	 * @see #run(String, TrxRunnable)
 	 */
 	void runInNewTrx(TrxRunnable runnable);
-
-	default void run(final TrxRunnable runnable)
-	{
-		runInNewTrx(runnable);
-	};
 
 	/**
 	 * Same as calling {@link #call(String, TrxRunnable)} with trxName=null
@@ -529,7 +518,7 @@ public interface ITrxManager extends ISingletonService
 	 * @param onTrxMissingPolicy
 	 * @return current thread's trx
 	 */
-	public String getThreadInheritedTrxName(final OnTrxMissingPolicy onTrxMissingPolicy);
+	String getThreadInheritedTrxName(final OnTrxMissingPolicy onTrxMissingPolicy);
 
 	/**
 	 * Gets current Thread's transaction.

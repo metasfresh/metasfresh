@@ -137,7 +137,7 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 	{
 		try
 		{
-			trxManager.run(() -> checkProductById(product));
+			trxManager.runInNewTrx(() -> checkProductById(product));
 		}
 		catch (final Exception ex)
 		{

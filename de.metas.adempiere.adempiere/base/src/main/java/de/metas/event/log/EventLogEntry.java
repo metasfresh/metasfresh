@@ -2,6 +2,7 @@ package de.metas.event.log;
 
 import java.util.UUID;
 
+import de.metas.error.AdIssueId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -42,8 +43,7 @@ public class EventLogEntry
 	@Default
 	boolean error = false;
 
-	@Default
-	int adIssueId = 0;
+	AdIssueId adIssueId;
 
 	@NonNull
 	Integer clientId;

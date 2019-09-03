@@ -8,9 +8,10 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
 
 import org.adempiere.plaf.AdempierePLAF;
-import org.compiere.impexp.CellErrorMessage;
 import org.jdesktop.swingx.table.ColumnFactory;
 import org.jdesktop.swingx.table.TableColumnExt;
+
+import de.metas.impexp.CellErrorMessage;
 
 /**
  * 

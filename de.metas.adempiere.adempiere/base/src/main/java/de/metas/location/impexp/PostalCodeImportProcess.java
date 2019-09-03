@@ -4,13 +4,14 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_C_Postal;
 import org.compiere.model.I_I_Postal;
 import org.compiere.model.X_I_Postal;
 
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult;
 import de.metas.location.ICountryDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -40,7 +41,7 @@ import lombok.NonNull;
 /**
  * Import {@link I_I_Postal} to {@link I_C_Postal}.
  */
-public class PostalCodeImportProcess extends AbstractImportProcess<I_I_Postal>
+public class PostalCodeImportProcess extends SimpleImportProcessTemplate<I_I_Postal>
 {
 	@Override
 	public Class<I_I_Postal> getImportModelClass()
@@ -78,7 +79,10 @@ public class PostalCodeImportProcess extends AbstractImportProcess<I_I_Postal>
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(@NonNull final IMutable<Object> state, @NonNull final I_I_Postal importRecord, final boolean isInsertOnly)
+	protected ImportRecordResult importRecord(
+			@NonNull final IMutable<Object> state_NOTUSED, 
+			@NonNull final I_I_Postal importRecord,
+			final boolean isInsertOnly_NOTUSED)
 	{
 		return importPostalCode(importRecord);
 	}

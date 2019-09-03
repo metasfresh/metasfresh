@@ -504,7 +504,7 @@ final class ReadPaymentForm
 	{
 		final Properties ctx = getCtx();
 
-		trxManager.run((TrxRunnable)localTrxName -> {
+		trxManager.runInNewTrx((TrxRunnable)localTrxName -> {
 			final List<I_C_Invoice_Candidate> candidates = getSelectedInvoiceCandidates();
 			if (candidates.isEmpty())
 			{

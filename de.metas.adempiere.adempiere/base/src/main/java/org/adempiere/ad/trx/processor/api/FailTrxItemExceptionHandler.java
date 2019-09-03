@@ -64,6 +64,13 @@ public class FailTrxItemExceptionHandler implements ITrxItemExceptionHandler
 	}
 
 	@Override
+	public void afterCompleteChunkError(final Throwable e)
+	{
+		// Nothing to do.
+		// This method will never be called because "onCompleteChunkError" method already threw exception.
+	}
+
+	@Override
 	public void onCommitChunkError(final Throwable e)
 	{
 		final Object item = null;

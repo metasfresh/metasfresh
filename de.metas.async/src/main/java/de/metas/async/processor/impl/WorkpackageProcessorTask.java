@@ -30,7 +30,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
@@ -45,7 +44,6 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.logging.LoggingHelper;
-import org.compiere.model.I_AD_Issue;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
@@ -67,6 +65,8 @@ import de.metas.async.processor.IWorkpackageSkipRequest;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.IWorkpackageProcessor.Result;
 import de.metas.async.spi.IWorkpackageProcessor2;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.exceptions.LockFailedException;
@@ -215,9 +215,9 @@ import lombok.NonNull;
 				markError(workPackage, e);
 			}
 		}
-		catch (final Exception e)
+		catch (final Throwable ex)
 		{
-			final IWorkpackageSkipRequest skipRequest = getWorkpackageSkipRequest(e);
+			final IWorkpackageSkipRequest skipRequest = getWorkpackageSkipRequest(ex);
 			if (skipRequest != null)
 			{
 				finallyReleaseElementLockIfAny = false; // task 08999: don't release the lock yet, because we are going to retry later
@@ -225,7 +225,7 @@ import lombok.NonNull;
 			}
 			else
 			{
-				markError(workPackage, AdempiereException.wrapIfNeeded(e));
+				markError(workPackage, AdempiereException.wrapIfNeeded(ex));
 			}
 		}
 		finally
@@ -493,7 +493,7 @@ import lombok.NonNull;
 
 	private void markError(final I_C_Queue_WorkPackage workPackage, final AdempiereException ex)
 	{
-		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(ex);
+		final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(ex);
 
 		//
 		// Allow retry processing this workpackage?
@@ -512,7 +512,7 @@ import lombok.NonNull;
 
 		workPackage.setIsError(true);
 		workPackage.setErrorMsg(ex.getLocalizedMessage());
-		workPackage.setAD_Issue(issue);
+		workPackage.setAD_Issue_ID(issueId.getRepoId());
 
 		setLastEndTime(workPackage); // update statistics
 

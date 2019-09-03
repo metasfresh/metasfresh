@@ -37,6 +37,13 @@ public final class LoggableTrxItemExceptionHandler implements ITrxItemExceptionH
 	}
 
 	@Override
+	public void afterCompleteChunkError(final Throwable e)
+	{
+		// nothing to do.
+		// error was already logged by onCompleteChunkError
+	}
+
+	@Override
 	public void onCommitChunkError(final Throwable e)
 	{
 		Loggables.addLog("Processor failed to commit current chunk => rollback transaction; exception={}", e);

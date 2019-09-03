@@ -44,17 +44,12 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.IImportProcessFactory;
-import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.form.fileimport.FileImportPreviewColumnFactory;
 import org.compiere.apps.form.fileimport.FileImportPreviewTableModel;
-import org.compiere.impexp.FileImportReader;
-import org.compiere.impexp.ImpDataLine;
-import org.compiere.impexp.ImpFormat;
-import org.compiere.impexp.ImportStatus;
 import org.compiere.model.I_AD_ImpFormat;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CPanel;
@@ -67,6 +62,14 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.IMsgBL;
+import de.metas.impexp.FileImportReader;
+import de.metas.impexp.ImpDataContext;
+import de.metas.impexp.ImpDataLine;
+import de.metas.impexp.ImpDataLineStatus;
+import de.metas.impexp.ImpFormat;
+import de.metas.impexp.ImpFormatRepository;
+import de.metas.impexp.processing.IImportProcessFactory;
+import de.metas.impexp.processing.spi.IAsyncImportProcessBuilder;
 import de.metas.logging.LogManager;
 import de.metas.security.permissions.Access;
 import de.metas.util.Services;
@@ -473,7 +476,7 @@ public class VFileImport extends CPanel
 		final ImpFormat impFormat = previewTableModel.getImpFormat();
 
 		final boolean hasData = previewTableModel.getRowCount() > 0
-				&& impFormat != null && impFormat.getRowCount() > 0; // format loaded
+				&& impFormat != null && impFormat.getColumnsCount() > 0; // format loaded
 
 		confirmPanel.getOKButton().setEnabled(hasData);
 	}
@@ -484,17 +487,18 @@ public class VFileImport extends CPanel
 	private void cmd_loadImpFormat()
 	{
 		//
-		final I_AD_ImpFormat impFormatModel = (I_AD_ImpFormat)pickImpFormat.getSelectedItem();
-		if (impFormatModel == null)
+		final I_AD_ImpFormat impFormatRecord = (I_AD_ImpFormat)pickImpFormat.getSelectedItem();
+		if (impFormatRecord == null)
 		{
 			return;
 		}
 
-		final ImpFormat impFormat = ImpFormat.load(impFormatModel);
+		final ImpFormatRepository impFormatsRepo = SpringContextHolder.instance.getBean(ImpFormatRepository.class);
+		final ImpFormat impFormat = impFormatsRepo.toImpFormat(impFormatRecord);
 		previewTableModel.setImpFormat(impFormat);
 		if (impFormat == null)
 		{
-			throw new AdempiereException("@FileImportNoFormat@: " + impFormatModel.getName());
+			throw new AdempiereException("@FileImportNoFormat@: " + impFormatRecord.getName());
 		}
 	}
 
@@ -508,6 +512,12 @@ public class VFileImport extends CPanel
 		m_frame.setBusy(true);
 		m_frame.setBusyMessage(null);
 
+		final ImpDataContext ctx = ImpDataContext.builder()
+				.clientId(Env.getClientId())
+				.orgId(Env.getOrgId())
+				.userId(Env.getLoggedUserId())
+				.build();
+
 		final SwingWorker<Void, ImpDataLine> worker = new SwingWorker<Void, ImpDataLine>()
 		{
 			private int countImported = 0;
@@ -516,7 +526,7 @@ public class VFileImport extends CPanel
 			private String statusMessagePrefix = "";
 
 			@Override
-			protected Void doInBackground() throws Exception
+			protected Void doInBackground()
 			{
 				statusMessagePrefix = msgBL.getMsg(Env.getCtx(), "Processing") + ": ";
 
@@ -531,8 +541,8 @@ public class VFileImport extends CPanel
 						continue;
 					}
 
-					line.importToDB();
-					if (ImportStatus.ImportPrepared == line.getImportStatus())
+					line.importToDB(ctx);
+					if (ImpDataLineStatus.ImportPrepared == line.getImportStatus())
 					{
 						line.setToImport(false);
 						countImported++;
@@ -600,14 +610,14 @@ public class VFileImport extends CPanel
 			for (final ImpDataLine line : lines)
 			{
 				// Skip those which were not prepared yet
-				final ITableRecordReference importRecordRef = line.getImportRecordRef();
+				final TableRecordReference importRecordRef = line.getImportRecordRef();
 				if (importRecordRef == null)
 				{
 					continue;
 				}
 
 				// Skip those already scheduled
-				if (ImportStatus.ImportScheduled == line.getImportStatus())
+				if (ImpDataLineStatus.ImportScheduled == line.getImportStatus())
 				{
 					continue;
 				}

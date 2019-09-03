@@ -308,7 +308,7 @@ public class RecordCrawlerService implements IRecordCrawlerService
 		{
 			return; // nothing to store
 		}
-		Services.get(ITrxManager.class).run((TrxRunnable)localTrxName -> storeIterateResult0(config,
+		Services.get(ITrxManager.class).runInNewTrx((TrxRunnable)localTrxName -> storeIterateResult0(config,
 				(IStorableIterateResult)result,
 				PlainContextAware.newWithTrxName(ctxAware.getCtx(), localTrxName)));
 	}
@@ -316,7 +316,7 @@ public class RecordCrawlerService implements IRecordCrawlerService
 	/**
 	 * Persists the given <code>result</code> to DB and invokes {@link CreatePartitionIterateResult#clearAfterPartitionStored(Partition)} to release memory.
 	 * <p>
-	 * This method is invoked in its own transaction via {@link ITrxManager#run(TrxRunnable)}.
+	 * This method is invoked in its own transaction via {@link ITrxManager#runInNewTrx(TrxRunnable)}.
 	 *
 	 * @param config not actually used in this method, but forwarded to the new {@link Partition} that <code>clearAfterPartitionStored</code> will be called with.
 	 * @param result side-effect: the method will call {@link IterateResult#clearAfterPartitionStored(Partition))}, so the stored partition will be contained within the result
