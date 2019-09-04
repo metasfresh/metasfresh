@@ -59,31 +59,6 @@ public class DateTimeConvertersTest
 	}
 
 	@Test
-	public void testLegacyFormatters()
-	{
-		final JSONDateConfig config = JSONDateConfig.LEGACY.toBuilder()
-				.fixedTimeZone(ZoneId.of("Europe/Berlin"))
-				.build();
-
-		assertLocalDateToJson(LocalDate.of(2019, 03, 05), config)
-				.isEqualTo("2019-03-05T00:00:00.000+01:00");
-
-		assertLocalTimeToJson(LocalTime.of(13, 14, 15, 16), config)
-				.isEqualTo("1970-01-01T13:14:15.000+01:00");
-
-		final ZonedDateTime zonedDateTime = LocalDate.of(2019, 03, 05)
-				.atTime(3, 14, 15, 16)
-				.atZone(ZoneId.of("UTC-9"));
-		assertZonedDateTimeToJson(zonedDateTime, zonedDateTime.getZone(), config)
-				// NOTE: nanos are not considered
-				.isEqualTo("2019-03-05T03:14:15.000-09:00");
-
-		assertInstantToJson(zonedDateTime.toInstant(), zonedDateTime.getZone(), config)
-				// NOTE: nanos are not considered
-				.isEqualTo("2019-03-05T03:14:15.000-09:00");
-	}
-
-	@Test
 	public void testTimeZoneToJson()
 	{
 		assertZoneIdToJson(ZoneId.of("UTC-9")).isEqualTo("UTC-09:00");

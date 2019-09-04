@@ -1,11 +1,11 @@
 package de.metas.ui.web.impexp;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.IImportProcess;
-import org.adempiere.impexp.IImportProcessFactory;
-import org.adempiere.impexp.ImportDataDeleteMode;
-import org.adempiere.impexp.ImportDataDeleteRequest;
 
+import de.metas.impexp.processing.IImportProcess;
+import de.metas.impexp.processing.IImportProcessFactory;
+import de.metas.impexp.processing.ImportDataDeleteMode;
+import de.metas.impexp.processing.ImportDataDeleteRequest;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
