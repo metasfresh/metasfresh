@@ -103,9 +103,9 @@ public class IdentifierString
 
 				return new IdentifierString(Type.METASFRESH_ID, value);
 			}
-			catch (final NumberFormatException e)
+			catch (final NumberFormatException ex)
 			{
-				throw new InvalidIdentifierException(value);
+				throw new InvalidIdentifierException(value, ex);
 			}
 		}
 	}

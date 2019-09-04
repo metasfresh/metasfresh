@@ -11,12 +11,12 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
-import com.jgoodies.common.base.Objects;
 
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartnerCompositeRepository.NextPageQuery;
 import de.metas.bpartner.composite.BPartnerCompositeRepository.SinceQuery;
 import de.metas.dao.selection.pagination.QueryResultPage;
+import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.JsonPagingDescriptor;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverService;
@@ -131,11 +131,9 @@ class BPartnerEndpointService
 		switch (contactIdentifier.getType())
 		{
 			case EXTERNAL_ID:
-				return Objects.equals(jsonContact.getExternalId(), contactIdentifier.asJsonExternalId());
+				return JsonExternalId.equals(jsonContact.getExternalId(), contactIdentifier.asJsonExternalId());
 			case METASFRESH_ID:
-				final MetasfreshId contactIdentifierMetasfreshId = contactIdentifier.asMetasfreshId();
-				final MetasfreshId contactMetasfreshId = jsonContact.getMetasfreshId();
-				return Objects.equals(contactIdentifierMetasfreshId, contactMetasfreshId);
+				return MetasfreshId.equals(jsonContact.getMetasfreshId(), contactIdentifier.asMetasfreshId());
 			default:
 				// note: currently, "val-" and GLN are supported with contacts
 				throw new AdempiereException("Unexpected type=" + contactIdentifier.getType());

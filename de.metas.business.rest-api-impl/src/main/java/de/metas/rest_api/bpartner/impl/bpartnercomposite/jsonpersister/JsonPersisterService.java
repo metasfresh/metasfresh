@@ -139,11 +139,11 @@ public class JsonPersisterService
 	}
 
 	public BPartnerContact persist(
-			@NonNull final String contactIdentifierStr,
+			@NonNull final IdentifierString contactIdentifier,
 			@NonNull final JsonRequestContact jsonContact,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		final BPartnerContactQuery contactQuery = createContactQuery(contactIdentifierStr);
+		final BPartnerContactQuery contactQuery = createContactQuery(contactIdentifier);
 		final Optional<ContactIdAndBPartner> optionalContactIdAndBPartner = bpartnerCompositeRepository.getByContact(contactQuery);
 
 		final BPartnerContact contact;
@@ -163,7 +163,7 @@ public class JsonPersisterService
 			if (parentSyncAdvise.isFailIfNotExists())
 			{
 				throw new MissingResourceException(
-						"Did not find an existing contact with identifier '" + contactIdentifierStr + "'")
+						"Did not find an existing contact with identifier '" + contactIdentifier + "'")
 								.setParameter("effectiveSyncAdvise", parentSyncAdvise);
 			}
 			if (jsonContact.getMetasfreshBPartnerId() == null)
@@ -185,25 +185,24 @@ public class JsonPersisterService
 		return contact;
 	}
 
-	private BPartnerContactQuery createContactQuery(@NonNull final String contactIdentifierStr)
+	private static BPartnerContactQuery createContactQuery(@NonNull final IdentifierString contactIdentifier)
 	{
 		final BPartnerContactQueryBuilder contactQuery = BPartnerContactQuery.builder();
 
-		final IdentifierString contactIdentifier = IdentifierString.of(contactIdentifierStr);
 		switch (contactIdentifier.getType())
 		{
 			case EXTERNAL_ID:
 				contactQuery.externalId(JsonExternalIds.toExternalIdOrNull((contactIdentifier.asJsonExternalId())));
 				break;
 			case METASFRESH_ID:
-				final UserId userId = UserId.ofRepoIdOrNull(contactIdentifier.asMetasfreshId().getValue());
+				final UserId userId = contactIdentifier.asMetasfreshId(UserId::ofRepoId);
 				contactQuery.userId(userId);
 				break;
 			case VALUE:
 				contactQuery.value(contactIdentifier.asValue());
 				break;
 			default:
-				throw new InvalidIdentifierException(contactIdentifierStr);
+				throw new InvalidIdentifierException(contactIdentifier);
 		}
 		return contactQuery.build();
 	}

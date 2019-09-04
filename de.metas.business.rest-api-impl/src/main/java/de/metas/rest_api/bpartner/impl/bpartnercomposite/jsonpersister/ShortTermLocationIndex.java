@@ -82,7 +82,7 @@ public class ShortTermLocationIndex
 			case EXTERNAL_ID:
 				return externalId2Location.get(locationIdentifier.asExternalId());
 			default:
-				throw new InvalidIdentifierException(locationIdentifier.toString());
+				throw new InvalidIdentifierException(locationIdentifier);
 		}
 	}
 
@@ -115,7 +115,7 @@ public class ShortTermLocationIndex
 				externalId2Location.put(locationIdentifier.asExternalId(), location);
 				break;
 			default:
-				throw new InvalidIdentifierException(locationIdentifier.toString());
+				throw new InvalidIdentifierException(locationIdentifier);
 		}
 
 		bpartnerComposite

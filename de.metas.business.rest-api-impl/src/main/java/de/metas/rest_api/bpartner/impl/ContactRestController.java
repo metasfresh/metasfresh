@@ -142,7 +142,7 @@ public class ContactRestController implements ContactRestEndpoint
 		for (final JsonRequestContactUpsertItem requestItem : contacts.getRequestItems())
 		{
 			final BPartnerContact bpartnerContact = persister.persist(
-					requestItem.getContactIdentifier(),
+					IdentifierString.of(requestItem.getContactIdentifier()),
 					requestItem.getContact(),
 					syncAdvise);
 

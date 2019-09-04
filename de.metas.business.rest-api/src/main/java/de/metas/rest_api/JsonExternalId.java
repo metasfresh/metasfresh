@@ -82,4 +82,10 @@ public class JsonExternalId
 	{
 		return value;
 	}
+
+	public static boolean equals(final JsonExternalId id1, final JsonExternalId id2)
+	{
+		return Objects.equals(id1, id2);
+	}
+
 }
