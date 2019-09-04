@@ -104,7 +104,7 @@ public class M_DiscountSchemaBreak_CopyToOtherSchema_Product extends ViewBasedPr
 
 			final ProductId uniqueProductIdForSelection = pricingConditionsRepo.retrieveUniqueProductIdForSelectionOrNull(selectionQueryFilter);
 
-			if(uniqueProductIdForSelection == null)
+			if (uniqueProductIdForSelection == null)
 			{
 				// should not happen because of the preconditions above
 				return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
@@ -128,7 +128,12 @@ public class M_DiscountSchemaBreak_CopyToOtherSchema_Product extends ViewBasedPr
 			throw new AdempiereException("@NoSelection@");
 		}
 
-		pricingConditionsRepo.copyDiscountSchemaBreaks(PricingConditionsId.ofDiscountSchemaId(p_PricingConditionsId), queryFilter);
+		final boolean allowCopyToSameSchema = true;
+
+		pricingConditionsRepo.copyDiscountSchemaBreaksWithProductId(PricingConditionsId.ofDiscountSchemaId(p_PricingConditionsId),
+				queryFilter,
+				ProductId.ofRepoId(p_ProductId),
+				allowCopyToSameSchema);
 
 		return MSG_OK;
 	}
