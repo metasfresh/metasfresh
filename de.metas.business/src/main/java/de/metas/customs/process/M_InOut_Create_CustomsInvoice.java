@@ -7,7 +7,7 @@ import java.util.function.Function;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 
@@ -65,8 +65,8 @@ import lombok.NonNull;
 
 public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProcessPrecondition
 {
-	private final CustomsInvoiceService customsInvoiceService = Adempiere.getBean(CustomsInvoiceService.class);
-	private final ShipmentLinesForCustomsInvoiceRepo shipmentLinesForCustomsInvoiceRepo = Adempiere.getBean(ShipmentLinesForCustomsInvoiceRepo.class);
+	private final CustomsInvoiceService customsInvoiceService = SpringContextHolder.instance.getBean(CustomsInvoiceService.class);
+	private final ShipmentLinesForCustomsInvoiceRepo shipmentLinesForCustomsInvoiceRepo = SpringContextHolder.instance.getBean(ShipmentLinesForCustomsInvoiceRepo.class);
 
 	@Param(parameterName = "C_BPartner_ID")
 	private BPartnerId p_BPartnerId;
@@ -83,7 +83,7 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		if (context.getSelectionSize() <= 0)
+		if (context.isNoSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
