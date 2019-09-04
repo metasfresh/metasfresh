@@ -10,6 +10,12 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.119
+
+# Features
+* metasfresh-webui-frontend
+  * [#2350](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2350) Respect new lines in webui texts
+
 # metasfresh 5.118
 
 # Features
