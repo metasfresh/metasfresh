@@ -9,13 +9,13 @@ import org.compiere.util.Env;
 
 import de.metas.util.Check;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * A cell of {@link ImpDataCell}.
- * 
- * @author tsa
  *
  */
+@ToString
 public class ImpDataCell
 {
 	private final ImpFormatColumn impFormatColumn;

@@ -16,6 +16,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RunOutOfTrx;
 
 /*
  * #%L
@@ -63,6 +64,7 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 	}
 
 	@Override
+	@RunOutOfTrx // dataImportService comes with its own trx-management
 	protected String doIt()
 	{
 		final AttachmentEntryDataResource data = attachmentEntryService.retrieveDataResource(getAttachmentEntryId());

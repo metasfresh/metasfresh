@@ -14,13 +14,14 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * A line from import file, which needs to be imported.
- * 
- * @author tsa
  *
  */
+@ToString(exclude = "_impFormat")
 public class ImpDataLine
 {
 	private final String lineStr;
@@ -130,7 +131,7 @@ public class ImpDataLine
 
 	/**
 	 * Sets cell value
-	 * 
+	 *
 	 * @param columnIndex cell's index
 	 * @param value value to set
 	 * @param flagToImport true if the line shall be flagged as "To import" if the line has no cell errors
@@ -261,7 +262,7 @@ public class ImpDataLine
 		return importRecordRef;
 	}
 
-	public void importToDB(final ImpDataContext ctx)
+	public void importToDB(@NonNull final ImpDataContext ctx)
 	{
 		final ImpFormat impFormat = getImpFormat();
 		Check.assumeNotNull(impFormat, "impFormat not null");

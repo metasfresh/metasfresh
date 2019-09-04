@@ -261,8 +261,6 @@ public final class ImpFormat
 	/**
 	 * Insert/Update Database.
 	 *
-	 * @param ctx context
-	 * @param line line
 	 * @return reference to import table record
 	 */
 	public TableRecordReference updateDB(
@@ -271,13 +269,17 @@ public final class ImpFormat
 	{
 		if (line == null || line.isEmpty())
 		{
-			throw new AdempiereException("No Line");
+			throw new AdempiereException("No Line").appendParametersToMessage()
+					.setParameter("impDataContext", ctx)
+					.setParameter("impDataLine", line);
 		}
 
 		final List<ImpDataCell> nodes = line.getValues();
 		if (nodes.isEmpty())
 		{
-			throw new AdempiereException("Nothing parsed");
+			throw new AdempiereException("Nothing parsed").appendParametersToMessage()
+					.setParameter("impDataContext", ctx)
+					.setParameter("impDataLine", line);
 		}
 
 		// Standard Fields
