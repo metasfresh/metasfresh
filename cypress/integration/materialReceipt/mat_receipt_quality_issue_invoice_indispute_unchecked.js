@@ -1,3 +1,5 @@
+/**this test is incomplete as the deduction needs to be checked in the jasper report too
+ * but currently, we don't have a solution for using cypress in pdf reports */
 import { ProductCategory } from '../../support/utils/product';
 import { Builder } from '../../support/utils/builder';
 import { BPartner } from '../../support/utils/bpartner';
@@ -27,6 +29,7 @@ let product1Quantity;
 let product2Quantity;
 let docBaseType;
 let deduction;
+let qtyEnteredColumnName;
 
 let purchaseOrderRecordId;
 
@@ -52,6 +55,7 @@ it('Read the fixture', function() {
     product2Quantity = f['product2Quantity'];
     docBaseType = f['docBaseType'];
     deduction = f['deduction'];
+    qtyEnteredColumnName = f['qtyEnteredColumnName'];
   });
 });
 it('Disable all other quality issue warehouses', function() {
@@ -186,9 +190,7 @@ it('Open Purchase Invoice and check the deduction in Invoice Line tab', function
   cy.openInboxNotificationWithText('Rechnung');
   cy.selectTab('C_InvoiceLine');
   cy.expectNumberOfRows(3);
-  cy.selectNthRow(0);
-  cy.openAdvancedEdit();
-  cy.getStringFieldValue('QtyEntered').should('equals', deduction);
+  cy.selectRowByColumnAndValue({ column: qtyEnteredColumnName, value: deduction });
 });
 function filterInBillingCandidatesWindow() {
   cy.visitWindow('540092');
