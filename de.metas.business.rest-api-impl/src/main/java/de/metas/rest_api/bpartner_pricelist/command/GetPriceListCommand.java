@@ -93,7 +93,7 @@ public class GetPriceListCommand
 		}
 	}
 
-	private AdempiereException populateParameters(final Throwable ex)
+	private AdempiereException populateWithParameters(final Throwable ex)
 	{
 		return AdempiereException.wrapIfNeeded(ex)
 				// Command parameters:
@@ -116,7 +116,7 @@ public class GetPriceListCommand
 		}
 		catch (final Exception ex)
 		{
-			throw populateParameters(ex);
+			throw populateWithParameters(ex);
 		}
 	}
 
