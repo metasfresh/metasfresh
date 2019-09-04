@@ -39,6 +39,8 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_ProductPrice;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.impexp.processing.product.ProductPriceCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -49,6 +51,7 @@ import de.metas.pricing.ProductPriceId;
 import de.metas.pricing.exceptions.PriceListVersionNotFoundException;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IPriceListDAO extends ISingletonService
 {
@@ -93,7 +96,7 @@ public interface IPriceListDAO extends ISingletonService
 	 * @param processed optional, can be <code>null</code>. Allow to filter by <code>I_M_PriceList.Processed</code>
 	 */
 	I_M_PriceList_Version retrievePriceListVersionOrNull(org.compiere.model.I_M_PriceList priceList, LocalDate date, @Nullable Boolean processed);
-	
+
 	/**
 	 * Retrieves the plv for the given price list and date. Never returns <code>null</code>
 	 *
@@ -151,6 +154,12 @@ public interface IPriceListDAO extends ISingletonService
 	Set<CountryId> retrieveCountryIdsByPricingSystem(final PricingSystemId pricingSystemId);
 
 	Set<ProductId> retrieveHighPriceProducts(BigDecimal minimumPrice, LocalDate date);
+
+	default Stream<I_M_ProductPrice> retrieveProductPrices(@NonNull final PriceListVersionId priceListVersionId)
+	{
+		final Set<ProductId> productIdsToExclude = ImmutableSet.of();
+		return retrieveProductPrices(priceListVersionId, productIdsToExclude);
+	}
 
 	Stream<I_M_ProductPrice> retrieveProductPrices(PriceListVersionId priceListVersionId, Set<ProductId> productIdsToExclude);
 
