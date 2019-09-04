@@ -6,6 +6,7 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
+import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import de.metas.Profiles;
 import de.metas.lang.SOTrx;
 import de.metas.rest_api.bpartner.impl.BpartnerRestController;
+import de.metas.rest_api.bpartner_pricelist.command.GetPriceListCommand;
 import de.metas.rest_api.bpartner_pricelist.response.JsonResponsePriceList;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.util.Check;
@@ -52,12 +54,12 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App)
 public class BpartnerPriceListRestController
 {
-	private final BpartnerPriceListEndpointService bpartnerPriceListEndpointService;
+	private final BpartnerPriceListServicesFacade servicesFacade;
 
 	public BpartnerPriceListRestController(
-			@NonNull final BpartnerPriceListEndpointService bpartnerPriceListEndpointService)
+			@NonNull final BpartnerPriceListServicesFacade servicesFacade)
 	{
-		this.bpartnerPriceListEndpointService = bpartnerPriceListEndpointService;
+		this.servicesFacade = servicesFacade;
 	}
 
 	@GetMapping("/{bpartnerIdentifier}/sales/prices/{countryCode}")
@@ -104,18 +106,24 @@ public class BpartnerPriceListRestController
 	{
 		try
 		{
-			final LocalDate date = !Check.isEmpty(dateStr)
-					? LocalDate.parse(dateStr)
-					: SystemTime.asLocalDate();
+			final LocalDate date = !Check.isEmpty(dateStr) ? LocalDate.parse(dateStr) : SystemTime.asLocalDate();
 
-			final JsonResponsePriceList result = bpartnerPriceListEndpointService.getPriceList(bpartnerIdentifier, soTrx, countryCode, date);
+			final JsonResponsePriceList result = GetPriceListCommand.builder()
+					.servicesFacade(servicesFacade)
+					//
+					.bpartnerIdentifier(bpartnerIdentifier)
+					.soTrx(soTrx)
+					.countryCode(countryCode)
+					.date(date)
+					.execute();
+
 			return ResponseEntity.ok(result);
 		}
 		catch (final Exception ex)
 		{
 			return ResponseEntity
 					.status(HttpStatus.NOT_FOUND)
-					.body(JsonResponsePriceList.error(ex));
+					.body(JsonResponsePriceList.error(ex, Env.getADLanguageOrBaseLanguage()));
 		}
 	}
 }

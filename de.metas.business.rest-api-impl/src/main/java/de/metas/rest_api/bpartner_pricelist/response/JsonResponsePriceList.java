@@ -46,10 +46,10 @@ public class JsonResponsePriceList
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private JsonError error;
 
-	public static JsonResponsePriceList error(@NonNull final Throwable throwable)
+	public static JsonResponsePriceList error(@NonNull final Throwable throwable, @NonNull final String adLanguage)
 	{
 		return builder()
-				.error(JsonError.ofThrowable(throwable))
+				.error(JsonError.ofThrowable(throwable, adLanguage))
 				.build();
 	}
 }

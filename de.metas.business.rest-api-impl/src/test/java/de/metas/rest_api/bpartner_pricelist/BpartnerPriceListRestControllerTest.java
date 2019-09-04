@@ -79,8 +79,7 @@ public class BpartnerPriceListRestControllerTest
 
 		createMasterData();
 
-		final BpartnerPriceListEndpointService bpartnerPriceListEndpointService = new BpartnerPriceListEndpointService();
-		restController = new BpartnerPriceListRestController(bpartnerPriceListEndpointService);
+		restController = new BpartnerPriceListRestController(new BpartnerPriceListServicesFacade());
 	}
 
 	private void createMasterData()
