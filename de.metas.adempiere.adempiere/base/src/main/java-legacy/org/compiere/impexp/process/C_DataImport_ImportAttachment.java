@@ -12,7 +12,7 @@ import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.impexp.FileImportReader;
 import org.compiere.impexp.ImpDataLine;
 import org.compiere.impexp.ImpFormat;
@@ -56,7 +56,7 @@ import de.metas.util.Services;
 
 public class C_DataImport_ImportAttachment extends JavaProcess implements IProcessPrecondition
 {
-	private final transient AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+	private final transient AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 	private final transient IImportProcessFactory importProcessFactory = Services.get(IImportProcessFactory.class);
 
 	private static final Charset CHARSET = Charset.forName("UTF-8");

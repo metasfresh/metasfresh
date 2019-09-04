@@ -4,6 +4,7 @@ import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -14,6 +15,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.SelectionSize;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderEmailer;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
@@ -54,17 +56,18 @@ public class M_ShipperTransportation_SendDerKurierEMail
 	private final transient IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	private final transient DerKurierDeliveryOrderEmailer //
-	derKurierDeliveryOrderEmailer = Adempiere.getBean(DerKurierDeliveryOrderEmailer.class);
+	derKurierDeliveryOrderEmailer = SpringContextHolder.instance.getBean(DerKurierDeliveryOrderEmailer.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		if (context.isNoSelection())
+		final SelectionSize selectionSize = context.getSelectionSize();
+		if (selectionSize.isNoSelection())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("No records selected");
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		if (context.getSelectionSize() > 500)
+		if (selectionSize.isAllSelected() || selectionSize.getSize() > 500)
 		{
 			// Checking is too expensive; just assume that some selected records have an email address
 			return ProcessPreconditionsResolution.accept();
