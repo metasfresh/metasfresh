@@ -497,6 +497,98 @@ Die neue PLV hat dasselbe "Gültig ab"-Datum wie ''URSPR. PLV NEU''.
 Die neue PLV und ''URSPR. PLV NEU'' und ''PLV KUNDEN ALT'' haben alle die ''URSPR. BASIS-PLV'' als Basis-PLV.',Updated=TO_TIMESTAMP('2019-09-04 14:33:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=541180
 ;
 
+-- 2019-09-04T12:36:21.320Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='', Help='',Updated=TO_TIMESTAMP('2019-09-04 15:36:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=541180
+;
+
+-- 2019-09-04T12:36:28.275Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='Mittels dieses Prozesses werden Preislistenversionen (PLV) für Kundenpreislisten erstellt, in denen dieselbe Basis-PLV wie die selektierte eingestellt ist.
+Beispiel:
+Ein Preissystem ''URSPR. BASISPREISSYSTEM'' mit einer ab dem 01. Januar 2019 gültigen PLV erstellen.
+Eine PLV ''URSPR. BASIS-PLV'' erstellen. Diese Basis-PLV beinhaltet 3 Produkte (etwa A, B und C).
+Ein Preisschema (Preiskonditionen) ''PREISKONDITIONEN KUNDEN'' mit zwei Schemapositionen für Produkte A und B erstellen.
+Ein Preissystem ''PREISSYSTEM KUNDEN'' mit einer PLV ''PLV KUNDEN ALT'' mit Basis-PLV = ''URSPR. BASIS-PLV'' und Preisschema = ''PREISKONDITIONEN KUNDEN'' erstellen.
+Diese PLV beinhaltet 2 Produktpreise für Produkte A und B. Die Preise bilden jeweils die Summe aus den Preisen aus der Basis-PLV und dem Aufschlag aus dem Preisschema.
+Einen Kunden erfassen, für den das Kontrollkästchen "Preise mutieren" aktiviert ist. Für diesen Kunden ''PREISSYSTEM KUNDEN'' als M_Pricing_System_ID einstellen.
+Im ''URSPR. BASISPREISSYSTEM'' eine neue PLV ''URSPR. PLV NEU'' erstellen. Sie soll die Basis-PLV = ''URSPR. BASIS-PLV'' bekommen.
+Die Produktpreise für diese PLV erstellen (z.B. mittels Prozess ''Produktpreise erstellen'').
+Diese neue PLV selektieren und den Prozess "Auf derivative Preislisten anwenden" starten.
+Ergebnisse:
+In dem ''PREISSYSTEM KUNDEN'' wird eine neue PLV erstellt.
+Sie beinhaltet die BASIS-PLV = ''URSPR. BASIS-PLV'' und das Preisschema = ''PREISKONDITIONEN KUNDEN'', welches aus der ''PLV KUNDEN ALT'' übernommen wurde.
+Sie beinhaltet 2 Produktpreise für Produkte A und B, die die Summe aus den Basis-Preisen der Basis-PLV + dem Aufschlag aus den ''PREISKONDITIONEN KUNDEN'' bilden.
+Hinweis:
+Produktpreise werden nur erstellt, wenn die jeweiligen Produkte (oder ihre Kategorien) in den ''PREISKONDITIONEN KUNDEN'' beinhaltet sind.
+Die neue PLV hat dasselbe "Gültig ab"-Datum wie ''URSPR. PLV NEU''.
+Die neue PLV und ''URSPR. PLV NEU'' und ''PLV KUNDEN ALT'' haben alle die ''URSPR. BASIS-PLV'' als Basis-PLV.', Help='Mittels dieses Prozesses werden Preislistenversionen (PLV) für Kundenpreislisten erstellt, in denen dieselbe Basis-PLV wie die selektierte eingestellt ist.
+Beispiel:
+Ein Preissystem ''URSPR. BASISPREISSYSTEM'' mit einer ab dem 01. Januar 2019 gültigen PLV erstellen.
+Eine PLV ''URSPR. BASIS-PLV'' erstellen. Diese Basis-PLV beinhaltet 3 Produkte (etwa A, B und C).
+Ein Preisschema (Preiskonditionen) ''PREISKONDITIONEN KUNDEN'' mit zwei Schemapositionen für Produkte A und B erstellen.
+Ein Preissystem ''PREISSYSTEM KUNDEN'' mit einer PLV ''PLV KUNDEN ALT'' mit Basis-PLV = ''URSPR. BASIS-PLV'' und Preisschema = ''PREISKONDITIONEN KUNDEN'' erstellen.
+Diese PLV beinhaltet 2 Produktpreise für Produkte A und B. Die Preise bilden jeweils die Summe aus den Preisen aus der Basis-PLV und dem Aufschlag aus dem Preisschema.
+Einen Kunden erfassen, für den das Kontrollkästchen "Preise mutieren" aktiviert ist. Für diesen Kunden ''PREISSYSTEM KUNDEN'' als M_Pricing_System_ID einstellen.
+Im ''URSPR. BASISPREISSYSTEM'' eine neue PLV ''URSPR. PLV NEU'' erstellen. Sie soll die Basis-PLV = ''URSPR. BASIS-PLV'' bekommen.
+Die Produktpreise für diese PLV erstellen (z.B. mittels Prozess ''Produktpreise erstellen'').
+Diese neue PLV selektieren und den Prozess "Auf derivative Preislisten anwenden" starten.
+Ergebnisse:
+In dem ''PREISSYSTEM KUNDEN'' wird eine neue PLV erstellt.
+Sie beinhaltet die BASIS-PLV = ''URSPR. BASIS-PLV'' und das Preisschema = ''PREISKONDITIONEN KUNDEN'', welches aus der ''PLV KUNDEN ALT'' übernommen wurde.
+Sie beinhaltet 2 Produktpreise für Produkte A und B, die die Summe aus den Basis-Preisen der Basis-PLV + dem Aufschlag aus den ''PREISKONDITIONEN KUNDEN'' bilden.
+Hinweis:
+Produktpreise werden nur erstellt, wenn die jeweiligen Produkte (oder ihre Kategorien) in den ''PREISKONDITIONEN KUNDEN'' beinhaltet sind.
+Die neue PLV hat dasselbe "Gültig ab"-Datum wie ''URSPR. PLV NEU''.
+Die neue PLV und ''URSPR. PLV NEU'' und ''PLV KUNDEN ALT'' haben alle die ''URSPR. BASIS-PLV'' als Basis-PLV.',Updated=TO_TIMESTAMP('2019-09-04 15:36:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=541180
+;
+
+-- 2019-09-04T12:36:36.179Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Description='Mittels dieses Prozesses werden Preislistenversionen (PLV) für Kundenpreislisten erstellt, in denen dieselbe Basis-PLV wie die selektierte eingestellt ist.
+Beispiel:
+Ein Preissystem ''URSPR. BASISPREISSYSTEM'' mit einer ab dem 01. Januar 2019 gültigen PLV erstellen.
+Eine PLV ''URSPR. BASIS-PLV'' erstellen. Diese Basis-PLV beinhaltet 3 Produkte (etwa A, B und C).
+Ein Preisschema (Preiskonditionen) ''PREISKONDITIONEN KUNDEN'' mit zwei Schemapositionen für Produkte A und B erstellen.
+Ein Preissystem ''PREISSYSTEM KUNDEN'' mit einer PLV ''PLV KUNDEN ALT'' mit Basis-PLV = ''URSPR. BASIS-PLV'' und Preisschema = ''PREISKONDITIONEN KUNDEN'' erstellen.
+Diese PLV beinhaltet 2 Produktpreise für Produkte A und B. Die Preise bilden jeweils die Summe aus den Preisen aus der Basis-PLV und dem Aufschlag aus dem Preisschema.
+Einen Kunden erfassen, für den das Kontrollkästchen "Preise mutieren" aktiviert ist. Für diesen Kunden ''PREISSYSTEM KUNDEN'' als M_Pricing_System_ID einstellen.
+Im ''URSPR. BASISPREISSYSTEM'' eine neue PLV ''URSPR. PLV NEU'' erstellen. Sie soll die Basis-PLV = ''URSPR. BASIS-PLV'' bekommen.
+Die Produktpreise für diese PLV erstellen (z.B. mittels Prozess ''Produktpreise erstellen'').
+Diese neue PLV selektieren und den Prozess "Auf derivative Preislisten anwenden" starten.
+Ergebnisse:
+In dem ''PREISSYSTEM KUNDEN'' wird eine neue PLV erstellt.
+Sie beinhaltet die BASIS-PLV = ''URSPR. BASIS-PLV'' und das Preisschema = ''PREISKONDITIONEN KUNDEN'', welches aus der ''PLV KUNDEN ALT'' übernommen wurde.
+Sie beinhaltet 2 Produktpreise für Produkte A und B, die die Summe aus den Basis-Preisen der Basis-PLV + dem Aufschlag aus den ''PREISKONDITIONEN KUNDEN'' bilden.
+Hinweis:
+Produktpreise werden nur erstellt, wenn die jeweiligen Produkte (oder ihre Kategorien) in den ''PREISKONDITIONEN KUNDEN'' beinhaltet sind.
+Die neue PLV hat dasselbe "Gültig ab"-Datum wie ''URSPR. PLV NEU''.
+Die neue PLV und ''URSPR. PLV NEU'' und ''PLV KUNDEN ALT'' haben alle die ''URSPR. BASIS-PLV'' als Basis-PLV.',Updated=TO_TIMESTAMP('2019-09-04 15:36:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=541180
+;
+
+-- 2019-09-04T12:36:41.790Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Help='Mittels dieses Prozesses werden Preislistenversionen (PLV) für Kundenpreislisten erstellt, in denen dieselbe Basis-PLV wie die selektierte eingestellt ist.
+Beispiel:
+Ein Preissystem ''URSPR. BASISPREISSYSTEM'' mit einer ab dem 01. Januar 2019 gültigen PLV erstellen.
+Eine PLV ''URSPR. BASIS-PLV'' erstellen. Diese Basis-PLV beinhaltet 3 Produkte (etwa A, B und C).
+Ein Preisschema (Preiskonditionen) ''PREISKONDITIONEN KUNDEN'' mit zwei Schemapositionen für Produkte A und B erstellen.
+Ein Preissystem ''PREISSYSTEM KUNDEN'' mit einer PLV ''PLV KUNDEN ALT'' mit Basis-PLV = ''URSPR. BASIS-PLV'' und Preisschema = ''PREISKONDITIONEN KUNDEN'' erstellen.
+Diese PLV beinhaltet 2 Produktpreise für Produkte A und B. Die Preise bilden jeweils die Summe aus den Preisen aus der Basis-PLV und dem Aufschlag aus dem Preisschema.
+Einen Kunden erfassen, für den das Kontrollkästchen "Preise mutieren" aktiviert ist. Für diesen Kunden ''PREISSYSTEM KUNDEN'' als M_Pricing_System_ID einstellen.
+Im ''URSPR. BASISPREISSYSTEM'' eine neue PLV ''URSPR. PLV NEU'' erstellen. Sie soll die Basis-PLV = ''URSPR. BASIS-PLV'' bekommen.
+Die Produktpreise für diese PLV erstellen (z.B. mittels Prozess ''Produktpreise erstellen'').
+Diese neue PLV selektieren und den Prozess "Auf derivative Preislisten anwenden" starten.
+Ergebnisse:
+In dem ''PREISSYSTEM KUNDEN'' wird eine neue PLV erstellt.
+Sie beinhaltet die BASIS-PLV = ''URSPR. BASIS-PLV'' und das Preisschema = ''PREISKONDITIONEN KUNDEN'', welches aus der ''PLV KUNDEN ALT'' übernommen wurde.
+Sie beinhaltet 2 Produktpreise für Produkte A und B, die die Summe aus den Basis-Preisen der Basis-PLV + dem Aufschlag aus den ''PREISKONDITIONEN KUNDEN'' bilden.
+Hinweis:
+Produktpreise werden nur erstellt, wenn die jeweiligen Produkte (oder ihre Kategorien) in den ''PREISKONDITIONEN KUNDEN'' beinhaltet sind.
+Die neue PLV hat dasselbe "Gültig ab"-Datum wie ''URSPR. PLV NEU''.
+Die neue PLV und ''URSPR. PLV NEU'' und ''PLV KUNDEN ALT'' haben alle die ''URSPR. BASIS-PLV'' als Basis-PLV.',Updated=TO_TIMESTAMP('2019-09-04 15:36:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=541180
+;
+
 
 
 
