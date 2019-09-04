@@ -1,0 +1,10 @@
+{
+   "customer1" : "CustomerTest1",
+   "productName1" : "ProductTest1",
+   "productCategoryName" : "ProductCategoryName",
+   "discountSchemaName" : "DiscountSchemaTest",
+   "priceSystemName" : "PriceSystem",
+   "priceListName" : "PriceList",
+   "priceListVersionName" : "PriceListVersion",
+   "productType" : "Item"
+}
