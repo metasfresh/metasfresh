@@ -1197,9 +1197,14 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			@NonNull final I_M_ShipmentSchedule record,
 			@NonNull final ShipmentScheduleUserChangeRequest from)
 	{
-		if (from.getQtyToDeliverOverride() != null)
+		if (from.getQtyToDeliverStockOverride() != null)
 		{
-			record.setQtyToDeliver_Override(from.getQtyToDeliverOverride());
+			record.setQtyToDeliver_Override(from.getQtyToDeliverStockOverride());
+		}
+
+		if (from.getQtyToDeliverCatchOverride() != null)
+		{
+			record.setQtyToDeliverCatch_Override(from.getQtyToDeliverCatchOverride());
 		}
 
 		if (from.getAsiId() != null)
