@@ -108,7 +108,6 @@ public class XmlRecordService
 	{
 		return toBuilder()
 				.amount(serviceMod.getAmount())
-				.externalFactor(serviceMod.getExternalFactor())
 				.build();
 	}
 }
