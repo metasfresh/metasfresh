@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.process.SelectionSize;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewProfileId;
@@ -181,15 +182,15 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 	}
 
 	@Override
-	public int getSelectionSize()
+	public SelectionSize getSelectionSize()
 	{
-		return getSelectedRowIds().size();
+		return getSelectedRowIds().toSelectionSize();
 	}
 
 	@Override
 	public boolean isNoSelection()
 	{
-		return getSelectedRowIds().isEmpty();
+		return getSelectedRowIds().isEmpty() && !getSelectedRowIds().isAll();
 	}
 
 	@Override
@@ -206,7 +207,7 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 
 	private static final class SelectedModelsList
 	{
-		private static final SelectedModelsList of(final List<?> models, final Class<?> modelClass)
+		private static SelectedModelsList of(final List<?> models, final Class<?> modelClass)
 		{
 			if (models == null || models.isEmpty())
 			{
