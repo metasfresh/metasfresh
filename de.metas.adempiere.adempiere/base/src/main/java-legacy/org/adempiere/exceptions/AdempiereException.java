@@ -133,6 +133,18 @@ public class AdempiereException extends RuntimeException
 		return TranslatableStrings.constant(extractMessage(throwable));
 	}
 
+	public static final Map<String, Object> extractParameters(final Throwable throwable)
+	{
+		if (throwable instanceof AdempiereException)
+		{
+			return ((AdempiereException)throwable).getParameters();
+		}
+		else
+		{
+			return ImmutableMap.of();
+		}
+	}
+
 	/**
 	 * Extract cause exception from those exceptions which are only about wrapping the real cause (e.g. ExecutionException, InvocationTargetException).
 	 *
