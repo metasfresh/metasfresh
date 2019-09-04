@@ -174,8 +174,8 @@ class InventoryRepositoryTest
 			final I_M_InventoryLine inventoryLineRecord = newInstance(I_M_InventoryLine.class);
 			inventoryLineRecord.setM_Inventory_ID(inventoryId.getRepoId());
 			inventoryLineRecord.setHUAggregationType(AggregationType.MULTIPLE_HUS.getHuAggregationTypeCode());
-			inventoryLineRecord.setC_UOM(uomRecord);
-			inventoryLineRecord.setM_Locator(locatorRecord);
+			inventoryLineRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
+			inventoryLineRecord.setM_Locator_ID(locatorRecord.getM_Locator_ID());
 			inventoryLineRecord.setM_Product_ID(40);
 			saveRecord(inventoryLineRecord);
 			inventoryLineId = InventoryLineId.ofRepoId(inventoryLineRecord.getM_InventoryLine_ID());

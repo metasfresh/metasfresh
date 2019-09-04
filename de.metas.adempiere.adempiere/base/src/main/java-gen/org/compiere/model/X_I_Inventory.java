@@ -15,7 +15,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 421142813L;
+	private static final long serialVersionUID = -1626654953L;
 
     /** Standard Constructor */
     public X_I_Inventory (Properties ctx, int I_Inventory_ID, String trxName)
@@ -43,6 +43,43 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public org.compiere.model.I_AD_Issue getAD_Issue()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class);
+	}
+
+	@Override
+	public void setAD_Issue(org.compiere.model.I_AD_Issue AD_Issue)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class, AD_Issue);
+	}
+
+	/** Set System-Problem.
+		@param AD_Issue_ID 
+		Automatically created or manually entered System Issue
+	  */
+	@Override
+	public void setAD_Issue_ID (int AD_Issue_ID)
+	{
+		if (AD_Issue_ID < 1) 
+			set_Value (COLUMNNAME_AD_Issue_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Issue_ID, Integer.valueOf(AD_Issue_ID));
+	}
+
+	/** Get System-Problem.
+		@return Automatically created or manually entered System Issue
+	  */
+	@Override
+	public int getAD_Issue_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Issue_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	/** Set Datum der letzten Inventur.
 		@param DateLastInventory 
@@ -96,6 +133,38 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set External Header ID.
+		@param ExternalHeaderId External Header ID	  */
+	@Override
+	public void setExternalHeaderId (java.lang.String ExternalHeaderId)
+	{
+		set_Value (COLUMNNAME_ExternalHeaderId, ExternalHeaderId);
+	}
+
+	/** Get External Header ID.
+		@return External Header ID	  */
+	@Override
+	public java.lang.String getExternalHeaderId () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExternalHeaderId);
+	}
+
+	/** Set External Line ID.
+		@param ExternalLineId External Line ID	  */
+	@Override
+	public void setExternalLineId (java.lang.String ExternalLineId)
+	{
+		set_Value (COLUMNNAME_ExternalLineId, ExternalLineId);
+	}
+
+	/** Get External Line ID.
+		@return External Line ID	  */
+	@Override
+	public java.lang.String getExternalLineId () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExternalLineId);
 	}
 
 	/** Set Best Before Date.
@@ -246,7 +315,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	@Override
-	public org.compiere.model.I_M_Inventory getM_Inventory() throws RuntimeException
+	public org.compiere.model.I_M_Inventory getM_Inventory()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Inventory_ID, org.compiere.model.I_M_Inventory.class);
 	}
@@ -283,7 +352,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	@Override
-	public org.compiere.model.I_M_InventoryLine getM_InventoryLine() throws RuntimeException
+	public org.compiere.model.I_M_InventoryLine getM_InventoryLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_InventoryLine_ID, org.compiere.model.I_M_InventoryLine.class);
 	}
@@ -319,18 +388,6 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Locator getM_Locator() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class);
-	}
-
-	@Override
-	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class, M_Locator);
-	}
-
 	/** Set Lagerort.
 		@param M_Locator_ID 
 		Warehouse Locator
@@ -356,18 +413,6 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
-	}
-
 	/** Set Produkt.
 		@param M_Product_ID 
 		Produkt, Leistung, Artikel
@@ -391,18 +436,6 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class);
-	}
-
-	@Override
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class, M_Warehouse);
 	}
 
 	/** Set Lager.
@@ -537,18 +570,6 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	public java.lang.String getSerNo () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_SerNo);
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner getSubProducer_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_SubProducer_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setSubProducer_BPartner(org.compiere.model.I_C_BPartner SubProducer_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_SubProducer_BPartner_ID, org.compiere.model.I_C_BPartner.class, SubProducer_BPartner);
 	}
 
 	/** Set Unterlieferanten.

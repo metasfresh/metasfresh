@@ -60,7 +60,7 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 {
 	private final DocOutBoundRecipientRepository docOutBoundRecipientRepository;
 	private final MailService mailService;
-	
+
 	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
 	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 
@@ -91,43 +91,56 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 	{
 		if (docOutboundLogRecord.getRecord_ID() <= 0 || docOutboundLogRecord.getAD_Table_ID() <= 0)
 		{
+			Loggables.addLog("provideMailRecipient - docOutboundLogRecord has no AD_Table_ID/Record_ID => return 'no recipient'; docOutboundLogRecord={}", docOutboundLogRecord);
 			return Optional.empty();
 		}
-
 
 		final Mailbox mailbox = findMailboxOrNull(docOutboundLogRecord);
 		if (mailbox == null)
 		{
+			Loggables.addLog("provideMailRecipient - return 'no recipient'; mailbox={}", mailbox);
 			return Optional.empty();
 		}
 
 		// check if the column for the user is specified
-		if (!Check.isEmpty(mailbox.getUserToColumnName(), true))
+		final String userToColumnName = mailbox.getUserToColumnName();
+		if (!Check.isEmpty(userToColumnName, true))
 		{
+
 			final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 			final String tableName = adTableDAO.retrieveTableName(docOutboundLogRecord.getAD_Table_ID());
-			final boolean existsColumn = tableName != null && adTableDAO.hasColumnName(tableName, mailbox.getUserToColumnName());
+			final boolean existsColumn = tableName != null && adTableDAO.hasColumnName(tableName, userToColumnName);
 
+			Loggables.addLog("provideMailRecipient - Mail config has userToColumnName={}; column exists: {}; mailbox={}", userToColumnName, existsColumn, mailbox);
 			if (existsColumn)
 			{
 				final IContextAware context = PlainContextAware.newWithThreadInheritedTrx();
 				final Object referencedModel = TableRecordReference.ofReferenced(docOutboundLogRecord).getModel(context);
 
 				// load the column content
-				final Integer userRepoId = getValueOrNull(referencedModel, mailbox.getUserToColumnName());
-				if (userRepoId == null)
+				final Integer userRepoId = getValueOrNull(referencedModel, userToColumnName);
+				if (userRepoId == null || userRepoId < 0)
 				{
+					Loggables.addLog("provideMailRecipient - Record model has {}={} => return 'no recipient'", userToColumnName, userRepoId);
 					return Optional.empty();
 				}
+				if (userRepoId == 0)
+				{
+					Loggables.addLog("provideMailRecipient - Record model has {}={} (system-user) => return 'no recipient'", userToColumnName, userRepoId);
+					return Optional.empty();
+				}
+
 				final DocOutBoundRecipientId docOutBoundRecipientId = DocOutBoundRecipientId.ofRepoId(userRepoId);
 				final DocOutBoundRecipient user = docOutBoundRecipientRepository.getById(docOutBoundRecipientId);
 				if (Check.isEmpty(user.getEmailAddress(), true))
 				{
+					Loggables.addLog("provideMailRecipient - user-id {} has no/empty emailAddress => return 'no recipient'; user={}", user.getId(), user);
 					return Optional.empty();
 				}
 				return Optional.of(user);
 			}
 		}
+		Loggables.addLog("provideMailRecipient - return 'no recipient'; mailbox={}", mailbox);
 		return Optional.empty();
 	}
 
@@ -147,7 +160,7 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 		}
 		catch (final MailboxNotFoundException e)
 		{
-			Loggables.addLog("DefaultDocOutboundLogMailRecipientProvider - Unable to find a mailbox; exception message: {}", e.getMessage());
+			Loggables.addLog("findMailboxOrNull. DefaultDocOutboundLogMailRecipientProvider - Unable to find a mailbox for record (system-user) => return null; exception message: {}; docOutboundLogRecord={}", e.getMessage(), docOutboundLogRecord);
 			return null;
 		}
 	}

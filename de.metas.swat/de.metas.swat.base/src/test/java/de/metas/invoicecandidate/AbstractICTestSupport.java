@@ -668,7 +668,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 
 		//
 		// Update invalid
-		Services.get(ITrxManager.class).run(new TrxRunnableAdapter()
+		Services.get(ITrxManager.class).runInNewTrx(new TrxRunnableAdapter()
 		{
 			@Override
 			public void run(final String localTrxName) throws Exception

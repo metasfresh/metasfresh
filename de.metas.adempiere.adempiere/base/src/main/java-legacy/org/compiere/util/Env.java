@@ -1485,7 +1485,7 @@ public final class Env
 	public static boolean isMultiLingualDocument(final Properties ctx)
 	{
 		final ClientId clientId = getClientId(ctx);
-		
+
 		final IClientDAO clientsRepo = Services.get(IClientDAO.class);
 		return clientsRepo.isMultilingualDocumentsEnabled(clientId);
 	}    // isMultiLingualDocument
@@ -2286,9 +2286,9 @@ public final class Env
 	 * @return Timestamp or <code>null</code> if value is empty
 	 * @see #toString(Timestamp)
 	 */
-	public static Timestamp parseTimestamp(final String timestampStr)
+	public static Timestamp parseTimestamp(@Nullable final String timestampStr)
 	{
-		if (timestampStr == null || Check.isEmpty(timestampStr, true) || isPropertyValueNull(timestampStr))
+		if (Check.isEmpty(timestampStr, true) || isPropertyValueNull(timestampStr))
 		{
 			return null;
 		}

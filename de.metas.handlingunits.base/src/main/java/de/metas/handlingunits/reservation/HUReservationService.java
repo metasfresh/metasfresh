@@ -159,7 +159,7 @@ public class HUReservationService
 	 */
 	public void deleteReservations(@NonNull final Collection<HuId> vhuIds)
 	{
-		Services.get(ITrxManager.class).run(() -> deleteReservationInTrx(vhuIds));
+		Services.get(ITrxManager.class).runInNewTrx(() -> deleteReservationInTrx(vhuIds));
 	}
 
 	private void deleteReservationInTrx(@NonNull final Collection<HuId> vhuIds)

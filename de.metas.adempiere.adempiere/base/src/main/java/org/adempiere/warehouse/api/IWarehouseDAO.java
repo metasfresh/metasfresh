@@ -112,6 +112,8 @@ public interface IWarehouseDAO extends ISingletonService
 
 	OrgId retrieveOrgIdByLocatorId(int locatorId);
 
+	LocatorId createOrUpdateLocator(CreateOrUpdateLocatorRequest request);
+
 	LocatorId retrieveLocatorIdByValueAndWarehouseId(String locatorValue, WarehouseId warehouseId);
 
 	I_M_Locator getOrCreateLocatorByCoordinates(WarehouseId warehouseId, String value, String x, String y, String z);

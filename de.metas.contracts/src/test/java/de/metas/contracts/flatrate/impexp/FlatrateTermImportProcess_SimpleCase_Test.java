@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.impexp.DBFunctionsRepository;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_Product;
@@ -34,6 +33,8 @@ import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.impexp.ImportTableDescriptorRepository;
+import de.metas.impexp.processing.DBFunctionsRepository;
 import de.metas.inout.invoicecandidate.InOutLinesWithMissingInvoiceCandidate;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -81,7 +82,8 @@ import de.metas.util.Services;
 		BPartnerBL.class,
 		UserRepository.class,
 		ContractLibraryConfiguration.class,
-		DBFunctionsRepository.class})
+		DBFunctionsRepository.class,
+		ImportTableDescriptorRepository.class })
 public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateTermTest
 {
 	private final transient IInvoiceCandDAO iinvoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -144,7 +146,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		final FlatrateTermImportProcess importProcess = new FlatrateTermImportProcess();
 		importProcess.setCtx(helper.getCtx());
-		importProcess.importRecord(new Mutable<>(), iflatrateTerm, true /*isInsertOnly*/);
+		importProcess.importRecord(new Mutable<>(), iflatrateTerm, true /* isInsertOnly */);
 
 		final I_C_Flatrate_Term flatrateTerm = iflatrateTerm.getC_Flatrate_Term();
 		assertThat(flatrateTerm).isNotNull();
@@ -213,7 +215,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		final FlatrateTermImportProcess importProcess = new FlatrateTermImportProcess();
 		importProcess.setCtx(helper.getCtx());
-		importProcess.importRecord(new Mutable<>(), iflatrateTerm, true /*isInsertOnly*/);
+		importProcess.importRecord(new Mutable<>(), iflatrateTerm, true /* isInsertOnly */);
 
 		final I_C_Flatrate_Term flatrateTerm = iflatrateTerm.getC_Flatrate_Term();
 		assertThat(flatrateTerm).isNotNull();
@@ -278,7 +280,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		final FlatrateTermImportProcess importProcess = new FlatrateTermImportProcess();
 		importProcess.setCtx(helper.getCtx());
-		importProcess.importRecord(new Mutable<>(), iflatrateTerm, true /*isInsertOnly*/);
+		importProcess.importRecord(new Mutable<>(), iflatrateTerm, true /* isInsertOnly */);
 
 		final I_C_Flatrate_Term flatrateTerm = iflatrateTerm.getC_Flatrate_Term();
 		assertThat(flatrateTerm).isNotNull();

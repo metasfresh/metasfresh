@@ -15,7 +15,6 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.product.ProductPriceCreateRequest;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -25,6 +24,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.i18n.IMsgBL;
+import de.metas.impexp.processing.product.ProductPriceCreateRequest;
 import de.metas.logging.LogManager;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;

@@ -82,11 +82,7 @@ public final class Loggables
 	}
 
 	/**
-	 * Create a new {@link ILoggable} instance that delegates {@link #addLog(String, Object...)} invokations to this instance and in addition logs to the given logger.
-	 *
-	 * @param logger
-	 * @param level
-	 * @return
+	 * Create a new {@link ILoggable} instance that delegates {@link #addLog(String, Object...)} invocations to this instance and in addition logs to the given logger.
 	 */
 	public static ILoggable withLogger(@NonNull final Logger logger, @NonNull final Level level)
 	{

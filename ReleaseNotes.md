@@ -10,6 +10,26 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.118
+
+# Features
+* metasfresh
+  * [#5423](https://github.com/metasfresh/metasfresh/issues/5423) Drafted PP Orders shall not create demands
+  * [#5440](https://github.com/metasfresh/metasfresh/issues/5440) Easy shipment candidate recording (Modal Overlay)
+  * [#5447](https://github.com/metasfresh/metasfresh/issues/5447) Optionally include C_Location changes in parent record's changelog
+  * [#5457](https://github.com/metasfresh/metasfresh/issues/5457) MaterialTracking - Support regular PP_Orders with heterogenous components
+  * [#5471](https://github.com/metasfresh/metasfresh/issues/5471) Date Filter in Payment Window
+
+* metasfresh-webui-api
+  * [#1245](https://github.com/metasfresh/metasfresh-webui-api/issues/1245) webui cache reset: don't invalidate new/changed documents
+
+# Fixes
+* metasfresh 
+  * [#5380](https://github.com/metasfresh/metasfresh/issues/5380) Fix timezone issues
+
+* metasfresh-webui-api
+  * [#1248](https://github.com/metasfresh/metasfresh-webui-api/issues/1248) webui: don't apply role permissions when loading layout fields
+
 # metasfresh 5.117
 
 # Features

@@ -10,10 +10,11 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
@@ -70,14 +71,23 @@ public class DDOrderPojoSupplier
 		this.productDescriptorFactory = productDescriptorFactory;
 	}
 
-	/**
-	 *
-	 * @param request
-	 * @param mrpNotesCollector
-	 * @return
-	 */
-	public List<DDOrder> supplyPojos(final IMaterialRequest request)
+	public List<DDOrder> supplyPojos(@NonNull final IMaterialRequest request)
 	{
+		try
+		{
+			return supplyPojos0(request);
+		}
+		catch (final RuntimeException e)
+		{
+			throw new AdempiereException("Caught " + e.getClass().getSimpleName() + " trying to create DDOrders for a materialRequest", e)
+					.appendParametersToMessage()
+					.setParameter("request", request);
+		}
+	}
+
+	public List<DDOrder> supplyPojos0(@NonNull final IMaterialRequest request)
+	{
+		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 		final List<DDOrder.DDOrderBuilder> builders = new ArrayList<>();
 
@@ -136,35 +146,15 @@ public class DDOrderPojoSupplier
 			}
 
 			// get supply source warehouse and locator
-			final I_M_Warehouse warehouseFrom = networkLine.getM_WarehouseSource();
-			final I_M_Locator locatorFrom = Services.get(IWarehouseBL.class).getDefaultLocator(warehouseFrom);
-			if (locatorFrom == null)
-			{
-				Loggables.addLog(
-						"The source warehouse with ID={} has no default locator; {} returns entpy list; "
-								+ "networkLine={}"
-								+ "network={}"
-								+ "warehouse={}",
-						networkLine.getM_WarehouseSource_ID(), this.getClass(), networkLine, network, warehouseFrom);
-				continue;
-			}
+			final WarehouseId warehouseFromId = WarehouseId.ofRepoId(networkLine.getM_WarehouseSource_ID());
 
 			// get supply target warehouse and locator
-			final I_M_Warehouse warehouseTo = networkLine.getM_Warehouse();
-			final I_M_Locator locatorTo = Services.get(IWarehouseBL.class).getDefaultLocator(warehouseTo);
-			if (locatorTo == null)
-			{
-				Loggables.addLog(
-						"The target warehouse with ID={} has no default locator; {} returns entpy list; "
-								+ "networkLine={}"
-								+ "network={}"
-								+ "warehouse={}",
-						networkLine.getM_Warehouse_ID(), this.getClass(), networkLine, network, warehouseTo);
-				continue;
-			}
+			final WarehouseId warehouseToId = WarehouseId.ofRepoId(networkLine.getM_Warehouse_ID());
+			final LocatorId locatorToId = warehouseBL.getDefaultLocatorId(warehouseToId);
 
 			// Get the warehouse in transit
-			final WarehouseId warehouseInTrasitId = DDOrderUtil.retrieveInTransitWarehouseIdIfExists(OrgId.ofRepoId(warehouseFrom.getAD_Org_ID())).orElse(null);
+			final OrgId warehouseFromOrgId = warehouseBL.getWarehouseOrgId(warehouseFromId);
+			final WarehouseId warehouseInTrasitId = DDOrderUtil.retrieveInTransitWarehouseIdIfExists(warehouseFromOrgId).orElse(null);
 			if (warehouseInTrasitId == null)
 			{
 				// DRP-010: Do not exist Transit Warehouse to this Organization
@@ -172,8 +162,8 @@ public class DDOrderPojoSupplier
 						"No in-transit warehouse found for AD_Org_ID={} of the source warehouse; {} returns entpy list; "
 								+ "networkLine={}"
 								+ "network={}"
-								+ "warehouse={}",
-						warehouseFrom.getAD_Org_ID(), this.getClass(), networkLine, network, warehouseFrom);
+								+ "warehouseFromId={}",
+						warehouseFromOrgId.getRepoId(), this.getClass(), networkLine, network, warehouseFromId);
 				continue;
 			}
 
@@ -190,17 +180,20 @@ public class DDOrderPojoSupplier
 
 			if (M_Shipper_ID != networkLine.getM_Shipper_ID()) // this is also the case on our first iteration since we initialized M_Shipper_ID := -1
 			{
+				final OrgId warehouseToOrgId = warehouseBL.getWarehouseOrgId(warehouseToId);
 				// Org Must be linked to BPartner
-				final int orgBPartnerId = DDOrderUtil.retrieveOrgBPartnerId(ctx, locatorTo.getAD_Org_ID());
+				// final OrgId locatorToOrgId = warehouseBL.getLocatorOrgId(locatorToId); // we strongly assume that we can got with the warehouse's org and don't need to retrieve its default locator's org!
+				final int orgBPartnerId = DDOrderUtil.retrieveOrgBPartnerId(ctx, warehouseToOrgId.getRepoId());
 				if (orgBPartnerId <= 0)
 				{
 					// DRP-020: Target Org has no BP linked to it
 					Loggables.addLog(
-							"No org-bpartner found for AD_Org_ID={} of target locator; {} returns entpy list; "
+							"No org-bpartner found for AD_Org_ID={} of target warehouse; {} returns entpy list; "
 									+ "networkLine={}"
 									+ "network={}"
-									+ "locatorTo={}",
-							locatorTo.getAD_Org_ID(), this.getClass(), networkLine, network, locatorTo);
+									+ "warehouseToId={}"
+									+ "locatorToId={}",
+							warehouseToOrgId.getRepoId(), this.getClass(), networkLine, network, warehouseToId, locatorToId);
 					continue;
 				}
 
@@ -208,7 +201,7 @@ public class DDOrderPojoSupplier
 				// Try to find some DD_Order with Shipper , Business Partner and Doc Status = Draft
 				// Consolidate the demand in a single order for each Shipper , Business Partner , DemandDateStartSchedule
 				ddOrderBuilder = DDOrder.builder()
-						.orgId(OrgId.ofRepoId(warehouseTo.getAD_Org_ID()))
+						.orgId(warehouseToOrgId)
 						.plantId(plant.getS_Resource_ID())
 						.productPlanningId(productPlanningData.getPP_Product_Planning_ID())
 						.datePromised(supplyDateFinishSchedule)

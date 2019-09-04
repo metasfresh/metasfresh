@@ -136,7 +136,7 @@ public class HandlingUnitsBL_MoveHU_Test extends AbstractHUTest
 		// Change VHU's locator
 		// NOTE: we are enforced to change the HU in a transaction
 		final Date dateTrx = TimeUtil.getDay(1993, 10, 10);
-		Services.get(ITrxManager.class).run((TrxRunnable)localTrxName -> {
+		Services.get(ITrxManager.class).runInNewTrx((TrxRunnable)localTrxName -> {
 			InterfaceWrapperHelper.setTrxName(vhu, localTrxName);
 
 			try (final ITemporaryDateTrx dateTrxTmp = IHUContext.DateTrxProvider.temporarySet(dateTrx))

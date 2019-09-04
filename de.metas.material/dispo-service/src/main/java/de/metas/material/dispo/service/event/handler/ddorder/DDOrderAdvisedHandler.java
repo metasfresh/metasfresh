@@ -114,7 +114,7 @@ public class DDOrderAdvisedHandler
 
 		for (final MaterialDispoGroupId groupId : groupIds)
 		{
-			requestMaterialOrderService.requestMaterialOrder(groupId);
+			requestMaterialOrderService.requestMaterialOrderForCandidates(groupId);
 		}
 	}
 

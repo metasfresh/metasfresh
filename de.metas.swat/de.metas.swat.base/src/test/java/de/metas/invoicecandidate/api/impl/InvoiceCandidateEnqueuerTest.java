@@ -106,7 +106,7 @@ public class InvoiceCandidateEnqueuerTest extends AbstractICTestSupport
 		final PInstanceId selectionId = POJOLookupMap.get().createSelectionFromModels(ic1, ic2);
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final IMutable<IInvoiceCandidateEnqueueResult> enqueueResultRef = new Mutable<>();
-		trxManager.run(new TrxRunnable()
+		trxManager.runInNewTrx(new TrxRunnable()
 		{
 			@Override
 			public void run(final String localTrxName)

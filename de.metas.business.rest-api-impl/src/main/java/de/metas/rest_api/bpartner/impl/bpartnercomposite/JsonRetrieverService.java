@@ -1,6 +1,7 @@
 package de.metas.rest_api.bpartner.impl.bpartnercomposite;
 
 import static de.metas.util.Check.isEmpty;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -18,6 +19,7 @@ import org.compiere.util.Env;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+
 import de.metas.bpartner.BPGroup;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPGroupRepository;
@@ -60,7 +62,6 @@ import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.RepoIdAware;
-import de.metas.util.rest.ExternalId;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
@@ -280,9 +281,9 @@ public class JsonRetrieverService
 		}
 
 		final JsonChangeInfoBuilder jsonChangeInfo = JsonChangeInfo.builder()
-				.createdBy(MetasfreshId.of(recordChangeLog.getCreatedByUserId()))
+				.createdBy(MetasfreshId.ofOrNull(recordChangeLog.getCreatedByUserId()))
 				.createdMillis(recordChangeLog.getCreatedTimestamp().toEpochMilli())
-				.lastUpdatedBy(MetasfreshId.of(recordChangeLog.getLastChangedByUserId()))
+				.lastUpdatedBy(MetasfreshId.ofOrNull(recordChangeLog.getLastChangedByUserId()))
 				.lastUpdatedMillis(recordChangeLog.getLastChangedTimestamp().toEpochMilli());
 
 		for (final RecordChangeLogEntry entry : recordChangeLog.getEntries())
@@ -295,7 +296,7 @@ public class JsonRetrieverService
 
 			final JsonChangeLogItemBuilder jsonChangeLogItem = JsonChangeLogItem.builder()
 					.fieldName(columnMap.get(columnName))
-					.updatedBy(MetasfreshId.of(entry.getChangedByUserId()))
+					.updatedBy(MetasfreshId.ofOrNull(entry.getChangedByUserId()))
 					.updatedMillis(entry.getChangedTimestamp().toEpochMilli())
 					.newValue(String.valueOf(entry.getValueNew()))
 					.oldValue(String.valueOf(entry.getValueOld()));
@@ -423,9 +424,9 @@ public class JsonRetrieverService
 			case EXTERNAL_ID:
 				return BPartnerCompositeLookupKey.ofJsonExternalId(identifier.asJsonExternalId());
 			case VALUE:
-				return BPartnerCompositeLookupKey.ofCode(identifier.getValue());
+				return BPartnerCompositeLookupKey.ofCode(identifier.asValue());
 			case GLN:
-				return BPartnerCompositeLookupKey.ofGln(identifier.getValue());
+				return BPartnerCompositeLookupKey.ofGln(identifier.asGLN());
 			case METASFRESH_ID:
 				return BPartnerCompositeLookupKey.ofMetasfreshId(identifier.asMetasfreshId());
 			default:
@@ -584,13 +585,13 @@ public class JsonRetrieverService
 		switch (identifier.getType())
 		{
 			case EXTERNAL_ID:
-				query.externalId(ExternalId.of(identifier.getValue()));
+				query.externalId(identifier.asExternalId());
 				break;
 			case VALUE:
-				query.value(identifier.getValue());
+				query.value(identifier.asValue());
 				break;
 			case METASFRESH_ID:
-				final int repoId = Integer.parseInt(identifier.getValue());
+				final int repoId = identifier.asMetasfreshId().getValue();
 				query.userId(UserId.ofRepoId(repoId));
 				break;
 			default:

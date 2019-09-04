@@ -65,7 +65,7 @@ import lombok.NonNull;
  */
 
 @Service
-@Profile(Profiles.PROFILE_App) // we want only one component to bother itself with SupplyRequiredEvent
+@Profile(Profiles.PROFILE_App) // we want only one component to bother itself with SupplyRequiredEvents
 public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequiredEvent>
 {
 	private final DDOrderAdvisedEventCreator dDOrderAdvisedEventCreator;
@@ -143,7 +143,7 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(productPlanningQuery);
 		if (productPlanning == null)
 		{
-			Loggables.addLog("No PP_Product_Planning record found; query={}", productPlanningQuery);
+			Loggables.addLog("No PP_Product_Planning record found => nothing to do; query={}", productPlanningQuery);
 			return null;
 		}
 

@@ -508,7 +508,7 @@ public class InvoiceCandidateWriter
 				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 				.registerHandlingMethod(innerTrx -> {
 
-					trxManager.run(new TrxRunnableAdapter()
+					trxManager.runInNewTrx(new TrxRunnableAdapter()
 					{
 						@Override
 						public void run(final String localTrxName) throws Exception

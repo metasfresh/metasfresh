@@ -7,7 +7,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -17,6 +16,7 @@ import org.compiere.model.ModelValidationEngine;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.util.Check;
 import lombok.NonNull;
 

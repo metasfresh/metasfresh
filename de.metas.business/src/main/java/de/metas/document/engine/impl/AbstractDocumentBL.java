@@ -190,7 +190,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 			documents.put(documentId, document);
 		}
 
-		trxManager.run((TrxRunnable)localTrxName -> {
+		trxManager.runInNewTrx((TrxRunnable)localTrxName -> {
 			for (final T document : documents.values())
 			{
 				final String trxNameOld = InterfaceWrapperHelper.getTrxName(document);

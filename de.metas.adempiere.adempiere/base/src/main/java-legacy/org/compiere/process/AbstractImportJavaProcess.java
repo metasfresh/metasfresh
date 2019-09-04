@@ -1,12 +1,11 @@
 package org.compiere.process;
 
-import org.adempiere.impexp.IImportProcess;
-import org.adempiere.impexp.IImportProcessFactory;
-
-import de.metas.process.RunOutOfTrx;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import de.metas.impexp.processing.IImportProcess;
+import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.process.JavaProcess;
+import de.metas.process.RunOutOfTrx;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * {@link IImportProcess} to {@link JavaProcess} adapter.
@@ -20,18 +19,16 @@ public abstract class AbstractImportJavaProcess<ImportRecordType> extends JavaPr
 	private final Class<ImportRecordType> importRecordClass;
 	private IImportProcess<ImportRecordType> importProcess;
 
-	public AbstractImportJavaProcess(Class<ImportRecordType> importRecordClass)
+	public AbstractImportJavaProcess(@NonNull final Class<ImportRecordType> importRecordClass)
 	{
-		super();
-
-		Check.assumeNotNull(importRecordClass, "importRecordClass not null");
 		this.importRecordClass = importRecordClass;
 	}
 
 	@Override
 	protected final void prepare()
 	{
-		importProcess = Services.get(IImportProcessFactory.class).newImportProcess(importRecordClass);
+		final IImportProcessFactory importProcessFactory = Services.get(IImportProcessFactory.class);
+		importProcess = importProcessFactory.newImportProcess(importRecordClass);
 		importProcess.setCtx(getCtx());
 		importProcess.setParameters(getParameterAsIParams());
 		importProcess.setLoggable(this);
@@ -40,7 +37,7 @@ public abstract class AbstractImportJavaProcess<ImportRecordType> extends JavaPr
 	// NOTE: we shall run this process out of transaction because the actual import process is managing the transaction
 	@Override
 	@RunOutOfTrx
-	protected final String doIt() throws Exception
+	protected final String doIt()
 	{
 		importProcess.run();
 		return MSG_OK;

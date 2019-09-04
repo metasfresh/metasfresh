@@ -77,7 +77,7 @@ public class ShortTermLocationIndex
 					return null;
 				}
 			case GLN:
-				return gln2Location.get(locationIdentifier.getValue());
+				return gln2Location.get(locationIdentifier.asGLN());
 			case EXTERNAL_ID:
 				return externalId2Location.get(locationIdentifier.asExternalId());
 			default:
@@ -105,8 +105,9 @@ public class ShortTermLocationIndex
 				}
 				break;
 			case GLN:
-				location = locationBuilder.gln(locationIdentifier.getValue()).build();
-				gln2Location.put(locationIdentifier.getValue(), location);
+				final String gln = locationIdentifier.asGLN();
+				location = locationBuilder.gln(gln).build();
+				gln2Location.put(gln, location);
 				break;
 			case EXTERNAL_ID:
 				location = locationBuilder.externalId(locationIdentifier.asExternalId()).build();

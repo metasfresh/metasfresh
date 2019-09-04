@@ -142,7 +142,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 
 		final PurchaseOrderFromItemsAggregator aggregator = PurchaseOrderFromItemsAggregator.newInstance();
 
-		Services.get(ITrxManager.class).run(() -> {
+		Services.get(ITrxManager.class).runInNewTrx(() -> {
 			aggregator.add(PurchaseOrderItem.builder()
 					.purchaseCandidate(purchaseCandidate)
 					.datePromised(SystemTime.asZonedDateTime())

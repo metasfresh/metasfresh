@@ -203,7 +203,7 @@ public class HUSnapshotDAOTest extends AbstractHUTest
 
 		//
 		// Change our LU/TU/VHUs
-		trxManager.run(new TrxRunnableAdapter()
+		trxManager.runInNewTrx(new TrxRunnableAdapter()
 		{
 
 			@Override

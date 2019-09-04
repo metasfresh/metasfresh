@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.server;
 
+import java.io.File;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -402,11 +403,14 @@ public class RequestProcessor extends AdempiereServer
 	private boolean sendEmail (MRequest request, String AD_Message)
 	{
 		//  Alert: Request {} overdue
-		String subject = Msg.getMsg(m_client.getAD_Language(), AD_Message,
+		final String subject = Msg.getMsg(m_client.getAD_Language(), AD_Message,
 				new String[] { request.getDocumentNo() });
+		final File attachment = null;
 		return m_client.sendEMail(
 				UserId.ofRepoId(request.getSalesRep_ID()),
-				subject, request.getSummary(), request.createPDF());
+				subject,
+				request.getSummary(),
+				attachment);
 	}   //  sendAlert
 
 	/**
@@ -438,9 +442,12 @@ public class RequestProcessor extends AdempiereServer
 		}
 		else
 		{
+			final File attachment = null;
 			m_client.sendEMail(
 					UserId.ofRepoId(request.getSalesRep_ID()),
-					subject, request.getSummary(), request.createPDF());
+					subject,
+					request.getSummary(),
+					attachment);
 		}
 
 		//	Not the same - send mail to supervisor
@@ -449,13 +456,16 @@ public class RequestProcessor extends AdempiereServer
 			to = supervisor.getEMail();
 			if (to == null || to.length() == 0)
 			{
-				log.warn("Supervisor has no EMail - " + supervisor);
+				log.warn("Supervisor has no EMail - {}", supervisor);
 			}
 			else
 			{
+				final File attachment = null;
 				m_client.sendEMail(
 						UserId.ofRepoId(supervisor.getAD_User_ID()),
-						subject, request.getSummary(), request.createPDF());
+						subject,
+						request.getSummary(),
+						attachment);
 			}
 		}
 		

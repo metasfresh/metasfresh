@@ -49,12 +49,14 @@ import org.adempiere.warehouse.WarehousePickingGroup;
 import org.adempiere.warehouse.WarehousePickingGroupId;
 import org.adempiere.warehouse.WarehouseType;
 import org.adempiere.warehouse.WarehouseTypeId;
+import org.adempiere.warehouse.api.CreateOrUpdateLocatorRequest;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_M_Warehouse_PickingGroup;
 import org.compiere.model.I_M_Warehouse_Type;
 import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_M_Warehouse_Routing;
 import org.slf4j.Logger;
 
@@ -460,6 +462,38 @@ public class WarehouseDAO implements IWarehouseDAO
 			throw new AdempiereException("No Org found for locatorId=" + locatorId);
 		}
 		return OrgId.ofRepoId(orgIdInt);
+	}
+
+	@Override
+	public LocatorId createOrUpdateLocator(@NonNull final CreateOrUpdateLocatorRequest request)
+	{
+		final WarehouseId warehouseId = request.getWarehouseId();
+		final String locatorValue = request.getLocatorValue();
+		final LocatorId locatorId = retrieveLocatorIdByValueAndWarehouseId(locatorValue, warehouseId);
+		final I_M_Locator locator;
+		if (locatorId != null)
+		{
+			locator = getLocatorByIdInTrx(locatorId, I_M_Locator.class);
+		}
+		else
+		{
+			locator = InterfaceWrapperHelper.newInstance(I_M_Locator.class);
+		}
+
+		if (request.getOrgId() != null)
+		{
+			locator.setAD_Org_ID(request.getOrgId().getRepoId());
+		}
+		locator.setM_Warehouse_ID(warehouseId.getRepoId());
+		locator.setValue(locatorValue);
+		locator.setX(request.getX());
+		locator.setY(request.getY());
+		locator.setZ(request.getZ());
+		locator.setX1(request.getX1());
+		locator.setDateLastInventory(TimeUtil.asTimestamp(request.getDateLastInventory()));
+		InterfaceWrapperHelper.saveRecord(locator);
+
+		return LocatorId.ofRepoId(warehouseId, locator.getM_Locator_ID());
 	}
 
 	@Override
