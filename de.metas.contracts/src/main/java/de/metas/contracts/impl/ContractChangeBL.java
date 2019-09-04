@@ -330,7 +330,7 @@ public class ContractChangeBL implements IContractChangeBL
 		final String trxName = InterfaceWrapperHelper.getTrxName(currentTerm);
 		final I_C_Order termChangeOrder = orderPA.copyOrder(currentTermOrder, false, trxName);
 		final PricingSystemId pricingSystemId = getPricingSystemId(currentTerm, changeConditions);
-		termChangeOrder.setM_PricingSystem_ID(PricingSystemId.getRepoId(pricingSystemId));
+		termChangeOrder.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId));
 
 		termChangeOrder.setDateOrdered(SystemTime.asDayTimestamp());
 		termChangeOrder.setDatePromised(changeDate);

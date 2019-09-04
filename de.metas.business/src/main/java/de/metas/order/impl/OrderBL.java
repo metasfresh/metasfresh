@@ -127,7 +127,7 @@ public class OrderBL implements IOrderBL
 				Check.errorIf(true, "Unable to find pricing system for BPartner {}_{}; SOTrx={}", bpartnerName, soTrx);
 			}
 
-			order.setM_PricingSystem_ID(PricingSystemId.getRepoId(pricingSysId));
+			order.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSysId));
 		}
 
 		//

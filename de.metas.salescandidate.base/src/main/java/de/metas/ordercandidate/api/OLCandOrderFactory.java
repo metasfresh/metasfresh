@@ -188,7 +188,7 @@ class OLCandOrderFactory
 		order.setPOReference(candidateOfGroup.getPOReference());
 
 		// pricing-system is not mandatory in 'processor', so we set it either from the processor *or* from the bpartner or BP-GRoup
-		order.setM_PricingSystem_ID(PricingSystemId.getRepoId(candidateOfGroup.getPricingSystemId()));
+		order.setM_PricingSystem_ID(PricingSystemId.toRepoId(candidateOfGroup.getPricingSystemId()));
 
 		// task 08926: set the data source; this shall trigger IsEdiEnabled to be set to true, if the data source is "EDI"
 		final de.metas.order.model.I_C_Order orderWithDataSource = InterfaceWrapperHelper.create(order, de.metas.order.model.I_C_Order.class);

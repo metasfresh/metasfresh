@@ -335,7 +335,7 @@ public class CreateInvoiceCandidateDialog
 		{
 			missingCollector.add(I_C_Invoice_Candidate.COLUMNNAME_M_PricingSystem_ID);
 		}
-		pricingSystemField.setValue(PricingSystemId.getRepoId(pricingSystemId));
+		pricingSystemField.setValue(PricingSystemId.toRepoId(pricingSystemId));
 
 		// do not load UOMs; instead, they shall be loaded when the product is modified
 		// priceUOMField.loadFirstItem();

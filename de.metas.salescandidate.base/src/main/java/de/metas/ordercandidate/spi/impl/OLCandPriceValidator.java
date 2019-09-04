@@ -161,7 +161,7 @@ public class OLCandPriceValidator implements IOLCandValidator
 
 		olCand.setC_TaxCategory_ID(TaxCategoryId.toRepoId(pricingResult.getTaxCategoryId()));
 
-		olCand.setM_PricingSystem_ID(PricingSystemId.getRepoId(pricingResult.getPricingSystemId()));
+		olCand.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingResult.getPricingSystemId()));
 
 		// task 08803: we provide the pricing result and expect that OLCandPricingASIListener will keep the ASI up to date
 		DYNATTR_OLCAND_PRICEVALIDATOR_PRICING_RESULT.setValue(olCand, pricingResult);

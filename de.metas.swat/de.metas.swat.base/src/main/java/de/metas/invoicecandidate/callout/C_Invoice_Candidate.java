@@ -138,7 +138,7 @@ public class C_Invoice_Candidate
 	{
 		final IBPartnerDAO bPartnerPA = Services.get(IBPartnerDAO.class);
 		final PricingSystemId pricingSysId = bPartnerPA.retrievePricingSystemId(ctx, ic.getBill_BPartner_ID(), SOTrx.ofBoolean(ic.isSOTrx()), ITrx.TRXNAME_None);
-		ic.setM_PricingSystem_ID(PricingSystemId.getRepoId(pricingSysId));
+		ic.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSysId));
 	}
 
 	@CalloutMethod(columnNames = { I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override })
