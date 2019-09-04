@@ -514,20 +514,41 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public PricingSystemId retrievePricingSystemId(@NonNull final BPartnerId bPartnerId, final SOTrx soTrx)
+	public PricingSystemId retrievePricingSystemId(@NonNull final BPartnerId bpartnerId, final SOTrx soTrx)
 	{
-		return retrievePricingSystemId(Env.getCtx(), bPartnerId.getRepoId(), soTrx, ITrx.TRXNAME_None);
+		return retrievePricingSystemIdOrNull(bpartnerId, soTrx, ITrx.TRXNAME_None);
 	}
 
 	@Override
-	public PricingSystemId retrievePricingSystemId(
-			final Properties ctx,
-			final int bPartnerId,
+	public PricingSystemId retrievePricingSystemIdInTrx(@NonNull final BPartnerId bpartnerId, final SOTrx soTrx)
+	{
+		return retrievePricingSystemIdOrNull(bpartnerId, soTrx, ITrx.TRXNAME_ThreadInherited);
+	}
+
+	/**
+	 * Returns the <code>M_PricingSystem_ID</code> to use for a given bPartner.
+	 *
+	 *
+	 * @param bPartnerId the ID of the BPartner for which we need the pricing system id
+	 * @param soTrx
+	 *            <ul>
+	 *            <li>if <code>true</code>, then the method first checks <code>C_BPartner.M_PricingSystem_ID</code> , then (if the BPartner has a C_BP_Group_ID) in
+	 *            <code>C_BP_Group.M_PricingSystem_ID</code> and finally (if the C_BPArtner has a AD_Org_ID>0) in <code>AD_OrgInfo.M_PricingSystem_ID</code></li>
+	 *            <li>if <code>false</code></li>, then the method first checks <code>C_BPartner.PO_PricingSystem_ID</code>, then (if the BPartner has a C_BP_Group_ID!) in
+	 *            <code>C_BP_Group.PO_PricingSystem_ID</code>. Note that <code>AD_OrgInfo</code> has currently no <code>PO_PricingSystem_ID</code> column.
+	 *            </ul>
+	 */
+	private PricingSystemId retrievePricingSystemIdOrNull(
+			@NonNull final BPartnerId bpartnerId,
 			final SOTrx soTrx,
 			final String trxName)
 	{
-		final de.metas.interfaces.I_C_BPartner bPartner = InterfaceWrapperHelper.create(ctx, bPartnerId, de.metas.interfaces.I_C_BPartner.class, trxName);
-		// try to set the pricing system from BPartner
+		final Properties ctx = Env.getCtx();
+		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(ctx, bpartnerId.getRepoId(), I_C_BPartner.class, trxName);
+		if (bPartner == null)
+		{
+			throw new AdempiereException("No BPartner found for " + bpartnerId);
+		}
 
 		// metas: The method always retrieved SO-PricingSys. This caused errors in PO-Documents.
 		final Integer bpPricingSysId;

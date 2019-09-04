@@ -124,23 +124,7 @@ public interface IBPartnerDAO extends ISingletonService
 
 	EMailAddress getContactEMail(BPartnerContactId contactId);
 
-	/**
-	 * Returns the <code>M_PricingSystem_ID</code> to use for a given bPartner.
-	 *
-	 *
-	 * @param ctx
-	 * @param bPartnerId the ID of the BPartner for which we need the pricing system id
-	 * @param soTrx
-	 *            <ul>
-	 *            <li>if <code>true</code>, then the method first checks <code>C_BPartner.M_PricingSystem_ID</code> , then (if the BPartner has a C_BP_Group_ID) in
-	 *            <code>C_BP_Group.M_PricingSystem_ID</code> and finally (if the C_BPArtner has a AD_Org_ID>0) in <code>AD_OrgInfo.M_PricingSystem_ID</code></li>
-	 *            <li>if <code>false</code></li>, then the method first checks <code>C_BPartner.PO_PricingSystem_ID</code>, then (if the BPartner has a C_BP_Group_ID!) in
-	 *            <code>C_BP_Group.PO_PricingSystem_ID</code>. Note that <code>AD_OrgInfo</code> has currently no <code>PO_PricingSystem_ID</code> column.
-	 *            </ul>
-	 * @param trxName
-	 * @return M_PricingSystem_ID or 0
-	 */
-	PricingSystemId retrievePricingSystemId(Properties ctx, int bPartnerId, SOTrx soTrx, String trxName);
+	PricingSystemId retrievePricingSystemIdInTrx(BPartnerId bPartnerId, SOTrx soTrx);
 
 	PricingSystemId retrievePricingSystemId(BPartnerId bPartnerId, SOTrx soTrx);
 

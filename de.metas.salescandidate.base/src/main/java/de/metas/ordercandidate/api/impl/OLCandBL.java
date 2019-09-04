@@ -28,7 +28,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -36,7 +35,6 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.PO;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -114,13 +112,10 @@ public class OLCandBL implements IOLCandBL
 			final IOLCandEffectiveValuesBL effectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 			final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
-			final int bpartnerId = BPartnerId.toRepoId(effectiveValuesBL.getBillBPartnerEffectiveId(olCand));
+			final BPartnerId bpartnerId = effectiveValuesBL.getBillBPartnerEffectiveId(olCand);
 
-			final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemId(
-					Env.getCtx(),
-					bpartnerId,
-					SOTrx.SALES,
-					ITrx.TRXNAME_ThreadInherited/* we don't know if the C_BPartner already exists outside this transaction */);
+			// we don't know if the C_BPartner already exists outside this transaction
+			final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemIdInTrx(bpartnerId, SOTrx.SALES);
 			return pricingSystemId;
 		}
 	}

@@ -3,9 +3,7 @@ package de.metas.procurement.base.impl;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
@@ -16,6 +14,7 @@ import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.currency.CurrencyPrecision;
@@ -102,18 +101,17 @@ public class PMMPricingBL implements IPMMPricingBL
 	private void updatePriceFromPricingMasterdata(final IPMMPricingAware pricingAware)
 	{
 		final SOTrx soTrx = SOTrx.PURCHASE;
-		final Properties ctx = pricingAware.getCtx();
 
 		final I_C_BPartner bpartner = pricingAware.getC_BPartner();
 		Check.assumeNotNull(bpartner, "bpartner not null"); // shall not happen
-		final int bpartnerId = bpartner.getC_BPartner_ID();
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
 		final I_M_Product product = pricingAware.getM_Product();
 		final I_C_UOM uom = pricingAware.getC_UOM();
 		final LocalDate date = TimeUtil.asLocalDate(pricingAware.getDate());
 
 		// Pricing system
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-		final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemId(ctx, bpartnerId, soTrx, ITrx.TRXNAME_ThreadInherited);
+		final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemIdInTrx(bpartnerId, soTrx);
 		if (pricingSystemId == null)
 		{
 			// no term and no pricing system means that we can't figure out the price
@@ -135,7 +133,7 @@ public class PMMPricingBL implements IPMMPricingBL
 		// Fetch price from pricing engine
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final BigDecimal qty = pricingAware.getQty();
-		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(product.getM_Product_ID(), bpartnerId, uom.getC_UOM_ID(), qty, soTrx.toBoolean());
+		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(product.getM_Product_ID(), bpartnerId.getRepoId(), uom.getC_UOM_ID(), qty, soTrx.toBoolean());
 		pricingCtx.setPricingSystemId(pricingSystemId);
 		pricingCtx.setPriceDate(date);
 		pricingCtx.setCountryId(countryId);
@@ -183,7 +181,7 @@ public class PMMPricingBL implements IPMMPricingBL
 			logger.info("Invalid FlatrateAmtPerUOM: {} (event={})", flatrateAmtPerUOM, pricingAware);
 			return false;
 		}
-		
+
 		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(flatrateTerm.getC_Currency_ID());
 		final CurrencyPrecision currencyPrecision = currencyId != null
 				? Services.get(ICurrencyDAO.class).getStdPrecision(currencyId)
@@ -191,7 +189,7 @@ public class PMMPricingBL implements IPMMPricingBL
 
 		final UomId flatrateTermUomId = UomId.ofRepoIdOrNull(flatrateTerm.getC_UOM_ID());
 		final I_C_UOM flatrateTermUom = Services.get(IUOMDAO.class).getById(flatrateTermUomId);
-		
+
 		//
 		// Convert the price
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);

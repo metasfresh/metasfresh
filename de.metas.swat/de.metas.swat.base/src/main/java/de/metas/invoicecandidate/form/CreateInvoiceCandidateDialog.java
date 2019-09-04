@@ -74,6 +74,7 @@ import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
@@ -152,7 +153,7 @@ public class CreateInvoiceCandidateDialog
 
 	private final ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 
-	private final int partnerId;
+	private final BPartnerId partnerId;
 	private final int currencyId;
 	private final Timestamp date;
 
@@ -172,7 +173,7 @@ public class CreateInvoiceCandidateDialog
 
 		//
 		// Initialize inherited values
-		this.partnerId = partnerId;
+		this.partnerId = BPartnerId.ofRepoId(partnerId);
 		this.currencyId = currencyId;
 		this.date = date;
 
@@ -199,14 +200,7 @@ public class CreateInvoiceCandidateDialog
 		// TODO fix the lookup field with the validation rule
 		// productField = factory.getVLookup(windowNo, tabNo, DisplayType.Search, tableName, I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID, mandatory, autocomplete);
 		productField = factory.getVLookup(windowNo, tabNo, DisplayType.Table, tableName, I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID, mandatory, autocomplete);
-		productField.addVetoableChangeListener(new VetoableChangeListener()
-		{
-			@Override
-			public void vetoableChange(final PropertyChangeEvent e)
-			{
-				onProductChanged(e);
-			}
-		});
+		productField.addVetoableChangeListener((VetoableChangeListener)e -> onProductChanged(e));
 
 		taxField = factory.getVLookup(windowNo, tabNo, DisplayType.Table, tableName, I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID, mandatory, autocomplete);
 		activityField = factory.getVLookup(windowNo, tabNo, DisplayType.Table, tableName, I_C_Invoice_Candidate.COLUMNNAME_C_Activity_ID, mandatory, autocomplete);
@@ -330,7 +324,7 @@ public class CreateInvoiceCandidateDialog
 
 		//
 		// Get pricing system (or dispose window if none was found)
-		final PricingSystemId pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(ctx, partnerId, soTrx, ITrx.TRXNAME_None);
+		final PricingSystemId pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(partnerId, soTrx);
 		if (pricingSystemId == null)
 		{
 			missingCollector.add(I_C_Invoice_Candidate.COLUMNNAME_M_PricingSystem_ID);
@@ -561,7 +555,7 @@ public class CreateInvoiceCandidateDialog
 
 				//
 				// Set field values
-				ic.setBill_BPartner_ID(partnerId);
+				ic.setBill_BPartner_ID(partnerId.getRepoId());
 				ic.setC_Currency_ID(currencyId);
 				ic.setDateOrdered(date);
 
