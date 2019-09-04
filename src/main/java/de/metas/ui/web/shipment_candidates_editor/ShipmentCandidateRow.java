@@ -29,6 +29,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
+import de.metas.ui.web.window.descriptor.WidgetSize;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -56,24 +57,31 @@ import lombok.NonNull;
 
 public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfoAware
 {
-	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "C_OrderSO_ID")
+	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "C_OrderSO_ID")
 	private final LookupValue salesOrder;
 
-	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "C_BPartner_Customer_ID")
+	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "C_BPartner_Customer_ID")
 	private final LookupValue customer;
 
-	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Warehouse_ID")
+	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "M_Warehouse_ID")
 	private final LookupValue warehouse;
 
-	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Product_ID")
+	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "M_Product_ID")
 	private final LookupValue product;
 
 	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.ZonedDateTime, captionKey = "PreparationDate")
 	private final ZonedDateTime preparationDate;
 
-	public static final String FIELD_qtyToDeliver = "qtyToDeliver";
-	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Quantity, fieldName = FIELD_qtyToDeliver, captionKey = "QtyToDeliver", editor = ViewEditorRenderMode.ALWAYS)
-	private final BigDecimal qtyToDeliver;
+	public static final String FIELD_qtyToDeliverStockOverride = "qtyToDeliverStockOverride";
+	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Quantity, fieldName = FIELD_qtyToDeliverStockOverride, captionKey = "QtyToDeliver_Override", editor = ViewEditorRenderMode.ALWAYS)
+	private final BigDecimal qtyToDeliverStockOverride;
+
+	public static final String FIELD_qtyToDeliverCatchOverride = "qtyToDeliverCatchOverride";
+	@ViewColumn(seqNo = 63, widgetType = DocumentFieldWidgetType.Quantity, fieldName = FIELD_qtyToDeliverCatchOverride, captionKey = "QtyToDeliverCatch_Override", editor = ViewEditorRenderMode.ALWAYS)
+	private final BigDecimal qtyToDeliverCatchOverride;
+
+	@ViewColumn(seqNo = 66, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "Catch_UOM_ID")
+	private final LookupValue catchUOM;
 
 	public static final String FIELD_asi = "asi";
 	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.ProductAttributes, fieldName = FIELD_asi, captionKey = "M_AttributeSetInstance_ID", editor = ViewEditorRenderMode.ALWAYS)
@@ -81,11 +89,15 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 
 	private final ShipmentScheduleId shipmentScheduleId;
 	private final DocumentId rowId;
-	private final Quantity qtyToDeliverInitial;
+	private final Quantity qtyToDeliverStockInitial;
+	private final BigDecimal qtyToDeliverCatchOverrideInitial;
 	private final AttributeSetInstanceId asiIdInitial;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<ShipmentCandidateRow> values;
 
+	/**
+	 * If {@code catchUOM} is null, then the user is not supposed to enter a catch weight override quantity.
+	 */
 	@Builder(toBuilder = true)
 	private ShipmentCandidateRow(
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
@@ -95,8 +107,12 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 			@NonNull final LookupValue product,
 			@NonNull final ZonedDateTime preparationDate,
 			//
-			@NonNull final Quantity qtyToDeliverInitial,
-			@NonNull final BigDecimal qtyToDeliver,
+			@NonNull final Quantity qtyToDeliverStockInitial,
+			@NonNull final BigDecimal qtyToDeliverStockOverride,
+			//
+			@Nullable final BigDecimal qtyToDeliverCatchOverrideInitial,
+			@Nullable final BigDecimal qtyToDeliverCatchOverride,
+			@Nullable final LookupValue catchUOM,
 			//
 			@NonNull final AttributeSetInstanceId asiIdInitial,
 			@NonNull final LookupValue asi)
@@ -107,8 +123,12 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 		this.product = product;
 		this.preparationDate = preparationDate;
 
-		this.qtyToDeliverInitial = qtyToDeliverInitial;
-		this.qtyToDeliver = qtyToDeliver;
+		this.qtyToDeliverStockInitial = qtyToDeliverStockInitial;
+		this.qtyToDeliverStockOverride = qtyToDeliverStockOverride;
+
+		this.qtyToDeliverCatchOverrideInitial = qtyToDeliverCatchOverrideInitial;
+		this.qtyToDeliverCatchOverride = qtyToDeliverCatchOverride;
+		this.catchUOM = catchUOM;
 
 		this.asiIdInitial = asiIdInitial;
 		this.asi = asi;
@@ -153,11 +173,15 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 	{
 		final ShipmentCandidateRowBuilder builder = toBuilder();
 
-		if (userChanges.getQtyToDeliver() != null)
+		if (userChanges.getQtyToDeliverStockOverride() != null)
 		{
-			builder.qtyToDeliver(userChanges.getQtyToDeliver());
+			builder.qtyToDeliverStockOverride(userChanges.getQtyToDeliverStockOverride());
 		}
-		else if (userChanges.getAsi() != null)
+		if (userChanges.getQtyToDeliverCatchOverride() != null)
+		{
+			builder.qtyToDeliverCatchOverride(userChanges.getQtyToDeliverCatchOverride());
+		}
+		if (userChanges.getAsi() != null)
 		{
 			builder.asi(userChanges.getAsi());
 		}
@@ -189,9 +213,15 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 
 		boolean changes = false;
 
-		if (qtyToDeliverInitial.toBigDecimal().compareTo(qtyToDeliver) != 0)
+		if (qtyToDeliverStockInitial.toBigDecimal().compareTo(qtyToDeliverStockOverride) != 0)
 		{
-			builder.qtyToDeliverOverride(qtyToDeliver);
+			builder.qtyToDeliverStockOverride(qtyToDeliverStockOverride);
+			changes = true;
+		}
+
+		if (qtyToDeliverCatchOverrideIsChanged())
+		{
+			builder.qtyToDeliverCatchOverride(qtyToDeliverCatchOverride);
 			changes = true;
 		}
 
@@ -205,5 +235,28 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 		return changes
 				? Optional.of(builder.build())
 				: Optional.empty();
+	}
+
+	private boolean qtyToDeliverCatchOverrideIsChanged()
+	{
+		final boolean wasNull = qtyToDeliverCatchOverrideInitial == null;
+		final boolean isNull = qtyToDeliverCatchOverride == null;
+
+		if (wasNull)
+		{
+			if (isNull)
+			{
+				return false;
+			}
+			return true; // was null and is not null anymore
+		}
+
+		if (isNull)
+		{
+			return true; // was not null and is now
+		}
+
+		// was not null and still is not null
+		return qtyToDeliverCatchOverrideInitial.compareTo(qtyToDeliverCatchOverride) != 0;
 	}
 }
