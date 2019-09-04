@@ -3,7 +3,10 @@ package de.metas.rest_api.utils;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.Test;
+
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.bpartner.GLN;
 import de.metas.rest_api.MetasfreshId;
@@ -103,6 +106,29 @@ class IdentifierStringTest
 		assertThatThrownBy(() -> IdentifierString.of("12345x"))
 				.isInstanceOf(InvalidIdentifierException.class)
 				.hasMessageContaining("12345x");
+	}
+
+	@Test
+	void testFromToJson()
+	{
+		final ImmutableMap<Type, String> testValues = ImmutableMap.<Type, String> builder()
+				.put(Type.METASFRESH_ID, "12345")
+				.put(Type.EXTERNAL_ID, "ext-someExternalId")
+				.put(Type.VALUE, "val-someValue")
+				.put(Type.GLN, "gln-someGLN")
+				.build();
+
+		for (final Type type : Type.values())
+		{
+			final String testValue = testValues.get(type);
+			if (testValue == null)
+			{
+				throw new AdempiereException("No test value defined for type=" + type);
+			}
+
+			final IdentifierString identifierString = IdentifierString.of(testValue);
+			assertThat(identifierString.toJson()).isEqualTo(testValue);
+		}
 	}
 
 }

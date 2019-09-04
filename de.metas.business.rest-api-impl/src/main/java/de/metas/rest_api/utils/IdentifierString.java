@@ -6,6 +6,9 @@ import java.util.function.IntFunction;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.bpartner.GLN;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
@@ -61,6 +64,7 @@ public class IdentifierString
 	public static final String PREFIX_VALUE = "val-";
 	public static final String PREFIX_GLN = "gln-";
 
+	@JsonCreator
 	public static final IdentifierString of(@NonNull final String value)
 	{
 		assumeNotEmpty("Parameter may not be empty", value);
@@ -116,6 +120,42 @@ public class IdentifierString
 	{
 		this.type = type;
 		this.value = assumeNotEmpty(value, "Parameter value may not be empty");
+	}
+
+	@Override
+	@Deprecated
+	public String toString()
+	{
+		// using toJson because it's much more user friendly
+		return toJson();
+	}
+
+	@JsonValue
+	public String toJson()
+	{
+		final String prefix;
+		if (Type.METASFRESH_ID.equals(type))
+		{
+			prefix = "";
+		}
+		else if (Type.EXTERNAL_ID.equals(type))
+		{
+			prefix = PREFIX_EXTERNAL_ID;
+		}
+		else if (Type.VALUE.equals(type))
+		{
+			prefix = PREFIX_VALUE;
+		}
+		else if (Type.GLN.equals(type))
+		{
+			prefix = PREFIX_GLN;
+		}
+		else
+		{
+			throw new AdempiereException("Unknown type: " + type);
+		}
+
+		return !prefix.isEmpty() ? prefix + value : value;
 	}
 
 	public ExternalId asExternalId()
