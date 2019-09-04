@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 import com.jgoodies.common.base.Objects;
 
+import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartnerCompositeRepository.NextPageQuery;
 import de.metas.bpartner.composite.BPartnerCompositeRepository.SinceQuery;
 import de.metas.dao.selection.pagination.QueryResultPage;
@@ -27,6 +28,7 @@ import de.metas.rest_api.bpartner.response.JsonResponseContactList;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonConverters;
+import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -94,11 +96,11 @@ class BPartnerEndpointService
 		switch (locationIdentifier.getType())
 		{
 			case EXTERNAL_ID:
-				return Objects.equals(jsonBPartnerLocation.getExternalId(), locationIdentifier.asJsonExternalId());
+				return JsonExternalIds.equals(jsonBPartnerLocation.getExternalId(), locationIdentifier.asJsonExternalId());
 			case GLN:
-				return Objects.equals(jsonBPartnerLocation.getGln(), locationIdentifier.asGLN());
+				return GLN.equals(GLN.ofNullableString(jsonBPartnerLocation.getGln()), locationIdentifier.asGLN());
 			case METASFRESH_ID:
-				return Objects.equals(locationIdentifier.asMetasfreshId(), jsonBPartnerLocation.getMetasfreshId());
+				return MetasfreshId.equals(locationIdentifier.asMetasfreshId(), jsonBPartnerLocation.getMetasfreshId());
 			default:
 				// note: currently, "val-" is not supported with bpartner locations
 				throw new AdempiereException("Unexpected type=" + locationIdentifier.getType());

@@ -1068,7 +1068,7 @@ public class BPartnerDAO implements IBPartnerDAO
 			final GLNQuery glnsQuery = toGLNQuery(query);
 
 			existingBPartnerId = glnsLoadingCache.getSingleBPartnerId(glnsQuery).orElse(null);
-			searchedByInfo.add(StringUtils.formatMessage("Location.GLN={}", query.getGlns()));
+			searchedByInfo.add(StringUtils.formatMessage("Location.GLNs={}", query.getGlns()));
 		}
 
 		if (existingBPartnerId == null && query.isFailIfNotExists())

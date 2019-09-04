@@ -1,6 +1,7 @@
 package de.metas.bpartner;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -88,5 +89,10 @@ public class GLN
 	public static String toCode(@Nullable final GLN gln)
 	{
 		return gln != null ? gln.getCode() : null;
+	}
+
+	public static boolean equals(@Nullable final GLN gln1, @Nullable final GLN gln2)
+	{
+		return Objects.equals(gln1, gln2);
 	}
 }

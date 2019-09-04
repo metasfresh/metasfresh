@@ -265,12 +265,12 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 		final IdentifierString bpartnerIdentifier = IdentifierString.of(bpartnerIdentifierStr);
 
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
-		final Optional<JsonResponseUpsert> jsonContactId = persister.persistForBPartner(
+		final Optional<JsonResponseUpsert> response = persister.persistForBPartner(
 				bpartnerIdentifier,
 				jsonContactUpsert,
 				SyncAdvise.CREATE_OR_MERGE);
 
-		return okOrNotFound(jsonContactId);
+		return createdOrNotFound(response);
 	}
 
 	private static <T> ResponseEntity<T> okOrNotFound(@NonNull final Optional<T> optionalResult)
