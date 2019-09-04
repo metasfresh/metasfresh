@@ -205,9 +205,194 @@ Die neue PLV und ''URSPR. PLV NEU'' und ''PLV KUNDEN ALT'' haben alle die ''URSP
 
 
 
+-- 2019-09-03T09:53:37.397Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='Auf derivative Preislisten anwenden',Updated=TO_TIMESTAMP('2019-09-03 12:53:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=541180
+;
+
+-- 2019-09-03T09:53:46.202Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Name='Auf derivative Preislisten anwenden',Updated=TO_TIMESTAMP('2019-09-03 12:53:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=541180
+;
+
+-- 2019-09-03T09:54:01.004Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Name='Apply to derivative price lists',Updated=TO_TIMESTAMP('2019-09-03 12:54:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=541180
+;
+
+-- 2019-09-03T09:54:10.637Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Name='Auf derivative Preislisten anwenden',Updated=TO_TIMESTAMP('2019-09-03 12:54:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=541180
+;
+
+-- 2019-09-03T09:54:15.525Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Name='Auf derivative Preislisten anwenden',Updated=TO_TIMESTAMP('2019-09-03 12:54:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=541180
+;
 
 
 
+
+
+
+
+
+
+
+-- 2019-09-04T09:52:35.132Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='PLV von Basis', PrintName='PLV von Basis',Updated=TO_TIMESTAMP('2019-09-04 12:52:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=577030 AND AD_Language='de_CH'
+;
+
+-- 2019-09-04T09:52:35.179Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(577030,'de_CH') 
+;
+
+-- 2019-09-04T09:52:39.865Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='PLV von Basis', PrintName='PLV von Basis',Updated=TO_TIMESTAMP('2019-09-04 12:52:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=577030 AND AD_Language='de_DE'
+;
+
+-- 2019-09-04T09:52:39.868Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(577030,'de_DE') 
+;
+
+-- 2019-09-04T09:52:39.885Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(577030,'de_DE') 
+;
+
+-- 2019-09-04T09:52:39.889Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='IsAllowPriceMutation', Name='PLV von Basis', Description=NULL, Help=NULL WHERE AD_Element_ID=577030
+;
+
+-- 2019-09-04T09:52:39.891Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsAllowPriceMutation', Name='PLV von Basis', Description=NULL, Help=NULL, AD_Element_ID=577030 WHERE UPPER(ColumnName)='ISALLOWPRICEMUTATION' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2019-09-04T09:52:39.894Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsAllowPriceMutation', Name='PLV von Basis', Description=NULL, Help=NULL WHERE AD_Element_ID=577030 AND IsCentrallyMaintained='Y'
+;
+
+-- 2019-09-04T09:52:39.895Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='PLV von Basis', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=577030) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 577030)
+;
+
+-- 2019-09-04T09:52:39.931Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='PLV von Basis', Name='PLV von Basis' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=577030)
+;
+
+-- 2019-09-04T09:52:39.933Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='PLV von Basis', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 577030
+;
+
+-- 2019-09-04T09:52:39.934Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='PLV von Basis', Description=NULL, Help=NULL WHERE AD_Element_ID = 577030
+;
+
+-- 2019-09-04T09:52:39.935Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'PLV von Basis', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 577030
+;
+
+-- 2019-09-04T09:52:44.885Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2019-09-04 12:52:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=577030 AND AD_Language='en_US'
+;
+
+-- 2019-09-04T09:52:44.888Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(577030,'en_US') 
+;
+
+-- 2019-09-04T09:52:50.841Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='PLV von Basis', PrintName='PLV von Basis',Updated=TO_TIMESTAMP('2019-09-04 12:52:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=577030 AND AD_Language='nl_NL'
+;
+
+-- 2019-09-04T09:52:50.845Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(577030,'nl_NL') 
+;
+
+-- 2019-09-04T09:53:12.744Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Von Basis derivierte PLV erlauben ',Updated=TO_TIMESTAMP('2019-09-04 12:53:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=577030 AND AD_Language='de_DE'
+;
+
+-- 2019-09-04T09:53:12.747Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(577030,'de_DE') 
+;
+
+-- 2019-09-04T09:53:12.759Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(577030,'de_DE') 
+;
+
+-- 2019-09-04T09:53:12.760Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='IsAllowPriceMutation', Name='PLV von Basis', Description='Von Basis derivierte PLV erlauben ', Help=NULL WHERE AD_Element_ID=577030
+;
+
+-- 2019-09-04T09:53:12.761Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsAllowPriceMutation', Name='PLV von Basis', Description='Von Basis derivierte PLV erlauben ', Help=NULL, AD_Element_ID=577030 WHERE UPPER(ColumnName)='ISALLOWPRICEMUTATION' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2019-09-04T09:53:12.762Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsAllowPriceMutation', Name='PLV von Basis', Description='Von Basis derivierte PLV erlauben ', Help=NULL WHERE AD_Element_ID=577030 AND IsCentrallyMaintained='Y'
+;
+
+-- 2019-09-04T09:53:12.763Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='PLV von Basis', Description='Von Basis derivierte PLV erlauben ', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=577030) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 577030)
+;
+
+-- 2019-09-04T09:53:12.773Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='PLV von Basis', Description='Von Basis derivierte PLV erlauben ', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 577030
+;
+
+-- 2019-09-04T09:53:12.775Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='PLV von Basis', Description='Von Basis derivierte PLV erlauben ', Help=NULL WHERE AD_Element_ID = 577030
+;
+
+-- 2019-09-04T09:53:12.777Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'PLV von Basis', Description = 'Von Basis derivierte PLV erlauben ', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 577030
+;
+
+-- 2019-09-04T09:53:36.160Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Allow derivative PLV from base',Updated=TO_TIMESTAMP('2019-09-04 12:53:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=577030 AND AD_Language='en_US'
+;
+
+-- 2019-09-04T09:53:36.163Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(577030,'en_US') 
+;
+
+-- 2019-09-04T09:53:50.912Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Von Basis derivierte PLV erlauben ',Updated=TO_TIMESTAMP('2019-09-04 12:53:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=577030 AND AD_Language='de_CH'
+;
+
+-- 2019-09-04T09:53:50.915Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(577030,'de_CH') 
+;
 
 
 
