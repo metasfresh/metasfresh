@@ -65,7 +65,7 @@ public class M_DiscountSchemaBreak_CopyToOtherSchema_Product extends ViewBasedPr
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		if (rowsHaveMultipleProducts())
+		if (rowsHaveMultipleProductsOrNone())
 		{
 			ITranslatableString msg = TranslatableStrings.builder()
 					.append("Multiple products or none in the selected rows")
@@ -76,7 +76,7 @@ public class M_DiscountSchemaBreak_CopyToOtherSchema_Product extends ViewBasedPr
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	private boolean rowsHaveMultipleProducts()
+	private boolean rowsHaveMultipleProductsOrNone()
 	{
 		final String viewSqlWhereClause = getViewSqlWhereClause(getSelectedRowIds());
 
