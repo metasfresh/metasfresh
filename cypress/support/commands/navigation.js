@@ -148,25 +148,24 @@ Cypress.Commands.add('selectRowByColumnAndValue', (columnAndValue, modal = false
 
   const $ = Cypress.$;
 
-  return cy
-    .get(path, timeout)
-    .should(table => {
-      // step: make sure the values exist and the page is loaded
-      columnAndValue.forEach(c => {
-        expect(table).to.contain(c.value);
-      });
-    })
-    // step: find all the columns' indexes
-    .then(() => {
-      columnAndValue.forEach(item => {
-        item.columnIndex = $(`[data-cy='cell-${item.column}']`).index();
-      });
-    })
-    .then(() => {
-      // step: iterate through all the table rows and return only the ones matching everything in the array
-      return cy
-        .get(`${path} tr`)
-        .then($tableRows => {
+  return (
+    cy
+      .get(path, timeout)
+      .should(table => {
+        // step: make sure the values exist and the page is loaded
+        columnAndValue.forEach(c => {
+          expect(table).to.contain(c.value);
+        });
+      })
+      // step: find all the columns' indexes
+      .then(() => {
+        columnAndValue.forEach(item => {
+          item.columnIndex = $(`[data-cy='cell-${item.column}']`).index();
+        });
+      })
+      .then(() => {
+        // step: iterate through all the table rows and return only the ones matching everything in the array
+        return cy.get(`${path} tr`).then($tableRows => {
           let matchingRows = [];
 
           $tableRows.each((_, tr) => {
@@ -194,7 +193,8 @@ Cypress.Commands.add('selectRowByColumnAndValue', (columnAndValue, modal = false
           }
           return cy.wrap(matchingRows);
         });
-    });
+      })
+  );
 });
 /**
  * Select all rows on the current page
