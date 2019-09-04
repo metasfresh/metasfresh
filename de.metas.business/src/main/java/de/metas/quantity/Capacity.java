@@ -131,7 +131,7 @@ public class Capacity implements CapacityInterface
 	 * @return capacity
 	 */
 	@Override
-	public BigDecimal getCapacityQty()
+	public BigDecimal toBigDecimal()
 	{
 		Check.assume(!isInfiniteCapacity(), "Cannot retrieve capacity Qty if it's infinite for {}", this);
 		return capacity;
@@ -175,7 +175,7 @@ public class Capacity implements CapacityInterface
 
 		final BigDecimal qtyUsedConv = Services.get(IUOMConversionBL.class)
 				.convertQty(getProductId(),
-						quantity.getAsBigDecimal(),
+						quantity.toBigDecimal(),
 						quantity.getUOM(),
 						uom);
 

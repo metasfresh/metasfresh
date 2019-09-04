@@ -127,7 +127,7 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 		return BOM.builder()
 				.productId(mainProductId)
 				.asiId(mainProductAsiId)
-				.qty(mainProductQty.getAsBigDecimal())
+				.qty(mainProductQty.toBigDecimal())
 				.lines(bomLines)
 				.costPrice(getProductCostPrice(mainProductId, orderCosts))
 				.build();

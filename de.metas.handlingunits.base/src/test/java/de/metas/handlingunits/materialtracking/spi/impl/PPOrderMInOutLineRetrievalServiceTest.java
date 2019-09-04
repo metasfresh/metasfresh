@@ -107,8 +107,8 @@ public class PPOrderMInOutLineRetrievalServiceTest
 
 		{
 			reversedLines = createReceiptInOutLines(IDocument.STATUS_Reversed);
-			assertThat(reversedLines.get(0).getM_Product(), is(helper.pTomato));
-			assertThat(reversedLines.get(1).getM_Product(), is(helper.pSalad));
+			assertThat(reversedLines.get(0).getM_Product_ID(), is(helper.pTomato.getM_Product_ID()));
+			assertThat(reversedLines.get(1).getM_Product_ID(), is(helper.pSalad.getM_Product_ID()));
 
 			reversedLineTomatoHU = createLU(helper.pTomatoProductId, new BigDecimal("20"));
 			assertThat(handlingUnitsBL.isTopLevel(reversedLineTomatoHU), is(true));
@@ -239,13 +239,13 @@ public class PPOrderMInOutLineRetrievalServiceTest
 		final I_M_InOutLine iol1 = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class);
 		iol1.setM_InOut(io);
 		iol1.setLine(10);
-		iol1.setM_Product(helper.pTomato);
+		iol1.setM_Product_ID(helper.pTomato.getM_Product_ID());
 		InterfaceWrapperHelper.save(iol1);
 
 		final I_M_InOutLine iol2 = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class);
 		iol2.setM_InOut(io);
 		iol2.setLine(20);
-		iol2.setM_Product(helper.pSalad);
+		iol2.setM_Product_ID(helper.pSalad.getM_Product_ID());
 		InterfaceWrapperHelper.save(iol2);
 
 		return ImmutableList.<I_M_InOutLine> of(iol1, iol2);

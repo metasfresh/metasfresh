@@ -114,7 +114,7 @@ public class OrderLineBLTest
 		final I_M_ProductPrice productprice = InterfaceWrapperHelper.create(ctx, I_M_ProductPrice.class, ITrx.TRXNAME_None);
 		productprice.setM_Product_ID(product.getM_Product_ID());
 		productprice.setM_PriceList_Version_ID(plv.getM_PriceList_Version_ID());
-		productprice.setC_UOM(priceUom);
+		productprice.setC_UOM_ID(priceUom.getC_UOM_ID());
 		InterfaceWrapperHelper.save(productprice);
 
 		orderline.setM_PriceList_Version_ID(plv.getM_PriceList_Version_ID());

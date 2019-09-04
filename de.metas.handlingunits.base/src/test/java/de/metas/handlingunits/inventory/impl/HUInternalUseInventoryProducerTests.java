@@ -384,10 +384,10 @@ public class HUInternalUseInventoryProducerTests
 
 		final I_M_InOutLine inoutLine = newInstance(I_M_InOutLine.class);
 		inoutLine.setM_InOut(inout);
-		inoutLine.setM_Product(product);
+		inoutLine.setM_Product_ID(product.getM_Product_ID());
 		inoutLine.setQtyEntered(qty);
-		inoutLine.setC_UOM(uom);
-		inoutLine.setM_Locator(locator);
+		inoutLine.setC_UOM_ID(uom.getC_UOM_ID());
+		inoutLine.setM_Locator_ID(locator.getM_Locator_ID());
 
 		save(inoutLine);
 		return inoutLine;

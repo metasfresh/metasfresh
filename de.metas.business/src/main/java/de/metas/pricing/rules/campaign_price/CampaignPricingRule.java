@@ -121,7 +121,7 @@ public class CampaignPricingRule implements IPricingRule
 	{
 		result.setCalculated(true);
 		result.setDisallowDiscount(true); // this is the end price, don't apply any other discounts
-		result.setPriceStd(campaignPrice.getPriceStd().getAsBigDecimal());
+		result.setPriceStd(campaignPrice.getPriceStd().toBigDecimal());
 		result.setCurrencyId(campaignPrice.getPriceStd().getCurrencyId());
 		result.setTaxCategoryId(campaignPrice.getTaxCategoryId());
 		result.setPrecision(extractPrecisionFromPrice(campaignPrice.getPriceStd()));
@@ -129,7 +129,7 @@ public class CampaignPricingRule implements IPricingRule
 
 	private static CurrencyPrecision extractPrecisionFromPrice(final Money amt)
 	{
-		final int amtPrecision = NumberUtils.stripTrailingDecimalZeros(amt.getAsBigDecimal()).scale();
+		final int amtPrecision = NumberUtils.stripTrailingDecimalZeros(amt.toBigDecimal()).scale();
 		return CurrencyPrecision.ofInt(Math.max(amtPrecision, 2));
 	}
 }

@@ -150,7 +150,7 @@ import lombok.NonNull;
 				throw new AdempiereException("Quantity to receive was not determined");
 			}
 
-			return createHUsInTrx(qtyCUsTotal.getAsBigDecimal(), qtyCUsTotal.getUOM());
+			return createHUsInTrx(qtyCUsTotal.toBigDecimal(), qtyCUsTotal.getUOM());
 		});
 	}
 
@@ -294,7 +294,7 @@ import lombok.NonNull;
 		candidate.setM_Locator_ID(request.getLocatorId());
 		candidate.setM_HU_ID(request.getTopLevelHUId());
 		candidate.setM_Product_ID(ProductId.toRepoId(request.getProductId()));
-		candidate.setQty(request.getQty().getAsBigDecimal());
+		candidate.setQty(request.getQty().toBigDecimal());
 		candidate.setC_UOM_ID(request.getQty().getUOMId());
 		candidate.setMovementDate(TimeUtil.asTimestamp(movementDate));
 		candidate.setProcessed(false);

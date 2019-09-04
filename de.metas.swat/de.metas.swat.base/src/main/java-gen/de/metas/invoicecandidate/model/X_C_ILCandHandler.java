@@ -14,7 +14,7 @@ public class X_C_ILCandHandler extends org.compiere.model.PO implements I_C_ILCa
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1532076109L;
+	private static final long serialVersionUID = 2141144043L;
 
     /** Standard Constructor */
     public X_C_ILCandHandler (Properties ctx, int C_ILCandHandler_ID, String trxName)
@@ -46,18 +46,6 @@ public class X_C_ILCandHandler extends org.compiere.model.PO implements I_C_ILCa
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_AD_User getAD_User_InCharge() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_InCharge_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setAD_User_InCharge(org.compiere.model.I_AD_User AD_User_InCharge)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_InCharge_ID, org.compiere.model.I_AD_User.class, AD_User_InCharge);
-	}
 
 	/** Set Betreuer.
 		@param AD_User_InCharge_ID 
@@ -190,9 +178,7 @@ public class X_C_ILCandHandler extends org.compiere.model.PO implements I_C_ILCa
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -200,8 +186,7 @@ public class X_C_ILCandHandler extends org.compiere.model.PO implements I_C_ILCa
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{

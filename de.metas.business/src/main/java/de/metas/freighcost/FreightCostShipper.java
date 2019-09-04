@@ -58,7 +58,7 @@ public class FreightCostShipper
 		this.shipperId = shipperId;
 		this.validFrom = validFrom;
 		this.breaks = breaks.stream()
-				.sorted(Comparator.comparing(freightCostBreak -> freightCostBreak.getShipmentValueAmtMax().getAsBigDecimal()))
+				.sorted(Comparator.comparing(freightCostBreak -> freightCostBreak.getShipmentValueAmtMax().toBigDecimal()))
 				.collect(ImmutableList.toImmutableList());
 
 	}

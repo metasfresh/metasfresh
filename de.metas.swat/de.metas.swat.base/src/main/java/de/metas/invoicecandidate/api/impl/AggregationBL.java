@@ -137,7 +137,7 @@ public class AggregationBL implements IAggregationBL
 		result.setPriceActual(template.getPriceActual());
 		result.setPriceEntered(template.getPriceEntered());
 		result.setPrinted(template.isPrinted());
-		result.setQtyToInvoice(template.getQtyToInvoice());
+		result.setQtysToInvoice(template.getQtysToInvoice());
 		result.setC_PaymentTerm_ID(template.getC_PaymentTerm_ID());
 
 		return result;

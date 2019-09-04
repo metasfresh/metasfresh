@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.acct;
 
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -58,6 +60,7 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
@@ -198,7 +201,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 		//
 		// Skip not stockable (e.g. service products) because they have no cost
-		final int productId = getM_MatchInv().getM_Product_ID();
+		final ProductId productId = ProductId.ofRepoIdOrNull(getM_MatchInv().getM_Product_ID());
 		if (!productBL.isStocked(productId))
 		{
 			return ImmutableList.of();
@@ -270,7 +273,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 	/**
 	 * Create the InvoicePriceVariance fact line
-	 * 
+	 *
 	 * @param fact
 	 * @param dr_NotInvoicedReceipts
 	 * @param cr_InventoryClearing
@@ -402,7 +405,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		final BigDecimal qtyInvoiced = getQtyInvoiced();
 		if (qtyInvoiced.signum() != 0) // task 08337: guard against division by zero
 		{
-			return getQty().divide(qtyInvoiced, 12, RoundingMode.HALF_UP).getAsBigDecimal();
+			return getQty().divide(qtyInvoiced, 12, RoundingMode.HALF_UP).toBigDecimal();
 		}
 		else
 		{
@@ -465,7 +468,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		fl.setC_Activity_ID(invoiceLine.getC_Activity_ID());
 		fl.setC_Campaign_ID(invoiceLine.getC_Campaign_ID());
 		fl.setC_Project_ID(invoiceLine.getC_Project_ID());
-		fl.setC_UOM_ID(invoiceLine.getPrice_UOM_ID());
+		fl.setC_UOM_ID(firstGreaterThanZero(invoiceLine.getPrice_UOM_ID(), invoiceLine.getC_UOM_ID()));
 		fl.setUser1_ID(invoiceLine.getUser1_ID());
 		fl.setUser2_ID(invoiceLine.getUser2_ID());
 	}

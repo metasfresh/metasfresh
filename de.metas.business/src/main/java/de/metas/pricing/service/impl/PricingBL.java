@@ -355,7 +355,7 @@ public class PricingBL implements IPricingBL
 			final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(plv, productId);
 			if (productPrice == null)
 			{
-				final UomId uomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+				final UomId uomId = Services.get(IProductBL.class).getStockUOMId(productId);
 				result.setPriceUomId(uomId);
 			}
 			else
@@ -365,7 +365,7 @@ public class PricingBL implements IPricingBL
 		}
 		else
 		{
-			final UomId uomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+			final UomId uomId = Services.get(IProductBL.class).getStockUOMId(productId);
 			result.setPriceUomId(uomId);
 		}
 	}

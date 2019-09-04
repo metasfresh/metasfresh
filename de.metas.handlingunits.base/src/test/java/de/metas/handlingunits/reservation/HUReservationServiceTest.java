@@ -107,13 +107,13 @@ public class HUReservationServiceTest
 		final HUReservation result = huReservationService.makeReservation(request).get();
 
 		assertThat(result).isNotNull();
-		assertThat(result.getReservedQtySum().getAsBigDecimal()).isEqualByComparingTo("1");
+		assertThat(result.getReservedQtySum().toBigDecimal()).isEqualByComparingTo("1");
 		assertThat(result.getReservedQtySum().getUOMId()).isEqualTo(cuUOM.getC_UOM_ID());
 
 		// final Map<HuId, Quantity> vhuId2reservedQtys = result.getVhuId2reservedQtys();
 		assertThat(result.getVhuIds()).hasSize(1);
 		final HuId vhuId = result.getVhuIds().iterator().next();
-		assertThat(result.getReservedQtyByVhuId(vhuId).getAsBigDecimal()).isEqualByComparingTo(ONE);
+		assertThat(result.getReservedQtyByVhuId(vhuId).toBigDecimal()).isEqualByComparingTo(ONE);
 
 		assertThatHuHasQty(lu, "200");
 
@@ -157,12 +157,12 @@ public class HUReservationServiceTest
 		// invoke the method under test
 		final HUReservation result = huReservationService.makeReservation(firstRequest).get();
 
-		assertThat(result.getReservedQtySum().getAsBigDecimal()).isEqualByComparingTo(TWOHUNDRET);
+		assertThat(result.getReservedQtySum().toBigDecimal()).isEqualByComparingTo(TWOHUNDRET);
 
 		// final Map<HuId, Quantity> vhuId2reservedQtys = result.getVhuId2reservedQtys();
 		assertThat(result.getVhuIds()).hasSize(5);
 		final HuId vhuId = result.getVhuIds().iterator().next();
-		assertThat(result.getReservedQtyByVhuId(vhuId).getAsBigDecimal()).isEqualByComparingTo("40");
+		assertThat(result.getReservedQtyByVhuId(vhuId).toBigDecimal()).isEqualByComparingTo("40");
 
 		assertThatHuHasQty(lu, "200");
 
@@ -197,7 +197,7 @@ public class HUReservationServiceTest
 
 			// invoke the method under test
 			final HUReservation firstResult = huReservationService.makeReservation(firstRequest).get();
-			assertThat(firstResult.getReservedQtySum().getAsBigDecimal()).isEqualByComparingTo(TWOHUNDRET); // guard
+			assertThat(firstResult.getReservedQtySum().toBigDecimal()).isEqualByComparingTo(TWOHUNDRET); // guard
 		}
 
 		//
@@ -234,6 +234,6 @@ public class HUReservationServiceTest
 		assertThat(productStorages).hasSize(1);
 
 		final Quantity luQuantity = productStorages.get(0).getQty(cuUOM);
-		return luQuantity.getAsBigDecimal();
+		return luQuantity.toBigDecimal();
 	}
 }

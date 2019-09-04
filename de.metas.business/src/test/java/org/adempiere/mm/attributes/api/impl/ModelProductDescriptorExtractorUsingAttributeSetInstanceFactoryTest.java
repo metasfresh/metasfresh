@@ -8,7 +8,7 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -21,6 +21,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.ShutdownListener;
@@ -57,6 +59,7 @@ import lombok.NonNull;
 @SpringBootTest(classes = { StartupListener.class,
 		ShutdownListener.class,
 		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
+@DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
 public class ModelProductDescriptorExtractorUsingAttributeSetInstanceFactoryTest
 {
 	private static final int PRODUCT_ID = 20;
@@ -76,7 +79,7 @@ public class ModelProductDescriptorExtractorUsingAttributeSetInstanceFactoryTest
 	@Test
 	public void productDescriptorFactory_bean_is_a_ProductDescriptorFromAttributeSetInstanceFactory()
 	{
-		final ModelProductDescriptorExtractor productDescriptor = Adempiere.getBean(ModelProductDescriptorExtractor.class);
+		final ModelProductDescriptorExtractor productDescriptor = SpringContextHolder.instance.getBean(ModelProductDescriptorExtractor.class);
 		assertThat(productDescriptor).isInstanceOf(ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class);
 	}
 

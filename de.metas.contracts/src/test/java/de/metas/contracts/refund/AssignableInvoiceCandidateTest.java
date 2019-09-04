@@ -70,13 +70,13 @@ public class AssignableInvoiceCandidateTest
 		final SplitResult result = candidate.splitQuantity(TEN);
 
 		assertThat(result.getRemainder()).isNotNull();
-		assertThat(result.getRemainder().getQuantity().getAsBigDecimal()).isEqualByComparingTo(TWENTY);
-		assertThat(result.getRemainder().getMoney().getAsBigDecimal()).isEqualByComparingTo("6.67"); // 2/3 of the original's quantity
+		assertThat(result.getRemainder().getQuantity().toBigDecimal()).isEqualByComparingTo(TWENTY);
+		assertThat(result.getRemainder().getMoney().toBigDecimal()).isEqualByComparingTo("6.67"); // 2/3 of the original's quantity
 		assertThat(result.getRemainder().getId()).isEqualTo(candidate.getId());
 
 		assertThat(result.getNewCandidate()).isNotNull();
-		assertThat(result.getNewCandidate().getQuantity().getAsBigDecimal()).isEqualByComparingTo(TEN);
-		assertThat(result.getNewCandidate().getMoney().getAsBigDecimal()).isEqualByComparingTo("3.33"); // 1/3 of the original's quantity
+		assertThat(result.getNewCandidate().getQuantity().toBigDecimal()).isEqualByComparingTo(TEN);
+		assertThat(result.getNewCandidate().getMoney().toBigDecimal()).isEqualByComparingTo("3.33"); // 1/3 of the original's quantity
 		assertThat(result.getNewCandidate().getId()).isEqualTo(candidate.getId());
 	}
 }

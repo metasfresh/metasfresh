@@ -446,7 +446,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		final QualityInvoiceLine invoicableDetailLineOverride = createDetailForSingleRegularOrder(
 				overallRawUOM,
 				huInfo,
-				invoiceableLine.getQty().getAsBigDecimal(),
+				invoiceableLine.getQty().toBigDecimal(),
 				labelToUse);
 		invoicableDetailLineOverride.setDisplayed(displayRegularOrderData);
 
@@ -556,7 +556,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 			final QualityInvoiceLine invoicableDetailLineOverride = createDetailForSingleRegularOrder(
 					overallRawUOM,
 					huInfo,
-					invoiceableLine.getQty().getAsBigDecimal(),
+					invoiceableLine.getQty().toBigDecimal(),
 					labelToUse);
 			invoicableDetailLineOverride.setDisplayed(displayRegularOrderData);
 
@@ -1144,7 +1144,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		final IEditablePricingContext pricingContext = pricingContextInitial.copy();
 
 		pricingContext.setProductId(line.getProductId());
-		pricingContext.setQty(line.getQty().getAsBigDecimal());
+		pricingContext.setQty(line.getQty().toBigDecimal());
 		pricingContext.setUomId(line.getQty().getUomId());
 
 		return pricingContext;
@@ -1207,7 +1207,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 		final CurrencyPrecision pricePrecision = pricingResult.getPrecision();
 
-		final BigDecimal netAmt = pricePrecision.round(price.multiply(qtyInPricingUom.getAsBigDecimal()));
+		final BigDecimal netAmt = pricePrecision.round(price.multiply(qtyInPricingUom.toBigDecimal()));
 		return netAmt;
 	}
 

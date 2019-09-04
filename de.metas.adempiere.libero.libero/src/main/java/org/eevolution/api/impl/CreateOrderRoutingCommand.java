@@ -154,7 +154,7 @@ final class CreateOrderRoutingCommand
 		final Duration durationRequired = WorkingTime.builder()
 				.durationPerOneUnit(durationPerOneUnit)
 				.unitsPerCycle(unitsPerCycle)
-				.qty(qtyOrdered.getAsBigDecimal())
+				.qty(qtyOrdered.toBigDecimal())
 				.activityTimeUnit(durationUnit)
 				.build()
 				.getDuration();

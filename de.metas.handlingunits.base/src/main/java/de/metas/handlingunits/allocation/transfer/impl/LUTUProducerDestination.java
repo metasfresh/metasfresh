@@ -801,7 +801,7 @@ public class LUTUProducerDestination
 	private final Quantity calculateTotalQtyCU(final CapacityInterface tuCapacity)
 	{
 		Check.assumeNotNull(tuCapacity, "tuCapacity not null");
-		final BigDecimal qtyCUsPerTU = tuCapacity.getCapacityQty();
+		final BigDecimal qtyCUsPerTU = tuCapacity.toBigDecimal();
 		final I_C_UOM cuUOM = tuCapacity.getC_UOM();
 
 		// If Qty CU/TU is infinite, we cannot calculate

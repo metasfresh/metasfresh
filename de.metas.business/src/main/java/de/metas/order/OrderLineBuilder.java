@@ -75,8 +75,8 @@ public class OrderLineBuilder
 		orderLine.setM_Product_ID(productId.getRepoId());
 		orderLine.setM_AttributeSetInstance_ID(asiId);
 
-		orderLine.setQtyEntered(qty.getAsBigDecimal());
-		orderLine.setQtyOrdered(qty.getAsBigDecimal());
+		orderLine.setQtyEntered(qty.toBigDecimal());
+		orderLine.setQtyOrdered(qty.toBigDecimal());
 		orderLine.setC_UOM_ID(qty.getUOMId());
 
 		if (manualPrice != null)

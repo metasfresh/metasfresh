@@ -40,6 +40,7 @@ import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -299,7 +300,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 		}
 
 		final IProductBL productBL = Services.get(IProductBL.class);
-		if (!productBL.isStocked(line.getM_Product_ID()))
+		if (!productBL.isStocked(ProductId.ofRepoIdOrNull(line.getM_Product_ID())))
 		{
 			return;
 		}
@@ -315,7 +316,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 				line.getM_Locator_ID(),
 				line.getM_Product_ID(),
 				line.getM_AttributeSetInstance_ID(),
-				qtyDiff.getAsBigDecimal(),
+				qtyDiff.toBigDecimal(),
 				getMovementDate(),
 				get_TrxName());
 		mtrx.setM_InventoryLine_ID(line.getM_InventoryLine_ID());

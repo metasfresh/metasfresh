@@ -232,7 +232,7 @@ import de.metas.util.StringUtils;
 	{
 		final HUKey huKey = getKey();
 
-		BigDecimal qty = productStorage.getQty().getAsBigDecimal();
+		BigDecimal qty = productStorage.getQty().toBigDecimal();
 		if (qty.signum() == 0)
 		{
 			return null;

@@ -149,7 +149,7 @@ public class RefundInvoiceCandidateFactoryTest
 
 		assertThat(ofRecord.getBpartnerId().getRepoId()).isEqualTo(bPartnerRecord.getC_BPartner_ID());
 		assertThat(ofRecord.getRefundContract().getId().getRepoId()).isEqualTo(refundContractRecord.getC_Flatrate_Term_ID());
-		assertThat(ofRecord.getMoney().getAsBigDecimal()).isEqualByComparingTo(TEN);
+		assertThat(ofRecord.getMoney().toBigDecimal()).isEqualByComparingTo(TEN);
 		assertThat(ofRecord.getInvoiceableFrom()).isEqualTo(TimeUtil.asLocalDate(dateToInvoiceOfAssignableCand));
 
 		final List<RefundConfig> refundConfigs = ofRecord.getRefundConfigs();

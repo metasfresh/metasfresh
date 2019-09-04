@@ -33,6 +33,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.PO;
@@ -83,8 +84,10 @@ public class OLCandBL implements IOLCandBL
 	@Override
 	public void process(@NonNull final OLCandProcessorDescriptor processor)
 	{
-		final OLCandRegistry olCandRegistry = Adempiere.getBean(OLCandRegistry.class);
-		final OLCandRepository olCandRepo = Adempiere.getBean(OLCandRepository.class);
+		final SpringContextHolder springContextHolder = SpringContextHolder.instance;
+		final OLCandRegistry olCandRegistry =  springContextHolder.getBean(OLCandRegistry.class);
+		final OLCandRepository olCandRepo =  springContextHolder.getBean(OLCandRepository.class);
+
 		final OLCandSource candidatesSource = olCandRepo.getForProcessor(processor);
 
 		OLCandsProcessorExecutor.builder()

@@ -12,12 +12,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -174,10 +174,10 @@ public abstract class ReceiptScheduleTestBase
 		new Expectations()
 		{{
 			productAcctDAO.retrieveActivityForAcct(
-					(ClientId)any, 
-					orgId, 
+					(ClientId)any,
+					orgId,
 					(ProductId)any);
-			
+
 			minTimes=0;
 			result = activityId;
 		}};
@@ -259,14 +259,14 @@ public abstract class ReceiptScheduleTestBase
 		receiptSchedule.setAD_Org_ID(0);
 		receiptSchedule.setAD_Table_ID(0);
 
-		receiptSchedule.setC_BPartner(bartner);
+		receiptSchedule.setC_BPartner_ID(bartner.getC_BPartner_ID());
 		receiptSchedule.setAD_User_ID(0);
 
 		receiptSchedule.setDateOrdered(date);
 
-		receiptSchedule.setM_Warehouse(warehouse);
+		receiptSchedule.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 
-		receiptSchedule.setM_Product(product);
+		receiptSchedule.setM_Product_ID(product.getM_Product_ID());
 		//receiptSchedule.setC_UOM(productUOM);
 
 		receiptSchedule.setQtyOrdered(qtyBD);

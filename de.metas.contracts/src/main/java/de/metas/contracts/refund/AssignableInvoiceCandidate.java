@@ -110,7 +110,7 @@ public class AssignableInvoiceCandidate
 
 	public SplitResult splitQuantity(@NonNull final BigDecimal qtyToSplit)
 	{
-		Check.errorIf(qtyToSplit.compareTo(quantity.getAsBigDecimal()) >= 0,
+		Check.errorIf(qtyToSplit.compareTo(quantity.toBigDecimal()) >= 0,
 				"The given qtyToSplit={} needs to be less than this instance's quantity; this={}",
 				qtyToSplit, this);
 
@@ -119,10 +119,10 @@ public class AssignableInvoiceCandidate
 
 		final BigDecimal newFraction = qtyToSplit
 				.setScale(precision * 2, RoundingMode.HALF_UP)
-				.divide(quantity.getAsBigDecimal(), RoundingMode.HALF_UP);
+				.divide(quantity.toBigDecimal(), RoundingMode.HALF_UP);
 
 		final BigDecimal newMoneyValue = money
-				.getAsBigDecimal()
+				.toBigDecimal()
 				.setScale(precision, RoundingMode.HALF_UP)
 				.multiply(newFraction)
 				.setScale(precision, RoundingMode.HALF_UP);

@@ -10,7 +10,6 @@ import javax.annotation.Nullable;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.X_C_DocType;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Product_Planning;
@@ -129,8 +128,6 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 			@NonNull final I_M_InOutLine inOutLine,
 			@Nullable final LocatorId locatorToId)
 	{
-		final I_M_Locator locator = inOutLine.getM_Locator();
-
 		final I_M_InOut inout = inOutLine.getM_InOut();
 
 		final I_DD_OrderLine ddOrderLine = newInstance(I_DD_OrderLine.class);
@@ -138,10 +135,10 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 		ddOrderLine.setLine(10);
 		ddOrderLine.setM_Product_ID(inOutLine.getM_Product_ID());
 		ddOrderLine.setQtyEntered(inOutLine.getQtyEntered());
-		ddOrderLine.setC_UOM(inOutLine.getC_UOM());
+		ddOrderLine.setC_UOM_ID(inOutLine.getC_UOM_ID());
 		ddOrderLine.setQtyEnteredTU(inOutLine.getQtyEnteredTU());
 		ddOrderLine.setM_HU_PI_Item_Product(inOutLine.getM_HU_PI_Item_Product());
-		ddOrderLine.setM_Locator(locator);
+		ddOrderLine.setM_Locator_ID(inOutLine.getM_Locator_ID());
 		ddOrderLine.setM_LocatorTo_ID(locatorToId.getRepoId());
 		ddOrderLine.setIsInvoiced(false);
 		ddOrderLine.setDateOrdered(inout.getDateOrdered());

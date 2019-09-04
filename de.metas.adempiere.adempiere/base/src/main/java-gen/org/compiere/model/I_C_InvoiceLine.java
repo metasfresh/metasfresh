@@ -2,10 +2,10 @@ package org.compiere.model;
 
 
 /** Generated Interface for C_InvoiceLine
- *  @author Adempiere (generated) 
+ *  @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
-public interface I_C_InvoiceLine 
+public interface I_C_InvoiceLine
 {
 
     /** TableName=C_InvoiceLine */

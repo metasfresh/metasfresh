@@ -628,7 +628,7 @@ public class BPartnerCompositeRepository
 
 	private BPartner ofBPartnerRecord(
 			@NonNull final I_C_BPartner bpartnerRecord,
-			@NonNull ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> immutableListMultimap)
+			@NonNull final ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> immutableListMultimap)
 	{
 		final RecordChangeLog recordChangeLog = ChangeLogUtil.createBPartnerChangeLog(bpartnerRecord, immutableListMultimap);
 

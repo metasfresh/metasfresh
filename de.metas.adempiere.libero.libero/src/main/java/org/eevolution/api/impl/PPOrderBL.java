@@ -214,7 +214,7 @@ public class PPOrderBL implements IPPOrderBL
 	private I_C_UOM getMainProductStockingUOM(final I_PP_Order ppOrder)
 	{
 		final ProductId mainProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
-		return Services.get(IProductBL.class).getStockingUOM(mainProductId);
+		return Services.get(IProductBL.class).getStockUOM(mainProductId);
 	}
 
 	@Override
@@ -413,7 +413,7 @@ public class PPOrderBL implements IPPOrderBL
 				final WorkingTime durationRemaining = WorkingTime.builder()
 						.durationPerOneUnit(activity.getDurationPerOneUnit())
 						.unitsPerCycle(activity.getUnitsPerCycle())
-						.qty(qtyToProcess.getAsBigDecimal())
+						.qty(qtyToProcess.toBigDecimal())
 						.activityTimeUnit(activity.getDurationUnit())
 						.build();
 

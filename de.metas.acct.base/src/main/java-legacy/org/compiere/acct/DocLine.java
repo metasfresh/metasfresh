@@ -600,12 +600,12 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 	protected final I_C_UOM getProductStockingUOM()
 	{
-		return productBL.getStockingUOM(getProductId());
+		return productBL.getStockUOM(getProductId());
 	}
-	
+
 	protected final UomId getProductStockingUOMId()
 	{
-		return productBL.getStockingUOMId(getProductId());
+		return productBL.getStockUOMId(getProductId());
 	}
 
 

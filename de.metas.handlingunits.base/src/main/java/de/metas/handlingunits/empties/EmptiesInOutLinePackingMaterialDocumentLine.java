@@ -10,12 +10,12 @@ package de.metas.handlingunits.empties;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,6 +28,7 @@ import de.metas.handlingunits.impl.AbstractPackingMaterialDocumentLine;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.product.ProductId;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -75,7 +76,7 @@ import de.metas.util.Services;
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-		final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(getProductId(), inoutLine.getC_UOM(), qty);
+		final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(getProductId(), UomId.ofRepoId(inoutLine.getC_UOM_ID()), qty);
 		inoutLine.setQtyEntered(qtyEntered);
 	}
 }

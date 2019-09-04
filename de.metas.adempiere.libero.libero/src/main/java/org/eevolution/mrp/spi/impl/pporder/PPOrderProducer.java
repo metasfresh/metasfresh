@@ -126,7 +126,7 @@ public class PPOrderProducer
 		ppOrderBL.setQtyOrdered(ppOrderRecord, ppOrder.getQtyRequired());
 
 		ppOrderBL.setQtyEntered(ppOrderRecord, ppOrder.getQtyRequired());
-		ppOrderRecord.setC_UOM_ID(productBL.getStockingUOMId(productDescriptor.getProductId()).getRepoId());
+		ppOrderRecord.setC_UOM_ID(productBL.getStockUOMId(productDescriptor.getProductId()).getRepoId());
 
 		// QtyBatchSize : do not set it, let the MO to take it from workflow
 		ppOrderRecord.setYield(BigDecimal.ZERO);
