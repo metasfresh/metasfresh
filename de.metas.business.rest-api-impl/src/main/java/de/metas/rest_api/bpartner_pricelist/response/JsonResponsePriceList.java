@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import de.metas.rest_api.utils.JsonError;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -39,6 +40,7 @@ import lombok.Value;
 public class JsonResponsePriceList
 {
 	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Singular
 	private List<JsonResponsePrice> prices;
 
 	@JsonInclude(JsonInclude.Include.NON_NULL)
