@@ -65,7 +65,7 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 			return ProcessPreconditionsResolution.reject();
 		}
 
-		if (context.getSelectionSize() > 1)
+		if (context.isMoreThanOneSelected())
 		{
 			return ProcessPreconditionsResolution.reject();
 		}
