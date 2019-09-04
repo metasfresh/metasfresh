@@ -628,10 +628,15 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 	{
 		final Set<ProductId> distinctProductsForSelection = retrieveDistinctProductIdsForSelection(selectionFilter);
 
+		if(distinctProductsForSelection.isEmpty())
+		{
+			return null;
+		}
+
 		if (distinctProductsForSelection.size() > 1)
 		{
 			throw new AdempiereException(TranslatableStrings.builder()
-					.append("Multiple products in the selected rows")
+					.append("Multiple products or none in the selected rows")
 					.build());
 		}
 
