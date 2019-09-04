@@ -79,6 +79,12 @@ public class PriceListsCollection
 
 	public Optional<PriceListId> getPriceListId(@NonNull final CountryId countryId, @NonNull final SOTrx soTrx)
 	{
+		return getPriceList(countryId, soTrx)
+				.map(priceList -> extractPriceListId(priceList));
+	}
+
+	public Optional<I_M_PriceList> getPriceList(@NonNull final CountryId countryId, @NonNull final SOTrx soTrx)
+	{
 		return getPriceLists()
 				.stream()
 				.filter(PriceListFilter.builder()
@@ -87,7 +93,6 @@ public class PriceListsCollection
 						.soTrx(soTrx)
 						.build())
 				.sorted(RepoIdAwares.comparingNullsLast(PriceListsCollection::extractCountryIdOrNull))
-				.map(priceList -> extractPriceListId(priceList))
 				.findFirst();
 	}
 
