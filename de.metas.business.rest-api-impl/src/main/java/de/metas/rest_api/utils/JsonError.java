@@ -1,13 +1,20 @@
 package de.metas.rest_api.utils;
 
+import java.util.Map;
+
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.Null;
 import org.compiere.util.Trace;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.RepoIdAware;
 import io.swagger.annotations.ApiModel;
 import lombok.Builder;
 import lombok.NonNull;
@@ -41,14 +48,51 @@ import lombok.Value;
 @Builder
 public class JsonError
 {
-	public static JsonError ofThrowable(@NonNull final Throwable throwable)
+	public static JsonError ofThrowable(
+			@NonNull final Throwable throwable,
+			@NonNull final String adLanguage)
 	{
 		final Throwable cause = AdempiereException.extractCause(throwable);
 
 		return builder()
-				.message(AdempiereException.extractMessage(cause))
+				.message(AdempiereException.extractMessageTrl(cause).translate(adLanguage))
 				.stackTrace(Trace.toOneLineStackTraceString(cause.getStackTrace()))
+				.parameters(extractParameters(throwable, adLanguage))
 				.build();
+	}
+
+	private static Map<String, String> extractParameters(@NonNull final Throwable throwable, @NonNull final String adLanguage)
+	{
+		return AdempiereException.extractParameters(throwable)
+				.entrySet()
+				.stream()
+				.map(e -> GuavaCollectors.entry(e.getKey(), convertParameterToJson(e.getValue(), adLanguage)))
+				.collect(GuavaCollectors.toImmutableMap());
+	}
+
+	@NonNull
+	private static String convertParameterToJson(final Object value, final String adLanguage)
+	{
+		if (Null.isNull(value))
+		{
+			return "<null>";
+		}
+		else if (value instanceof ITranslatableString)
+		{
+			return ((ITranslatableString)value).translate(adLanguage);
+		}
+		else if (value instanceof RepoIdAware)
+		{
+			return String.valueOf(((RepoIdAware)value).getRepoId());
+		}
+		else if (value instanceof ReferenceListAwareEnum)
+		{
+			return ((ReferenceListAwareEnum)value).getCode();
+		}
+		else
+		{
+			return value.toString();
+		}
 	}
 
 	@NonNull
@@ -56,4 +100,7 @@ public class JsonError
 
 	@Nullable
 	String stackTrace;
+
+	@NonNull
+	Map<String, String> parameters;
 }
