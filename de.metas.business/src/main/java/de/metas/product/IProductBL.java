@@ -24,12 +24,15 @@ package de.metas.product;
 
 import java.math.BigDecimal;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
+
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
@@ -172,6 +175,8 @@ public interface IProductBL extends ISingletonService
 	}
 
 	String getProductValue(ProductId productId);
+
+	ImmutableMap<ProductId, String> getProductValues(Set<ProductId> productIds);
 
 	String getProductName(ProductId productId);
 
