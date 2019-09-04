@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -85,12 +87,7 @@ public class ShipmentData
 		switch (invoicableQtyBasedOn)
 		{
 			case CatchWeight:
-				final Quantity qtyCatch = getQtyCatch();
-				if (qtyCatch == null)
-				{
-					throw new AdempiereException("Invoice candidate has invoicableQtyBasedOn=" + invoicableQtyBasedOn + " but missing qtyCatch");
-				}
-				deliveredInUom = qtyCatch;
+				deliveredInUom = coalesce(getQtyCatch(), getQtyNominal());
 				break;
 			case NominalWeight:
 				deliveredInUom = getQtyNominal();

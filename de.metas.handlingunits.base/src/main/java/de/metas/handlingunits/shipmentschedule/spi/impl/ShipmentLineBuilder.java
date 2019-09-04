@@ -297,7 +297,6 @@ import lombok.NonNull;
 
 		if (candidate.getCatchQty().isPresent())
 		{
-
 			// catchQty might be null in a unit test, if you forgot to set up a catch-UOM for the productId's product
 			assumeNotNull(catchQty, "Param candidate has a catch qty, but this instance has no catchQty; candidate={}; this={}", candidate, this);
 			catchQty = Quantitys.add(UOMConversionContext.of(productId), catchQty, candidate.getCatchQty().get());

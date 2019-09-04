@@ -6,6 +6,7 @@ package de.metas.invoicecandidate.api.impl;
 import static de.metas.util.Check.assumeGreaterThanZero;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -1942,7 +1943,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		if (inOutLine.getCatch_UOM_ID() > 0)
 		{
 			iciol.setC_UOM_ID(inOutLine.getCatch_UOM_ID());
-			iciol.setQtyDeliveredInUOM_Catch(inOutLine.getQtyDeliveredCatch());
+
+			// if inOutLine.QtyDeliveredCatch is null, then iciol.QtyDeliveredInUOM_Catch must also be null and not zero.
+			final BigDecimal catchQtyOrNull = getValueOrNull(inOutLine, I_M_InOutLine.COLUMNNAME_QtyDeliveredCatch);
+			iciol.setQtyDeliveredInUOM_Catch(catchQtyOrNull);
 
 			// make sure that both quantities have the same UOM
 			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);

@@ -4,11 +4,8 @@ import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFi
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import java.math.BigDecimal;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -257,15 +254,19 @@ class InvoiceCandidateTest
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
 	}
 
+	/** Verifies that if there is no catch weight, we fall back to the nominal weight. */
 	@Test
 	void sales_afterDelivery_missing_catchWeight()
 	{
 		final InvoiceCandidate invoiceCandidate = loadJsonFixture("sales_withoutCatchWeight");
 		invoiceCandidate.changeQtyBasedOn(InvoicableQtyBasedOn.CatchWeight);
 
-		assertThatThrownBy(() -> invoiceCandidate.computeToInvoiceData())
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("missing qtyCatch");
+		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
+
+		assertThat(toInvoiceData.getQtysEffective().getUOMQtyNotNull().toBigDecimal()).isEqualByComparingTo("40"); // delivered nominal qty
+		assertThat(toInvoiceData.getQtysEffective().getUOMQtyNotNull().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo("10"); // delivered qty in stock UOM
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
 	}
 
 	@Test

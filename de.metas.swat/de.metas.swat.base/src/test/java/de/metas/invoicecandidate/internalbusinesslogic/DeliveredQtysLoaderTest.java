@@ -68,6 +68,7 @@ class DeliveredQtysLoaderTest
 	private I_C_Invoice_Candidate icRecord;
 
 	private I_C_InvoiceCandidate_InOutLine icIol1;
+	private I_C_InvoiceCandidate_InOutLine icIol2;
 
 	@BeforeEach
 	void beforeEach()
@@ -113,7 +114,7 @@ class DeliveredQtysLoaderTest
 	}
 
 	/**
-	 * Verifies that we tolerate individual {@link I_C_InvoiceCandidate_InOutLine} the have no catch quantities.
+	 * Verifies that we tolerate individual {@link I_C_InvoiceCandidate_InOutLine} that have no catch quantities.
 	 * This can happen if we create shipments and a part of the quantity is on-the-fly-picked,
 	 * and we have a quantity override value set in the shipment schedule.
 	 */
@@ -150,6 +151,46 @@ class DeliveredQtysLoaderTest
 		assertThat(result.getShipmentData().getQtyCatch()).isNotNull();
 		assertThat(result.getShipmentData().getQtyCatch().getUomId()).isEqualTo(UomIds.ofRecord(icUomRecord));
 		assertThat(result.getShipmentData().getQtyCatch().toBigDecimal()).isEqualByComparingTo("19"); // null + 19
+	}
+
+	/**
+	 * Verifies that we tolerate the case of <b>all</> {@link I_C_InvoiceCandidate_InOutLine} to have no catch quantities.
+	 * This can happen if we create shipments without actually picked HUs and no catch-qty override;
+	 * In this case, we fall back to the nominal quantity.
+	 */
+	@Test
+	void loadDeliveredQtys_sales_all_icIol_without_catch()
+	{
+		createStandardData();
+		icIol1.setQtyDeliveredInUOM_Catch(null);
+		saveRecord(icIol1);
+		icIol2.setQtyDeliveredInUOM_Catch(null);
+		saveRecord(icIol2);
+
+		final DeliveredDataLoader deliveredQtysLoader = DeliveredDataLoader.builder()
+				.invoiceCandidateId(InvoiceCandidateIds.ofRecord(icRecord))
+				.soTrx(SOTrx.SALES)
+				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
+				.icUomId(UomIds.ofRecord(icUomRecord))
+				.stockUomId(UomIds.ofRecord(stockUomRecord))
+				.deliveryQualityDiscount(Optional.empty())
+				.negateQtys(false)
+				.build();
+
+		final DeliveredData result = deliveredQtysLoader.loadDeliveredQtys();
+
+		assertThat(result.getShipmentData().getShippedQtyItems())
+				.extracting("qtyInStockUom.qty", "qtyNominal.qty", "qtyCatch.qty", "qtyOverride.qty")
+				.contains(tuple(TEN, FOUR_HUNDRET, null, null),
+						tuple(FIVE, TWO_HUNDRET, null, null));
+
+		assertThat(result.getShipmentData().getQtyInStockUom().getUomId()).isEqualTo(UomIds.ofRecord(stockUomRecord));
+		assertThat(result.getShipmentData().getQtyInStockUom().toBigDecimal()).isEqualByComparingTo("15");
+
+		assertThat(result.getShipmentData().getQtyNominal().getUomId()).isEqualTo(UomIds.ofRecord(icUomRecord));
+		assertThat(result.getShipmentData().getQtyNominal().toBigDecimal()).isEqualByComparingTo("60"); // 40 + 20
+
+		assertThat(result.getShipmentData().getQtyCatch()).isNull();
 	}
 
 	@Test
@@ -288,7 +329,7 @@ class DeliveredQtysLoaderTest
 		iol2.setMovementQty(FIVE);
 		saveRecord(iol2);
 
-		final I_C_InvoiceCandidate_InOutLine icIol2 = newInstance(I_C_InvoiceCandidate_InOutLine.class);
+		icIol2 = newInstance(I_C_InvoiceCandidate_InOutLine.class);
 		icIol2.setC_Invoice_Candidate_ID(icRecord.getC_Invoice_Candidate_ID());
 		icIol2.setM_InOutLine_ID(iol2.getM_InOutLine_ID());
 		icIol2.setC_UOM_ID(iol2.getC_UOM_ID());
