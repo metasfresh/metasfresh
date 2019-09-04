@@ -36,8 +36,8 @@ public interface IPricingConditionsRepository extends ISingletonService
 
 	boolean selectionHasMultipleProductsOrNone(IQueryFilter<I_M_DiscountSchemaBreak> queryFilter);
 
-	void copyDiscountSchemaBreaksWithProductId(PricingConditionsId pricingConditionsId, IQueryFilter<I_M_DiscountSchemaBreak> queryFilter, ProductId productId);
-
 	ProductId retrieveUniqueProductIdForSelectionOrNull(IQueryFilter<I_M_DiscountSchemaBreak> selectionFilter);
+
+	void copyDiscountSchemaBreaksWithProductId(PricingConditionsId pricingConditionsId, IQueryFilter<I_M_DiscountSchemaBreak> queryFilter, ProductId productId, boolean allowCopyToSameSchema);
 
 }

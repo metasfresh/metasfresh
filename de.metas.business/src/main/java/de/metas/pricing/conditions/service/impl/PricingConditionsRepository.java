@@ -548,20 +548,30 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 			@NonNull final PricingConditionsId pricingConditionsId,
 			@NonNull final IQueryFilter<I_M_DiscountSchemaBreak> queryFilter)
 	{
-		copyDiscountSchemaBreaksWithProductId(pricingConditionsId, queryFilter, null);
+
+		final boolean allowCopyToSameSchema = false;
+
+		copyDiscountSchemaBreaksWithProductId(pricingConditionsId, queryFilter, null, allowCopyToSameSchema);
 	}
 
 	@Override
 	public void copyDiscountSchemaBreaksWithProductId(
 			@NonNull final PricingConditionsId pricingConditionsId,
 			@NonNull final IQueryFilter<I_M_DiscountSchemaBreak> queryFilter,
-			@Nullable final ProductId productId)
+			@Nullable final ProductId productId,
+			final boolean allowCopyToSameSchema)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final ICompositeQueryFilter<I_M_DiscountSchemaBreak> breaksFromOtherPricingConditions = queryBL.createCompositeQueryFilter(I_M_DiscountSchemaBreak.class)
 				.setJoinAnd()
-				.addFilter(queryFilter)
-				.addNotEqualsFilter(I_M_DiscountSchemaBreak.COLUMNNAME_M_DiscountSchema_ID, pricingConditionsId.getDiscountSchemaId());
+				.addFilter(queryFilter);
+
+		if (!allowCopyToSameSchema)
+		{
+			breaksFromOtherPricingConditions
+
+					.addNotEqualsFilter(I_M_DiscountSchemaBreak.COLUMNNAME_M_DiscountSchema_ID, pricingConditionsId.getDiscountSchemaId());
+		}
 
 		final List<I_M_DiscountSchemaBreak> discountSchemaBreakRecords = retrieveDiscountSchemaBreakRecords(breaksFromOtherPricingConditions);
 
@@ -605,7 +615,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 	{
 		final Set<ProductId> distinctProductIds = retrieveDistinctProductIdsForSelection(selectionFilter);
 
-		if(distinctProductIds.isEmpty())
+		if (distinctProductIds.isEmpty())
 		{
 			return true;
 		}
@@ -641,7 +651,6 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		final List<Integer> distinctProductRecordIds = breaksQuery.listDistinct(I_M_DiscountSchemaBreak.COLUMNNAME_M_Product_ID, Integer.class);
 
 		return ProductId.ofRepoIds(distinctProductRecordIds);
-
 
 	}
 }
