@@ -127,7 +127,7 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 		}
 
 		final IHUProductStorage productStorage = fromHUStorage.getProductStorage(productId);
-		return productStorage.getQty().getAsBigDecimal();
+		return productStorage.getQty().toBigDecimal();
 
 	}
 

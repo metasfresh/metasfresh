@@ -435,7 +435,7 @@ class ProductsToPickRowsDataFactory
 
 		if (huProductStorage == null)
 		{
-			final I_C_UOM uom = productBL.getStockingUOM(productId);
+			final I_C_UOM uom = productBL.getStockUOM(productId);
 			return new ReservableStorage(productId, Quantity.zero(uom));
 		}
 		else

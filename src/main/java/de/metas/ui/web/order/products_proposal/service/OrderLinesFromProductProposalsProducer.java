@@ -140,7 +140,7 @@ public final class OrderLinesFromProductProposalsProducer
 		huPackingAware.setDateOrdered(order.getDateOrdered());
 		huPackingAware.setInDispute(false);
 
-		final UomId uomId = productBL.getStockingUOMId(fromRow.getProductId());
+		final UomId uomId = productBL.getStockUOMId(fromRow.getProductId());
 		huPackingAware.setM_Product_ID(fromRow.getProductId().getRepoId());
 		huPackingAware.setC_UOM_ID(uomId.getRepoId());
 		// huPackingAware.setM_AttributeSetInstance_ID(...);

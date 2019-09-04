@@ -2,6 +2,7 @@ package de.metas.ui.web.picking.pickingslot.process;
 
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_MISSING_SOURCE_HU;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKING_SLOT;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -11,6 +12,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -192,7 +194,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
 		return WEBUI_ProcessHelper.retrieveHUPIItemProducts(ctx,
 				productId,
-				shipmentSchedule.getC_BPartner(),
+				loadOutOfTrx(shipmentSchedule.getC_BPartner_ID(), I_C_BPartner.class),
 				true); // includeVirtualItem = true..similar case as with production
 	}
 
@@ -201,7 +203,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 	{
 		if (Objects.equals(PARAM_QTY_CU, parameter.getColumnName()))
 		{
-			return retrieveQtyToPick().getAsBigDecimal();
+			return retrieveQtyToPick().toBigDecimal();
 		}
 		else if (Objects.equals(PARAM_M_HU_PI_Item_Product_ID, parameter.getColumnName()))
 		{

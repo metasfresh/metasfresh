@@ -193,7 +193,7 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			{
 				assumeNotNull(basePrice, "If type={}, then the given basePrice may not be null; pricingConditionsBreak={}", type, pricingConditionsBreak);
 
-				final BigDecimal priceEntered = limitPrice(basePrice.getAsBigDecimal(), orderLineRecord);
+				final BigDecimal priceEntered = limitPrice(basePrice.toBigDecimal(), orderLineRecord);
 
 				orderLineRecord.setIsManualPrice(true);
 				orderLineRecord.setPriceEntered(priceEntered);
@@ -206,7 +206,7 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 				final Money fixedPrice = price.getFixedPrice();
 				Check.assumeNotNull(fixedPrice, "fixedPrice shall not be null for {}", price);
 
-				final BigDecimal priceEntered = limitPrice(fixedPrice.getAsBigDecimal(), orderLineRecord);
+				final BigDecimal priceEntered = limitPrice(fixedPrice.toBigDecimal(), orderLineRecord);
 
 				orderLineRecord.setIsManualPrice(true);
 				orderLineRecord.setPriceEntered(priceEntered);
@@ -216,11 +216,11 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			}
 
 			orderLineRecord.setIsManualDiscount(true);
-			orderLineRecord.setDiscount(pricingConditionsBreak.getDiscount().getValue());
+			orderLineRecord.setDiscount(pricingConditionsBreak.getDiscount().toBigDecimal());
 
 			orderLineRecord.setIsManualPaymentTerm(true); // make sure it's not overwritten by whatever the system comes up with when we save the orderLine.
 			orderLineRecord.setC_PaymentTerm_Override_ID(PaymentTermId.toRepoId(pricingConditionsBreak.getDerivedPaymentTermIdOrNull()));
-			orderLineRecord.setPaymentDiscount(Percent.getValueOrNull(pricingConditionsBreak.getPaymentDiscountOverrideOrNull()));
+			orderLineRecord.setPaymentDiscount(Percent.toBigDecimalOrNull(pricingConditionsBreak.getPaymentDiscountOverrideOrNull()));
 
 			//
 			// PriceActual & Discount
@@ -236,7 +236,7 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			}
 			//
 			orderLineRecord.setIsManualDiscount(true);
-			orderLineRecord.setDiscount(discountEffective.getValue());
+			orderLineRecord.setDiscount(discountEffective.toBigDecimal());
 			orderLineRecord.setPriceActual(priceActualEffective);
 
 		}
