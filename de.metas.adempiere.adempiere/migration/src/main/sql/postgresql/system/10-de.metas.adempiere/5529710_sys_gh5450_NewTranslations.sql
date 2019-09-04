@@ -399,6 +399,34 @@ UPDATE AD_Element_Trl SET Description='Von Basis derivierte PLV erlauben ',Updat
 
 
 
+-- 2019-09-04T11:28:06.659Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Description='Produktpreise  für diese Version erstellen', Name='Produktpreise erstellen',Updated=TO_TIMESTAMP('2019-09-04 14:28:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=103
+;
+
+-- 2019-09-04T11:28:43.981Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='Produktpreisefür diese Version erstellen', IsTranslated='Y', Name='Produktpreise erstellen',Updated=TO_TIMESTAMP('2019-09-04 14:28:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=103
+;
+
+-- 2019-09-04T11:28:55.085Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='Produktpreise für diese Version erstellen', Name='Produktpreise erstellen',Updated=TO_TIMESTAMP('2019-09-04 14:28:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=103
+;
+
+-- 2019-09-04T11:28:57.820Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2019-09-04 14:28:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=103
+;
+
+-- 2019-09-04T11:29:41.436Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='Create Product Prices', Help='Create product prices for this price list version based on the Base Pricelist Version and the discount schema.', Name='Create Product Prices',Updated=TO_TIMESTAMP('2019-09-04 14:29:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Process_ID=103
+;
+
+
+
+
 
 
 
