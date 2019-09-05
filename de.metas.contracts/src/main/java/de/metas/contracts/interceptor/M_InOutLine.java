@@ -1,5 +1,7 @@
 package de.metas.contracts.interceptor;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.contracts
@@ -26,6 +28,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.ModelValidator;
 
+import de.metas.adempiere.model.I_M_Product;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.util.Services;
@@ -44,7 +47,7 @@ public class M_InOutLine
 		}
 
 		flatrateBL.updateFlatrateDataEntryQty(
-				doc.getM_Product(),
+				loadOutOfTrx(doc.getM_Product_ID(),I_M_Product.class),
 				doc.getMovementQty(),
 				doc, // inOutLine
 				false); // subtract = false
@@ -58,7 +61,7 @@ public class M_InOutLine
 			return; // nothing to do/avoid NPE
 		}
 		flatrateBL.updateFlatrateDataEntryQty(
-				doc.getM_Product(),
+				loadOutOfTrx(doc.getM_Product_ID(),I_M_Product.class),
 				doc.getMovementQty(),
 				doc, // inOutLine
 				true); // subtract = true

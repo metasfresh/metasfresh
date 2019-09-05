@@ -449,7 +449,7 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		saveRecord(bpartner);
 
 		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
-		shipmentSchedule.setM_Warehouse(warehouse);
+		shipmentSchedule.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 		shipmentSchedule.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		shipmentSchedule.setM_Product_ID(20); // since we are mocking the result, the actual ID doesn't really matter right now
 

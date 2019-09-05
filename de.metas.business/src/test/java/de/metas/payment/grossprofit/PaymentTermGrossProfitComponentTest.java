@@ -72,7 +72,7 @@ public class PaymentTermGrossProfitComponentTest
 
 		// invoke the method under test
 		final Money result = component.applyToInput(Money.of(ONE, currencyId));
-		assertThat(result.getAsBigDecimal()).isEqualByComparingTo("0.97");
+		assertThat(result.toBigDecimal()).isEqualByComparingTo("0.97");
 	}
 
 	@Test
@@ -82,7 +82,7 @@ public class PaymentTermGrossProfitComponentTest
 
 		// invoke the method under test
 		final Money result = component.applyToInput(Money.of(ONE, currencyId));
-		assertThat(result.getAsBigDecimal()).isEqualByComparingTo("1");
+		assertThat(result.toBigDecimal()).isEqualByComparingTo("1");
 	}
 
 }

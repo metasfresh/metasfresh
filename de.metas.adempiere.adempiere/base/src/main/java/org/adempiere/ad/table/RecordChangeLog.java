@@ -36,7 +36,6 @@ import lombok.Value;
  */
 
 @Value
-
 public class RecordChangeLog
 {
 	String tableName;

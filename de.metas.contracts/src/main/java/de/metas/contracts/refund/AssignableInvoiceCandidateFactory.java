@@ -72,7 +72,7 @@ public class AssignableInvoiceCandidateFactory
 		final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository = new AssignmentToRefundCandidateRepository(refundInvoiceCandidateRepository);
 
 		final CurrencyRepository currenciesRepo = new CurrencyRepository();
-		
+
 		return new AssignableInvoiceCandidateFactory(assignmentToRefundCandidateRepository, currenciesRepo);
 	}
 

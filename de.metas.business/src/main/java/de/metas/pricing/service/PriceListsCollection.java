@@ -1,10 +1,12 @@
 package de.metas.pricing.service;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import de.metas.location.CountryId;
+import javax.annotation.Nullable;
+
 import org.compiere.model.I_M_PriceList;
 
 import com.google.common.base.Predicates;
@@ -12,9 +14,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAwares;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -47,7 +52,7 @@ import lombok.Value;
 public class PriceListsCollection
 {
 	private final PricingSystemId pricingSystemId;
-	@Getter
+	@Getter(AccessLevel.PRIVATE)
 	private final ImmutableList<I_M_PriceList> priceLists;
 
 	public PriceListsCollection(
@@ -62,12 +67,36 @@ public class PriceListsCollection
 	{
 		return getPriceLists()
 				.stream()
-				.map(priceList -> CountryId.ofRepoIdOrNull(priceList.getC_Country_ID()))
+				.map(priceList -> extractCountryIdOrNull(priceList))
 				.filter(Predicates.notNull())
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public ImmutableList<I_M_PriceList> filterAndList(@NonNull final CountryId countryId, final SOTrx soTrx)
+	private static CountryId extractCountryIdOrNull(final I_M_PriceList priceList)
+	{
+		return CountryId.ofRepoIdOrNull(priceList.getC_Country_ID());
+	}
+
+	public Optional<PriceListId> getPriceListId(@NonNull final CountryId countryId, @NonNull final SOTrx soTrx)
+	{
+		return getPriceList(countryId, soTrx)
+				.map(priceList -> extractPriceListId(priceList));
+	}
+
+	public Optional<I_M_PriceList> getPriceList(@NonNull final CountryId countryId, @NonNull final SOTrx soTrx)
+	{
+		return getPriceLists()
+				.stream()
+				.filter(PriceListFilter.builder()
+						.countryIds(ImmutableSet.of(countryId))
+						.acceptNoCountry(true)
+						.soTrx(soTrx)
+						.build())
+				.sorted(RepoIdAwares.comparingNullsLast(PriceListsCollection::extractCountryIdOrNull))
+				.findFirst();
+	}
+
+	public ImmutableList<I_M_PriceList> filterAndList(@NonNull final CountryId countryId, @Nullable final SOTrx soTrx)
 	{
 		return getPriceLists()
 				.stream()
@@ -94,8 +123,13 @@ public class PriceListsCollection
 				.filter(PriceListFilter.builder()
 						.countryIds(ImmutableSet.copyOf(countryIds))
 						.build())
-				.map(priceList -> PriceListId.ofRepoId(priceList.getM_PriceList_ID()))
+				.map(priceList -> extractPriceListId(priceList))
 				.distinct();
+	}
+
+	private static PriceListId extractPriceListId(final I_M_PriceList priceList)
+	{
+		return PriceListId.ofRepoId(priceList.getM_PriceList_ID());
 	}
 
 	@Value

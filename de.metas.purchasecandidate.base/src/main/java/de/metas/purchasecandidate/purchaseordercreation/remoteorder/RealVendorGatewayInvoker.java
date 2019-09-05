@@ -164,7 +164,7 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 	private static PurchaseOrderRequestItem createPurchaseOrderRequestItem(final PurchaseCandidate purchaseCandidate)
 	{
 		final Quantity qtyToPurchase = purchaseCandidate.getQtyToPurchase();
-		final ProductAndQuantity productAndQuantity = ProductAndQuantity.of(purchaseCandidate.getVendorProductNo(), qtyToPurchase.getAsBigDecimal(), qtyToPurchase.getUOMId());
+		final ProductAndQuantity productAndQuantity = ProductAndQuantity.of(purchaseCandidate.getVendorProductNo(), qtyToPurchase.toBigDecimal(), qtyToPurchase.getUOMId());
 		return PurchaseOrderRequestItem.builder()
 				.purchaseCandidateId(PurchaseCandidateId.getRepoIdOr(purchaseCandidate.getId(), -1))
 				.productAndQuantity(productAndQuantity)

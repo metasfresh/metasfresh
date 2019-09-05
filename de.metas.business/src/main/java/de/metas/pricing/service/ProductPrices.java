@@ -1,5 +1,6 @@
 package de.metas.pricing.service;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -159,7 +160,7 @@ public class ProductPrices
 		final IProductBL productBL = Services.get(IProductBL.class);
 		final String productName = productBL.getProductValueAndName(ProductId.ofRepoId(someMainProductPrice.getM_Product_ID()));
 
-		final I_M_PriceList_Version plv = someMainProductPrice.getM_PriceList_Version();
+		final I_M_PriceList_Version plv = load(someMainProductPrice.getM_PriceList_Version_ID(), I_M_PriceList_Version.class);
 		final I_M_PriceList pl = plv.getM_PriceList();
 		final I_M_PricingSystem ps = pl.getM_PricingSystem();
 
@@ -186,9 +187,12 @@ public class ProductPrices
 			final Properties ctx = InterfaceWrapperHelper.getCtx(anyDublicatedMainProductPrice);
 			final IMsgBL msgBL = Services.get(IMsgBL.class);
 
+			final I_M_Product productRecord = load(anyDublicatedMainProductPrice.getM_Product_ID(), I_M_Product.class);
+			final I_M_PriceList_Version plvRecord = load(anyDublicatedMainProductPrice.getM_PriceList_Version_ID(), I_M_PriceList_Version.class);
+
 			return msgBL.getMsg(ctx,
 					"M_ProductPrice_DublicateMainPrice",
-					new Object[] { anyDublicatedMainProductPrice.getM_Product().getValue(), anyDublicatedMainProductPrice.getM_PriceList_Version().getName() });
+					new Object[] { productRecord.getValue(), plvRecord.getName() });
 		}
 	}
 
@@ -256,7 +260,7 @@ public class ProductPrices
 			return pp;
 		}
 
-		pp.setM_PriceList_Version(plv);
+		pp.setM_PriceList_Version_ID(plv.getM_PriceList_Version_ID());
 		pp.setM_Product_ID(ppRequest.getProductId());
 		pp.setSeqNo(ppRequest.getSeqNo());
 		pp.setPriceLimit(price);

@@ -6,6 +6,7 @@ import java.util.Map;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocation.BPartnerLocationBuilder;
@@ -42,7 +43,7 @@ public class ShortTermLocationIndex
 {
 	Map<BPartnerLocationId, BPartnerLocation> id2Location;
 	Map<ExternalId, BPartnerLocation> externalId2Location;
-	Map<String, BPartnerLocation> gln2Location;
+	Map<GLN, BPartnerLocation> gln2Location;
 	BPartnerId bpartnerId;
 	BPartnerComposite bpartnerComposite;
 
@@ -81,7 +82,7 @@ public class ShortTermLocationIndex
 			case EXTERNAL_ID:
 				return externalId2Location.get(locationIdentifier.asExternalId());
 			default:
-				throw new InvalidIdentifierException(locationIdentifier.toString());
+				throw new InvalidIdentifierException(locationIdentifier);
 		}
 	}
 
@@ -105,7 +106,7 @@ public class ShortTermLocationIndex
 				}
 				break;
 			case GLN:
-				final String gln = locationIdentifier.asGLN();
+				final GLN gln = locationIdentifier.asGLN();
 				location = locationBuilder.gln(gln).build();
 				gln2Location.put(gln, location);
 				break;
@@ -114,7 +115,7 @@ public class ShortTermLocationIndex
 				externalId2Location.put(locationIdentifier.asExternalId(), location);
 				break;
 			default:
-				throw new InvalidIdentifierException(locationIdentifier.toString());
+				throw new InvalidIdentifierException(locationIdentifier);
 		}
 
 		bpartnerComposite

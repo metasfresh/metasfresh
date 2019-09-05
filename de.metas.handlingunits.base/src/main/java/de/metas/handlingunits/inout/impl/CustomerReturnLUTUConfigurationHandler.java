@@ -1,5 +1,7 @@
 package de.metas.handlingunits.inout.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.math.BigDecimal;
 
 import org.adempiere.warehouse.LocatorId;
@@ -81,7 +83,7 @@ public class CustomerReturnLUTUConfigurationHandler
 
 		final I_M_HU_PI_Item_Product tuPIItemProduct = getM_HU_PI_Item_Product(documentLine);
 		final ProductId cuProductId = ProductId.ofRepoIdOrNull(documentLine.getM_Product_ID());
-		final I_C_UOM cuUOM = documentLine.getC_UOM();
+		final I_C_UOM cuUOM = loadOutOfTrx(documentLine.getC_UOM_ID(), I_C_UOM.class);
 
 		final I_C_BPartner bpartner = documentLine.getM_InOut().getC_BPartner();
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuFactory.createLUTUConfiguration(

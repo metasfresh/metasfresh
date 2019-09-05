@@ -18,10 +18,13 @@ import org.adempiere.exceptions.AdempiereException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.GLN;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.organization.OrgId;
@@ -82,13 +85,13 @@ public final class BPartnerComposite
 		this.contacts = new ArrayList<>(coalesce(contacts, ImmutableList.of()));
 	}
 
-	public ImmutableList<String> extractLocationGlns()
+	public ImmutableSet<GLN> extractLocationGlns()
 	{
 		return this.locations
 				.stream()
 				.map(BPartnerLocation::getGln)
-				.filter(gln -> !isEmpty(gln, true))
-				.collect(ImmutableList.toImmutableList());
+				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public BPartnerContact extractContact(@NonNull final BPartnerContactId contactId)

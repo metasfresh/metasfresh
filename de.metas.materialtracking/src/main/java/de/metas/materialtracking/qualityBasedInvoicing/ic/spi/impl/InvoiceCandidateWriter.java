@@ -416,10 +416,10 @@ public class InvoiceCandidateWriter
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final Quantity qtyOrdered = uomConversionBL.convertToProductUOM(qty, ProductId.ofRepoId(product.getM_Product_ID()));
-		ic.setQtyOrdered(qtyOrdered.getAsBigDecimal());
+		ic.setQtyOrdered(qtyOrdered.toBigDecimal());
 
 		ic.setQtyToInvoice(BigDecimal.ZERO); // to be computed
-		ic.setQtyEntered(qty.getAsBigDecimal());
+		ic.setQtyEntered(qty.toBigDecimal());
 		ic.setC_UOM_ID(UomId.toRepoId(qty.getUomId()));
 
 		ic.setDateOrdered(materialTrackingPPOrderBL.getDateOfProduction(order.getPP_Order()));
@@ -432,13 +432,13 @@ public class InvoiceCandidateWriter
 
 		//
 		// Pricing
-		ic.setM_PricingSystem_ID(PricingSystemId.getRepoId(pricingResult.getPricingSystemId()));
+		ic.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingResult.getPricingSystemId()));
 		ic.setM_PriceList_Version_ID(PriceListVersionId.toRepoId(pricingResult.getPriceListVersionId()));
 		ic.setPrice_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId()));
 		ic.setPriceEntered(pricingResult.getPriceStd());
 		ic.setPriceActual(pricingResult.getPriceStd());
 		ic.setIsTaxIncluded(pricingResult.isTaxIncluded()); // 08457: Configure new IC from pricing result
-		ic.setDiscount(pricingResult.getDiscount().getValue());
+		ic.setDiscount(pricingResult.getDiscount().toBigDecimal());
 		ic.setC_Currency_ID(pricingResult.getCurrencyRepoId());
 
 		// InvoiceRule

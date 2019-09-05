@@ -32,6 +32,7 @@ import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentTags;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse;
+import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse.Status;
 import lombok.NonNull;
 
 @Repository
@@ -62,7 +63,7 @@ public class InvoiceRejectionDetailRepo
 		rejectionDetail.setResponsiblePerson(response.getResponsiblePerson());
 		rejectionDetail.setPhone(response.getPhone());
 		rejectionDetail.setEMail(response.getEmail());
-		rejectionDetail.setStatus(response.getStatus().name());
+		rejectionDetail.setStatus(Status.toStringOrNull(response.getStatus()));
 		rejectionDetail.setAD_Org_ID(response.getBillerOrg());
 
 		return rejectionDetail;

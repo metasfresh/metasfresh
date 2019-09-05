@@ -1,5 +1,7 @@
 package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.materialtracking
@@ -38,9 +40,11 @@ import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
+import de.metas.product.ProductId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -165,15 +169,15 @@ import de.metas.util.Services;
 		//
 		// Vendor Product
 		final int productId = _product.getM_Product_ID();
-		final I_C_UOM productUOM = uomDAO.getById(_product.getC_UOM_ID());
-		Check.assumeNotNull(productUOM, "productUOM not null");
+		final UomId productUomId = UomId.ofRepoIdOrNull(_product.getC_UOM_ID());
+		Check.assumeNotNull(productUomId, "UomId of product={} may not be null", _product);
 
 		// Define the conversion context (in case we need it)
-		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(_product);
+		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(ProductId.ofRepoId(_product.getM_Product_ID()));
 
 		//
 		// UOM
-		final I_C_UOM qtyReceivedTotalUOM = firstInOutLine.getC_UOM();
+		final UomId qtyReceivedTotalUomId = UomId.ofRepoId(firstInOutLine.getC_UOM_ID());
 
 		//
 		// Iterate Receipt Lines linked to this invoice candidate, extract & aggregate informations from them
@@ -198,7 +202,7 @@ import de.metas.util.Services;
 			}
 
 			final BigDecimal qtyReceived = inoutLine.getMovementQty();
-			final BigDecimal qtyReceivedConv = uomConversionBL.convertQty(uomConversionCtx, qtyReceived, productUOM, qtyReceivedTotalUOM);
+			final BigDecimal qtyReceivedConv = uomConversionBL.convertQty(uomConversionCtx, qtyReceived, productUomId, qtyReceivedTotalUomId);
 			qtyReceivedTotal = qtyReceivedTotal.add(qtyReceivedConv);
 
 			final IHandlingUnitsInfo handlingUnitsInfo = handlingUnitsInfoFactory.createFromModel(inoutLine);
@@ -219,7 +223,7 @@ import de.metas.util.Services;
 		//
 		// Set loaded values
 		_qtyReceived = qtyReceivedTotal;
-		_qtyReceivedUOM = qtyReceivedTotalUOM;
+		_qtyReceivedUOM = loadOutOfTrx(qtyReceivedTotalUomId, I_C_UOM.class);
 		_handlingUnitsInfo = handlingUnitsInfoTotal;
 		_loaded = true;
 	}

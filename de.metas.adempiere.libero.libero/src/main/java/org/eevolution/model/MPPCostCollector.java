@@ -619,6 +619,6 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 
 	private I_C_UOM getProductStockingUOM()
 	{
-		return Services.get(IProductBL.class).getStockingUOM(getM_Product_ID());
+		return Services.get(IProductBL.class).getStockUOM(getM_Product_ID());
 	}
 }

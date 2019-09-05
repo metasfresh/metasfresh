@@ -14,7 +14,7 @@ public class X_C_OLCandAggAndOrder extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2068366896L;
+	private static final long serialVersionUID = -1223608988L;
 
     /** Standard Constructor */
     public X_C_OLCandAggAndOrder (Properties ctx, int C_OLCandAggAndOrder_ID, String trxName)
@@ -46,7 +46,7 @@ public class X_C_OLCandAggAndOrder extends org.compiere.model.PO implements I_C_
     }
 
 	@Override
-	public org.compiere.model.I_AD_Column getAD_Column_OLCand() throws RuntimeException
+	public org.compiere.model.I_AD_Column getAD_Column_OLCand()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Column_OLCand_ID, org.compiere.model.I_AD_Column.class);
 	}
@@ -142,7 +142,7 @@ public class X_C_OLCandAggAndOrder extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public de.metas.ordercandidate.model.I_C_OLCandProcessor getC_OLCandProcessor() throws RuntimeException
+	public de.metas.ordercandidate.model.I_C_OLCandProcessor getC_OLCandProcessor()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_OLCandProcessor_ID, de.metas.ordercandidate.model.I_C_OLCandProcessor.class);
 	}

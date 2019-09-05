@@ -120,16 +120,22 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void deleteAssignment(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
+	public void deleteAssignment(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		if (refundInvoiceCandidateService.isRefundInvoiceCandidateRecord(invoiceCandidateRecord))
+		if (refundInvoiceCandidateService.isRefundInvoiceCandidateRecord(icRecord))
 		{
-			final RefundInvoiceCandidate refundCandidate = refundInvoiceCandidateRepository.ofRecord(invoiceCandidateRecord);
+			final RefundInvoiceCandidate refundCandidate = refundInvoiceCandidateRepository.ofRecord(icRecord);
 			invoiceCandidateAssignmentService.removeAllAssignments(refundCandidate);
 		}
 		else
 		{
-			final AssignableInvoiceCandidate assignableCandidate = assignableInvoiceCandidateRepository.ofRecord(invoiceCandidateRecord);
+			final Timestamp invoicableFromDate = getValueOverrideOrValue(icRecord, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
+			if (invoicableFromDate == null)
+			{
+				return; // this IC was not yet once validated; it's certainly no assigned, and we can't create an AssignableInvoiceCandidate from it, because invoicableFromDate may not be null
+			}
+
+			final AssignableInvoiceCandidate assignableCandidate = assignableInvoiceCandidateRepository.ofRecord(icRecord);
 			if (assignableCandidate.isAssigned())
 			{
 				invoiceCandidateAssignmentService.unassignCandidate(assignableCandidate);

@@ -48,8 +48,7 @@ public class MaterialTrackingReportBL implements IMaterialTrackingReportBL
 		final I_M_Material_Tracking_Report_Line newLine = InterfaceWrapperHelper.newInstance(I_M_Material_Tracking_Report_Line.class, iol);
 		newLine.setM_Material_Tracking_Report(report);
 
-		final org.compiere.model.I_M_Product product = iol.getM_Product();
-		newLine.setM_Product(product);
+		newLine.setM_Product_ID(iol.getM_Product_ID());
 
 		final I_M_AttributeSetInstance asi = createASIFromRef(iol);
 		newLine.setM_AttributeSetInstance(asi);

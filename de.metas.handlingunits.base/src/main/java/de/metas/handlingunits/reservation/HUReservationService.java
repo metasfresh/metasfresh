@@ -244,7 +244,7 @@ public class HUReservationService
 
 		if (result.getValue() == null)
 		{
-			final I_C_UOM stockingUomRecord = Services.get(IProductBL.class).getStockingUOM(request.getProductId());
+			final I_C_UOM stockingUomRecord = Services.get(IProductBL.class).getStockUOM(request.getProductId());
 			return Quantity.zero(stockingUomRecord);
 		}
 

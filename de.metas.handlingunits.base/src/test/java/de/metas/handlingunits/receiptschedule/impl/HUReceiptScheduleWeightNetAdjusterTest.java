@@ -1,5 +1,7 @@
 package de.metas.handlingunits.receiptschedule.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -141,7 +143,7 @@ public class HUReceiptScheduleWeightNetAdjusterTest extends AbstractRSAllocation
 				createReceiptSchedule(BigDecimal.valueOf(4300))
 				);
 
-		final I_C_UOM cuUOM = receiptSchedules.get(0).getC_UOM();
+		final I_C_UOM cuUOM = load(receiptSchedules.get(0).getC_UOM_ID(), I_C_UOM.class);
 
 		final ReceiptScheduleHUGenerator huGenerator = ReceiptScheduleHUGenerator.newInstance(huContext)
 				.setQtyToAllocateTarget(new Quantity(BigDecimal.valueOf(4300), cuUOM)) // i.e. 10xPaloxe

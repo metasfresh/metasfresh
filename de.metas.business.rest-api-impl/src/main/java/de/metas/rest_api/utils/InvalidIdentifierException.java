@@ -1,5 +1,7 @@
 package de.metas.rest_api.utils;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 
 /*
@@ -24,11 +26,22 @@ import org.adempiere.exceptions.AdempiereException;
  * #L%
  */
 
+@SuppressWarnings("serial")
 public class InvalidIdentifierException extends AdempiereException
 {
-	private static final long serialVersionUID = -1973403699430819624L;
+	public InvalidIdentifierException(final IdentifierString invalidIdentifier)
+	{
+		super(invalidIdentifier != null ? invalidIdentifier.toString() : null);
+	}
 
-	public InvalidIdentifierException(String invalidIdentifierString)
+	public InvalidIdentifierException(@Nullable final String invalidIdentifierString)
+	{
+		this(invalidIdentifierString, (Throwable)null);
+	}
+
+	public InvalidIdentifierException(
+			@Nullable final String invalidIdentifierString,
+			@Nullable final Throwable cause)
 	{
 		super(invalidIdentifierString);
 	}

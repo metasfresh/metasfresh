@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.api.impl;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static java.math.BigDecimal.ZERO;
 
 /*
@@ -177,7 +178,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 				.create()
 				.aggregate(I_M_InOutLine.COLUMNNAME_MovementQty, Aggregate.SUM, BigDecimal.class);
 
-		return CoalesceUtil.coalesce(qty, ZERO);
+		return coalesce(qty, ZERO);
 	}
 
 	@Override
@@ -193,7 +194,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 				.create()
 				.aggregate(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_QtyPicked, Aggregate.SUM, BigDecimal.class);
 
-		return CoalesceUtil.coalesce(qty, ZERO);
+		return coalesce(qty, ZERO);
 	}
 
 	@Override

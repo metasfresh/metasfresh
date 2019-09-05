@@ -323,8 +323,8 @@ public class PPOrderQualityCalculator
 				previousQtyDeliveredAvg = getQtyDeliveredAvg(previousProductionMaterial, qtyDelivered.getUOM());
 			}
 
-			final Quantity qtyDeliveredAvg = qtyDelivered.weightedAverage(previousQtyDeliveredAvg.getAsBigDecimal(), previousInspectionNumber);
-			productionMaterial.setQM_QtyDeliveredAvg(qtyDeliveredAvg.getAsBigDecimal());
+			final Quantity qtyDeliveredAvg = qtyDelivered.weightedAverage(previousQtyDeliveredAvg.toBigDecimal(), previousInspectionNumber);
+			productionMaterial.setQM_QtyDeliveredAvg(qtyDeliveredAvg.toBigDecimal());
 
 			save(productionMaterial);
 		}

@@ -32,8 +32,6 @@ public interface I_C_UOM_Conversion
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_AD_Client>(I_C_UOM_Conversion.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -59,14 +57,40 @@ public interface I_C_UOM_Conversion
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_AD_Org>(I_C_UOM_Conversion.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Get Erstellt.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCreated();
+
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_C_UOM_Conversion, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_UOM_Conversion, Object>(I_C_UOM_Conversion.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Erstellt durch.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCreatedBy();
+
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_AD_User>(I_C_UOM_Conversion.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Umrechnung Maßeinheit.
@@ -113,18 +137,14 @@ public interface I_C_UOM_Conversion
 	 */
 	public int getC_UOM_ID();
 
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
     /** Column definition for C_UOM_ID */
     public static final org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_C_UOM>(I_C_UOM_Conversion.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
     /** Column name C_UOM_ID */
     public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Set Maßeinheit Nach.
-	 * Target or destination Unit of Measure
+	 * Set Ziel-Maßeinheit.
+	 * Maßeinheit, in die eine bestimmte Menge konvertiert werden soll
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -133,8 +153,8 @@ public interface I_C_UOM_Conversion
 	public void setC_UOM_To_ID (int C_UOM_To_ID);
 
 	/**
-	 * Get Maßeinheit Nach.
-	 * Target or destination Unit of Measure
+	 * Get Ziel-Maßeinheit.
+	 * Maßeinheit, in die eine bestimmte Menge konvertiert werden soll
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -142,48 +162,14 @@ public interface I_C_UOM_Conversion
 	 */
 	public int getC_UOM_To_ID();
 
-	public org.compiere.model.I_C_UOM getC_UOM_To();
-
-	public void setC_UOM_To(org.compiere.model.I_C_UOM C_UOM_To);
-
     /** Column definition for C_UOM_To_ID */
     public static final org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_C_UOM> COLUMN_C_UOM_To_ID = new org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_C_UOM>(I_C_UOM_Conversion.class, "C_UOM_To_ID", org.compiere.model.I_C_UOM.class);
     /** Column name C_UOM_To_ID */
     public static final String COLUMNNAME_C_UOM_To_ID = "C_UOM_To_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getCreated();
-
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_UOM_Conversion, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_UOM_Conversion, Object>(I_C_UOM_Conversion.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Erstellt durch.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getCreatedBy();
-
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_AD_User>(I_C_UOM_Conversion.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
 	 * Set Divisor.
-	 * To convert Source number to Target number, the Source is divided
+	 * Der Divisor ist der Kehrwert des Umrechnungsfaktors.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -193,7 +179,7 @@ public interface I_C_UOM_Conversion
 
 	/**
 	 * Get Divisor.
-	 * To convert Source number to Target number, the Source is divided
+	 * Der Divisor ist der Kehrwert des Umrechnungsfaktors.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -232,6 +218,31 @@ public interface I_C_UOM_Conversion
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Ziel ist Catch-Maßeinheit.
+	 * Legt fest ob die Ziel-Maßeinheit die Parallel-Maßeinheit des Produktes ist, auf die bei einer Catch-Weight-Abrechnung zurückgegriffen wird
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsCatchUOMForProduct (boolean IsCatchUOMForProduct);
+
+	/**
+	 * Get Ziel ist Catch-Maßeinheit.
+	 * Legt fest ob die Ziel-Maßeinheit die Parallel-Maßeinheit des Produktes ist, auf die bei einer Catch-Weight-Abrechnung zurückgegriffen wird
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isCatchUOMForProduct();
+
+    /** Column definition for IsCatchUOMForProduct */
+    public static final org.adempiere.model.ModelColumn<I_C_UOM_Conversion, Object> COLUMN_IsCatchUOMForProduct = new org.adempiere.model.ModelColumn<I_C_UOM_Conversion, Object>(I_C_UOM_Conversion.class, "IsCatchUOMForProduct", null);
+    /** Column name IsCatchUOMForProduct */
+    public static final String COLUMNNAME_IsCatchUOMForProduct = "IsCatchUOMForProduct";
+
+	/**
 	 * Set Produkt.
 	 * Produkt, Leistung, Artikel
 	 *
@@ -250,10 +261,6 @@ public interface I_C_UOM_Conversion
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Product_ID();
-
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
 
     /** Column definition for M_Product_ID */
     public static final org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_M_Product>(I_C_UOM_Conversion.class, "M_Product_ID", org.compiere.model.I_M_Product.class);

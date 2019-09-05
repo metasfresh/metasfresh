@@ -1,14 +1,18 @@
 package de.metas.bpartner.service;
 
-import static de.metas.util.Check.errorIf;
 import static de.metas.util.Check.isEmpty;
 import static de.metas.util.lang.CoalesceUtil.coalesce;
 
+import java.util.Set;
+
 import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.GLN;
 import de.metas.organization.OrgId;
 import de.metas.util.rest.ExternalId;
 import lombok.Builder;
@@ -45,12 +49,13 @@ import lombok.Value;
 @Value
 public class BPartnerQuery
 {
-	BPartnerId bBartnerId;
+	BPartnerId bPartnerId;
 	ExternalId externalId;
 	String bpartnerValue;
 	String bpartnerName;
-	String locationGln;
+	ImmutableSet<GLN> glns;
 
+	@Singular
 	ImmutableSet<OrgId> onlyOrgIds;
 
 	boolean outOfTrx;
@@ -58,33 +63,41 @@ public class BPartnerQuery
 
 	@Builder
 	private BPartnerQuery(
-			@Nullable final BPartnerId bBartnerId,
+			@Nullable final BPartnerId bPartnerId,
 			@Nullable final ExternalId externalId,
 			@Nullable final String bpartnerValue,
 			@Nullable final String bpartnerName,
-			@Nullable final String locationGln,
+			@NonNull @Singular final Set<GLN> glns,
 			//
-			@NonNull @Singular final ImmutableSet<OrgId> onlyOrgIds,
+			@NonNull @Singular final Set<OrgId> onlyOrgIds,
 			//
 			@Nullable final Boolean outOfTrx,
 			@Nullable final Boolean failIfNotExists)
 	{
 
-		this.bBartnerId = bBartnerId;
+		this.bPartnerId = bPartnerId;
 		this.bpartnerValue = bpartnerValue;
 		this.bpartnerName = bpartnerName;
-		this.locationGln = locationGln;
+		this.glns = ImmutableSet.copyOf(glns);
 		this.externalId = externalId;
-		errorIf(bBartnerId == null
-				&& isEmpty(bpartnerValue, true)
-				&& isEmpty(bpartnerName, true)
-				&& externalId == null
-				&& isEmpty(locationGln, true),
-				"At least one of the given bpartnerValue, bpartnerName, locationGln or externalId needs to be non-empty");
 
-		this.onlyOrgIds = onlyOrgIds;
+		this.onlyOrgIds = ImmutableSet.copyOf(onlyOrgIds);
 
 		this.outOfTrx = coalesce(outOfTrx, true);
 		this.failIfNotExists = coalesce(failIfNotExists, false);
+
+		validate();
+	}
+
+	private void validate()
+	{
+		if (bPartnerId == null
+				&& isEmpty(bpartnerValue, true)
+				&& isEmpty(bpartnerName, true)
+				&& externalId == null
+				&& isEmpty(glns))
+		{
+			throw new AdempiereException("At least one of the given bpartnerValue, bpartnerName, glns or externalId needs to be non-empty: " + this);
+		}
 	}
 }

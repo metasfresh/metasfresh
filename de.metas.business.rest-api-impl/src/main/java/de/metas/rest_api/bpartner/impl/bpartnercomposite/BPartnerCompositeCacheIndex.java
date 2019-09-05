@@ -3,13 +3,14 @@ package de.metas.rest_api.bpartner.impl.bpartnercomposite;
 import static de.metas.util.Check.isEmpty;
 
 import java.util.Collection;
-import java.util.List;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.cache.CacheIndexDataAdapter;
 import de.metas.rest_api.MetasfreshId;
@@ -53,8 +54,8 @@ public final class BPartnerCompositeCacheIndex implements CacheIndexDataAdapter<
 			result.add(BPartnerCompositeLookupKey.ofCode(value));
 		}
 
-		final List<String> locationGlns = record.extractLocationGlns();
-		for (final String locationGln : locationGlns)
+		final ImmutableSet<GLN> locationGlns = record.extractLocationGlns();
+		for (final GLN locationGln : locationGlns)
 		{
 			result.add(BPartnerCompositeLookupKey.ofGln(locationGln));
 		}
