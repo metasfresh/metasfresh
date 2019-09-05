@@ -21,12 +21,9 @@
  */
 
 import { Attribute, AttributeSet, AttributeValue } from '../../support/utils/attribute';
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 import { Builder } from '../../support/utils/builder';
 import { Product, ProductCategory } from '../../support/utils/product';
-import { PackingMaterial } from '../../support/utils/packing_material';
-import { PackingInstructions } from '../../support/utils/packing_instructions';
-import { PackingInstructionsVersion } from '../../support/utils/packing_instructions_version';
 import { ProductPrice } from '../../support/utils/product_price';
 import { RewriteURL } from '../../support/utils/constants';
 import { ProductPrices } from '../../page_objects/product_prices';
@@ -34,45 +31,76 @@ import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters }
 
 // task: https://github.com/metasfresh/metasfresh-e2e/issues/233
 
-const date = humanReadableNow();
-
-// Price Entities
-const priceSystemName = `PriceSystem_${date}`;
-const priceListName = `PriceList_${date}`;
-const priceListVersionName = `PriceListVersion_${date}`;
+let priceSystemName;
+let priceListName;
+let priceListVersionName;
 
 // Attribute and AttributeSet
-const attributeName1 = `Attribute1_${date}`;
-const attributeName2 = `Attribute2_${date}`;
-const attributeName3 = `Attribute3_${date}`;
-const attributeValue1 = `AttributeValue1`;
-const attributeValue2 = `AttributeValue2`;
-const attributeSetName1 = `AttributeSet1_${date}`;
-const attributeSetName2 = `AttributeSet2_${date}`;
+let attributeName1;
+let attributeName2;
+let attributeName3;
+let attributeValue1;
+let attributeValue2;
+let attributeSetName1;
+let attributeSetName2;
 
 // ProductCategory
-const productCategoryName1 = `ProductCategory1_${date}`;
-const productCategoryName2 = `ProductCategory2_${date}`;
+let productCategoryName1;
+let productCategoryName2;
 
 // Packing
-const productForPacking1 = `ProductPackingMaterial1_${date}`;
-const productForPacking2 = `ProductPackingMaterial2_${date}`;
-const packingInstructionsName1 = `ProductPackingInstructions1_${date}`;
-const packingInstructionsName2 = `ProductPackingInstructions2_${date}`;
+let productForPacking1;
+let productForPacking2;
+let packingInstructionsName1;
+let packingInstructionsName2;
 
 // Product
-const productType = 'Item';
-const productName1 = `Product1_${date}`;
-const productName2 = `Product2_${date}`;
-const productName3 = `Product3_${date}`;
+let productType;
+let productName1;
+let productName2;
+let productName3;
 
 // ProductPrice
-const standardPrice = 123.456;
-const taxCategory = 'Regular Tax Rate 19% (Germany)';
+let standardPrice;
+let taxCategory;
 
 // test variables
 let productID1;
 let productID2;
+
+it('Read fixture and prepare the names', function() {
+  cy.fixture('price/change_product_prices_and_add_a_new_one.json').then(f => {
+    priceSystemName = appendHumanReadableNow(f['priceSystemName']);
+    priceListName = appendHumanReadableNow(f['priceListName']);
+    priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
+
+    attributeName1 = appendHumanReadableNow(f['attributeName1']);
+    attributeName2 = appendHumanReadableNow(f['attributeName2']);
+    attributeName3 = appendHumanReadableNow(f['attributeName3']);
+
+    attributeValue1 = f['attributeValue1'];
+    attributeValue2 = f['attributeValue2'];
+
+    attributeSetName1 = appendHumanReadableNow(f['attributeSetName1']);
+    attributeSetName2 = appendHumanReadableNow(f['attributeSetName2']);
+
+    productCategoryName1 = appendHumanReadableNow(f['productCategoryName1']);
+    productCategoryName2 = appendHumanReadableNow(f['productCategoryName2']);
+
+    productForPacking1 = appendHumanReadableNow(f['productForPacking1']);
+    productForPacking2 = appendHumanReadableNow(f['productForPacking2']);
+    packingInstructionsName1 = appendHumanReadableNow(f['packingInstructionsName1']);
+    packingInstructionsName2 = appendHumanReadableNow(f['packingInstructionsName2']);
+
+    productType = f['productType'];
+    productName1 = appendHumanReadableNow(f['productName1']);
+    productName2 = appendHumanReadableNow(f['productName2']);
+    productName3 = appendHumanReadableNow(f['productName3']);
+
+    standardPrice = f['standardPrice'];
+    taxCategory = f['taxCategory'];
+  });
+});
 
 // ===========================
 // create test data
@@ -83,10 +111,13 @@ describe('Create Price data', function() {
 });
 
 describe('Create Attributes and AttributeSets', function() {
-  createAttribute(attributeName1, attributeValue1, attributeValue2);
-  createAttribute(attributeName2, attributeValue1, attributeValue2);
-  createAttribute(attributeName3, attributeValue1, attributeValue2);
-
+  it('Create attributes', function() {
+    createAttribute(attributeName1, attributeValue1, attributeValue2);
+    createAttribute(attributeName2, attributeValue1, attributeValue2);
+    createAttribute(attributeName3, attributeValue1, attributeValue2);
+  });
+});
+describe('Create Attributes and AttributeSets', function() {
   it('Create AttributeSet1', function() {
     // eslint-disable-next-line
     new AttributeSet(attributeSetName1)
@@ -94,7 +125,8 @@ describe('Create Attributes and AttributeSets', function() {
       .addAttribute(attributeName2)
       .apply();
   });
-
+});
+describe('Create Attributes and AttributeSets', function() {
   it('Create AttributeSet2', function() {
     // eslint-disable-next-line
     new AttributeSet(attributeSetName2)
@@ -105,13 +137,17 @@ describe('Create Attributes and AttributeSets', function() {
 });
 
 describe('Create Product Categories', function() {
-  createProductCategory(productCategoryName1, attributeSetName1);
-  createProductCategory(productCategoryName2, attributeSetName2);
+  it('Create Product Categories with attribute sets', function() {
+    createProductCategory(productCategoryName1, attributeSetName1);
+    createProductCategory(productCategoryName2, attributeSetName2);
+  });
 });
-
-createPackingEntities(productForPacking1, packingInstructionsName1);
-createPackingEntities(productForPacking2, packingInstructionsName2);
-
+describe('Create packing entities', function() {
+  it('Create packing entities and instructions', function() {
+    createPackingEntities(productForPacking1, packingInstructionsName1);
+    createPackingEntities(productForPacking2, packingInstructionsName2);
+  });
+});
 describe('Create the 3 products ', function() {
   it('Create product 1', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
@@ -152,160 +188,83 @@ describe('Create the 3 products ', function() {
 // begin test
 
 describe('Create ProductPrices for Product 1', function() {
-  const productName = productName1;
-  const expectedNumberOfRows = 1;
+  it('Create ProductPrices with attributes for Product 1', function() {
+    const productName = productName1;
+    const expectedNumberOfRows = 1;
+    createProductPriceWithAttributes(productName);
 
-  createProductPriceWithAttributes(productName);
-  it('Save productId', function() {
     cy.getCurrentWindowRecordId().then(id => {
       productID1 = id;
     });
+    expectNumberOfProductPrices(expectedNumberOfRows, priceListName);
   });
-  expectNumberOfProductPrices(expectedNumberOfRows);
 });
 
 describe('Create ProductPrices for Product 2', function() {
-  const productName = productName2;
-  const expectedNumberOfRows = 2;
+  it('Create ProductPrices with attributes for Product 2', function() {
+    const productName = productName2;
+    const expectedNumberOfRows = 2;
 
-  createProductPriceWithAttributes(productName);
-  it('Save productId', function() {
+    createProductPriceWithAttributes(productName);
     cy.getCurrentWindowRecordId().then(id => {
       productID2 = id;
     });
+
+    expectNumberOfProductPrices(expectedNumberOfRows, priceListName);
   });
-  expectNumberOfProductPrices(expectedNumberOfRows);
 });
 
 describe('Change attributes for Product Prices 1 and 2', function() {
-  const expectedNumberOfRows = 2;
-
-  it(`Edit ${productName1}`, function() {
+  it(`Edit products attributes`, function() {
+    const expectedNumberOfRows = 2;
     editProductAttributes(productName1, productID1);
-  });
-
-  it(`Edit ${productName2}`, function() {
     editProductAttributes(productName2, productID2);
-  });
 
-  expectNumberOfProductPrices(expectedNumberOfRows);
+    expectNumberOfProductPrices(expectedNumberOfRows, priceListName);
+  });
 });
 
 describe('Create ProductPrices for Product 3', function() {
-  const productName = productName3;
-  const expectedNumberOfRows = 3;
-
-  createProductPriceWithAttributes(productName);
-  expectNumberOfProductPrices(expectedNumberOfRows);
+  it(`Create ProductPrices with attributes for Product 3`, function() {
+    const productName = productName3;
+    const expectedNumberOfRows = 3;
+    createProductPriceWithAttributes(productName);
+    expectNumberOfProductPrices(expectedNumberOfRows, priceListName);
+  });
 });
 
-///////////////////////////////
-///////////////////////////////
-///////////////////////////////
-///////////////////////////////
-///////////////////////////////
-///////////////////////////////
-
-// all of the helper stuff belongs to <here>
-function createAttribute(attributeName, attributeValue1, attributeValue2) {
-  it(`Create Attribute ${attributeName}`, function() {
-    new Attribute(attributeName)
-      .setValue(attributeName)
-      .setDescription(attributeName)
-      .setAttributeValueType('List')
-      .setInstanceAttribute(true)
-      .setPricingRelevant(true)
-      .setStorageRelevant(true)
-      .setAttrDocumentRelevant(true)
-      .addAttributeValue(new AttributeValue(attributeValue1).setValue(attributeValue1))
-      .addAttributeValue(new AttributeValue(attributeValue2).setValue(attributeValue2))
-      .apply();
-  });
-}
-
 function createProductCategory(productCategoryName, attributeSet) {
-  it(`Create ProductCategory ${productCategoryName}`, function() {
-    cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
-      Object.assign(new ProductCategory(), productCategoryJson)
-        .setName(productCategoryName)
-        .setAttributeSet(attributeSet)
-        .apply();
-    });
+  cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
+    Object.assign(new ProductCategory(), productCategoryJson)
+      .setName(productCategoryName)
+      .setAttributeSet(attributeSet)
+      .apply();
   });
 }
 
 function createPackingEntities(productForPacking, packingInstructionsName) {
-  describe(`Create packing entities for material ${productForPacking}`, function() {
-    it('Create packing product', function() {
-      Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPacking, productForPacking, productType, "24_Gebinde");
-    });
-
-    it('Create packing material', function() {
-      cy.fixture('product/packing_material.json').then(packingMaterialJson => {
-        Object.assign(new PackingMaterial(), packingMaterialJson)
-          .setName(productForPacking)
-          .setProduct(productForPacking)
-          .apply();
-      });
-    });
-
-    it('Create packing instructions', function() {
-      cy.fixture('product/packing_instructions.json').then(packingInstructionsJson => {
-        Object.assign(new PackingInstructions(), packingInstructionsJson)
-          .setName(packingInstructionsName)
-          .apply();
-      });
-
-      cy.fixture('product/packing_instructions_version.json').then(pivJson => {
-        Object.assign(new PackingInstructionsVersion(), pivJson)
-          .setName(packingInstructionsName)
-          .setPackingInstructions(packingInstructionsName)
-          .setPackingMaterial(productForPacking)
-          .apply();
-      });
-    });
-  });
-}
-
-function createProductPrice(productName, priceListName, standardPrice, taxCategory) {
-  it(`Create ProductPrice for ${productName}`, function() {
-    new ProductPrice()
-      .setProduct(productName)
-      .setIsAttributeDependant(true)
-      .setPriceListVersion(priceListName)
-      // .setPackingItem() // default none
-      .setStandardPrice(standardPrice)
-      // .setUOM() // default = each
-      .setTaxCategory(taxCategory)
-      .apply();
-  });
-}
-
-function filterByPriceListVersion(priceListVersionName) {
-  toggleNotFrequentFilters();
-  selectNotFrequentFilterWidget('default');
-  cy.writeIntoLookupListField(
-    'M_PriceList_Version_ID',
-    priceListVersionName,
-    priceListVersionName,
-    false,
-    false,
-    null,
-    true
-  );
-  cy.setCheckBoxValue('IsAttributeDependant', true, false, null, true);
-  applyFilters();
+  Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPacking, productForPacking, productType, '24_Gebinde');
+  Builder.createPackingMaterial(productForPacking, packingInstructionsName);
 }
 
 function createProductPriceWithAttributes(productName) {
   createProductPrice(productName, priceListName, standardPrice, taxCategory);
-  it(`Set attributes for ProductPrice of ${productName}`, function() {
-    cy.get('.form-field-M_AttributeSetInstance_ID').click();
-    cy.selectInListField(attributeName1, attributeValue1, false, RewriteURL.ATTRIBUTE);
-    cy.selectInListField(attributeName2, attributeValue1, false, RewriteURL.ATTRIBUTE);
-    cy.get('.form-field-M_AttributeSetInstance_ID').click({ force: true }); // save the attributes
-    cy.waitForSaveIndicator(true);
-  });
+  cy.get('.form-field-M_AttributeSetInstance_ID').click();
+  cy.selectInListField(attributeName1, attributeValue1, false, RewriteURL.ATTRIBUTE);
+  cy.selectInListField(attributeName2, attributeValue1, false, RewriteURL.ATTRIBUTE);
+  cy.get('.form-field-M_AttributeSetInstance_ID').click({ force: true }); // save the attributes
+  cy.waitForSaveIndicator(true);
+}
+function createProductPrice(productName, priceListName, standardPrice, taxCategory) {
+  new ProductPrice()
+    .setProduct(productName)
+    .setIsAttributeDependant(true)
+    .setPriceListVersion(priceListName)
+    // .setPackingItem() // default none
+    .setStandardPrice(standardPrice)
+    // .setUOM() // default = each
+    .setTaxCategory(taxCategory)
+    .apply();
 }
 
 function editProductAttributes(productName, productID) {
@@ -320,12 +279,25 @@ function editProductAttributes(productName, productID) {
   cy.get('.form-field-M_AttributeSetInstance_ID').click({ force: true }); // save the attributes
   cy.waitForSaveIndicator(true);
 }
-
-function expectNumberOfProductPrices(expectedNumberOfRows) {
-  it(`Filter by PLV in ProductPrices window and expect ${expectedNumberOfRows} records`, function() {
-    // todo: commented during development
-    ProductPrices.visit();
-    filterByPriceListVersion(priceListName);
-    cy.expectNumberOfRows(expectedNumberOfRows);
-  });
+function expectNumberOfProductPrices(expectedNumberOfRows, priceListVersionName) {
+  ProductPrices.visit();
+  toggleNotFrequentFilters();
+  selectNotFrequentFilterWidget('default');
+  cy.writeIntoLookupListField('M_PriceList_Version_ID', priceListVersionName, priceListVersionName, false, false, null, true);
+  cy.setCheckBoxValue('IsAttributeDependant', true, false, null, true);
+  applyFilters();
+  cy.expectNumberOfRows(expectedNumberOfRows);
+}
+function createAttribute(attributeName, attributeValue1, attributeValue2) {
+  new Attribute(attributeName)
+    .setValue(attributeName)
+    .setDescription(attributeName)
+    .setAttributeValueType('List')
+    .setInstanceAttribute(true)
+    .setPricingRelevant(true)
+    .setStorageRelevant(true)
+    .setAttrDocumentRelevant(true)
+    .addAttributeValue(new AttributeValue(attributeValue1).setValue(attributeValue1))
+    .addAttributeValue(new AttributeValue(attributeValue2).setValue(attributeValue2))
+    .apply();
 }

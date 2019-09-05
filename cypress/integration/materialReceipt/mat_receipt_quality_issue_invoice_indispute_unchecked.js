@@ -1,3 +1,5 @@
+/**this test is incomplete as the deduction needs to be checked in the jasper report too
+ * but currently, we don't have a solution for using cypress in pdf reports */
 import { ProductCategory } from '../../support/utils/product';
 import { Builder } from '../../support/utils/builder';
 import { BPartner } from '../../support/utils/bpartner';
@@ -26,11 +28,13 @@ let vendorName;
 let product1Quantity;
 let product2Quantity;
 let docBaseType;
+let deduction;
+let qtyEnteredColumnName;
 
 let purchaseOrderRecordId;
 
 it('Read the fixture', function() {
-  cy.fixture('materialReceipt/mat_receipt_quality_issue_invoice_unchecking_indispute.json').then(f => {
+  cy.fixture('materialReceipt/mat_receipt_quality_issue_invoice_indispute_unchecked.json').then(f => {
     qualityNoteName = f['qualityNoteName'];
     qualityDiscountPercent = f['qualityDiscountPercent'];
     qtyToInvoice1 = f['qtyToInvoice1'];
@@ -50,6 +54,8 @@ it('Read the fixture', function() {
     product1Quantity = f['product1Quantity'];
     product2Quantity = f['product2Quantity'];
     docBaseType = f['docBaseType'];
+    deduction = f['deduction'];
+    qtyEnteredColumnName = f['qtyEnteredColumnName'];
   });
 });
 it('Disable all other quality issue warehouses', function() {
@@ -100,21 +106,11 @@ it('Create Product Category', function() {
   });
 });
 
-it('Create products and vendor', function() {
-  Builder.createProductWithPriceUsingExistingCategory(
-    priceListName,
-    productName1,
-    productName1,
-    productType,
-    productCategoryName
-  );
-  Builder.createProductWithPriceUsingExistingCategory(
-    priceListName,
-    productName2,
-    productName2,
-    productType,
-    productCategoryName
-  );
+it('Create product 1', function() {
+  Builder.createProductWithPriceUsingExistingCategory(priceListName, productName1, productName1, productType, productCategoryName);
+});
+it('Create product 2 and vendor', function() {
+  Builder.createProductWithPriceUsingExistingCategory(priceListName, productName2, productName2, productType, productCategoryName);
   cy.fixture('sales/simple_vendor.json').then(vendorJson => {
     new BPartner({ ...vendorJson, name: vendorName })
       .setVendorPricingSystem(priceSystemName)
@@ -124,7 +120,7 @@ it('Create products and vendor', function() {
   cy.readAllNotifications();
 });
 
-it('Create purchase order - material receipt with quality issue', function() {
+it('Create the purchase order and complete it', function() {
   new PurchaseOrder()
     .setBPartner(vendorName)
     .setPriceSystem(priceSystemName)
@@ -141,7 +137,7 @@ it('Save values needed for the next steps', function() {
   });
 });
 
-it('Visit referenced Material Receipt Candidates, expect 1 row', function() {
+it('Visit referenced Material Receipt Candidates, expect 2 rows', function() {
   cy.openReferencedDocuments('M_ReceiptSchedule');
   cy.expectNumberOfRows(2);
 });
@@ -172,29 +168,36 @@ it('Go to the referenced Material Receipt and check the one with 5% alteration',
   cy.openReferencedDocuments('184');
   cy.selectNthRow(0).dblclick();
 });
-it('Go to Invoice Disposition and check the billing candidates', function() {
+it('Go to Invoice Disposition and uncheck In Dispute', function() {
   cy.visitWindow(purchaseOrders.windowId, purchaseOrderRecordId);
   cy.openReferencedDocuments('C_Invoice_Candidate');
   cy.expectNumberOfRows(2);
   cy.selectNthRow(1).dblclick();
   cy.expectCheckboxValue('IsInDispute', true);
   cy.getStringFieldValue('QtyToInvoice').should('equal', qtyToInvoice1.toString());
-  cy.go('back');
+  cy.setCheckBoxValue('IsInDispute', false);
+  filterInBillingCandidatesWindow();
   cy.selectNthRow(0).dblclick();
   cy.expectCheckboxValue('IsInDispute', false);
   cy.getStringFieldValue('QtyToInvoice').should('equal', qtyToInvoice2.toString());
-  cy.go('back');
+  filterInBillingCandidatesWindow();
 });
-
 it('Select both rows and generate invoices', function() {
   cy.selectAllRowsOnCurrentPage();
   cy.executeQuickAction('C_Invoice_Candidate_EnqueueSelectionForInvoicing', false, true);
   cy.pressStartButton();
   cy.waitUntilProcessIsFinished();
-  cy.openInboxNotificationWithText(vendorName);
-  cy.selectTab('C_InvoiceLine');
-  cy.expectNumberOfRows(1);
-  cy.selectSingleTabRow();
-  cy.openAdvancedEdit();
-  cy.getStringFieldValue('QtyEntered', true).should('equals', qtyToInvoice2.toString());
 });
+it('Open Purchase Invoice and check the deduction in Invoice Line tab', function() {
+  cy.openInboxNotificationWithText('Rechnung');
+  cy.selectTab('C_InvoiceLine');
+  cy.expectNumberOfRows(3);
+  cy.selectRowByColumnAndValue({ column: qtyEnteredColumnName, value: deduction });
+});
+function filterInBillingCandidatesWindow() {
+  cy.visitWindow('540092');
+  toggleNotFrequentFilters();
+  selectNotFrequentFilterWidget('default');
+  cy.writeIntoLookupListField('Bill_BPartner_ID', vendorName, vendorName, false, false, null, true);
+  applyFilters();
+}
