@@ -69,13 +69,13 @@ public class ProductsServicesFacade
 		return partnerProductsRepo.retrieveAllVendors(productIds);
 	}
 
-	public JsonCreatedUpdatedInfo extractCreatedUpdatedInfo(final I_M_Product productRecord)
+	public JsonCreatedUpdatedInfo extractCreatedUpdatedInfo(final I_M_Product record)
 	{
 		return JsonCreatedUpdatedInfo.builder()
-				.created(TimeUtil.asZonedDateTime(productRecord.getCreated()))
-				.createdBy(UserId.optionalOfRepoId(productRecord.getCreatedBy()).orElse(UserId.SYSTEM))
-				.updated(TimeUtil.asZonedDateTime(productRecord.getUpdated()))
-				.updatedBy(UserId.optionalOfRepoId(productRecord.getUpdatedBy()).orElse(UserId.SYSTEM))
+				.created(TimeUtil.asZonedDateTime(record.getCreated()))
+				.createdBy(UserId.optionalOfRepoId(record.getCreatedBy()).orElse(UserId.SYSTEM))
+				.updated(TimeUtil.asZonedDateTime(record.getUpdated()))
+				.updatedBy(UserId.optionalOfRepoId(record.getUpdatedBy()).orElse(UserId.SYSTEM))
 				.build();
 	}
 
