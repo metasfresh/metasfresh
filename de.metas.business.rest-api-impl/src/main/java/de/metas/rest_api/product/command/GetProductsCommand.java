@@ -19,7 +19,6 @@ import de.metas.rest_api.product.response.JsonGetProductsResponse;
 import de.metas.rest_api.product.response.JsonProduct;
 import de.metas.rest_api.product.response.JsonProductVendor;
 import de.metas.uom.UomId;
-import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -125,15 +124,11 @@ public class GetProductsCommand
 
 	private JsonProductVendor toJsonProductVendor(final I_C_BPartner_Product record)
 	{
-		final String vendorProductNo = CoalesceUtil.coalesceSuppliers(
-				() -> record.getVendorProductNo(),
-				() -> record.getProductNo());
-
 		String vendorProductName = record.getProductName();
 
 		return JsonProductVendor.builder()
 				.vendorId(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
-				.productNo(vendorProductNo)
+				.productNo(record.getProductNo())
 				.productName(vendorProductName)
 				.currentVendor(record.isCurrentVendor())
 				.build();
