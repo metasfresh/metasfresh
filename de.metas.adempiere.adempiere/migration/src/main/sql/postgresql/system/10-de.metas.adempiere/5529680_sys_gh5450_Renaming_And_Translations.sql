@@ -1,3 +1,36 @@
+-- 2019-09-05T13:28:38.793Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=276447230,Updated=TO_TIMESTAMP('2019-09-05 15:28:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=2810
+;
+
+-- 2019-09-05T13:28:42.257Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=276447231,Updated=TO_TIMESTAMP('2019-09-05 15:28:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=2810
+;
+
+-- 2019-09-05T13:28:45.376Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('ad_process','Description','TEXT',null,null)
+;
+INSERT INTO t_alter_column values('ad_process_trl','Description','TEXT',null,null)
+;
+
+-- 2019-09-05T13:30:09.202Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=36, FieldLength=276447231,Updated=TO_TIMESTAMP('2019-09-05 15:30:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=2811
+;
+
+-- 2019-09-05T13:30:09.988Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('ad_process','Help','TEXT',null,null)
+;
+INSERT INTO t_alter_column values('ad_process_trl','Help','TEXT',null,null)
+;
+
+
+
+COMMIT;
+
 -- 2019-09-02T10:18:54.478Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Process_Trl SET IsTranslated='N', Name='Apply to derived price lists',Updated=TO_TIMESTAMP('2019-09-02 13:18:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=541180
