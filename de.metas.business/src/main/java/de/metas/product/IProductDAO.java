@@ -27,6 +27,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
@@ -94,6 +95,8 @@ public interface IProductDAO extends ISingletonService
 		@Default
 		boolean outOfTrx = false;
 	}
+
+	Stream<I_M_Product> streamAllProducts();
 
 	/** @return product category or null */
 	ProductCategoryId retrieveProductCategoryByProductId(ProductId productId);
