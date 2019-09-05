@@ -31,7 +31,6 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.ordercandidates.JsonDocTypeInfo;
 import de.metas.rest_api.ordercandidates.JsonOrganization;
-import de.metas.rest_api.product.impl.ProductMasterDataProvider;
 import de.metas.rest_api.utils.MissingPropertyException;
 import de.metas.rest_api.utils.PermissionService;
 import de.metas.util.Check;
@@ -62,7 +61,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public final class MasterdataProvider
+final class MasterdataProvider
 {
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 

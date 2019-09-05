@@ -13,6 +13,7 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkRequest;
 import de.metas.util.Check;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -36,7 +37,8 @@ import lombok.NonNull;
  * #L%
  */
 
-public class JsonOLCandUtil
+@UtilityClass
+class JsonOLCandUtil
 {
 	/**
 	 * Sends the given request's JSON to std-out in a pretty-printed way
