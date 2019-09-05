@@ -8,6 +8,7 @@ import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -113,11 +114,12 @@ public class GetProductsCommand
 				.ean(productRecord.getUPC())
 				.uom(servicesFacade.getUOMSymbol(uomId))
 				.vendors(productVendors.get(productId))
-				.createdUpdatedInfo(toCreatedUpdatedInfo(productRecord))
+				.createdUpdatedInfo(extractCreatedUpdatedInfo(productRecord))
 				.build();
 	}
 
-	private static JsonCreatedUpdatedInfo toCreatedUpdatedInfo(final I_M_Product productRecord)
+	@VisibleForTesting
+	public static JsonCreatedUpdatedInfo extractCreatedUpdatedInfo(final I_M_Product productRecord)
 	{
 		return JsonCreatedUpdatedInfo.builder()
 				.created(TimeUtil.asZonedDateTime(productRecord.getCreated()))
