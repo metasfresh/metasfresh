@@ -1,5 +1,6 @@
 package de.metas.ui.web.pricing.process;
 
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
@@ -8,7 +9,6 @@ import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_Product;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.process.IProcessDefaultParameter;
@@ -47,6 +47,8 @@ import lombok.NonNull;
 
 public class M_DiscountSchemaBreak_CopyToOtherSchema_Product extends ViewBasedProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
+	private static final String MSG = "de.metas.ui.web.pricing.process.M_DiscountSchemaBreak_CopyToOtherSchema_Product.NoSingleProduct";
+
 	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
 
 	final String PARAM_M_Product_ID = I_M_Product.COLUMNNAME_M_Product_ID;
@@ -65,30 +67,22 @@ public class M_DiscountSchemaBreak_CopyToOtherSchema_Product extends ViewBasedPr
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		if (rowsHaveMultipleProductsOrNone())
+		if (!rowsHaveSingleProductId())
 		{
-			ITranslatableString msg = TranslatableStrings.builder()
-					.append("Multiple products or none in the selected rows")
-					.build();
+			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG);
 			return ProcessPreconditionsResolution.reject(msg);
 		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	private boolean rowsHaveMultipleProductsOrNone()
+	private boolean rowsHaveSingleProductId()
 	{
+		// getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false)); doesn't work from checkPreconditionsApplicable
 		final String viewSqlWhereClause = getViewSqlWhereClause(getSelectedRowIds());
-
 		final IQueryFilter<I_M_DiscountSchemaBreak> selectionQueryFilter = TypedSqlQueryFilter.of(viewSqlWhereClause);
 
-		return pricingConditionsRepo.selectionHasMultipleProductsOrNone(selectionQueryFilter);
-	}
-
-	private String getViewSqlWhereClause(@NonNull final DocumentIdsSelection rowIds)
-	{
-		final String breaksTableName = I_M_DiscountSchemaBreak.Table_Name;
-		return getView().getSqlWhereClause(rowIds, SqlOptions.usingTableName(breaksTableName));
+		return pricingConditionsRepo.isSingleProductId(selectionQueryFilter);
 	}
 
 	@Override
@@ -97,10 +91,7 @@ public class M_DiscountSchemaBreak_CopyToOtherSchema_Product extends ViewBasedPr
 		final String parameterName = parameter.getColumnName();
 		if (PARAM_M_Product_ID.equals(parameterName))
 		{
-
-			final String viewSqlWhereClause = getViewSqlWhereClause(getSelectedRowIds());
-
-			final IQueryFilter<I_M_DiscountSchemaBreak> selectionQueryFilter = TypedSqlQueryFilter.of(viewSqlWhereClause);
+			final IQueryFilter<I_M_DiscountSchemaBreak> selectionQueryFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
 
 			final ProductId uniqueProductIdForSelection = pricingConditionsRepo.retrieveUniqueProductIdForSelectionOrNull(selectionQueryFilter);
 
@@ -119,6 +110,12 @@ public class M_DiscountSchemaBreak_CopyToOtherSchema_Product extends ViewBasedPr
 		}
 	}
 
+	private String getViewSqlWhereClause(@NonNull final DocumentIdsSelection rowIds)
+	{
+		final String breaksTableName = I_M_DiscountSchemaBreak.Table_Name;
+		return getView().getSqlWhereClause(rowIds, SqlOptions.usingTableName(breaksTableName));
+	}
+
 	@Override
 	protected String doIt()
 	{
@@ -130,8 +127,8 @@ public class M_DiscountSchemaBreak_CopyToOtherSchema_Product extends ViewBasedPr
 
 		final boolean allowCopyToSameSchema = true;
 
-		pricingConditionsRepo.copyDiscountSchemaBreaksWithProductId(PricingConditionsId.ofDiscountSchemaId(p_PricingConditionsId),
-				queryFilter,
+		pricingConditionsRepo.copyDiscountSchemaBreaksWithProductId(queryFilter,
+				PricingConditionsId.ofDiscountSchemaId(p_PricingConditionsId),
 				ProductId.ofRepoId(p_ProductId),
 				allowCopyToSameSchema);
 
