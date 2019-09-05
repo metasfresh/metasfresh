@@ -423,7 +423,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		updateSchemaBreakRecordFromPrice(schemaBreak, request.getPrice());
 		if (request.getDiscount() != null)
 		{
-			schemaBreak.setBreakDiscount(request.getDiscount().getValue());
+			schemaBreak.setBreakDiscount(request.getDiscount().toBigDecimal());
 		}
 
 		if (request.getPaymentTermId() != null)
@@ -435,7 +435,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		{
 			final BigDecimal paymentDiscountValue = request
 					.getPaymentDiscount()
-					.map(Percent::getValue)
+					.map(Percent::toBigDecimal)
 					.orElse(null);
 			schemaBreak.setPaymentDiscount(paymentDiscountValue);
 		}
@@ -505,7 +505,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 			schemaBreak.setBase_PricingSystem_ID(price.getBasePricingSystemId().getRepoId());
 
 			final Money surcharge = price.getPricingSystemSurcharge();
-			schemaBreak.setPricingSystemSurchargeAmt(surcharge != null ? surcharge.getAsBigDecimal() : null);
+			schemaBreak.setPricingSystemSurchargeAmt(surcharge != null ? surcharge.toBigDecimal() : null);
 			schemaBreak.setC_Currency_ID(surcharge != null ? surcharge.getCurrencyId().getRepoId() : -1);
 
 			schemaBreak.setPriceStdFixed(null);
@@ -517,7 +517,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 			schemaBreak.setPricingSystemSurchargeAmt(BigDecimal.ZERO);
 
 			final Money fixedPrice = price.getFixedPrice();
-			schemaBreak.setPriceStdFixed(fixedPrice != null ? fixedPrice.getAsBigDecimal() : null);
+			schemaBreak.setPriceStdFixed(fixedPrice != null ? fixedPrice.toBigDecimal() : null);
 			schemaBreak.setC_Currency_ID(fixedPrice != null ? fixedPrice.getCurrencyId().getRepoId() : -1);
 		}
 		else

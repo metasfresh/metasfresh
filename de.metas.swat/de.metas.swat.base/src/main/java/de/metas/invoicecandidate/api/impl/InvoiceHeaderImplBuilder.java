@@ -33,6 +33,7 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_DocType;
 import org.compiere.util.TimeUtil;
 
+import de.metas.money.CurrencyId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
@@ -101,7 +102,7 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setIsSOTrx(isSOTrx());
 
 		// Pricing and currency
-		invoiceHeader.setC_Currency_ID(getC_Currency_ID());
+		invoiceHeader.setCurrencyId(CurrencyId.ofRepoId(getC_Currency_ID()));
 		invoiceHeader.setM_PriceList_ID(getM_PriceList_ID());
 
 		// Tax

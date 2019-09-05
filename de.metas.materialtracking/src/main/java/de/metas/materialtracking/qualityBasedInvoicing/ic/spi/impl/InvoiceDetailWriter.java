@@ -153,7 +153,7 @@ public class InvoiceDetailWriter
 		{
 			priceUOMId = pricingResult.getPriceUomId();
 			price = pricingResult.getPriceStd();
-			discount = pricingResult.getDiscount().getValue();
+			discount = pricingResult.getDiscount().toBigDecimal();
 
 			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 			qtyEnteredInPriceUOM = uomConversionBL
@@ -161,14 +161,14 @@ public class InvoiceDetailWriter
 							lineQty,
 							UOMConversionContext.of(line.getProductId()),
 							priceUOMId)
-					.getAsBigDecimal();
+					.toBigDecimal();
 		}
 		else
 		{
 			priceUOMId = lineQty.getUomId();
 			price = null;
 			discount = null;
-			qtyEnteredInPriceUOM = lineQty.getAsBigDecimal();
+			qtyEnteredInPriceUOM = lineQty.toBigDecimal();
 		}
 
 		final I_C_Invoice_Detail invoiceDetail = InterfaceWrapperHelper.newInstance(I_C_Invoice_Detail.class, getContext());
@@ -183,7 +183,7 @@ public class InvoiceDetailWriter
 		invoiceDetail.setM_Product(line.getM_Product());
 		invoiceDetail.setNote(line.getProductName());
 		// invoiceDetail.setM_AttributeSetInstance(M_AttributeSetInstance);
-		invoiceDetail.setQty(lineQty.getAsBigDecimal());
+		invoiceDetail.setQty(lineQty.toBigDecimal());
 		invoiceDetail.setC_UOM_ID(lineQty.getUomId().getRepoId());
 		invoiceDetail.setDiscount(discount);
 		invoiceDetail.setPriceEntered(price);

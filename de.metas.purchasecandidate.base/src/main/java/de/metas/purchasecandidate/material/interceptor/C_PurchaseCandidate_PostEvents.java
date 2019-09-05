@@ -154,7 +154,7 @@ public class C_PurchaseCandidate_PostEvents
 				.warehouseId(WarehouseId.ofRepoId(purchaseCandidateRecord.getM_WarehousePO_ID()))
 				.productDescriptor(productDescriptor)
 				// .customerId() we don't have a customer
-				.quantity(purchaseQty.getAsBigDecimal())
+				.quantity(purchaseQty.toBigDecimal())
 				.build();
 		return materialDescriptor;
 	}

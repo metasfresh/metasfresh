@@ -157,7 +157,7 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 		}
 		if (qtyEnteredSet)
 		{
-			assertEquals(prefix + "QtyEntered", this.qtyEntered, line.getQty().getAsBigDecimal());
+			assertEquals(prefix + "QtyEntered", this.qtyEntered, line.getQty().toBigDecimal());
 		}
 		if (uomSet)
 		{

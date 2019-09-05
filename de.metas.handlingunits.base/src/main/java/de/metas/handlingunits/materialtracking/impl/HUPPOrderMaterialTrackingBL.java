@@ -109,7 +109,7 @@ public class HUPPOrderMaterialTrackingBL implements IHUPPOrderMaterialTrackingBL
 
 		// Assign PP_Cost_Collector and quantity to material tracking
 		final ProductId productId = ProductId.ofRepoId(materialTrackingRecord.getM_Product_ID());
-		final UomId toUOMId = productBL.getStockingUOMId(productId);
+		final UomId toUOMId = productBL.getStockUOMId(productId);
 		final Quantity sum = uomConversionBL.computeSum(
 				UOMConversionContext.of(productId),
 				materialTrackingWithQuantity.getQuantities(),
@@ -118,7 +118,7 @@ public class HUPPOrderMaterialTrackingBL implements IHUPPOrderMaterialTrackingBL
 		final MTLinkRequest costCollectorLinkRequest = MTLinkRequest.builder()
 				.model(costCollectorRecord)
 				.materialTrackingRecord(materialTrackingRecord)
-				.qtyIssued(sum.getAsBigDecimal())
+				.qtyIssued(sum.toBigDecimal())
 				.ifModelAlreadyLinked(IfModelAlreadyLinked.ADD_ADDITIONAL_LINK)
 				.build();
 		materialTrackingBL.linkModelToMaterialTracking(costCollectorLinkRequest);

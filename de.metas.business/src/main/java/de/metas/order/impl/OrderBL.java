@@ -859,7 +859,7 @@ public class OrderBL implements IOrderBL
 
 		//
 		// Set QtyOrdered
-		orderLine.setQtyOrdered(qtyOrdered.getAsBigDecimal());
+		orderLine.setQtyOrdered(qtyOrdered.toBigDecimal());
 		InterfaceWrapperHelper.save(orderLine); // saving, just to be on the save side in case reserveStock() does a refresh or sth
 
 		//

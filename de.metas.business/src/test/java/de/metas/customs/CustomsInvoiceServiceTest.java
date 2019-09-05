@@ -205,7 +205,7 @@ public class CustomsInvoiceServiceTest
 
 		assertNotNull(customsInvoiceLine.getId());
 
-		final Money expectedLineNetAmt = Money.of(priceActual.getAsBigDecimal().multiply(qty.getAsBigDecimal()), chf);
+		final Money expectedLineNetAmt = Money.of(priceActual.toBigDecimal().multiply(qty.toBigDecimal()), chf);
 
 		assertThat(customsInvoiceLine.getLineNetAmt(), is(expectedLineNetAmt));
 		assertThat(customsInvoiceLine.getLineNo(), is(10));
@@ -288,8 +288,8 @@ public class CustomsInvoiceServiceTest
 
 		assertNotNull(customsInvoiceLine.getId());
 
-		final BigDecimal expectedPrice = (priceActual1.getAsBigDecimal().multiply(qty1.getAsBigDecimal()))
-				.add(priceActual2.getAsBigDecimal().multiply(qty2.getAsBigDecimal()));
+		final BigDecimal expectedPrice = (priceActual1.toBigDecimal().multiply(qty1.toBigDecimal()))
+				.add(priceActual2.toBigDecimal().multiply(qty2.toBigDecimal()));
 		final Money expectedLineNetAmt = Money.of(expectedPrice, chf);
 
 		assertThat(customsInvoiceLine.getLineNetAmt(), is(expectedLineNetAmt));
@@ -370,13 +370,13 @@ public class CustomsInvoiceServiceTest
 
 		assertNotNull(customsInvoiceLine.getId());
 
-		final BigDecimal qty2inUom1 = qty2.getAsBigDecimal().multiply(convertionMultiplier);
+		final BigDecimal qty2inUom1 = qty2.toBigDecimal().multiply(convertionMultiplier);
 		final Quantity expectedQty = qty1.add(qty2inUom1);
 
 		assertThat(customsInvoiceLine.getQuantity(), is(expectedQty));
 
-		final BigDecimal expectedPrice = (priceActual1.getAsBigDecimal().multiply(qty1.getAsBigDecimal()))
-				.add(priceActual2.getAsBigDecimal().multiply(qty2inUom1));
+		final BigDecimal expectedPrice = (priceActual1.toBigDecimal().multiply(qty1.toBigDecimal()))
+				.add(priceActual2.toBigDecimal().multiply(qty2inUom1));
 		final Money expectedLineNetAmt = Money.of(expectedPrice, chf);
 
 		assertThat(customsInvoiceLine.getLineNetAmt(), is(expectedLineNetAmt));
@@ -455,14 +455,14 @@ public class CustomsInvoiceServiceTest
 
 		assertNotNull(customsInvoiceLine.getId());
 
-		final BigDecimal qty2inUom1 = qty2.getAsBigDecimal().multiply(convertionMultiplier);
+		final BigDecimal qty2inUom1 = qty2.toBigDecimal().multiply(convertionMultiplier);
 		final Quantity expectedQty = qty1.add(qty2inUom1);
 
 		assertThat(customsInvoiceLine.getQuantity(), is(expectedQty));
 
-		final BigDecimal price2inCurrency1 = priceActual2.getAsBigDecimal().multiply(currencyMultiplier);
+		final BigDecimal price2inCurrency1 = priceActual2.toBigDecimal().multiply(currencyMultiplier);
 
-		final BigDecimal expectedPrice = (priceActual1.getAsBigDecimal().multiply(qty1.getAsBigDecimal()))
+		final BigDecimal expectedPrice = (priceActual1.toBigDecimal().multiply(qty1.toBigDecimal()))
 				.add(price2inCurrency1.multiply(qty2inUom1));
 
 		final Money expectedLineNetAmt = Money.of(expectedPrice, chf);
@@ -481,10 +481,10 @@ public class CustomsInvoiceServiceTest
 		orderLineRecord.setM_Product_ID(product1.getRepoId());
 		orderLineRecord.setC_UOM_ID(qty.getUomId().getRepoId());
 
-		orderLineRecord.setPriceActual(priceActual.getAsBigDecimal());
+		orderLineRecord.setPriceActual(priceActual.toBigDecimal());
 		orderLineRecord.setC_Currency_ID(priceActual.getCurrencyId().getRepoId());
 
-		orderLineRecord.setQtyOrdered(qty.getAsBigDecimal());
+		orderLineRecord.setQtyOrdered(qty.toBigDecimal());
 
 		save(orderLineRecord);
 

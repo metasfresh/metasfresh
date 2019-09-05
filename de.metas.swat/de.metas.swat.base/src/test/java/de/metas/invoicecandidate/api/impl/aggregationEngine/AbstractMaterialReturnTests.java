@@ -13,15 +13,14 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.is;
@@ -40,16 +39,20 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.expectations.InvoiceCandidateExpectation;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Services;
 
 public abstract class AbstractMaterialReturnTests extends AbstractNewAggregationEngineTests
 {
+
 	protected I_C_Invoice_Candidate ic1;
 
 	protected I_M_InOut inOut1;
@@ -64,7 +67,7 @@ public abstract class AbstractMaterialReturnTests extends AbstractNewAggregation
 		ic1 = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(1)
-				.setQty(FIFTY.negate())
+				.setQtyOrdered(FIFTY.negate())
 				.setSOTrx(config_IsSOTrx())
 				.setOrderDocNo("order1")
 				.setOrderLineDescription("orderline1_1")
@@ -80,19 +83,20 @@ public abstract class AbstractMaterialReturnTests extends AbstractNewAggregation
 	}
 
 	@Override
-	protected List<I_M_InOutLine> step_createInOutLines(List<I_C_Invoice_Candidate> invoiceCandidates)
+	protected List<I_M_InOutLine> step_createInOutLines(final List<I_C_Invoice_Candidate> invoiceCandidates)
 	{
+		final StockQtyAndUOMQty qtysDelivered = StockQtyAndUOMQtys.create(FIFTY.negate(), productId, FIVE_HUNDRET.negate(), uomId);
 		{
 			final String inOutDocumentNo = "1";
 			inOut1 = createInOut(ic1.getBill_BPartner_ID(), ic1.getC_Order_ID(), inOutDocumentNo);
-			iol11 = createInvoiceCandidateInOutLine(ic1, inOut1, FIFTY.negate(), inOutDocumentNo + "_1");
+			iol11 = createInvoiceCandidateInOutLine(ic1, inOut1, qtysDelivered, inOutDocumentNo + "_1");
 			completeInOut(inOut1);
 		}
 		return Arrays.asList(iol11);
 	}
 
 	@Override
-	protected void step_validate_before_aggregation(List<I_C_Invoice_Candidate> invoiceCandidates, List<I_M_InOutLine> inOutLines)
+	protected void step_validate_before_aggregation(final List<I_C_Invoice_Candidate> invoiceCandidates, final List<I_M_InOutLine> inOutLines)
 	{
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
@@ -105,11 +109,11 @@ public abstract class AbstractMaterialReturnTests extends AbstractNewAggregation
 				.qualityDiscountPercent(BigDecimal.ZERO)
 				.assertExpected(ic1);
 
-		assertThat(invoiceCandDAO.retrieveICIOLAssociationsExclRE(ic1).size(), is(1));
+		assertThat(invoiceCandDAO.retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(ic1)).size(), is(1));
 	}
 
 	@Override
-	protected void step_validate_after_aggregation(List<I_C_Invoice_Candidate> invoiceCandidates, List<I_M_InOutLine> inOutLines, List<IInvoiceHeader> invoices)
+	protected void step_validate_after_aggregation(final List<I_C_Invoice_Candidate> invoiceCandidates, final List<I_M_InOutLine> inOutLines, final List<IInvoiceHeader> invoices)
 	{
 		assertEquals("We are expecting one invoice: " + invoices, 1, invoices.size());
 
@@ -126,9 +130,10 @@ public abstract class AbstractMaterialReturnTests extends AbstractNewAggregation
 		final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol11);
 		assertNotNull("Missing IInvoiceLineRW for iol11=" + iol11, il1);
 
-		assertThat(il1.getPriceActual(), comparesEqualTo(BigDecimal.ONE.negate()));
-		assertThat(il1.getQtyToInvoice(), comparesEqualTo(FIFTY.negate()));
-		assertThat(il1.getNetLineAmt(), comparesEqualTo(FIFTY));
+		assertThat(il1.getPriceActual().toBigDecimal(), comparesEqualTo(BigDecimal.ONE.negate()));
+		assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(FIFTY.negate()));
+		assertThat(il1.getQtysToInvoice().getUOMQtyNotNull().toBigDecimal(), comparesEqualTo(FIVE_HUNDRET.negate()));
+		assertThat(il1.getNetLineAmt().toBigDecimal(), comparesEqualTo(FIVE_HUNDRET)); /**/
 	}
 
 	protected abstract boolean config_IsSOTrx();

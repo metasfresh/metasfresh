@@ -149,13 +149,13 @@ public final class GroupCompensationLine
 		Check.assumeEquals(qtyEntered.getUomId(), this.uomId, "Param qtyEntered needs to have UomId={}; qtyEntered={}", this.uomId, qtyEntered);
 
 		this.price = price;
-		this.qtyEntered = qtyEntered.getAsBigDecimal();
+		this.qtyEntered = qtyEntered.toBigDecimal();
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 		final Quantity qtyInProductUOM = uomConversionBL.convertToProductUOM(qtyEntered, getProductId());
 
-		this.lineNetAmt = price.multiply(qtyInProductUOM.getAsBigDecimal());
+		this.lineNetAmt = price.multiply(qtyInProductUOM.toBigDecimal());
 		this.lineNetAmt = amountPrecision.roundIfNeeded(this.lineNetAmt);
 	}
 

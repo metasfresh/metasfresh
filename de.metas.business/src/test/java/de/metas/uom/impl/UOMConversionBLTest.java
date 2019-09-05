@@ -655,7 +655,7 @@ public class UOMConversionBLTest extends UOMTestBase
 		final ProductPrice pricePerTrip = ProductPrice.builder()
 				.productId(productId)
 				.uomId(uomTripOfSand)
-				.value(Money.of(950, currencyId))
+				.money(Money.of(950, currencyId))
 				.build();
 		System.out.println("Price/Trip: " + pricePerTrip);
 
@@ -691,7 +691,7 @@ public class UOMConversionBLTest extends UOMTestBase
 		final ProductPrice pricePerSQM = ProductPrice.builder()
 				.productId(productId)
 				.uomId(uomSQM)
-				.value(Money.of(new BigDecimal("42.03"), currencyId))
+				.money(Money.of(new BigDecimal("42.03"), currencyId))
 				.build();
 		System.out.println("Price/SQM: " + pricePerSQM);
 

@@ -26,6 +26,7 @@ import java.util.Collection;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.warehouse.LocatorId;
@@ -121,4 +122,18 @@ public interface IWarehouseDAO extends ISingletonService
 
 	WarehouseType getWarehouseTypeById(WarehouseTypeId id);
 
+	/**
+	 * Retrieve the warehouse marked as IsIssueWarehouse; There should be one and only one entry of this kind (unique index).
+	 */
+	I_M_Warehouse retrieveWarehouseForIssuesOrNull(Properties ctx);
+
+	/**
+	 * Same as {@link #retrieveWarehouseForIssuesOrNull(Properties)} but it will fail if no warehouse found.
+	 */
+	I_M_Warehouse retrieveWarehouseForIssues(Properties ctx);
+
+	/**
+	 * Retrieve the warehouse marked as IsQuarantineWarehouse.
+	 */
+	org.adempiere.warehouse.model.I_M_Warehouse retrieveQuarantineWarehouseOrNull();
 }

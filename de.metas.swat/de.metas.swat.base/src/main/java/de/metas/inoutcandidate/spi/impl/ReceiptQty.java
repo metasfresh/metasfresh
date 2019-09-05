@@ -10,36 +10,46 @@ package de.metas.inoutcandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
-public final class MutableQtyAndQuality implements IQtyAndQuality
+import de.metas.logging.LogManager;
+import lombok.NonNull;
+
+/**
+ * Quantity and Quality, i.e.
+ * <ul>
+ * <li>total quantity: {@link #getQtyTotal()}
+ * <li>quantity with issues: {@link #getQtyWithIssues(int)}
+ * <li>quantity without issues: {@link #getQtyWithoutIssues(int)}
+ * <li>quality discount percent: {@link #getQualityDiscountPercent()}
+ * <li>quality notices: {@link #getQualityNotices()}
+ * </ul>
+ */
+public final class ReceiptQty
 {
 	public static final int QualityDiscountPercent_Precision = 2;
 	public static final RoundingMode QualityDiscountPercent_RoundingMode = RoundingMode.HALF_DOWN;
 	public static final RoundingMode QtyTotal_RoundingMode = RoundingMode.HALF_UP;
 	public static final RoundingMode QtyWithIssues_RoundingMode = RoundingMode.HALF_DOWN;
 
-	private static final transient Logger logger = LogManager.getLogger(MutableQtyAndQuality.class);
+	private static final transient Logger logger = LogManager.getLogger(ReceiptQty.class);
 
 	/** Precision used to store internal quantities */
 	/* package */static final int INTERNAL_PRECISION = 12;
@@ -50,25 +60,20 @@ public final class MutableQtyAndQuality implements IQtyAndQuality
 	private BigDecimal qtyWithIssues = BigDecimal.ZERO;
 	/**
 	 * Quality Notices.
-	 * 
+	 *
 	 * NOTE: always return a copy of this value, because qualityNotices is not immutable
 	 */
 	private QualityNoticesCollection qualityNotices = new QualityNoticesCollection();
 
-	public MutableQtyAndQuality()
+	/** @return a copy of this object */
+	public ReceiptQty copy()
 	{
-		super();
-	}
-
-	@Override
-	public MutableQtyAndQuality copy()
-	{
-		final MutableQtyAndQuality copy = new MutableQtyAndQuality();
+		final ReceiptQty copy = new ReceiptQty();
 		copy.copyFrom(this);
 		return copy;
 	}
 
-	protected void copyFrom(final MutableQtyAndQuality from)
+	protected void copyFrom(@NonNull final ReceiptQty from)
 	{
 		this.qtyTotal = from.qtyTotal;
 		this.qtyWithIssues = from.qtyWithIssues;
@@ -76,13 +81,13 @@ public final class MutableQtyAndQuality implements IQtyAndQuality
 	}
 
 	@Override
-	public MutableQtyAndQuality clone()
+	public ReceiptQty clone()
 	{
 		return copy();
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qty
 	 * @param qualityDiscountPercent percent between 0...100
 	 */
@@ -101,10 +106,8 @@ public final class MutableQtyAndQuality implements IQtyAndQuality
 		qtyWithIssues = qtyWithIssues.add(qtyWithIssuesToAdd);
 	}
 
-	public void add(final IQtyAndQuality qtyAndQualityToAdd)
+	public void add(@NonNull final ReceiptQty qtyAndQualityToAdd)
 	{
-		Check.assumeNotNull(qtyAndQualityToAdd, "qtyAndQualityToAdd not null");
-
 		final BigDecimal qtyTotalToAdd = qtyAndQualityToAdd.getQtyTotal();
 		final BigDecimal qtyWithIssuesToAdd = qtyAndQualityToAdd.getQtyWithIssuesExact();
 		final QualityNoticesCollection qualityNoticesToAdd = qtyAndQualityToAdd.getQualityNotices();
@@ -113,19 +116,19 @@ public final class MutableQtyAndQuality implements IQtyAndQuality
 		addQualityNotices(qualityNoticesToAdd);
 	}
 
-	public void subtractQtys(final MutableQtyAndQuality qtysToRemove)
+	public void subtractQtys(final ReceiptQty qtysToRemove)
 	{
 		add(qtysToRemove.negateQtys());
 	}
 
-	public IQtyAndQuality negateQtys()
+	public ReceiptQty negateQtys()
 	{
 		if (isZero())
 		{
 			return this;
 		}
 
-		final MutableQtyAndQuality thisNegated = copy();
+		final ReceiptQty thisNegated = copy();
 		thisNegated.qtyTotal = thisNegated.qtyTotal.negate();
 		thisNegated.qtyWithIssues = thisNegated.qtyWithIssues.negate();
 		return thisNegated;
@@ -141,13 +144,17 @@ public final class MutableQtyAndQuality implements IQtyAndQuality
 				+ "]";
 	}
 
-	@Override
-	public final BigDecimal getQtyTotal()
+	/**
+	 * @return total quantity (with and without issues)
+	 */
+	public BigDecimal getQtyTotal()
 	{
 		return qtyTotal;
 	}
 
-	@Override
+	/**
+	 * @return true if total quantity is zero
+	 */
 	public boolean isZero()
 	{
 		return qtyTotal.signum() == 0 && qtyWithIssues.signum() == 0;
@@ -164,7 +171,9 @@ public final class MutableQtyAndQuality implements IQtyAndQuality
 		return qtyTotal;
 	}
 
-	@Override
+	/**
+	 * @return weighted average quality discount percent (between 0..100)
+	 */
 	public BigDecimal getQualityDiscountPercent()
 	{
 		final BigDecimal qtyTotalExact = getQtyTotal();
@@ -182,8 +191,7 @@ public final class MutableQtyAndQuality implements IQtyAndQuality
 			{
 				final AdempiereException ex = new AdempiereException("We are asked to calculate QualityDiscountPercent when QtyTotal=0 and QtyWithIssues>0."
 						+ "\nThis could be an error but we are returning ZERO by now."
-						+ "\nQtyAndQuality: " + this
-						);
+						+ "\nQtyAndQuality: " + this);
 				// just log it for now
 				logger.warn(ex.getLocalizedMessage(), ex);
 				return BigDecimal.ZERO;
@@ -197,20 +205,26 @@ public final class MutableQtyAndQuality implements IQtyAndQuality
 		return qualityDiscountPercent;
 	}
 
-	@Override
+	/**
+	 * @return quantity with issues; i.e. QtyTotal * Quality Discount Percent%
+	 */
 	public BigDecimal getQtyWithIssues(final int qtyPrecision)
 	{
 		return getQtyWithIssuesExact()
 				.setScale(qtyPrecision, QtyWithIssues_RoundingMode);
 	}
 
-	@Override
-	public final BigDecimal getQtyWithIssuesExact()
+	/**
+	 * @return quantity with issues (precise, high scale value)
+	 */
+	public BigDecimal getQtyWithIssuesExact()
 	{
 		return qtyWithIssues;
 	}
 
-	@Override
+	/**
+	 * @return quantity without issues; i.e. QtyTotal - QtyWithIssues
+	 */
 	public BigDecimal getQtyWithoutIssues(final int qtyPrecision)
 	{
 		final BigDecimal qtyTotal = getQtyTotal(qtyPrecision);
@@ -224,7 +238,9 @@ public final class MutableQtyAndQuality implements IQtyAndQuality
 		this.qualityNotices.addQualityNotices(qualityNoticesToAdd);
 	}
 
-	@Override
+	/**
+	 * @return quality notices; never null
+	 */
 	public QualityNoticesCollection getQualityNotices()
 	{
 		// always return a copy, because qualityNotices is not immutable

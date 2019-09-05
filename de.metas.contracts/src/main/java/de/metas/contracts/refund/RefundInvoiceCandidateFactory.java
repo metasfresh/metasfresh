@@ -20,7 +20,6 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -50,7 +49,9 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductIds;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
@@ -259,8 +260,9 @@ public class RefundInvoiceCandidateFactory
 	public Optional<RefundInvoiceCandidate> ofNullableRefundRecord(@Nullable final I_C_Invoice_Candidate refundRecord)
 	{
 		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-		
+
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
+		final IProductBL productBL = Services.get(IProductBL.class);
 
 		if (refundRecord == null)
 		{
@@ -302,8 +304,7 @@ public class RefundInvoiceCandidateFactory
 				priceActual,
 				CurrencyId.ofRepoId(refundRecord.getC_Currency_ID()));
 
-		final I_M_Product product = productDAO.getById(refundRecord.getM_Product_ID());
-		final I_C_UOM productUom = uomDAO.getById(product.getC_UOM_ID());
+		final I_C_UOM productUom = productBL.getStockUOM(ProductIds.ofRecord(refundRecord));
 
 		final RefundInvoiceCandidate invoiceCandidate = RefundInvoiceCandidate
 				.builder()

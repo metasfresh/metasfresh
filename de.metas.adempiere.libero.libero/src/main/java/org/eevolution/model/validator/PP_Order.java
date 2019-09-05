@@ -73,7 +73,7 @@ public class PP_Order
 		if (ppOrder.getC_UOM_ID() <= 0)
 		{
 			final ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
-			final UomId uomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+			final UomId uomId = Services.get(IProductBL.class).getStockUOMId(productId);
 			ppOrder.setC_UOM_ID(uomId.getRepoId());
 		}
 
@@ -183,7 +183,7 @@ public class PP_Order
 	public void updateAndPostEventOnQtyEnteredChange(final I_PP_Order ppOrderRecord)
 	{
 		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-
+		
 		if (ppOrderBL.isSomethingProcessed(ppOrderRecord))
 		{
 			throw new LiberoException("Cannot quantity is not allowed because there is something already processed on this order"); // TODO: trl

@@ -119,7 +119,7 @@ public class VendorProductInfo
 		return PricingConditionsBreakQuery.builder()
 				.product(getProduct())
 				// .attributeInstances(attributeInstances)// TODO
-				.qty(qtyToDeliver.getAsBigDecimal())
+				.qty(qtyToDeliver.toBigDecimal())
 				.price(BigDecimal.ZERO) // N/A
 				.build();
 	}

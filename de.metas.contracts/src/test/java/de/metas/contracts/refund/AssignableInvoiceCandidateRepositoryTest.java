@@ -75,12 +75,12 @@ public class AssignableInvoiceCandidateRepositoryTest
 		// invoke the method under test
 		final AssignableInvoiceCandidate assignableCandidate = assignableInvoiceCandidateRepository.getById(InvoiceCandidateId.ofRepoId(assignableCandidateRecord.getC_Invoice_Candidate_ID()));
 
-		assertThat(assignableCandidate.getQuantity().getAsBigDecimal()).isEqualByComparingTo("15");
+		assertThat(assignableCandidate.getQuantity().toBigDecimal()).isEqualByComparingTo("15");
 
 		final I_M_Product product = productDAO.getById(ProductId.ofRepoId(assignableCandidateRecord.getM_Product_ID()));
 		assertThat(assignableCandidate.getQuantity().getUomId().getRepoId()).isEqualTo(product.getC_UOM_ID());
 		assertThat(assignableCandidate.getBpartnerLocationId().getBpartnerId().getRepoId()).isEqualTo(refundTestTools.billBPartnerLocationId.getBpartnerId().getRepoId());
-		assertThat(assignableCandidate.getMoney().getAsBigDecimal()).isEqualTo(TWENTY);
+		assertThat(assignableCandidate.getMoney().toBigDecimal()).isEqualTo(TWENTY);
 		assertThat(assignableCandidate.getMoney().getCurrencyId()).isEqualTo(refundTestTools.getCurrencyId());
 		assertThat(assignableCandidate.getInvoiceableFrom()).isEqualTo(NOW);
 	}

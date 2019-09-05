@@ -120,12 +120,12 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 			this.itemToPack = PackingItems.newPackingItem(parts);
 
 			// Validate
-			assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliver)));
+			assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliver)));
 		}
 
 		//
 		// Validate initial context state
-		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliver)));
+		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliver)));
 
 		new ShipmentScheduleQtyPickedExpectations()
 				.shipmentSchedule(shipmentSchedule)
@@ -155,7 +155,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 					.allocate();
 
 			// Validate
-			assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), comparesEqualTo(BigDecimal.valueOf(100 - 30)));
+			assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(100 - 30)));
 			assertTrue("We shall have unpacked items", packingItems.hasUnpackedItems());
 			assertTrue("We shall have packed items", packingItems.hasPackedItems());
 
@@ -182,7 +182,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 					.allocate();
 
 			// Validate
-			assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), comparesEqualTo(BigDecimal.valueOf(100 - 30 - 60)));
+			assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(100 - 30 - 60)));
 			assertTrue("We shall have unpacked items", packingItems.hasUnpackedItems());
 			assertTrue("We shall have packed items", packingItems.hasPackedItems());
 
@@ -209,7 +209,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 					.allocate();
 
 			// Validate
-			assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), comparesEqualTo(BigDecimal.valueOf(0)));
+			assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(0)));
 			assertFalse("We shall NOT have unpacked items", packingItems.hasUnpackedItems());
 			assertTrue("We shall have packed items", packingItems.hasPackedItems());
 
@@ -241,7 +241,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 					.allocate();
 
 			// Validate
-			assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), comparesEqualTo(BigDecimal.valueOf(100 - 30)));
+			assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(100 - 30)));
 			assertTrue("We shall have unpacked items", packingItems.hasUnpackedItems());
 			assertTrue("We shall have packed items", packingItems.hasPackedItems());
 			new ShipmentScheduleQtyPickedExpectations()
@@ -269,7 +269,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 				.allocate();
 
 		// Validate
-		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), comparesEqualTo(BigDecimal.valueOf(100)));
+		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(100)));
 		assertTrue("We shall have unpacked items", packingItems.hasUnpackedItems());
 		assertFalse("We shall NOT have packed items", packingItems.hasPackedItems());
 		new ShipmentScheduleQtyPickedExpectations()
@@ -304,7 +304,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 		// we expect the system to figure this out and to automatically set the QtyPicked record's LU
 
 		// Validate
-		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), comparesEqualTo(BigDecimal.valueOf(100 - COUNT_Tomatoes_Per_IFCO)));
+		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(100 - COUNT_Tomatoes_Per_IFCO)));
 		assertTrue("We shall have unpacked items", packingItems.hasUnpackedItems());
 		assertTrue("We shall have packed items", packingItems.hasPackedItems());
 
@@ -320,7 +320,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 			final int qtyToDeliverInt)
 	{
 		final Quantity qtyToDeliver = Quantity.of(qtyToDeliverInt, uomEach);
-		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, qtyToDeliver.getAsBigDecimal(), BigDecimal.ZERO);
+		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, qtyToDeliver.toBigDecimal(), BigDecimal.ZERO);
 
 		parts.updatePart(PackingItems.newPackingItemPart(schedule)
 				.qty(qtyToDeliver)
@@ -410,7 +410,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 				.getStorage(vhu)
 				.getProductStorage(pTomatoId)
 				.getQty()
-				.getAsBigDecimal();
+				.toBigDecimal();
 		assertThat("HU Qty shall match QtyPicked", huQty, comparesEqualTo(qtyPicked));
 	}
 

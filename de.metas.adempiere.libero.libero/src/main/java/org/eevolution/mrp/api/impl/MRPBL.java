@@ -204,14 +204,14 @@ public class MRPBL implements IMRPBL
 	public I_C_UOM getC_UOM(final I_PP_MRP mrp)
 	{
 		Check.assumeNotNull(mrp, "mrp not null");
-		return Services.get(IProductBL.class).getStockingUOM(mrp.getM_Product_ID());
+		return Services.get(IProductBL.class).getStockUOM(mrp.getM_Product_ID());
 	}
 
 	@Override
 	public I_C_UOM getC_UOM(final I_PP_MRP_Alternative mrpAlternative)
 	{
 		Check.assumeNotNull(mrpAlternative, "mrpAlternative not null");
-		return Services.get(IProductBL.class).getStockingUOM(mrpAlternative.getM_Product_ID());
+		return Services.get(IProductBL.class).getStockUOM(mrpAlternative.getM_Product_ID());
 	}
 
 	@Override

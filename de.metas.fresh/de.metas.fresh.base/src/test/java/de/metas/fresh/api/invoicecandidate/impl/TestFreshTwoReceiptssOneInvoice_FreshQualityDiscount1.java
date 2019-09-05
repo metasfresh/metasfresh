@@ -34,13 +34,21 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import de.metas.StartupListener;
+import de.metas.currency.CurrencyRepository;
 import de.metas.fresh.invoicecandidate.spi.impl.FreshQuantityDiscountAggregator;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.impl.aggregationEngine.TestTwoReceiptsOneInvoice_QualityDiscount1;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
+import de.metas.money.MoneyService;
 import de.metas.util.collections.CollectionUtils;
 
 /**
@@ -55,6 +63,9 @@ import de.metas.util.collections.CollectionUtils;
  * @task 08507
  *
  */
+
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, /* ShutdownListener.class,*/ MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
 public class TestFreshTwoReceiptssOneInvoice_FreshQualityDiscount1 extends TestTwoReceiptsOneInvoice_QualityDiscount1
 {
 	private I_C_Invoice_Candidate_Agg freshAgg;
@@ -93,8 +104,8 @@ public class TestFreshTwoReceiptssOneInvoice_FreshQualityDiscount1 extends TestT
 		final BigDecimal qtyDeliveredInclDisputed = THREE.add(FIVE).add(TEN).add(TWENTY);
 		final BigDecimal qtyDisputed = FIVE.add(TWENTY);
 
-		assertThat(invoiceLine1.getQtyToInvoice(), comparesEqualTo(qtyDeliveredInclDisputed));
-		assertThat(invoiceLine1.getNetLineAmt(), comparesEqualTo(qtyDeliveredInclDisputed));
+		assertThat(invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(qtyDeliveredInclDisputed));
+		assertThat(invoiceLine1.getNetLineAmt().toBigDecimal(), comparesEqualTo(qtyDeliveredInclDisputed.multiply(TEN)));
 		validateIcIlAllocationQty(ic, invoice, invoiceLine1, qtyDeliveredInclDisputed);
 
 //		final I_C_InvoiceCandidate_InOutLine icIol11 = invoiceCandidateInOutLine(ic, iol11_three);
@@ -116,9 +127,9 @@ public class TestFreshTwoReceiptssOneInvoice_FreshQualityDiscount1 extends TestT
 
 		final IInvoiceLineRW invoiceLine2 = forIol22.get(0);
 
-		assertThat(invoiceLine2.getQtyToInvoice(), comparesEqualTo(qtyDisputed.negate()));
-		assertThat(invoiceLine2.getPriceActual(), comparesEqualTo(BigDecimal.ONE));
-		assertThat(invoiceLine2.getNetLineAmt(), comparesEqualTo(qtyDisputed.negate()));
+		assertThat(invoiceLine2.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(qtyDisputed.negate()));
+		assertThat(invoiceLine2.getPriceActual().toMoney().toBigDecimal(), comparesEqualTo(BigDecimal.ONE));
+		assertThat(invoiceLine2.getNetLineAmt().toBigDecimal(), comparesEqualTo(qtyDisputed.negate().multiply(TEN)));
 		validateIcIlAllocationQty(ic, invoice, invoiceLine2, qtyDisputed.negate());
 
 //		final I_C_InvoiceCandidate_InOutLine icIol12 = invoiceCandidateInOutLine(ic, iol12_five_disp);

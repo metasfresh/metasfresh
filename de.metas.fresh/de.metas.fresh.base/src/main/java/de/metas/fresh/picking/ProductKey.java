@@ -304,7 +304,7 @@ public class ProductKey extends TerminalKey
 	{
 		final BigDecimal unallocQty = getQtyUnallocated(2);
 
-		BigDecimal allocQty = getQty().getAsBigDecimal();
+		BigDecimal allocQty = getQty().toBigDecimal();
 		if (allocQty.scale() > 2)
 		{
 			allocQty = allocQty.setScale(2, BigDecimal.ROUND_HALF_UP);
@@ -346,7 +346,7 @@ public class ProductKey extends TerminalKey
 		}
 		final Quantity qtyUnallocated = unallocPackingItem.getQtySum();
 
-		return qtyUnallocated.getAsBigDecimal();
+		return qtyUnallocated.toBigDecimal();
 	}
 
 	public I_C_UOM getQtyUnallocatedUOM()

@@ -197,7 +197,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		else
 		{
 			lutuConfiguration.setIsInfiniteQtyCU(false);
-			lutuConfiguration.setQtyCU(tuCapacity.getCapacityQty());
+			lutuConfiguration.setQtyCU(tuCapacity.toBigDecimal());
 		}
 
 		//
@@ -476,7 +476,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 
 		//
 		// Calculate how many LUs we need for given total QtyCU (converted to our capacity UOM)
-		final int qtyLUs = qtyCUsTotal_Converted.getAsBigDecimal().divide(qtyCUsPerLU, 0, RoundingMode.UP).intValueExact();
+		final int qtyLUs = qtyCUsTotal_Converted.toBigDecimal().divide(qtyCUsPerLU, 0, RoundingMode.UP).intValueExact();
 		return qtyLUs;
 	}
 

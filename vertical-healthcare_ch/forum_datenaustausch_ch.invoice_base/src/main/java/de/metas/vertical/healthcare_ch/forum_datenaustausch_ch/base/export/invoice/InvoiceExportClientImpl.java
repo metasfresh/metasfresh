@@ -1,14 +1,12 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.export.invoice;
 
 import static de.metas.util.Check.assumeNotNull;
-import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.GregorianCalendar;
@@ -443,7 +441,6 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 
 			final XmlService xServiceForInvoiceLine = recordId2xService.get(recordId);
 			final BigDecimal xServiceAmount = xServiceForInvoiceLine.getAmount();
-			final BigDecimal xServiceExternalFactor = xServiceForInvoiceLine.getExternalFactor();
 
 			final Money invoiceLineMoney = invoiceLine.getLineAmount();
 			final BigDecimal invoiceLineAmount = invoiceLineMoney.getAmount();
@@ -458,21 +455,9 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 				continue;
 			}
 
+			// note that we don't modify the external factor
 			serviceMod.amount(invoiceLineAmount);
 
-			final BigDecimal externalFactorMod;
-			if (xServiceAmount.signum() == 0 || xServiceExternalFactor.signum() == 0)
-			{
-				externalFactorMod = ONE;
-			}
-			else
-			{
-				externalFactorMod = invoiceLineAmount
-						.setScale(invoiceLineAmount.scale() + 10)
-						.multiply(xServiceExternalFactor)
-						.divide(xServiceAmount, RoundingMode.HALF_UP);
-			}
-			serviceMod.externalFactor(externalFactorMod);
 			serviceMods.add(serviceMod.build());
 		}
 		return serviceMods.build();

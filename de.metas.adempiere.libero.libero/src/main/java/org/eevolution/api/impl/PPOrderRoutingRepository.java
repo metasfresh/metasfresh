@@ -560,16 +560,16 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		// Planned values
 		record.setSetupTimeRequiered(DurationUtils.toInt(from.getSetupTimeRequired(), durationUnit));
 		record.setDurationRequiered(DurationUtils.toInt(from.getDurationRequired(), durationUnit));
-		record.setQtyRequiered(from.getQtyRequired().getAsBigDecimal());
+		record.setQtyRequiered(from.getQtyRequired().toBigDecimal());
 		record.setC_UOM_ID(from.getQtyRequired().getUOMId());
 
 		//
 		// Reported values
 		record.setSetupTimeReal(DurationUtils.toInt(from.getSetupTimeReal(), durationUnit));
 		record.setDurationReal(DurationUtils.toInt(from.getDurationReal(), durationUnit));
-		record.setQtyDelivered(from.getQtyDelivered().getAsBigDecimal());
-		record.setQtyScrap(from.getQtyScrapped().getAsBigDecimal());
-		record.setQtyReject(from.getQtyRejected().getAsBigDecimal());
+		record.setQtyDelivered(from.getQtyDelivered().toBigDecimal());
+		record.setQtyScrap(from.getQtyScrapped().toBigDecimal());
+		record.setQtyReject(from.getQtyRejected().toBigDecimal());
 		record.setDateStart(TimeUtil.asTimestamp(from.getDateStart()));
 		record.setDateFinish(TimeUtil.asTimestamp(from.getDateFinish()));
 	}

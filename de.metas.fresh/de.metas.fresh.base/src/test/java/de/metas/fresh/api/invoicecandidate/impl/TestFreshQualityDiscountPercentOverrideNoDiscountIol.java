@@ -10,18 +10,17 @@ package de.metas.fresh.api.invoicecandidate.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.is;
@@ -32,23 +31,31 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import de.metas.StartupListener;
+import de.metas.currency.CurrencyRepository;
 import de.metas.fresh.invoicecandidate.spi.impl.FreshQuantityDiscountAggregator;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.invoicecandidate.api.IInvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
+import de.metas.invoicecandidate.api.InvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.api.impl.aggregationEngine.TestQualityDiscountPercentOverrideNoDiscountIol;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
+import de.metas.money.MoneyService;
 
 /**
  * Checks the {@link FreshQuantityDiscountAggregator} when using {@link I_C_Invoice_Candidate#setQualityDiscountPercent_Override(BigDecimal)}.
  * <p>
  * Note that there is also no in-dispute iol in this case.
  *
- * @author ts
- *
  */
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class,/* ShutdownListener.class,*/ InvoiceCandidateRecordService.class, MoneyService.class, CurrencyRepository.class })
 public class TestFreshQualityDiscountPercentOverrideNoDiscountIol extends TestQualityDiscountPercentOverrideNoDiscountIol
 {
 	private I_C_Invoice_Candidate_Agg freshAgg;
@@ -85,12 +92,12 @@ public class TestFreshQualityDiscountPercentOverrideNoDiscountIol extends TestQu
 		assertEquals("We are expecting two invoice lines: " + invoiceLines, 2, invoiceLines.size());
 
 		final IInvoiceLineRW invoiceLine1 = invoiceLines.get(0);
-		assertThat("Invalid invoice line 1 - QtyToInvoice", invoiceLine1.getQtyToInvoice(), comparesEqualTo(new BigDecimal("100")));
+		assertThat("Invalid invoice line 1 - QtyToInvoice", invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(new BigDecimal("100")));
 
-		final IInvoiceCandidateInOutLineToUpdate icIolToUpdate11 = retrieveIcIolToUpdateIfExists(invoiceLine1, iol11);
-		assertThat(icIolToUpdate11.getQtyInvoiced(), comparesEqualTo(new BigDecimal("90")));
+		final InvoiceCandidateInOutLineToUpdate icIolToUpdate11 = retrieveIcIolToUpdateIfExists(invoiceLine1, iol11);
+		assertThat(icIolToUpdate11.getQtyInvoiced().getUOMQtyNotNull().toBigDecimal(), comparesEqualTo(new BigDecimal("900")));
 
 		final IInvoiceLineRW invoiceLine2 = invoiceLines.get(1);
-		assertThat("Invalid invoice line 2 - QtyToInvoice", invoiceLine2.getQtyToInvoice(), comparesEqualTo(new BigDecimal("-10")));
+		assertThat("Invalid invoice line 2 - QtyToInvoice", invoiceLine2.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(new BigDecimal("-10")));
 	}
 }

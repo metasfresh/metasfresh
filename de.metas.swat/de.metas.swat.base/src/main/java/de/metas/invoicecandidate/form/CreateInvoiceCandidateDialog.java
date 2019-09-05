@@ -60,7 +60,6 @@ import org.compiere.grid.ed.VLookup;
 import org.compiere.grid.ed.VNumber;
 import org.compiere.grid.ed.api.ISwingEditorFactory;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
@@ -93,6 +92,7 @@ import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -396,7 +396,7 @@ public class CreateInvoiceCandidateDialog
 			final I_M_Product product,
 			final I_M_PricingSystem pricingSystem)
 	{
-		final I_C_UOM priceUOM;
+		final UomId priceUomId;
 		try
 		{
 			final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
@@ -426,16 +426,16 @@ public class CreateInvoiceCandidateDialog
 			{
 				throw new ProductPriceNotFoundException("@NotFound@: @M_ProductPrice_ID@");
 			}
-			priceUOM = productPrice.getC_UOM();
+			priceUomId = UomId.ofRepoIdOrNull(productPrice.getC_UOM_ID());
 		}
 		catch (final ProductPriceNotFoundException ppnfe)
 		{
 			ADialog.error(windowNo, getContentPane(), ppnfe);
 			return;
 		}
-		Check.assumeNotNull(priceUOM, "priceUOM not null");
+		Check.assumeNotNull(priceUomId, "priceUomId not null");
 
-		final int uomId = priceUOM.getC_UOM_ID();
+		final int uomId = priceUomId.getRepoId();
 		priceUOMField.setValue(uomId);
 	}
 

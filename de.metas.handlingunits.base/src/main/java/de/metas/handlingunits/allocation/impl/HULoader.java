@@ -390,7 +390,7 @@ public class HULoader
 				trxs.add(unloadTrxPartial);
 				trxs.add(loadTrx);
 
-				final BigDecimal unloadTrxPartial_Qty = unloadTrxPartial.getQuantity().getAsBigDecimal().negate();
+				final BigDecimal unloadTrxPartial_Qty = unloadTrxPartial.getQuantity().toBigDecimal().negate();
 				qtyUnloaded = qtyUnloaded.add(unloadTrxPartial_Qty);
 			}
 

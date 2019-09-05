@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
 
@@ -32,7 +16,7 @@ public interface I_M_MatchInv
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
@@ -47,8 +31,6 @@ public interface I_M_MatchInv
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Client_ID();
-
-	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_M_MatchInv, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_MatchInv, org.compiere.model.I_AD_Client>(I_M_MatchInv.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
@@ -74,10 +56,6 @@ public interface I_M_MatchInv
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_M_MatchInv, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_MatchInv, org.compiere.model.I_AD_Org>(I_M_MatchInv.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
@@ -142,6 +120,31 @@ public interface I_M_MatchInv
     public static final org.adempiere.model.ModelColumn<I_M_MatchInv, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_MatchInv, org.compiere.model.I_AD_User>(I_M_MatchInv.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_MatchInv, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_MatchInv, org.compiere.model.I_C_UOM>(I_M_MatchInv.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Buchungsdatum.
@@ -217,7 +220,7 @@ public interface I_M_MatchInv
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Beleg Nr..
+	 * Set Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -227,7 +230,7 @@ public interface I_M_MatchInv
 	public void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Beleg Nr..
+	 * Get Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -292,8 +295,8 @@ public interface I_M_MatchInv
     public static final String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
-	 * Set Ausprägung Merkmals-Satz.
-	 * Product Attribute Set Instance
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -302,8 +305,8 @@ public interface I_M_MatchInv
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Ausprägung Merkmals-Satz.
-	 * Product Attribute Set Instance
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -393,10 +396,6 @@ public interface I_M_MatchInv
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Product_ID();
-
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
 
     /** Column definition for M_Product_ID */
     public static final org.adempiere.model.ModelColumn<I_M_MatchInv, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_M_MatchInv, org.compiere.model.I_M_Product>(I_M_MatchInv.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
@@ -500,6 +499,29 @@ public interface I_M_MatchInv
     public static final org.adempiere.model.ModelColumn<I_M_MatchInv, Object> COLUMN_Qty = new org.adempiere.model.ModelColumn<I_M_MatchInv, Object>(I_M_MatchInv.class, "Qty", null);
     /** Column name Qty */
     public static final String COLUMNNAME_Qty = "Qty";
+
+	/**
+	 * Set Menge in Maßeinheit.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyInUOM (java.math.BigDecimal QtyInUOM);
+
+	/**
+	 * Get Menge in Maßeinheit.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyInUOM();
+
+    /** Column definition for QtyInUOM */
+    public static final org.adempiere.model.ModelColumn<I_M_MatchInv, Object> COLUMN_QtyInUOM = new org.adempiere.model.ModelColumn<I_M_MatchInv, Object>(I_M_MatchInv.class, "QtyInUOM", null);
+    /** Column name QtyInUOM */
+    public static final String COLUMNNAME_QtyInUOM = "QtyInUOM";
 
 	/**
 	 * Get Aktualisiert.

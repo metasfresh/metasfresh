@@ -164,7 +164,7 @@ public class QualityInvoiceLineGroupExpectationsJavaWriter
 		appendMethodCall("product", invoiceableLine.getM_Product());
 		appendMethodCall("productName", invoiceableLine.getProductName());
 		appendMethodCall("percentage", invoiceableLine.getPercentage());
-		appendMethodCall("qty", invoiceableLine.getQty().getAsBigDecimal());
+		appendMethodCall("qty", invoiceableLine.getQty().toBigDecimal());
 		appendMethodCall("uom", invoiceableLine.getQty().getUOM());
 		appendMethodCall("displayed", invoiceableLine.isDisplayed());
 		appendMethodCall("description", invoiceableLine.getDescription());

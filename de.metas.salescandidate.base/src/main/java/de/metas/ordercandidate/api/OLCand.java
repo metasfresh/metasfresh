@@ -10,6 +10,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.product.ProductId;
@@ -337,5 +338,10 @@ public final class OLCand implements IProductPriceAware
 			return candidate.getM_HU_PI_Item_Product_Override_ID();
 		}
 		return candidate.getM_HU_PI_Item_Product_ID();
+	}
+
+	public InvoicableQtyBasedOn getInvoicableQtyBasedOn()
+	{
+		return InvoicableQtyBasedOn.fromRecordString(candidate.getInvoicableQtyBasedOn());
 	}
 }

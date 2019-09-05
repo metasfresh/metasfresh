@@ -181,7 +181,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 		inventoryLine.setM_Locator_ID(importRecord.getM_Locator_ID());
 
 		final ProductId productId = ProductId.ofRepoId(importRecord.getM_Product_ID());
-		final UomId uomId = productBL.getStockingUOMId(productId);
+		final UomId uomId = productBL.getStockUOMId(productId);
 		inventoryLine.setM_Product_ID(productId.getRepoId());
 		inventoryLine.setC_UOM_ID(uomId.getRepoId());
 

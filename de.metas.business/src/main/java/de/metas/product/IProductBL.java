@@ -23,6 +23,7 @@ package de.metas.product;
  */
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.AttributeSetId;
@@ -72,7 +73,7 @@ public interface IProductBL extends ISingletonService
 	 */
 	boolean isStocked(I_M_Product product);
 
-	boolean isStocked(int productId);
+	boolean isStocked(ProductId productId);
 
 	boolean isDiverse(ProductId productId);
 
@@ -103,26 +104,28 @@ public interface IProductBL extends ISingletonService
 	I_M_AttributeSetInstance getCreateASI(Properties ctx, int M_AttributeSetInstance_ID, int M_Product_ID);
 
 	/** @return UOM used in material storage; never return null; */
-	I_C_UOM getStockingUOM(I_M_Product product);
+	I_C_UOM getStockUOM(I_M_Product product);
 
 	/** @return UOM used in material storage; never return null; */
-	I_C_UOM getStockingUOM(int productId);
+	I_C_UOM getStockUOM(int productId);
 
 	/** @return UOM used in material storage; never return null; */
-	default I_C_UOM getStockingUOM(@NonNull final ProductId productId)
+	default I_C_UOM getStockUOM(@NonNull final ProductId productId)
 	{
-		return getStockingUOM(productId.getRepoId());
+		return getStockUOM(productId.getRepoId());
 	}
 
-	default UomId getStockingUOMId(@NonNull final ProductId productId)
+	default UomId getStockUOMId(@NonNull final ProductId productId)
 	{
-		return getStockingUOMId(productId.getRepoId());
+		return getStockUOMId(productId.getRepoId());
 	}
 
-	default UomId getStockingUOMId(final int productId)
+	default UomId getStockUOMId(final int productId)
 	{
-		return UomId.ofRepoId(getStockingUOM(productId).getC_UOM_ID());
+		return UomId.ofRepoId(getStockUOM(productId).getC_UOM_ID());
 	}
+
+	Optional<UomId> getCatchUOMId(ProductId productId);
 
 	/**
 	 * Gets product standard Weight in <code>uomTo</code>.

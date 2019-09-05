@@ -37,12 +37,12 @@ import de.metas.util.time.SystemTime;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -166,7 +166,7 @@ public class RequestBLTest
 		final I_M_InOutLine line = newInstance(I_M_InOutLine.class);
 		line.setM_InOut(inout);
 
-		line.setM_Product(createProduct("Product1"));
+		line.setM_Product_ID(createProduct("Product1").getM_Product_ID());
 
 		line.setQualityDiscountPercent(BigDecimal.TEN);
 		save(line);

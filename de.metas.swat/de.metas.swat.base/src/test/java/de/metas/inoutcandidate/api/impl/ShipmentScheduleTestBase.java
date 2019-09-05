@@ -38,6 +38,7 @@ import javax.annotation.Nullable;
 
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.TimeUtil;
 
@@ -85,13 +86,27 @@ public class ShipmentScheduleTestBase
 
 	public ImmutableList<OlAndSched> setup(@NonNull final TestSetupSpec spec)
 	{
+		final Map<String, I_C_UOM> name2uom = new HashMap<>();
+		for (final UomSpec uom : spec.getUoms())
+		{
+			final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
+			uomRecord.setName(uom.getName());
+			saveRecord(uomRecord);
+
+			name2uom.put(uomRecord.getName(), uomRecord);
+		}
+
 		final Map<String, I_M_Product> value2product = new HashMap<>();
 		for (final ProductSpec product : spec.getProducts())
 		{
+			final I_C_UOM uomRecord = assumeNotNull(name2uom.get(product.getUomValue()), "");
+
 			final I_M_Product productRecord = newInstance(I_M_Product.class);
 			productRecord.setValue(product.getValue());
 			productRecord.setIsStocked(product.isStocked());
 			productRecord.setProductType(product.getProductType());
+			productRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
+
 			saveRecord(productRecord);
 
 			value2product.put(productRecord.getValue(), productRecord);
@@ -147,6 +162,7 @@ public class ShipmentScheduleTestBase
 			final I_C_OrderLine orderLineRecord = value2orderLine.get(shipmentSchedule.getOrderLine());
 
 			final I_M_ShipmentSchedule shipmentScheduleRecord = newInstance(I_M_ShipmentSchedule.class);
+			shipmentScheduleRecord.setM_Product_ID(productRecord.getM_Product_ID());
 			shipmentScheduleRecord.setIsClosed(false);
 			shipmentScheduleRecord.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
 			shipmentScheduleRecord.setQtyDelivered(BigDecimal.ONE);
@@ -175,6 +191,7 @@ public class ShipmentScheduleTestBase
 	@Value
 	public static class TestSetupSpec
 	{
+		Map<String, UomSpec> names2uoms;
 
 		Map<String, ProductSpec> values2products;
 
@@ -188,12 +205,14 @@ public class ShipmentScheduleTestBase
 
 		@Builder(toBuilder = true)
 		private TestSetupSpec(
+				@Singular @ObtainVia(method = "getUoms") List<UomSpec> uoms,
 				@Singular @ObtainVia(method = "getProducts") List<ProductSpec> products,
 				@Singular List<StockSpec> stocks,
 				@Singular List<OrderSpec> orders,
 				@Singular List<OrderLineSpec> orderLines,
 				@Singular List<ShipmentScheduleSpec> shipmentSchedules)
 		{
+			this.names2uoms = Maps.uniqueIndex(uoms, UomSpec::getName);
 			this.values2products = Maps.uniqueIndex(products, ProductSpec::getValue);
 			this.stocks = stocks;
 			this.orders = orders;
@@ -213,6 +232,19 @@ public class ShipmentScheduleTestBase
 		{
 			return ImmutableList.copyOf(values2products.values());
 		}
+
+		private List<UomSpec> getUoms()
+		{
+			return ImmutableList.copyOf(names2uoms.values());
+		}
+	}
+
+	@Value
+	@Builder
+	@Wither
+	public static class UomSpec
+	{
+		String name;
 	}
 
 	@Value
@@ -224,6 +256,9 @@ public class ShipmentScheduleTestBase
 		String value;
 
 		boolean stocked;
+
+		@NonNull
+		String uomValue;
 
 		@Default
 		String productType= X_M_Product.PRODUCTTYPE_Item;

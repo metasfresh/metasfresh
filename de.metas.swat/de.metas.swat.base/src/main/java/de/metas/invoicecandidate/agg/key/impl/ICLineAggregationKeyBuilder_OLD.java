@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.agg.key.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -52,9 +54,11 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.impl.AggregationKeyEvaluationContext;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
+import de.metas.invoicecandidate.model.I_M_ProductGroup;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
 import de.metas.money.CurrencyId;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductPrice;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
@@ -101,6 +105,7 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 	{
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
 		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 		final I_C_Invoice_Candidate_Agg agg = ic.getC_Invoice_Candidate_Agg();
 		Check.assumeNotNull(agg, "invoice candidate aggregation not null for {}", ic);
@@ -109,12 +114,15 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 
 		if (agg.getM_ProductGroup_ID() > 0)
 		{
+			final I_M_ProductGroup productGroupgrcord = agg.getM_ProductGroup();
+			final I_M_Product productProxyRecord = loadOutOfTrx(productGroupgrcord.getM_Product_Proxy_ID(), I_M_Product.class);
+
 			// NOTE: the only reason why we add all these strings instead of just adding agg.getC_Invoice_Candidate_Agg_ID() is because we want an user friendly string
 			sb.append(agg.getName());
 			sb.append("_").append(agg.getSeqNo());
-			sb.append("_").append(agg.getAD_Org().getName());
-			sb.append("_").append(agg.getM_ProductGroup().getName());
-			sb.append("_").append(agg.getM_ProductGroup().getM_Product_Proxy().getValue());
+			sb.append("_").append(agg.getAD_Org_ID());
+			sb.append("_").append(productGroupgrcord.getName());
+			sb.append("_").append(productProxyRecord.getValue());
 		}
 		else
 		{
@@ -142,9 +150,11 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 
 		final NumberFormat numberFormat = createCurrencyNumberFormat(ic);
 
-		final BigDecimal priceActual = Services.get(IInvoiceCandBL.class).getPriceActual(ic);
-		sb.append("/" + numberFormat.format(priceActual));
-		sb.append("/" + NumberUtils.stripTrailingDecimalZeros(priceActual));
+		final ProductPrice priceActual = invoiceCandBL.getPriceActual(ic);
+		final BigDecimal priceActualAmt = priceActual.toMoney().toBigDecimal();
+
+		sb.append("/" + numberFormat.format(priceActualAmt));
+		sb.append("/" + NumberUtils.stripTrailingDecimalZeros(priceActualAmt));
 
 		//
 		// 06718: Use UOM in aggregation
@@ -161,7 +171,7 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 		sb.append("/" + ic.getC_Activity_ID());
 
 		// Add Tax
-		final I_C_Tax taxEffective = Services.get(IInvoiceCandBL.class).getTaxEffective(ic);
+		final I_C_Tax taxEffective = invoiceCandBL.getTaxEffective(ic);
 		sb.append("/" + taxEffective.getC_Tax_ID());
 
 		// Add IsPrinted

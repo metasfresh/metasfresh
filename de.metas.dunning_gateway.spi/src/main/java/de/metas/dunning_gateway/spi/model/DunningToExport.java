@@ -9,6 +9,8 @@ import java.time.Instant;
 import java.util.Calendar;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-invoice.gateway.commons
@@ -47,7 +49,7 @@ public class DunningToExport
 	@NonNull
 	String documentNumber;
 
-	@NonNull
+	@Nullable
 	String dunningText;
 
 	@NonNull

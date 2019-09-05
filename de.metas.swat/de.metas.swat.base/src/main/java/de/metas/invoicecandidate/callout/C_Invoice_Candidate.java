@@ -31,7 +31,7 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.invoicecandidate.api.IAggregationBL;
@@ -141,7 +141,7 @@ public class C_Invoice_Candidate
 		ic.setM_PricingSystem_ID(PricingSystemId.getRepoId(pricingSysId));
 	}
 
-	@CalloutMethod(columnNames = { I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override })
+	@CalloutMethod(columnNames = I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override )
 	public void onQualityDiscountPercentOverride(final I_C_Invoice_Candidate ic, final ICalloutField field)
 	{
 		ic.setIsInDispute(false);
@@ -150,7 +150,7 @@ public class C_Invoice_Candidate
 	@CalloutMethod(columnNames = I_C_Invoice_Candidate.COLUMNNAME_GroupCompensationPercentage)
 	public void onGroupCompensationPercentageChanged(final I_C_Invoice_Candidate ic)
 	{
-		final InvoiceCandidateGroupRepository groupsRepo = Adempiere.getBean(InvoiceCandidateGroupRepository.class);
+		final InvoiceCandidateGroupRepository groupsRepo = SpringContextHolder.instance.getBean(InvoiceCandidateGroupRepository.class);
 
 		final Group group = groupsRepo.createPartialGroupFromCompensationLine(ic);
 		group.updateAllCompensationLines();
