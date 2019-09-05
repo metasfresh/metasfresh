@@ -12,7 +12,7 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<parameter name="RECORD_ID" class="java.lang.Integer">
+	<parameter name="RECORD_ID" class="java.math.BigDecimal">
 		<defaultValueExpression><![CDATA[0]]></defaultValueExpression>
 	</parameter>
 	<parameter name="ad_language" class="java.lang.String" isForPrompting="false">
