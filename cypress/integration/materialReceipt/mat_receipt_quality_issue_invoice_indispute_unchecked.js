@@ -106,8 +106,10 @@ it('Create Product Category', function() {
   });
 });
 
-it('Create products and vendor', function() {
+it('Create product 1', function() {
   Builder.createProductWithPriceUsingExistingCategory(priceListName, productName1, productName1, productType, productCategoryName);
+});
+it('Create product 2 and vendor', function() {
   Builder.createProductWithPriceUsingExistingCategory(priceListName, productName2, productName2, productType, productCategoryName);
   cy.fixture('sales/simple_vendor.json').then(vendorJson => {
     new BPartner({ ...vendorJson, name: vendorName })
@@ -135,7 +137,7 @@ it('Save values needed for the next steps', function() {
   });
 });
 
-it('Visit referenced Material Receipt Candidates, expect 1 row', function() {
+it('Visit referenced Material Receipt Candidates, expect 2 rows', function() {
   cy.openReferencedDocuments('M_ReceiptSchedule');
   cy.expectNumberOfRows(2);
 });
