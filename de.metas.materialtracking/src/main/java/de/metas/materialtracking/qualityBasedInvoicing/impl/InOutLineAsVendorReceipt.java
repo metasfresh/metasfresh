@@ -25,23 +25,25 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
+import org.slf4j.Logger;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.logging.LogManager;
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
+import lombok.NonNull;
 
 /**
  * {@link IVendorReceipt} implementation which takes the values from the wrapped {@link I_M_InOutLine}.
@@ -75,9 +77,8 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 	}
 
 	@Override
-	public void add(final I_M_InOutLine inOutLine)
+	public void add(@NonNull final I_M_InOutLine inOutLine)
 	{
-		Check.assumeNotNull(inOutLine, "inOutLine not null");
 		if (inOutLine.getM_Product_ID() != _product.getM_Product_ID())
 		{
 			return; // nothing to do
@@ -181,7 +182,7 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 		{
 			if (inoutLine.getM_Product_ID() != productId)
 			{
-				logger.debug("Not counting {} because its M_Product_ID={} is not the ID of product {}", new Object[] { inoutLine, inoutLine.getM_Product_ID(), _product });
+				Loggables.get().addLog("Not counting {} because its M_Product_ID={} is not the ID of product {}", new Object[] { inoutLine, inoutLine.getM_Product_ID(), _product });
 				continue;
 			}
 
@@ -189,7 +190,7 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 			final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 			if (!docActionBL.isDocumentStatusOneOf(inoutLine.getM_InOut(), IDocument.STATUS_Completed, IDocument.STATUS_Closed))
 			{
-				logger.debug("Not counting {} because its M_InOut has docstatus {}", new Object[] { inoutLine, inoutLine.getM_InOut().getDocStatus() });
+				Loggables.get().addLog("Not counting {} because its M_InOut has docstatus {}", new Object[] { inoutLine, inoutLine.getM_InOut().getDocStatus() });
 				continue;
 			}
 

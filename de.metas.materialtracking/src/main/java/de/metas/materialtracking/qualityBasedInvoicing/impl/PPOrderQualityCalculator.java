@@ -52,6 +52,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionOrder;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 /**
  * Calculates and updates Quality related fields of a {@link I_PP_Order} (and it's BOM Lines).
@@ -167,13 +168,12 @@ public class PPOrderQualityCalculator
 	}
 
 	/**
-	 *
-	 * @param materialTracking
-	 * @param product
-	 * @param uomTo
 	 * @return quantity received (in <code>uomTo</code>) from linked material receipt lines
 	 */
-	private final BigDecimal retrieveQtyReceived(final I_M_Material_Tracking materialTracking, final I_M_Product product, final I_C_UOM uomTo)
+	private final BigDecimal retrieveQtyReceived(
+			@NonNull final I_M_Material_Tracking materialTracking,
+			@NonNull final I_M_Product product,
+			@NonNull final I_C_UOM uomTo)
 	{
 		// Services
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);

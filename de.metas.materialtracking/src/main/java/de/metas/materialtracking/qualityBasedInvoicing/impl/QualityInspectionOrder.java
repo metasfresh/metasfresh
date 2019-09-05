@@ -13,11 +13,11 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -91,8 +91,6 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 	 */
 	public QualityInspectionOrder(final org.eevolution.model.I_PP_Order ppOrder, final I_M_Material_Tracking materialTracking)
 	{
-		super();
-
 		//
 		// PP_Order
 		Check.assumeNotNull(ppOrder, "ppOrder not null");
@@ -205,7 +203,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 			{
 				continue;
 			}
-			if(productionMaterial.getM_Product().getM_Product_ID() != _materialTracking.getM_Product_ID())
+			if (productionMaterial.getM_Product().getM_Product_ID() != _materialTracking.getM_Product_ID())
 			{
 				continue; // beware of unrelated products that could have been issued together with "our" raw materials
 			}
@@ -236,7 +234,11 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 
 		if (rawProductionMaterials.size() > 1)
 		{
-			throw new AdempiereException("More than one raw production material lines where found: " + rawProductionMaterials);
+			throw new AdempiereException("More than one raw production material lines where found")
+					.appendParametersToMessage()
+					.setParameter("inspectionNumber", _inspectionNumber)
+					.setParameter("rawProductionMaterials", rawProductionMaterials)
+					.setParameter("ppOrderRecord", _ppOrder);
 		}
 
 		_productionMaterial_Raw = rawProductionMaterials.get(0);

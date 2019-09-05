@@ -42,6 +42,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
 import de.metas.materialtracking.qualityBasedInvoicing.QualityInspectionLineType;
 import de.metas.materialtracking.util.QualityBasedInspectionUtils;
+import lombok.NonNull;
 
 /**
  * Creates {@link IQualityInspectionLine}s for a given {@link IQualityInspectionOrder}.
@@ -113,10 +114,9 @@ public class QualityInspectionLinesBuilder
 		return getQualityInspectionOrder().getMainProductionMaterial();
 	}
 
-	public void setReceiptFromVendor(final IVendorReceipt<?> receiptFromVendor)
+	public void setReceiptFromVendor(@NonNull final IVendorReceipt<?> receiptsFromVendor)
 	{
-		Check.assumeNotNull(receiptFromVendor, "receiptFromVendor not null");
-		_receiptFromVendor = receiptFromVendor;
+		_receiptFromVendor = receiptsFromVendor;
 	}
 
 	private IVendorReceipt<?> getReceiptFromVendor()
@@ -125,10 +125,8 @@ public class QualityInspectionLinesBuilder
 		return _receiptFromVendor;
 	}
 
-	private BigDecimal getQtyReceivedFromVendor(final I_C_UOM uomTo)
+	private BigDecimal getQtyReceivedFromVendor(@NonNull final I_C_UOM uomTo)
 	{
-		Check.assumeNotNull(uomTo, "uomTo not null");
-
 		final IVendorReceipt<?> receiptFromVendor = getReceiptFromVendor();
 		final BigDecimal qtyReceivedFromVendor = receiptFromVendor.getQtyReceived();
 		final I_C_UOM qtyReceivedFromVendorUOM = receiptFromVendor.getQtyReceivedUOM();
