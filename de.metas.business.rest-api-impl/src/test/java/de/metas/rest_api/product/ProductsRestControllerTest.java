@@ -19,7 +19,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
+import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.rest_api.product.response.JsonGetProductsResponse;
 import de.metas.rest_api.product.response.JsonProduct;
@@ -67,6 +69,8 @@ public class ProductsRestControllerTest
 		SnapshotMatcher.start(
 				AdempiereTestHelper.SNAPSHOT_CONFIG,
 				AdempiereTestHelper.createSnapshotJsonFunction());
+
+		LogManager.setLoggerLevel(ProductsRestController.class, Level.ALL);
 	}
 
 	@AfterAll

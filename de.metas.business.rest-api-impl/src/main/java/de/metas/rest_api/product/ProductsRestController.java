@@ -1,6 +1,7 @@
 package de.metas.rest_api.product;
 
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.Profiles;
+import de.metas.logging.LogManager;
 import de.metas.rest_api.product.command.GetProductsCommand;
 import de.metas.rest_api.product.response.JsonGetProductsResponse;
 import de.metas.util.rest.MetasfreshRestAPIConstants;
@@ -43,6 +45,7 @@ public class ProductsRestController
 {
 	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/products";
 
+	private static final Logger logger = LogManager.getLogger(ProductsRestController.class);
 	private final ProductsServicesFacade productsServicesFacade;
 
 	public ProductsRestController(@NonNull final ProductsServicesFacade productsServicesFacade)
@@ -66,6 +69,8 @@ public class ProductsRestController
 		}
 		catch (final Exception ex)
 		{
+			logger.debug("Got exception", ex);
+
 			return ResponseEntity
 					.status(HttpStatus.NOT_FOUND)
 					.body(JsonGetProductsResponse.error(ex, adLanguage));
