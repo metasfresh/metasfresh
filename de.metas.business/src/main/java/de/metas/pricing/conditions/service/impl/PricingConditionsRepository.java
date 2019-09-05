@@ -36,6 +36,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -47,6 +49,7 @@ import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_DiscountSchemaLine;
@@ -313,6 +316,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				.create()
 				.stream();
 	}
+
 	@VisibleForTesting
 	/* package */ List<I_M_DiscountSchemaLine> retrieveLines(final int discountSchemaId)
 	{
@@ -540,20 +544,35 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 
 	@Override
 	public void copyDiscountSchemaBreaks(
-			@NonNull final PricingConditionsId pricingConditionsId,
-			@NonNull final IQueryFilter<I_M_DiscountSchemaBreak> queryFilter)
+			@NonNull final IQueryFilter<I_M_DiscountSchemaBreak> sourceFilter,
+			@NonNull final PricingConditionsId toPricingConditionsId)
+	{
+		copyDiscountSchemaBreaksWithProductId(sourceFilter, toPricingConditionsId, null/* productId */, false/* allowCopyToSameSchema */);
+	}
+
+	@Override
+	public void copyDiscountSchemaBreaksWithProductId(
+			@NonNull final IQueryFilter<I_M_DiscountSchemaBreak> sourceFilter,
+			@NonNull final PricingConditionsId toPricingConditionsId,
+			@Nullable final ProductId toProductId,
+			final boolean allowCopyToSameSchema)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final ICompositeQueryFilter<I_M_DiscountSchemaBreak> breaksFromOtherPricingConditions = queryBL.createCompositeQueryFilter(I_M_DiscountSchemaBreak.class)
 				.setJoinAnd()
-				.addFilter(queryFilter)
-				.addNotEqualsFilter(I_M_DiscountSchemaBreak.COLUMNNAME_M_DiscountSchema_ID, pricingConditionsId.getDiscountSchemaId());
+				.addFilter(sourceFilter);
+
+		if (!allowCopyToSameSchema)
+		{
+			breaksFromOtherPricingConditions
+					.addNotEqualsFilter(I_M_DiscountSchemaBreak.COLUMNNAME_M_DiscountSchema_ID, toPricingConditionsId.getDiscountSchemaId());
+		}
 
 		final List<I_M_DiscountSchemaBreak> discountSchemaBreakRecords = retrieveDiscountSchemaBreakRecords(breaksFromOtherPricingConditions);
 
-		for (I_M_DiscountSchemaBreak schemaBreak : discountSchemaBreakRecords)
+		for (final I_M_DiscountSchemaBreak schemaBreak : discountSchemaBreakRecords)
 		{
-			copyDiscountSchemaBreak(schemaBreak, pricingConditionsId);
+			copyDiscountSchemaBreakWithProductId(schemaBreak, toPricingConditionsId, toProductId);
 		}
 	}
 
@@ -566,18 +585,65 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				.list();
 	}
 
-	private void copyDiscountSchemaBreak(
+	private void copyDiscountSchemaBreakWithProductId(
 			@NonNull final I_M_DiscountSchemaBreak from,
-			@NonNull final PricingConditionsId toPricingConditionsId)
+			@NonNull final PricingConditionsId toPricingConditionsId,
+			@Nullable final ProductId toProductId)
 	{
 		final I_M_DiscountSchemaBreak newBreak = copy()
 				.setSkipCalculatedColumns(true)
 				.setFrom(from)
 				.copyToNew(I_M_DiscountSchemaBreak.class);
 
+		if (toProductId != null)
+		{
+			newBreak.setM_Product_ID(toProductId.getRepoId());
+		}
 		newBreak.setSeqNo(retrieveNextSeqNo(toPricingConditionsId.getDiscountSchemaId()));
 		newBreak.setM_DiscountSchema_ID(toPricingConditionsId.getDiscountSchemaId());
 
 		saveRecord(newBreak);
+	}
+
+	@Override
+	public boolean isSingleProductId(final IQueryFilter<I_M_DiscountSchemaBreak> selectionFilter)
+	{
+		final Set<ProductId> distinctProductIds = retrieveDistinctProductIdsForSelection(selectionFilter);
+		return distinctProductIds.size() == 1;
+	}
+
+	@Override
+	public ProductId retrieveUniqueProductIdForSelectionOrNull(final IQueryFilter<I_M_DiscountSchemaBreak> selectionFilter)
+	{
+		final Set<ProductId> distinctProductsForSelection = retrieveDistinctProductIdsForSelection(selectionFilter);
+
+		if (distinctProductsForSelection.isEmpty())
+		{
+			return null;
+		}
+
+		if (distinctProductsForSelection.size() > 1)
+		{
+			throw new AdempiereException("Multiple products or none in the selected rows")
+					.appendParametersToMessage()
+					.setParameter("selectionFilter", selectionFilter);
+		}
+
+		final ProductId uniqueProductId = distinctProductsForSelection.iterator().next();
+		return uniqueProductId;
+	}
+
+	private Set<ProductId> retrieveDistinctProductIdsForSelection(final IQueryFilter<I_M_DiscountSchemaBreak> selectionFilter)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQuery<I_M_DiscountSchemaBreak> breaksQuery = queryBL.createQueryBuilder(I_M_DiscountSchemaBreak.class)
+				.filter(selectionFilter)
+				.create();
+
+		final List<Integer> distinctProductRecordIds = breaksQuery.listDistinct(I_M_DiscountSchemaBreak.COLUMNNAME_M_Product_ID, Integer.class);
+
+		return ProductId.ofRepoIds(distinctProductRecordIds);
+
 	}
 }
