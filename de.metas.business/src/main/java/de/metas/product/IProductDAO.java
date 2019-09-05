@@ -113,6 +113,8 @@ public interface IProductDAO extends ISingletonService
 
 	<T extends I_M_Product_Category> T getProductCategoryById(ProductCategoryId id, Class<T> modelClass);
 
+	Stream<I_M_Product_Category> streamAllProductCategories();
+	
 	String getProductCategoryNameById(ProductCategoryId id);
 
 	ProductId getProductIdByResourceId(ResourceId resourceId);

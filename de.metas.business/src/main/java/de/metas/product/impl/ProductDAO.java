@@ -302,6 +302,16 @@ public class ProductDAO implements IProductDAO
 		return getProductCategoryById(id).getName();
 	}
 
+	@Override
+	public Stream<I_M_Product_Category> streamAllProductCategories()
+	{
+		return Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_M_Product_Category.class)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_M_Product_Category.COLUMN_M_Product_Category_ID)
+				.create()
+				.iterateAndStream();
+	}
+
 	@Cached(cacheName = I_M_Product.Table_Name + "#by#" + I_M_Product.COLUMNNAME_S_Resource_ID)
 	@Override
 	public ProductId getProductIdByResourceId(@NonNull final ResourceId resourceId)
