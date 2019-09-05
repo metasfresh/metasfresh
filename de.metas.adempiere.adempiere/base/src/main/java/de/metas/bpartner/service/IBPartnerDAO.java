@@ -292,4 +292,6 @@ public interface IBPartnerDAO extends ISingletonService
 	List<BPartnerId> getParentsUpToTheTopInTrx(BPartnerId bpartnerId);
 
 	boolean isActionPriceAllowed(BPartnerId bpartnerId);
+
+	boolean pricingSystemBelongsToCustomerForPriceMutation(PricingSystemId pricingSystemId);
 }
