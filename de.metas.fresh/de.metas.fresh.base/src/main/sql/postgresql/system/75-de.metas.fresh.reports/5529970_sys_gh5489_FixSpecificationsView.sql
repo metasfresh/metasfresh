@@ -1,4 +1,4 @@
---DROP VIEW "de.metas.fresh".product_specifications_v;
+DROP VIEW "de.metas.fresh".product_specifications_v;
 
 CREATE OR REPLACE VIEW "de.metas.fresh".product_specifications_v AS
   select
