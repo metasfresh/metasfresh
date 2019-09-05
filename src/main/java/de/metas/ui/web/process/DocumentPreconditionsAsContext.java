@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
+import de.metas.process.SelectionSize;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.model.Document;
 import lombok.Builder;
@@ -111,8 +112,8 @@ public final class DocumentPreconditionsAsContext implements WebuiPreconditionsC
 	}
 
 	@Override
-	public int getSelectionSize()
+	public SelectionSize getSelectionSize()
 	{
-		return 1;
+		return SelectionSize.ofSize(1);
 	}
 }
