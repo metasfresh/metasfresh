@@ -85,7 +85,7 @@ public class ProductsRestControllerTest
 		final ProductsServicesFacade productsServicesFacade = new ProductsServicesFacade()
 		{
 			@Override
-			public JsonCreatedUpdatedInfo extractCreatedUpdatedInfo(final I_M_Product productRecord)
+			public JsonCreatedUpdatedInfo extractCreatedUpdatedInfo(final I_M_Product record)
 			{
 				return createdUpdatedInfo;
 			}
