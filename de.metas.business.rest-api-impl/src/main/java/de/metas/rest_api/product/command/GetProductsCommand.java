@@ -6,9 +6,7 @@ import java.util.Set;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.TimeUtil;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -20,9 +18,7 @@ import de.metas.rest_api.product.ProductsServicesFacade;
 import de.metas.rest_api.product.response.JsonGetProductsResponse;
 import de.metas.rest_api.product.response.JsonProduct;
 import de.metas.rest_api.product.response.JsonProductVendor;
-import de.metas.rest_api.utils.JsonCreatedUpdatedInfo;
 import de.metas.uom.UomId;
-import de.metas.user.UserId;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
@@ -114,18 +110,7 @@ public class GetProductsCommand
 				.ean(productRecord.getUPC())
 				.uom(servicesFacade.getUOMSymbol(uomId))
 				.vendors(productVendors.get(productId))
-				.createdUpdatedInfo(extractCreatedUpdatedInfo(productRecord))
-				.build();
-	}
-
-	@VisibleForTesting
-	public static JsonCreatedUpdatedInfo extractCreatedUpdatedInfo(final I_M_Product productRecord)
-	{
-		return JsonCreatedUpdatedInfo.builder()
-				.created(TimeUtil.asZonedDateTime(productRecord.getCreated()))
-				.createdBy(UserId.optionalOfRepoId(productRecord.getCreatedBy()).orElse(UserId.SYSTEM))
-				.updated(TimeUtil.asZonedDateTime(productRecord.getUpdated()))
-				.updatedBy(UserId.optionalOfRepoId(productRecord.getUpdatedBy()).orElse(UserId.SYSTEM))
+				.createdUpdatedInfo(servicesFacade.extractCreatedUpdatedInfo(productRecord))
 				.build();
 	}
 

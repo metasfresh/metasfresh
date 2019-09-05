@@ -45,7 +45,7 @@ public class ProductsRestController
 
 	private final ProductsServicesFacade productsServicesFacade;
 
-	private ProductsRestController(@NonNull final ProductsServicesFacade productsServicesFacade)
+	public ProductsRestController(@NonNull final ProductsServicesFacade productsServicesFacade)
 	{
 		this.productsServicesFacade = productsServicesFacade;
 	}

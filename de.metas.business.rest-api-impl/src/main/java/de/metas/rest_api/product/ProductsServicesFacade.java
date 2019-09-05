@@ -7,13 +7,16 @@ import java.util.stream.Stream;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.rest_api.utils.JsonCreatedUpdatedInfo;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -65,4 +68,15 @@ public class ProductsServicesFacade
 	{
 		return partnerProductsRepo.retrieveAllVendors(productIds);
 	}
+
+	public JsonCreatedUpdatedInfo extractCreatedUpdatedInfo(final I_M_Product productRecord)
+	{
+		return JsonCreatedUpdatedInfo.builder()
+				.created(TimeUtil.asZonedDateTime(productRecord.getCreated()))
+				.createdBy(UserId.optionalOfRepoId(productRecord.getCreatedBy()).orElse(UserId.SYSTEM))
+				.updated(TimeUtil.asZonedDateTime(productRecord.getUpdated()))
+				.updatedBy(UserId.optionalOfRepoId(productRecord.getUpdatedBy()).orElse(UserId.SYSTEM))
+				.build();
+	}
+
 }

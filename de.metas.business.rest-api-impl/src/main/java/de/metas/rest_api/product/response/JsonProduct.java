@@ -12,6 +12,7 @@ import de.metas.rest_api.utils.JsonCreatedUpdatedInfo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -64,6 +65,7 @@ public class JsonProduct
 	String uom;
 
 	@NonNull
+	@Singular
 	List<JsonProductVendor> vendors;
 
 	@NonNull
