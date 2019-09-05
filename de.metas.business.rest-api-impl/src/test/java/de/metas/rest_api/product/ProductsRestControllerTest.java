@@ -25,7 +25,7 @@ import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.rest_api.product.response.JsonGetProductsResponse;
 import de.metas.rest_api.product.response.JsonProduct;
-import de.metas.rest_api.product.response.JsonProductVendor;
+import de.metas.rest_api.product.response.JsonProductBPartner;
 import de.metas.rest_api.utils.JsonCreatedUpdatedInfo;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -127,9 +127,28 @@ public class ProductsRestControllerTest
 		prepareBPartnerProduct()
 				.productId(productId1)
 				.bpartnerId(BPartnerId.ofRepoId(1))
-				.vendorProductNo("value1-vendor1")
-				.productName("name1-vendor1")
+				.productNo("productNo1-vendor1")
+				.productName("productName1-vendor1")
+				.productDescription("productDescription1-vendor1")
+				.productCategory("productCategory1-vendor1")
+				.ean("ean1-vendor1")
+				.vendor(true)
 				.currentVendor(true)
+				.customer(false)
+				.leadTimeInDays(13)
+				.build();
+		prepareBPartnerProduct()
+				.productId(productId1)
+				.bpartnerId(BPartnerId.ofRepoId(2))
+				.productNo("productNo1-customer2")
+				.productName("productName1-customer2")
+				.productDescription("productDescription1-customer2")
+				.productCategory("productCategory1-customer2")
+				.ean("ean1-customer2")
+				.vendor(false)
+				.currentVendor(false)
+				.customer(true)
+				.leadTimeInDays(32)
 				.build();
 
 		final I_M_Product product2 = prepareProduct()
@@ -158,11 +177,29 @@ public class ProductsRestControllerTest
 								.ean("ean1")
 								.uom("Ea")
 								.createdUpdatedInfo(createdUpdatedInfo)
-								.vendor(JsonProductVendor.builder()
-										.vendorId(BPartnerId.ofRepoId(1))
-										.productNo("value1-vendor1")
-										.productName("name1-vendor1")
+								.bpartner(JsonProductBPartner.builder()
+										.bpartnerId(BPartnerId.ofRepoId(1))
+										.productNo("productNo1-vendor1")
+										.productName("productName1-vendor1")
+										.productDescription("productDescription1-vendor1")
+										.productCategory("productCategory1-vendor1")
+										.ean("ean1-vendor1")
+										.vendor(true)
 										.currentVendor(true)
+										.customer(false)
+										.leadTimeInDays(13)
+										.build())
+								.bpartner(JsonProductBPartner.builder()
+										.bpartnerId(BPartnerId.ofRepoId(2))
+										.productNo("productNo1-customer2")
+										.productName("productName1-customer2")
+										.productDescription("productDescription1-customer2")
+										.productCategory("productCategory1-customer2")
+										.ean("ean1-customer2")
+										.vendor(false)
+										.currentVendor(false)
+										.customer(true)
+										.leadTimeInDays(32)
 										.build())
 								.build())
 						.product(JsonProduct.builder()
@@ -211,17 +248,36 @@ public class ProductsRestControllerTest
 	private I_C_BPartner_Product createBPartnerProduct(
 			final ProductId productId,
 			final BPartnerId bpartnerId,
-			final String vendorProductNo,
+			//
+			final String productNo,
 			final String productName,
-			final Boolean currentVendor)
+			final String productDescription,
+			final String productCategory,
+			//
+			final String ean,
+			//
+			final boolean vendor,
+			final boolean currentVendor,
+			final boolean customer,
+			//
+			final int leadTimeInDays)
 	{
 		final I_C_BPartner_Product record = newInstance(I_C_BPartner_Product.class);
 		record.setM_Product_ID(productId.getRepoId());
 		record.setC_BPartner_ID(bpartnerId.getRepoId());
-		record.setUsedForVendor(true);
-		record.setVendorProductNo(vendorProductNo);
+		//
+		record.setProductNo(productNo);
 		record.setProductName(productName);
-		record.setIsCurrentVendor(currentVendor.booleanValue());
+		record.setProductDescription(productDescription);
+		record.setProductCategory(productCategory);
+		//
+		record.setUPC(ean);
+		//
+		record.setUsedForVendor(vendor);
+		record.setIsCurrentVendor(currentVendor);
+		record.setUsedForCustomer(customer);
+		//
+		record.setDeliveryTime_Promised(leadTimeInDays);
 
 		saveRecord(record);
 		return record;

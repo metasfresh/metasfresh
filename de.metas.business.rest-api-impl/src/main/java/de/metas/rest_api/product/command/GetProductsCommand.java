@@ -17,7 +17,7 @@ import de.metas.product.ProductId;
 import de.metas.rest_api.product.ProductsServicesFacade;
 import de.metas.rest_api.product.response.JsonGetProductsResponse;
 import de.metas.rest_api.product.response.JsonProduct;
-import de.metas.rest_api.product.response.JsonProductVendor;
+import de.metas.rest_api.product.response.JsonProductBPartner;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -49,7 +49,7 @@ public class GetProductsCommand
 	private final ProductsServicesFacade servicesFacade;
 	private String adLanguage;
 
-	private ImmutableListMultimap<ProductId, JsonProductVendor> productVendors;
+	private ImmutableListMultimap<ProductId, JsonProductBPartner> productBPartners;
 
 	@Builder(buildMethodName = "_build")
 	private GetProductsCommand(
@@ -74,7 +74,7 @@ public class GetProductsCommand
 				.collect(ImmutableList.toImmutableList());
 
 		final ImmutableSet<ProductId> productIds = extractProductIds(productRecords);
-		productVendors = retrieveJsonProductVendors(productIds);
+		productBPartners = retrieveJsonProductVendors(productIds);
 
 		final ImmutableList<JsonProduct> products = productRecords.stream()
 				.map(this::toJsonProduct)
@@ -108,29 +108,40 @@ public class GetProductsCommand
 				.description(trls.getColumnTrl(I_M_Product.COLUMNNAME_Description, productRecord.getDescription()).translate(adLanguage))
 				.ean(productRecord.getUPC())
 				.uom(servicesFacade.getUOMSymbol(uomId))
-				.vendors(productVendors.get(productId))
+				.bpartners(productBPartners.get(productId))
 				.createdUpdatedInfo(servicesFacade.extractCreatedUpdatedInfo(productRecord))
 				.build();
 	}
 
-	private ImmutableListMultimap<ProductId, JsonProductVendor> retrieveJsonProductVendors(final Set<ProductId> productIds)
+	private ImmutableListMultimap<ProductId, JsonProductBPartner> retrieveJsonProductVendors(final Set<ProductId> productIds)
 	{
-		return servicesFacade.retrieveAllProductVendors(productIds)
+		return servicesFacade.getBPartnerProductRecords(productIds)
 				.stream()
 				.collect(ImmutableListMultimap.toImmutableListMultimap(
 						record -> ProductId.ofRepoId(record.getM_Product_ID()),
-						record -> toJsonProductVendor(record)));
+						record -> toJsonProductBPartner(record)));
 	}
 
-	private JsonProductVendor toJsonProductVendor(final I_C_BPartner_Product record)
+	private JsonProductBPartner toJsonProductBPartner(final I_C_BPartner_Product record)
 	{
-		String vendorProductName = record.getProductName();
+		final IModelTranslationMap trls = InterfaceWrapperHelper.getModelTranslationMap(record);
 
-		return JsonProductVendor.builder()
-				.vendorId(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
+		return JsonProductBPartner.builder()
+				.bpartnerId(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
+				//
 				.productNo(record.getProductNo())
-				.productName(vendorProductName)
-				.currentVendor(record.isCurrentVendor())
+				.productName(trls.getColumnTrl(I_C_BPartner_Product.COLUMNNAME_ProductName, record.getProductName()).translate(adLanguage))
+				.productDescription(trls.getColumnTrl(I_C_BPartner_Product.COLUMNNAME_ProductDescription, record.getProductDescription()).translate(adLanguage))
+				.productCategory(trls.getColumnTrl(I_C_BPartner_Product.COLUMNNAME_ProductCategory, record.getProductCategory()).translate(adLanguage))
+				//
+				.ean(record.getUPC())
+				//
+				.vendor(record.isUsedForVendor())
+				.currentVendor(record.isUsedForVendor() && record.isCurrentVendor())
+				.customer(record.isUsedForCustomer())
+				//
+				.leadTimeInDays(record.getDeliveryTime_Promised())
+				//
 				.build();
 	}
 }

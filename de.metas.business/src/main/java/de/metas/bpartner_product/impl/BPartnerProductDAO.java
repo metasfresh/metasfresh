@@ -110,7 +110,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	}
 
 	@Override
-	public List<I_C_BPartner_Product> retrieveAllVendors(@NonNull final Set<ProductId> productIds)
+	public List<I_C_BPartner_Product> retrieveForProductIds(@NonNull final Set<ProductId> productIds)
 	{
 		if (productIds.isEmpty())
 		{
@@ -121,7 +121,6 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 		return queryBL
 				.createQueryBuilderOutOfTrx(org.compiere.model.I_C_BPartner_Product.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_UsedForVendor, true)
 				.addInArrayFilter(I_C_BPartner_Product.COLUMN_M_Product_ID, productIds)
 				.create()
 				.list(I_C_BPartner_Product.class);

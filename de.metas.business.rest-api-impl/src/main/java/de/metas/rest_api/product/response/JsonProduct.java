@@ -66,7 +66,7 @@ public class JsonProduct
 
 	@NonNull
 	@Singular
-	List<JsonProductVendor> vendors;
+	List<JsonProductBPartner> bpartners;
 
 	@NonNull
 	JsonCreatedUpdatedInfo createdUpdatedInfo;

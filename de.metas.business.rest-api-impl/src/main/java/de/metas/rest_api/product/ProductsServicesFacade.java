@@ -65,9 +65,9 @@ public class ProductsServicesFacade
 		return uom.getUOMSymbol();
 	}
 
-	public List<I_C_BPartner_Product> retrieveAllProductVendors(Set<ProductId> productIds)
+	public List<I_C_BPartner_Product> getBPartnerProductRecords(Set<ProductId> productIds)
 	{
-		return partnerProductsRepo.retrieveAllVendors(productIds);
+		return partnerProductsRepo.retrieveForProductIds(productIds);
 	}
 
 	public JsonCreatedUpdatedInfo extractCreatedUpdatedInfo(final I_M_Product record)

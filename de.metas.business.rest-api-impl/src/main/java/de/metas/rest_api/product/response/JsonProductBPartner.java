@@ -34,18 +34,25 @@ import lombok.Value;
 @Value
 @Builder
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class JsonProductVendor
+public class JsonProductBPartner
 {
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
 			dataType = "java.lang.Integer", //
 			value = "This translates to `C_BPartner_ID`.")
 	@NonNull
-	BPartnerId vendorId;
+	BPartnerId bpartnerId;
 
 	String productNo;
-
 	String productName;
-	
+	String productDescription;
+	String productCategory;
+
+	String ean;
+
+	boolean vendor;
 	boolean currentVendor;
+	boolean customer;
+
+	int leadTimeInDays;
 }
