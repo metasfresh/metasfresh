@@ -66,7 +66,6 @@ import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.currency.ICurrencyBL;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -545,39 +544,35 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 
 	@Override
 	public void copyDiscountSchemaBreaks(
-			@NonNull final PricingConditionsId pricingConditionsId,
-			@NonNull final IQueryFilter<I_M_DiscountSchemaBreak> queryFilter)
+			@NonNull final IQueryFilter<I_M_DiscountSchemaBreak> sourceFilter,
+			@NonNull final PricingConditionsId toPricingConditionsId)
 	{
-
-		final boolean allowCopyToSameSchema = false;
-
-		copyDiscountSchemaBreaksWithProductId(pricingConditionsId, queryFilter, null, allowCopyToSameSchema);
+		copyDiscountSchemaBreaksWithProductId(sourceFilter, toPricingConditionsId, null/* productId */, false/* allowCopyToSameSchema */);
 	}
 
 	@Override
 	public void copyDiscountSchemaBreaksWithProductId(
-			@NonNull final PricingConditionsId pricingConditionsId,
-			@NonNull final IQueryFilter<I_M_DiscountSchemaBreak> queryFilter,
-			@Nullable final ProductId productId,
+			@NonNull final IQueryFilter<I_M_DiscountSchemaBreak> sourceFilter,
+			@NonNull final PricingConditionsId toPricingConditionsId,
+			@Nullable final ProductId toProductId,
 			final boolean allowCopyToSameSchema)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final ICompositeQueryFilter<I_M_DiscountSchemaBreak> breaksFromOtherPricingConditions = queryBL.createCompositeQueryFilter(I_M_DiscountSchemaBreak.class)
 				.setJoinAnd()
-				.addFilter(queryFilter);
+				.addFilter(sourceFilter);
 
 		if (!allowCopyToSameSchema)
 		{
 			breaksFromOtherPricingConditions
-
-					.addNotEqualsFilter(I_M_DiscountSchemaBreak.COLUMNNAME_M_DiscountSchema_ID, pricingConditionsId.getDiscountSchemaId());
+					.addNotEqualsFilter(I_M_DiscountSchemaBreak.COLUMNNAME_M_DiscountSchema_ID, toPricingConditionsId.getDiscountSchemaId());
 		}
 
 		final List<I_M_DiscountSchemaBreak> discountSchemaBreakRecords = retrieveDiscountSchemaBreakRecords(breaksFromOtherPricingConditions);
 
-		for (I_M_DiscountSchemaBreak schemaBreak : discountSchemaBreakRecords)
+		for (final I_M_DiscountSchemaBreak schemaBreak : discountSchemaBreakRecords)
 		{
-			copyDiscountSchemaBreakWithProductId(schemaBreak, pricingConditionsId, productId);
+			copyDiscountSchemaBreakWithProductId(schemaBreak, toPricingConditionsId, toProductId);
 		}
 	}
 
@@ -593,16 +588,16 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 	private void copyDiscountSchemaBreakWithProductId(
 			@NonNull final I_M_DiscountSchemaBreak from,
 			@NonNull final PricingConditionsId toPricingConditionsId,
-			@Nullable final ProductId productId)
+			@Nullable final ProductId toProductId)
 	{
 		final I_M_DiscountSchemaBreak newBreak = copy()
 				.setSkipCalculatedColumns(true)
 				.setFrom(from)
 				.copyToNew(I_M_DiscountSchemaBreak.class);
 
-		if (productId != null)
+		if (toProductId != null)
 		{
-			newBreak.setM_Product_ID(productId.getRepoId());
+			newBreak.setM_Product_ID(toProductId.getRepoId());
 		}
 		newBreak.setSeqNo(retrieveNextSeqNo(toPricingConditionsId.getDiscountSchemaId()));
 		newBreak.setM_DiscountSchema_ID(toPricingConditionsId.getDiscountSchemaId());
@@ -611,16 +606,10 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 	}
 
 	@Override
-	public boolean selectionHasMultipleProductsOrNone(final IQueryFilter<I_M_DiscountSchemaBreak> selectionFilter)
+	public boolean isSingleProductId(final IQueryFilter<I_M_DiscountSchemaBreak> selectionFilter)
 	{
 		final Set<ProductId> distinctProductIds = retrieveDistinctProductIdsForSelection(selectionFilter);
-
-		if (distinctProductIds.isEmpty())
-		{
-			return true;
-		}
-
-		return distinctProductIds.size() > 1;
+		return distinctProductIds.size() == 1;
 	}
 
 	@Override
@@ -628,20 +617,19 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 	{
 		final Set<ProductId> distinctProductsForSelection = retrieveDistinctProductIdsForSelection(selectionFilter);
 
-		if(distinctProductsForSelection.isEmpty())
+		if (distinctProductsForSelection.isEmpty())
 		{
 			return null;
 		}
 
 		if (distinctProductsForSelection.size() > 1)
 		{
-			throw new AdempiereException(TranslatableStrings.builder()
-					.append("Multiple products or none in the selected rows")
-					.build());
+			throw new AdempiereException("Multiple products or none in the selected rows")
+					.appendParametersToMessage()
+					.setParameter("selectionFilter", selectionFilter);
 		}
 
-		final ProductId uniqueProductId = distinctProductsForSelection.stream().findFirst().orElse(null);
-
+		final ProductId uniqueProductId = distinctProductsForSelection.iterator().next();
 		return uniqueProductId;
 	}
 

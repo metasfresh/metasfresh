@@ -32,12 +32,12 @@ public interface IPricingConditionsRepository extends ISingletonService
 	 */
 	int resequence(int discountSchemaId);
 
-	void copyDiscountSchemaBreaks(PricingConditionsId pricingConditionsId, IQueryFilter<I_M_DiscountSchemaBreak> queryFilter);
+	void copyDiscountSchemaBreaks(IQueryFilter<I_M_DiscountSchemaBreak> sourceFilter, PricingConditionsId toPricingConditionsId);
 
-	boolean selectionHasMultipleProductsOrNone(IQueryFilter<I_M_DiscountSchemaBreak> queryFilter);
+	void copyDiscountSchemaBreaksWithProductId(IQueryFilter<I_M_DiscountSchemaBreak> sourceFilter, PricingConditionsId toPricingConditionsId, ProductId toProductId, boolean allowCopyToSameSchema);
+
+	boolean isSingleProductId(IQueryFilter<I_M_DiscountSchemaBreak> queryFilter);
 
 	ProductId retrieveUniqueProductIdForSelectionOrNull(IQueryFilter<I_M_DiscountSchemaBreak> selectionFilter);
-
-	void copyDiscountSchemaBreaksWithProductId(PricingConditionsId pricingConditionsId, IQueryFilter<I_M_DiscountSchemaBreak> queryFilter, ProductId productId, boolean allowCopyToSameSchema);
 
 }
