@@ -1,5 +1,7 @@
 package de.metas.pricing;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -47,11 +49,6 @@ public class PricingSystemId implements RepoIdAware
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	public static int getRepoId(final PricingSystemId PricingSystemId)
-	{
-		return PricingSystemId != null ? PricingSystemId.getRepoId() : -1;
-	}
-
 	public static final PricingSystemId NULL = null;
 	public static final PricingSystemId NONE = new PricingSystemId(100);
 
@@ -72,5 +69,10 @@ public class PricingSystemId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static int toRepoId(@Nullable final PricingSystemId id)
+	{
+		return id != null ? id.getRepoId() : -1;
 	}
 }

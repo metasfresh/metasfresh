@@ -31,7 +31,6 @@ import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_Recent_V;
@@ -45,6 +44,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 
@@ -52,8 +52,11 @@ import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartnerLocation.BPartnerLocationBuilder;
+import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
 import de.metas.cache.CachingKeysMapper;
@@ -98,6 +101,8 @@ import lombok.Value;
 @Repository
 public class BPartnerCompositeRepository
 {
+	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+
 	private final CachingKeysMapper<BPartnerId> invalidationKeysMapper = new CachingKeysMapper<BPartnerId>()
 	{
 		@Override
@@ -400,87 +405,20 @@ public class BPartnerCompositeRepository
 		return page.mapTo(record -> BPartnerContactId.ofRepoId(record.getC_BPartner_ID(), record.getAD_User_ID()));
 	}
 
-	public ImmutableList<BPartnerComposite> getByQuery(@NonNull final BPartnerCompositeQuery query)
+	public ImmutableList<BPartnerComposite> getByQuery(@NonNull final BPartnerQuery query)
 	{
-		final List<BPartnerId> pageWithIds = getIdsByQuery(query);
-
-		return getByIds(pageWithIds);
+		final ImmutableSet<BPartnerId> bpartnerIds = getIdsByQuery(query);
+		return getByIds(bpartnerIds);
 	}
 
-	private ImmutableList<BPartnerId> getIdsByQuery(@NonNull final BPartnerCompositeQuery query)
+	private ImmutableSet<BPartnerId> getIdsByQuery(@NonNull final BPartnerQuery query)
 	{
-		final IQuery<I_C_BPartner> bpartnerRecordQuery = createBPartnerRecordQuery(query);
-
-		final ImmutableList<BPartnerId> bPartnerIds = bpartnerRecordQuery.listIds().stream()
-				.map(BPartnerId::ofRepoId)
-				.collect(ImmutableList.toImmutableList());
-
-		return bPartnerIds;
+		return bpartnersRepo.retrieveBPartnerIdsBy(query);
 	}
 
-	private IQuery<I_C_BPartner> createBPartnerRecordQuery(@NonNull final BPartnerCompositeQuery query)
+	public ImmutableList<BPartnerComposite> getByIds(@NonNull final Collection<BPartnerId> bpartnerIds)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<I_C_BPartner> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner.class)
-				.addOnlyContextClient()
-		// .addOnlyActiveRecordsFilter() also load inactive records!
-		;
-
-		if (!query.getOnlyOrgIds().isEmpty())
-		{
-			queryBuilder.addInArrayFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, query.getOnlyOrgIds());
-		}
-
-		if (query.getBPartnerId() != null)
-		{
-			queryBuilder.addEqualsFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, query.getBPartnerId());
-		}
-
-		// ..BPartner external-id
-		if (query.getExternalId() != null)
-		{
-			queryBuilder.addEqualsFilter(I_C_BPartner.COLUMNNAME_ExternalId, query.getExternalId().getValue());
-		}
-
-		// ..BPartner code (aka value)
-		if (!isEmpty(query.getBpartnerValue(), true))
-		{
-			queryBuilder.addEqualsFilter(I_C_BPartner.COLUMNNAME_Value, query.getBpartnerValue());
-		}
-
-		// ..BPartner Name
-		if (!isEmpty(query.getBpartnerName(), true))
-		{
-			queryBuilder.addEqualsFilter(I_C_BPartner.COLUMNNAME_Name, query.getBpartnerName());
-		}
-
-		// BPLocation's GLN
-		if (!query.getLocationGlns().isEmpty())
-		{
-			final IQueryBuilder<I_C_BPartner_Location> glnQueryBuilder = queryBL
-					.createQueryBuilder(I_C_BPartner_Location.class)
-					.addOnlyActiveRecordsFilter();
-			if (!query.getOnlyOrgIds().isEmpty())
-			{
-				glnQueryBuilder.addInArrayFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, query.getOnlyOrgIds());
-			}
-
-			for (final String locationGln : query.getLocationGlns())
-			{
-				glnQueryBuilder.addEqualsFilter(I_C_BPartner_Location.COLUMN_GLN, locationGln);
-			}
-			queryBuilder.addInSubQueryFilter(
-					I_C_BPartner.COLUMNNAME_C_BPartner_ID,
-					I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID,
-					glnQueryBuilder.create());
-		}
-
-		return queryBuilder.create();
-	}
-
-	public ImmutableList<BPartnerComposite> getByIds(@NonNull final Collection<BPartnerId> bPartnerIds)
-	{
-		final Collection<BPartnerComposite> result = bpartnerCompositeCache.getAllOrLoad(bPartnerIds, this::getByIds0);
+		final Collection<BPartnerComposite> result = bpartnerCompositeCache.getAllOrLoad(bpartnerIds, this::retrieveByIds);
 
 		return result
 				.stream()
@@ -488,14 +426,14 @@ public class BPartnerCompositeRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private ImmutableMap<BPartnerId, BPartnerComposite> getByIds0(@NonNull final Collection<BPartnerId> bPartnerIds)
+	private ImmutableMap<BPartnerId, BPartnerComposite> retrieveByIds(@NonNull final Collection<BPartnerId> bpartnerIds)
 	{
-		final IQuery<I_C_BPartner> bpartnerRecordQuery = Services.get(IQueryBL.class)
+		final List<I_C_BPartner> bPartnerRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner.class)
 				.addOnlyContextClient()
-				.addInArrayFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, bPartnerIds)
-				.create();
-		final List<I_C_BPartner> bPartnerRecords = bpartnerRecordQuery.list();
+				.addInArrayFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, bpartnerIds)
+				.create()
+				.list();
 
 		return createBPartnerComposites(bPartnerRecords);
 	}
@@ -696,7 +634,7 @@ public class BPartnerCompositeRepository
 				.city(locationRecord.getCity())
 				.countryCode(countryRecord.getCountryCode())
 				.externalId(ExternalId.ofOrNull(bPartnerLocationRecord.getExternalId()))
-				.gln(bPartnerLocationRecord.getGLN())
+				.gln(GLN.ofNullableString(bPartnerLocationRecord.getGLN()))
 				.id(BPartnerLocationId.ofRepoId(bPartnerLocationRecord.getC_BPartner_ID(), bPartnerLocationRecord.getC_BPartner_Location_ID()))
 				.poBox(locationRecord.getPOBox())
 				.postal(locationRecord.getPostal())
@@ -810,7 +748,7 @@ public class BPartnerCompositeRepository
 		bpartnerRecord.setC_BP_Group_ID(bpartner.getGroupId().getRepoId()); // since we validated, we know it's set
 		// bpartner.getId() used only for lookup
 
-		bpartnerRecord.setAD_Language(Language.asLanguageString(bpartner.getLanguage()));
+		bpartnerRecord.setAD_Language(Language.asLanguageStringOrNull(bpartner.getLanguage()));
 		bpartnerRecord.setName(bpartner.getName());
 		bpartnerRecord.setName2(bpartner.getName2());
 		bpartnerRecord.setName3(bpartner.getName3());
@@ -960,7 +898,7 @@ public class BPartnerCompositeRepository
 		}
 
 		bpartnerLocationRecord.setExternalId(ExternalId.toValue(bpartnerLocation.getExternalId()));
-		bpartnerLocationRecord.setGLN(bpartnerLocation.getGln());
+		bpartnerLocationRecord.setGLN(GLN.toCode(bpartnerLocation.getGln()));
 		// bpartnerLocation.getId() // id is only for lookup and won't be updated later
 
 		if (!postalDataSetFromPostalRecord)

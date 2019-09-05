@@ -2,11 +2,18 @@ package de.metas.rest_api.utils;
 
 import static de.metas.util.Check.assumeNotEmpty;
 
+import java.util.function.IntFunction;
+
 import org.adempiere.exceptions.AdempiereException;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import de.metas.bpartner.GLN;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import de.metas.util.rest.ExternalId;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -57,6 +64,7 @@ public class IdentifierString
 	public static final String PREFIX_VALUE = "val-";
 	public static final String PREFIX_GLN = "gln-";
 
+	@JsonCreator
 	public static final IdentifierString of(@NonNull final String value)
 	{
 		assumeNotEmpty("Parameter may not be empty", value);
@@ -99,9 +107,9 @@ public class IdentifierString
 
 				return new IdentifierString(Type.METASFRESH_ID, value);
 			}
-			catch (final NumberFormatException e)
+			catch (final NumberFormatException ex)
 			{
-				throw new InvalidIdentifierException(value);
+				throw new InvalidIdentifierException(value, ex);
 			}
 		}
 	}
@@ -112,6 +120,42 @@ public class IdentifierString
 	{
 		this.type = type;
 		this.value = assumeNotEmpty(value, "Parameter value may not be empty");
+	}
+
+	@Override
+	@Deprecated
+	public String toString()
+	{
+		// using toJson because it's much more user friendly
+		return toJson();
+	}
+
+	@JsonValue
+	public String toJson()
+	{
+		final String prefix;
+		if (Type.METASFRESH_ID.equals(type))
+		{
+			prefix = "";
+		}
+		else if (Type.EXTERNAL_ID.equals(type))
+		{
+			prefix = PREFIX_EXTERNAL_ID;
+		}
+		else if (Type.VALUE.equals(type))
+		{
+			prefix = PREFIX_VALUE;
+		}
+		else if (Type.GLN.equals(type))
+		{
+			prefix = PREFIX_GLN;
+		}
+		else
+		{
+			throw new AdempiereException("Unknown type: " + type);
+		}
+
+		return !prefix.isEmpty() ? prefix + value : value;
 	}
 
 	public ExternalId asExternalId()
@@ -136,11 +180,19 @@ public class IdentifierString
 		return MetasfreshId.of(repoId);
 	}
 
-	public String asGLN()
+	public <T extends RepoIdAware> T asMetasfreshId(@NonNull final IntFunction<T> mapper)
+	{
+		Check.assume(Type.METASFRESH_ID.equals(type), "The type of this instace needs to be {}; this={}", Type.METASFRESH_ID, this);
+
+		final int repoId = Integer.parseInt(value);
+		return mapper.apply(repoId);
+	}
+
+	public GLN asGLN()
 	{
 		Check.assume(Type.GLN.equals(type), "The type of this instace needs to be {}; this={}", Type.GLN, this);
 
-		return value;
+		return GLN.ofString(value);
 	}
 
 	public String asValue()

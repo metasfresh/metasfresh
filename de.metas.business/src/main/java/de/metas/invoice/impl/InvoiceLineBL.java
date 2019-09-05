@@ -429,7 +429,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		}
 
 		final PricingConditionsResult pricingConditions = pricingResult.getPricingConditions();
-		invoiceLine.setBase_PricingSystem_ID(pricingConditions != null ? PricingSystemId.getRepoId(pricingConditions.getBasePricingSystemId()) : -1);
+		invoiceLine.setBase_PricingSystem_ID(pricingConditions != null ? PricingSystemId.toRepoId(pricingConditions.getBasePricingSystemId()) : -1);
 
 		//
 		// Calculate PriceActual from PriceEntered and Discount

@@ -1,5 +1,7 @@
 package de.metas.rest_api.utils;
 
+import java.util.Objects;
+
 import javax.annotation.Nullable;
 
 import de.metas.rest_api.JsonExternalId;
@@ -44,5 +46,10 @@ public class JsonExternalIds
 	public JsonExternalId of(@NonNull final ExternalId externalId)
 	{
 		return JsonExternalId.of(externalId.getValue());
+	}
+
+	public boolean equals(@Nullable final JsonExternalId id1, @Nullable final JsonExternalId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

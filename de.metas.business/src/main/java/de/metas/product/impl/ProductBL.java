@@ -29,6 +29,7 @@ import java.math.RoundingMode;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -50,6 +51,8 @@ import org.compiere.model.X_C_UOM;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -402,6 +405,23 @@ public final class ProductBL implements IProductBL
 			return "<" + productId + ">";
 		}
 		return product.getValue();
+	}
+
+	@Override
+	public ImmutableMap<ProductId, String> getProductValues(@NonNull final Set<ProductId> productIds)
+	{
+		if (productIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final IProductDAO productsRepo = Services.get(IProductDAO.class);
+
+		return productsRepo.getByIds(productIds)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						product -> ProductId.ofRepoId(product.getM_Product_ID()),
+						product -> product.getValue()));
 	}
 
 	@Override

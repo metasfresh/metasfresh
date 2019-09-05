@@ -15,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.GLN;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.rest.ExternalId;
@@ -72,7 +73,7 @@ public class BPartnerLocation
 	/** Needs to be unique over all business partners (not only the one this location belongs to). */
 	private ExternalId externalId;
 
-	private String gln;
+	private GLN gln;
 
 	private String name;
 
@@ -116,7 +117,7 @@ public class BPartnerLocation
 	private BPartnerLocation(
 			@Nullable final BPartnerLocationId id,
 			@Nullable final ExternalId externalId,
-			@Nullable final String gln,
+			@Nullable final GLN gln,
 			@Nullable final Boolean active,
 			@Nullable final String name,
 			@Nullable final String address1,
@@ -196,7 +197,7 @@ public class BPartnerLocation
 		this.externalId = externalId;
 	}
 
-	public void setGln(@Nullable final String gln)
+	public void setGln(@Nullable final GLN gln)
 	{
 		if (!Objects.equals(this.gln, gln))
 		{

@@ -208,7 +208,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	private void setPricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
 	{
 		final PricingSystemTaxCategoryAndIsTaxIncluded computed = computePricingSystemTaxCategAndIsTaxIncluded(ol, newTerm);
-		newTerm.setM_PricingSystem_ID(PricingSystemId.getRepoId(computed.getPricingSystemId()));
+		newTerm.setM_PricingSystem_ID(PricingSystemId.toRepoId(computed.getPricingSystemId()));
 		newTerm.setC_TaxCategory_ID(computed.getTaxCategoryId().getRepoId());
 		newTerm.setIsTaxIncluded(computed.isTaxIncluded());
 	}

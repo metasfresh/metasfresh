@@ -41,6 +41,7 @@ import de.metas.rest_api.bpartner.response.JsonResponseComposite;
 import de.metas.rest_api.bpartner.response.JsonResponseCompositeList;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
+import de.metas.rest_api.utils.IdentifierString;
 import de.metas.util.rest.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -70,22 +71,23 @@ import lombok.NonNull;
  * #L%
  */
 
-@RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API + "/bpartner")
+@RequestMapping(BpartnerRestController.ENDPOINT)
 @RestController
 @Profile(Profiles.PROFILE_App)
 // the spelling "Bpartner" is to avoid swagger from spelling it "b-partner-rest.."
 public class BpartnerRestController implements BPartnerRestEndpoint
 {
+	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/bpartner";
 
-	private final BPartnerEndpointService bPartnerEndpointservice;
+	private final BPartnerEndpointService bpartnerEndpointService;
 	private final JsonServiceFactory jsonServiceFactory;
 
-	public BpartnerRestController(@NonNull final BPartnerEndpointService bpIbPartnerEndpointservice,
+	public BpartnerRestController(
+			@NonNull final BPartnerEndpointService bpartnerEndpointService,
 			@NonNull final JsonServiceFactory jsonServiceFactory)
 	{
 		this.jsonServiceFactory = jsonServiceFactory;
-		this.bPartnerEndpointservice = bpIbPartnerEndpointservice;
-
+		this.bpartnerEndpointService = bpartnerEndpointService;
 	}
 
 	//
@@ -101,16 +103,11 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 
 			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
-			@NonNull final String bpartnerIdentifier)
+			@NonNull final String bpartnerIdentifierStr)
 	{
-		final Optional<JsonResponseComposite> result = bPartnerEndpointservice.retrieveBPartner(bpartnerIdentifier);
-		if (result.isPresent())
-		{
-			return ResponseEntity.ok(result.get());
-		}
-		return new ResponseEntity<JsonResponseComposite>(
-				(JsonResponseComposite)null,
-				HttpStatus.NOT_FOUND);
+		final IdentifierString bpartnerIdentifier = IdentifierString.of(bpartnerIdentifierStr);
+		final Optional<JsonResponseComposite> result = bpartnerEndpointService.retrieveBPartner(bpartnerIdentifier);
+		return okOrNotFound(result);
 	}
 
 	//
@@ -126,20 +123,17 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 
 			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
-			@NonNull final String bpartnerIdentifier,
+			@NonNull final String bpartnerIdentifierStr,
 
 			@ApiParam(required = true, value = LOCATION_IDENTIFIER_DOC) //
 			@PathVariable("locationIdentifier") //
-			@NonNull final String locationIdentifier)
+			@NonNull final String locationIdentifierStr)
 	{
-		final Optional<JsonResponseLocation> location = bPartnerEndpointservice.retrieveBPartnerLocation(bpartnerIdentifier, locationIdentifier);
-		if (location.isPresent())
-		{
-			return ResponseEntity.ok(location.get());
-		}
-		return new ResponseEntity<JsonResponseLocation>(
-				(JsonResponseLocation)null,
-				HttpStatus.NOT_FOUND);
+		final IdentifierString bpartnerIdentifier = IdentifierString.of(bpartnerIdentifierStr);
+		final IdentifierString locationIdentifier = IdentifierString.of(locationIdentifierStr);
+
+		final Optional<JsonResponseLocation> location = bpartnerEndpointService.retrieveBPartnerLocation(bpartnerIdentifier, locationIdentifier);
+		return okOrNotFound(location);
 	}
 
 	@ApiResponses(value = {
@@ -154,20 +148,17 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 
 			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
-			@NonNull final String bpartnerIdentifier,
+			@NonNull final String bpartnerIdentifierStr,
 
 			@ApiParam(required = true, value = CONTACT_IDENTIFIER_DOC) //
 			@PathVariable("contactIdentifier") //
-			@NonNull final String contactIdentifier)
+			@NonNull final String contactIdentifierStr)
 	{
-		final Optional<JsonResponseContact> contact = bPartnerEndpointservice.retrieveBPartnerContact(bpartnerIdentifier, contactIdentifier);
-		if (contact.isPresent())
-		{
-			return ResponseEntity.ok(contact.get());
-		}
-		return new ResponseEntity<JsonResponseContact>(
-				(JsonResponseContact)null,
-				HttpStatus.NOT_FOUND);
+		final IdentifierString bpartnerIdentifier = IdentifierString.of(bpartnerIdentifierStr);
+		final IdentifierString contactIdentifier = IdentifierString.of(contactIdentifierStr);
+
+		final Optional<JsonResponseContact> contact = bpartnerEndpointService.retrieveBPartnerContact(bpartnerIdentifier, contactIdentifier);
+		return okOrNotFound(contact);
 	}
 
 	@ApiResponses(value = {
@@ -188,14 +179,8 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@RequestParam(name = "next", required = false) //
 			@Nullable final String next)
 	{
-		final Optional<JsonResponseCompositeList> result = bPartnerEndpointservice.retrieveBPartnersSince(epochTimestampMillis, next);
-		if (result.isPresent())
-		{
-			return ResponseEntity.ok(result.get());
-		}
-		return new ResponseEntity<JsonResponseCompositeList>(
-				(JsonResponseCompositeList)null,
-				HttpStatus.NOT_FOUND);
+		final Optional<JsonResponseCompositeList> result = bpartnerEndpointService.retrieveBPartnersSince(epochTimestampMillis, next);
+		return okOrNotFound(result);
 	}
 
 	//
@@ -218,7 +203,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 		for (final JsonRequestBPartnerUpsertItem requestItem : bpartnerUpsertRequest.getRequestItems())
 		{
 			final BPartnerComposite syncToMetasfresh = persister.persist(
-					requestItem.getBpartnerIdentifier(),
+					IdentifierString.of(requestItem.getBpartnerIdentifier()),
 					requestItem.getBpartnerComposite(),
 					defaultSyncAdvise);
 
@@ -246,26 +231,19 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 
 			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
-			@NonNull final String bpartnerIdentifier,
+			@NonNull final String bpartnerIdentifierStr,
 
 			@RequestBody @NonNull final JsonRequestLocationUpsert jsonLocation)
 	{
+		final IdentifierString bpartnerIdentifier = IdentifierString.of(bpartnerIdentifierStr);
+
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
 		final Optional<JsonResponseUpsert> jsonLocationId = persister.persistForBPartner(
 				bpartnerIdentifier,
 				jsonLocation,
 				SyncAdvise.builder().ifExists(IfExists.UPDATE_MERGE).ifNotExists(IfNotExists.CREATE).build());
 
-		if (!jsonLocationId.isPresent())
-		{
-			return new ResponseEntity<JsonResponseUpsert>(
-					(JsonResponseUpsert)null,
-					HttpStatus.NOT_FOUND);
-		}
-
-		return new ResponseEntity<JsonResponseUpsert>(
-				jsonLocationId.get(),
-				HttpStatus.CREATED);
+		return createdOrNotFound(jsonLocationId);
 	}
 
 	@ApiResponses(value = {
@@ -281,26 +259,32 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 
 			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
-			@NonNull final String bpartnerIdentifier,
+			@NonNull final String bpartnerIdentifierStr,
 
 			@RequestBody @NonNull final JsonRequestContactUpsert jsonContactUpsert)
 	{
+		final IdentifierString bpartnerIdentifier = IdentifierString.of(bpartnerIdentifierStr);
+
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
-		final Optional<JsonResponseUpsert> jsonContactId = persister.persistForBPartner(
+		final Optional<JsonResponseUpsert> response = persister.persistForBPartner(
 				bpartnerIdentifier,
 				jsonContactUpsert,
 				SyncAdvise.CREATE_OR_MERGE);
 
-		if (!jsonContactId.isPresent())
-		{
-			return new ResponseEntity<JsonResponseUpsert>(
-					(JsonResponseUpsert)null,
-					HttpStatus.NOT_FOUND);
-		}
-
-		return new ResponseEntity<JsonResponseUpsert>(
-				jsonContactId.get(),
-				HttpStatus.CREATED);
+		return createdOrNotFound(response);
 	}
 
+	private static <T> ResponseEntity<T> okOrNotFound(@NonNull final Optional<T> optionalResult)
+	{
+		return optionalResult
+				.map(result -> ResponseEntity.ok(result))
+				.orElseGet(() -> ResponseEntity.notFound().build());
+	}
+
+	private static <T> ResponseEntity<T> createdOrNotFound(@NonNull final Optional<T> optionalResult)
+	{
+		return optionalResult
+				.map(result -> new ResponseEntity<>(result, HttpStatus.CREATED))
+				.orElseGet(() -> ResponseEntity.notFound().build());
+	}
 }

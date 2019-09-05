@@ -242,7 +242,7 @@ final class OrderLinePriceCalculator
 			tempPricingConditions = false;
 		}
 
-		orderLine.setBase_PricingSystem_ID(PricingSystemId.getRepoId(basePricingSystemId));
+		orderLine.setBase_PricingSystem_ID(PricingSystemId.toRepoId(basePricingSystemId));
 
 		if (!orderLine.isManualPaymentTerm())
 		{

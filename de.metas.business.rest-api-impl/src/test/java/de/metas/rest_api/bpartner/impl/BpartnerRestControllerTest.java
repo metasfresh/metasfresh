@@ -47,11 +47,11 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.composite.BPartnerComposite;
-import de.metas.bpartner.composite.BPartnerCompositeQuery;
 import de.metas.bpartner.composite.BPartnerCompositeRepository;
 import de.metas.bpartner.composite.BPartnerCompositeRepository.ContactIdAndBPartner;
 import de.metas.bpartner.composite.BPartnerContactQuery;
 import de.metas.bpartner.composite.BPartnerLocation;
+import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.greeting.GreetingRepository;
@@ -573,7 +573,7 @@ class BpartnerRestControllerTest
 
 		final MetasfreshId metasfreshId = responseItem.getMetasfreshId();
 
-		final BPartnerCompositeQuery query = BPartnerCompositeQuery.builder().externalId(ExternalId.of(C_BPARTNER_EXTERNAL_ID)).build();
+		final BPartnerQuery query = BPartnerQuery.builder().externalId(ExternalId.of(C_BPARTNER_EXTERNAL_ID)).build();
 		final ImmutableList<BPartnerComposite> persistedPage = bpartnerCompositeRepository.getByQuery(query);
 
 		assertThat(persistedPage).hasSize(1);

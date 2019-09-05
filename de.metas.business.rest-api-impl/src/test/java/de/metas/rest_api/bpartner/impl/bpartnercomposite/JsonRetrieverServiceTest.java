@@ -102,7 +102,7 @@ class JsonRetrieverServiceTest
 						BPartnerCompositeLookupKey.ofJsonExternalId(JsonExternalId.of(C_BPARTNER_EXTERNAL_ID)),
 						BPartnerCompositeLookupKey.ofCode(C_BPARTNER_VALUE));
 
-		final Optional<BPartnerComposite> result = jsonRetrieverService.retrieveBPartnerComposite(bpartnerLookupKeys);
+		final Optional<BPartnerComposite> result = jsonRetrieverService.getBPartnerComposite(bpartnerLookupKeys);
 
 		assertThat(result).isNotEmpty();
 		expect(result.get()).toMatchSnapshot();
@@ -114,10 +114,10 @@ class JsonRetrieverServiceTest
 	{
 
 		final ImmutableList<BPartnerCompositeLookupKey> bpartnerLookupKey = ImmutableList.of(BPartnerCompositeLookupKey.ofCode(C_BPARTNER_VALUE));
-		final Optional<BPartnerComposite> result = jsonRetrieverService.retrieveBPartnerComposite(bpartnerLookupKey);
+		final Optional<BPartnerComposite> result = jsonRetrieverService.getBPartnerComposite(bpartnerLookupKey);
 
 		final ImmutableList<BPartnerCompositeLookupKey> bpartnerLookupKey2 = ImmutableList.of(BPartnerCompositeLookupKey.ofJsonExternalId(JsonExternalId.of(C_BPARTNER_EXTERNAL_ID)));
-		final Optional<BPartnerComposite> result2 = jsonRetrieverService.retrieveBPartnerCompositeAssertCacheHit(bpartnerLookupKey2);
+		final Optional<BPartnerComposite> result2 = jsonRetrieverService.getBPartnerCompositeAssertCacheHit(bpartnerLookupKey2);
 
 		assertThat(result2).isNotSameAs(result); // not sameAs, because the composite is mutable and the retriever shall give us own own instance each time.
 		assertThat(result2).isEqualTo(result);

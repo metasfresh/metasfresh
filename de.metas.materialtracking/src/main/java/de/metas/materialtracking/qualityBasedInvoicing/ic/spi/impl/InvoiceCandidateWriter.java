@@ -432,7 +432,7 @@ public class InvoiceCandidateWriter
 
 		//
 		// Pricing
-		ic.setM_PricingSystem_ID(PricingSystemId.getRepoId(pricingResult.getPricingSystemId()));
+		ic.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingResult.getPricingSystemId()));
 		ic.setM_PriceList_Version_ID(PriceListVersionId.toRepoId(pricingResult.getPriceListVersionId()));
 		ic.setPrice_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId()));
 		ic.setPriceEntered(pricingResult.getPriceStd());

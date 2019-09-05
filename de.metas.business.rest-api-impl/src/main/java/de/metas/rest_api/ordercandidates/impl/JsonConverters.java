@@ -170,7 +170,7 @@ public class JsonConverters
 				.uomId(olCand.getC_UOM_ID())
 				.huPIItemProductId(olCand.getHUPIProductItemId())
 				//
-				.pricingSystemId(PricingSystemId.getRepoId(olCand.getPricingSystemId()))
+				.pricingSystemId(PricingSystemId.toRepoId(olCand.getPricingSystemId()))
 				.price(olCand.getPriceActual())
 				.discount(olCand.getDiscount())
 				//
