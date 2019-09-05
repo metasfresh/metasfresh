@@ -7,12 +7,12 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.api.impl.WarehouseDAO;
 import org.adempiere.warehouse.model.I_M_Warehouse;
 import org.compiere.Adempiere;
 import org.springframework.context.annotation.Profile;
 
 import de.metas.Profiles;
-import de.metas.adempiere.service.impl.WarehouseDAO;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.quarantine.HULotNumberQuarantineService;
@@ -92,7 +92,7 @@ public class WEBUI_M_HU_CreateReceipt_LocatorParams
 
 			if (existQuarantineHUs())
 			{
-				final I_M_Warehouse quarantineWarehouse = Services.get(de.metas.adempiere.service.IWarehouseDAO.class).retrieveQuarantineWarehouseOrNull();
+				final I_M_Warehouse quarantineWarehouse = Services.get(IWarehouseDAO.class).retrieveQuarantineWarehouseOrNull();
 
 				if (quarantineWarehouse == null)
 				{

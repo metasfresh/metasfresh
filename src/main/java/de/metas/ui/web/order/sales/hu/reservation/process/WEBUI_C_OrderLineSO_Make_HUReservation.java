@@ -115,7 +115,7 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 					UOMConversionContext.of(productId),
 					orderedQty.getUOM());
 
-			return requiredQty.min(reservableQtyInSalesOrderUOM).getAsBigDecimal();
+			return requiredQty.min(reservableQtyInSalesOrderUOM).toBigDecimal();
 		}
 		return null;
 	}

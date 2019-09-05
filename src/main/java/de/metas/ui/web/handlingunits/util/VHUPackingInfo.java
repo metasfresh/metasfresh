@@ -110,7 +110,7 @@ class VHUPackingInfo implements IHUPackingInfo
 			return null;
 		}
 
-		return huProductStorage.getQty().getAsBigDecimal();
+		return huProductStorage.getQty().toBigDecimal();
 	}
 
 	@Override

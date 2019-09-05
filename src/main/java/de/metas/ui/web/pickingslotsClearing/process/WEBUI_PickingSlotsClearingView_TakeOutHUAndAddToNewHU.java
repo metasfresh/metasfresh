@@ -153,7 +153,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToNewHU
 		final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
 		final IHUStorage storage = storageFactory.getStorage(fromHU);
 		final ProductId singleProductId = storage.getSingleProductIdOrNull();
-		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(singleProductId);
+		final I_C_UOM uom = Services.get(IProductBL.class).getStockUOM(singleProductId);
 
 		final LUTUProducerDestination lutuProducerDestination = createNewHUProducer(pickingRow, targetHUPI);
 		lutuProducerDestination.addCUPerTU(singleProductId, qtyCU, uom);

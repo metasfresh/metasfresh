@@ -139,7 +139,7 @@ public class PurchaseRowFactory
 
 		final BigDecimal qtyAvailableToPromise = availableToPromiseRepository.retrieveAvailableStockQtySum(query);
 
-		final I_C_UOM uom = productsBL.getStockingUOM(productId);
+		final I_C_UOM uom = productsBL.getStockUOM(productId);
 
 		return Quantity.of(qtyAvailableToPromise, uom);
 	}

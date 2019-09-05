@@ -485,7 +485,7 @@ public final class PurchaseRow implements IViewRow
 			profitSalesPriceActual = profitInfo.getProfitSalesPriceActual().orElse(null);
 			profitPurchasePriceActual = profitInfo.getProfitPurchasePriceActual().orElse(null);
 			profitPercent = profitInfo.getProfitPercent()
-					.map(percent -> percent.roundToHalf(RoundingMode.HALF_UP).getValue())
+					.map(percent -> percent.roundToHalf(RoundingMode.HALF_UP).toBigDecimal())
 					.orElse(null);
 		}
 		else

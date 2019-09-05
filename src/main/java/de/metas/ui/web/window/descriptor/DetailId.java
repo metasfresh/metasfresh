@@ -66,7 +66,7 @@ public final class DetailId implements Comparable<DetailId>
 	}
 
 	@JsonCreator
-	public static final DetailId fromJson(@Nullable final String json)
+	public static DetailId fromJson(@Nullable final String json)
 	{
 		if (json == null)
 		{
@@ -80,7 +80,7 @@ public final class DetailId implements Comparable<DetailId>
 		}
 
 		final String[] prefixAndId = jsonToUse.split(PARTS_SEPARATOR);
-		Check.assume(prefixAndId.length == 2, "The given json need to consist for a prefix and the actual ID, separated by {}; json={}", PARTS_SEPARATOR, json);
+		Check.assume(prefixAndId.length == 2, "The given json needs to consist of a prefix and the actual ID, separated by {}; json={}", PARTS_SEPARATOR, json);
 
 		final String prefix = prefixAndId[0];
 		final int idInt = Integer.parseInt(prefixAndId[1]);
@@ -88,12 +88,12 @@ public final class DetailId implements Comparable<DetailId>
 		return DetailId.fromPrefixAndId(prefix, idInt);
 	}
 
-	public static final String toJson(@Nullable final DetailId detailId)
+	public static String toJson(@Nullable final DetailId detailId)
 	{
 		return detailId == null ? null : (detailId.idPrefix + PARTS_SEPARATOR + detailId.idInt);
 	}
 
-	public static final Set<String> toJson(@Nullable final Collection<DetailId> detailIds)
+	public static Set<String> toJson(@Nullable final Collection<DetailId> detailIds)
 	{
 		if (detailIds == null || detailIds.isEmpty())
 		{

@@ -243,7 +243,7 @@ class PricingConditionsRowReducers
 
 		final BigDecimal amountEffective = coalesce(
 				amount,
-				fallback != null ? fallback.getAsBigDecimal() : BigDecimal.ZERO);
+				fallback != null ? fallback.toBigDecimal() : BigDecimal.ZERO);
 
 		final CurrencyId currencyIdEffective = coalesceSuppliers(
 				() -> currencyId,

@@ -1,11 +1,15 @@
 package de.metas.ui.web.handlingunits.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.springframework.context.annotation.Profile;
 
 import com.google.common.collect.ImmutableList;
@@ -229,8 +233,8 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 		final IAllocationRequest allocationRequest = AllocationUtils.createAllocationRequestBuilder()
 				.setHUContext(huContextInitial)
 				.setDateAsToday()
-				.setProduct(rs.getM_Product())
-				.setQuantity(new Quantity(qty, rs.getC_UOM()))
+				.setProduct(loadOutOfTrx(rs.getM_Product_ID(), I_M_Product.class))
+				.setQuantity(new Quantity(qty, loadOutOfTrx(rs.getC_UOM_ID(), I_C_UOM.class)))
 				.setFromReferencedModel(rs)
 				.setForceQtyAllocation(true)
 				.create();
