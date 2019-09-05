@@ -1,16 +1,15 @@
-package de.metas.rest_api.bpartner_pricelist.response;
+package de.metas.rest_api.product.response;
 
-import java.math.BigDecimal;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
-import de.metas.currency.CurrencyCode;
-import de.metas.product.ProductId;
-import de.metas.tax.api.TaxCategoryId;
-import io.swagger.annotations.ApiModelProperty;
+import de.metas.rest_api.utils.JsonError;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -38,32 +37,19 @@ import lombok.Value;
 @Value
 @Builder
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class JsonResponsePrice
+public class JsonGetProductCategoriesResponse
 {
-	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			dataType = "java.lang.Integer", //
-			value = "This translates to `M_Product.M_Product_ID`.")
-	@NonNull
-	private ProductId productId;
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Singular
+	List<JsonProductCategory> productCategories;
 
-	@NonNull
-	private String productCode;
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	JsonError error;
 
-	@NonNull
-	private BigDecimal price;
-
-	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			dataType = "java.lang.String", //
-			value = "Currency code (3 letters)")
-	@NonNull
-	CurrencyCode currencyCode;
-
-	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			dataType = "java.lang.Integer", //
-			value = "This translates to `C_TaxCategory_ID`.")
-	@NonNull
-	TaxCategoryId taxCategoryId;
+	public static JsonGetProductCategoriesResponse error(@NonNull final Throwable throwable, @NonNull final String adLanguage)
+	{
+		return builder()
+				.error(JsonError.ofThrowable(throwable, adLanguage))
+				.build();
+	}
 }

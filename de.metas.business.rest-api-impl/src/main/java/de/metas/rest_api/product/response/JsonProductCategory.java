@@ -1,13 +1,12 @@
-package de.metas.rest_api.bpartner_pricelist.response;
+package de.metas.rest_api.product.response;
 
-import java.math.BigDecimal;
+import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
-import de.metas.currency.CurrencyCode;
-import de.metas.product.ProductId;
-import de.metas.tax.api.TaxCategoryId;
+import de.metas.product.ProductCategoryId;
+import de.metas.rest_api.utils.JsonCreatedUpdatedInfo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -38,32 +37,33 @@ import lombok.Value;
 @Value
 @Builder
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class JsonResponsePrice
+public class JsonProductCategory
 {
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
 			dataType = "java.lang.Integer", //
-			value = "This translates to `M_Product.M_Product_ID`.")
+			value = "This translates to `M_Product_Category_ID`.")
 	@NonNull
-	private ProductId productId;
+	ProductCategoryId id;
 
 	@NonNull
-	private String productCode;
+	String value;
 
 	@NonNull
-	private BigDecimal price;
+	String name;
 
-	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			dataType = "java.lang.String", //
-			value = "Currency code (3 letters)")
-	@NonNull
-	CurrencyCode currencyCode;
+	@Nullable
+	String description;
 
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
 			dataType = "java.lang.Integer", //
-			value = "This translates to `C_TaxCategory_ID`.")
+			value = "This translates to `M_Product_Category.M_Product_Category_Parent_ID`.")
+	@Nullable
+	ProductCategoryId parentProductCategoryId;
+
+	boolean defaultCategory;
+
 	@NonNull
-	TaxCategoryId taxCategoryId;
+	JsonCreatedUpdatedInfo createdUpdatedInfo;
 }

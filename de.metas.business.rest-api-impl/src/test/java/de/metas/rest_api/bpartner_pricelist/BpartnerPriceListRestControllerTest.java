@@ -36,6 +36,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.rest_api.bpartner_pricelist.response.JsonResponsePrice;
 import de.metas.rest_api.bpartner_pricelist.response.JsonResponsePriceList;
+import de.metas.tax.api.TaxCategoryId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -71,6 +72,8 @@ public class BpartnerPriceListRestControllerTest
 	private ProductId productId1;
 	private ProductId productId2;
 	private ProductId productId3;
+
+	private TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoId(12345);
 
 	@BeforeEach
 	public void init()
@@ -130,18 +133,21 @@ public class BpartnerPriceListRestControllerTest
 						.productCode("productValue1")
 						.price(new BigDecimal("10"))
 						.currencyCode(CurrencyCode.EUR)
+						.taxCategoryId(taxCategoryId)
 						.build())
 				.price(JsonResponsePrice.builder()
 						.productId(productId2)
 						.productCode("productValue2")
 						.price(new BigDecimal("20"))
 						.currencyCode(CurrencyCode.EUR)
+						.taxCategoryId(taxCategoryId)
 						.build())
 				.price(JsonResponsePrice.builder()
 						.productId(productId3)
 						.productCode("productValue3")
 						.price(new BigDecimal("30"))
 						.currencyCode(CurrencyCode.EUR)
+						.taxCategoryId(taxCategoryId)
 						.build())
 				.build());
 	}
@@ -231,7 +237,10 @@ public class BpartnerPriceListRestControllerTest
 		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 
-	private void createProductPrice(final PriceListVersionCreateResult priceListVersion, final ProductId productId, int price)
+	private void createProductPrice(
+			final PriceListVersionCreateResult priceListVersion,
+			final ProductId productId,
+			int price)
 	{
 		final PriceListVersionId priceListVersionId = priceListVersion.getPriceListVersionId();
 
@@ -239,6 +248,7 @@ public class BpartnerPriceListRestControllerTest
 		productPrice.setM_PriceList_Version_ID(priceListVersionId.getRepoId());
 		productPrice.setM_Product_ID(productId.getRepoId());
 		productPrice.setPriceStd(BigDecimal.valueOf(price));
+		productPrice.setC_TaxCategory_ID(taxCategoryId.getRepoId());
 		saveRecord(productPrice);
 	}
 }

@@ -13,7 +13,7 @@ import de.metas.rest_api.ordercandidates.JsonBPartnerInfo;
 import de.metas.rest_api.ordercandidates.JsonDocTypeInfo;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest;
-import de.metas.rest_api.product.JsonProductInfo;
+import de.metas.rest_api.ordercandidates.JsonProductInfo;
 import de.metas.util.JSONObjectMapper;
 import lombok.NonNull;
 

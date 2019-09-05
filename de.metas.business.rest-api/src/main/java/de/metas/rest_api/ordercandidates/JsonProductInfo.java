@@ -1,4 +1,4 @@
-package de.metas.rest_api.product;
+package de.metas.rest_api.ordercandidates;
 
 import static de.metas.util.lang.CoalesceUtil.coalesce;
 

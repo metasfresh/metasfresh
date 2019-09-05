@@ -1,13 +1,9 @@
-package de.metas.rest_api.bpartner_pricelist.response;
-
-import java.math.BigDecimal;
+package de.metas.rest_api.product.response;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
-import de.metas.currency.CurrencyCode;
-import de.metas.product.ProductId;
-import de.metas.tax.api.TaxCategoryId;
+import de.metas.bpartner.BPartnerId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -38,32 +34,25 @@ import lombok.Value;
 @Value
 @Builder
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class JsonResponsePrice
+public class JsonProductBPartner
 {
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
 			dataType = "java.lang.Integer", //
-			value = "This translates to `M_Product.M_Product_ID`.")
+			value = "This translates to `C_BPartner_ID`.")
 	@NonNull
-	private ProductId productId;
+	BPartnerId bpartnerId;
 
-	@NonNull
-	private String productCode;
+	String productNo;
+	String productName;
+	String productDescription;
+	String productCategory;
 
-	@NonNull
-	private BigDecimal price;
+	String ean;
 
-	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			dataType = "java.lang.String", //
-			value = "Currency code (3 letters)")
-	@NonNull
-	CurrencyCode currencyCode;
+	boolean vendor;
+	boolean currentVendor;
+	boolean customer;
 
-	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			dataType = "java.lang.Integer", //
-			value = "This translates to `C_TaxCategory_ID`.")
-	@NonNull
-	TaxCategoryId taxCategoryId;
+	int leadTimeInDays;
 }
