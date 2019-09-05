@@ -7,8 +7,8 @@ import javax.annotation.Nullable;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
-import de.metas.dataentry.data.DataEntryCreatedUpdatedInfo;
 import de.metas.product.ProductId;
+import de.metas.rest_api.utils.JsonCreatedUpdatedInfo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -67,5 +67,5 @@ public class JsonProduct
 	List<JsonProductVendor> vendors;
 
 	@NonNull
-	DataEntryCreatedUpdatedInfo createdUpdatedInfo;
+	JsonCreatedUpdatedInfo createdUpdatedInfo;
 }

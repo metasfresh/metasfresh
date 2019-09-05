@@ -13,13 +13,13 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.dataentry.data.DataEntryCreatedUpdatedInfo;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.product.ProductId;
 import de.metas.rest_api.product.ProductsServicesFacade;
 import de.metas.rest_api.product.response.JsonGetProductsResponse;
 import de.metas.rest_api.product.response.JsonProduct;
 import de.metas.rest_api.product.response.JsonProductVendor;
+import de.metas.rest_api.utils.JsonCreatedUpdatedInfo;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.lang.CoalesceUtil;
@@ -117,9 +117,9 @@ public class GetProductsCommand
 				.build();
 	}
 
-	private static DataEntryCreatedUpdatedInfo toCreatedUpdatedInfo(final I_M_Product productRecord)
+	private static JsonCreatedUpdatedInfo toCreatedUpdatedInfo(final I_M_Product productRecord)
 	{
-		return DataEntryCreatedUpdatedInfo.builder()
+		return JsonCreatedUpdatedInfo.builder()
 				.created(TimeUtil.asZonedDateTime(productRecord.getCreated()))
 				.createdBy(UserId.optionalOfRepoId(productRecord.getCreatedBy()).orElse(UserId.SYSTEM))
 				.updated(TimeUtil.asZonedDateTime(productRecord.getUpdated()))
