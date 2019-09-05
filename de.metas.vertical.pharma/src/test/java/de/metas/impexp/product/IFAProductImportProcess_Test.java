@@ -16,9 +16,17 @@ import org.compiere.model.I_C_Country;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.impexp.ImportTableDescriptorRepository;
+import de.metas.impexp.processing.DBFunctionsRepository;
 import de.metas.impexp.product.IFAProductImportTestHelper.IFAFlags;
 import de.metas.pricing.PriceListId;
+import de.metas.vertical.pharma.PharmaProductRepository;
 import de.metas.vertical.pharma.model.I_I_Pharma_Product;
 
 /*
@@ -31,18 +39,28 @@ import de.metas.vertical.pharma.model.I_I_Pharma_Product;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = {
+		// needed to register the spring context with the Adempiere main class
+		StartupListener.class, ShutdownListener.class,
+
+		// needed so that the spring context can discover those components
+		PharmaProductRepository.class,
+		DBFunctionsRepository.class,
+		ImportTableDescriptorRepository.class
+})
 public class IFAProductImportProcess_Test
 {
 	private Properties ctx;
@@ -53,14 +71,14 @@ public class IFAProductImportProcess_Test
 	private int AVP_Price_List_ID;
 	private int UVP_Price_List_ID;
 	private int ZBV_Price_List_ID;
-	
+
 	private final BigDecimal A01KAEP = BigDecimal.valueOf(6);
 	private final BigDecimal A01APU = BigDecimal.valueOf(2);
 	private final BigDecimal A01AEP = BigDecimal.valueOf(1);
 	private final BigDecimal A01AVP = BigDecimal.valueOf(3);
 	private final BigDecimal A01UVP = BigDecimal.valueOf(4);
 	private final BigDecimal A01ZBV = BigDecimal.valueOf(5);
-	
+
 	private final String adLanguage ="de_DE";
 	private final String countryCode ="DE";
 
@@ -104,7 +122,7 @@ public class IFAProductImportProcess_Test
 	}
 
 	@Test
-	public void testAccountImport()
+	public void testIFAProductImport()
 	{
 		final List<I_I_Pharma_Product> importRecords = prepareImportRecords();
 

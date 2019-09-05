@@ -9,7 +9,14 @@ import org.adempiere.util.lang.Mutable;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.impexp.ImportTableDescriptorRepository;
+import de.metas.impexp.processing.DBFunctionsRepository;
 import de.metas.vertical.pharma.model.I_I_Pharma_BPartner;
 
 /*
@@ -22,18 +29,27 @@ import de.metas.vertical.pharma.model.I_I_Pharma_BPartner;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = {
+		// needed to register the spring context with the Adempiere main class
+		StartupListener.class, ShutdownListener.class,
+
+		// needed so that the spring context can discover those components
+		DBFunctionsRepository.class,
+		ImportTableDescriptorRepository.class
+})
 public class IFABPartnerImportProcess_Test
 {
 	private Properties ctx;
@@ -47,7 +63,7 @@ public class IFABPartnerImportProcess_Test
 	}
 
 	@Test
-	public void testAccountImport()
+	public void testIFABPartnerImport()
 	{
 		final List<I_I_Pharma_BPartner> importRecords = prepareImportRecords();
 
@@ -57,8 +73,8 @@ public class IFABPartnerImportProcess_Test
 		importRecords.forEach(record -> importProcess.importRecord(new Mutable<>(), record, false /* isInsertOnly */));
 
 		importRecords.forEach(record -> IFABPartnerImportTestHelper.assertIFABPartnerImported(record));
-		
-		
+
+
 	}
 
 	/**
@@ -100,8 +116,8 @@ public class IFABPartnerImportProcess_Test
 				.B00HOMEPAG("www@test.com")
 				.build();
 		records.add(ifaPartner);
-		
-		
+
+
 		ifaPartner = IIFABPartnerFactory.builder()
 				.B00SSATZ("1")
 				.B00ADRNR("20")
