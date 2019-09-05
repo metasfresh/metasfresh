@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -70,6 +71,21 @@ public class ProductsServicesFacade
 	}
 
 	public JsonCreatedUpdatedInfo extractCreatedUpdatedInfo(final I_M_Product record)
+	{
+		return JsonCreatedUpdatedInfo.builder()
+				.created(TimeUtil.asZonedDateTime(record.getCreated()))
+				.createdBy(UserId.optionalOfRepoId(record.getCreatedBy()).orElse(UserId.SYSTEM))
+				.updated(TimeUtil.asZonedDateTime(record.getUpdated()))
+				.updatedBy(UserId.optionalOfRepoId(record.getUpdatedBy()).orElse(UserId.SYSTEM))
+				.build();
+	}
+
+	public Stream<I_M_Product_Category> streamAllProductCategories()
+	{
+		return productsRepo.streamAllProductCategories();
+	}
+
+	public JsonCreatedUpdatedInfo extractCreatedUpdatedInfo(final I_M_Product_Category record)
 	{
 		return JsonCreatedUpdatedInfo.builder()
 				.created(TimeUtil.asZonedDateTime(record.getCreated()))
