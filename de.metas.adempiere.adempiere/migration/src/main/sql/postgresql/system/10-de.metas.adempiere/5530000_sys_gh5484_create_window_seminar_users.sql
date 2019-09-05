@@ -1628,3 +1628,29 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=583631
 /* DDL */ select AD_Element_Link_Create_Missing_Field(583631)
 ;
 
+
+-- 2019-09-05T20:43:00.600Z
+-- URL zum Konzept
+INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,541035,TO_TIMESTAMP('2019-09-05 22:43:00','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','N','Seminarreihe',TO_TIMESTAMP('2019-09-05 22:43:00','YYYY-MM-DD HH24:MI:SS'),100,'T')
+;
+
+-- 2019-09-05T20:43:00.602Z
+-- URL zum Konzept
+INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Reference_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Reference t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Reference_ID=541035 AND NOT EXISTS (SELECT 1 FROM AD_Reference_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Reference_ID=t.AD_Reference_ID)
+;
+
+-- 2019-09-05T20:43:43.087Z
+-- URL zum Konzept
+INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Display,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,Updated,UpdatedBy) VALUES (0,568648,568647,0,541035,541404,540681,TO_TIMESTAMP('2019-09-05 22:43:43','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','N',TO_TIMESTAMP('2019-09-05 22:43:43','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2019-09-05T20:43:55.500Z
+-- URL zum Konzept
+UPDATE AD_Field SET AD_Reference_ID=18, AD_Reference_Value_ID=541035,Updated=TO_TIMESTAMP('2019-09-05 22:43:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=583624
+;
+
+-- 2019-09-05T20:44:41.565Z
+-- URL zum Konzept
+UPDATE AD_Field SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2019-09-05 22:44:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=583623
+;
+
