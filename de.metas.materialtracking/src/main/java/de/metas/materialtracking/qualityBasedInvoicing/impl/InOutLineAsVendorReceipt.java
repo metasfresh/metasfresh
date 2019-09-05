@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 
 import de.metas.document.engine.DocStatus;
 import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
@@ -47,6 +48,8 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+
+import lombok.NonNull;
 
 /**
  * {@link IVendorReceipt} implementation which takes the values from the wrapped {@link I_M_InOutLine}.
@@ -80,9 +83,8 @@ import de.metas.util.Services;
 	}
 
 	@Override
-	public void add(final I_M_InOutLine inOutLine)
+	public void add(@NonNull final I_M_InOutLine inOutLine)
 	{
-		Check.assumeNotNull(inOutLine, "inOutLine not null");
 		if (inOutLine.getM_Product_ID() != _product.getM_Product_ID())
 		{
 			return; // nothing to do
@@ -188,7 +190,7 @@ import de.metas.util.Services;
 		{
 			if (inoutLine.getM_Product_ID() != productId)
 			{
-				logger.debug("Not counting {} because its M_Product_ID={} is not the ID of product {}", new Object[] { inoutLine, inoutLine.getM_Product_ID(), _product });
+				Loggables.get().addLog("Not counting {} because its M_Product_ID={} is not the ID of product {}", new Object[] { inoutLine, inoutLine.getM_Product_ID(), _product });
 				continue;
 			}
 
@@ -197,7 +199,7 @@ import de.metas.util.Services;
 			final DocStatus inoutDocStatus = DocStatus.ofCode(inout.getDocStatus());
 			if(!inoutDocStatus.isCompletedOrClosed())
 			{
-				logger.debug("Not counting {} because its M_InOut has docstatus {}", new Object[] { inoutLine, inoutDocStatus });
+				Loggables.addLog("Not counting {} because its M_InOut has docstatus {}", new Object[] { inoutLine, inoutDocStatus });
 				continue;
 			}
 
