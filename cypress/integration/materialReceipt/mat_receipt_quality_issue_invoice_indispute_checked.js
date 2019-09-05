@@ -100,8 +100,10 @@ it('Create Product Category', function() {
   });
 });
 
-it('Create products and vendor', function() {
+it('Create product 1', function() {
   Builder.createProductWithPriceUsingExistingCategory(priceListName, productName1, productName1, productType, productCategoryName);
+});
+it('Create product 1 and vendor', function() {
   Builder.createProductWithPriceUsingExistingCategory(priceListName, productName2, productName2, productType, productCategoryName);
   cy.fixture('sales/simple_vendor.json').then(vendorJson => {
     new BPartner({ ...vendorJson, name: vendorName })

@@ -1,0 +1,26 @@
+{
+  "priceSystemName" : "MaterialTracking",
+  "priceListName" : "MaterialTracking",
+  "priceListVersionName" : "MaterialTracking",
+
+  "productCategoryName" : "MaterialTracking",
+
+  "scrapProductName" : "P002749_Erdbesatz",
+  "processingFeeProductName" : "P002750_Futterkaroten",
+  "productionProductName" : "P002752_Produkt fur Auslagerung",
+  "witholdingProductName" : "P002751_Akonto (Einbehalt)",
+
+  "rawProductName" : "Raw",
+
+  "calendarName":  "Calendar",
+  "contactTransitionName": "MaterialTracking",
+  "serviceProductType": "Service",
+  "itemProductType": "Item",
+  "contractConditionsName": "ContractConditions",
+  "vendorName":  "Vendor",
+  "lagerKonferenzName": "LagerKonferenz",
+  "validFrom": "06/01/2015",
+  "validTo": "05/31/2016",
+  "scrapFeeAmt": "0.06",
+  "percentageScrapTreshhold": "10.00"
+}
