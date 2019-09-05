@@ -66,7 +66,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		if (context.getSelectionSize() <= 0)
+		if (context.isNoSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}

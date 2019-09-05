@@ -1049,7 +1049,7 @@ public abstract class PO
 			final Object oldValue = get_ValueOld(index);
 			if (Objects.equals(oldValue, valueToUse))
 			{
-				// Value did not changed.
+				// Value was not changed
 
 				// Don't return here, but allow actually setting the value
 				// because it could be that someone changed the "m_newValues" by using set_ValueNoCheck()
@@ -1380,7 +1380,7 @@ public abstract class PO
 		String valueString = "NULL";
 		if (value == null)
 		{
-			
+
 		}
 		else if (value instanceof Number)
 		{
@@ -2160,7 +2160,7 @@ public abstract class PO
 			}
 			else if (value == null || value.equals(Null.NULL))
 			{
-				
+
 			}
 			else if (value instanceof Integer || value instanceof BigDecimal)
 			{
@@ -2181,7 +2181,7 @@ public abstract class PO
 			}
 			else if (DisplayType.isLOB(dt))
 			{
-				
+
 			}
 			else {
 					// saveNewSpecial (value, i));
@@ -2284,7 +2284,7 @@ public abstract class PO
 			{
 				continue;
 			}
-			
+
 			final String colName = p_info.getColumnName(i);
 			// Set Standard Values
 			if (colName.equals("CreatedBy") || colName.equals("UpdatedBy"))
@@ -3684,7 +3684,7 @@ public abstract class PO
 			final String columnName = p_info.getColumnName(i);
 			final Object value = get_Value(i);
 			final int dt = p_info.getColumnDisplayType(i);
-			
+
 			// Don't insert NULL values (allows Database defaults)
 			if (value == null)
 			{
@@ -4902,7 +4902,7 @@ public abstract class PO
 			final Class<?> c = p_info.getColumnClass(i);
 			if (value == null || value.equals(Null.NULL))
 			{
-				
+
 			}
 			else if (c == Object.class)
 			{
