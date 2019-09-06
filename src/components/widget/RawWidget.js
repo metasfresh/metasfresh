@@ -283,7 +283,8 @@ export class RawWidget extends Component {
 
     const widgetProperties = {
       ref: c => (this.rawWidget = c),
-      // Chrome hack for autofills - Kuba
+      //autocomplete=new-password did not work in chrome for non password fields anymore,
+      //switched to autocomplete=off instead
       autoComplete: 'off',
       className: 'input-field js-input-field',
       value: widgetValue,
