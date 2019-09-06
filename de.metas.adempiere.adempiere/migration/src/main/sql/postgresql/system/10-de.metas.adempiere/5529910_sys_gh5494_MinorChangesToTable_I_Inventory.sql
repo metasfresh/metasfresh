@@ -185,3 +185,187 @@ UPDATE AD_Field SET IsDisplayed='Y', SeqNo=160,Updated=TO_TIMESTAMP('2019-09-06 
 UPDATE AD_Field SET IsDisplayed='Y', SeqNo=170,Updated=TO_TIMESTAMP('2019-09-06 17:05:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=563454
 ;
 
+
+
+
+
+
+-- 2019-09-06T14:12:21.305Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Help='E.g. WH-LO-1-1-1-1',Updated=TO_TIMESTAMP('2019-09-06 17:12:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=577038
+;
+
+-- 2019-09-06T14:12:21.323Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='WarehouseLocatorIdentifier', Name='Warehouse Locator Identifier', Description='Text that contains identifier of earehosue and locator', Help='E.g. WH-LO-1-1-1-1' WHERE AD_Element_ID=577038
+;
+
+-- 2019-09-06T14:12:21.325Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='WarehouseLocatorIdentifier', Name='Warehouse Locator Identifier', Description='Text that contains identifier of earehosue and locator', Help='E.g. WH-LO-1-1-1-1', AD_Element_ID=577038 WHERE UPPER(ColumnName)='WAREHOUSELOCATORIDENTIFIER' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2019-09-06T14:12:21.330Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='WarehouseLocatorIdentifier', Name='Warehouse Locator Identifier', Description='Text that contains identifier of earehosue and locator', Help='E.g. WH-LO-1-1-1-1' WHERE AD_Element_ID=577038 AND IsCentrallyMaintained='Y'
+;
+
+-- 2019-09-06T14:12:21.331Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Warehouse Locator Identifier', Description='Text that contains identifier of earehosue and locator', Help='E.g. WH-LO-1-1-1-1' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=577038) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 577038)
+;
+
+-- 2019-09-06T14:12:21.342Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Warehouse Locator Identifier', Description='Text that contains identifier of earehosue and locator', Help='E.g. WH-LO-1-1-1-1', CommitWarning = NULL WHERE AD_Element_ID = 577038
+;
+
+-- 2019-09-06T14:12:21.344Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Warehouse Locator Identifier', Description='Text that contains identifier of earehosue and locator', Help='E.g. WH-LO-1-1-1-1' WHERE AD_Element_ID = 577038
+;
+
+-- 2019-09-06T14:12:21.346Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Warehouse Locator Identifier', Description = 'Text that contains identifier of earehosue and locator', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 577038
+;
+
+-- 2019-09-06T14:12:59.850Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Description='Text that contains identifier of warehouse. locator and dimensions',Updated=TO_TIMESTAMP('2019-09-06 17:12:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=577038
+;
+
+-- 2019-09-06T14:12:59.855Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='WarehouseLocatorIdentifier', Name='Warehouse Locator Identifier', Description='Text that contains identifier of warehouse. locator and dimensions', Help='E.g. WH-LO-1-1-1-1' WHERE AD_Element_ID=577038
+;
+
+-- 2019-09-06T14:12:59.858Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='WarehouseLocatorIdentifier', Name='Warehouse Locator Identifier', Description='Text that contains identifier of warehouse. locator and dimensions', Help='E.g. WH-LO-1-1-1-1', AD_Element_ID=577038 WHERE UPPER(ColumnName)='WAREHOUSELOCATORIDENTIFIER' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2019-09-06T14:12:59.861Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='WarehouseLocatorIdentifier', Name='Warehouse Locator Identifier', Description='Text that contains identifier of warehouse. locator and dimensions', Help='E.g. WH-LO-1-1-1-1' WHERE AD_Element_ID=577038 AND IsCentrallyMaintained='Y'
+;
+
+-- 2019-09-06T14:12:59.863Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Warehouse Locator Identifier', Description='Text that contains identifier of warehouse. locator and dimensions', Help='E.g. WH-LO-1-1-1-1' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=577038) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 577038)
+;
+
+-- 2019-09-06T14:12:59.883Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Warehouse Locator Identifier', Description='Text that contains identifier of warehouse. locator and dimensions', Help='E.g. WH-LO-1-1-1-1', CommitWarning = NULL WHERE AD_Element_ID = 577038
+;
+
+-- 2019-09-06T14:12:59.885Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Warehouse Locator Identifier', Description='Text that contains identifier of warehouse. locator and dimensions', Help='E.g. WH-LO-1-1-1-1' WHERE AD_Element_ID = 577038
+;
+
+-- 2019-09-06T14:12:59.886Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Warehouse Locator Identifier', Description = 'Text that contains identifier of warehouse. locator and dimensions', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 577038
+;
+
+-- 2019-09-06T14:22:37.041Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Help='E.g. WH-LO-1-2-3-4
+WH- warehouse value
+LO - locator value
+1 - X dimension
+2 - Y dimension
+3 - Z dimension
+4 - X1 dimension',Updated=TO_TIMESTAMP('2019-09-06 17:22:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=577038
+;
+
+-- 2019-09-06T14:22:37.049Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='WarehouseLocatorIdentifier', Name='Warehouse Locator Identifier', Description='Text that contains identifier of warehouse. locator and dimensions', Help='E.g. WH-LO-1-2-3-4
+WH- warehouse value
+LO - locator value
+1 - X dimension
+2 - Y dimension
+3 - Z dimension
+4 - X1 dimension' WHERE AD_Element_ID=577038
+;
+
+-- 2019-09-06T14:22:37.051Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='WarehouseLocatorIdentifier', Name='Warehouse Locator Identifier', Description='Text that contains identifier of warehouse. locator and dimensions', Help='E.g. WH-LO-1-2-3-4
+WH- warehouse value
+LO - locator value
+1 - X dimension
+2 - Y dimension
+3 - Z dimension
+4 - X1 dimension', AD_Element_ID=577038 WHERE UPPER(ColumnName)='WAREHOUSELOCATORIDENTIFIER' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2019-09-06T14:22:37.052Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='WarehouseLocatorIdentifier', Name='Warehouse Locator Identifier', Description='Text that contains identifier of warehouse. locator and dimensions', Help='E.g. WH-LO-1-2-3-4
+WH- warehouse value
+LO - locator value
+1 - X dimension
+2 - Y dimension
+3 - Z dimension
+4 - X1 dimension' WHERE AD_Element_ID=577038 AND IsCentrallyMaintained='Y'
+;
+
+-- 2019-09-06T14:22:37.053Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Warehouse Locator Identifier', Description='Text that contains identifier of warehouse. locator and dimensions', Help='E.g. WH-LO-1-2-3-4
+WH- warehouse value
+LO - locator value
+1 - X dimension
+2 - Y dimension
+3 - Z dimension
+4 - X1 dimension' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=577038) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 577038)
+;
+
+-- 2019-09-06T14:22:37.066Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Warehouse Locator Identifier', Description='Text that contains identifier of warehouse. locator and dimensions', Help='E.g. WH-LO-1-2-3-4
+WH- warehouse value
+LO - locator value
+1 - X dimension
+2 - Y dimension
+3 - Z dimension
+4 - X1 dimension', CommitWarning = NULL WHERE AD_Element_ID = 577038
+;
+
+-- 2019-09-06T14:22:37.068Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Warehouse Locator Identifier', Description='Text that contains identifier of warehouse. locator and dimensions', Help='E.g. WH-LO-1-2-3-4
+WH- warehouse value
+LO - locator value
+1 - X dimension
+2 - Y dimension
+3 - Z dimension
+4 - X1 dimension' WHERE AD_Element_ID = 577038
+;
+
+-- 2019-09-06T14:22:37.068Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Warehouse Locator Identifier', Description = 'Text that contains identifier of warehouse. locator and dimensions', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 577038
+;
+
+-- 2019-09-06T15:09:40.101Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET Description='Can be:
+	* The exact product value
+	* The product id
+	* Part of the product value, using this pattern val-%',Updated=TO_TIMESTAMP('2019-09-06 18:09:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=8824
+;
+
+-- 2019-09-06T15:09:40.114Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Produktschlüssel', Description='Can be:
+	* The exact product value
+	* The product id
+	* Part of the product value, using this pattern val-%', Help=NULL WHERE AD_Column_ID=8824
+;
+
+
