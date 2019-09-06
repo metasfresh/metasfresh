@@ -79,6 +79,18 @@ export class LagerKonferenzVersion {
     this.regularProductionProduct = regularProductionProduct;
     return this;
   }
+
+  setScrapFeeAmt(scrapFeeAmount) {
+    cy.log(`LagerKonferenzVersion - set scrap fee amount = ${scrapFeeAmount}`);
+    this.scrapFeeAmount = scrapFeeAmount;
+    return this;
+  }
+
+  setPercentageScrapTreshhold(treshhold) {
+    cy.log(`LagerKonferenzVersion - set percentage scrap treshhold = ${treshhold}`);
+    this.treshhold = treshhold;
+    return this;
+  }
 }
 
 function applyQualitySettings(qualitySettings) {
@@ -101,40 +113,21 @@ function applyLine(settingsLine) {
   cy.writeIntoStringField('ValidFrom', settingsLine.validFrom, true /*modal*/, undefined, true /*norequest */);
   cy.writeIntoStringField('ValidTo', settingsLine.validTo, true /*modal*/, undefined, true /*norequest */);
 
-  cy.writeIntoLookupListField(
-    'M_Product_Scrap_ID',
-    settingsLine.scrapProduct,
-    settingsLine.scrapProduct,
-    false,
-    true /*modal*/
-  );
+  cy.writeIntoLookupListField('M_Product_Scrap_ID', settingsLine.scrapProduct, settingsLine.scrapProduct, false, true /*modal*/);
   cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
     cy.selectInListField('C_UOM_Scrap_ID', getLanguageSpecific(miscDictionary, settingsLine.scrapUOM), true /*modal*/);
   });
 
-  cy.writeIntoLookupListField(
-    'M_Product_ProcessingFee_ID',
-    settingsLine.processingFeeProduct,
-    settingsLine.processingFeeProduct,
-    false,
-    true /*modal*/
-  );
+  cy.writeIntoLookupListField('M_Product_ProcessingFee_ID', settingsLine.processingFeeProduct, settingsLine.processingFeeProduct, false, true /*modal*/);
 
-  cy.writeIntoLookupListField(
-    'M_Product_Witholding_ID',
-    settingsLine.witholdingProduct,
-    settingsLine.witholdingProduct,
-    false,
-    true /*modal*/
-  );
+  cy.writeIntoLookupListField('M_Product_Witholding_ID', settingsLine.witholdingProduct, settingsLine.witholdingProduct, false, true /*modal*/);
 
-  cy.writeIntoLookupListField(
-    'M_Product_RegularPPOrder_ID',
-    settingsLine.regularProductionProduct,
-    settingsLine.regularProductionProduct,
-    false,
-    true /*modal*/
-  );
-
+  cy.writeIntoLookupListField('M_Product_RegularPPOrder_ID', settingsLine.regularProductionProduct, settingsLine.regularProductionProduct, false, true /*modal*/);
+  if (settingsLine.scrapFeeAmount) {
+    cy.writeIntoStringField('Scrap_Fee_Amt_Per_UOM', settingsLine.scrapFeeAmount, true, null, true);
+  }
+  if (settingsLine.treshhold) {
+    cy.writeIntoStringField('Percentage_Scrap_Treshhold', settingsLine.treshhold, true, null, true);
+  }
   cy.pressDoneButton();
 }
