@@ -169,13 +169,12 @@ public class PPOrderQualityCalculator
 	}
 
 	/**
-	 *
-	 * @param materialTracking
-	 * @param product
-	 * @param uomTo
 	 * @return quantity received (in <code>uomTo</code>) from linked material receipt lines
 	 */
-	private final BigDecimal retrieveQtyReceived(final I_M_Material_Tracking materialTracking, final I_M_Product product, final I_C_UOM uomTo)
+	private final BigDecimal retrieveQtyReceived(
+			@NonNull final I_M_Material_Tracking materialTracking,
+			@NonNull final I_M_Product product,
+			@NonNull final I_C_UOM uomTo)
 	{
 		// Services
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);

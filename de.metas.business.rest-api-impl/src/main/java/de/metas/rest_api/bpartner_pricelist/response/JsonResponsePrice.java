@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
 import de.metas.currency.CurrencyCode;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -58,4 +59,11 @@ public class JsonResponsePrice
 			value = "Currency code (3 letters)")
 	@NonNull
 	CurrencyCode currencyCode;
+
+	@ApiModelProperty( //
+			allowEmptyValue = false, //
+			dataType = "java.lang.Integer", //
+			value = "This translates to `C_TaxCategory_ID`.")
+	@NonNull
+	TaxCategoryId taxCategoryId;
 }

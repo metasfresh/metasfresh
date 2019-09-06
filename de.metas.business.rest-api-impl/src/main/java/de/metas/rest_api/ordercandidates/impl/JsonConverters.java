@@ -22,8 +22,7 @@ import de.metas.rest_api.ordercandidates.JsonBPartnerInfo;
 import de.metas.rest_api.ordercandidates.JsonOLCand;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest;
-import de.metas.rest_api.product.impl.ProductMasterDataProvider;
-import de.metas.rest_api.product.impl.ProductMasterDataProvider.ProductInfo;
+import de.metas.rest_api.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -51,7 +50,7 @@ import lombok.NonNull;
  */
 
 @Service
-public class JsonConverters
+class JsonConverters
 {
 	public final OLCandCreateRequestBuilder fromJson(
 			@NonNull final JsonOLCandCreateRequest request,

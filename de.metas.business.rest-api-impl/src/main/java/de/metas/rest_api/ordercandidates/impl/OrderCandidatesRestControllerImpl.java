@@ -41,7 +41,6 @@ import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
-import de.metas.rest_api.product.impl.ProductMasterDataProvider;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.swagger.annotations.ApiParam;
@@ -72,14 +71,12 @@ import lombok.NonNull;
 @RestController
 @RequestMapping(OrderCandidatesRestEndpoint.ENDPOINT)
 @Profile(Profiles.PROFILE_App)
-public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
+class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 {
 	public static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE." + OrderCandidatesRestControllerImpl.class.getName();
 
 	private JsonConverters jsonConverters;
-
 	private OLCandRepository olCandRepo;
-
 	private MasterdataProviderFactory masterdataProviderFactory;
 
 	public OrderCandidatesRestControllerImpl(
@@ -90,7 +87,6 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 		this.masterdataProviderFactory = masterdataProviderFactory;
 		this.jsonConverters = jsonConverters;
 		this.olCandRepo = olCandRepo;
-
 	}
 
 	@PostMapping

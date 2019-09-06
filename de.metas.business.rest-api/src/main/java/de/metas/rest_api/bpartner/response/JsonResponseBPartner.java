@@ -57,11 +57,16 @@ public class JsonResponseBPartner
 	public static final String METASFRESH_ID = "metasfreshId";
 	public static final String CODE = "code";
 	public static final String ACTIVE = "active";
+	public static final String VENDOR = "vendor";
+	public static final String CUSTOMER = "customer";
+
+	private static final String CHANGE_INFO = "changeInfo";
 
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
 			dataType = "java.lang.Integer", //
 			value = "This translates to `C_BPartner.C_BPartner_ID`.")
+	@JsonProperty(METASFRESH_ID)
 	@JsonInclude(Include.NON_NULL)
 	MetasfreshId metasfreshId;
 
@@ -69,23 +74,29 @@ public class JsonResponseBPartner
 			required = false, //
 			dataType = "java.lang.String", //
 			value = "This translates to `C_BPartner.ExternalId`.")
+	@JsonProperty(EXTERNAL_ID)
 	@JsonInclude(Include.NON_NULL)
 	JsonExternalId externalId;
 
 	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Value`.")
+	@JsonProperty(CODE)
 	String code;
 
 	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.IsActive`.")
+	@JsonProperty(ACTIVE)
 	boolean active;
 
 	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Name`.")
+	@JsonProperty(NAME)
 	String name;
 
 	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Name2`.")
+	@JsonProperty(NAME_2)
 	@JsonInclude(Include.NON_NULL)
 	String name2;
 
 	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Name3`.")
+	@JsonProperty(NAME_3)
 	@JsonInclude(Include.NON_NULL)
 	String name3;
 
@@ -93,6 +104,7 @@ public class JsonResponseBPartner
 			required = false, //
 			value = "This translates to `C_BPartner.CompanyName`.\n"
 					+ "If set, the the respective `C_BPartner` record will also have `IsCompany='Y'`")
+	@JsonProperty(COMPANY_NAME)
 	@JsonInclude(Include.NON_NULL)
 	String companyName;
 
@@ -100,38 +112,54 @@ public class JsonResponseBPartner
 			required = false, //
 			value = "This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company",//
 			dataType = "java.lang.Integer")
+	@JsonProperty(PARENT_ID)
 	@JsonInclude(Include.NON_NULL)
 	MetasfreshId parentId;
 
 	@ApiModelProperty( //
 			required = false, //
 			value = "This translates to `C_BPartner.Phone2`. It's this bpartner's central phone number")
+	@JsonProperty(PHONE)
 	@JsonInclude(Include.NON_NULL)
 	String phone;
 
 	@JsonInclude(Include.NON_NULL)
+	@JsonProperty(LANGUAGE)
 	String language;
 
 	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.URL`.")
+	@JsonProperty(URL)
 	@JsonInclude(Include.NON_NULL)
 	String url;
 
 	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.URL2`.")
+	@JsonProperty(URL_2)
 	@JsonInclude(Include.NON_NULL)
 	private String url2;
 
 	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.URL3`.")
+	@JsonProperty(URL_3)
 	@JsonInclude(Include.NON_NULL)
 	private String url3;
 
 	@ApiModelProperty( //
 			required = false, //
 			value = "Name of the business partner's group")
+	@JsonProperty(GROUP_NAME)
 	@JsonInclude(Include.NON_NULL)
 	String group;
 
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.IsVendor`.")
+	@JsonProperty(VENDOR)
+	boolean vendor;
+
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.IsCustomer`.")
+	@JsonProperty(CUSTOMER)
+	boolean customer;
+
+	@ApiModelProperty(position = 9999) // shall be last
+	@JsonProperty(CHANGE_INFO)
 	@JsonInclude(Include.NON_NULL)
-	@ApiModelProperty(position = 20) // shall be last
 	JsonChangeInfo changeInfo;
 
 	@JsonCreator
@@ -152,7 +180,10 @@ public class JsonResponseBPartner
 			@JsonProperty(URL_2) @Nullable final String url2,
 			@JsonProperty(URL_3) @Nullable final String url3,
 			@JsonProperty(GROUP_NAME) @Nullable final String group,
-			@JsonProperty("changeInfo") @Nullable JsonChangeInfo changeInfo)
+			@JsonProperty(VENDOR) @NonNull final Boolean vendor,
+			@JsonProperty(CUSTOMER) @NonNull final Boolean customer,
+			//
+			@JsonProperty(CHANGE_INFO) @Nullable JsonChangeInfo changeInfo)
 	{
 		this.metasfreshId = metasfreshId;
 		this.externalId = externalId;
@@ -175,6 +206,10 @@ public class JsonResponseBPartner
 		this.url3 = url3;
 
 		this.group = group;
+
+		this.vendor = vendor;
+		this.customer = customer;
+
 		this.changeInfo = changeInfo;
 	}
 }

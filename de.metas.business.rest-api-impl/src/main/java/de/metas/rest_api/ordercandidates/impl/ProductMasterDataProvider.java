@@ -1,4 +1,4 @@
-package de.metas.rest_api.product.impl;
+package de.metas.rest_api.ordercandidates.impl;
 
 import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -22,7 +22,7 @@ import de.metas.product.ProductId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
 import de.metas.rest_api.bpartner.impl.BPartnerMasterDataContext;
-import de.metas.rest_api.product.JsonProductInfo;
+import de.metas.rest_api.ordercandidates.JsonProductInfo;
 import de.metas.rest_api.utils.PermissionService;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -54,7 +54,7 @@ import lombok.Value;
  * #L%
  */
 
-public class ProductMasterDataProvider
+final class ProductMasterDataProvider
 {
 	public static ProductMasterDataProvider of(
 			@Nullable final Properties ctx,

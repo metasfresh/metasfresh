@@ -94,6 +94,7 @@ import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.AdProcessId;
 import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.SelectionSize;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -496,7 +497,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 				final int sortNo = field.getSortNo();
 				if (sortNo == 0)
 				{
-					
+
 				}
 				else if (Math.abs(sortNo) == 1)
 				{
@@ -583,11 +584,11 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			{
 				final GridField updated = new GridField(GridFieldVO.createStdField(
 						ctx,
-						m_vo.getWindowNo(), 
+						m_vo.getWindowNo(),
 						m_vo.getTabNo(),
-						m_vo.getAdWindowId(), 
+						m_vo.getAdWindowId(),
 						m_vo.getAD_Tab_ID(),
-						tabReadOnly, 
+						tabReadOnly,
 						applyRolePermissions,
 						false, // isCreated
 						true // isTimestamp
@@ -2662,11 +2663,11 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	{
 		event.setCreated((Integer)getValue("CreatedBy"), (Timestamp)getValue("Created"));
 		event.setUpdated((Integer)getValue("UpdatedBy"), (Timestamp)getValue("Updated"));
-		
-		
+
+
 		final int adTableId = getAD_Table_ID();
 		final String singleKeyColumnName = getKeyColumnName();
-		
+
 		// We have a key column
 		if(!Check.isEmpty(singleKeyColumnName, true))
 		{
@@ -2689,7 +2690,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 				final Object keyValue = getValue(keyColumnName);
 				valuesByColumnName.put(keyColumnName, keyValue);
 			}
-			
+
 			event.setRecord(adTableId, ComposedRecordId.composedKey(valuesByColumnName));
 		}
 	}
@@ -4374,7 +4375,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			return gridTab.getAdWindowId();
 		}
-		
+
 		@Override
 		public AdTabId getAdTabId()
 		{
@@ -4408,10 +4409,10 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 
 		@Override
-		public int getSelectionSize()
+		public SelectionSize getSelectionSize()
 		{
 			// backward compatibility
-			return 1;
+			return SelectionSize.ofSize(1);
 		}
 
 	}

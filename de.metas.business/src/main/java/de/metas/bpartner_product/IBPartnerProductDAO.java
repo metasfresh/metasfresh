@@ -88,7 +88,7 @@ public interface IBPartnerProductDAO extends ISingletonService
 	 */
 	I_C_BPartner_Product retrieveBPProductForCustomer(I_C_BPartner customerPartner, I_M_Product product, OrgId orgId);
 
-	List<I_C_BPartner_Product> retrieveAllVendors(ProductId productId, OrgId orgId);
+	List<I_C_BPartner_Product> retrieveForProductIds(Set<ProductId> productIds);
 
 	List<ProductExclude> retrieveAllProductSalesExcludes();
 

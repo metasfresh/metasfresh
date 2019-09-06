@@ -57,12 +57,17 @@ public class QueryResultPage<T>
 				.map(mapper)
 				.collect(ImmutableList.toImmutableList());
 
-		return new QueryResultPage<R>(currentPageDescriptor, nextPageDescriptor, totalSize, resultTimestamp, mappedItems);
+		return new QueryResultPage<>(currentPageDescriptor, nextPageDescriptor, totalSize, resultTimestamp, mappedItems);
+	}
+
+	public <R> QueryResultPage<R> mapAllTo(@NonNull final Function<ImmutableList<T>, ImmutableList<R>> mapper)
+	{
+		return withItems(mapper.apply(getItems()));
 	}
 
 	public <R> QueryResultPage<R> withItems(@NonNull final ImmutableList<R> replacementItems)
 	{
-		return new QueryResultPage<R>(
+		return new QueryResultPage<>(
 				currentPageDescriptor.withSize(replacementItems.size()),
 				nextPageDescriptor,
 				totalSize,

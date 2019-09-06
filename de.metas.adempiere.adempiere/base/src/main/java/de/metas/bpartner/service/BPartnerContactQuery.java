@@ -1,4 +1,4 @@
-package de.metas.bpartner.composite;
+package de.metas.bpartner.service;
 
 import static de.metas.util.Check.assume;
 import static de.metas.util.Check.isEmpty;
@@ -34,7 +34,6 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class BPartnerContactQuery
 {
 	/** If set, it overrides the other query parameters */
@@ -48,6 +47,7 @@ public class BPartnerContactQuery
 	/** If set, it is ANDed to the rest */
 	BPartnerId bPartnerId;
 
+	@Builder
 	private BPartnerContactQuery(
 			@Nullable final UserId userId,
 			@Nullable final ExternalId externalId,

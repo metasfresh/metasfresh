@@ -16,14 +16,14 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerComposite;
-import de.metas.bpartner.composite.BPartnerCompositeRepository;
-import de.metas.bpartner.composite.BPartnerCompositeRepository.ContactIdAndBPartner;
+import de.metas.bpartner.composite.BPartnerCompositeAndContactId;
 import de.metas.bpartner.composite.BPartnerContact;
-import de.metas.bpartner.composite.BPartnerContactQuery;
-import de.metas.bpartner.composite.BPartnerContactQuery.BPartnerContactQueryBuilder;
 import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.BPartnerContactQuery;
+import de.metas.bpartner.service.BPartnerContactQuery.BPartnerContactQueryBuilder;
 import de.metas.i18n.Language;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -144,13 +144,13 @@ public class JsonPersisterService
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
 		final BPartnerContactQuery contactQuery = createContactQuery(contactIdentifier);
-		final Optional<ContactIdAndBPartner> optionalContactIdAndBPartner = bpartnerCompositeRepository.getByContact(contactQuery);
+		final Optional<BPartnerCompositeAndContactId> optionalContactIdAndBPartner = bpartnerCompositeRepository.getByContact(contactQuery);
 
 		final BPartnerContact contact;
 		final BPartnerComposite bpartnerComposite;
 		if (optionalContactIdAndBPartner.isPresent())
 		{
-			final ContactIdAndBPartner contactIdAndBPartner = optionalContactIdAndBPartner.get();
+			final BPartnerCompositeAndContactId contactIdAndBPartner = optionalContactIdAndBPartner.get();
 
 			bpartnerComposite = contactIdAndBPartner.getBpartnerComposite();
 

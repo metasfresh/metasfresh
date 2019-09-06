@@ -2,23 +2,16 @@ package de.metas.rest_api.utils;
 
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.Null;
 import org.compiere.util.Trace;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
-import io.swagger.annotations.ApiModel;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -42,11 +35,8 @@ import lombok.Value;
  * #L%
  */
 
-@ApiModel(description = "Error informations")
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@Value
-@Builder
-public class JsonError
+@UtilityClass
+public class JsonErrors
 {
 	public static JsonError ofThrowable(
 			@NonNull final Throwable throwable,
@@ -54,7 +44,7 @@ public class JsonError
 	{
 		final Throwable cause = AdempiereException.extractCause(throwable);
 
-		return builder()
+		return JsonError.builder()
 				.message(AdempiereException.extractMessageTrl(cause).translate(adLanguage))
 				.stackTrace(Trace.toOneLineStackTraceString(cause.getStackTrace()))
 				.parameters(extractParameters(throwable, adLanguage))
@@ -94,13 +84,4 @@ public class JsonError
 			return value.toString();
 		}
 	}
-
-	@NonNull
-	String message;
-
-	@Nullable
-	String stackTrace;
-
-	@NonNull
-	Map<String, String> parameters;
 }

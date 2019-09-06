@@ -24,6 +24,7 @@ import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
 import de.metas.rest_api.bpartner_pricelist.response.JsonResponsePrice;
 import de.metas.rest_api.bpartner_pricelist.response.JsonResponsePriceList;
 import de.metas.rest_api.utils.IdentifierString;
+import de.metas.tax.api.TaxCategoryId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
@@ -166,18 +167,21 @@ public class GetPriceListCommand
 				.build();
 	}
 
-	private static JsonResponsePrice toJsonResponsePrice(
+	private JsonResponsePrice toJsonResponsePrice(
 			@NonNull final I_M_ProductPrice productPrice,
 			@NonNull final ImmutableMap<ProductId, String> productValues,
 			@NonNull final CurrencyCode currencyCode)
 	{
 		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
 
+		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID());
+
 		return JsonResponsePrice.builder()
 				.productId(productId)
 				.productCode(productValues.get(productId))
 				.price(productPrice.getPriceStd())
 				.currencyCode(currencyCode)
+				.taxCategoryId(taxCategoryId)
 				.build();
 	}
 

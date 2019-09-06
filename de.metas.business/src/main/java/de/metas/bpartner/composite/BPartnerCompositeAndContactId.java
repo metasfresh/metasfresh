@@ -1,12 +1,13 @@
-package de.metas.rest_api.product.impl;
+package de.metas.bpartner.composite;
 
-import org.adempiere.exceptions.AdempiereException;
+import de.metas.bpartner.BPartnerContactId;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.ordercandidate.rest-api-impl
+ * de.metas.business
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,12 +26,9 @@ import org.adempiere.exceptions.AdempiereException;
  */
 
 
-public class ProductNotFoundException extends AdempiereException
+@Value(staticConstructor = "of")
+public class BPartnerCompositeAndContactId
 {
-	private static final long serialVersionUID = -4776977540135879202L;
-
-	public ProductNotFoundException(String msg)
-	{
-		super(msg);
-	}
+	BPartnerComposite bpartnerComposite;
+	BPartnerContactId bpartnerContactId;
 }
