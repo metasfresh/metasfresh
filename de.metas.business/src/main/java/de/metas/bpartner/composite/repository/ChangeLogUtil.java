@@ -74,6 +74,8 @@ final class ChangeLogUtil
 			.put(I_C_BPartner.COLUMNNAME_URL2, BPartner.URL_2)
 			.put(I_C_BPartner.COLUMNNAME_URL3, BPartner.URL_3)
 			.put(I_C_BPartner.COLUMNNAME_IsActive, BPartner.ACTIVE)
+			.put(I_C_BPartner.COLUMNNAME_IsVendor, BPartner.VENDOR)
+			.put(I_C_BPartner.COLUMNNAME_IsCustomer, BPartner.CUSTOMER)
 			.build();
 
 	private static final ImmutableMap<String, String> AD_USER_COLUMN_MAP = ImmutableMap
@@ -140,9 +142,9 @@ final class ChangeLogUtil
 
 	public static RecordChangeLog createBPartnerChangeLog(
 			@NonNull final I_C_BPartner bpartnerRecord,
-			@NonNull final ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> immutableListMultimap)
+			@NonNull final ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> changeLogEntries)
 	{
-		final ImmutableList<RecordChangeLogEntry> bpartnerEntries = immutableListMultimap.get(TableRecordReference.of(bpartnerRecord));
+		final ImmutableList<RecordChangeLogEntry> bpartnerEntries = changeLogEntries.get(TableRecordReference.of(bpartnerRecord));
 
 		IPair<Instant, UserId> updated = ImmutablePair.of(
 				TimeUtil.asInstant(bpartnerRecord.getUpdated()),

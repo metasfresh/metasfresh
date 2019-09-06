@@ -107,6 +107,8 @@ public class JsonRetrieverService
 			.put(BPartner.URL, JsonResponseBPartner.URL)
 			.put(BPartner.URL_2, JsonResponseBPartner.URL_2)
 			.put(BPartner.URL_3, JsonResponseBPartner.URL_3)
+			.put(BPartner.VENDOR, JsonResponseBPartner.VENDOR)
+			.put(BPartner.CUSTOMER, JsonResponseBPartner.CUSTOMER)
 			.build();
 
 	/** Mapping between {@link JsonResponseContact} property names and REST-API properties names */
@@ -260,6 +262,8 @@ public class JsonRetrieverService
 				.url(bpartner.getUrl())
 				.url2(bpartner.getUrl2())
 				.url3(bpartner.getUrl3())
+				.vendor(bpartner.isVendor())
+				.customer(bpartner.isCustomer())
 				.changeInfo(jsonChangeInfo)
 				.build();
 	}

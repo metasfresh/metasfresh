@@ -125,6 +125,9 @@ final class BPartnerCompositeSaver
 		bpartnerRecord.setURL(bpartner.getUrl());
 		bpartnerRecord.setURL2(bpartner.getUrl2());
 		bpartnerRecord.setURL3(bpartner.getUrl3());
+		
+		bpartnerRecord.setIsVendor(bpartner.isVendor());
+		bpartnerRecord.setIsCustomer(bpartner.isCustomer());
 
 		bpartnerRecord.setValue(bpartner.getValue());
 

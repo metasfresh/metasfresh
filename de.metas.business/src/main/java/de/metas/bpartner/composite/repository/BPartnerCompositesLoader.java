@@ -32,8 +32,8 @@ import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
-import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.BPartnerLocation.BPartnerLocationBuilder;
+import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_BPartner;
@@ -195,9 +195,9 @@ final class BPartnerCompositesLoader
 
 	private static BPartner ofBPartnerRecord(
 			@NonNull final I_C_BPartner bpartnerRecord,
-			@NonNull final ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> immutableListMultimap)
+			@NonNull final ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> changeLogEntries)
 	{
-		final RecordChangeLog recordChangeLog = ChangeLogUtil.createBPartnerChangeLog(bpartnerRecord, immutableListMultimap);
+		final RecordChangeLog recordChangeLog = ChangeLogUtil.createBPartnerChangeLog(bpartnerRecord, changeLogEntries);
 
 		return BPartner.builder()
 				.active(bpartnerRecord.isActive())
@@ -215,7 +215,11 @@ final class BPartnerCompositesLoader
 				.url(bpartnerRecord.getURL())
 				.url2(bpartnerRecord.getURL2())
 				.url3(bpartnerRecord.getURL3())
+				.vendor(bpartnerRecord.isVendor())
+				.customer(bpartnerRecord.isCustomer())
+				//
 				.changeLog(recordChangeLog)
+				//
 				.build();
 	}
 
