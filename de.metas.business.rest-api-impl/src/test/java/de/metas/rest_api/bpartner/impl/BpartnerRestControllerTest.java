@@ -47,10 +47,10 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.composite.BPartnerComposite;
-import de.metas.bpartner.composite.BPartnerCompositeRepository;
-import de.metas.bpartner.composite.BPartnerCompositeRepository.ContactIdAndBPartner;
-import de.metas.bpartner.composite.BPartnerContactQuery;
+import de.metas.bpartner.composite.BPartnerCompositeAndContactId;
 import de.metas.bpartner.composite.BPartnerLocation;
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.BPartnerContactQuery;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -540,7 +540,7 @@ class BpartnerRestControllerTest
 		final MetasfreshId metasfreshId = responseItem.getMetasfreshId();
 
 		final BPartnerContactQuery bpartnerContactQuery = BPartnerContactQuery.builder().userId(UserId.ofRepoId(metasfreshId.getValue())).build();
-		final Optional<ContactIdAndBPartner> optContactIdAndBPartner = bpartnerCompositeRepository.getByContact(bpartnerContactQuery);
+		final Optional<BPartnerCompositeAndContactId> optContactIdAndBPartner = bpartnerCompositeRepository.getByContact(bpartnerContactQuery);
 		assertThat(optContactIdAndBPartner).isPresent();
 
 		final BPartnerContactId resultContactId = optContactIdAndBPartner.get().getBpartnerContactId();

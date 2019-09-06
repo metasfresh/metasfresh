@@ -7,14 +7,10 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSetMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.SetMultimap;
 
 import de.metas.logging.LogManager;
-import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -63,90 +59,116 @@ import lombok.NonNull;
  * Note: if you have a very straight 1:1 relation between your cache's key and value, then just implementing {@link CachingKeysMapper} might be sufficient for you.
  * <p>
  *
- * @param <RK> "actual" key/id of the cached data ("record key")
- * @param <CK> cache key that is used in your {@link CCache}. Might or migh not be the same as {@code RK}
- * @param <V> the actually cached data ("value")
+ * @param <DataItemId> data item's ID
+ * @param <CacheKey> cache key that is used in your {@link CCache}. Might or might not be the same as {@code DataItemId}
+ * @param <DataItem> the actually cached data item
  */
-public final class CacheIndex<RK, CK, V> implements CachingKeysMapper<CK>
+public final class CacheIndex<DataItemId, CacheKey, DataItem> implements CachingKeysMapper<CacheKey>
 {
+	public static <DataItemId, CacheKey, DataItem> CacheIndex<DataItemId, CacheKey, DataItem> of(@NonNull final CacheIndexDataAdapter<DataItemId, CacheKey, DataItem> adapter)
+	{
+		return new CacheIndex<>(adapter);
+	}
+
 	private static final Logger logger = LogManager.getLogger(CacheIndex.class);
 
-	private final SetMultimap<RK, CK> map = Multimaps.synchronizedSetMultimap(HashMultimap.create());
+	private final CacheIndexDataAdapter<DataItemId, CacheKey, DataItem> adapter;
 
-	@Getter
-	private final CacheIndexDataAdapter<RK, CK, V> adapter;
+	// NOTE: following maps shall be accessed from synchronized blocks
+	private final SetMultimap<DataItemId, CacheKey> _dataItemId_to_cacheKey = HashMultimap.create();
+	private final SetMultimap<TableRecordReference, DataItemId> _recordRef_to_dateItemId = HashMultimap.create();
 
-	public CacheIndex(@NonNull final CacheIndexDataAdapter<RK, CK, V> adapter)
+	private CacheIndex(@NonNull final CacheIndexDataAdapter<DataItemId, CacheKey, DataItem> adapter)
 	{
 		this.adapter = adapter;
 	}
 
 	public synchronized int size()
 	{
-		return map.size();
+		return _dataItemId_to_cacheKey.size();
 	}
-
-	//
-	// ------------
-	//
 
 	@Override
-	public Collection<CK> computeCachingKeys(@NonNull final TableRecordReference recordRef)
+	public Collection<CacheKey> computeCachingKeys(@NonNull final TableRecordReference recordRef)
 	{
-		final RK recordId = adapter.extractRK(recordRef);
-		return getCKs(recordId);
+		return getCacheKeys(recordRef);
 	}
 
-	private synchronized Collection<CK> getCKs(final RK entryRecordId)
+	private synchronized Collection<CacheKey> getCacheKeys(@NonNull final TableRecordReference recordRef)
 	{
-		final Set<CK> CKs = map.get(entryRecordId);
-		logger.trace("Returning {} for {}", CKs, entryRecordId);
+		final Set<DataItemId> dataItemIds = _recordRef_to_dateItemId.get(recordRef);
+		if (dataItemIds.isEmpty())
+		{
+			logger.trace("computeCachingKeys: Returning no cache keys for {}", recordRef);
+			return ImmutableSet.of();
+		}
 
-		return ImmutableList.copyOf(CKs); // return a copy to avoid ConcurrentModificationException
+		final ImmutableSet<CacheKey> cacheKeys = dataItemIds.stream()
+				.flatMap(dataItemId -> _dataItemId_to_cacheKey.get(dataItemId).stream())
+				.collect(ImmutableSet.toImmutableSet());
+		logger.trace("computeCachingKeys: Returning cacheKeys={} for {} (dataItemIds={})", cacheKeys, recordRef, dataItemIds);
+		return cacheKeys;
 	}
 
-	/** @return the caching keys for the given record. */
-	public Collection<CK> extractCKs(@NonNull final V record)
+	public Collection<CacheKey> extractCacheKeys(final DataItem dataItem)
 	{
-		return adapter.extractCKs(record);
+		return adapter.extractCacheKeys(dataItem);
 	}
 
-	public RK extractRK(@NonNull final V record)
+	private DataItemId extractDataItemId(final DataItem dataItem)
 	{
-		return adapter.extractRK(record);
+		return adapter.extractDataItemId(dataItem);
 	}
 
-	public RK extractRK(@NonNull final TableRecordReference recordRef)
+	private Collection<TableRecordReference> extractRecordRefs(final DataItem dataItem)
 	{
-		return adapter.extractRK(recordRef);
+		return adapter.extractRecordRefs(dataItem);
 	}
 
-	public void add(@NonNull final CK ignored, @NonNull final V record)
+	/** Convenient method to be used as {@link CacheAdditionListener} */
+	public void add(final CacheKey ignored, @NonNull final DataItem dataItem)
 	{
-		final ImmutableSetMultimap.Builder<RK, CK> multimap = ImmutableSetMultimap.builder();
-
-		multimap.putAll(
-				adapter.extractRK(record),
-				adapter.extractCKs(record));
-
-		add(multimap.build());
+		add(dataItem);
 	}
 
-	private synchronized void add(final Multimap<? extends RK, ? extends CK> multimap)
+	public void add(@NonNull final DataItem dataItem)
 	{
-		logger.trace("Adding to index: {}", multimap);
-		map.putAll(multimap);
+		final DataItemId dataItemId = extractDataItemId(dataItem);
+		final Collection<CacheKey> cacheKeys = extractCacheKeys(dataItem);
+		final Collection<TableRecordReference> recordRefs = extractRecordRefs(dataItem);
+
+		add(dataItemId, cacheKeys, recordRefs);
 	}
 
-	public void remove(final CK key, final V record)
+	private synchronized void add(
+			@NonNull final DataItemId dataItemId,
+			@NonNull final Collection<CacheKey> cacheKeys,
+			@NonNull final Collection<TableRecordReference> recordRefs)
 	{
-		final RK recordKey = adapter.extractRK(record);
-		removeRecordKey(recordKey, key);
+		logger.trace("Adding to index: {} -> {}", dataItemId, cacheKeys);
+		_dataItemId_to_cacheKey.putAll(dataItemId, cacheKeys);
+
+		logger.trace("Adding to index: {} -> {}", recordRefs, dataItemId);
+		recordRefs.forEach(recordRef -> _recordRef_to_dateItemId.put(recordRef, dataItemId));
 	}
 
-	private synchronized void removeRecordKey(final RK entryRecordId, final CK key)
+	public void remove(final CacheKey cacheKey, final DataItem dataItem)
 	{
-		logger.trace("Removing pair from index: {}, {}", entryRecordId, key);
-		map.remove(entryRecordId, key);
+		final DataItemId dataItemId = extractDataItemId(dataItem);
+		final Collection<TableRecordReference> recordRefs = extractRecordRefs(dataItem);
+
+		removeDataItemId(dataItemId, cacheKey, recordRefs);
+	}
+
+	private synchronized void removeDataItemId(
+			final DataItemId dataItemId,
+			final CacheKey cacheKey,
+			final Collection<TableRecordReference> recordRefs)
+	{
+		logger.trace("Removing pair from index: {}, {}", dataItemId, cacheKey);
+		_dataItemId_to_cacheKey.remove(dataItemId, cacheKey);
+
+		logger.trace("Removing pairs from index: {}, {}", recordRefs, dataItemId);
+		recordRefs.forEach(recordRef -> _recordRef_to_dateItemId.remove(recordRef, dataItemId));
 	}
 }

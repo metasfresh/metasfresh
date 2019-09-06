@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.rest.ExternalId;

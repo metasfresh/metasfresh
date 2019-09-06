@@ -1,4 +1,4 @@
-package de.metas.bpartner.composite;
+package de.metas.bpartner.composite.repository;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -23,10 +23,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.bpartner.composite.BPartnerCompositeRepository.CompositeRelatedRecords;
+import de.metas.bpartner.composite.BPartner;
+import de.metas.bpartner.composite.BPartnerContact;
+import de.metas.bpartner.composite.BPartnerContactType;
+import de.metas.bpartner.composite.BPartnerLocation;
+import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.user.UserId;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -49,8 +54,8 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-public class ChangeLogUtil
+@UtilityClass
+final class ChangeLogUtil
 {
 	private static final ImmutableMap<String, String> BPARTNER_COLUMN_MAP = ImmutableMap
 			.<String, String> builder()
@@ -69,6 +74,8 @@ public class ChangeLogUtil
 			.put(I_C_BPartner.COLUMNNAME_URL2, BPartner.URL_2)
 			.put(I_C_BPartner.COLUMNNAME_URL3, BPartner.URL_3)
 			.put(I_C_BPartner.COLUMNNAME_IsActive, BPartner.ACTIVE)
+			.put(I_C_BPartner.COLUMNNAME_IsVendor, BPartner.VENDOR)
+			.put(I_C_BPartner.COLUMNNAME_IsCustomer, BPartner.CUSTOMER)
 			.build();
 
 	private static final ImmutableMap<String, String> AD_USER_COLUMN_MAP = ImmutableMap
@@ -135,9 +142,9 @@ public class ChangeLogUtil
 
 	public static RecordChangeLog createBPartnerChangeLog(
 			@NonNull final I_C_BPartner bpartnerRecord,
-			@NonNull final ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> immutableListMultimap)
+			@NonNull final ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> changeLogEntries)
 	{
-		final ImmutableList<RecordChangeLogEntry> bpartnerEntries = immutableListMultimap.get(TableRecordReference.of(bpartnerRecord));
+		final ImmutableList<RecordChangeLogEntry> bpartnerEntries = changeLogEntries.get(TableRecordReference.of(bpartnerRecord));
 
 		IPair<Instant, UserId> updated = ImmutablePair.of(
 				TimeUtil.asInstant(bpartnerRecord.getUpdated()),
