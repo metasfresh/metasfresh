@@ -1,16 +1,15 @@
-package de.metas.rest_api.product.response;
+package de.metas.rest_api.utils;
 
-import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonInclude;
 
-import de.metas.rest_api.utils.JsonError;
-import de.metas.rest_api.utils.JsonErrors;
+import io.swagger.annotations.ApiModel;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -35,22 +34,18 @@ import lombok.Value;
  * #L%
  */
 
+@ApiModel(description = "Error informations")
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 @Builder
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class JsonGetProductCategoriesResponse
+public class JsonError
 {
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	@Singular
-	List<JsonProductCategory> productCategories;
+	@NonNull
+	String message;
 
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	JsonError error;
+	@Nullable
+	String stackTrace;
 
-	public static JsonGetProductCategoriesResponse error(@NonNull final Throwable throwable, @NonNull final String adLanguage)
-	{
-		return builder()
-				.error(JsonErrors.ofThrowable(throwable, adLanguage))
-				.build();
-	}
+	@NonNull
+	Map<String, String> parameters;
 }
