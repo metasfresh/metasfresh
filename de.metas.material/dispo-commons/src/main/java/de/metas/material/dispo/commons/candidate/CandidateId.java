@@ -2,6 +2,9 @@ package de.metas.material.dispo.commons.candidate;
 
 import javax.annotation.Nullable;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
@@ -48,6 +51,7 @@ public class CandidateId implements RepoIdAware
 
 	int repoId;
 
+	@JsonCreator
 	public static CandidateId ofRepoId(final int repoId)
 	{
 		return new CandidateId(repoId);
@@ -73,6 +77,7 @@ public class CandidateId implements RepoIdAware
 	}
 
 	@Override
+	@JsonValue
 	public int getRepoId()
 	{
 		if (isUnspecified())
