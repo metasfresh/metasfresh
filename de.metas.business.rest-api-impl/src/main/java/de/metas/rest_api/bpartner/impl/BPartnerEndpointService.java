@@ -151,25 +151,15 @@ class BPartnerEndpointService
 
 		final NextPageQuery nextPageQuery = NextPageQuery.anyEntityOrNull(nextPageId);
 
-		final Optional<QueryResultPage<JsonResponseComposite>> optionalPage = jsonRetriever.getJsonBPartnerComposites(nextPageQuery, sinceQuery);
-		if (!optionalPage.isPresent())
+		final QueryResultPage<JsonResponseComposite> page = jsonRetriever.getJsonBPartnerComposites(nextPageQuery, sinceQuery).orElse(null);
+		if (page == null)
 		{
 			return Optional.empty();
 		}
 
-		final QueryResultPage<JsonResponseComposite> page = optionalPage.get();
-
-		final ImmutableList<JsonResponseComposite> jsonItems = page
-				.getItems()
-				.stream()
-				.collect(ImmutableList.toImmutableList());
-
+		final ImmutableList<JsonResponseComposite> jsonItems = page.getItems();
 		final JsonPagingDescriptor jsonPagingDescriptor = JsonConverters.createJsonPagingDescriptor(page);
-
-		final JsonResponseCompositeList result = JsonResponseCompositeList.builder()
-				.items(jsonItems)
-				.pagingDescriptor(jsonPagingDescriptor)
-				.build();
+		final JsonResponseCompositeList result = JsonResponseCompositeList.ok(jsonPagingDescriptor, jsonItems);
 
 		return Optional.of(result);
 	}
