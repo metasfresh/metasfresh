@@ -40,8 +40,14 @@ export class SalesOrder {
   }
 
   setPriceSystem(priceSystem) {
-    cy.log(`PurchaseOrder - priceSystem = ${priceSystem}`);
+    cy.log(`SalesOrder - priceSystem = ${priceSystem}`);
     this.priceSystem = priceSystem;
+    return this;
+  }
+
+  setWarehouse(warehouse) {
+    cy.log(`SalesOrder - warehouse = ${warehouse}`);
+    this.warehouse = warehouse;
     return this;
   }
 
@@ -66,15 +72,19 @@ export class SalesOrder {
           true /*typeList*/
         );
       }
-      cy.get('.header-breadcrumb-sitename').should('not.contain', '<');
 
-      if (salesOrder.reference) {
-        cy.writeIntoStringField('POReference', salesOrder.reference);
+      if (salesOrder.warehouse) {
+        cy.selectInListField('M_Warehouse_ID', salesOrder.warehouse);
       }
 
       if (salesOrder.priceSystem) {
-        cy.resetListValue('M_PricingSystem_ID');
         cy.selectInListField('M_PricingSystem_ID', salesOrder.priceSystem);
+      }
+
+      cy.get('.header-breadcrumb-sitename').should('not.contain', '<'); // make sure the order was successfully saved as bpartner, warehouse price system were dealt with
+
+      if (salesOrder.reference) {
+        cy.writeIntoStringField('POReference', salesOrder.reference);
       }
 
       salesOrder.lines.forEach(line => {

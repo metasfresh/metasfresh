@@ -3,10 +3,18 @@ export class BillOfMaterial {
     this.lines = [];
   }
 
+  setName(name) {
+    cy.log(`BillOfMaterial - set name = ${name}`);
+    this.name = name;
+    return this;
+  }
+
   setProduct(product) {
     cy.log(`BillOfMaterial - set product = ${product}`);
     this.product = product;
-    this.name = product + '_BOM';
+    if (!name) { // if name already set explicitly then don't overwrite it
+      this.name = product + '_BOM';
+    }
     return this;
   }
 
