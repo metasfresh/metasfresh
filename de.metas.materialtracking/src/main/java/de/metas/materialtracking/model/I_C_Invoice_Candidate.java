@@ -13,20 +13,20 @@ package de.metas.materialtracking.model;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 public interface I_C_Invoice_Candidate extends de.metas.invoicecandidate.model.I_C_Invoice_Candidate
 {
 	// @formatter:off
 	String COLUMNNAME_M_Material_Tracking_ID = "M_Material_Tracking_ID";
+
 	int getM_Material_Tracking_ID();
 	// void setM_Material_Tracking_ID(int M_Material_Tracking_ID); // shall not be used
 	I_M_Material_Tracking getM_Material_Tracking();
@@ -34,24 +34,26 @@ public interface I_C_Invoice_Candidate extends de.metas.invoicecandidate.model.I
 	// @formatter:on
 
 	// @formatter:off
-	public static final int QUALITYINVOICELINEGROUPTYPE_AD_Reference_ID=540617;
+	int QUALITYINVOICELINEGROUPTYPE_AD_Reference_ID=540617;
 	/** Scrap = 01 */
-	public static final String QUALITYINVOICELINEGROUPTYPE_Scrap = "01";
+	String QUALITYINVOICELINEGROUPTYPE_Scrap = "01";
 	/** ByProduct = 02 */
-	public static final String QUALITYINVOICELINEGROUPTYPE_ProducedByProducts = "02";
+	String QUALITYINVOICELINEGROUPTYPE_ProducedByProducts = "02";
 	/** Fee = 03 */
-	public static final String QUALITYINVOICELINEGROUPTYPE_AdditionalFee = "03";
+	String QUALITYINVOICELINEGROUPTYPE_AdditionalFee = "03";
 	/** MainProduct = 04 */
-	public static final String QUALITYINVOICELINEGROUPTYPE_ProducedMainProduct = "04";
+	String QUALITYINVOICELINEGROUPTYPE_ProducedMainProduct = "04";
 	/** CoProduct = 05 */
-	public static final String QUALITYINVOICELINEGROUPTYPE_ProducedCoProduct = "05";
+	String QUALITYINVOICELINEGROUPTYPE_ProducedCoProduct = "05";
 	/** Withholding = 06 */
-	public static final String QUALITYINVOICELINEGROUPTYPE_WithholdingAmount = "06";
+	String QUALITYINVOICELINEGROUPTYPE_WithholdingAmount = "06";
 	/** ProductionOrder = 07 */
-	public static final String QUALITYINVOICELINEGROUPTYPE_PreceeedingRegularOrderDeduction = "07";
+	String QUALITYINVOICELINEGROUPTYPE_PreceeedingRegularOrderDeduction = "07";
 
 	String COLUMNNAME_QualityInvoiceLineGroupType = "QualityInvoiceLineGroupType";
+	@Override
 	String getQualityInvoiceLineGroupType();
+	@Override
 	void setQualityInvoiceLineGroupType(final String QualityInvoiceLineGroupType);
 	// @formatter:on
 }

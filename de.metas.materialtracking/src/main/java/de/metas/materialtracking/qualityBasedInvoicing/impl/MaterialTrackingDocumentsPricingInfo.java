@@ -82,10 +82,8 @@ import lombok.NonNull;
 	private final ImmutableMap<Integer, IVendorReceipt<I_M_InOutLine>> plvId2vendorReceipt;
 	private final ImmutableMap<Integer, I_M_PriceList_Version> plvs;
 
-	private MaterialTrackingDocumentsPricingInfo(final Builder builder)
+	private MaterialTrackingDocumentsPricingInfo(@NonNull final Builder builder)
 	{
-		super();
-
 		plvId2qiOrders = ImmutableListMultimap.copyOf(builder.plvId2qiOrders);
 		plvId2vendorReceipt = ImmutableMap.copyOf(builder.plvId2vendorReceipt);
 		plvs = ImmutableMap.copyOf(builder.plvs);
@@ -216,7 +214,7 @@ import lombok.NonNull;
 			return new MaterialTrackingDocumentsPricingInfo(this);
 		}
 
-		private ImmutablePair<I_M_PriceList_Version, List<I_M_InOutLine>> providePriceListVersionOrNullForPPOrder(final I_PP_Order ppOrder)
+		private ImmutablePair<I_M_PriceList_Version, List<I_M_InOutLine>> providePriceListVersionOrNullForPPOrder(@NonNull final I_PP_Order ppOrder)
 		{
 			I_M_PriceList_Version plv = null;
 
