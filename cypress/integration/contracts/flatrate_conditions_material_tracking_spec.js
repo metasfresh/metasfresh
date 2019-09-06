@@ -9,6 +9,7 @@ import { PriceList, PriceListVersion } from '../../support/utils/pricelist';
 import { BPartner } from '../../support/utils/bpartner';
 import { runProcessCreateContract } from '../../support/functions/contractFunctions';
 import { appendHumanReadableNow, getLanguageSpecific } from '../../support/utils/utils';
+import { StorageConferenceVersion } from '../../support/utils/storage_conferenceversion';
 
 // pricing
 let priceSystemName;
@@ -35,6 +36,7 @@ let validFrom;
 let validTo;
 let scrapFeeAmt;
 let percentageScrapTreshhold;
+let uomScrap;
 
 // static
 const currentYear = new Date().getFullYear();
@@ -72,6 +74,7 @@ it('Read the fixture', function() {
 
     scrapFeeAmt = f['scrapFeeAmt'];
     percentageScrapTreshhold = f['percentageScrapTreshhold'];
+    uomScrap = f['uomScrap'];
   });
 });
 
@@ -170,6 +173,23 @@ it('Create vendor', function() {
     new BPartner({ ...vendorJson, name: vendorName }).setVendorPricingSystem(priceSystemName).apply();
   });
   runProcessCreateContract(contractConditionsName);
+});
+
+it('Create new Storage conference version', function() {
+  cy.fixture('contract/storage_conferenceversion.json').then(conferenceVersionJson => {
+    Object.assign(new StorageConferenceVersion(), conferenceVersionJson)
+      .setLagerKonferenz(lagerKonferenzName)
+      .setProductProcessingFee(processingFeeProductName)
+      .setProductWitholding(witholdingProductName)
+      .setProductRegularPPOrder(productionProductName)
+      .setProductScrap(scrapProductName)
+      .setUOMScrap(uomScrap)
+      .setValidFrom(validFrom)
+      .setValidTo(validTo)
+      .setPercentageScrapTreshhold(percentageScrapTreshhold)
+      .setScrapFeeAmt(scrapFeeAmt)
+      .apply();
+  });
 });
 
 function createProduct(productName, productType, productCategoryName, productPrice) {

@@ -18,9 +18,10 @@
   "itemProductType": "Item",
   "contractConditionsName": "ContractConditions",
   "vendorName":  "Vendor",
-  "lagerKonferenzName": "LagerKonferenz",
+  "lagerKonferenzName": "Karotten Abrechnung",
   "validFrom": "06/01/2015",
   "validTo": "05/31/2016",
   "scrapFeeAmt": "0.06",
-  "percentageScrapTreshhold": "10.00"
+  "percentageScrapTreshhold": "10.00",
+  "uomScrap": "Kilogramm"
 }
