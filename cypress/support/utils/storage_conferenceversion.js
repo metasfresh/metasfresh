@@ -1,6 +1,7 @@
 export class StorageConferenceVersion {
   constructor() {
     this.lines = [];
+    this.months = [];
   }
 
   setLagerKonferenz(lagerKonferenz) {
@@ -64,6 +65,11 @@ export class StorageConferenceVersion {
     this.lines.push(costLine);
     return this;
   }
+  addMonth(month) {
+    cy.log(`StorageConferenceVersion - add Months = ${JSON.stringify(month)}`);
+    this.months.push(month);
+    return this;
+  }
 
   apply() {
     cy.log(`StorageConferenceVersion - apply - START`);
@@ -91,6 +97,11 @@ function applyStorageConferenceVersion(storageConferenceVersion) {
       applyCostLine(line);
     });
     cy.expectNumberOfRows(storageConferenceVersion.lines.length);
+
+    storageConferenceVersion.months.forEach(month => {
+      applyLagerKonfMonth(month);
+    });
+    cy.expectNumberOfRows(storageConferenceVersion.months.length);
   });
 }
 
@@ -100,6 +111,14 @@ function applyCostLine(costLine) {
   cy.writeIntoStringField('PercentFrom', costLine.percentFrom, false, null, true);
   cy.writeIntoStringField('Processing_Fee_Amt_Per_UOM', costLine.processingFeeAmtPerUOM, false, null, true);
   cy.selectInListField('C_UOM_ID', costLine.uomId);
+  cy.pressDoneButton();
+}
+function applyLagerKonfMonth(lagerKonfMonth) {
+  cy.selectTab('M_QualityInsp_LagerKonf_Month_Adj');
+  cy.pressAddNewButton();
+  cy.selectInListField('QualityAdjustmentMonth', lagerKonfMonth.month);
+  cy.writeIntoStringField('QualityAdj_Amt_Per_UOM', lagerKonfMonth.adjAmount, false, null, true);
+  cy.selectInListField('C_UOM_ID', lagerKonfMonth.uomId);
   cy.pressDoneButton();
 }
 export class CostLine {
@@ -117,6 +136,25 @@ export class CostLine {
 
   setCUOMID(uomId) {
     cy.log(`CostLine - set uomId = ${uomId}`);
+    this.uomId = uomId;
+    return this;
+  }
+}
+export class LagerKonfMonth {
+  setMonth(month) {
+    cy.log(`LagerKonfMonth - set month = ${month}`);
+    this.month = month;
+    return this;
+  }
+
+  setQualityAdjAmt(adjAmount) {
+    cy.log(`LagerKonfMonth - set adjAmount = ${adjAmount}`);
+    this.adjAmount = adjAmount;
+    return this;
+  }
+
+  setCUOMID(uomId) {
+    cy.log(`LagerKonfMonth - set uomId = ${uomId}`);
     this.uomId = uomId;
     return this;
   }
