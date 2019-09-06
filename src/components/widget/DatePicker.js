@@ -2,9 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import MomentTZ from 'moment-timezone';
-import Moment from 'moment';
 import onClickOutside from 'react-onclickoutside';
-import _ from 'lodash';
 
 import TetheredDateTime from './TetheredDateTime';
 import { addNotification } from '../../actions/AppActions';
@@ -21,18 +19,12 @@ class DatePicker extends Component {
     this.state = {
       open: false,
       cache: null,
-      // we need to store a local copy of value in case we need to strip it out of timezone
-      value: null,
     };
   }
 
   componentDidMount() {
-    const { handleBackdropLock, isOpenDatePicker, value } = this.props;
+    const { handleBackdropLock, isOpenDatePicker } = this.props;
     handleBackdropLock && handleBackdropLock(true);
-
-    this.setState({
-      value: value || null,
-    });
 
     if (isOpenDatePicker) {
       setTimeout(() => {
@@ -41,40 +33,24 @@ class DatePicker extends Component {
     }
   }
 
-  UNSAFE_componentWillReceiveProps(nextProps) {
-    const { hasTimeZone } = this.props;
-    let { value } = nextProps;
-
-    if (hasTimeZone && value) {
-      if (typeof value !== 'string') {
-        value = value.format();
-      }
-      const timeZoneOffset = value.match(DatePicker.timeZoneRegex)[0];
-      const timeZone = _.find(MomentTZ.tz.names(), timezoneName => {
-        return timeZoneOffset === MomentTZ.tz(timezoneName).format('Z');
-      });
-
-      value = value.replace(DatePicker.timeZoneRegex, '');
-      value = MomentTZ.tz(value, timeZone);
-    } else {
-      if (!value) value = null;
-
-      if (value && !Moment.isMoment(value) && this.props.dateFormat) {
-        value = new Date(value);
-      }
-    }
-
-    this.setState({
-      value,
-    });
-  }
-
   handleBlur = date => {
-    const { patch, handleBackdropLock, dispatch, field } = this.props;
+    const {
+      patch,
+      handleBackdropLock,
+      dispatch,
+      field,
+      handleChange,
+      timeZone,
+    } = this.props;
     const { cache, open } = this.state;
 
     if (!open) {
       return;
+    }
+
+    if (date && !MomentTZ.isMoment(date)) {
+      date = MomentTZ(date, `L LT`);
+      date = date.tz(timeZone, true);
     }
 
     try {
@@ -82,6 +58,9 @@ class DatePicker extends Component {
         JSON.stringify(cache) !==
         (date !== '' ? JSON.stringify(date && date.toDate()) : '')
       ) {
+        // calling handleChange manually to update date stored in the MasterWidget
+        handleChange && handleChange(field, date);
+
         patch(date);
       }
     } catch (error) {
@@ -97,7 +76,7 @@ class DatePicker extends Component {
 
   handleFocus = () => {
     const { dispatch } = this.props;
-    const { value } = this.state;
+    const { value } = this.props;
 
     this.setState({
       cache: value,
@@ -152,8 +131,6 @@ class DatePicker extends Component {
   );
 
   render() {
-    const { value } = this.state;
-
     return (
       <div tabIndex="-1" onKeyDown={this.handleKeydown} className="datepicker">
         <TetheredDateTime
@@ -167,7 +144,6 @@ class DatePicker extends Component {
           onFocusInput={this.focusInput}
           closeOnSelect={false}
           {...this.props}
-          value={value}
         />
         <i className="meta-icon-calendar" key={0} />
       </div>
@@ -177,6 +153,7 @@ class DatePicker extends Component {
 
 DatePicker.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  handleChange: PropTypes.func,
   handleBackdropLock: PropTypes.func,
   patch: PropTypes.func,
   field: PropTypes.string,
