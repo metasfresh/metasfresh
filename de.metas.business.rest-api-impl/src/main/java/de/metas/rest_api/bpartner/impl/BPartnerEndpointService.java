@@ -13,8 +13,8 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.GLN;
-import de.metas.bpartner.composite.BPartnerCompositeRepository.NextPageQuery;
-import de.metas.bpartner.composite.BPartnerCompositeRepository.SinceQuery;
+import de.metas.bpartner.composite.repository.NextPageQuery;
+import de.metas.bpartner.composite.repository.SinceQuery;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.JsonPagingDescriptor;
@@ -142,7 +142,8 @@ class BPartnerEndpointService
 
 	public Optional<JsonResponseCompositeList> retrieveBPartnersSince(
 			@Nullable final Long epochMilli,
-			@Nullable final String nextPageId)
+			@Nullable final String nextPageId,
+			@Nullable final Boolean vendors)
 	{
 		final SinceQuery sinceQuery = SinceQuery.anyEntity(
 				extractInstant(epochMilli),
@@ -208,7 +209,7 @@ class BPartnerEndpointService
 		return Optional.of(result);
 	}
 
-	private Instant extractInstant(@Nullable final Long epochMilli)
+	private static Instant extractInstant(@Nullable final Long epochMilli)
 	{
 		if (epochMilli == null || epochMilli <= 0)
 		{

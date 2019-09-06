@@ -177,9 +177,13 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 
 			@ApiParam(NEXT_DOC) //
 			@RequestParam(name = "next", required = false) //
-			@Nullable final String next)
+			@Nullable final String next,
+
+			@ApiParam("Optional flag to filter by vendors") //
+			@RequestParam(name = "vendors", required = false) //
+			@Nullable Boolean vendors)
 	{
-		final Optional<JsonResponseCompositeList> result = bpartnerEndpointService.retrieveBPartnersSince(epochTimestampMillis, next);
+		final Optional<JsonResponseCompositeList> result = bpartnerEndpointService.retrieveBPartnersSince(epochTimestampMillis, next, vendors);
 		return okOrNotFound(result);
 	}
 

@@ -69,6 +69,11 @@ import lombok.NonNull;
  */
 public final class CacheIndex<RK, CK, V> implements CachingKeysMapper<CK>
 {
+	public static <RK, CK, V> CacheIndex<RK, CK, V> of(@NonNull final CacheIndexDataAdapter<RK, CK, V> adapter)
+	{
+		return new CacheIndex<>(adapter);
+	}
+
 	private static final Logger logger = LogManager.getLogger(CacheIndex.class);
 
 	private final SetMultimap<RK, CK> map = Multimaps.synchronizedSetMultimap(HashMultimap.create());
@@ -76,7 +81,7 @@ public final class CacheIndex<RK, CK, V> implements CachingKeysMapper<CK>
 	@Getter
 	private final CacheIndexDataAdapter<RK, CK, V> adapter;
 
-	public CacheIndex(@NonNull final CacheIndexDataAdapter<RK, CK, V> adapter)
+	private CacheIndex(@NonNull final CacheIndexDataAdapter<RK, CK, V> adapter)
 	{
 		this.adapter = adapter;
 	}

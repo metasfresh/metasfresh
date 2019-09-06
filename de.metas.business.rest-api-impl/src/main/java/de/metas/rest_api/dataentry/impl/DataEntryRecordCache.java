@@ -55,7 +55,7 @@ final class DataEntryRecordCache
 {
 	private final DataEntryRecordRepository recordsRepo;
 
-	private final CacheIndex<DataEntryRecordId/* RK */, CacheKey/* CK */, DataEntryRecord/* V */> cacheIndex = new CacheIndex<>(new DataEntryRecordIdIndex());
+	private final CacheIndex<DataEntryRecordId/* RK */, CacheKey/* CK */, DataEntryRecord/* V */> cacheIndex = CacheIndex.of(new DataEntryRecordIdIndex());
 
 	private final CCache<CacheKey, DataEntryRecord> cache;
 

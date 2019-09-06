@@ -47,10 +47,10 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.composite.BPartnerComposite;
-import de.metas.bpartner.composite.BPartnerCompositeRepository;
-import de.metas.bpartner.composite.BPartnerCompositeRepository.ContactIdAndBPartner;
-import de.metas.bpartner.composite.BPartnerContactQuery;
+import de.metas.bpartner.composite.BPartnerCompositeAndContactId;
 import de.metas.bpartner.composite.BPartnerLocation;
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.BPartnerContactQuery;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -540,7 +540,7 @@ class BpartnerRestControllerTest
 		final MetasfreshId metasfreshId = responseItem.getMetasfreshId();
 
 		final BPartnerContactQuery bpartnerContactQuery = BPartnerContactQuery.builder().userId(UserId.ofRepoId(metasfreshId.getValue())).build();
-		final Optional<ContactIdAndBPartner> optContactIdAndBPartner = bpartnerCompositeRepository.getByContact(bpartnerContactQuery);
+		final Optional<BPartnerCompositeAndContactId> optContactIdAndBPartner = bpartnerCompositeRepository.getByContact(bpartnerContactQuery);
 		assertThat(optContactIdAndBPartner).isPresent();
 
 		final BPartnerContactId resultContactId = optContactIdAndBPartner.get().getBpartnerContactId();
@@ -605,7 +605,7 @@ class BpartnerRestControllerTest
 		UIDStringUtil.setRandomUUIDSource(() -> "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1");
 
 		// invoke the method under test
-		final ResponseEntity<JsonResponseCompositeList> page1 = bpartnerRestController.retrieveBPartnersSince(0L, null);
+		final ResponseEntity<JsonResponseCompositeList> page1 = bpartnerRestController.retrieveBPartnersSince(0L, null, null);
 
 		assertThat(page1.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseCompositeList page1Body = page1.getBody();
@@ -614,7 +614,7 @@ class BpartnerRestControllerTest
 		final String page2Id = page1Body.getPagingDescriptor().getNextPage();
 		assertThat(page2Id).isNotEmpty();
 
-		final ResponseEntity<JsonResponseCompositeList> page2 = bpartnerRestController.retrieveBPartnersSince(null, page2Id);
+		final ResponseEntity<JsonResponseCompositeList> page2 = bpartnerRestController.retrieveBPartnersSince(null, page2Id, null);
 
 		assertThat(page2.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseCompositeList page2Body = page2.getBody();
@@ -623,7 +623,7 @@ class BpartnerRestControllerTest
 		final String page3Id = page2Body.getPagingDescriptor().getNextPage();
 		assertThat(page3Id).isNotEmpty();
 
-		final ResponseEntity<JsonResponseCompositeList> page3 = bpartnerRestController.retrieveBPartnersSince(null, page3Id);
+		final ResponseEntity<JsonResponseCompositeList> page3 = bpartnerRestController.retrieveBPartnersSince(null, page3Id, null);
 
 		assertThat(page3.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseCompositeList page3Body = page3.getBody();

@@ -76,6 +76,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
 import de.metas.bpartner.GLN;
+import de.metas.bpartner.service.BPartnerContactQuery;
 import de.metas.bpartner.service.BPartnerIdNotFoundException;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -1326,5 +1327,48 @@ public class BPartnerDAO implements IBPartnerDAO
 				.match();
 
 		return belongsToCustomerForMutation;
+	}
+
+	@Override
+	public Optional<BPartnerContactId> getBPartnerContactIdBy(@NonNull final BPartnerContactQuery contactQuery)
+	{
+		final IQueryBuilder<I_AD_User> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addInArrayFilter(I_AD_User.COLUMN_AD_Org_ID, Env.getOrgId(), OrgId.ANY);
+
+		if (contactQuery.getBPartnerId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_AD_User.COLUMN_C_BPartner_ID, contactQuery.getBPartnerId());
+		}
+		else
+		{ // we don't know which one, but is has to be some C_BPartner_ID
+			queryBuilder.addNotEqualsFilter(I_AD_User.COLUMN_C_BPartner_ID, null);
+		}
+
+		if (contactQuery.getUserId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_AD_User.COLUMN_AD_User_ID, contactQuery.getUserId());
+		}
+		else if (contactQuery.getExternalId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_AD_User.COLUMN_ExternalId, contactQuery.getExternalId().getValue());
+		}
+		else if (!Check.isEmpty(contactQuery.getValue(), true))
+		{
+			queryBuilder.addEqualsFilter(I_AD_User.COLUMN_Value, contactQuery.getValue().trim());
+		}
+
+		final I_AD_User userRecord = queryBuilder
+				.create()
+				.firstOnlyOrNull(I_AD_User.class);
+
+		if (userRecord == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(BPartnerContactId.ofRepoId(userRecord.getC_BPartner_ID(), userRecord.getAD_User_ID()));
 	}
 }

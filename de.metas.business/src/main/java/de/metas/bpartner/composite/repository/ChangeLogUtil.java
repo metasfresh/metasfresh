@@ -1,4 +1,4 @@
-package de.metas.bpartner.composite;
+package de.metas.bpartner.composite.repository;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -23,10 +23,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.bpartner.composite.BPartnerCompositeRepository.CompositeRelatedRecords;
+import de.metas.bpartner.composite.BPartner;
+import de.metas.bpartner.composite.BPartnerContact;
+import de.metas.bpartner.composite.BPartnerContactType;
+import de.metas.bpartner.composite.BPartnerLocation;
+import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.user.UserId;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -49,8 +54,8 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-public class ChangeLogUtil
+@UtilityClass
+final class ChangeLogUtil
 {
 	private static final ImmutableMap<String, String> BPARTNER_COLUMN_MAP = ImmutableMap
 			.<String, String> builder()

@@ -28,16 +28,16 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerComposite;
-import de.metas.bpartner.composite.BPartnerCompositeRepository;
-import de.metas.bpartner.composite.BPartnerCompositeRepository.ContactIdAndBPartner;
-import de.metas.bpartner.composite.BPartnerCompositeRepository.NextPageQuery;
-import de.metas.bpartner.composite.BPartnerCompositeRepository.SinceQuery;
+import de.metas.bpartner.composite.BPartnerCompositeAndContactId;
 import de.metas.bpartner.composite.BPartnerContact;
-import de.metas.bpartner.composite.BPartnerContactQuery;
-import de.metas.bpartner.composite.BPartnerContactQuery.BPartnerContactQueryBuilder;
 import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.composite.repository.NextPageQuery;
+import de.metas.bpartner.composite.repository.SinceQuery;
+import de.metas.bpartner.service.BPartnerContactQuery;
+import de.metas.bpartner.service.BPartnerContactQuery.BPartnerContactQueryBuilder;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.dao.selection.pagination.UnknownPageIdentifierException;
@@ -214,13 +214,8 @@ public class JsonRetrieverService
 				return Optional.empty();
 			}
 		}
-		final ImmutableList<JsonResponseComposite> jsonBPartnerComposites = page
-				.getItems()
-				.stream()
-				.map(this::toJson)
-				.collect(ImmutableList.toImmutableList());
 
-		return Optional.of(page.withItems(jsonBPartnerComposites));
+		return Optional.of(page.mapTo(this::toJson));
 	}
 
 	private JsonResponseComposite toJson(@NonNull final BPartnerComposite bpartnerComposite)
@@ -520,12 +515,12 @@ public class JsonRetrieverService
 	{
 		final BPartnerContactQuery contactQuery = createContactQuery(contactIdentifier);
 
-		final Optional<ContactIdAndBPartner> optionalContactIdAndBPartner = bpartnerCompositeRepository.getByContact(contactQuery);
+		final Optional<BPartnerCompositeAndContactId> optionalContactIdAndBPartner = bpartnerCompositeRepository.getByContact(contactQuery);
 		if (!optionalContactIdAndBPartner.isPresent())
 		{
 			return Optional.empty();
 		}
-		final ContactIdAndBPartner contactIdAndBPartner = optionalContactIdAndBPartner.get();
+		final BPartnerCompositeAndContactId contactIdAndBPartner = optionalContactIdAndBPartner.get();
 		final BPartnerContactId contactId = contactIdAndBPartner.getBpartnerContactId();
 
 		final BPartnerComposite bpartnerComposite = contactIdAndBPartner.getBpartnerComposite();

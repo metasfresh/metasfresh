@@ -40,7 +40,8 @@ import lombok.NonNull;
  * #L%
  */
 
-public final class BPartnerCompositeCacheIndex implements CacheIndexDataAdapter<BPartnerId/* RK */, BPartnerCompositeLookupKey/* CK */, BPartnerComposite/* V */>
+final class BPartnerCompositeCacheIndex
+		implements CacheIndexDataAdapter<BPartnerId/* RK */, BPartnerCompositeLookupKey/* CK */, BPartnerComposite/* V */>
 {
 
 	@Override
@@ -86,5 +87,4 @@ public final class BPartnerCompositeCacheIndex implements CacheIndexDataAdapter<
 	{
 		return BPartnerId.ofRepoId(recordRef.getRecord_ID());
 	}
-
 }
