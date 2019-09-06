@@ -102,7 +102,6 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@GetMapping("{bpartnerIdentifier}")
 	@Override
 	public ResponseEntity<JsonResponseComposite> retrieveBPartner(
-
 			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr)
@@ -179,15 +178,11 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 
 			@ApiParam(NEXT_DOC) //
 			@RequestParam(name = "next", required = false) //
-			@Nullable final String next,
-
-			@ApiParam("Optional flag to filter by vendors") //
-			@RequestParam(name = "vendors", required = false) //
-			@Nullable Boolean vendors)
+			@Nullable final String next)
 	{
 		try
 		{
-			final Optional<JsonResponseCompositeList> result = bpartnerEndpointService.retrieveBPartnersSince(epochTimestampMillis, next, vendors);
+			final Optional<JsonResponseCompositeList> result = bpartnerEndpointService.retrieveBPartnersSince(epochTimestampMillis, next);
 			return okOrNotFound(result);
 		}
 		catch (final Exception ex)

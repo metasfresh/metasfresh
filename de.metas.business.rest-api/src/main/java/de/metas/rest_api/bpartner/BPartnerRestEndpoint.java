@@ -47,8 +47,7 @@ public interface BPartnerRestEndpoint
 
 	ResponseEntity<JsonResponseCompositeList> retrieveBPartnersSince(
 			Long epochTimestampMillis,
-			String next,
-			Boolean vendors);
+			String next);
 
 	ResponseEntity<JsonResponseUpsert> createOrUpdateBPartner(JsonRequestBPartnerUpsert bpartners);
 

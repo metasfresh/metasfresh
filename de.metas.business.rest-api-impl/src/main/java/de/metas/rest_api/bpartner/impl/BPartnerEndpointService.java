@@ -142,8 +142,7 @@ class BPartnerEndpointService
 
 	public Optional<JsonResponseCompositeList> retrieveBPartnersSince(
 			@Nullable final Long epochMilli,
-			@Nullable final String nextPageId,
-			@Nullable final Boolean vendors)
+			@Nullable final String nextPageId)
 	{
 		final SinceQuery sinceQuery = SinceQuery.anyEntity(
 				extractInstant(epochMilli),

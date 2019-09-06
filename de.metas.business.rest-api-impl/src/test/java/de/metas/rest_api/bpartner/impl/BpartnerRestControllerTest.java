@@ -605,7 +605,7 @@ class BpartnerRestControllerTest
 		UIDStringUtil.setRandomUUIDSource(() -> "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1");
 
 		// invoke the method under test
-		final ResponseEntity<JsonResponseCompositeList> page1 = bpartnerRestController.retrieveBPartnersSince(0L, null, null);
+		final ResponseEntity<JsonResponseCompositeList> page1 = bpartnerRestController.retrieveBPartnersSince(0L, null);
 
 		assertThat(page1.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseCompositeList page1Body = page1.getBody();
@@ -614,7 +614,7 @@ class BpartnerRestControllerTest
 		final String page2Id = page1Body.getPagingDescriptor().getNextPage();
 		assertThat(page2Id).isNotEmpty();
 
-		final ResponseEntity<JsonResponseCompositeList> page2 = bpartnerRestController.retrieveBPartnersSince(null, page2Id, null);
+		final ResponseEntity<JsonResponseCompositeList> page2 = bpartnerRestController.retrieveBPartnersSince(null, page2Id);
 
 		assertThat(page2.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseCompositeList page2Body = page2.getBody();
@@ -623,7 +623,7 @@ class BpartnerRestControllerTest
 		final String page3Id = page2Body.getPagingDescriptor().getNextPage();
 		assertThat(page3Id).isNotEmpty();
 
-		final ResponseEntity<JsonResponseCompositeList> page3 = bpartnerRestController.retrieveBPartnersSince(null, page3Id, null);
+		final ResponseEntity<JsonResponseCompositeList> page3 = bpartnerRestController.retrieveBPartnersSince(null, page3Id);
 
 		assertThat(page3.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseCompositeList page3Body = page3.getBody();
