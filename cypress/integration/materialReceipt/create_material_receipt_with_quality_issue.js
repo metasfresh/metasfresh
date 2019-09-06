@@ -1,7 +1,6 @@
 import { QualityNote } from '../../support/utils/qualityNote';
 import { ProductCategory } from '../../support/utils/product';
 import { Builder } from '../../support/utils/builder';
-import { BPartnerLocation } from '../../support/utils/bpartner_ui';
 import { BPartner } from '../../support/utils/bpartner';
 import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
 import { humanReadableNow } from '../../support/utils/utils';
