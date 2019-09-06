@@ -55,7 +55,8 @@ final class DataEntryRecordCache
 {
 	private final DataEntryRecordRepository recordsRepo;
 
-	private final CacheIndex<DataEntryRecordId/* RK */, CacheKey/* CK */, DataEntryRecord/* V */> cacheIndex = CacheIndex.of(new DataEntryRecordIdIndex());
+	private final CacheIndex<DataEntryRecordId/* RK */, CacheKey/* CK */, DataEntryRecord/* V */> //
+	cacheIndex = CacheIndex.of(new DataEntryRecordIdIndex());
 
 	private final CCache<CacheKey, DataEntryRecord> cache;
 
@@ -106,7 +107,7 @@ final class DataEntryRecordCache
 
 		final Map<CacheKey, DataEntryRecord> recordsMap = Maps.uniqueIndex(
 				records,
-				record -> CollectionUtils.singleElement(cacheIndex.getAdapter().extractCKs(record)));
+				record -> CollectionUtils.singleElement(cacheIndex.extractCacheKeys(record)));
 
 		return recordsMap;
 	}
@@ -148,23 +149,25 @@ final class DataEntryRecordCache
 	static final class DataEntryRecordIdIndex implements CacheIndexDataAdapter<DataEntryRecordId, CacheKey, DataEntryRecord>
 	{
 		@Override
-		public List<CacheKey> extractCKs(DataEntryRecord record)
+		public DataEntryRecordId extractDataItemId(final DataEntryRecord dataItem)
 		{
-			final CacheKey singleCacheKey = CacheKey.of(record.getMainRecord().getRecord_ID(), record.getDataEntrySubTabId());
+			return dataItem.getId().get();
+		}
+
+		@Override
+		public ImmutableSet<TableRecordReference> extractRecordRefs(final DataEntryRecord dataItem)
+		{
+			final DataEntryRecordId id = dataItem.getId().orElse(null);
+			return id != null
+					? ImmutableSet.of(TableRecordReference.of(I_DataEntry_Record.Table_Name, id))
+					: ImmutableSet.of();
+		}
+
+		@Override
+		public List<CacheKey> extractCacheKeys(final DataEntryRecord dataItem)
+		{
+			final CacheKey singleCacheKey = CacheKey.of(dataItem.getMainRecord().getRecord_ID(), dataItem.getDataEntrySubTabId());
 			return ImmutableList.of(singleCacheKey);
 		}
-
-		@Override
-		public DataEntryRecordId extractRK(DataEntryRecord record)
-		{
-			return record.getId().get();
-		}
-
-		@Override
-		public DataEntryRecordId extractRK(TableRecordReference recordRef)
-		{
-			return DataEntryRecordId.ofRepoId(recordRef.getRecord_ID());
-		}
-
 	}
 }
