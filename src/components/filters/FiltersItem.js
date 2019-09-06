@@ -369,7 +369,6 @@ class FiltersItem extends Component {
               <div className="col-sm-12">
                 {filter.parameters &&
                   filter.parameters.map((item, index) => {
-                    // item.field = data.filterId;
                     item.field = item.parameterName;
 
                     return (
