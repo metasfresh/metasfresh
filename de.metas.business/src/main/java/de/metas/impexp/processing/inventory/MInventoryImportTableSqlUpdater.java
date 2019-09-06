@@ -235,7 +235,7 @@ final class MInventoryImportTableSqlUpdater
 				+ " WHERE"
 				+ " I_IsImported<>'Y'"
 				+ " AND M_Product_ID IS NULL"
-				+ " AND i.Value IS NOT NULL"
+				+ " AND i.ProductValue IS NOT NULL"
 				+ " AND (" + importValueFormatMatcher + ")"
 				+ " " + importTableWhereClause;
 

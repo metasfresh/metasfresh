@@ -369,3 +369,23 @@ UPDATE AD_Field SET Name='Produktschlüssel', Description='Can be:
 ;
 
 
+
+-- 2019-09-06T15:14:41.852Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Help='Can be:
+	* The exact product value
+	* The product id
+	* Part of the product value, using this pattern val-%',Updated=TO_TIMESTAMP('2019-09-06 18:14:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=6704
+;
+
+
+
+----------- update standard import invetory format
+
+
+
+-- 2019-09-06T15:28:19.256Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET AD_Column_ID=568639, Name='Warehouse Locator Identifier',Updated=TO_TIMESTAMP('2019-09-06 18:28:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=531106
+;
+
