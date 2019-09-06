@@ -36,7 +36,7 @@ import lombok.NonNull;
  */
 
 @Interceptor(I_C_UOM_Conversion.class)
-@Component("de.metas.inoutcandidate.modelvalidator.C_UOM_Conversion")
+@Component
 public class C_UOM_Conversion
 {
 	private static final String SYSCONFIG_SHIPMENT_SCHEDULE_CATCH_UOM_ID_UPDATE_DELAY_MS = "de.metas.inoutcandidate.M_ShipmentSchedule.CatchUOM_ID_update_delay_ms";
