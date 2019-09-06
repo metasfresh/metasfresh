@@ -27,9 +27,9 @@ export const DATE_FIELD_TYPES = [
   'Timestamp',
 ];
 export const DATE_FIELD_FORMATS = {
-  Date: 'l',
-  ZonedDateTime: 'l LTS',
-  DateTime: 'l LTS',
+  Date: 'L',
+  ZonedDateTime: 'L LTS',
+  DateTime: 'L LTS',
   Time: 'LT',
   Timestamp: 'x',
 };
