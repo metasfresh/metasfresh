@@ -1,4 +1,8 @@
 export class StorageConferenceVersion {
+  constructor() {
+    this.lines = [];
+  }
+
   setLagerKonferenz(lagerKonferenz) {
     cy.log(`StorageConferenceVersionBuilder - set LagerKonferenz = ${lagerKonferenz}`);
     this.lagerKonferenz = lagerKonferenz;
@@ -55,6 +59,12 @@ export class StorageConferenceVersion {
     return this;
   }
 
+  addLine(costLine) {
+    cy.log(`StorageConferenceVersion - add Costs lines = ${JSON.stringify(costLine)}`);
+    this.lines.push(costLine);
+    return this;
+  }
+
   apply() {
     cy.log(`StorageConferenceVersion - apply - START`);
     applyStorageConferenceVersion(this);
@@ -76,5 +86,38 @@ function applyStorageConferenceVersion(storageConferenceVersion) {
     cy.writeIntoStringField('ValidTo', storageConferenceVersion.validTo, false, null, true);
     cy.writeIntoStringField('Percentage_Scrap_Treshhold', storageConferenceVersion.percentageScrapT);
     cy.writeIntoStringField('Scrap_Fee_Amt_Per_UOM', storageConferenceVersion.scrapFeeAmt);
+
+    storageConferenceVersion.lines.forEach(line => {
+      applyCostLine(line);
+    });
+    cy.expectNumberOfRows(storageConferenceVersion.lines.length);
   });
+}
+
+function applyCostLine(costLine) {
+  cy.selectTab('M_QualityInsp_LagerKonf_ProcessingFee');
+  cy.pressAddNewButton();
+  cy.writeIntoStringField('PercentFrom', costLine.percentFrom, false, null, true);
+  cy.writeIntoStringField('Processing_Fee_Amt_Per_UOM', costLine.processingFeeAmtPerUOM, false, null, true);
+  cy.selectInListField('C_UOM_ID', costLine.uomId);
+  cy.pressDoneButton();
+}
+export class CostLine {
+  setPercentFrom(percentFrom) {
+    cy.log(`CostLine - set product = ${percentFrom}`);
+    this.percentFrom = percentFrom;
+    return this;
+  }
+
+  setProcessingFeeAmtPerUOM(processingFeeAmtPerUOM) {
+    cy.log(`CostLine - set processingFeeAmtPerUOM = ${processingFeeAmtPerUOM}`);
+    this.processingFeeAmtPerUOM = processingFeeAmtPerUOM;
+    return this;
+  }
+
+  setCUOMID(uomId) {
+    cy.log(`CostLine - set uomId = ${uomId}`);
+    this.uomId = uomId;
+    return this;
+  }
 }

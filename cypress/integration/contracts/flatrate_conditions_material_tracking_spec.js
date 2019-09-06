@@ -9,7 +9,7 @@ import { PriceList, PriceListVersion } from '../../support/utils/pricelist';
 import { BPartner } from '../../support/utils/bpartner';
 import { runProcessCreateContract } from '../../support/functions/contractFunctions';
 import { appendHumanReadableNow, getLanguageSpecific } from '../../support/utils/utils';
-import { StorageConferenceVersion } from '../../support/utils/storage_conferenceversion';
+import { StorageConferenceVersion, CostLine } from '../../support/utils/storage_conferenceversion';
 
 // pricing
 let priceSystemName;
@@ -37,6 +37,22 @@ let validTo;
 let scrapFeeAmt;
 let percentageScrapTreshhold;
 let uomScrap;
+
+let percentFrom1;
+let percentFrom2;
+let percentFrom3;
+let percentFrom4;
+let percentFrom5;
+let percentFrom6;
+let percentFrom7;
+let processingFee1;
+let processingFee2;
+let processingFee3;
+let processingFee4;
+let processingFee5;
+let processingFee6;
+let processingFee7;
+let cUomId;
 
 // static
 const currentYear = new Date().getFullYear();
@@ -75,6 +91,22 @@ it('Read the fixture', function() {
     scrapFeeAmt = f['scrapFeeAmt'];
     percentageScrapTreshhold = f['percentageScrapTreshhold'];
     uomScrap = f['uomScrap'];
+
+    percentFrom1 = f['percentFrom1'];
+    percentFrom2 = f['percentFrom2'];
+    percentFrom3 = f['percentFrom3'];
+    percentFrom4 = f['percentFrom4'];
+    percentFrom5 = f['percentFrom5'];
+    percentFrom6 = f['percentFrom6'];
+    percentFrom7 = f['percentFrom7'];
+    processingFee1 = f['processingFee1'];
+    processingFee2 = f['processingFee2'];
+    processingFee3 = f['processingFee3'];
+    processingFee4 = f['processingFee4'];
+    processingFee5 = f['processingFee5'];
+    processingFee6 = f['processingFee6'];
+    processingFee7 = f['processingFee7'];
+    cUomId = f['cUomId'];
   });
 });
 
@@ -188,6 +220,48 @@ it('Create new Storage conference version', function() {
       .setValidTo(validTo)
       .setPercentageScrapTreshhold(percentageScrapTreshhold)
       .setScrapFeeAmt(scrapFeeAmt)
+      .addLine(
+        new CostLine()
+          .setPercentFrom(percentFrom1)
+          .setProcessingFeeAmtPerUOM(processingFee1)
+          .setCUOMID('Each')
+      )
+      .addLine(
+        new CostLine()
+          .setPercentFrom(percentFrom2)
+          .setProcessingFeeAmtPerUOM(processingFee2)
+          .setCUOMID(cUomId)
+      )
+      .addLine(
+        new CostLine()
+          .setPercentFrom(percentFrom3)
+          .setProcessingFeeAmtPerUOM(processingFee3)
+          .setCUOMID(cUomId)
+      )
+      .addLine(
+        new CostLine()
+          .setPercentFrom(percentFrom4)
+          .setProcessingFeeAmtPerUOM(processingFee4)
+          .setCUOMID(cUomId)
+      )
+      .addLine(
+        new CostLine()
+          .setPercentFrom(percentFrom5)
+          .setProcessingFeeAmtPerUOM(processingFee5)
+          .setCUOMID(cUomId)
+      )
+      .addLine(
+        new CostLine()
+          .setPercentFrom(percentFrom6)
+          .setProcessingFeeAmtPerUOM(processingFee6)
+          .setCUOMID(cUomId)
+      )
+      .addLine(
+        new CostLine()
+          .setPercentFrom(percentFrom7)
+          .setProcessingFeeAmtPerUOM(processingFee7)
+          .setCUOMID(cUomId)
+      )
       .apply();
   });
 });

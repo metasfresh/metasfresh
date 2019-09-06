@@ -23,5 +23,20 @@
   "validTo": "05/31/2016",
   "scrapFeeAmt": "0.06",
   "percentageScrapTreshhold": "10.00",
-  "uomScrap": "Kilogramm"
+  "uomScrap": "Kilogramm",
+  "cUomId": "Each",
+  "percentFrom1": "0.00",
+  "percentFrom2": "15.00",
+  "percentFrom3": "20.00",
+  "percentFrom4": "25.00",
+  "percentFrom5": "30.00",
+  "percentFrom6": "35.00",
+  "percentFrom7": "40.00",
+  "processingFee1": "0.00",
+  "processingFee2": "0.01",
+  "processingFee3": "0.02",
+  "processingFee4": "0.03",
+  "processingFee5": "0.04",
+  "processingFee6": "0.05",
+  "processingFee7": "0.06"
 }
