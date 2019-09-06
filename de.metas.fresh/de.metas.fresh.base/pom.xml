@@ -185,7 +185,7 @@
 			<artifactId>de.metas.payment.sepa</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>de.metas.payment.paypal</groupId>
 			<artifactId>de.metas.payment.paypal</artifactId>
@@ -296,6 +296,16 @@
 		<dependency>
 			<groupId>de.metas.datev</groupId>
 			<artifactId>metasfresh-datev</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<!-- include material-dispo; 
+			This component will only be active within metasfresh-app (a.k.a. serverRoot) 
+			if the spring profile "material-dispo" is active. One way of activating that profile is to 
+			find the existing AD_SysConfig with Name="de.metas.spring.profiles.active_material-dispo" and set is to IsActive='Y' -->
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-dispo-service</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 

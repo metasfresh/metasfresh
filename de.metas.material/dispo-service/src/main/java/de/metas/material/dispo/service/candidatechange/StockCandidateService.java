@@ -8,8 +8,10 @@ import java.time.Instant;
 import java.util.List;
 
 import org.compiere.util.TimeUtil;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -52,6 +54,7 @@ import lombok.NonNull;
  */
 
 @Service
+@Profile(Profiles.PROFILE_MaterialDispo)
 public class StockCandidateService
 {
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
