@@ -197,14 +197,14 @@ final class MInventoryImportTableSqlUpdater
 		// Match by product value
 		dbUpdateProducts(
 				sqlImportTableWhereClause,
-				"i.Value LIKE 'val-%'",
-				"p.Value = substr(i.Value, 5)");
+				"i.ProductValue LIKE 'val-%'",
+				"p.Value = substr(i.ProductValue, 5)");
 
 		// Match by M_Product_ID
 		dbUpdateProducts(
 				sqlImportTableWhereClause,
-				"i.Value ~ E'^\\\\d+$'",
-				"p.M_Product_ID = i.Value::numeric");
+				"i.ProductValue ~ E'^\\\\d+$'",
+				"p.M_Product_ID = i.ProductValue::numeric");
 
 		// Match by UPC
 		dbUpdateProducts(
@@ -215,8 +215,8 @@ final class MInventoryImportTableSqlUpdater
 		// Fallback/backwards compatibility: Match by product value, without using the 'val-' prefix
 		dbUpdateProducts(
 				sqlImportTableWhereClause,
-				"i.Value IS NOT NULL",
-				"p.Value = i.Value");
+				"i.ProductValue IS NOT NULL",
+				"p.Value = i.ProductValue");
 	}
 
 	private static int dbUpdateProducts(
