@@ -1,11 +1,15 @@
 package de.metas.rest_api.ordercandidates;
 
 import java.util.List;
+import java.util.function.UnaryOperator;
 
 import javax.annotation.Nullable;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.rest_api.SyncAdvise;
 import lombok.Builder;
@@ -35,15 +39,24 @@ import lombok.Value;
  * #L%
  */
 
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class JsonOLCandCreateBulkRequest
 {
 	public static JsonOLCandCreateBulkRequest of(@NonNull final JsonOLCandCreateRequest request)
 	{
-		return builder().request(request).build();
+		return new JsonOLCandCreateBulkRequest(ImmutableList.of(request));
 	}
 
+	@JsonProperty("requests")
 	List<JsonOLCandCreateRequest> requests;
+
+	@JsonCreator
+	@Builder
+	private JsonOLCandCreateBulkRequest(@JsonProperty("requests") @Singular final List<JsonOLCandCreateRequest> requests)
+	{
+		this.requests = ImmutableList.copyOf(requests);
+	}
 
 	public JsonOLCandCreateBulkRequest validate()
 	{
@@ -54,56 +67,38 @@ public class JsonOLCandCreateBulkRequest
 		return this;
 	}
 
-	@Builder(toBuilder = true)
-	@JsonCreator
-	private JsonOLCandCreateBulkRequest(@Singular @JsonProperty("requests") final List<JsonOLCandCreateRequest> requests)
-	{
-		this.requests = requests;
-	}
-
 	public JsonOLCandCreateBulkRequest withOrgSyncAdvise(@Nullable final SyncAdvise syncAdvise)
 	{
-		if (syncAdvise == null || requests.isEmpty())
-		{
-			return this;
-		}
-
-		final JsonOLCandCreateBulkRequestBuilder builder = toBuilder().clearRequests();
-		for (final JsonOLCandCreateRequest request : requests)
-		{
-			builder.request(request.withOrgSyncAdvise(syncAdvise));
-		}
-		return builder.build();
+		return syncAdvise != null
+				? map(request -> request.withOrgSyncAdvise(syncAdvise))
+				: this;
 	}
 
 	public JsonOLCandCreateBulkRequest withBPartnersSyncAdvise(@Nullable final SyncAdvise syncAdvise)
 	{
-		if (syncAdvise == null || requests.isEmpty())
-		{
-			return this;
-		}
-
-		final JsonOLCandCreateBulkRequestBuilder builder = toBuilder().clearRequests();
-		for (final JsonOLCandCreateRequest request : requests)
-		{
-			builder.request(request.withBPartnersSyncAdvise(syncAdvise));
-		}
-		return builder.build();
+		return syncAdvise != null
+				? map(request -> request.withBPartnersSyncAdvise(syncAdvise))
+				: this;
 	}
 
 	public JsonOLCandCreateBulkRequest withProductsSyncAdvise(@Nullable final SyncAdvise syncAdvise)
 	{
-		if (syncAdvise == null || requests.isEmpty())
+		return syncAdvise != null
+				? map(request -> request.withProductsSyncAdvise(syncAdvise))
+				: this;
+	}
+
+	private JsonOLCandCreateBulkRequest map(@NonNull final UnaryOperator<JsonOLCandCreateRequest> mapper)
+	{
+		if (requests.isEmpty())
 		{
 			return this;
 		}
 
-		final JsonOLCandCreateBulkRequestBuilder builder = toBuilder().clearRequests();
-		for (final JsonOLCandCreateRequest request : requests)
-		{
-			builder.request(request.withProductsSyncAdvise(syncAdvise));
-		}
-		return builder.build();
-	}
+		final ImmutableList<JsonOLCandCreateRequest> newRequests = this.requests.stream()
+				.map(mapper)
+				.collect(ImmutableList.toImmutableList());
 
+		return new JsonOLCandCreateBulkRequest(newRequests);
+	}
 }
