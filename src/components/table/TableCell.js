@@ -28,7 +28,7 @@ class TableCell extends PureComponent {
 
   static createDate = (fieldValue, fieldType) =>
     fieldValue
-      ? Moment(new Date(fieldValue)).format(TableCell.getDateFormat(fieldType))
+      ? Moment(fieldValue).format(TableCell.getDateFormat(fieldType))
       : '';
 
   static createAmount = (fieldValue, precision, isGerman) => {

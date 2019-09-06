@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import Moment from 'moment-timezone';
 
 import * as windowActions from '../../actions/WindowActions';
 import RawWidget from './RawWidget';
@@ -15,6 +16,8 @@ function isNumberField(widgetType) {
       return false;
   }
 }
+
+const dateParse = ['Date', 'DateTime', 'ZonedDateTime', 'Timestamp', 'Time'];
 
 class MasterWidget extends Component {
   state = {
@@ -32,17 +35,22 @@ class MasterWidget extends Component {
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
-    const { widgetData } = this.props;
+    const { widgetData, widgetType } = this.props;
     const { edited, data } = this.state;
+    let next = nextProps.widgetData[0].value;
 
     if (
       !edited &&
-      JSON.stringify(nextProps.widgetData[0].value) !== data &&
+      JSON.stringify(next) !== data &&
       JSON.stringify(widgetData[0].value) !==
-        JSON.stringify(nextProps.widgetData[0].value)
+        JSON.stringify(next)
     ) {
+      if (dateParse.includes(widgetType) && !Moment.isMoment(next)) {
+        next = Moment(next);
+      }
+
       this.setState({
-        data: nextProps.widgetData[0].value,
+        data: next,
       });
 
       if (!edited) {
@@ -146,13 +154,6 @@ class MasterWidget extends Component {
       widgetType,
       entity,
     } = this.props;
-    const dateParse = [
-      'Date',
-      'DateTime',
-      'ZonedDateTime',
-      'Timestamp',
-      'Time',
-    ];
     let currRowId = rowId;
 
     this.setState(

@@ -260,6 +260,7 @@ export class RawWidget extends Component {
       isOpenDatePicker,
       dateFormat,
       initialFocus,
+      timeZone,
     } = this.props;
 
     let widgetValue = data != null ? data : widgetData[0].value;
@@ -315,13 +316,17 @@ export class RawWidget extends Component {
                   valueTo ? Moment(valueTo).format(DATE_FORMAT) : null
                 )
               }
+              field={widgetField}
               mandatory={widgetData[0].mandatory}
               validStatus={widgetData[0].validStatus}
-              onShow={onShow}
-              onHide={onHide}
               value={widgetData[0].value}
               valueTo={widgetData[0].valueTo}
-              tabIndex={tabIndex}
+              {...{
+                tabIndex,
+                onShow,
+                onHide,
+                timeZone,
+              }}
             />
           );
         } else {
@@ -329,10 +334,9 @@ export class RawWidget extends Component {
             <div className={this.getClassNames({ icon: true })}>
               <DatePicker
                 key={1}
-                field={fields[0].field}
+                field={widgetField}
                 timeFormat={false}
                 dateFormat={dateFormat || true}
-                isOpenDatePicker={isOpenDatePicker}
                 inputProps={{
                   placeholder: fields[0].emptyText,
                   disabled: readonly,
@@ -349,8 +353,11 @@ export class RawWidget extends Component {
                     true
                   )
                 }
+                handleChange={handleChange}
                 {...{
                   handleBackdropLock,
+                  isOpenDatePicker,
+                  timeZone,
                 }}
               />
             </div>
@@ -361,11 +368,10 @@ export class RawWidget extends Component {
           <div className={this.getClassNames({ icon: true })}>
             <DatePicker
               key={1}
-              field={fields[0].field}
+              field={widgetField}
               timeFormat={true}
               dateFormat={dateFormat || true}
               hasTimeZone={true}
-              isOpenDatePicker={isOpenDatePicker}
               inputProps={{
                 placeholder: fields[0].emptyText,
                 disabled: readonly,
@@ -382,8 +388,11 @@ export class RawWidget extends Component {
                   true
                 )
               }
+              handleChange={handleChange}
               {...{
                 handleBackdropLock,
+                isOpenDatePicker,
+                timeZone,
               }}
             />
           </div>
@@ -392,7 +401,7 @@ export class RawWidget extends Component {
         return (
           <div className={this.getClassNames({ icon: true })}>
             <DatePicker
-              field={fields[0].field}
+              field={widgetField}
               timeFormat={TIME_FORMAT}
               dateFormat={false}
               inputProps={{
@@ -412,6 +421,7 @@ export class RawWidget extends Component {
                 )
               }
               tabIndex={tabIndex}
+              handleChange={handleChange}
               handleBackdropLock={handleBackdropLock}
             />
           </div>
@@ -420,7 +430,7 @@ export class RawWidget extends Component {
         return (
           <div className={this.getClassNames({ icon: true })}>
             <DatePicker
-              field={fields[0].field}
+              field={widgetField}
               timeFormat={false}
               dateFormat={`x`}
               inputProps={{
@@ -440,6 +450,7 @@ export class RawWidget extends Component {
                 )
               }
               tabIndex={tabIndex}
+              handleChange={handleChange}
               handleBackdropLock={handleBackdropLock}
             />
           </div>
@@ -1025,4 +1036,5 @@ RawWidget.defaultProps = RawWidgetDefaultProps;
 
 export default connect(state => ({
   modalVisible: state.windowHandler.modal.visible,
+  timeZone: state.appHandler.me.timeZone,
 }))(RawWidget);
