@@ -15,7 +15,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1626654953L;
+	private static final long serialVersionUID = -1841714447L;
 
     /** Standard Constructor */
     public X_I_Inventory (Properties ctx, int I_Inventory_ID, String trxName)
@@ -135,32 +135,32 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** Set External Header ID.
-		@param ExternalHeaderId External Header ID	  */
+	/** Set Externe Datensatz-Kopf-ID.
+		@param ExternalHeaderId Externe Datensatz-Kopf-ID	  */
 	@Override
 	public void setExternalHeaderId (java.lang.String ExternalHeaderId)
 	{
 		set_Value (COLUMNNAME_ExternalHeaderId, ExternalHeaderId);
 	}
 
-	/** Get External Header ID.
-		@return External Header ID	  */
+	/** Get Externe Datensatz-Kopf-ID.
+		@return Externe Datensatz-Kopf-ID	  */
 	@Override
 	public java.lang.String getExternalHeaderId () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ExternalHeaderId);
 	}
 
-	/** Set External Line ID.
-		@param ExternalLineId External Line ID	  */
+	/** Set Externe Datensatz-Zeilen-ID.
+		@param ExternalLineId Externe Datensatz-Zeilen-ID	  */
 	@Override
 	public void setExternalLineId (java.lang.String ExternalLineId)
 	{
 		set_Value (COLUMNNAME_ExternalLineId, ExternalLineId);
 	}
 
-	/** Get External Line ID.
-		@return External Line ID	  */
+	/** Get Externe Datensatz-Zeilen-ID.
+		@return Externe Datensatz-Zeilen-ID	  */
 	@Override
 	public java.lang.String getExternalLineId () 
 	{
@@ -531,6 +531,25 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 		return false;
 	}
 
+	/** Set Produktschlüssel.
+		@param ProductValue 
+		Schlüssel des Produktes
+	  */
+	@Override
+	public void setProductValue (java.lang.String ProductValue)
+	{
+		set_Value (COLUMNNAME_ProductValue, ProductValue);
+	}
+
+	/** Get Produktschlüssel.
+		@return Schlüssel des Produktes
+	  */
+	@Override
+	public java.lang.String getProductValue () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ProductValue);
+	}
+
 	/** Set Zählmenge.
 		@param QtyCount 
 		Gezählte Menge
@@ -651,23 +670,23 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 		return (java.lang.String)get_Value(COLUMNNAME_UPC);
 	}
 
-	/** Set Suchschlüssel.
-		@param Value 
-		Search key for the record in the format required - must be unique
+	/** Set Warehouse Locator Identifier.
+		@param WarehouseLocatorIdentifier 
+		Text that contains identifier of earehosue and locator
 	  */
 	@Override
-	public void setValue (java.lang.String Value)
+	public void setWarehouseLocatorIdentifier (java.lang.String WarehouseLocatorIdentifier)
 	{
-		set_Value (COLUMNNAME_Value, Value);
+		set_Value (COLUMNNAME_WarehouseLocatorIdentifier, WarehouseLocatorIdentifier);
 	}
 
-	/** Get Suchschlüssel.
-		@return Search key for the record in the format required - must be unique
+	/** Get Warehouse Locator Identifier.
+		@return Text that contains identifier of earehosue and locator
 	  */
 	@Override
-	public java.lang.String getValue () 
+	public java.lang.String getWarehouseLocatorIdentifier () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Value);
+		return (java.lang.String)get_Value(COLUMNNAME_WarehouseLocatorIdentifier);
 	}
 
 	/** Set Lager-Schlüssel.

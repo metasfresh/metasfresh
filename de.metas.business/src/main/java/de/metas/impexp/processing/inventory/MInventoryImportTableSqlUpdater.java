@@ -68,27 +68,35 @@ final class MInventoryImportTableSqlUpdater
 
 	private void dbUpdateLocatorDimensions(@NonNull final String whereClause)
 	{
-		// Set M_Warehouse_ID
 		final StringBuilder sql = new StringBuilder("UPDATE I_Inventory i "
 				+ "SET WarehouseValue = COALESCE(i.WarehouseValue, dimensions.warehouseValue), "
+				+ "    locatorvalue = COALESCE(i.locatorvalue, dimensions.locatorvalue), "
 				+ "    X = COALESCE(i.X, dimensions.locatorX), "
 				+ "    Y = COALESCE(i.Y, dimensions.locatorY), "
 				+ "    Z = COALESCE(i.Z, dimensions.locatorZ), "
 				+ "    X1 = COALESCE(i.X1, dimensions.locatorX1) "
-				+ "FROM (SELECT d.warehouseValue, d.locatorValue, d.locatorX, d.locatorY, d.locatorZ, d.locatorX1 "
+				+ "FROM (SELECT d.warehouseValue, d.locatorValue, d.locatorX, d.locatorY, d.locatorZ, d.locatorX1, inv.I_Inventory_ID "
 				+ "	FROM I_Inventory as inv"
-				+ "	JOIN extractLocatorDimensions(inv.locatorvalue) as d on d.locatorvalue=inv.locatorvalue"
+				+ "	JOIN extractLocatorDimensions(inv.WarehouseLocatorIdentifier) as d on 1=1"
 				+ ") AS dimensions "
-				+ "WHERE I_IsImported<>'Y' AND dimensions.locatorvalue = i.locatorvalue ")
-						.append(whereClause);
+				+ "WHERE I_IsImported<>'Y' AND dimensions.I_Inventory_ID = i.I_Inventory_ID ")
+				.append(whereClause);
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateWarehouse(@NonNull final String whereClause)
 	{
-		// Set M_Warehouse_ID
-		final StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
+		// Try to set M_Warehouse_ID based on warehouse value
+		StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
 				.append("SET M_Warehouse_ID=(SELECT M_Warehouse_ID FROM M_Warehouse w WHERE i.WarehouseValue=w.Value) ")
+				.append("WHERE M_Warehouse_ID IS NULL ")
+				.append("AND I_IsImported<>'Y' ")
+				.append(whereClause);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+
+		// Try to set M_Warehouse_ID based on locator value
+		sql = new StringBuilder("UPDATE I_Inventory i ")
+				.append("SET M_Warehouse_ID=(SELECT M_Warehouse_ID FROM M_Locator l WHERE i.locatorvalue=l.Value) ")
 				.append("WHERE M_Warehouse_ID IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
@@ -103,11 +111,20 @@ final class MInventoryImportTableSqlUpdater
 
 	private void dbUpdateLocators(@NonNull final String whereClause)
 	{
-		// supplement missing M_Locator_ID from LocatorValue, M_Warehouse_ID and AD_Client_ID and
+		// supplement missing M_Locator_ID from LocatorValue, M_Warehouse_ID and AD_Client_ID
 		StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
-				.append("SET M_Locator_ID=(SELECT MAX(M_Locator_ID) FROM M_Locator l ")
+				.append("SET M_Locator_ID=(SELECT M_Locator_ID FROM M_Locator l ")
 				.append("WHERE i.LocatorValue=l.Value AND i.M_Warehouse_ID = l.M_Warehouse_ID AND i.AD_Client_ID=l.AD_Client_ID) ")
 				.append("WHERE M_Locator_ID IS NULL AND LocatorValue IS NOT NULL ")
+				.append("AND I_IsImported<>'Y' ")
+				.append(whereClause);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+
+		// supplement missing M_Locator_ID from standard warehouse locator
+		sql = new StringBuilder("UPDATE I_Inventory i ")
+				.append("SET M_Locator_ID=(SELECT M_Locator_ID FROM M_Locator l ")
+				.append("WHERE l.IsDefault='Y' AND i.M_Warehouse_ID = l.M_Warehouse_ID AND i.AD_Client_ID=l.AD_Client_ID) ")
+				.append("WHERE M_Locator_ID IS NULL AND LocatorValue IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
