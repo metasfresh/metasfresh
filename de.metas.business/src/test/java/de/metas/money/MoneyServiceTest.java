@@ -72,7 +72,7 @@ public class MoneyServiceTest
 		final Money result = moneyService.percentage(Percent.of(80), twoHundredEuro);
 
 		assertThat(result.getCurrencyId()).isEqualTo(currencyId);
-		assertThat(result.getAsBigDecimal()).isEqualByComparingTo("160");
+		assertThat(result.toBigDecimal()).isEqualByComparingTo("160");
 	}
 
 	@Test
@@ -92,7 +92,7 @@ public class MoneyServiceTest
 		final Money result = moneyService.percentage(Percent.of(10), Money.of(14, currencyId));
 
 		assertThat(result.getCurrencyId()).isEqualTo(currencyId);
-		assertThat(result.getAsBigDecimal()).isEqualByComparingTo("1.4");
+		assertThat(result.toBigDecimal()).isEqualByComparingTo("1.4");
 	}
 
 	@Test

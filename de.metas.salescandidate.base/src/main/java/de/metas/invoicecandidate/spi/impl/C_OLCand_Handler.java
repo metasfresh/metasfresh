@@ -176,6 +176,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 
 		ic.setQtyToInvoice(ZERO); // to be computed
 
+		ic.setInvoicableQtyBasedOn(olc.getInvoicableQtyBasedOn());
 		ic.setM_PricingSystem_ID(olc.getM_PricingSystem_ID());
 		ic.setPriceActual(olc.getPriceActual());
 		ic.setPrice_UOM_ID(olCandEffectiveValuesBL.getC_UOM_Effective_ID(olc)); // 07090 when we set PriceActual, we shall also set PriceUOM.
@@ -289,13 +290,13 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
 		final Quantity olCandQuantity = Quantity.of(olc.getQty(), olCandEffectiveValuesBL.getC_UOM_Effective(olc));
-		ic.setQtyEntered(olCandQuantity.getAsBigDecimal());
+		ic.setQtyEntered(olCandQuantity.toBigDecimal());
 		ic.setC_UOM_ID(UomId.toRepoId(olCandQuantity.getUomId()));
 
 		final ProductId productId = olCandEffectiveValuesBL.getM_Product_Effective_ID(olc);
 		final Quantity qtyInProductUOM = uomConversionBL.convertToProductUOM(olCandQuantity, productId);
 
-		ic.setQtyOrdered(qtyInProductUOM.getAsBigDecimal());
+		ic.setQtyOrdered(qtyInProductUOM.toBigDecimal());
 	}
 
 	private I_C_OLCand getOLCand(@NonNull final I_C_Invoice_Candidate ic)
@@ -317,6 +318,8 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	public void setDeliveredData(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		ic.setQtyDelivered(ic.getQtyOrdered()); // when changing this, make sure to threat ProductType.Service specially
+		ic.setQtyDeliveredInUOM(ic.getQtyEntered());
+
 		ic.setDeliveryDate(ic.getDateOrdered());
 	}
 
@@ -325,15 +328,16 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final I_C_OLCand olc = getOLCand(ic);
 		final IPricingResult pricingResult = Services.get(IOLCandBL.class).computePriceActual(
-				olc, 
-				null, 
-				PricingSystemId.NULL, 
+				olc,
+				null,
+				PricingSystemId.NULL,
 				TimeUtil.asLocalDate(olc.getDateCandidate()));
 
 		return PriceAndTax.builder()
 				.priceUOMId(pricingResult.getPriceUomId())
 				.priceActual(pricingResult.getPriceStd())
 				.taxIncluded(pricingResult.isTaxIncluded())
+				.invoicableQtyBasedOn(pricingResult.getInvoicableQtyBasedOn())
 				.build();
 	}
 

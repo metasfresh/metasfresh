@@ -41,6 +41,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public abstract class AbstractProductStorage implements IProductStorage
 {
@@ -107,7 +108,7 @@ public abstract class AbstractProductStorage implements IProductStorage
 	}
 
 	@Override
-	public final Quantity getQty(final I_C_UOM uom)
+	public final Quantity getQty(@NonNull final I_C_UOM uom)
 	{
 		final ProductId productId = getProductId();
 		final Quantity qty = getQty();

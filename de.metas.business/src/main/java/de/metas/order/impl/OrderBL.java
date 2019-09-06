@@ -127,7 +127,7 @@ public class OrderBL implements IOrderBL
 				Check.errorIf(true, "Unable to find pricing system for BPartner {}_{}; SOTrx={}", bpartnerName, soTrx);
 			}
 
-			order.setM_PricingSystem_ID(PricingSystemId.getRepoId(pricingSysId));
+			order.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSysId));
 		}
 
 		//
@@ -859,7 +859,7 @@ public class OrderBL implements IOrderBL
 
 		//
 		// Set QtyOrdered
-		orderLine.setQtyOrdered(qtyOrdered.getAsBigDecimal());
+		orderLine.setQtyOrdered(qtyOrdered.toBigDecimal());
 		InterfaceWrapperHelper.save(orderLine); // saving, just to be on the save side in case reserveStock() does a refresh or sth
 
 		//

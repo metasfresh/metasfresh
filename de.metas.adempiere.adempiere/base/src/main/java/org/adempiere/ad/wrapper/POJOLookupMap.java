@@ -61,7 +61,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.jmx.JMXPOJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
-import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
@@ -76,6 +75,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.CacheMgt;
+import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.exception.MonitoringException;
 import de.metas.process.IADPInstanceDAO;

@@ -148,7 +148,7 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 		// Execute the runnable
 		if (isRunInTrx())
 		{
-			trxManager.run(trxRunnable);
+			trxManager.runInNewTrx(trxRunnable);
 		}
 		else
 		{

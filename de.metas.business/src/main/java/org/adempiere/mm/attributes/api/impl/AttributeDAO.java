@@ -712,4 +712,13 @@ public class AttributeDAO implements IAttributeDAO
 		return result.build();
 
 	}
+
+	@Override
+	public AttributeSetInstanceId copyASI(@NonNull final AttributeSetInstanceId asiSourceId)
+	{
+		final I_M_AttributeSetInstance asiSourceRecord = getAttributeSetInstanceById(asiSourceId);
+		final I_M_AttributeSetInstance asiTargetRecord = copy(asiSourceRecord);
+
+		return AttributeSetInstanceId.ofRepoId(asiTargetRecord.getM_AttributeSetInstance_ID());
+	}
 }

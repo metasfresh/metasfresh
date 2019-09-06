@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableMap;
 
 import ch.qos.logback.classic.Level;
+import de.metas.error.AdIssueId;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
@@ -132,6 +133,18 @@ public class AdempiereException extends RuntimeException
 		return TranslatableStrings.constant(extractMessage(throwable));
 	}
 
+	public static final Map<String, Object> extractParameters(final Throwable throwable)
+	{
+		if (throwable instanceof AdempiereException)
+		{
+			return ((AdempiereException)throwable).getParameters();
+		}
+		else
+		{
+			return ImmutableMap.of();
+		}
+	}
+
 	/**
 	 * Extract cause exception from those exceptions which are only about wrapping the real cause (e.g. ExecutionException, InvocationTargetException).
 	 *
@@ -205,7 +218,7 @@ public class AdempiereException extends RuntimeException
 	private ITranslatableString _messageBuilt = null;
 	private final String adLanguage;
 
-	private Integer adIssueId = null;
+	private AdIssueId adIssueId = null;
 	private boolean userNotified = false;
 	private boolean userValidationError;
 
@@ -470,16 +483,21 @@ public class AdempiereException extends RuntimeException
 	}
 
 	@Override
-	public final void markIssueReported(final int adIssueId)
+	public final void markIssueReported(final AdIssueId adIssueId)
 	{
-		this.adIssueId = (adIssueId <= 0 ? 0 : adIssueId);
+		this.adIssueId = adIssueId;
 	}
 
 	@Override
 	public final boolean isIssueReported()
 	{
-		// NOTE: we consider it as issue reported even if the AD_Issue_ID <= 0
 		return adIssueId != null;
+	}
+
+	@Override
+	public AdIssueId getAdIssueId()
+	{
+		return adIssueId;
 	}
 
 	public final boolean isUserNotified()

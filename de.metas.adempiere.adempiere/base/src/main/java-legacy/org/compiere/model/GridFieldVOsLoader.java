@@ -34,16 +34,16 @@ import de.metas.util.Check;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-/*package*/ final class GridFieldVOsLoader
+/* package */ final class GridFieldVOsLoader
 {
 	public static GridFieldVOsLoader newInstance()
 	{
@@ -60,10 +60,10 @@ import de.metas.util.Check;
 	private int _templateTabId;
 	private boolean _tabReadOnly;
 	private boolean _loadAllLanguages = false;
+	private boolean _applyRolePermissions = true;
 
 	private GridFieldVOsLoader()
 	{
-		super();
 	}
 
 	@Override
@@ -89,6 +89,7 @@ import de.metas.util.Check;
 		final int templateTabId = getTemplateTabIdEffective();
 		final boolean tabReadOnly = isTabReadOnly();
 		final boolean loadAllLanguages = isLoadAllLanguages();
+		final boolean applyRolePermissions = isApplyRolePermissions();
 
 		final List<Object> sqlParams = new ArrayList<>();
 		final String sql = GridFieldVO.getSQL(ctx, templateTabId, loadAllLanguages, sqlParams);
@@ -115,6 +116,7 @@ import de.metas.util.Check;
 							adTabId,
 							tabReadOnly,
 							loadAllLanguages,
+							applyRolePermissions,
 							rs);
 					if (field == null)
 					{
@@ -195,7 +197,7 @@ import de.metas.util.Check;
 		_adTabId = AD_Tab_ID;
 		return this;
 	}
-	
+
 	public GridFieldVOsLoader setTemplateTabId(int templateTabId)
 	{
 		this._templateTabId = templateTabId;
@@ -206,7 +208,7 @@ import de.metas.util.Check;
 	{
 		return _adTabId;
 	}
-	
+
 	private int getTemplateTabIdEffective()
 	{
 		return _templateTabId > 0 ? _templateTabId : getAD_Tab_ID();
@@ -232,5 +234,16 @@ import de.metas.util.Check;
 	private boolean isLoadAllLanguages()
 	{
 		return _loadAllLanguages;
+	}
+
+	public GridFieldVOsLoader setApplyRolePermissions(final boolean applyRolePermissions)
+	{
+		this._applyRolePermissions = applyRolePermissions;
+		return this;
+	}
+
+	private boolean isApplyRolePermissions()
+	{
+		return _applyRolePermissions;
 	}
 }

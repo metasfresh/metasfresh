@@ -142,7 +142,7 @@ public class OLCandRepository
 		if (request.getDiscount() != null)
 		{
 			olCandPO.setIsManualDiscount(true);
-			olCandPO.setDiscount(request.getDiscount().getValueAsBigDecimal());
+			olCandPO.setDiscount(request.getDiscount().toBigDecimal());
 		}
 
 		olCandPO.setAD_User_EnteredBy_ID(Env.getAD_User_ID());

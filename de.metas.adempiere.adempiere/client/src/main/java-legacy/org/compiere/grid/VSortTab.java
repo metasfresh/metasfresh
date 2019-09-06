@@ -770,7 +770,7 @@ public class VSortTab extends CPanel implements APanelTab
 		final AtomicBoolean ok = new AtomicBoolean(true);
 		final StringBuffer info = new StringBuffer();
 		Services.get(ITrxManager.class)
-				.run(new TrxRunnableAdapter()
+				.runInNewTrx(new TrxRunnableAdapter()
 				{
 					@Override
 					public void run(String localTrxName) throws Exception

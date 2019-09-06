@@ -250,7 +250,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 			else
 			{
 				final IHUStorage storage = request.getHUContext().getHUStorageFactory().getStorage(hu);
-				final BigDecimal storageQty = storage == null ? BigDecimal.ZERO : storage.getQtyForProductStorages(request.getC_UOM()).getAsBigDecimal();
+				final BigDecimal storageQty = storage == null ? BigDecimal.ZERO : storage.getQtyForProductStorages(request.getC_UOM()).toBigDecimal();
 
 				// gh #1237: cuQty does *not* have to be a an "integer" number.
 				// If the overall HU's storage is not always integer and given that the aggregate's TU qty is always an integer, cuQty can't be an integer at any times either

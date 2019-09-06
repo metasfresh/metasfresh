@@ -388,7 +388,7 @@ public class ServerSyncBL implements IServerSyncBL
 
 		try (final IAutoCloseable contextRestorer = Env.switchContext(tempCtx))
 		{
-			Services.get(ITrxManager.class).run(new TrxRunnableAdapter()
+			Services.get(ITrxManager.class).runInNewTrx(new TrxRunnableAdapter()
 			{
 				@Override
 				public void run(final String localTrxName) throws Exception

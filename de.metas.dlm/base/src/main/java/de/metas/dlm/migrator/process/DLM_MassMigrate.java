@@ -106,7 +106,7 @@ public class DLM_MassMigrate extends JavaProcess
 
 		do
 		{
-			Services.get(ITrxManager.class).run((TrxRunnable)localTrxName -> {
+			Services.get(ITrxManager.class).runInNewTrx((TrxRunnable)localTrxName -> {
 				final CPreparedStatement stmt = DB.prepareStatement("select * from " + dbFunctionName + "();", localTrxName);
 
 				final Stopwatch stopWatch = Stopwatch.createStarted();

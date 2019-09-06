@@ -190,7 +190,7 @@ public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_War
 	{
 		final I_M_ReceiptSchedule rs = newInstance(I_M_ReceiptSchedule.class);
 		rs.setOnMaterialReceiptWithDestWarehouse(onMaterialReceiptWithDestWarehouse);
-		rs.setM_Warehouse_Dest(warehouseDest);
+		rs.setM_Warehouse_Dest_ID(warehouseDest.getM_Warehouse_ID());
 		save(rs);
 
 		return rs;

@@ -1,5 +1,7 @@
 package org.adempiere.exceptions;
 
+import de.metas.error.AdIssueId;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -38,11 +40,12 @@ public interface IIssueReportableAware
 	 * 
 	 * @param adIssueId
 	 */
-	void markIssueReported(final int adIssueId);
+	void markIssueReported(final AdIssueId adIssueId);
 
 	/**
-	 * 
 	 * @return <code>true</code> if this exception was already reported
 	 */
 	boolean isIssueReported();
+	
+	AdIssueId getAdIssueId();
 }

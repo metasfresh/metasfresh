@@ -39,6 +39,7 @@ import de.metas.invoice.IMatchInvDAO;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxNotFoundException;
@@ -1719,10 +1720,8 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		il.setIsPackagingMaterial(true);
 	}
 
-	/**
-	 * @return matched qty
-	 */
-	public BigDecimal getMatchedQty()
+	@Deprecated
+	public StockQtyAndUOMQty getMatchedQty()
 	{
 		return Services.get(IMatchInvDAO.class).retrieveQtyMatched(this);
 	}

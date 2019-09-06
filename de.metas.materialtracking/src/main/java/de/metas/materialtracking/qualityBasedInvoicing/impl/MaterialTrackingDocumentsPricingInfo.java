@@ -13,7 +13,6 @@ import java.util.TreeMap;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import de.metas.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.ObjectUtils;
@@ -30,6 +29,7 @@ import com.google.common.collect.ListMultimap;
 
 import de.metas.document.engine.IDocument;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.IMaterialTrackingAware;
 import de.metas.materialtracking.model.I_M_InOutLine;
@@ -82,10 +82,8 @@ import lombok.NonNull;
 	private final ImmutableMap<Integer, IVendorReceipt<I_M_InOutLine>> plvId2vendorReceipt;
 	private final ImmutableMap<Integer, I_M_PriceList_Version> plvs;
 
-	private MaterialTrackingDocumentsPricingInfo(final Builder builder)
+	private MaterialTrackingDocumentsPricingInfo(@NonNull final Builder builder)
 	{
-		super();
-
 		plvId2qiOrders = ImmutableListMultimap.copyOf(builder.plvId2qiOrders);
 		plvId2vendorReceipt = ImmutableMap.copyOf(builder.plvId2vendorReceipt);
 		plvs = ImmutableMap.copyOf(builder.plvs);
@@ -216,7 +214,7 @@ import lombok.NonNull;
 			return new MaterialTrackingDocumentsPricingInfo(this);
 		}
 
-		private ImmutablePair<I_M_PriceList_Version, List<I_M_InOutLine>> providePriceListVersionOrNullForPPOrder(final I_PP_Order ppOrder)
+		private ImmutablePair<I_M_PriceList_Version, List<I_M_InOutLine>> providePriceListVersionOrNullForPPOrder(@NonNull final I_PP_Order ppOrder)
 		{
 			I_M_PriceList_Version plv = null;
 
@@ -293,7 +291,7 @@ import lombok.NonNull;
 					.addInArrayOrAllFilter(I_M_InOut.COLUMN_DocStatus, IDocument.STATUS_Completed, IDocument.STATUS_Closed)
 					.addCompareFilter(I_M_InOut.COLUMN_MovementDate, Operator.GREATER_OR_EQUAL, plv.getValidFrom());
 
-			final I_M_PriceList_Version nextPLV = priceListDAO.retrieveNextVersionOrNull(plv);
+			final I_M_PriceList_Version nextPLV = priceListDAO.retrieveNextVersionOrNull(plv, true /* onlyProcessed */ );
 			if (nextPLV != null)
 			{
 				inOutFilter.addCompareFilter(I_M_InOut.COLUMN_MovementDate, Operator.LESS, nextPLV.getValidFrom());

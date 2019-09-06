@@ -324,7 +324,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 		bomLineRecord.setPP_Product_BOM_ID(bomId.getRepoId());
 		bomLineRecord.setM_Product_ID(line.getProductId().getRepoId());
 		bomLineRecord.setC_UOM_ID(line.getQty().getUOMId());
-		bomLineRecord.setQtyBOM(line.getQty().getAsBigDecimal());
+		bomLineRecord.setQtyBOM(line.getQty().toBigDecimal());
 		bomLineRecord.setIsQtyPercentage(false);
 		bomLineRecord.setComponentType(line.getComponentType().getCode());
 		bomLineRecord.setValidFrom(TimeUtil.asTimestamp(validFrom));

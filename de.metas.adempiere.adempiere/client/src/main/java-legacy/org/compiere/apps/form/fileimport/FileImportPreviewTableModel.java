@@ -7,12 +7,12 @@ import java.util.Objects;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 
-import org.compiere.impexp.CellErrorMessage;
-import org.compiere.impexp.ImpDataLine;
-import org.compiere.impexp.ImpFormat;
 import org.compiere.util.Env;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.impexp.CellErrorMessage;
+import de.metas.impexp.ImpDataLine;
+import de.metas.impexp.ImpFormat;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -65,9 +65,9 @@ public class FileImportPreviewTableModel extends AbstractTableModel
 			int columnIndex = 0;
 			columnModels.add(new ToImportTableColumnModel(columnIndex++));
 			columnModels.add(new LineNoTableColumnModel(columnIndex++));
-			for (int rowIndex = 0; rowIndex < impFormat.getRowCount(); rowIndex++)
+			for (int rowIndex = 0; rowIndex < impFormat.getColumnsCount(); rowIndex++)
 			{
-				columnModels.add(new ImpDataLineRowTableColumnModel(impFormat.getRow(rowIndex), rowIndex, columnIndex++));
+				columnModels.add(new ImpDataLineRowTableColumnModel(impFormat.getColumn(rowIndex), rowIndex, columnIndex++));
 			}
 			columnModels.add(new ImportStatusTableColumnModel(columnIndex++));
 			columnModels.add(new ImportErrorTableColumnModel(columnIndex++));

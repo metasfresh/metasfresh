@@ -58,6 +58,8 @@ import org.compiere.model.MQuery;
 import org.compiere.model.X_AD_Column;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.compiere.util.Ini;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
@@ -842,8 +844,9 @@ public class LookupDAO implements ILookupDAO
 				return true;
 			}
 
-			final boolean displayed = UIDisplayedEntityTypes.isEntityTypeDisplayedInUIOrTrueIfNull(entityType);
-			return displayed;
+			return Ini.isSwingClient()
+					? UIDisplayedEntityTypes.isEntityTypeDisplayedInUIOrTrueIfNull(Env.getCtx(), entityType)
+					: true;
 		}
 
 		private final String getDisplayName(final ResultSet rs, final boolean isActive) throws SQLException

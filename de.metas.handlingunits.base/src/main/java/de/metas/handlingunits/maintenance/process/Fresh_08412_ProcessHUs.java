@@ -121,7 +121,7 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 
 	private void process(final HUToProcess huToProcess)
 	{
-		trxManager.run(new TrxRunnable2()
+		trxManager.runInNewTrx(new TrxRunnable2()
 		{
 
 			@Override

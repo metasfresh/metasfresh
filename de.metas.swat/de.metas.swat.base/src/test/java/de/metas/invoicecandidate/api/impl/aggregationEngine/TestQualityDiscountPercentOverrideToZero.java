@@ -36,17 +36,16 @@ import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.collections.CollectionUtils;
 
 /**
  * Two inout lines, one in-dispute. However, <code>QualityDiscount_Override</code> is set to zero.
  * <p>
  * Expectation: the full qty (including the in-dispute-qty) is invoiced in one invoice line.
- *
- * @author ts
- *
  */
-public class TestQualityDiscountPercentOverrideToZero extends AbstractTestQualityDiscountPercentOverride
+public abstract class TestQualityDiscountPercentOverrideToZero extends AbstractTestQualityDiscountPercentOverride
 {
 
 	private I_M_InOutLine iol12_twenty_disp;
@@ -55,12 +54,15 @@ public class TestQualityDiscountPercentOverrideToZero extends AbstractTestQualit
 	protected List<I_M_InOutLine> step_createInOutLines(List<I_C_Invoice_Candidate> invoiceCandidates)
 	{
 		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
+
+		final StockQtyAndUOMQty qtysDelivered_90 = StockQtyAndUOMQtys.create(new BigDecimal("90"), productId, new BigDecimal("900"), uomId);
+		final StockQtyAndUOMQty qtysDelivered_10 = StockQtyAndUOMQtys.create(TEN, productId, HUNDRET, uomId);
 		{
 			final String inOutDocumentNo = "1";
 			inOut1 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo); // DocumentNo
-			iol11 = createInvoiceCandidateInOutLine(ic, inOut1, new BigDecimal("90"), inOutDocumentNo + "_90"); // inOutLineDescription
+			iol11 = createInvoiceCandidateInOutLine(ic, inOut1, qtysDelivered_90, inOutDocumentNo + "_90"); // inOutLineDescription
 
-			iol12_twenty_disp = createInvoiceCandidateInOutLine(ic, inOut1, TEN, inOutDocumentNo + "_10_disp");
+			iol12_twenty_disp = createInvoiceCandidateInOutLine(ic, inOut1, qtysDelivered_10, inOutDocumentNo + "_10_disp");
 			iol12_twenty_disp.setIsInDispute(true);
 			InterfaceWrapperHelper.save(iol12_twenty_disp);
 
@@ -116,7 +118,7 @@ public class TestQualityDiscountPercentOverrideToZero extends AbstractTestQualit
 		final List<IInvoiceLineRW> invoiceLines1 = getInvoiceLines(invoice1);
 		final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol11);
 
-		assertThat(il1.getQtyToInvoice(), comparesEqualTo(new BigDecimal("100")));
+		assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(new BigDecimal("100")));
 	}
 
 }

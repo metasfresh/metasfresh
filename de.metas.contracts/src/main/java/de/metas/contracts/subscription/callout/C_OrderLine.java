@@ -174,9 +174,9 @@ public class C_OrderLine
 
 		// qty ordered needs to be set because it will be used to compute the
 		// line's NetLineAmount in MOrderLine.beforeSave()
-		ol.setQtyOrdered(priceQty.getAsBigDecimal());
+		ol.setQtyOrdered(priceQty.toBigDecimal());
 
-		ol.setQtyEnteredInPriceUOM(priceQty.getAsBigDecimal());
+		ol.setQtyEnteredInPriceUOM(priceQty.toBigDecimal());
 
 		// now compute the new prices
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()

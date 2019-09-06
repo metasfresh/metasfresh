@@ -36,6 +36,7 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
@@ -47,6 +48,7 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
@@ -56,6 +58,7 @@ import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import mockit.Expectations;
@@ -95,6 +98,8 @@ public abstract class AbstractDeliveryTest
 
 	protected I_C_BPartner bPartner;
 
+	private UomId stockUomId;
+
 	@Before
 	public void init()
 	{
@@ -103,7 +108,12 @@ public abstract class AbstractDeliveryTest
 
 		initHandlers();
 
+		final I_C_UOM stockUom = newInstance(I_C_UOM.class);
+		saveRecord(stockUom);
+		stockUomId = UomId.ofRepoId(stockUom.getC_UOM_ID());
+
 		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setC_UOM_ID(stockUom.getC_UOM_ID());
 		saveRecord(product);
 		productId = ProductId.ofRepoId(product.getM_Product_ID());
 
@@ -181,6 +191,7 @@ public abstract class AbstractDeliveryTest
 		order = InterfaceWrapperHelper.create(ctx, I_C_Order.class, trxName);
 		order.setAD_Org_ID(orgId.getRepoId());
 		order.setBill_BPartner_ID(bPartner.getC_BPartner_ID());
+		order.setDocStatus(DocStatus.Completed.getCode());
 		InterfaceWrapperHelper.save(order);
 	}
 
@@ -194,6 +205,7 @@ public abstract class AbstractDeliveryTest
 		final BigDecimal qty = new BigDecimal(13);
 		orderLine.setQtyEntered(qty);
 		orderLine.setQtyOrdered(qty);
+		orderLine.setC_UOM_ID(stockUomId.getRepoId());
 		orderLine.setQtyReserved(qty);
 
 		// assume that the process (no direct access in decoupled mode) already set the orderLine qty
@@ -232,6 +244,7 @@ public abstract class AbstractDeliveryTest
 		// set the orderLine's qty
 		mInOutLine.setQtyEntered(orderLine.getQtyEntered());
 		mInOutLine.setMovementQty(orderLine.getQtyEntered()); // TODO should use ReceiptSchedule for conversion
+		mInOutLine.setC_UOM_ID(stockUomId.getRepoId());
 
 		InterfaceWrapperHelper.save(mInOutLine);
 	}

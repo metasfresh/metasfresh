@@ -6,8 +6,6 @@ import java.time.LocalDate;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.impexp.AbstractImportProcess;
-import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_C_Payment;
@@ -17,6 +15,9 @@ import org.compiere.util.TimeUtil;
 import de.metas.banking.model.I_I_Datev_Payment;
 import de.metas.banking.model.X_I_Datev_Payment;
 import de.metas.bpartner.BPartnerId;
+import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult;
 import de.metas.organization.OrgId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
@@ -27,7 +28,7 @@ import lombok.NonNull;
  * Import {@link I_I_Datev_Payment} to {@link I_C_Payment}.
  *
  */
-public class DatevPaymentImportProcess extends AbstractImportProcess<I_I_Datev_Payment>
+public class DatevPaymentImportProcess extends SimpleImportProcessTemplate<I_I_Datev_Payment>
 {
 	@Override
 	public Class<I_I_Datev_Payment> getImportModelClass()

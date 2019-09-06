@@ -143,7 +143,7 @@ public class SalesOrderRestController
 			throw new AdempiereException("@NotFound@ M_Product_ID@ (@Value=" + salesOrderLine.getProductCode() + ")");
 		}
 
-		final I_C_UOM uom = productBL.getStockingUOM(productId);
+		final I_C_UOM uom = productBL.getStockUOM(productId);
 		final Quantity qty = Quantity.of(salesOrderLine.getQty(), uom);
 
 		salesOrderFactory.newOrderLine()

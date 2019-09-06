@@ -10,12 +10,12 @@ package de.metas.inoutcandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,8 +30,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
-import de.metas.inoutcandidate.spi.impl.IQtyAndQuality;
-import de.metas.inoutcandidate.spi.impl.MutableQtyAndQuality;
+import de.metas.inoutcandidate.spi.impl.ReceiptQty;
 import de.metas.inoutcandidate.spi.impl.QualityNoticesCollection;
 
 public class InOutCandidateBL implements IInOutCandidateBL
@@ -43,7 +42,7 @@ public class InOutCandidateBL implements IInOutCandidateBL
 	}
 
 	@Override
-	public IQtyAndQuality getQtyAndQuality(final org.compiere.model.I_M_InOutLine inoutLine0)
+	public ReceiptQty getQtyAndQuality(final org.compiere.model.I_M_InOutLine inoutLine0)
 	{
 		I_M_InOutLine inoutLine = InterfaceWrapperHelper.create(inoutLine0, I_M_InOutLine.class);
 
@@ -61,7 +60,7 @@ public class InOutCandidateBL implements IInOutCandidateBL
 			qtyMovedWithIssues = BigDecimal.ZERO;
 		}
 
-		final MutableQtyAndQuality qtys = new MutableQtyAndQuality();
+		final ReceiptQty qtys = new ReceiptQty();
 		qtys.addQtyAndQtyWithIssues(qtyMoved, qtyMovedWithIssues);
 		qtys.addQualityNotices(QualityNoticesCollection.valueOfQualityNoticesString(inoutLine.getQualityNote()));
 

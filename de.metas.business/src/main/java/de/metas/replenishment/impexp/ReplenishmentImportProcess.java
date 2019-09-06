@@ -6,7 +6,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_I_Replenish;
@@ -15,6 +14,7 @@ import org.compiere.model.X_I_Replenish;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -40,7 +40,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class ReplenishmentImportProcess extends AbstractImportProcess<I_I_Replenish>
+public class ReplenishmentImportProcess extends SimpleImportProcessTemplate<I_I_Replenish>
 {
 
 	private static final String MSG_NoValidRecord = "de.metas.replenishment.impexp.ReplenishmentImportProcess.RecordNotValid";
@@ -85,9 +85,10 @@ public class ReplenishmentImportProcess extends AbstractImportProcess<I_I_Replen
 	 * @param isInsertOnly ignored. This import is only for updates.
 	 */
 	@Override
-	protected ImportRecordResult importRecord(@NonNull IMutable<Object> state,
+	protected ImportRecordResult importRecord(
+			@NonNull IMutable<Object> state_NOTUSED,
 			@NonNull final I_I_Replenish importRecord,
-			final boolean isInsertOnly)
+			final boolean isInsertOnly_NOTUSED)
 	{
 		if (ReplenishImportHelper.isValidRecordForImport(importRecord))
 		{

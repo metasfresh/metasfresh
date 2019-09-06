@@ -104,7 +104,7 @@ public class C_Dunning_Candidate_Create extends JavaProcess
 	{
 		final IDunningBL dunningBL = Services.get(IDunningBL.class);
 
-		trxManager.run(new TrxRunnableAdapter()
+		trxManager.runInNewTrx(new TrxRunnableAdapter()
 		{
 
 			@Override

@@ -32,8 +32,6 @@ public interface I_M_Packageable_V
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_AD_Client>(I_M_Packageable_V.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -58,10 +56,6 @@ public interface I_M_Packageable_V
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_AD_Org>(I_M_Packageable_V.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
@@ -180,10 +174,6 @@ public interface I_M_Packageable_V
 	 */
 	public int getC_BPartner_Customer_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner_Customer();
-
-	public void setC_BPartner_Customer(org.compiere.model.I_C_BPartner C_BPartner_Customer);
-
     /** Column definition for C_BPartner_Customer_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_Customer_ID = new org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_C_BPartner>(I_M_Packageable_V.class, "C_BPartner_Customer_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_Customer_ID */
@@ -209,10 +199,6 @@ public interface I_M_Packageable_V
 	 */
 	public int getC_BPartner_Location_ID();
 
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location();
-
-	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location);
-
     /** Column definition for C_BPartner_Location_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_C_BPartner_Location>(I_M_Packageable_V.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name C_BPartner_Location_ID */
@@ -237,10 +223,6 @@ public interface I_M_Packageable_V
 	 * <br>Virtual Column: false
 	 */
 	public int getC_Currency_ID();
-
-	public org.compiere.model.I_C_Currency getC_Currency();
-
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
 
     /** Column definition for C_Currency_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_C_Currency>(I_M_Packageable_V.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
@@ -354,10 +336,6 @@ public interface I_M_Packageable_V
 	 * <br>Virtual Column: false
 	 */
 	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
 
     /** Column definition for C_UOM_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_C_UOM>(I_M_Packageable_V.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
@@ -580,10 +558,6 @@ public interface I_M_Packageable_V
 	 */
 	public int getLockedBy_User_ID();
 
-	public org.compiere.model.I_AD_User getLockedBy_User();
-
-	public void setLockedBy_User(org.compiere.model.I_AD_User LockedBy_User);
-
     /** Column definition for LockedBy_User_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_AD_User> COLUMN_LockedBy_User_ID = new org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_AD_User>(I_M_Packageable_V.class, "LockedBy_User_ID", org.compiere.model.I_AD_User.class);
     /** Column name LockedBy_User_ID */
@@ -637,10 +611,6 @@ public interface I_M_Packageable_V
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Product_ID();
-
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
 
     /** Column definition for M_Product_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_M_Product>(I_M_Packageable_V.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
@@ -719,17 +689,13 @@ public interface I_M_Packageable_V
 	 */
 	public int getM_Warehouse_ID();
 
-	public org.compiere.model.I_M_Warehouse getM_Warehouse();
-
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
-
     /** Column definition for M_Warehouse_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_M_Warehouse>(I_M_Packageable_V.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
     /** Column name M_Warehouse_ID */
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Warehouse Type.
+	 * Set Lagerart.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -738,7 +704,7 @@ public interface I_M_Packageable_V
 	public void setM_Warehouse_Type_ID (int M_Warehouse_Type_ID);
 
 	/**
-	 * Get Warehouse Type.
+	 * Get Lagerart.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false

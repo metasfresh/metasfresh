@@ -397,23 +397,6 @@ public abstract class AbstractTrxManager implements ITrxManager
 	}
 
 	@Override
-	public ITrx[] getActiveTransactions()
-	{
-		trxName2trxLock.lock();
-		try
-		{
-			final Collection<ITrx> collections = trxName2trx.values();
-			final ITrx[] trxs = new ITrx[collections.size()];
-			collections.toArray(trxs);
-			return trxs;
-		}
-		finally
-		{
-			trxName2trxLock.unlock();
-		}
-	}
-
-	@Override
 	public List<ITrx> getActiveTransactionsList()
 	{
 		trxName2trxLock.lock();

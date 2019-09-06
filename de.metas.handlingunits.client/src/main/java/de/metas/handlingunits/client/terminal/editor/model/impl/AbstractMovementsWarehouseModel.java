@@ -140,7 +140,7 @@ public abstract class AbstractMovementsWarehouseModel extends AbstractMaterialMo
 	@Override
 	public void execute() throws MaterialMovementException
 	{
-		trxManager.run(new TrxRunnable2()
+		trxManager.runInNewTrx(new TrxRunnable2()
 		{
 
 			@Override

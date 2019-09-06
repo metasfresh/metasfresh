@@ -80,7 +80,7 @@ public final class HUStorageRecord implements IStorageRecord
 		// Get QtyOnHand from HU Storage
 		final Quantity qtyOnHandSrc = new Quantity(huStorage.getQty(), IHUStorageBL.extractUOM(huStorage));
 		// ... and convert it to product's storage UOM
-		final I_C_UOM productUOM = productBL.getStockingUOM(productId);
+		final I_C_UOM productUOM = productBL.getStockUOM(productId);
 		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(productId);
 		qtyOnHand = uomConversionBL.convertQuantityTo(qtyOnHandSrc, uomConversionCtx, productUOM);
 	}
@@ -174,7 +174,7 @@ public final class HUStorageRecord implements IStorageRecord
 	@Override
 	public BigDecimal getQtyOnHand()
 	{
-		return qtyOnHand.getAsBigDecimal();
+		return qtyOnHand.toBigDecimal();
 	}
 
 	public I_M_HU getVHU()

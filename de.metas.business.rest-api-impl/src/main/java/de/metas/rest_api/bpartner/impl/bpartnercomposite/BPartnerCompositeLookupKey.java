@@ -2,8 +2,15 @@ package de.metas.rest_api.bpartner.impl.bpartnercomposite;
 
 import static de.metas.util.Check.assumeNotEmpty;
 
+import org.adempiere.exceptions.AdempiereException;
+
+import de.metas.bpartner.GLN;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
+import de.metas.rest_api.utils.IdentifierString;
+import de.metas.rest_api.utils.JsonExternalIds;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.rest.ExternalId;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -37,9 +44,19 @@ public class BPartnerCompositeLookupKey
 		return new BPartnerCompositeLookupKey(metasfreshId, null, null, null);
 	}
 
+	public static <T extends RepoIdAware> BPartnerCompositeLookupKey ofMetasfreshId(@NonNull final T id)
+	{
+		return ofMetasfreshId(MetasfreshId.of(id));
+	}
+
 	public static BPartnerCompositeLookupKey ofJsonExternalId(@NonNull final JsonExternalId jsonExternalId)
 	{
 		return new BPartnerCompositeLookupKey(null, jsonExternalId, null, null);
+	}
+
+	public static BPartnerCompositeLookupKey ofExternalId(@NonNull final ExternalId externalId)
+	{
+		return ofJsonExternalId(JsonExternalIds.of(externalId));
 	}
 
 	public static BPartnerCompositeLookupKey ofCode(@NonNull final String code)
@@ -48,31 +65,43 @@ public class BPartnerCompositeLookupKey
 		return new BPartnerCompositeLookupKey(null, null, code.trim(), null);
 	}
 
-	public static BPartnerCompositeLookupKey ofGln(@NonNull final String gln)
+	public static BPartnerCompositeLookupKey ofGln(@NonNull final GLN gln)
 	{
-		assumeNotEmpty(gln, "Given parameter 'gln' may not be empty");
 		return new BPartnerCompositeLookupKey(null, null, null, gln);
 	}
 
+	public static BPartnerCompositeLookupKey ofIdentifierString(@NonNull final IdentifierString bpartnerIdentifier)
+	{
+		switch (bpartnerIdentifier.getType())
+		{
+			case EXTERNAL_ID:
+				return BPartnerCompositeLookupKey.ofJsonExternalId(bpartnerIdentifier.asJsonExternalId());
+			case VALUE:
+				return BPartnerCompositeLookupKey.ofCode(bpartnerIdentifier.asValue());
+			case GLN:
+				return BPartnerCompositeLookupKey.ofGln(bpartnerIdentifier.asGLN());
+			case METASFRESH_ID:
+				return BPartnerCompositeLookupKey.ofMetasfreshId(bpartnerIdentifier.asMetasfreshId());
+			default:
+				throw new AdempiereException("Unexpected type=" + bpartnerIdentifier.getType());
+		}
+	}
+
 	MetasfreshId metasfreshId;
-
 	JsonExternalId jsonExternalId;
-
 	String code;
-
-	String gln;
+	GLN gln;
 
 	private BPartnerCompositeLookupKey(
 			MetasfreshId metasfreshId,
 			JsonExternalId jsonExternalId,
 			String code,
-			String gln)
+			GLN gln)
 	{
 		this.metasfreshId = metasfreshId;
 		this.jsonExternalId = jsonExternalId;
 		this.code = code;
 		this.gln = gln;
 	}
-
 
 }

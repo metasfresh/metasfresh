@@ -13,6 +13,7 @@ import de.metas.bpartner.BPGroup;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerCompositeRepository;
@@ -103,13 +104,13 @@ public class JsonPersisterService
 	}
 
 	public BPartnerComposite persist(
-			@NonNull final String bpartnerIdentifierStr,
+			@NonNull final IdentifierString bpartnerIdentifier,
 			@NonNull final JsonRequestComposite jsonBPartnerComposite,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		// TODO: add support to retrieve without changelog; we don't need changelog here; 
+		// TODO: add support to retrieve without changelog; we don't need changelog here;
 		// but! make sure we don't screw up caching
-		final Optional<BPartnerComposite> optionalBPartnerComposite = jsonRetrieverService.retrieveBPartnerComposite(bpartnerIdentifierStr);
+		final Optional<BPartnerComposite> optionalBPartnerComposite = jsonRetrieverService.getBPartnerComposite(bpartnerIdentifier);
 
 		final SyncAdvise effectiveSyncAdvise = coalesce(jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
 
@@ -124,7 +125,7 @@ public class JsonPersisterService
 			if (effectiveSyncAdvise.isFailIfNotExists())
 			{
 				throw new MissingResourceException(
-						"Did not find an existing partner with identifier '" + bpartnerIdentifierStr + "'",
+						"Did not find an existing partner with identifier '" + bpartnerIdentifier + "'",
 						jsonBPartnerComposite)
 								.setParameter("effectiveSyncAdvise", effectiveSyncAdvise);
 			}
@@ -138,11 +139,11 @@ public class JsonPersisterService
 	}
 
 	public BPartnerContact persist(
-			@NonNull final String contactIdentifierStr,
+			@NonNull final IdentifierString contactIdentifier,
 			@NonNull final JsonRequestContact jsonContact,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		final BPartnerContactQuery contactQuery = createContactQuery(contactIdentifierStr);
+		final BPartnerContactQuery contactQuery = createContactQuery(contactIdentifier);
 		final Optional<ContactIdAndBPartner> optionalContactIdAndBPartner = bpartnerCompositeRepository.getByContact(contactQuery);
 
 		final BPartnerContact contact;
@@ -162,7 +163,7 @@ public class JsonPersisterService
 			if (parentSyncAdvise.isFailIfNotExists())
 			{
 				throw new MissingResourceException(
-						"Did not find an existing contact with identifier '" + contactIdentifierStr + "'")
+						"Did not find an existing contact with identifier '" + contactIdentifier + "'")
 								.setParameter("effectiveSyncAdvise", parentSyncAdvise);
 			}
 			if (jsonContact.getMetasfreshBPartnerId() == null)
@@ -184,36 +185,35 @@ public class JsonPersisterService
 		return contact;
 	}
 
-	private BPartnerContactQuery createContactQuery(@NonNull final String contactIdentifierStr)
+	private static BPartnerContactQuery createContactQuery(@NonNull final IdentifierString contactIdentifier)
 	{
 		final BPartnerContactQueryBuilder contactQuery = BPartnerContactQuery.builder();
 
-		final IdentifierString contactIdentifier = IdentifierString.of(contactIdentifierStr);
 		switch (contactIdentifier.getType())
 		{
 			case EXTERNAL_ID:
 				contactQuery.externalId(JsonExternalIds.toExternalIdOrNull((contactIdentifier.asJsonExternalId())));
 				break;
 			case METASFRESH_ID:
-				final UserId userId = UserId.ofRepoIdOrNull(contactIdentifier.asMetasfreshId().getValue());
+				final UserId userId = contactIdentifier.asMetasfreshId(UserId::ofRepoId);
 				contactQuery.userId(userId);
 				break;
 			case VALUE:
-				contactQuery.value(contactIdentifier.getValue());
+				contactQuery.value(contactIdentifier.asValue());
 				break;
 			default:
-				throw new InvalidIdentifierException(contactIdentifierStr);
+				throw new InvalidIdentifierException(contactIdentifier);
 		}
 		return contactQuery.build();
 	}
 
 	/** Adds or update a given location. Leaves all unrelated location of the same bpartner untouched */
 	public Optional<JsonResponseUpsert> persistForBPartner(
-			@NonNull final String bpartnerIdentifierStr,
+			@NonNull final IdentifierString bpartnerIdentifier,
 			@NonNull final JsonRequestLocationUpsert jsonBPartnerLocations,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.retrieveBPartnerComposite(bpartnerIdentifierStr);
+		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.getBPartnerComposite(bpartnerIdentifier);
 		if (!optBPartnerComposite.isPresent())
 		{
 			return Optional.empty(); // 404
@@ -250,11 +250,11 @@ public class JsonPersisterService
 	}
 
 	public Optional<JsonResponseUpsert> persistForBPartner(
-			@NonNull final String bpartnerIdentifierStr,
+			@NonNull final IdentifierString bpartnerIdentifier,
 			@NonNull final JsonRequestContactUpsert jsonContactUpsert,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.retrieveBPartnerComposite(bpartnerIdentifierStr);
+		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.getBPartnerComposite(bpartnerIdentifier);
 		if (!optBPartnerComposite.isPresent())
 		{
 			return Optional.empty(); // 404
@@ -965,9 +965,10 @@ public class JsonPersisterService
 		}
 
 		// gln
-		if (!isEmpty(jsonBPartnerLocation.getGln(), true))
+		final GLN gln = GLN.ofNullableString(jsonBPartnerLocation.getGln());
+		if (gln != null)
 		{
-			location.setGln(jsonBPartnerLocation.getGln().trim());
+			location.setGln(gln);
 		}
 		else if (isUpdateRemove)
 		{

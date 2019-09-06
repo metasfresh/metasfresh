@@ -99,13 +99,13 @@ public class PricingConditionsTest
 	@Test
 	public void testRetrieveBreaks()
 	{
-		final I_M_DiscountSchema schema1 = PricingConditionsTestUtils.createSchema();
-		final I_M_DiscountSchema schema2 = PricingConditionsTestUtils.createSchema();
+		final I_M_DiscountSchema schema1 = createSchema();
+		final I_M_DiscountSchema schema2 = createSchema();
 
-		final I_M_DiscountSchemaBreak schemaBreak1 = PricingConditionsTestUtils.createBreak(schema1, 10);
-		final I_M_DiscountSchemaBreak schemaBreak2 = PricingConditionsTestUtils.createBreak(schema1, 20);
+		final I_M_DiscountSchemaBreak schemaBreak1 = createBreak(schema1, 10);
+		final I_M_DiscountSchemaBreak schemaBreak2 = createBreak(schema1, 20);
 
-		final I_M_DiscountSchemaBreak schemaBreak3 = PricingConditionsTestUtils.createBreak(schema2, 10);
+		final I_M_DiscountSchemaBreak schemaBreak3 = createBreak(schema2, 10);
 
 		final PricingConditionsId pricingConditionsId = PricingConditionsId.ofDiscountSchemaId(schema1.getM_DiscountSchema_ID());
 		final List<I_M_DiscountSchemaBreak> breaks = repo.streamSchemaBreakRecords(ImmutableList.of(pricingConditionsId))
@@ -119,8 +119,8 @@ public class PricingConditionsTest
 	@Test
 	public void testRetrieveLines()
 	{
-		final I_M_DiscountSchema schema1 = PricingConditionsTestUtils.createSchema();
-		final I_M_DiscountSchema schema2 = PricingConditionsTestUtils.createSchema();
+		final I_M_DiscountSchema schema1 = createSchema();
+		final I_M_DiscountSchema schema2 = createSchema();
 
 		final I_M_DiscountSchemaLine schemaLine1 = createLine(schema1, 10);
 		final I_M_DiscountSchemaLine schemaLine2 = createLine(schema1, 20);

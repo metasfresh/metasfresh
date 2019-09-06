@@ -102,7 +102,7 @@ public class ContactPersonRepository
 		}
 
 		contactPersonRecord.setName(contactPerson.getName());
-		contactPersonRecord.setAD_Language(Language.asLanguageString(contactPerson.getLanguage()));
+		contactPersonRecord.setAD_Language(Language.asLanguageStringOrNull(contactPerson.getLanguage()));
 
 		contactPersonRecord.setMKTG_Platform_ID(contactPerson.getPlatformId().getRepoId());
 		contactPersonRecord.setRemoteRecordId(contactPerson.getRemoteId());

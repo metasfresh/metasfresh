@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.impexp.DBFunctionsRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
@@ -27,6 +26,8 @@ import de.metas.StartupListener;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.impexp.ImportTableDescriptorRepository;
+import de.metas.impexp.processing.DBFunctionsRepository;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 
@@ -60,7 +61,8 @@ import de.metas.util.Services;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-		DBFunctionsRepository.class})
+		DBFunctionsRepository.class,
+		ImportTableDescriptorRepository.class })
 public class BPartnerImportProcess_MultiLocations_gh2543_Test
 {
 	private Properties ctx;
@@ -85,7 +87,7 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 
 		final IMutable<Object> state = new Mutable<>();
 
-		ibpartners.forEach(importRecord -> importProcess.importRecord(state, importRecord, false /*isInsertOnly*/));
+		ibpartners.forEach(importRecord -> importProcess.importRecord(state, importRecord, false /* isInsertOnly */));
 
 		assertMultipleBpartnerImported(ibpartners);
 

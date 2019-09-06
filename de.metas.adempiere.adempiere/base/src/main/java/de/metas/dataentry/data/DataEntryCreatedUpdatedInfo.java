@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.user.UserId;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -51,13 +52,11 @@ public class DataEntryCreatedUpdatedInfo
 	}
 
 	UserId createdBy;
-
 	ZonedDateTime created;
-
 	UserId updatedBy;
-
 	ZonedDateTime updated;
 
+	@Builder
 	@JsonCreator
 	private DataEntryCreatedUpdatedInfo(
 			@NonNull @JsonProperty("createdBy") final UserId createdBy,

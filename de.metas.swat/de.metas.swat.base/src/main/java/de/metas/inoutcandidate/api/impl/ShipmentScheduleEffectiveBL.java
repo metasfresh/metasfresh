@@ -1,5 +1,8 @@
 package de.metas.inoutcandidate.api.impl;
 
+
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -164,7 +167,7 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	@Override
 	public I_AD_User getAD_User(final I_M_ShipmentSchedule sched)
 	{
-		final I_AD_User user = sched.getAD_User_Override_ID() <= 0 ? InterfaceWrapperHelper.create(sched.getAD_User(), I_AD_User.class) : InterfaceWrapperHelper.create(sched.getAD_User_Override(), I_AD_User.class);
+		final I_AD_User user = sched.getAD_User_Override_ID() <= 0 ? InterfaceWrapperHelper.loadOutOfTrx(sched.getAD_User_ID(), I_AD_User.class) : InterfaceWrapperHelper.loadOutOfTrx(sched.getAD_User_Override_ID(), I_AD_User.class);
 		return user;
 	}
 

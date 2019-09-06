@@ -1,10 +1,10 @@
 package de.metas.shipper.gateway.go;
 
-import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Issue;
 import org.slf4j.Logger;
 
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.logging.LogManager;
 import de.metas.shipper.gateway.go.model.I_GO_DeliveryOrder_Log;
 import de.metas.util.Services;
@@ -74,8 +74,8 @@ public class DatabaseGOClientLogger implements GOClientLogger
 		{
 			logRecord.setIsError(true);
 
-			final I_AD_Issue adIssue = Services.get(IErrorManager.class).createIssue(event.getResponseException());
-			logRecord.setAD_Issue_ID(adIssue.getAD_Issue_ID());
+			final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(event.getResponseException());
+			logRecord.setAD_Issue_ID(issueId.getRepoId());
 		}
 		else
 		{

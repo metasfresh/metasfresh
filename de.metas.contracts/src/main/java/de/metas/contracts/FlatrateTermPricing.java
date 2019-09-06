@@ -106,7 +106,7 @@ public class FlatrateTermPricing
 		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(
 				termRelatedProductId.getRepoId(),
 				term.getBill_BPartner_ID(),
-				Services.get(IProductBL.class).getStockingUOMId(termRelatedProductId).getRepoId(),
+				Services.get(IProductBL.class).getStockUOMId(termRelatedProductId).getRepoId(),
 				qty,
 				isSOTrx);
 

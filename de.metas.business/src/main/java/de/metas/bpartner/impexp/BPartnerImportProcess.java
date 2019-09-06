@@ -33,7 +33,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
@@ -51,6 +50,8 @@ import de.metas.bpartner.service.BPartnerPrintFormatRepository;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -60,7 +61,7 @@ import lombok.NonNull;
  * @author tsa
  *
  */
-public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
+public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPartner>
 {
 	private final BPartnerImportHelper bpartnerImporter;
 	private final BPartnerLocationImportHelper bpartnerLocationImporter;
