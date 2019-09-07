@@ -93,6 +93,7 @@ class JsonConverters
 				//
 				.poReference(request.getPoReference())
 				//
+				.dateOrdered(request.getDateOrdered())
 				.dateRequired(request.getDateRequired())
 				//
 				.dateInvoiced(request.getDateInvoiced())
@@ -160,6 +161,7 @@ class JsonConverters
 				.dropShipBPartner(toJson(olCand.getDropShipBPartnerInfo(), masterdataProvider))
 				.handOverBPartner(toJson(olCand.getHandOverBPartnerInfo(), masterdataProvider))
 				//
+				.dateOrdered(olCand.getDateDoc())
 				.datePromised(TimeUtil.asLocalDate(olCand.getDatePromised()))
 				.flatrateConditionsId(olCand.getFlatrateConditionsId())
 				//

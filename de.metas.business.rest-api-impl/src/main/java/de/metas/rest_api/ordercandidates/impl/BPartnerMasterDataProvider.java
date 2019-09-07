@@ -252,7 +252,7 @@ final class BPartnerMasterDataProvider
 	}
 
 	private BPartnerLocationId lookupBPartnerLocationIdOrNull(
-			@NonNull final JsonRequestLocation jsonBPartnerLocation,
+			@Nullable final JsonRequestLocation jsonBPartnerLocation,
 			@NonNull final BPartnerMasterDataContext context)
 	{
 		final BPartnerId bpartnerId = context.getBpartnerId();
@@ -263,7 +263,9 @@ final class BPartnerMasterDataProvider
 			existingBPLocationId = context.getLocationId();
 		}
 
-		if (existingBPLocationId == null && jsonBPartnerLocation.getExternalId() != null)
+		if (existingBPLocationId == null
+				&& jsonBPartnerLocation != null
+				&& jsonBPartnerLocation.getExternalId() != null)
 		{
 			existingBPLocationId = bpartnersRepo
 					.getBPartnerLocationIdByExternalId(
@@ -271,7 +273,9 @@ final class BPartnerMasterDataProvider
 							JsonExternalIds.toExternalIdOrNull(jsonBPartnerLocation.getExternalId()))
 					.orElse(null);
 		}
-		if (existingBPLocationId == null && jsonBPartnerLocation.getGln() != null)
+		if (existingBPLocationId == null
+				&& jsonBPartnerLocation != null
+				&& jsonBPartnerLocation.getGln() != null)
 		{
 			existingBPLocationId = bpartnersRepo
 					.getBPartnerLocationIdByGln(
