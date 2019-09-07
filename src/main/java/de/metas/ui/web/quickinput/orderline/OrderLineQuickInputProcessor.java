@@ -165,7 +165,6 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 
 		final PlainHUPackingAware huPackingAware = new PlainHUPackingAware();
 		huPackingAware.setC_BPartner_ID(order.getC_BPartner_ID());
-		huPackingAware.setDateOrdered(order.getDateOrdered());
 		huPackingAware.setInDispute(false);
 
 		final ProductAndAttributes productAndAttributes = ProductLookupDescriptor.toProductAndAttributes(quickInput.getM_Product_ID());
