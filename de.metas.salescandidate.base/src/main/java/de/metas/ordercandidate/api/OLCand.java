@@ -2,9 +2,13 @@ package de.metas.ordercandidate.api;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.base.MoreObjects;
 
@@ -14,7 +18,6 @@ import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.product.ProductId;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -43,15 +46,11 @@ import lombok.NonNull;
 
 public final class OLCand implements IProductPriceAware
 {
-	public static OLCand of(final I_C_OLCand candidate)
-	{
-		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
-		return new OLCand(candidate, PricingSystemId.NULL, olCandEffectiveValuesBL);
-	}
-
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL;
 
 	private final I_C_OLCand candidate;
+
+	private LocalDate dateDoc;
 
 	private final BPartnerInfo bpartnerInfo;
 	private final BPartnerInfo billBPartnerInfo;
@@ -67,12 +66,16 @@ public final class OLCand implements IProductPriceAware
 
 	@Builder
 	private OLCand(
+			@NonNull final IOLCandEffectiveValuesBL olCandEffectiveValuesBL,
+			//
 			@NonNull final I_C_OLCand candidate,
-			final PricingSystemId pricingSystemId,
-			final IOLCandEffectiveValuesBL olCandEffectiveValuesBL)
+			@Nullable final PricingSystemId pricingSystemId)
 	{
+		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL;
+
 		this.candidate = candidate;
-		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL != null ? olCandEffectiveValuesBL : Services.get(IOLCandEffectiveValuesBL.class);
+
+		this.dateDoc = TimeUtil.asLocalDate(candidate.getDateOrdered());
 
 		this.bpartnerInfo = BPartnerInfo.builder()
 				.bpartnerId(this.olCandEffectiveValuesBL.getBPartnerEffectiveId(candidate))
@@ -254,6 +257,16 @@ public final class OLCand implements IProductPriceAware
 		return candidate.getPOReference();
 	}
 
+	public LocalDate getDateDoc()
+	{
+		return dateDoc;
+	}
+
+	public void setDateDoc(@NonNull final LocalDate dateDoc)
+	{
+		this.dateDoc = dateDoc;
+	}
+
 	public Timestamp getDatePromised()
 	{
 		return olCandEffectiveValuesBL.getDatePromised_Effective(candidate);
@@ -303,6 +316,10 @@ public final class OLCand implements IProductPriceAware
 		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_M_PricingSystem_ID))
 		{
 			return getPricingSystemId();
+		}
+		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_DateOrdered))
+		{
+			return getDateDoc();
 		}
 		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_DatePromised_Effective))
 		{

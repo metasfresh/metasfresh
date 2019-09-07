@@ -105,6 +105,13 @@ public final class JsonOLCandCreateRequest
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
+			value = "This translates to <code>C_OLCand.DateOrdered</code>.")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	@JsonInclude(Include.NON_NULL)
+	private LocalDate dateOrdered;
+
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
 			value = "This translates to <code>C_OLCand.datePromised</code>.\n"
 					+ "It's the date that the external system's user would like the metasfresh user to promise for delivery.\n"
 					+ "Note: may be empty, if is <code>dataDestInternalName='DEST.de.metas.invoicecandidate'</code>")
@@ -194,6 +201,7 @@ public final class JsonOLCandCreateRequest
 			@JsonProperty("billBPartner") final JsonBPartnerInfo billBPartner,
 			@JsonProperty("dropShipBPartner") final JsonBPartnerInfo dropShipBPartner,
 			@JsonProperty("handOverBPartner") final JsonBPartnerInfo handOverBPartner,
+			@JsonProperty("dateOrdered") final @Nullable LocalDate dateOrdered,
 			@JsonProperty("dateRequired") final LocalDate dateRequired,
 			@JsonProperty("flatrateConditionsId") final int flatrateConditionsId,
 			@JsonProperty("product") final JsonProductInfo product,
@@ -218,6 +226,7 @@ public final class JsonOLCandCreateRequest
 		this.billBPartner = billBPartner;
 		this.dropShipBPartner = dropShipBPartner;
 		this.handOverBPartner = handOverBPartner;
+		this.dateOrdered = dateOrdered;
 		this.dateRequired = dateRequired;
 		this.flatrateConditionsId = flatrateConditionsId;
 		this.product = product;

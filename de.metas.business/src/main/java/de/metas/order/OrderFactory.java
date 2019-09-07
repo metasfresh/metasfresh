@@ -2,6 +2,7 @@ package de.metas.order;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -220,6 +221,13 @@ public class OrderFactory
 	{
 		assertNotBuilt();
 		order.setAD_Org_ID(orgId);
+		return this;
+	}
+
+	public OrderFactory dateOrdered(final LocalDate dateOrdered)
+	{
+		assertNotBuilt();
+		order.setDateOrdered(TimeUtil.asTimestamp(dateOrdered));
 		return this;
 	}
 

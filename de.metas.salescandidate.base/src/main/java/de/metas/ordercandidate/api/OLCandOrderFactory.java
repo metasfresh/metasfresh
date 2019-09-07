@@ -6,6 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -26,6 +27,7 @@ import org.compiere.model.MNote;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_User;
@@ -161,6 +163,10 @@ class OLCandOrderFactory
 		order.setBill_BPartner_ID(BPartnerId.toRepoId(billBPartner.getBpartnerId()));
 		order.setBill_Location_ID(BPartnerLocationId.toRepoId(billBPartner.getBpartnerLocationId()));
 		order.setBill_User_ID(BPartnerContactId.toRepoId(billBPartner.getContactId()));
+		
+		final Timestamp dateDoc = TimeUtil.asTimestamp(candidateOfGroup.getDateDoc());
+		order.setDateOrdered(dateDoc);
+		order.setDateAcct(dateDoc);
 
 		// task 06269 (see KurzBeschreibung)
 		// note that C_Order.DatePromised is propagated to C_OrderLine.DatePromised in MOrder.afterSave() and MOrderLine.setOrder()

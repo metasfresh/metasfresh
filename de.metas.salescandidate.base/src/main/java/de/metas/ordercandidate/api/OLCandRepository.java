@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
@@ -62,13 +61,16 @@ public class OLCandRepository
 	{
 		Check.assumeNotEmpty(requests, "requests is not empty");
 
+		final OLCandFactory olCandFactory = new OLCandFactory();
+
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		return trxManager.call(ITrx.TRXNAME_ThreadInherited, () -> requests.stream()
-				.map(this::create)
+		return trxManager.callInThreadInheritedTrx(() -> requests.stream()
+				.map(this::createAndSaveOLCandRecord)
+				.map(olCandFactory::toOLCand)
 				.collect(ImmutableList.toImmutableList()));
 	}
 
-	public OLCand create(@NonNull final OLCandCreateRequest request)
+	private I_C_OLCand createAndSaveOLCandRecord(@NonNull final OLCandCreateRequest request)
 	{
 		final I_C_OLCand olCandPO = InterfaceWrapperHelper.newInstance(I_C_OLCand.class);
 
@@ -114,6 +116,7 @@ public class OLCandRepository
 		}
 
 		olCandPO.setDateCandidate(SystemTime.asDayTimestamp());
+		olCandPO.setDateOrdered(TimeUtil.asTimestamp(request.getDateOrdered()));
 		olCandPO.setDatePromised(TimeUtil.asTimestamp(request.getDateRequired()));
 
 		olCandPO.setDateInvoiced(TimeUtil.asTimestamp(request.getDateInvoiced()));
@@ -162,14 +165,23 @@ public class OLCandRepository
 		olCandPO.setExternalLineId(request.getExternalLineId());
 		olCandPO.setExternalHeaderId(request.getExternalHeaderId());
 
-		InterfaceWrapperHelper.save(olCandPO);
+		InterfaceWrapperHelper.saveRecord(olCandPO);
 
-		return OLCand.builder()
-				.candidate(olCandPO)
-				.build();
+		return olCandPO;
 	}
 
 	public List<OLCand> getByQuery(@NonNull final OLCandQuery olCandQuery)
+	{
+		final OLCandFactory olCandFactory = new OLCandFactory();
+
+		return toSqlQueryBuilder(olCandQuery)
+				.create()
+				.stream()
+				.map(olCandFactory::toOLCand)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private IQueryBuilder<I_C_OLCand> toSqlQueryBuilder(@NonNull final OLCandQuery olCandQuery)
 	{
 		final IQueryBuilder<I_C_OLCand> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_OLCand.class)
@@ -185,10 +197,6 @@ public class OLCandRepository
 			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMN_AD_InputDataSource_ID, inputDataSourceId);
 		}
 
-		return queryBuilder
-				.create()
-				.stream()
-				.map(OLCand::of)
-				.collect(ImmutableList.toImmutableList());
+		return queryBuilder;
 	}
 }

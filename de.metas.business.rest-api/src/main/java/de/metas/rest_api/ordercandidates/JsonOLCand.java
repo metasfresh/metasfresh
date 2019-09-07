@@ -59,6 +59,9 @@ public class JsonOLCand
 	private JsonBPartnerInfo handOverBPartner;
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	private LocalDate dateOrdered;
+
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	private LocalDate datePromised;
 
 	private int flatrateConditionsId;
