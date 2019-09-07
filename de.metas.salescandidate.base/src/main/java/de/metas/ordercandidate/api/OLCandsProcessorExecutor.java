@@ -27,6 +27,7 @@ import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.api.OLCandAggregationColumn.Granularity;
 import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandListener;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -69,7 +70,7 @@ public class OLCandsProcessorExecutor
 	private final IOLCandGroupingProvider groupingValuesProviders;
 
 	private final int olCandProcessorId;
-	private final int userInChargeId;
+	private final UserId userInChargeId;
 	private final OLCandAggregation aggregationInfo;
 	private final OLCandOrderDefaults orderDefaults;
 	private final int processorDataDestinationId;

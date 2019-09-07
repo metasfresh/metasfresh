@@ -22,6 +22,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.MNote;
 import org.compiere.model.MOrderLine;
@@ -38,19 +39,28 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceRule;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderLineBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.ordercandidate.spi.IOLCandListener;
+import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
+import de.metas.shipping.ShipperId;
+import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
@@ -100,7 +110,7 @@ class OLCandOrderFactory
 	// Parameters
 	private final OLCandOrderDefaults orderDefaults;
 	private final Properties ctx;
-	private final int userInChargeId;
+	private final UserId userInChargeId;
 	private final ILoggable loggable;
 	private final int olCandProcessorId;
 	private final IOLCandListener olCandListeners;
@@ -115,13 +125,13 @@ class OLCandOrderFactory
 	private OLCandOrderFactory(
 			@NonNull final OLCandOrderDefaults orderDefaults,
 			final int olCandProcessorId,
-			final int userInChargeId,
+			final UserId userInChargeId,
 			final ILoggable loggable,
 			final IOLCandListener olCandListeners)
 	{
 		this.orderDefaults = orderDefaults;
 		ctx = Env.getCtx();
-		this.userInChargeId = userInChargeId;
+		this.userInChargeId = userInChargeId != null ? userInChargeId : UserId.SYSTEM;
 		this.loggable = loggable != null ? loggable : Loggables.nop();
 
 		Check.assume(olCandProcessorId > 0, "olCandProcessorId > 0");
@@ -138,17 +148,17 @@ class OLCandOrderFactory
 		order.setDocAction(X_C_Order.DOCACTION_Complete);
 
 		// use the values from 'processor
-		order.setDeliveryRule(orderDefaults.getDeliveryRule());
-		order.setDeliveryViaRule(orderDefaults.getDeliveryViaRule());
-		order.setM_Shipper_ID(orderDefaults.getShipperId());
+		order.setDeliveryRule(DeliveryRule.toCodeOrNull(orderDefaults.getDeliveryRule()));
+		order.setDeliveryViaRule(DeliveryViaRule.toCodeOrNull(orderDefaults.getDeliveryViaRule()));
+		order.setM_Shipper_ID(ShipperId.toRepoId(orderDefaults.getShipperId()));
 
-		order.setFreightCostRule(orderDefaults.getFreightCostRule());
-		order.setPaymentRule(orderDefaults.getPaymentRule());
-		order.setC_PaymentTerm_ID(orderDefaults.getPaymentTermId());
+		order.setFreightCostRule(FreightCostRule.toCodeOrNull(orderDefaults.getFreightCostRule()));
+		order.setPaymentRule(PaymentRule.toCodeOrNull(orderDefaults.getPaymentRule()));
+		order.setC_PaymentTerm_ID(PaymentTermId.toRepoId(orderDefaults.getPaymentTermId()));
 
-		order.setInvoiceRule(orderDefaults.getInvoiceRule());
-		order.setC_DocTypeTarget_ID(orderDefaults.getDocTypeTargetId());
-		order.setM_Warehouse_ID(orderDefaults.getWarehouseId());
+		order.setInvoiceRule(InvoiceRule.toCodeOrNull(orderDefaults.getInvoiceRule()));
+		order.setC_DocTypeTarget_ID(DocTypeId.toRepoId(orderDefaults.getDocTypeTargetId()));
+		order.setM_Warehouse_ID(WarehouseId.toRepoId(orderDefaults.getWarehouseId()));
 
 		// use the values from 'olCand'
 		order.setAD_Org_ID(candidateOfGroup.getAD_Org_ID());
@@ -163,7 +173,7 @@ class OLCandOrderFactory
 		order.setBill_BPartner_ID(BPartnerId.toRepoId(billBPartner.getBpartnerId()));
 		order.setBill_Location_ID(BPartnerLocationId.toRepoId(billBPartner.getBpartnerLocationId()));
 		order.setBill_User_ID(BPartnerContactId.toRepoId(billBPartner.getContactId()));
-		
+
 		final Timestamp dateDoc = TimeUtil.asTimestamp(candidateOfGroup.getDateDoc());
 		order.setDateOrdered(dateDoc);
 		order.setDateAcct(dateDoc);
@@ -412,7 +422,7 @@ class OLCandOrderFactory
 
 	private I_AD_Note createOrderCompleteErrorNote(final String errorMsg)
 	{
-		final I_AD_User user = userDAO.retrieveUserOrNull(ctx, userInChargeId);
+		final I_AD_User user = userDAO.getById(userInChargeId);
 
 		final String candidateIdsAsString = candidates.stream()
 				.map(OLCand::getId)
@@ -420,7 +430,7 @@ class OLCandOrderFactory
 				.collect(Collectors.joining(", "));
 		final String adLanguage = user.getC_BPartner().getAD_Language();
 
-		final MNote note = new MNote(ctx, IOLCandBL.MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_0P, userInChargeId, ITrx.TRXNAME_None);
+		final MNote note = new MNote(ctx, IOLCandBL.MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_0P, userInChargeId.getRepoId(), ITrx.TRXNAME_None);
 		note.setClientOrg(user.getAD_Client_ID(), user.getAD_Org_ID());
 		note.setReference(errorMsg);
 		note.setTextMsg(msgBL.getMsg(adLanguage, MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P, new Object[] { candidateIdsAsString }));
@@ -431,9 +441,9 @@ class OLCandOrderFactory
 
 	private I_AD_Note createOLCandErrorNote(final OLCand olCand, final Exception ex)
 	{
-		final I_AD_User user = userDAO.retrieveUserOrNull(ctx, userInChargeId);
+		final I_AD_User user = userDAO.getById(userInChargeId);
 
-		final MNote note = new MNote(ctx, IOLCandBL.MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_0P, userInChargeId, ITrx.TRXNAME_None);
+		final MNote note = new MNote(ctx, IOLCandBL.MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_0P, userInChargeId.getRepoId(), ITrx.TRXNAME_None);
 		note.setRecord(olCand.toTableRecordReference());
 		note.setClientOrg(user.getAD_Client_ID(), user.getAD_Org_ID());
 		note.setTextMsg(ex.getLocalizedMessage());
