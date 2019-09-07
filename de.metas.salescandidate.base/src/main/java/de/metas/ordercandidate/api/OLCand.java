@@ -1,8 +1,8 @@
 package de.metas.ordercandidate.api;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
@@ -267,7 +267,7 @@ public final class OLCand implements IProductPriceAware
 		this.dateDoc = dateDoc;
 	}
 
-	public Timestamp getDatePromised()
+	public ZonedDateTime getDatePromised()
 	{
 		return olCandEffectiveValuesBL.getDatePromised_Effective(candidate);
 	}

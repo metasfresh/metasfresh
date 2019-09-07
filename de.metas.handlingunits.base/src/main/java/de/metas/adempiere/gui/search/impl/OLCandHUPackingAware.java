@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.bpartner.BPartnerId;
@@ -170,7 +171,7 @@ public class OLCandHUPackingAware implements IHUPackingAware
 	public Timestamp getDateOrdered()
 	{
 		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
-		return olCandEffectiveValuesBL.getDatePromised_Effective(olCand);
+		return TimeUtil.asTimestamp(olCandEffectiveValuesBL.getDatePromised_Effective(olCand));
 	}
 
 	@Override

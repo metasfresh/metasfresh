@@ -181,7 +181,7 @@ class OLCandOrderFactory
 		// task 06269 (see KurzBeschreibung)
 		// note that C_Order.DatePromised is propagated to C_OrderLine.DatePromised in MOrder.afterSave() and MOrderLine.setOrder()
 		// also note that for now we set datepromised only in the header, so different DatePromised values result in differnt orders, and all ol have the same datepromised
-		order.setDatePromised(candidateOfGroup.getDatePromised());
+		order.setDatePromised(TimeUtil.asTimestamp(candidateOfGroup.getDatePromised()));
 
 		// if the olc has no value set, we are not falling back here!
 		// 05617
