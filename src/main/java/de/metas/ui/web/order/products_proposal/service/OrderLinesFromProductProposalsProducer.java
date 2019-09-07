@@ -137,7 +137,6 @@ public final class OrderLinesFromProductProposalsProducer
 
 		final PlainHUPackingAware huPackingAware = new PlainHUPackingAware();
 		huPackingAware.setC_BPartner_ID(order.getC_BPartner_ID());
-		huPackingAware.setDateOrdered(order.getDateOrdered());
 		huPackingAware.setInDispute(false);
 
 		final UomId uomId = productBL.getStockUOMId(fromRow.getProductId());
