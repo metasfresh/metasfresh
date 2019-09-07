@@ -1,14 +1,3 @@
-drop type if exists LocatorDimensions;
-create type LocatorDimensions as (
-	warehouseValue character varying
-	, locatorValue character varying
-	, locatorX character varying
-	, locatorY character varying
-	, locatorZ character varying
-	, locatorX1 character varying
-);
-
-
 CREATE OR REPLACE FUNCTION extractLocatorDimensions(textInput character varying)
 RETURNS LocatorDimensions AS
 $BODY$
