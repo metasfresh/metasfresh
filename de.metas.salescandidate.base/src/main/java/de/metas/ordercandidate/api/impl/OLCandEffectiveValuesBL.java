@@ -18,7 +18,6 @@ import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.product.ProductId;
 import de.metas.util.lang.CoalesceUtil;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
@@ -79,7 +78,8 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 		return CoalesceUtil.coalesceSuppliers(
 				() -> TimeUtil.asZonedDateTime(olCand.getDatePromised_Override()),
 				() -> TimeUtil.asZonedDateTime(olCand.getDatePromised()),
-				() -> SystemTime.asZonedDateTime());
+				() -> TimeUtil.asZonedDateTime(olCand.getDateOrdered()),
+				() -> TimeUtil.asZonedDateTime(olCand.getDateCandidate()));
 	}
 
 	private int getBill_BPartner_Effective_ID(final I_C_OLCand olCand)
