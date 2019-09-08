@@ -490,7 +490,24 @@ class MasterWindow extends Component {
     );
   }
 }
-
+/**
+ * @typedef {object} Props Component props
+ * @prop {object} modal
+ * @prop {object} master,
+ * @prop {array} breadcrumb,
+ * @prop {func} dispatch,
+ * @prop {object} rawModal
+ * @prop {string} indicator
+ * @prop {object} me
+ * @prop {object} pluginModal
+ * @prop {object} overlay
+ * @prop {bool} allowShortcut
+ * @prop {*} params
+ * @prop {*} includedView
+ * @prop {*} processStatus
+ * @prop {*} enableTutorial
+ * @prop {*} location
+ */
 MasterWindow.propTypes = {
   modal: PropTypes.object.isRequired,
   master: PropTypes.object.isRequired,
