@@ -490,6 +490,7 @@ class MasterWindow extends Component {
     );
   }
 }
+
 /**
  * @typedef {object} Props Component props
  * @prop {object} modal

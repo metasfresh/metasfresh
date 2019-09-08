@@ -1115,7 +1115,16 @@ export class DocumentList extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {object} DLpropTypes
+ */
 DocumentList.propTypes = { ...DLpropTypes };
+
+/**
+ * @typedef {object} Props Component context
+ * @prop {object} DLcontextTypes
+ */
 DocumentList.contextTypes = { ...DLcontextTypes };
 
 export default connect(
