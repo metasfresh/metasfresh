@@ -44,19 +44,6 @@ class MasterWindow extends Component {
     router: PropTypes.object.isRequired,
   };
 
-  static propTypes = {
-    modal: PropTypes.object.isRequired,
-    master: PropTypes.object.isRequired,
-    breadcrumb: PropTypes.array.isRequired,
-    dispatch: PropTypes.func.isRequired,
-    rawModal: PropTypes.object.isRequired,
-    indicator: PropTypes.string.isRequired,
-    me: PropTypes.object.isRequired,
-    pluginModal: PropTypes.object,
-    overlay: PropTypes.object,
-    allowShortcut: PropTypes.bool,
-  };
-
   /**
    * @method componentDidMount
    * @summary ToDo: Describe the method.
@@ -503,6 +490,24 @@ class MasterWindow extends Component {
     );
   }
 }
+
+MasterWindow.propTypes = {
+  modal: PropTypes.object.isRequired,
+  master: PropTypes.object.isRequired,
+  breadcrumb: PropTypes.array.isRequired,
+  dispatch: PropTypes.func.isRequired,
+  rawModal: PropTypes.object.isRequired,
+  indicator: PropTypes.string.isRequired,
+  me: PropTypes.object.isRequired,
+  pluginModal: PropTypes.object,
+  overlay: PropTypes.object,
+  allowShortcut: PropTypes.bool,
+  params: PropTypes.any,
+  includedView: PropTypes.any,
+  processStatus: PropTypes.any,
+  enableTutorial: PropTypes.any,
+  location: PropTypes.any,
+};
 
 /**
  * @method mapStateToProps
