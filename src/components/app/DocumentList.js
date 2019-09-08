@@ -55,6 +55,11 @@ import Table from '../table/Table';
 import QuickActions from './QuickActions';
 import SelectionAttributes from './SelectionAttributes';
 
+/**
+ * @file Class based component.
+ * @module DocumentList
+ * @extends Component
+ */
 export class DocumentList extends Component {
   constructor(props) {
     super(props);
@@ -91,15 +96,27 @@ export class DocumentList extends Component {
     this.fetchLayoutAndData();
   }
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method.
+   */
   componentDidMount = () => {
     this.mounted = true;
   };
 
+  /**
+   * @method componentWillUnmount
+   * @summary ToDo: Describe the method.
+   */
   componentWillUnmount() {
     this.mounted = false;
     disconnectWS.call(this);
   }
 
+  /**
+   * @method UNSAFE_componentWillReceiveProps
+   * @summary ToDo: Describe the method.
+   */
   UNSAFE_componentWillReceiveProps(nextProps) {
     const {
       defaultPage: nextDefaultPage,
@@ -203,10 +220,18 @@ export class DocumentList extends Component {
     }
   }
 
+  /**
+   * @method shouldComponentUpdate
+   * @summary ToDo: Describe the method.
+   */
   shouldComponentUpdate(nextProps, nextState) {
     return !!nextState.layout && !!nextState.data;
   }
 
+  /**
+   * @method componentDidUpdate
+   * @summary ToDo: Describe the method.
+   */
   componentDidUpdate(prevProps, prevState) {
     const { setModalDescription } = this.props;
     const { data } = this.state;
@@ -216,6 +241,10 @@ export class DocumentList extends Component {
     }
   }
 
+  /**
+   * @method connectWebSocket
+   * @summary ToDo: Describe the method.
+   */
   connectWebSocket = () => {
     const { windowType, dispatch } = this.props;
     const { viewId } = this.state;
@@ -284,6 +313,10 @@ export class DocumentList extends Component {
     });
   };
 
+  /**
+   * @method updateQuickActions
+   * @summary ToDo: Describe the method.
+   */
   updateQuickActions = childSelection => {
     if (this.quickActionsComponent) {
       this.quickActionsComponent.updateActions(childSelection);
@@ -291,7 +324,8 @@ export class DocumentList extends Component {
   };
 
   /**
-   * load supportAttribute of the selected row from the table
+   * @method loadSupportAttributeFlag
+   * @summary Load supportAttribute of the selected row from the table.
    */
   loadSupportAttributeFlag = ({ selected }) => {
     const { data } = this.state;
@@ -315,12 +349,20 @@ export class DocumentList extends Component {
     }
   };
 
+  /**
+   * @method setClickOutsideLock
+   * @summary ToDo: Describe the method.
+   */
   setClickOutsideLock = value => {
     this.setState({
       clickOutsideLock: !!value,
     });
   };
 
+  /**
+   * @method clearStaticFilters
+   * @summary ToDo: Describe the method.
+   */
   clearStaticFilters = filterId => {
     const { dispatch, windowType } = this.props;
     const { viewId } = this.state;
@@ -333,7 +375,10 @@ export class DocumentList extends Component {
   };
 
   // FETCHING LAYOUT && DATA -------------------------------------------------
-
+  /**
+   * @method fetchLayoutAndData
+   * @summary ToDo: Describe the method.
+   */
   fetchLayoutAndData = isNewFilter => {
     const {
       windowType,
@@ -390,8 +435,9 @@ export class DocumentList extends Component {
       });
   };
 
-  /*
-   *  If viewId exist, than browse that view.
+  /**
+   * @method browseView
+   * @summary If viewId exist, than browse that view.
    */
   browseView = () => {
     const { viewId, page, sort } = this.state;
@@ -406,6 +452,10 @@ export class DocumentList extends Component {
     }
   };
 
+  /**
+   * @method createView
+   * @summary ToDo: Describe the method.
+   */
   createView = () => {
     const {
       windowType,
@@ -443,6 +493,10 @@ export class DocumentList extends Component {
     });
   };
 
+  /**
+   * @method filterView
+   * @summary ToDo: Describe the method.
+   */
   filterView = () => {
     const { windowType, isIncluded, dispatch } = this.props;
     const { page, sort, filtersActive, viewId } = this.state;
@@ -475,7 +529,8 @@ export class DocumentList extends Component {
   };
 
   /**
-   * Loads view/included tab data from REST endpoint
+   * @method getData
+   * @summary Loads view/included tab data from REST endpoint
    */
   getData = (id, page, sortingQuery) => {
     const {
@@ -587,6 +642,10 @@ export class DocumentList extends Component {
 
   // MANAGING SORT, PAGINATION, FILTERS --------------------------------------
 
+  /**
+   * @method handleChangePage
+   * @summary ToDo: Describe the method.
+   */
   handleChangePage = index => {
     const { data, sort, page, viewId } = this.state;
     let currentPage = page;
@@ -613,6 +672,10 @@ export class DocumentList extends Component {
     );
   };
 
+  /**
+   * @method sortData
+   * @summary ToDo: Describe the method.
+   */
   sortData = (asc, field, startPage) => {
     const { viewId, page } = this.state;
 
@@ -627,6 +690,10 @@ export class DocumentList extends Component {
     );
   };
 
+  /**
+   * @method handleFilterChange
+   * @summary ToDo: Describe the method.
+   */
   handleFilterChange = activeFilters => {
     this.setState(
       {
@@ -640,6 +707,10 @@ export class DocumentList extends Component {
     );
   };
 
+  /**
+   * @method resetInitialFilters
+   * @summary ToDo: Describe the method.
+   */
   resetInitialFilters = (filterId, parameterName) => {
     let { initialValuesNulled } = this.state;
     let filterParams = initialValuesNulled.get(filterId);
@@ -663,6 +734,10 @@ export class DocumentList extends Component {
 
   // END OF MANAGING SORT, PAGINATION, FILTERS -------------------------------
 
+  /**
+   * @method setTableRowEdited
+   * @summary ToDo: Describe the method.
+   */
   setTableRowEdited = val => {
     this.setState(
       {
@@ -672,6 +747,10 @@ export class DocumentList extends Component {
     );
   };
 
+  /**
+   * @method adjustWidth
+   * @summary ToDo: Describe the method.
+   */
   adjustWidth = () => {
     const widthIdx =
       this.state.toggleWidth + 1 === PANEL_WIDTHS.length
@@ -683,6 +762,10 @@ export class DocumentList extends Component {
     });
   };
 
+  /**
+   * @method redirectToDocument
+   * @summary ToDo: Describe the method.
+   */
   redirectToDocument = id => {
     const { dispatch, isModal, windowType, isSideListShow } = this.props;
     const { page, viewId, sort } = this.state;
@@ -701,6 +784,10 @@ export class DocumentList extends Component {
     }
   };
 
+  /**
+   * @method showIncludedView
+   * @summary ToDo: Describe the method.
+   */
   showIncludedViewOnSelect = ({
     showIncludedView,
     windowType,
@@ -728,6 +815,10 @@ export class DocumentList extends Component {
     }
   };
 
+  /**
+   * @method getSelected
+   * @summary ToDo: Describe the method.
+   */
   getSelected = () => {
     const {
       selections,
@@ -754,6 +845,10 @@ export class DocumentList extends Component {
     };
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const {
       windowType,
@@ -1020,7 +1115,16 @@ export class DocumentList extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {object} DLpropTypes
+ */
 DocumentList.propTypes = { ...DLpropTypes };
+
+/**
+ * @typedef {object} Props Component context
+ * @prop {object} DLcontextTypes
+ */
 DocumentList.contextTypes = { ...DLcontextTypes };
 
 export default connect(
