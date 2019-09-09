@@ -655,7 +655,7 @@ class Window extends PureComponent {
  * @prop {shape} tabsInfo
  * @prop {func} sort
  * @prop {bool} allowShortcut
- * @prop {*} data
+ * @prop {shape|array} data
  * @prop {string} dataId
  * @prop {bool} modal
  * @prop {string} tabId
