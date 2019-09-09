@@ -23,7 +23,6 @@ package de.metas.adempiere.gui.search.impl;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
@@ -153,18 +152,6 @@ public class InOutLineHUPackingAware implements IHUPackingAware
 	public void setC_BPartner_ID(final int partnerId)
 	{
 		values.setC_BPartner_ID(partnerId);
-	}
-
-	@Override
-	public void setDateOrdered(final Timestamp dateOrdered)
-	{
-		values.setDateOrdered(dateOrdered);
-	}
-
-	@Override
-	public Timestamp getDateOrdered()
-	{
-		return values.getDateOrdered();
 	}
 
 	@Override

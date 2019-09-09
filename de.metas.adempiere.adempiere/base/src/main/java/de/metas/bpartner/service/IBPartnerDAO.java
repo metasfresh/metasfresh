@@ -294,4 +294,6 @@ public interface IBPartnerDAO extends ISingletonService
 	boolean isActionPriceAllowed(BPartnerId bpartnerId);
 
 	boolean pricingSystemBelongsToCustomerForPriceMutation(PricingSystemId pricingSystemId);
+
+	Optional<BPartnerContactId> getBPartnerContactIdBy(BPartnerContactQuery query);
 }

@@ -134,18 +134,6 @@ public class PlainHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public void setDateOrdered(final Timestamp dateOrdered)
-	{
-		this.dateOrdered = dateOrdered;
-	}
-
-	@Override
-	public Timestamp getDateOrdered()
-	{
-		return dateOrdered;
-	}
-
-	@Override
 	public boolean isInDispute()
 	{
 		return inDispute;

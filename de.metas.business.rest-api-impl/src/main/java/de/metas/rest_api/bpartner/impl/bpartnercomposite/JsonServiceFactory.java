@@ -4,7 +4,7 @@ import org.adempiere.ad.table.RecordChangeLogRepository;
 import org.springframework.stereotype.Service;
 
 import de.metas.bpartner.BPGroupRepository;
-import de.metas.bpartner.composite.BPartnerCompositeRepository;
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.greeting.GreetingRepository;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister.JsonPersisterService;
 import de.metas.util.lang.UIDStringUtil;
