@@ -6,9 +6,11 @@ import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.google.common.collect.ImmutableMap;
 
 import io.swagger.annotations.ApiModel;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -47,5 +49,6 @@ public class JsonError
 	String stackTrace;
 
 	@NonNull
-	Map<String, String> parameters;
+	@Default
+	Map<String, String> parameters = ImmutableMap.of();
 }
