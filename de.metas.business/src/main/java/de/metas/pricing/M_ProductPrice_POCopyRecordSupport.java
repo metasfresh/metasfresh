@@ -33,7 +33,7 @@ public class M_ProductPrice_POCopyRecordSupport extends GeneralCopyRecordSupport
 	{
 		if (I_M_ProductPrice.COLUMNNAME_IsInvalidPrice.equals(columnName))
 		{
-			return true;
+			return Boolean.TRUE;
 		}
 		else
 		{
