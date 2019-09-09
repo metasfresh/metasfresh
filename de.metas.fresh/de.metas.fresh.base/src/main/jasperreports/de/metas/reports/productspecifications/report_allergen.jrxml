@@ -61,7 +61,7 @@ ORDER BY allergen;]]>
 	<detail>
 		<band height="14" splitType="Stretch">
 			<printWhenExpression><![CDATA[1==1]]></printWhenExpression>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement isPrintRepeatedValues="false" x="0" y="0" width="594" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="77ccef05-158f-4757-98af-8c5416f8cd42"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>

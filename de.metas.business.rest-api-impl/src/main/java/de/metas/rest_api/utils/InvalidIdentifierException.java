@@ -31,7 +31,7 @@ public class InvalidIdentifierException extends AdempiereException
 {
 	public InvalidIdentifierException(final IdentifierString invalidIdentifier)
 	{
-		super(invalidIdentifier != null ? invalidIdentifier.toString() : null);
+		super(invalidIdentifier != null ? invalidIdentifier.toJson() : null);
 	}
 
 	public InvalidIdentifierException(@Nullable final String invalidIdentifierString)

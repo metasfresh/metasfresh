@@ -141,7 +141,7 @@ class JsonConverters
 			@NonNull final List<OLCand> olCands,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
-		return JsonOLCandCreateBulkResponse.of(olCands.stream()
+		return JsonOLCandCreateBulkResponse.ok(olCands.stream()
 				.map(olCand -> toJson(olCand, masterdataProvider))
 				.collect(ImmutableList.toImmutableList()));
 	}
