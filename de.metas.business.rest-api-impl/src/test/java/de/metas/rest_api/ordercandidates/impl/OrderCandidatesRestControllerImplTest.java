@@ -292,7 +292,7 @@ public class OrderCandidatesRestControllerImplTest
 	}
 
 	@Test
-	public void test()
+	public void error_NoBPartnerFound()
 	{
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
 				.dataSourceInternalName(DATA_SOURCE_INTERNALNAME)
