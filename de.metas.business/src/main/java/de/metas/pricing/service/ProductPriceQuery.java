@@ -72,7 +72,7 @@ public class ProductPriceQuery
 
 	private Map<String, IProductPriceQueryMatcher> _additionalMatchers = null;
 
-	private boolean _ignoreInvalid;
+	private boolean _ignoreInvalid = true;
 
 	/* package */ ProductPriceQuery()
 	{
@@ -204,7 +204,7 @@ public class ProductPriceQuery
 
 		if (isIgnoreInvalid)
 		{
-			queryBuilder.addEqualsFilter(I_M_ProductPrice.COLUMN_IsInvalidPrice, false);
+			queryBuilder.addNotEqualsFilter(I_M_ProductPrice.COLUMN_IsInvalidPrice, true);
 		}
 
 		//

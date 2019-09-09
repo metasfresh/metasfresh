@@ -274,6 +274,7 @@ public class AttributePricing implements IPricingRule
 				ctxPriceListVersion,
 				priceListVersion -> ProductPrices.newQuery(priceListVersion)
 						.setProductId(pricingCtx.getProductId())
+						.ignoreInvalid(true)
 						.matching(_defaultMatchers)
 						.matchingAttributes(attributeSetInstance)
 						.firstMatching());
