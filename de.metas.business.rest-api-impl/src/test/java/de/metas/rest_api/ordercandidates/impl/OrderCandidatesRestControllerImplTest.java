@@ -22,13 +22,17 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.MimeType;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import ch.qos.logback.classic.Level;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.logging.LogManager;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfNotExists;
@@ -42,6 +46,7 @@ import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.JsonProductInfo;
+import de.metas.rest_api.utils.JsonError;
 import de.metas.rest_api.utils.PermissionService;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -118,6 +123,7 @@ public class OrderCandidatesRestControllerImplTest
 				masterdataProviderFactory,
 				new JsonConverters(),
 				new OLCandRepository());
+		LogManager.setLoggerLevel(orderCandidatesRestControllerImpl.getClass(), Level.ALL);
 	}
 
 	private void createBPartner(String value)
@@ -283,5 +289,40 @@ public class OrderCandidatesRestControllerImplTest
 
 		final JsonOLCand olCand = olCands.get(0);
 		assertThat(olCand.getDateOrdered()).isEqualTo(dateOrdered);
+	}
+
+	@Test
+	public void error_NoBPartnerFound()
+	{
+		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
+				.dataSourceInternalName(DATA_SOURCE_INTERNALNAME)
+				.dataDestInternalName(DATA_DEST_INVOICECANDIDATE)
+				.dateRequired(LocalDate.of(2019, Month.SEPTEMBER, 5))
+				.qty(new BigDecimal("66"))
+				.externalHeaderId("externalHeaderId")
+				.externalLineId("externalLineId")
+				.poReference("poRef")
+				.product(JsonProductInfo.builder()
+						.code("productCode")
+						.build())
+				.bpartner(JsonBPartnerInfo.builder()
+						.bpartner(JsonRequestBPartner.builder()
+								.code("bpCode")
+								.build())
+						.build())
+				.invoiceDocType(JsonDocTypeInfo.builder()
+						.docBaseType("ARI")
+						.docSubType("KV")
+						.build())
+				.build());
+
+		final ResponseEntity<JsonOLCandCreateBulkResponse> response = orderCandidatesRestControllerImpl.createOrderLineCandidates(request);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+
+		final JsonOLCandCreateBulkResponse responseBody = response.getBody();
+		assertThat(responseBody.isError()).isTrue();
+
+		final JsonError error = responseBody.getError();
+		assertThat(error.getMessage()).contains("Found no existing BPartner");
 	}
 }
