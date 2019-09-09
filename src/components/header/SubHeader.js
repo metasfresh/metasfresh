@@ -527,13 +527,56 @@ class SubHeader extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {func} activeTab
+ * @prop {*} closeSubheader
+ * @prop {*} dataId
+ * @prop {string} dispatch
+ * @prop {*} docNo
+ * @prop {*} editmode
+ * @prop {*} entity
+ * @prop {*} handleClone
+ * @prop {*} handleDelete
+ * @prop {*} handleEmail
+ * @prop {*} handleLetter
+ * @prop {*} handleEditModeToggle
+ * @prop {*} handlePrint
+ * @prop {*} notfound
+ * @prop {func} openModal
+ * @prop {func} openModalRow
+ * @prop {*} query
+ * @prop {*} redirect
+ * @prop {*} selected
+ * @prop {*} siteName
+ * @prop {*} standardActions
+ * @prop {string} viewId
+ * @prop {string} windowId
+ */
 SubHeader.propTypes = {
-  dispatch: PropTypes.func.isRequired,
   activeTab: PropTypes.string,
-  windowId: PropTypes.string.isRequired,
-  viewId: PropTypes.string,
-  openModalRow: PropTypes.func,
+  closeSubheader: PropTypes.any,
+  dataId: PropTypes.any,
+  dispatch: PropTypes.func.isRequired,
+  docNo: PropTypes.any,
+  editmode: PropTypes.any,
+  entity: PropTypes.any,
+  handleClone: PropTypes.any,
+  handleDelete: PropTypes.any,
+  handleEmail: PropTypes.any,
+  handleLetter: PropTypes.any,
+  handleEditModeToggle: PropTypes.any,
+  handlePrint: PropTypes.any,
+  notfound: PropTypes.any,
   openModal: PropTypes.func,
+  openModalRow: PropTypes.func,
+  query: PropTypes.any,
+  redirect: PropTypes.any,
+  selected: PropTypes.any,
+  siteName: PropTypes.any,
+  standardActions: PropTypes.any,
+  viewId: PropTypes.string,
+  windowId: PropTypes.string.isRequired,
 };
 
 /**
