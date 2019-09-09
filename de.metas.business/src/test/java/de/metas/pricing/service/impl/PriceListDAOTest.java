@@ -1336,17 +1336,18 @@ public class PriceListDAOTest
 		return c;
 	}
 
-	private I_M_PriceList createPriceList(final I_M_PricingSystem pricingSystem,
+	private I_M_PriceList createPriceList(
+			final I_M_PricingSystem pricingSystem,
 			final String name,
 			final boolean isSOTrx,
 			final I_C_Country country,
 			final CurrencyId currencyId)
 	{
 		final I_M_PriceList pl = newInstance(I_M_PriceList.class);
-		pl.setM_PricingSystem(pricingSystem);
+		pl.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
 		pl.setName(name);
 		pl.setIsSOPriceList(isSOTrx);
-		pl.setC_Country(country);
+		pl.setC_Country_ID(country.getC_Country_ID());
 		pl.setC_Currency_ID(currencyId.getRepoId());
 		save(pl);
 		return pl;

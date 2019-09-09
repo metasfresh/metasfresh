@@ -14,7 +14,7 @@ public class X_M_PriceList extends org.compiere.model.PO implements I_M_PriceLis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1378068239L;
+	private static final long serialVersionUID = -1775524734L;
 
     /** Standard Constructor */
     public X_M_PriceList (Properties ctx, int M_PriceList_ID, String trxName)
@@ -25,7 +25,7 @@ public class X_M_PriceList extends org.compiere.model.PO implements I_M_PriceLis
 			setC_Currency_ID (0);
 			setEnforcePriceLimit (false);
 			setIsDefault (false);
-			setIsRoundNetAmountToCurrencyPrecision (true); // Y
+			setIsRoundNetAmountToCurrencyPrecision (false); // N
 			setIsSOPriceList (false);
 			setIsTaxIncluded (false);
 			setM_PriceList_ID (0);
@@ -49,18 +49,6 @@ public class X_M_PriceList extends org.compiere.model.PO implements I_M_PriceLis
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_M_PriceList getBasePriceList() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_BasePriceList_ID, org.compiere.model.I_M_PriceList.class);
-	}
-
-	@Override
-	public void setBasePriceList(org.compiere.model.I_M_PriceList BasePriceList)
-	{
-		set_ValueFromPO(COLUMNNAME_BasePriceList_ID, org.compiere.model.I_M_PriceList.class, BasePriceList);
-	}
 
 	/** Set Basis Preisliste.
 		@param BasePriceList_ID 
@@ -88,7 +76,7 @@ public class X_M_PriceList extends org.compiere.model.PO implements I_M_PriceLis
 	}
 
 	@Override
-	public org.compiere.model.I_C_Country getC_Country() throws RuntimeException
+	public org.compiere.model.I_C_Country getC_Country()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Country_ID, org.compiere.model.I_C_Country.class);
 	}
@@ -124,18 +112,6 @@ public class X_M_PriceList extends org.compiere.model.PO implements I_M_PriceLis
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
-	}
-
-	@Override
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
-	}
-
 	/** Set Währung.
 		@param C_Currency_ID 
 		The Currency for this record
@@ -156,6 +132,28 @@ public class X_M_PriceList extends org.compiere.model.PO implements I_M_PriceLis
 	public int getC_Currency_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Standard Steuerkategorie.
+		@param Default_TaxCategory_ID Standard Steuerkategorie	  */
+	@Override
+	public void setDefault_TaxCategory_ID (int Default_TaxCategory_ID)
+	{
+		if (Default_TaxCategory_ID < 1) 
+			set_Value (COLUMNNAME_Default_TaxCategory_ID, null);
+		else 
+			set_Value (COLUMNNAME_Default_TaxCategory_ID, Integer.valueOf(Default_TaxCategory_ID));
+	}
+
+	/** Get Standard Steuerkategorie.
+		@return Standard Steuerkategorie	  */
+	@Override
+	public int getDefault_TaxCategory_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Default_TaxCategory_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -297,16 +295,16 @@ public class X_M_PriceList extends org.compiere.model.PO implements I_M_PriceLis
 		return false;
 	}
 
-	/** Set IsRoundNetAmountToCurrencyPrecision.
-		@param IsRoundNetAmountToCurrencyPrecision IsRoundNetAmountToCurrencyPrecision	  */
+	/** Set Netto-Beträge auf Währungspräzision runden.
+		@param IsRoundNetAmountToCurrencyPrecision Netto-Beträge auf Währungspräzision runden	  */
 	@Override
 	public void setIsRoundNetAmountToCurrencyPrecision (boolean IsRoundNetAmountToCurrencyPrecision)
 	{
 		set_Value (COLUMNNAME_IsRoundNetAmountToCurrencyPrecision, Boolean.valueOf(IsRoundNetAmountToCurrencyPrecision));
 	}
 
-	/** Get IsRoundNetAmountToCurrencyPrecision.
-		@return IsRoundNetAmountToCurrencyPrecision	  */
+	/** Get Netto-Beträge auf Währungspräzision runden.
+		@return Netto-Beträge auf Währungspräzision runden	  */
 	@Override
 	public boolean isRoundNetAmountToCurrencyPrecision () 
 	{
@@ -395,18 +393,6 @@ public class X_M_PriceList extends org.compiere.model.PO implements I_M_PriceLis
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_PricingSystem getM_PricingSystem() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class);
-	}
-
-	@Override
-	public void setM_PricingSystem(org.compiere.model.I_M_PricingSystem M_PricingSystem)
-	{
-		set_ValueFromPO(COLUMNNAME_M_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class, M_PricingSystem);
 	}
 
 	/** Set Preissystem.

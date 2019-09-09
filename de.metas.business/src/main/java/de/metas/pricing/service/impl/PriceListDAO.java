@@ -388,7 +388,7 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public String getPricingSystemName(final PricingSystemId pricingSystemId)
+	public String getPricingSystemName(@Nullable final PricingSystemId pricingSystemId)
 	{
 		if (pricingSystemId == null)
 		{

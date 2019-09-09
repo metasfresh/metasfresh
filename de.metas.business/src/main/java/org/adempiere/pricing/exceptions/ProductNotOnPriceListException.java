@@ -8,12 +8,12 @@ import java.time.LocalDate;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DisplayType;
 
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -110,8 +110,13 @@ public class ProductNotOnPriceListException extends AdempiereException
 
 		//
 		// Pricing System
-		final I_M_PricingSystem pricingSystem = priceList == null ? null : priceList.getM_PricingSystem();
-		sb.append("\n@M_PricingSystem_ID@: ").append(pricingSystem == null ? "-" : pricingSystem.getName());
+		final PricingSystemId pricingSystemId = priceList != null
+				? PricingSystemId.ofRepoIdOrNull(priceList.getM_PricingSystem_ID())
+				: null;
+		final String pricingSystemName = pricingSystemId != null
+				? Services.get(IPriceListDAO.class).getPricingSystemName(pricingSystemId)
+				: "-";
+		sb.append("\n@M_PricingSystem_ID@: ").append(pricingSystemName);
 
 		return sb.toString();
 	}
