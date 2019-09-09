@@ -209,30 +209,34 @@ class DocList extends Component {
 
 /**
  * @typedef {object} Props Component props
- * @prop {func} dispatch
  * @prop {array} breadcrumb
- * @prop {array} query
+ * @prop {func} dispatch
  * @prop {object} includedView
- * @prop {string} pathname
- * @prop {object} modal
- * @prop {object} rawModal
  * @prop {string} indicator
- * @prop {string} processStatus
- * @prop {object} pluginModal
+ * @prop {*} latestNewDocument
+ * @prop {object} modal
  * @prop {object} overlay
+ * @prop {string} pathname
+ * @prop {object} pluginModal
+ * @prop {string} processStatus
+ * @prop {object} query
+ * @prop {object} rawModal
+ * @prop {object} windowType
  */
 DocList.propTypes = {
-  dispatch: PropTypes.func.isRequired,
   breadcrumb: PropTypes.array.isRequired,
-  query: PropTypes.object.isRequired,
+  dispatch: PropTypes.func.isRequired,
   includedView: PropTypes.object.isRequired,
-  pathname: PropTypes.string.isRequired,
-  modal: PropTypes.object.isRequired,
-  rawModal: PropTypes.object.isRequired,
   indicator: PropTypes.string.isRequired,
-  processStatus: PropTypes.string.isRequired,
-  pluginModal: PropTypes.object,
+  latestNewDocument: PropTypes.any,
+  modal: PropTypes.object.isRequired,
   overlay: PropTypes.object,
+  pathname: PropTypes.string.isRequired,
+  pluginModal: PropTypes.object,
+  processStatus: PropTypes.string.isRequired,
+  query: PropTypes.object.isRequired,
+  rawModal: PropTypes.object.isRequired,
+  windowType: PropTypes.any,
 };
 
 /**
