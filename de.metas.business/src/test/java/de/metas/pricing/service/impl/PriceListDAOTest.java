@@ -969,7 +969,6 @@ public class PriceListDAOTest
 
 		priceListDAO.mutateCustomerPrices(PriceListVersionId.ofRepoId(newBasePLV.getM_PriceList_Version_ID()), UserId.ofRepoId(user.getAD_User_ID()));
 
-
 		final int versionsCount = countPLVs(customerPriceList);
 
 		assertThat(versionsCount).isEqualByComparingTo(3);
@@ -1031,9 +1030,9 @@ public class PriceListDAOTest
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		return queryBL.createQueryBuilder(I_M_PriceList_Version.class)
-		.addEqualsFilter(I_M_PriceList_Version.COLUMN_M_PriceList_ID, priceList.getM_PriceList_ID())
-		.create()
-		.count();
+				.addEqualsFilter(I_M_PriceList_Version.COLUMN_M_PriceList_ID, priceList.getM_PriceList_ID())
+				.create()
+				.count();
 
 	}
 
@@ -1347,7 +1346,7 @@ public class PriceListDAOTest
 		pl.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
 		pl.setName(name);
 		pl.setIsSOPriceList(isSOTrx);
-		pl.setC_Country_ID(country.getC_Country_ID());
+		pl.setC_Country_ID(country != null ? country.getC_Country_ID() : -1);
 		pl.setC_Currency_ID(currencyId.getRepoId());
 		save(pl);
 		return pl;
