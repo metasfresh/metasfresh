@@ -17,7 +17,7 @@
 	<parameter name="doctype" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA["io"]]></defaultValueExpression>
 	</parameter>
-	<parameter name="ad_language" class="java.lang.String" isForPrompting="false" evaluationTime="Early">
+	<parameter name="ad_language" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
 	<parameter name="C_BPartner_ID" class="java.math.BigDecimal">
