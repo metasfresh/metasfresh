@@ -1,12 +1,13 @@
-package de.metas.rest_api.utils;
+package de.metas.ordercandidate.api;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
+import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.pricing.PricingSystemId;
+import de.metas.util.Services;
+import lombok.ToString;
 
 /*
  * #%L
- * de.metas.business.rest-api-impl
+ * de.metas.salescandidate.base
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -14,35 +15,35 @@ import org.adempiere.exceptions.AdempiereException;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@SuppressWarnings("serial")
-public class InvalidIdentifierException extends AdempiereException
+@ToString
+final class OLCandFactory
 {
-	public InvalidIdentifierException(final IdentifierString invalidIdentifier)
+	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
+
+	private final PricingSystemId pricingSystemId = null;
+
+	public OLCandFactory()
 	{
-		super(invalidIdentifier != null ? invalidIdentifier.toJson() : null);
 	}
 
-	public InvalidIdentifierException(@Nullable final String invalidIdentifierString)
+	public OLCand toOLCand(final I_C_OLCand record)
 	{
-		this(invalidIdentifierString, (Throwable)null);
-	}
-
-	public InvalidIdentifierException(
-			@Nullable final String invalidIdentifierString,
-			@Nullable final Throwable cause)
-	{
-		super(invalidIdentifierString);
+		return OLCand.builder()
+				.olCandEffectiveValuesBL(olCandEffectiveValuesBL)
+				.candidate(record)
+				.pricingSystemId(pricingSystemId)
+				.build();
 	}
 }

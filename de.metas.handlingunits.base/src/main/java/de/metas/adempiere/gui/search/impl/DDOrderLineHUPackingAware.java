@@ -23,7 +23,6 @@ package de.metas.adempiere.gui.search.impl;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 
 import org.compiere.model.I_C_UOM;
 
@@ -148,19 +147,6 @@ public class DDOrderLineHUPackingAware implements IHUPackingAware
 	{
 		ddOrderLine.setQtyEnteredTU(qtyPacks);
 		values.setQtyTU(qtyPacks);
-	}
-
-	@Override
-	public void setDateOrdered(final Timestamp dateOrdered)
-	{
-		ddOrderLine.setDateOrdered(dateOrdered);
-		values.setDateOrdered(dateOrdered);
-	}
-
-	@Override
-	public Timestamp getDateOrdered()
-	{
-		return ddOrderLine.getDateOrdered();
 	}
 
 	@Override

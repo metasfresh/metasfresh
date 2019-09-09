@@ -5,10 +5,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
 import java.net.URI;
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
@@ -16,24 +22,34 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.MimeType;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import ch.qos.logback.classic.Level;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.logging.LogManager;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfNotExists;
 import de.metas.rest_api.attachment.JsonAttachmentType;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.ordercandidates.JsonAttachment;
+import de.metas.rest_api.ordercandidates.JsonBPartnerInfo;
+import de.metas.rest_api.ordercandidates.JsonDocTypeInfo;
 import de.metas.rest_api.ordercandidates.JsonOLCand;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest;
+import de.metas.rest_api.ordercandidates.JsonProductInfo;
+import de.metas.rest_api.utils.JsonError;
 import de.metas.rest_api.utils.PermissionService;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import mockit.Mocked;
 
@@ -61,6 +77,9 @@ import mockit.Mocked;
 
 public class OrderCandidatesRestControllerImplTest
 {
+	private static final String DATA_SOURCE_INTERNALNAME = "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController";
+	private static final String DATA_DEST_INVOICECANDIDATE = "DEST.de.metas.invoicecandidate";
+	private UomId uomId;
 
 	private OrderCandidatesRestControllerImpl orderCandidatesRestControllerImpl;
 
@@ -80,6 +99,7 @@ public class OrderCandidatesRestControllerImplTest
 			final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
 			uomRecord.setX12DE355("MJ");
 			saveRecord(uomRecord);
+			uomId = UomId.ofRepoId(uomRecord.getC_UOM_ID());
 
 			final I_C_DocType docTypeRecord = newInstance(I_C_DocType.class);
 			docTypeRecord.setDocBaseType("ARI");
@@ -87,11 +107,11 @@ public class OrderCandidatesRestControllerImplTest
 			saveRecord(docTypeRecord);
 
 			final I_AD_InputDataSource dataSourceRecord = newInstance(I_AD_InputDataSource.class);
-			dataSourceRecord.setInternalName("SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController");
+			dataSourceRecord.setInternalName(DATA_SOURCE_INTERNALNAME);
 			saveRecord(dataSourceRecord);
 
 			final I_AD_InputDataSource dataDestRecord = newInstance(I_AD_InputDataSource.class);
-			dataDestRecord.setInternalName("DEST.de.metas.invoicecandidate");
+			dataDestRecord.setInternalName(DATA_DEST_INVOICECANDIDATE);
 			saveRecord(dataDestRecord);
 		}
 
@@ -103,6 +123,22 @@ public class OrderCandidatesRestControllerImplTest
 				masterdataProviderFactory,
 				new JsonConverters(),
 				new OLCandRepository());
+		LogManager.setLoggerLevel(orderCandidatesRestControllerImpl.getClass(), Level.ALL);
+	}
+
+	private void createBPartner(String value)
+	{
+		final I_C_BPartner record = newInstance(I_C_BPartner.class);
+		record.setValue(value);
+		saveRecord(record);
+	}
+
+	private void createProduct(String value)
+	{
+		final I_M_Product record = newInstance(I_M_Product.class);
+		record.setValue(value);
+		record.setC_UOM_ID(uomId.getRepoId());
+		saveRecord(record);
 	}
 
 	@Test
@@ -205,5 +241,88 @@ public class OrderCandidatesRestControllerImplTest
 				attachmentEntry);
 
 		assertThat(jsonAttachment.getType().toString()).isEqualTo(AttachmentEntry.Type.URL.toString());
+	}
+
+	@Test
+	public void testDateOrdered()
+	{
+		createBPartner("bpCode");
+		createProduct("productCode");
+
+		testDateOrdered(null);
+		testDateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 1));
+		testDateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 2));
+		testDateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 30));
+	}
+
+	public void testDateOrdered(@Nullable final LocalDate dateOrdered)
+	{
+		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
+				.dataSourceInternalName(DATA_SOURCE_INTERNALNAME)
+				.dataDestInternalName(DATA_DEST_INVOICECANDIDATE)
+				.dateOrdered(dateOrdered)
+				.dateRequired(LocalDate.of(2019, Month.SEPTEMBER, 5))
+				.qty(new BigDecimal("66"))
+				.externalHeaderId("externalHeaderId")
+				.externalLineId("externalLineId")
+				.poReference("poRef")
+				.product(JsonProductInfo.builder()
+						.code("productCode")
+						.build())
+				.bpartner(JsonBPartnerInfo.builder()
+						.bpartner(JsonRequestBPartner.builder()
+								.code("bpCode")
+								.build())
+						.build())
+				.invoiceDocType(JsonDocTypeInfo.builder()
+						.docBaseType("ARI")
+						.docSubType("KV")
+						.build())
+				.build());
+
+		final JsonOLCandCreateBulkResponse response = orderCandidatesRestControllerImpl
+				.createOrderLineCandidates(request)
+				.getBody();
+
+		final List<JsonOLCand> olCands = response.getResult();
+		assertThat(olCands).hasSize(1);
+
+		final JsonOLCand olCand = olCands.get(0);
+		assertThat(olCand.getDateOrdered()).isEqualTo(dateOrdered);
+	}
+
+	@Test
+	public void error_NoBPartnerFound()
+	{
+		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
+				.dataSourceInternalName(DATA_SOURCE_INTERNALNAME)
+				.dataDestInternalName(DATA_DEST_INVOICECANDIDATE)
+				.dateRequired(LocalDate.of(2019, Month.SEPTEMBER, 5))
+				.qty(new BigDecimal("66"))
+				.externalHeaderId("externalHeaderId")
+				.externalLineId("externalLineId")
+				.poReference("poRef")
+				.product(JsonProductInfo.builder()
+						.code("productCode")
+						.build())
+				.bpartner(JsonBPartnerInfo.builder()
+						.bpartner(JsonRequestBPartner.builder()
+								.code("bpCode")
+								.build())
+						.build())
+				.invoiceDocType(JsonDocTypeInfo.builder()
+						.docBaseType("ARI")
+						.docSubType("KV")
+						.build())
+				.build());
+
+		final ResponseEntity<JsonOLCandCreateBulkResponse> response = orderCandidatesRestControllerImpl.createOrderLineCandidates(request);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+
+		final JsonOLCandCreateBulkResponse responseBody = response.getBody();
+		assertThat(responseBody.isError()).isTrue();
+
+		final JsonError error = responseBody.getError();
+		assertThat(error.getMessage()).contains("Found no existing BPartner");
 	}
 }

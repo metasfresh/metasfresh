@@ -8,6 +8,8 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +30,7 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentTags;
+import de.metas.logging.LogManager;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
@@ -41,6 +44,7 @@ import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
+import de.metas.rest_api.utils.JsonErrors;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.swagger.annotations.ApiParam;
@@ -75,6 +79,7 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 {
 	public static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE." + OrderCandidatesRestControllerImpl.class.getName();
 
+	private static final Logger logger = LogManager.getLogger(OrderCandidatesRestControllerImpl.class);
 	private JsonConverters jsonConverters;
 	private OLCandRepository olCandRepo;
 	private MasterdataProviderFactory masterdataProviderFactory;
@@ -104,24 +109,34 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 	@Override
 	public ResponseEntity<JsonOLCandCreateBulkResponse> createOrderLineCandidates(@RequestBody @NonNull final JsonOLCandCreateBulkRequest bulkRequest)
 	{
-		bulkRequest.validate();
+		try
+		{
+			bulkRequest.validate();
 
-		final MasterdataProvider masterdataProvider = masterdataProviderFactory.createMasterDataProvider();
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
+			final MasterdataProvider masterdataProvider = masterdataProviderFactory.createMasterDataProvider();
+			final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-		// load/create/update the master data (according to SyncAdvice) in a dedicated trx.
-		// because when creating the actual order line candidates, there is e.g. code invoked by model interceptors that gets AD_OrgInfo out of transaction.
-		trxManager.runInNewTrx(() -> createOrUpdateMasterdata(bulkRequest, masterdataProvider));
-		// the required masterdata should be there now, and cached within masterdataProvider for quick retrieval as the olcands are created.
+			// load/create/update the master data (according to SyncAdvice) in a dedicated trx.
+			// because when creating the actual order line candidates, there is e.g. code invoked by model interceptors that gets AD_OrgInfo out of transaction.
+			trxManager.runInNewTrx(() -> createOrUpdateMasterdata(bulkRequest, masterdataProvider));
+			// the required masterdata should be there now, and cached within masterdataProvider for quick retrieval as the olcands are created.
 
-		final JsonOLCandCreateBulkResponse //
-		jsonOLCandCreateBulkResponse = trxManager.call(() ->
+			// invoke creatOrderLineCandidates with the unchanged bulkRequest, because the request's bpartner and product instances are
+			// (at least currently) part of the respective caching keys.
+			final JsonOLCandCreateBulkResponse //
+			jsonOLCandCreateBulkResponse = trxManager.call(() -> creatOrderLineCandidates(bulkRequest, masterdataProvider));
 
-		// invoke creatOrderLineCandidates with the unchanged bulkRequest, because the request's bpartner and product instances are
-		// (at least currently) part of the respective caching keys.
-		creatOrderLineCandidates(bulkRequest, masterdataProvider));
+			//
+			return new ResponseEntity<>(jsonOLCandCreateBulkResponse, HttpStatus.CREATED);
+		}
+		catch (Exception ex)
+		{
+			logger.debug("Got exception while processing {}", bulkRequest, ex);
 
-		return new ResponseEntity<>(jsonOLCandCreateBulkResponse, HttpStatus.CREATED);
+			final String adLanguage = Env.getADLanguageOrBaseLanguage();
+			return ResponseEntity.badRequest()
+					.body(JsonOLCandCreateBulkResponse.error(JsonErrors.ofThrowable(ex, adLanguage)));
+		}
 	}
 
 	private void assertCanCreate(

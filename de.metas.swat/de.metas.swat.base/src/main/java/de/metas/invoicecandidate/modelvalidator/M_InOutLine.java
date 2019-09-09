@@ -42,7 +42,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 
 @Interceptor(I_M_InOutLine.class)
-@Component("de.metas.invoicecandidate.modelvalidator.M_InOutLine")
+@Component
 public class M_InOutLine
 {
 	private final InvoiceCandidateRecordService invoiceCandidateRecordService;

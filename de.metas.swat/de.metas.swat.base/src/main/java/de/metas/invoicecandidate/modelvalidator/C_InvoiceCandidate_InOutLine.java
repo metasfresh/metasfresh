@@ -34,7 +34,7 @@ import lombok.NonNull;
  */
 
 @Interceptor(I_C_InvoiceCandidate_InOutLine.class)
-@Component("de.metas.invoicecandidate.modelvalidator.C_InvoiceCandidate_InOutLine")
+@Component
 public class C_InvoiceCandidate_InOutLine
 {
 	private final InvoiceCandidateRepository invoiceCandidateRepository;

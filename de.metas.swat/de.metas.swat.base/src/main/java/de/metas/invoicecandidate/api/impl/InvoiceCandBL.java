@@ -269,8 +269,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
-		final String invoiceRule = getInvoiceRule(ic).getRecordString();
-		if (!X_C_Invoice_Candidate.INVOICERULE_CustomerScheduleAfterDelivery.equals(invoiceRule))
+		final InvoiceRule invoiceRule = getInvoiceRule(ic);
+		if (!InvoiceRule.CustomerScheduleAfterDelivery.equals(invoiceRule))
 		{
 			// Note: the field is supposed not to be displayed on status=OK, so we don't need to localize this
 			ic.setInvoiceScheduleAmtStatus("OK");
@@ -501,9 +501,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
-		final String invoiceRule = getInvoiceRule(ic).getRecordString();
-		Check.assume(X_C_Invoice_Candidate.INVOICERULE_CustomerScheduleAfterDelivery.equals(invoiceRule),
-				"Method is only called if invoice rule is " + X_C_Invoice_Candidate.INVOICERULE_CustomerScheduleAfterDelivery);
+		final InvoiceRule invoiceRule = getInvoiceRule(ic);
+		Check.assume(InvoiceRule.CustomerScheduleAfterDelivery.equals(invoiceRule),
+				"Method is only called if invoice rule is " + InvoiceRule.CustomerScheduleAfterDelivery);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 
@@ -710,8 +710,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
-		final String invoiceRule = getInvoiceRule(ic).getRecordString();
-		if (X_C_Invoice_Candidate.INVOICERULE_EFFECTIVE_CustomerScheduleAfterDelivery.equals(invoiceRule)
+		final InvoiceRule invoiceRule = getInvoiceRule(ic);
+		if (InvoiceRule.CustomerScheduleAfterDelivery.equals(invoiceRule)
 				&& ic.getC_InvoiceSchedule_ID() > 0)
 		{
 			final I_C_InvoiceSchedule invoiceSchedule = ic.getC_InvoiceSchedule();
@@ -955,13 +955,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public InvoiceRule getInvoiceRule(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final String invoiceRuleOverride = ic.getInvoiceRule_Override();
-		if (!Check.isEmpty(invoiceRuleOverride, true))
-		{
-			return InvoiceRule.fromRecordString(invoiceRuleOverride);
-		}
-
-		return InvoiceRule.fromRecordString(ic.getInvoiceRule());
+		final InvoiceRule invoiceRuleOverride = InvoiceRule.ofNullableCode(ic.getInvoiceRule_Override());
+		return invoiceRuleOverride != null
+				? invoiceRuleOverride
+				: InvoiceRule.ofCode(ic.getInvoiceRule());
 	}
 
 	@Override

@@ -6,11 +6,13 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Optional;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -50,6 +52,7 @@ import lombok.NonNull;
  */
 
 @Service
+@Profile(Profiles.PROFILE_MaterialDispo)
 public class DemandCandiateHandler implements CandidateHandler
 {
 	private final CandidateRepositoryRetrieval candidateRepository;
