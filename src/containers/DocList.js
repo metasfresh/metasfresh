@@ -25,20 +25,6 @@ class DocList extends Component {
     notfound: false,
   };
 
-  static propTypes = {
-    dispatch: PropTypes.func.isRequired,
-    breadcrumb: PropTypes.array.isRequired,
-    query: PropTypes.object.isRequired,
-    includedView: PropTypes.object.isRequired,
-    pathname: PropTypes.string.isRequired,
-    modal: PropTypes.object.isRequired,
-    rawModal: PropTypes.object.isRequired,
-    indicator: PropTypes.string.isRequired,
-    processStatus: PropTypes.string.isRequired,
-    pluginModal: PropTypes.object,
-    overlay: PropTypes.object,
-  };
-
   /**
    * @method componentDidMount
    * @summary ToDo: Describe the method.
@@ -222,8 +208,37 @@ class DocList extends Component {
 }
 
 /**
+ * @typedef {object} Props Component props
+ * @prop {func} dispatch
+ * @prop {array} breadcrumb
+ * @prop {array} query
+ * @prop {object} includedView
+ * @prop {string} pathname
+ * @prop {object} modal
+ * @prop {object} rawModal
+ * @prop {string} indicator
+ * @prop {string} processStatus
+ * @prop {object} pluginModal
+ * @prop {object} overlay
+ */
+DocList.propTypes = {
+  dispatch: PropTypes.func.isRequired,
+  breadcrumb: PropTypes.array.isRequired,
+  query: PropTypes.object.isRequired,
+  includedView: PropTypes.object.isRequired,
+  pathname: PropTypes.string.isRequired,
+  modal: PropTypes.object.isRequired,
+  rawModal: PropTypes.object.isRequired,
+  indicator: PropTypes.string.isRequired,
+  processStatus: PropTypes.string.isRequired,
+  pluginModal: PropTypes.object,
+  overlay: PropTypes.object,
+};
+
+/**
  * @method mapStateToProps
  * @summary ToDo: Describe the method.
+ * @param {object} state
  */
 const mapStateToProps = state => ({
   modal: state.windowHandler.modal,
