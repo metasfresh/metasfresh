@@ -32,7 +32,7 @@
 m_product_ID
 FROM "de.metas.fresh".product_specifications_v v
 WHERE m_product_ID = $P{RECORD_ID} AND componenttype='CO'
-ORDER BY componentIngredients nulls first;]]>
+ORDER BY QtyBatch DESC;]]>
 	</queryString>
 	<field name="bomproduct" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="bomproduct"/>
