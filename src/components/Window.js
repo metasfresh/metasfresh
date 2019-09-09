@@ -643,6 +643,25 @@ class Window extends PureComponent {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {shape} layout
+ * @prop {func} handleDropFile
+ * @prop {func} handleRejectDropped
+ * @prop {func} handleDragStart
+ * @prop {bool} isModal
+ * @prop {shape} rowData
+ * @prop {bool} newRow
+ * @prop {shape} tabsInfo
+ * @prop {func} sort
+ * @prop {bool} allowShortcut
+ * @prop {*} data
+ * @prop {string} dataId
+ * @prop {bool} modal
+ * @prop {string} tabId
+ * @prop {string} rowId
+ * @prop {bool} isAdvanced
+ */
 Window.propTypes = {
   layout: PropTypes.shape(),
   handleDropFile: PropTypes.func,
