@@ -9,14 +9,12 @@ import { PriceList, PriceListVersion } from '../../support/utils/pricelist';
 import { BPartner } from '../../support/utils/bpartner';
 import { runProcessCreateContract } from '../../support/functions/contractFunctions';
 import { appendHumanReadableNow, getLanguageSpecific } from '../../support/utils/utils';
-import { StorageConferenceVersion, CostLine } from '../../support/utils/storage_conferenceversion';
+import { StorageConferenceVersion, CostLine, LagerKonfMonth, AdditionalContribution } from '../../support/utils/storage_conferenceversion';
 
-// pricing
 let priceSystemName;
 let priceListName;
 let priceListVersionName;
 
-// product
 let productCategoryName;
 let scrapProductName;
 let processingFeeProductName;
@@ -53,6 +51,31 @@ let processingFee5;
 let processingFee6;
 let processingFee7;
 let cUomId;
+let juni;
+let juli;
+let august;
+let september;
+let oktober;
+let november;
+let dezember;
+let januar;
+let februar;
+let marz;
+let april;
+let mai;
+
+let compensationAmount1;
+let compensationAmount2;
+let compensationAmount3;
+let compensationAmount4;
+let compensationAmount5;
+let compensationAmount6;
+let contributionProduct1;
+let contributionProduct2;
+let seqNo1;
+let seqNo2;
+let contributionAmount1;
+let contributionAmount2;
 
 // static
 const currentYear = new Date().getFullYear();
@@ -64,12 +87,9 @@ let productPrice;
 
 it('Read the fixture', function() {
   cy.fixture('contracts/flatrate_conditions_material_tracking_spec.json').then(f => {
-    // pricing
     priceSystemName = appendHumanReadableNow(f['priceSystemName']);
     priceListName = appendHumanReadableNow(f['priceListName']);
     priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
-
-    // product
     productCategoryName = appendHumanReadableNow(f['productCategoryName']);
     scrapProductName = appendHumanReadableNow(f['scrapProductName']);
     processingFeeProductName = appendHumanReadableNow(f['processingFeeProductName']);
@@ -107,6 +127,34 @@ it('Read the fixture', function() {
     processingFee6 = f['processingFee6'];
     processingFee7 = f['processingFee7'];
     cUomId = f['cUomId'];
+
+    juni = f['juni'];
+    juli = f['juli'];
+    august = f['august'];
+    september = f['september'];
+    oktober = f['oktober'];
+    november = f['november'];
+    dezember = f['dezember'];
+    januar = f['januar'];
+    februar = f['februar'];
+    marz = f['marz'];
+    april = f['april'];
+    mai = f['mai'];
+
+    compensationAmount1 = f['compensationAmount1'];
+    compensationAmount2 = f['compensationAmount2'];
+    compensationAmount3 = f['compensationAmount3'];
+    compensationAmount4 = f['compensationAmount4'];
+    compensationAmount5 = f['compensationAmount5'];
+    compensationAmount6 = f['compensationAmount6'];
+
+    contributionProduct1 = appendHumanReadableNow(f['contributionProduct1']);
+    contributionProduct2 = appendHumanReadableNow(f['contributionProduct2']);
+
+    seqNo1 = f['seqNo1'];
+    seqNo2 = f['seqNo2'];
+    contributionAmount1 = f['contributionAmount1'];
+    contributionAmount2 = f['contributionAmount2'];
   });
 });
 
@@ -130,19 +178,16 @@ it('Create transition', function() {
 });
 
 it('Create PriceList and Product Price', function() {
-  // PriceList
   cy.fixture('price/pricesystem.json').then(priceSystemJson => {
     Object.assign(new Pricesystem(), priceSystemJson)
       .setName(priceSystemName)
       .apply();
   });
 
-  // PriceListVersion
   cy.fixture('price/pricelistversion.json').then(priceListVersionJson => {
     priceListVersion = Object.assign(new PriceListVersion(), priceListVersionJson).setName(priceListVersionName);
   });
 
-  // Product Price
   cy.fixture('product/product_price.json').then(productPriceJson => {
     productPrice = Object.assign(new ProductPrice(), productPriceJson).setPriceList(priceListName);
   });
@@ -171,6 +216,10 @@ it('Create LagerKonferenz products', function() {
   createProduct(processingFeeProductName, serviceProductType, productCategoryName, productPrice);
   createProduct(productionProductName, serviceProductType, productCategoryName, productPrice);
   createProduct(witholdingProductName, serviceProductType, productCategoryName, productPrice);
+});
+it('Create products for additional contribution tab', function() {
+  createProduct(contributionProduct1, itemProductType, productCategoryName, productPrice);
+  createProduct(contributionProduct2, itemProductType, productCategoryName, productPrice);
 });
 
 it('Create LagerKonferenz', function() {
@@ -224,7 +273,7 @@ it('Create new Storage conference version', function() {
         new CostLine()
           .setPercentFrom(percentFrom1)
           .setProcessingFeeAmtPerUOM(processingFee1)
-          .setCUOMID('Each')
+          .setCUOMID(cUomId)
       )
       .addLine(
         new CostLine()
@@ -261,6 +310,90 @@ it('Create new Storage conference version', function() {
           .setPercentFrom(percentFrom7)
           .setProcessingFeeAmtPerUOM(processingFee7)
           .setCUOMID(cUomId)
+      )
+      .addMonth(
+        new LagerKonfMonth()
+          .setMonth(juni)
+          .setQualityAdjAmt(compensationAmount1)
+          .setCUOMID(cUomId)
+      )
+      .addMonth(
+        new LagerKonfMonth()
+          .setMonth(juli)
+          .setQualityAdjAmt(compensationAmount1)
+          .setCUOMID(cUomId)
+      )
+      .addMonth(
+        new LagerKonfMonth()
+          .setMonth(august)
+          .setQualityAdjAmt(compensationAmount2)
+          .setCUOMID(cUomId)
+      )
+      .addMonth(
+        new LagerKonfMonth()
+          .setMonth(september)
+          .setQualityAdjAmt(compensationAmount2)
+          .setCUOMID(cUomId)
+      )
+      .addMonth(
+        new LagerKonfMonth()
+          .setMonth(oktober)
+          .setQualityAdjAmt(compensationAmount2)
+          .setCUOMID(cUomId)
+      )
+      .addMonth(
+        new LagerKonfMonth()
+          .setMonth(november)
+          .setQualityAdjAmt(compensationAmount3)
+          .setCUOMID(cUomId)
+      )
+      .addMonth(
+        new LagerKonfMonth()
+          .setMonth(dezember)
+          .setQualityAdjAmt(compensationAmount1)
+          .setCUOMID(cUomId)
+      )
+      .addMonth(
+        new LagerKonfMonth()
+          .setMonth(januar)
+          .setQualityAdjAmt(compensationAmount4)
+          .setCUOMID(cUomId)
+      )
+      .addMonth(
+        new LagerKonfMonth()
+          .setMonth(februar)
+          .setQualityAdjAmt(compensationAmount4)
+          .setCUOMID(cUomId)
+      )
+      .addMonth(
+        new LagerKonfMonth()
+          .setMonth(marz)
+          .setQualityAdjAmt(compensationAmount5)
+          .setCUOMID(cUomId)
+      )
+      .addMonth(
+        new LagerKonfMonth()
+          .setMonth(april)
+          .setQualityAdjAmt(compensationAmount6)
+          .setCUOMID(cUomId)
+      )
+      .addMonth(
+        new LagerKonfMonth()
+          .setMonth(mai)
+          .setQualityAdjAmt(compensationAmount6)
+          .setCUOMID(cUomId)
+      )
+      .addContribution(
+        new AdditionalContribution()
+          .setSeqNo(seqNo1)
+          .setProduct(contributionProduct1)
+          .setAdditionalFeeAmount(contributionAmount1)
+      )
+      .addContribution(
+        new AdditionalContribution()
+          .setSeqNo(seqNo2)
+          .setProduct(contributionProduct2)
+          .setAdditionalFeeAmount(contributionAmount2)
       )
       .apply();
   });

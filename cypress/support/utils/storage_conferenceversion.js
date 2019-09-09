@@ -2,6 +2,7 @@ export class StorageConferenceVersion {
   constructor() {
     this.lines = [];
     this.months = [];
+    this.contributions = [];
   }
 
   setLagerKonferenz(lagerKonferenz) {
@@ -70,6 +71,11 @@ export class StorageConferenceVersion {
     this.months.push(month);
     return this;
   }
+  addContribution(contribution) {
+    cy.log(`StorageConferenceVersion - add contribution = ${JSON.stringify(contribution)}`);
+    this.contributions.push(contribution);
+    return this;
+  }
 
   apply() {
     cy.log(`StorageConferenceVersion - apply - START`);
@@ -102,6 +108,11 @@ function applyStorageConferenceVersion(storageConferenceVersion) {
       applyLagerKonfMonth(month);
     });
     cy.expectNumberOfRows(storageConferenceVersion.months.length);
+
+    storageConferenceVersion.contributions.forEach(contribution => {
+      applyAdditionalContribution(contribution);
+    });
+    cy.expectNumberOfRows(storageConferenceVersion.contributions.length);
   });
 }
 
@@ -121,9 +132,18 @@ function applyLagerKonfMonth(lagerKonfMonth) {
   cy.selectInListField('C_UOM_ID', lagerKonfMonth.uomId);
   cy.pressDoneButton();
 }
+
+function applyAdditionalContribution(contribution) {
+  cy.selectTab('M_QualityInsp_LagerKonf_AdditionalFee');
+  cy.pressAddNewButton();
+  cy.writeIntoStringField('SeqNo', contribution.seqNo);
+  cy.writeIntoLookupListField('M_Product_ID', contribution.product, contribution.product);
+  cy.writeIntoStringField('Additional_Fee_Amt_Per_UOM', contribution.additionalFeeAmount);
+  cy.pressDoneButton();
+}
 export class CostLine {
   setPercentFrom(percentFrom) {
-    cy.log(`CostLine - set product = ${percentFrom}`);
+    cy.log(`CostLine - set percentFrom = ${percentFrom}`);
     this.percentFrom = percentFrom;
     return this;
   }
@@ -156,6 +176,25 @@ export class LagerKonfMonth {
   setCUOMID(uomId) {
     cy.log(`LagerKonfMonth - set uomId = ${uomId}`);
     this.uomId = uomId;
+    return this;
+  }
+}
+export class AdditionalContribution {
+  setSeqNo(seqNo) {
+    cy.log(`AdditionalContribution - set seqNo = ${seqNo}`);
+    this.seqNo = seqNo;
+    return this;
+  }
+
+  setProduct(product) {
+    cy.log(`AdditionalContribution - set product = ${product}`);
+    this.product = product;
+    return this;
+  }
+
+  setAdditionalFeeAmount(additionalFeeAmount) {
+    cy.log(`AdditionalContribution - set additionalFeeAmount = ${additionalFeeAmount}`);
+    this.additionalFeeAmount = additionalFeeAmount;
     return this;
   }
 }

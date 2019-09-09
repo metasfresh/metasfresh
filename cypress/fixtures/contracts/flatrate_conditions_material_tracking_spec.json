@@ -38,5 +38,32 @@
   "processingFee4": "0.03",
   "processingFee5": "0.04",
   "processingFee6": "0.05",
-  "processingFee7": "0.06"
+  "processingFee7": "0.06",
+  "juni":"Juni",
+  "juli":"Juli",
+  "august":"August",
+  "september":"September",
+  "oktober":"Oktober",
+  "november":"November",
+  "dezember":"Dezember",
+  "januar":"Januar",
+  "februar":"Februar",
+  "marz":"März",
+  "april":"April",
+  "mai":"Mai",
+  "compensationAmount1":"0.00",
+  "compensationAmount2":"-0.03",
+  "compensationAmount3": "-0.02",
+  "compensationAmount4": "0.02",
+  "compensationAmount5":"0.03",
+  "compensationAmount6":"0.04",
+
+  "contributionProduct1": "Abzug für Beitrag Basic-Linie",
+  "contributionProduct2": "Abzug für Beitrag Verkaufsförderung",
+
+  "seqNo1": 10,
+  "seqNo2": 20,
+  "contributionAmount1": "0.06",
+  "contributionAmount2": "0.04"
+
 }
