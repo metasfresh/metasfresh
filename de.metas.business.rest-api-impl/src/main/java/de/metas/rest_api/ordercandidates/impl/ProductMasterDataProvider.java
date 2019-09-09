@@ -81,14 +81,20 @@ final class ProductMasterDataProvider
 	@Value
 	private static class CachingKey
 	{
+		@NonNull
 		OrgId orgId;
+
+		@NonNull
 		JsonProductInfo jsonProductInfo;
 	}
 
 	@Value
 	public static class ProductInfo
 	{
+		@NonNull
 		ProductId productId;
+
+		@NonNull
 		UomId uomId;
 	}
 
@@ -103,23 +109,22 @@ final class ProductMasterDataProvider
 			@NonNull final OrgId orgId)
 	{
 		final CachingKey key = new CachingKey(orgId, jsonProductInfo);
-		return productInfoCache
-				.getOrLoad(key, () -> getCreateProductInfo0(jsonProductInfo, orgId));
+		return productInfoCache.getOrLoad(key, this::getCreateProductInfo0);
 	}
 
-	private ProductInfo getCreateProductInfo0(
-			@NonNull final JsonProductInfo jsonProductInfo,
-			@NonNull final OrgId orgId)
+	private ProductInfo getCreateProductInfo0(@NonNull final CachingKey key)
 	{
+		final JsonProductInfo jsonProductInfo = key.getJsonProductInfo();
+		final OrgId orgId = key.getOrgId();
+
 		final BPartnerMasterDataContext context = BPartnerMasterDataContext.ofOrg(orgId);
 		final ProductId existingProductId = lookupProductIdOrNull(jsonProductInfo, context);
 
 		final IfExists ifExists = jsonProductInfo.getSyncAdvise().getIfExists();
 		if (existingProductId != null && !ifExists.isUpdate())
 		{
-			return new ProductInfo(
-					existingProductId,
-					getProductUOMId(existingProductId, jsonProductInfo.getUomCode()));
+			final UomId uomId = getProductUOMId(existingProductId, jsonProductInfo.getUomCode());
+			return new ProductInfo(existingProductId, uomId);
 		}
 
 		final I_M_Product productRecord;
@@ -159,10 +164,9 @@ final class ProductMasterDataProvider
 
 		permissionService.assertCanCreateOrUpdate(productRecord);
 		saveRecord(productRecord);
+		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
 
-		return new ProductInfo(
-				ProductId.ofRepoId(productRecord.getM_Product_ID()),
-				uomId);
+		return new ProductInfo(productId, uomId);
 	}
 
 	private ProductId lookupProductIdOrNull(

@@ -162,14 +162,12 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 	{
 		final OrgId orgId = masterdataProvider.getCreateOrgId(json.getOrg());
 
-		final BPartnerMasterDataProvider bpartnerMasterdataProvider = masterdataProvider.getBPartnerMasterDataProvider();
-		bpartnerMasterdataProvider.getCreateBPartnerInfo(json.getBpartner(), orgId);
-		bpartnerMasterdataProvider.getCreateBPartnerInfo(json.getBillBPartner(), orgId);
-		bpartnerMasterdataProvider.getCreateBPartnerInfo(json.getDropShipBPartner(), orgId);
-		bpartnerMasterdataProvider.getCreateBPartnerInfo(json.getHandOverBPartner(), orgId);
+		masterdataProvider.getCreateBPartnerInfo(json.getBpartner(), orgId);
+		masterdataProvider.getCreateBPartnerInfo(json.getBillBPartner(), orgId);
+		masterdataProvider.getCreateBPartnerInfo(json.getDropShipBPartner(), orgId);
+		masterdataProvider.getCreateBPartnerInfo(json.getHandOverBPartner(), orgId);
 
-		final ProductMasterDataProvider productMasterDataProvider = masterdataProvider.getProductMasterDataProvider();
-		productMasterDataProvider.getCreateProductInfo(json.getProduct(), orgId);
+		masterdataProvider.getCreateProductInfo(json.getProduct(), orgId);
 	}
 
 	private JsonOLCandCreateBulkResponse creatOrderLineCandidates(
