@@ -536,6 +536,11 @@ SubHeader.propTypes = {
   openModal: PropTypes.func,
 };
 
+/**
+ * @method mapStateToProps
+ * @summary ToDo: Describe the method.
+ * @param {object} state
+ */
 const mapStateToProps = (state, props) => ({
   standardActions: state.windowHandler.master.standardActions,
   selected: getSelectionInstant(
