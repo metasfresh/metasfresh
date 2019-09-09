@@ -28,9 +28,11 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 
@@ -47,7 +49,7 @@ public class M_ProductPrice
 	public void onProductID(final I_M_ProductPrice productPrice, final ICalloutField field)
 	{
 		final ProductId productId = ProductId.ofRepoIdOrNull(productPrice.getM_Product_ID());
-		if (productId !=null)
+		if (productId != null)
 		{
 			final UomId stockingUOMId = Services.get(IProductBL.class).getStockUOMId(productId);
 			productPrice.setC_UOM_ID(stockingUOMId.getRepoId());
@@ -67,5 +69,31 @@ public class M_ProductPrice
 			final int nextMatchSeqNo = Services.get(IPriceListDAO.class).retrieveNextMatchSeqNo(productPrice);
 			productPrice.setMatchSeqNo(nextMatchSeqNo);
 		}
+	}
+
+	@CalloutMethod(columnNames = { I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID })
+	public void onPriceListVersionId(final I_M_ProductPrice productPrice)
+	{
+		setTaxCategoryIdFromPriceListVersion(productPrice);
+	}
+
+	static void setTaxCategoryIdFromPriceListVersion(final I_M_ProductPrice productPrice)
+	{
+		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoIdOrNull(productPrice.getM_PriceList_Version_ID());
+		if (priceListVersionId == null)
+		{
+			return;
+		}
+
+		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+		final TaxCategoryId defaultTaxCategoryId = priceListsRepo
+				.getDefaultTaxCategoryByPriceListVersionId(priceListVersionId)
+				.orElse(null);
+		if (defaultTaxCategoryId == null)
+		{
+			return;
+		}
+
+		productPrice.setC_TaxCategory_ID(defaultTaxCategoryId.getRepoId());
 	}
 }

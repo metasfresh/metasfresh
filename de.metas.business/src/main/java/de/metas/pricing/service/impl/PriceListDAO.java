@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -69,6 +70,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.PriceListsCollection;
 import de.metas.pricing.service.UpdateProductPriceRequest;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
@@ -388,7 +390,7 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public String getPricingSystemName(final PricingSystemId pricingSystemId)
+	public String getPricingSystemName(@Nullable final PricingSystemId pricingSystemId)
 	{
 		if (pricingSystemId == null)
 		{
@@ -789,4 +791,10 @@ public class PriceListDAO implements IPriceListDAO
 		return newestVersions;
 	}
 
+	@Override
+	public Optional<TaxCategoryId> getDefaultTaxCategoryByPriceListVersionId(@NonNull final PriceListVersionId priceListVersionId)
+	{
+		final I_M_PriceList priceList = getPriceListByPriceListVersionId(priceListVersionId);
+		return TaxCategoryId.optionalOfRepoId(priceList.getDefault_TaxCategory_ID());
+	}
 }
