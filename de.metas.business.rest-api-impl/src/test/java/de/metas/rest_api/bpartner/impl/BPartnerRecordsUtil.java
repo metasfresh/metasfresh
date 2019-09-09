@@ -2,6 +2,7 @@ package de.metas.rest_api.bpartner.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -68,6 +69,8 @@ public class BPartnerRecordsUtil
 		bpartnerRecord.setName("bpartnerRecord.name" + idOffSetStr);
 		bpartnerRecord.setValue(C_BPARTNER_VALUE + idOffSetStr);
 		bpartnerRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
+		bpartnerRecord.setIsVendor(true);
+		bpartnerRecord.setIsCustomer(true);
 		InterfaceWrapperHelper.setValue(bpartnerRecord, InterfaceWrapperHelper.COLUMNNAME_CreatedBy, AD_USER_ID + idOffSet);
 		InterfaceWrapperHelper.setValue(bpartnerRecord, InterfaceWrapperHelper.COLUMNNAME_Created, SystemTime.asTimestamp());
 		InterfaceWrapperHelper.setValue(bpartnerRecord, InterfaceWrapperHelper.COLUMNNAME_UpdatedBy, AD_USER_ID + idOffSet);

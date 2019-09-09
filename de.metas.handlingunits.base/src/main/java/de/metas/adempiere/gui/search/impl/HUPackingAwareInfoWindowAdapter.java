@@ -23,7 +23,6 @@ package de.metas.adempiere.gui.search.impl;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.apps.search.IInfoSimple;
@@ -169,19 +168,6 @@ import de.metas.util.Services;
 	{
 		final KeyNamePair bpartnerKNP = infoWindow.getValue(rowIndexModel, IHUPackingAware.COLUMNNAME_C_BPartner_ID);
 		return bpartnerKNP != null ? bpartnerKNP.getKey() : -1;
-	}
-
-	// DateOrdered does not exist yet in Info Windows
-	@Override
-	public void setDateOrdered(final Timestamp dateOrdered)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Timestamp getDateOrdered()
-	{
-		throw new UnsupportedOperationException();
 	}
 
 	@Override

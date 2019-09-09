@@ -76,4 +76,9 @@ public enum DeliveryViaRule implements ReferenceListAwareEnum
 	{
 		return this == Shipper;
 	}
+
+	public static String toCodeOrNull(final DeliveryViaRule type)
+	{
+		return type != null ? type.getCode() : null;
+	}
 }

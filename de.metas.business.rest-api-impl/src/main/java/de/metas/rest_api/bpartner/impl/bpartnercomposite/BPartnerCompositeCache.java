@@ -41,16 +41,17 @@ import lombok.NonNull;
  * #L%
  */
 
-public class BPartnerCompositeCache
+final class BPartnerCompositeCache
 {
 	private final transient CCache<BPartnerCompositeLookupKey, BPartnerComposite> cache;
 
-	private final transient CacheIndex<BPartnerId/* RK */, BPartnerCompositeLookupKey/* CK */, BPartnerComposite/* V */> cacheIndex = new CacheIndex<>(new BPartnerCompositeCacheIndex());
-
 	public BPartnerCompositeCache(@NonNull final String identifier)
 	{
+		final CacheIndex<BPartnerId/* RK */, BPartnerCompositeLookupKey/* CK */, BPartnerComposite/* V */> //
+		cacheIndex = CacheIndex.of(new BPartnerCompositeCacheIndex());
+
 		cache = CCache.<BPartnerCompositeLookupKey, BPartnerComposite> builder()
-				.cacheName("bpartnerQuery2BPartnerId" + "_" + identifier)
+				.cacheName("BPartnerComposite_by_LookupKey" + "_" + identifier)
 				.additionalTableNameToResetFor(I_AD_User.Table_Name)
 				.additionalTableNameToResetFor(I_C_BPartner.Table_Name)
 				.additionalTableNameToResetFor(I_C_BPartner_Location.Table_Name)

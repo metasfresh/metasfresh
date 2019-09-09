@@ -10,6 +10,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +43,7 @@ import de.metas.rest_api.bpartner.response.JsonResponseCompositeList;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
 import de.metas.rest_api.utils.IdentifierString;
+import de.metas.rest_api.utils.JsonErrors;
 import de.metas.util.rest.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -100,7 +102,6 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@GetMapping("{bpartnerIdentifier}")
 	@Override
 	public ResponseEntity<JsonResponseComposite> retrieveBPartner(
-
 			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr)
@@ -179,8 +180,17 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@RequestParam(name = "next", required = false) //
 			@Nullable final String next)
 	{
-		final Optional<JsonResponseCompositeList> result = bpartnerEndpointService.retrieveBPartnersSince(epochTimestampMillis, next);
-		return okOrNotFound(result);
+		try
+		{
+			final Optional<JsonResponseCompositeList> result = bpartnerEndpointService.retrieveBPartnersSince(epochTimestampMillis, next);
+			return okOrNotFound(result);
+		}
+		catch (final Exception ex)
+		{
+			final String adLanguage = Env.getADLanguageOrBaseLanguage();
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+					.body(JsonResponseCompositeList.error(JsonErrors.ofThrowable(ex, adLanguage)));
+		}
 	}
 
 	//

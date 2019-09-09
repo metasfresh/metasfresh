@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import de.metas.rest_api.utils.JsonError;
+import de.metas.rest_api.utils.JsonErrors;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -49,7 +50,7 @@ public class JsonGetProductCategoriesResponse
 	public static JsonGetProductCategoriesResponse error(@NonNull final Throwable throwable, @NonNull final String adLanguage)
 	{
 		return builder()
-				.error(JsonError.ofThrowable(throwable, adLanguage))
+				.error(JsonErrors.ofThrowable(throwable, adLanguage))
 				.build();
 	}
 }

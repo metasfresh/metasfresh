@@ -195,7 +195,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set External Header ID.
+	 * Set Externe Datensatz-Kopf-ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -204,7 +204,7 @@ public interface I_I_Inventory
 	public void setExternalHeaderId (java.lang.String ExternalHeaderId);
 
 	/**
-	 * Get External Header ID.
+	 * Get Externe Datensatz-Kopf-ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -218,7 +218,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_ExternalHeaderId = "ExternalHeaderId";
 
 	/**
-	 * Set External Line ID.
+	 * Set Externe Datensatz-Zeilen-ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -227,7 +227,7 @@ public interface I_I_Inventory
 	public void setExternalLineId (java.lang.String ExternalLineId);
 
 	/**
-	 * Get External Line ID.
+	 * Get Externe Datensatz-Zeilen-ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -643,6 +643,31 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_Processing = "Processing";
 
 	/**
+	 * Set Produktschlüssel.
+	 * Schlüssel des Produktes
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setProductValue (java.lang.String ProductValue);
+
+	/**
+	 * Get Produktschlüssel.
+	 * Schlüssel des Produktes
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getProductValue();
+
+    /** Column definition for ProductValue */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_ProductValue = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "ProductValue", null);
+    /** Column name ProductValue */
+    public static final String COLUMNNAME_ProductValue = "ProductValue";
+
+	/**
 	 * Set Zählmenge.
 	 * Gezählte Menge
 	 *
@@ -817,29 +842,29 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Suchschlüssel.
-	 * Search key for the record in the format required - must be unique
+	 * Set Warehouse Locator Identifier.
+	 * Text that contains identifier of earehosue and locator
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValue (java.lang.String Value);
+	public void setWarehouseLocatorIdentifier (java.lang.String WarehouseLocatorIdentifier);
 
 	/**
-	 * Get Suchschlüssel.
-	 * Search key for the record in the format required - must be unique
+	 * Get Warehouse Locator Identifier.
+	 * Text that contains identifier of earehosue and locator
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getValue();
+	public java.lang.String getWarehouseLocatorIdentifier();
 
-    /** Column definition for Value */
-    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "Value", null);
-    /** Column name Value */
-    public static final String COLUMNNAME_Value = "Value";
+    /** Column definition for WarehouseLocatorIdentifier */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_WarehouseLocatorIdentifier = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "WarehouseLocatorIdentifier", null);
+    /** Column name WarehouseLocatorIdentifier */
+    public static final String COLUMNNAME_WarehouseLocatorIdentifier = "WarehouseLocatorIdentifier";
 
 	/**
 	 * Set Lager-Schlüssel.

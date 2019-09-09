@@ -114,13 +114,12 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 		trxManager.runInNewTrx(() -> createOrUpdateMasterdata(bulkRequest, masterdataProvider));
 		// the required masterdata should be there now, and cached within masterdataProvider for quick retrieval as the olcands are created.
 
-		final JsonOLCandCreateBulkResponse //
-		jsonOLCandCreateBulkResponse = trxManager.call(() ->
-
 		// invoke creatOrderLineCandidates with the unchanged bulkRequest, because the request's bpartner and product instances are
 		// (at least currently) part of the respective caching keys.
-		creatOrderLineCandidates(bulkRequest, masterdataProvider));
+		final JsonOLCandCreateBulkResponse //
+		jsonOLCandCreateBulkResponse = trxManager.call(() -> creatOrderLineCandidates(bulkRequest, masterdataProvider));
 
+		//
 		return new ResponseEntity<>(jsonOLCandCreateBulkResponse, HttpStatus.CREATED);
 	}
 

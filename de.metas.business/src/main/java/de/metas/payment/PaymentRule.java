@@ -69,6 +69,11 @@ public enum PaymentRule implements ReferenceListAwareEnum
 		return type;
 	}
 
+	public static String toCodeOrNull(final PaymentRule type)
+	{
+		return type != null ? type.getCode() : null;
+	}
+
 	private static final ImmutableMap<String, PaymentRule> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), PaymentRule::getCode);
 
 	public boolean isCashOrCheck()

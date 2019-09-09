@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.composite.BPartnerComposite;
-import de.metas.bpartner.composite.BPartnerCompositeRepository;
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.greeting.GreetingRepository;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.bpartner.impl.MockLogEntriesRepository;

@@ -13,8 +13,8 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.GLN;
-import de.metas.bpartner.composite.BPartnerCompositeRepository.NextPageQuery;
-import de.metas.bpartner.composite.BPartnerCompositeRepository.SinceQuery;
+import de.metas.bpartner.composite.repository.NextPageQuery;
+import de.metas.bpartner.composite.repository.SinceQuery;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.JsonPagingDescriptor;
@@ -150,25 +150,15 @@ class BPartnerEndpointService
 
 		final NextPageQuery nextPageQuery = NextPageQuery.anyEntityOrNull(nextPageId);
 
-		final Optional<QueryResultPage<JsonResponseComposite>> optionalPage = jsonRetriever.getJsonBPartnerComposites(nextPageQuery, sinceQuery);
-		if (!optionalPage.isPresent())
+		final QueryResultPage<JsonResponseComposite> page = jsonRetriever.getJsonBPartnerComposites(nextPageQuery, sinceQuery).orElse(null);
+		if (page == null)
 		{
 			return Optional.empty();
 		}
 
-		final QueryResultPage<JsonResponseComposite> page = optionalPage.get();
-
-		final ImmutableList<JsonResponseComposite> jsonItems = page
-				.getItems()
-				.stream()
-				.collect(ImmutableList.toImmutableList());
-
+		final ImmutableList<JsonResponseComposite> jsonItems = page.getItems();
 		final JsonPagingDescriptor jsonPagingDescriptor = JsonConverters.createJsonPagingDescriptor(page);
-
-		final JsonResponseCompositeList result = JsonResponseCompositeList.builder()
-				.items(jsonItems)
-				.pagingDescriptor(jsonPagingDescriptor)
-				.build();
+		final JsonResponseCompositeList result = JsonResponseCompositeList.ok(jsonPagingDescriptor, jsonItems);
 
 		return Optional.of(result);
 	}
@@ -208,7 +198,7 @@ class BPartnerEndpointService
 		return Optional.of(result);
 	}
 
-	private Instant extractInstant(@Nullable final Long epochMilli)
+	private static Instant extractInstant(@Nullable final Long epochMilli)
 	{
 		if (epochMilli == null || epochMilli <= 0)
 		{

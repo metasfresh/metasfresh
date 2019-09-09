@@ -67,6 +67,7 @@ public class OLCandCreateRequest
 
 	String poReference;
 
+	LocalDate dateOrdered;
 	LocalDate dateRequired;
 
 	LocalDate dateInvoiced;
@@ -97,6 +98,7 @@ public class OLCandCreateRequest
 			final BPartnerInfo dropShipBPartner,
 			final BPartnerInfo handOverBPartner,
 			final String poReference,
+			@Nullable final LocalDate dateOrdered,
 			@Nullable final LocalDate dateRequired,
 			@Nullable final LocalDate dateInvoiced,
 			@Nullable final DocTypeId docTypeInvoiceId,
@@ -128,6 +130,7 @@ public class OLCandCreateRequest
 		this.poReference = poReference;
 		this.dateRequired = dateRequired;
 
+		this.dateOrdered = dateOrdered;
 		this.dateInvoiced = dateInvoiced;
 		this.docTypeInvoiceId = docTypeInvoiceId;
 
