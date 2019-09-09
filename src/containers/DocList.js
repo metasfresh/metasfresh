@@ -13,6 +13,11 @@ import Container from '../components/Container';
 import DocumentList from '../components/app/DocumentList';
 import Overlay from '../components/app/Overlay';
 
+/**
+ * @file Class based component.
+ * @module DocList
+ * @extends Component
+ */
 class DocList extends Component {
   state = {
     modalTitle: '',
@@ -34,6 +39,10 @@ class DocList extends Component {
     overlay: PropTypes.object,
   };
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method.
+   */
   componentDidMount = () => {
     const { dispatch, windowType, latestNewDocument, query } = this.props;
 
@@ -51,6 +60,10 @@ class DocList extends Component {
     }
   };
 
+  /**
+   * @method componentDidUpdate
+   * @summary ToDo: Describe the method.
+   */
   componentDidUpdate = prevProps => {
     const { dispatch, windowType } = this.props;
 
@@ -59,28 +72,52 @@ class DocList extends Component {
     }
   };
 
+  /**
+   * @method updateUriCallback
+   * @summary ToDo: Describe the method.
+   */
   updateUriCallback = (prop, value) => {
     const { dispatch, query, pathname } = this.props;
 
     dispatch(updateUri(pathname, query, prop, value));
   };
 
+  /**
+   * @method setModalTitle
+   * @summary ToDo: Describe the method.
+   */
   setModalTitle = title => {
     this.setState({ modalTitle: title });
   };
 
+  /**
+   * @method setModalDescription
+   * @summary ToDo: Describe the method.
+   */
   setModalDescription = desc => {
     this.setState({ modalDescription: desc });
   };
 
+  /**
+   * @method setNotFound
+   * @summary ToDo: Describe the method.
+   */
   setNotFound = isNotFound => {
     this.setState({ notfound: isNotFound });
   };
 
+  /**
+   * @method handleUpdateParentSelectedIds
+   * @summary ToDo: Describe the method.
+   */
   handleUpdateParentSelectedIds = childSelection => {
     this.masterDocumentList.updateQuickActions(childSelection);
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const {
       windowType,
@@ -184,6 +221,10 @@ class DocList extends Component {
   }
 }
 
+/**
+ * @method mapStateToProps
+ * @summary ToDo: Describe the method.
+ */
 const mapStateToProps = state => ({
   modal: state.windowHandler.modal,
   rawModal: state.windowHandler.rawModal,
