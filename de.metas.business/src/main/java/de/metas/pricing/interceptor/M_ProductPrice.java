@@ -9,6 +9,7 @@ import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import de.metas.pricing.M_ProductPrice_POCopyRecordSupport;
 import de.metas.pricing.service.ProductPrices;
 import lombok.NonNull;
 
@@ -47,8 +48,8 @@ public class M_ProductPrice
 	@Init
 	public void init(final IModelValidationEngine engine)
 	{
-
- 		CopyRecordFactory.enableForTableName(I_M_ProductPrice.Table_Name);
+		CopyRecordFactory.enableForTableName(I_M_ProductPrice.Table_Name);
+		CopyRecordFactory.registerCopyRecordSupport(I_M_ProductPrice.Table_Name, M_ProductPrice_POCopyRecordSupport.class);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })

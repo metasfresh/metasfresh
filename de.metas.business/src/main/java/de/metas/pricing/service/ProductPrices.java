@@ -99,6 +99,11 @@ public class ProductPrices
 			return;
 		}
 
+		if(productPrice.isInvalidPrice())
+		{
+			return;
+		}
+
 		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(productPrice.getM_PriceList_Version_ID());
 		final I_M_PriceList_Version priceListVersion = priceListsRepo.getPriceListVersionByIdInTrx(priceListVersionId);
@@ -135,6 +140,7 @@ public class ProductPrices
 		return newQuery(plv)
 				.setProductId(productId)
 				.noAttributePricing()
+				.ignoreInvalid(true)
 				//
 				.addMatchersIfAbsent(MATCHERS_MainProductPrice); // IMORTANT: keep it last
 	}

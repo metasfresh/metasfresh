@@ -29,7 +29,7 @@ import lombok.NonNull;
  * Note that we invoke {@link AttributePricing#registerDefaultMatcher(IProductPriceQueryMatcher)} with {@link #HUPIItemProductMatcher_None} (in a model interceptor)
  * to make sure that our super class will ignore those product price records that have a {@code M_HU_PI_Item_Product_ID} set.<br>
  * That way this class can reuse a lot of stuff like the {@link #applies(IPricingContext, IPricingResult)} method from its superclass.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -126,7 +126,7 @@ public class HUPricing extends AttributePricing
 	 * <li>there is a proper UOM-conversion for QtyEntered => QtyEnteredInPriceUOM</li>
 	 * <li>LineNetAmt is computed from QtyEnteredInPriceUOM x PriceActual</li>
 	 * </ul>
-	 * 
+	 *
 	 * @task 08147
 	 */
 	@Override
@@ -158,6 +158,7 @@ public class HUPricing extends AttributePricing
 				priceListVersion -> ProductPrices.newQuery(priceListVersion)
 						.setProductId(pricingCtx.getProductId())
 						.onlyAttributePricing()
+						.ignoreInvalid(true)
 						.matching(HUPIItemProductMatcher_Any)
 						.retrieveStrictDefault(I_M_ProductPrice.class));
 		if (defaultPrice == null)

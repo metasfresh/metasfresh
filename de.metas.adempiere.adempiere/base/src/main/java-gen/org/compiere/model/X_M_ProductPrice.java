@@ -15,7 +15,7 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 704017220L;
+	private static final long serialVersionUID = -1575704440L;
 
     /** Standard Constructor */
     public X_M_ProductPrice (Properties ctx, int M_ProductPrice_ID, String trxName)
@@ -29,12 +29,13 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 			setIsAttributeDependant (false); // N
 			setIsDefault (false); // N
 			setIsDiscountEditable (true); // Y
+			setIsInvalidPrice (false); // N
 			setIsPriceEditable (true); // Y
 			setIsSeasonFixedPrice (false); // N
-			setMatchSeqNo (0); // @SQL=SELECT COALESCE(MAX(MatchSeqNo),0)+10 AS DefaultValue FROM M_ProductPrice WHERE M_PriceList_Version_ID=@M_PriceList_Version_ID@ AND M_Product_ID=@M_Product_ID@
 			setM_PriceList_Version_ID (0);
 			setM_Product_ID (0);
 			setM_ProductPrice_ID (0);
+			setMatchSeqNo (0); // @SQL=SELECT COALESCE(MAX(MatchSeqNo),0)+10 AS DefaultValue FROM M_ProductPrice WHERE M_PriceList_Version_ID=@M_PriceList_Version_ID@ AND M_Product_ID=@M_Product_ID@
 			setPriceLimit (BigDecimal.ZERO);
 			setPriceList (BigDecimal.ZERO);
 			setPriceStd (BigDecimal.ZERO);
@@ -212,6 +213,29 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 		return false;
 	}
 
+	/** Set Invalid Price.
+		@param IsInvalidPrice Invalid Price	  */
+	@Override
+	public void setIsInvalidPrice (boolean IsInvalidPrice)
+	{
+		set_Value (COLUMNNAME_IsInvalidPrice, Boolean.valueOf(IsInvalidPrice));
+	}
+
+	/** Get Invalid Price.
+		@return Invalid Price	  */
+	@Override
+	public boolean isInvalidPrice () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsInvalidPrice);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Price Editable.
 		@param IsPriceEditable 
 		Allow user to change the price
@@ -259,25 +283,6 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 			return "Y".equals(oo);
 		}
 		return false;
-	}
-
-	/** Set Matching order.
-		@param MatchSeqNo Matching order	  */
-	@Override
-	public void setMatchSeqNo (int MatchSeqNo)
-	{
-		set_Value (COLUMNNAME_MatchSeqNo, Integer.valueOf(MatchSeqNo));
-	}
-
-	/** Get Matching order.
-		@return Matching order	  */
-	@Override
-	public int getMatchSeqNo () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_MatchSeqNo);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
 	}
 
 	@Override
@@ -455,6 +460,25 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 	public int getM_ProductPrice_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_ProductPrice_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Matching order.
+		@param MatchSeqNo Matching order	  */
+	@Override
+	public void setMatchSeqNo (int MatchSeqNo)
+	{
+		set_Value (COLUMNNAME_MatchSeqNo, Integer.valueOf(MatchSeqNo));
+	}
+
+	/** Get Matching order.
+		@return Matching order	  */
+	@Override
+	public int getMatchSeqNo () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_MatchSeqNo);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
