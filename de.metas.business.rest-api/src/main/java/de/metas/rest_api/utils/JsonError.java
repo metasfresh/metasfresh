@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableMap;
 
 import io.swagger.annotations.ApiModel;
@@ -51,4 +52,12 @@ public class JsonError
 	@NonNull
 	@Default
 	Map<String, String> parameters = ImmutableMap.of();
+
+	/**
+	 * Local exception.
+	 * It won't be serialized. It's just used for local troubleshooting.
+	 */
+	@Nullable
+	@JsonIgnore
+	transient Throwable throwable;
 }
