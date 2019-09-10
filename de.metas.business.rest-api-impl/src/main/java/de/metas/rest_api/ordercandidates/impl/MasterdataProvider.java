@@ -16,6 +16,10 @@ import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocTypeId;
@@ -29,14 +33,19 @@ import de.metas.organization.OrgQuery;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.rest_api.SyncAdvise;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
+import de.metas.rest_api.bpartner.request.JsonRequestContact;
+import de.metas.rest_api.bpartner.request.JsonRequestLocation;
+import de.metas.rest_api.ordercandidates.JsonBPartnerInfo;
 import de.metas.rest_api.ordercandidates.JsonDocTypeInfo;
 import de.metas.rest_api.ordercandidates.JsonOrganization;
+import de.metas.rest_api.ordercandidates.JsonProductInfo;
+import de.metas.rest_api.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
 import de.metas.rest_api.utils.MissingPropertyException;
 import de.metas.rest_api.utils.PermissionService;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -75,11 +84,9 @@ final class MasterdataProvider
 
 	private final PermissionService permissionService;
 
-	@Getter
-	private final BPartnerMasterDataProvider bPartnerMasterDataProvider;
-
-	@Getter
+	private final BPartnerMasterDataProvider bpartnerMasterDataProvider;
 	private final ProductMasterDataProvider productMasterDataProvider;
+	private final ProductPriceMasterDataProvider productPricesMasterDataProvider;
 
 	@Builder
 	private MasterdataProvider(
@@ -90,11 +97,12 @@ final class MasterdataProvider
 	{
 		final Properties ctxToUse = coalesceSuppliers(() -> ctx, () -> Env.getCtx());
 
-		this.defaultOrgId = OrgId.optionalOfRepoId(Env.getAD_Org_ID(ctxToUse)).orElse(OrgId.ANY);
+		defaultOrgId = OrgId.optionalOfRepoId(Env.getAD_Org_ID(ctxToUse)).orElse(OrgId.ANY);
 
 		this.permissionService = coalesce(permissionService, PermissionService.of(ctxToUse));
-		this.bPartnerMasterDataProvider = coalesce(bpartnerMasterDataProvider, BPartnerMasterDataProvider.of(ctxToUse, permissionService));
+		this.bpartnerMasterDataProvider = coalesce(bpartnerMasterDataProvider, BPartnerMasterDataProvider.of(ctxToUse, permissionService));
 		this.productMasterDataProvider = coalesce(productMasterDataProvider, ProductMasterDataProvider.of(ctxToUse, permissionService));
+		this.productPricesMasterDataProvider = new ProductPriceMasterDataProvider();
 	}
 
 	public void assertCanCreateNewOLCand(final OrgId orgId)
@@ -168,11 +176,9 @@ final class MasterdataProvider
 		final OrgId orgId = OrgId.ofRepoId(orgRecord.getAD_Org_ID());
 		if (json.getBpartner() != null)
 		{
-			bPartnerMasterDataProvider
-					.getCreateOrgBPartnerInfo(
-							json.getBpartner(),
-							orgId);
+			bpartnerMasterDataProvider.getCreateOrgBPartnerInfo(json.getBpartner(), orgId);
 		}
+
 		return orgId;
 	}
 
@@ -225,9 +231,42 @@ final class MasterdataProvider
 		}
 
 		final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(currencyCodeStr);
-		
+
 		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
 		return currenciesRepo.getByCurrencyCode(currencyCode).getId();
 	}
 
+	public BPartnerInfo getCreateBPartnerInfo(
+			@Nullable final JsonBPartnerInfo jsonBPartnerInfo,
+			final OrgId orgId)
+	{
+		return bpartnerMasterDataProvider.getCreateBPartnerInfo(jsonBPartnerInfo, orgId);
+	}
+
+	public JsonRequestBPartner getJsonBPartnerById(@NonNull final BPartnerId bpartnerId)
+	{
+		return bpartnerMasterDataProvider.getJsonBPartnerById(bpartnerId);
+	}
+
+	public JsonRequestLocation getJsonBPartnerLocationById(final BPartnerLocationId bpartnerLocationId)
+	{
+		return bpartnerMasterDataProvider.getJsonBPartnerLocationById(bpartnerLocationId);
+	}
+
+	public JsonRequestContact getJsonBPartnerContactById(final BPartnerContactId bpartnerContactId)
+	{
+		return bpartnerMasterDataProvider.getJsonBPartnerContactById(bpartnerContactId);
+	}
+
+	public ProductInfo getCreateProductInfo(
+			@NonNull final JsonProductInfo jsonProductInfo,
+			@NonNull final OrgId orgId)
+	{
+		return productMasterDataProvider.getCreateProductInfo(jsonProductInfo, orgId);
+	}
+
+	public void createProductPrice(@NonNull final ProductPriceCreateRequest request)
+	{
+		productPricesMasterDataProvider.createProductPrice(request);
+	}
 }

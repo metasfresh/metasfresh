@@ -30,9 +30,10 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.apache.commons.collections4.IteratorUtils;
+import org.compiere.SpringContextHolder;
 
 import de.metas.i18n.IMsgBL;
-import de.metas.ordercandidate.api.IOLCandValidatorBL;
+import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
@@ -44,7 +45,7 @@ public class C_OLCand_Validate_Selected extends JavaProcess
 	// services
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	final IOLCandValidatorBL olCandValdiatorBL = Services.get(IOLCandValidatorBL.class);
+	private final OLCandValidatorService olCandValidatorService = SpringContextHolder.instance.getBean(OLCandValidatorService.class);
 
 	@Override
 	protected void prepare()
@@ -65,13 +66,13 @@ public class C_OLCand_Validate_Selected extends JavaProcess
 				.create()
 				.iterate(I_C_OLCand.class); // working with a iterator, because the there might be *a lot* of C_OLCands, and the issue-solver that we use in the endcustomer.project also iterates.
 
-		olCandValdiatorBL.setValidationProcessInProgress(true); // avoid the InterfaceWrapperHelper.save to trigger another validation from a MV.
+		olCandValidatorService.setValidationProcessInProgress(true); // avoid the InterfaceWrapperHelper.save to trigger another validation from a MV.
 		try
 		{
 			int candidatesWithError = 0;
 			for (final I_C_OLCand olCand : IteratorUtils.asIterable(selectedCands))
 			{
-				olCandValdiatorBL.validate(olCand);
+				olCandValidatorService.validate(olCand);
 
 				if (olCand.isError())
 				{
@@ -79,11 +80,11 @@ public class C_OLCand_Validate_Selected extends JavaProcess
 				}
 				InterfaceWrapperHelper.save(olCand);
 			}
-			return msgBL.getMsg(getCtx(), IOLCandValidatorBL.MSG_ERRORS_FOUND, new Object[] { candidatesWithError });
+			return msgBL.getMsg(getCtx(), OLCandValidatorService.MSG_ERRORS_FOUND, new Object[] { candidatesWithError });
 		}
 		finally
 		{
-			olCandValdiatorBL.setValidationProcessInProgress(false);
+			olCandValidatorService.setValidationProcessInProgress(false);
 		}
 	}
 

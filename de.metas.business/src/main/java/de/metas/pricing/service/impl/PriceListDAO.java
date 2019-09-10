@@ -589,6 +589,8 @@ public class PriceListDAO implements IPriceListDAO
 		record.setPriceLimit(request.getPriceLimit());
 
 		record.setC_TaxCategory_ID(request.getTaxCategoryId().getRepoId());
+		
+		record.setIsAttributeDependant(false);
 
 		saveRecord(record);
 
