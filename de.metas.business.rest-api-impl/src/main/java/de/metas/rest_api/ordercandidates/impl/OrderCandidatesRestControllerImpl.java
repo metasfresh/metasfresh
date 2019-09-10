@@ -3,12 +3,16 @@ package de.metas.rest_api.ordercandidates.impl;
 import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
@@ -30,6 +34,9 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentTags;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCand;
@@ -37,6 +44,7 @@ import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandQuery;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.organization.OrgId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.rest_api.attachment.JsonAttachmentType;
 import de.metas.rest_api.ordercandidates.JsonAttachment;
 import de.metas.rest_api.ordercandidates.JsonOLCand;
@@ -44,9 +52,12 @@ import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
+import de.metas.rest_api.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
+import de.metas.util.time.SystemTime;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 
@@ -162,12 +173,74 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 	{
 		final OrgId orgId = masterdataProvider.getCreateOrgId(json.getOrg());
 
-		masterdataProvider.getCreateBPartnerInfo(json.getBpartner(), orgId);
-		masterdataProvider.getCreateBPartnerInfo(json.getBillBPartner(), orgId);
+		final BPartnerInfo bpartnerInfo = masterdataProvider.getCreateBPartnerInfo(json.getBpartner(), orgId);
+		final BPartnerInfo billBPartnerInfo = masterdataProvider.getCreateBPartnerInfo(json.getBillBPartner(), orgId);
 		masterdataProvider.getCreateBPartnerInfo(json.getDropShipBPartner(), orgId);
 		masterdataProvider.getCreateBPartnerInfo(json.getHandOverBPartner(), orgId);
 
-		masterdataProvider.getCreateProductInfo(json.getProduct(), orgId);
+		final ProductInfo productInfo = masterdataProvider.getCreateProductInfo(json.getProduct(), orgId);
+
+		//
+		// Create product prices if needed
+		{
+			final BPartnerInfo billBPartnerInfoEffective = CoalesceUtil.coalesce(billBPartnerInfo, bpartnerInfo);
+
+			final ExplainedOptional<ProductPriceCreateRequest> optionalRequest = createProductPriceCreateRequest(
+					masterdataProvider,
+					json,
+					billBPartnerInfoEffective,
+					productInfo);
+			if (optionalRequest.isPresent())
+			{
+				masterdataProvider.createProductPrice(optionalRequest.get());
+			}
+			else
+			{
+				logger.debug("Skip creating product price for {} because {}", productInfo, optionalRequest.getExplanation());
+			}
+		}
+
+	}
+
+	private ExplainedOptional<ProductPriceCreateRequest> createProductPriceCreateRequest(
+			@NonNull final MasterdataProvider masterdataProvider,
+			@NonNull final JsonOLCandCreateRequest json,
+			@NonNull final BPartnerInfo bpartnerInfo,
+			@NonNull final ProductInfo productInfo)
+	{
+		if (!productInfo.isJustCreated())
+		{
+			return ExplainedOptional.emptyBecause("product was already created");
+		}
+
+		final BigDecimal price = json.getProduct().getPrice();
+		if (price == null)
+		{
+			return ExplainedOptional.emptyBecause("price was not specified");
+		}
+
+		final BPartnerLocationId bpartnerAndLocationId = bpartnerInfo.getBpartnerLocationId();
+		if (bpartnerAndLocationId == null)
+		{
+			throw new AdempiereException("@NotFound@ @C_BPartner_Location_ID@");
+		}
+
+		final ZonedDateTime dateEffective = json.getDateOrdered() != null
+				? TimeUtil.asZonedDateTime(json.getDateOrdered())
+				: SystemTime.asZonedDateTime();
+
+		final PricingSystemId pricingSystemId = masterdataProvider.getPricingSystemIdByValue(json.getPricingSystemCode());
+
+		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
+				.bpartnerAndLocationId(bpartnerAndLocationId)
+				.pricingSystemId(pricingSystemId)
+				.date(dateEffective)
+				.productId(productInfo.getProductId())
+				.uomId(productInfo.getUomId())
+				.price(price)
+				.build();
+
+		return ExplainedOptional.of(request);
 	}
 
 	private JsonOLCandCreateBulkResponse creatOrderLineCandidates(
@@ -262,7 +335,7 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 	}
 
 	@VisibleForTesting
-	JsonAttachment toJsonAttachment(
+	static JsonAttachment toJsonAttachment(
 			@NonNull final String externalReference,
 			@NonNull final String dataSourceName,
 			@NonNull final AttachmentEntry entry)

@@ -86,7 +86,7 @@ final class MasterdataProvider
 
 	private final BPartnerMasterDataProvider bpartnerMasterDataProvider;
 	private final ProductMasterDataProvider productMasterDataProvider;
-	private final ProductPriceMasterDataProvider pricesMasterDataProvider;
+	private final ProductPriceMasterDataProvider productPricesMasterDataProvider;
 
 	@Builder
 	private MasterdataProvider(
@@ -102,7 +102,7 @@ final class MasterdataProvider
 		this.permissionService = coalesce(permissionService, PermissionService.of(ctxToUse));
 		this.bpartnerMasterDataProvider = coalesce(bpartnerMasterDataProvider, BPartnerMasterDataProvider.of(ctxToUse, permissionService));
 		this.productMasterDataProvider = coalesce(productMasterDataProvider, ProductMasterDataProvider.of(ctxToUse, permissionService));
-		this.pricesMasterDataProvider = new ProductPriceMasterDataProvider();
+		this.productPricesMasterDataProvider = new ProductPriceMasterDataProvider();
 	}
 
 	public void assertCanCreateNewOLCand(final OrgId orgId)
@@ -267,6 +267,6 @@ final class MasterdataProvider
 
 	public void createProductPrice(@NonNull final ProductPriceCreateRequest request)
 	{
-		pricesMasterDataProvider.createProductPrice(request);
+		productPricesMasterDataProvider.createProductPrice(request);
 	}
 }
