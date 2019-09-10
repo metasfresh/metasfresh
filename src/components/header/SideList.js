@@ -186,7 +186,12 @@ class SideList extends Component {
   }
 }
 
-function mapStateToProps(state) {
+/**
+ * @method mapStateToProps
+ * @summary ToDo: Describe the method.
+ * @param {object} state
+ */
+const mapStateToProps = state => {
   const { listHandler } = state;
   const { sorting, pagination, viewId } = listHandler || {
     sorting: {},
@@ -199,6 +204,6 @@ function mapStateToProps(state) {
     pagination,
     viewId,
   };
-}
+};
 
 export default connect(mapStateToProps)(onClickOutside(SideList));
