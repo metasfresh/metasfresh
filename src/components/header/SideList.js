@@ -9,6 +9,11 @@ import Tooltips from '../tooltips/Tooltips';
 import Attachments from './Attachments';
 import Referenced from './Referenced';
 
+/**
+ * @file Class based component.
+ * @module SideList
+ * @extends Component
+ */
 class SideList extends Component {
   constructor(props) {
     super(props);
@@ -21,6 +26,10 @@ class SideList extends Component {
     };
   }
 
+  /**
+   * @method UNSAFE_componentWillReceiveProps
+   * @summary ToDo: Describe the method.
+   */
   UNSAFE_componentWillReceiveProps(props) {
     const { defaultTab } = props;
 
@@ -31,17 +40,29 @@ class SideList extends Component {
     }
   }
 
+  /**
+   * @method handleClickOutside
+   * @summary ToDo: Describe the method.
+   */
   handleClickOutside = () => {
     const { closeSideList } = this.props;
     closeSideList();
   };
 
+  /**
+   * @method changeTab
+   * @summary ToDo: Describe the method.
+   */
   changeTab = index => {
     this.setState({
       tab: index,
     });
   };
 
+  /**
+   * @method renderBody
+   * @summary ToDo: Describe the method.
+   */
   renderBody = () => {
     const {
       windowType,
@@ -91,12 +112,21 @@ class SideList extends Component {
     }
   };
 
+  /**
+   * @method toggleTooltip
+   * @summary ToDo: Describe the method.
+   * @param {*} id
+   */
   toggleTooltip = id => {
     this.setState({
       tooltipOpen: id,
     });
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const { tab, tooltipOpen } = this.state;
 
