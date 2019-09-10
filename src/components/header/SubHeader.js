@@ -20,7 +20,6 @@ const simplifyName = name => name.toLowerCase().replace(/\s/g, '');
  * @module SubHeader
  * @extends Component
  */
-
 class SubHeader extends Component {
   state = {
     pdfSrc: null,
