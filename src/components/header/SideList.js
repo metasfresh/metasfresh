@@ -30,6 +30,7 @@ class SideList extends Component {
   /**
    * @method UNSAFE_componentWillReceiveProps
    * @summary ToDo: Describe the method.
+   * @param {objec} props
    */
   UNSAFE_componentWillReceiveProps(props) {
     const { defaultTab } = props;
@@ -53,6 +54,7 @@ class SideList extends Component {
   /**
    * @method changeTab
    * @summary ToDo: Describe the method.
+   * @param {*} index
    */
   changeTab = index => {
     this.setState({
