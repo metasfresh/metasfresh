@@ -1,19 +1,29 @@
-package de.metas.ordercandidate.api.impl;
+package de.metas.ordercandidate.api;
 
-import org.compiere.Adempiere;
+import org.springframework.stereotype.Service;
 
-import de.metas.ordercandidate.api.IOLCandValidatorBL;
-import de.metas.ordercandidate.api.OLCandRegistry;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandValidator;
 import lombok.NonNull;
 
-public class OLCandValidatorBL implements IOLCandValidatorBL
+@Service
+public class OLCandValidatorService
 {
-	@Override
+	/** AD_Message to be used by users of this implementation. */
+	public static final String MSG_ERRORS_FOUND = "de.metas.ordercandidate.spi.impl.OLCandPriceValidator.FoundErrors";
+
+	private final ThreadLocal<Boolean> validationProcessInProgress = ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+	private final OLCandRegistry olCandRegistry;
+
+	public OLCandValidatorService(
+			@NonNull final OLCandRegistry olCandRegistry)
+	{
+		this.olCandRegistry = olCandRegistry;
+	}
+
 	public boolean validate(@NonNull final I_C_OLCand olCand)
 	{
-		final OLCandRegistry olCandRegistry = Adempiere.getBean(OLCandRegistry.class);
 		final IOLCandValidator validators = olCandRegistry.getValidators();
 
 		// 08072
@@ -25,16 +35,9 @@ public class OLCandValidatorBL implements IOLCandValidatorBL
 		return validators.validate(olCand);
 	}
 
-	private final ThreadLocal<Boolean> validationProcessInProgress = new ThreadLocal<Boolean>()
-	{
-		@Override
-		protected Boolean initialValue()
-		{
-			return false;
-		};
-	};
-
-	@Override
+	/**
+	 * @return a thread-local variable that indicates if the current thread is currently validating olCands. Can be used to avoid unnecessary calls to the validation API (from MVs).
+	 */
 	public boolean isValidationProcessInProgress()
 	{
 		final Boolean isUpdateProcess = validationProcessInProgress.get();
@@ -44,7 +47,9 @@ public class OLCandValidatorBL implements IOLCandValidatorBL
 				: isUpdateProcess.booleanValue();
 	}
 
-	@Override
+	/**
+	 * See {@link #isValidationProcessInProgress()}.
+	 */
 	public boolean setValidationProcessInProgress(final boolean value)
 	{
 		final Boolean isUpdateProcess = isValidationProcessInProgress();

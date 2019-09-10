@@ -31,14 +31,15 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -49,7 +50,7 @@ import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.interfaces.I_C_BP_Relation;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
-import de.metas.ordercandidate.api.IOLCandValidatorBL;
+import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.organization.OrgId;
@@ -57,12 +58,17 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
-// Note: this model validator used to have the class name 'OLCand'
-
-@Validator(I_C_OLCand.class)
+@Interceptor(I_C_OLCand.class)
 @Callout(I_C_OLCand.class)
+@Component
 public class C_OLCand
 {
+	private final OLCandValidatorService olCandValidatorService;
+
+	public C_OLCand(@NonNull final OLCandValidatorService olCandValidatorService)
+	{
+		this.olCandValidatorService = olCandValidatorService;
+	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_OLCand.COLUMNNAME_IsError)
 	public void onIsErrorUnset(final I_C_OLCand olCand)
@@ -94,7 +100,7 @@ public class C_OLCand
 	}
 
 	/**
-	 * Calls {@link IOLCandValidatorBL#validate(I_C_OLCand)}.<br>
+	 * Calls {@link OLCandValidatorService#validate(I_C_OLCand)}.<br>
 	 *
 	 * Before that it resets the pricing system if there is a new C_BPartner or C_BPartner_Override.<br>
 	 * The {@link de.metas.ordercandidate.spi.IOLCandValidator} framework is then supposed to call {@link de.metas.ordercandidate.api.IOLCandBL} to come up with the then-correct pricing system.
@@ -105,8 +111,7 @@ public class C_OLCand
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW })
 	public void validateC_OLCand(final I_C_OLCand olCand)
 	{
-		final IOLCandValidatorBL olCandValdiatorBL = Services.get(IOLCandValidatorBL.class);
-		if (olCandValdiatorBL.isValidationProcessInProgress())
+		if (olCandValidatorService.isValidationProcessInProgress())
 		{
 			return; // we are already within the validation process. no need to call the logic from here.
 		}
@@ -119,7 +124,7 @@ public class C_OLCand
 			// task 09686
 			olCand.setM_PricingSystem_ID(0);
 		}
-		olCandValdiatorBL.validate(olCand);
+		olCandValidatorService.validate(olCand);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
