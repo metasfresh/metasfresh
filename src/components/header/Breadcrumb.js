@@ -262,8 +262,28 @@ class Breadcrumb extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} breadcrumb
+ * @prop {func} dispatch
+ * @prop {*} docId
+ * @prop {*} docSummaryData
+ * @prop {*} handleMenuOverlay
+ * @prop {*} menuOverlay
+ * @prop {*} openModal
+ * @prop {*} siteName
+ * @prop {*} windowType
+ */
 Breadcrumb.propTypes = {
+  breadcrumb: PropTypes.any,
   dispatch: PropTypes.func.isRequired,
+  docId: PropTypes.any,
+  docSummaryData: PropTypes.any,
+  handleMenuOverlay: PropTypes.any,
+  menuOverlay: PropTypes.any,
+  openModal: PropTypes.any,
+  siteName: PropTypes.any,
+  windowType: PropTypes.any,
 };
 
 export default connect()(Breadcrumb);
