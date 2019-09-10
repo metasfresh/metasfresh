@@ -1,4 +1,5 @@
 import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
@@ -9,6 +10,11 @@ import Tooltips from '../tooltips/Tooltips';
 import Attachments from './Attachments';
 import Referenced from './Referenced';
 
+/**
+ * @file Class based component.
+ * @module SideList
+ * @extends Component
+ */
 class SideList extends Component {
   constructor(props) {
     super(props);
@@ -21,6 +27,11 @@ class SideList extends Component {
     };
   }
 
+  /**
+   * @method UNSAFE_componentWillReceiveProps
+   * @summary ToDo: Describe the method.
+   * @param {objec} props
+   */
   UNSAFE_componentWillReceiveProps(props) {
     const { defaultTab } = props;
 
@@ -31,17 +42,30 @@ class SideList extends Component {
     }
   }
 
+  /**
+   * @method handleClickOutside
+   * @summary ToDo: Describe the method.
+   */
   handleClickOutside = () => {
     const { closeSideList } = this.props;
     closeSideList();
   };
 
+  /**
+   * @method changeTab
+   * @summary ToDo: Describe the method.
+   * @param {*} index
+   */
   changeTab = index => {
     this.setState({
       tab: index,
     });
   };
 
+  /**
+   * @method renderBody
+   * @summary ToDo: Describe the method.
+   */
   renderBody = () => {
     const {
       windowType,
@@ -91,12 +115,21 @@ class SideList extends Component {
     }
   };
 
+  /**
+   * @method toggleTooltip
+   * @summary ToDo: Describe the method.
+   * @param {*} id
+   */
   toggleTooltip = id => {
     this.setState({
       tooltipOpen: id,
     });
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const { tab, tooltipOpen } = this.state;
 
@@ -156,7 +189,36 @@ class SideList extends Component {
   }
 }
 
-function mapStateToProps(state) {
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} closeOverlays
+ * @prop {*} closeSideList
+ * @prop {*} defaultTab
+ * @prop {*} docId
+ * @prop {*} isSideListShow
+ * @prop {*} pagination
+ * @prop {*} sorting
+ * @prop {*} viewId
+ * @prop {*} windowType
+ */
+SideList.propTypes = {
+  closeOverlays: PropTypes.any,
+  closeSideList: PropTypes.any,
+  defaultTab: PropTypes.any,
+  docId: PropTypes.any,
+  isSideListShow: PropTypes.any,
+  pagination: PropTypes.any,
+  sorting: PropTypes.any,
+  viewId: PropTypes.any,
+  windowType: PropTypes.any,
+};
+
+/**
+ * @method mapStateToProps
+ * @summary ToDo: Describe the method.
+ * @param {object} state
+ */
+const mapStateToProps = state => {
   const { listHandler } = state;
   const { sorting, pagination, viewId } = listHandler || {
     sorting: {},
@@ -169,6 +231,6 @@ function mapStateToProps(state) {
     pagination,
     viewId,
   };
-}
+};
 
 export default connect(mapStateToProps)(onClickOutside(SideList));
