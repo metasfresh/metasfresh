@@ -538,7 +538,7 @@ final class BPartnerMasterDataProvider
 
 		return JsonRequestLocation
 				.builder()
-				.externalId(JsonExternalId.of(bpLocationRecord.getExternalId()))
+				.externalId(JsonExternalId.ofOrNull(bpLocationRecord.getExternalId()))
 				.gln(bpLocationRecord.getGLN())
 				.address1(location.getAddress1())
 				.address2(location.getAddress2())
@@ -614,7 +614,7 @@ final class BPartnerMasterDataProvider
 
 		return JsonRequestContact
 				.builder()
-				.externalId(JsonExternalId.of(bpContactRecord.getExternalId()))
+				.externalId(JsonExternalId.ofOrNull(bpContactRecord.getExternalId()))
 				.name(bpContactRecord.getName())
 				.email(bpContactRecord.getEMail())
 				.phone(bpContactRecord.getPhone())
