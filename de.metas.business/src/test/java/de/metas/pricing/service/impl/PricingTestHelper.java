@@ -168,8 +168,8 @@ public class PricingTestHelper
 	public final I_M_PriceList createPriceList(final I_M_PricingSystem pricingSystem, final I_C_Country country)
 	{
 		final I_M_PriceList priceList = InterfaceWrapperHelper.newInstance(I_M_PriceList.class, pricingSystem);
-		priceList.setM_PricingSystem(pricingSystem);
-		priceList.setC_Country(country);
+		priceList.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
+		priceList.setC_Country_ID(country.getC_Country_ID());
 		priceList.setC_Currency_ID(country.getC_Currency_ID());
 		priceList.setIsSOPriceList(true);
 		priceList.setPricePrecision(2);

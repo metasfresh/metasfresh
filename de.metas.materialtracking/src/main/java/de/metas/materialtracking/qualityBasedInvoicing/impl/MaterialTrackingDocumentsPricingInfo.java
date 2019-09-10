@@ -13,7 +13,6 @@ import java.util.TreeMap;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_InOut;
@@ -37,6 +36,7 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionOrder;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Check;
@@ -57,11 +57,11 @@ import lombok.NonNull;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -223,7 +223,7 @@ import lombok.NonNull;
 			final List<I_M_InOutLine> issuedInOutLinesForPPOrder = materialTrackingPPOrderBL.retrieveIssuedInOutLines(ppOrder);
 			for (final I_M_InOutLine inOutLine : issuedInOutLinesForPPOrder)
 			{
-				if(inOutLine.getM_Material_Tracking_ID() != _materialTracking.getM_Material_Tracking_ID())
+				if (inOutLine.getM_Material_Tracking_ID() != _materialTracking.getM_Material_Tracking_ID())
 				{
 					// someone issued stuff from an unrelated inoutLine to our ppOrder => ignore that iol
 					continue;
@@ -330,10 +330,16 @@ import lombok.NonNull;
 			return this;
 		}
 
-		public Builder setM_PricingSystemOf(final I_M_PriceList_Version plv)
+		public Builder setM_PricingSystemOf(@NonNull final I_M_PriceList_Version plv)
 		{
-			Check.assumeNotNull(plv, "plv not null");
-			final I_M_PricingSystem pricingSystem = InterfaceWrapperHelper.create(plv.getM_PriceList(), I_M_PriceList.class).getM_PricingSystem();
+			final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+
+			final PriceListId priceListId = PriceListId.ofRepoId(plv.getM_PriceList_ID());
+			I_M_PriceList priceList = priceListsRepo.getById(priceListId);
+
+			final PricingSystemId pricingSystemId = PricingSystemId.ofRepoIdOrNull(priceList.getM_PricingSystem_ID());
+			final I_M_PricingSystem pricingSystem = priceListsRepo.getPricingSystemById(pricingSystemId);
+
 			return setM_PricingSystem(pricingSystem);
 		}
 

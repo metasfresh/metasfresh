@@ -75,12 +75,18 @@ final class MInventoryImportTableSqlUpdater
 				+ "    Y = COALESCE(i.Y, dimensions.locatorY), "
 				+ "    Z = COALESCE(i.Z, dimensions.locatorZ), "
 				+ "    X1 = COALESCE(i.X1, dimensions.locatorX1) "
-				+ "FROM (SELECT d.warehouseValue, d.locatorValue, d.locatorX, d.locatorY, d.locatorZ, d.locatorX1, inv.I_Inventory_ID "
-				+ "	FROM I_Inventory as inv"
-				+ "	JOIN extractLocatorDimensions(inv.WarehouseLocatorIdentifier) as d on 1=1"
-				+ ") AS dimensions "
-				+ "WHERE I_IsImported<>'Y' AND dimensions.I_Inventory_ID = i.I_Inventory_ID ")
-				.append(whereClause);
+				+ "FROM ("
+				+ "      SELECT "
+				+ "             d.warehouseValue, d.locatorValue, "
+				+ "             d.locatorX, d.locatorY, d.locatorZ, d.locatorX1, "
+				/* we have need an alias because the 'whereClause' param that metasfresh appends is not not qualified; */
+				/* without the alias the SQL fails with "ERROR: column reference "i_inventory_id" is ambiguous" */
+				+ "             inv.I_Inventory_ID as dimensions_I_Inventory_ID"
+				+ "	     FROM I_Inventory as inv"
+				+ "	       JOIN extractLocatorDimensions(inv.WarehouseLocatorIdentifier) as d on 1=1"
+				+ "     ) AS dimensions "
+				+ "WHERE I_IsImported<>'Y' AND dimensions.dimensions_I_Inventory_ID = i.I_Inventory_ID ")
+						.append(whereClause);
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
