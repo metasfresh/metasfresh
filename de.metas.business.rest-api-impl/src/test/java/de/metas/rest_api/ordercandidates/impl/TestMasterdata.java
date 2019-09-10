@@ -7,6 +7,7 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.pricing.model.I_C_PricingRule;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
@@ -27,9 +28,12 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.rules.IPricingRule;
+import de.metas.pricing.rules.PriceListVersion;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import lombok.Builder;
@@ -139,14 +143,17 @@ final class TestMasterdata
 	}
 
 	public PriceListId createSalesPriceList(
-			final PricingSystemId pricingSystemId,
-			final CountryId countryId,
-			final TaxCategoryId defaultTaxCategoryId)
+			@NonNull final PricingSystemId pricingSystemId,
+			@NonNull final CountryId countryId,
+			@NonNull final CurrencyId currencyId,
+			@Nullable final TaxCategoryId defaultTaxCategoryId)
 	{
 		final I_M_PriceList record = newInstance(I_M_PriceList.class);
 		record.setM_PricingSystem_ID(pricingSystemId.getRepoId());
 		record.setC_Country_ID(countryId.getRepoId());
+		record.setC_Currency_ID(currencyId.getRepoId());
 		record.setIsSOPriceList(true);
+		record.setPricePrecision(2);
 		record.setDefault_TaxCategory_ID(TaxCategoryId.toRepoId(defaultTaxCategoryId));
 		saveRecord(record);
 		return PriceListId.ofRepoId(record.getM_PriceList_ID());
@@ -169,4 +176,24 @@ final class TestMasterdata
 		saveRecord(record);
 		return TaxCategoryId.ofRepoId(record.getC_TaxCategory_ID());
 	}
+
+	public void createPricingRules()
+	{
+		createPricingRule(PriceListVersion.class, 10);
+	}
+
+	private void createPricingRule(
+			@NonNull final Class<? extends IPricingRule> clazz,
+			int seqNo)
+	{
+		final String classname = clazz.getName();
+
+		final I_C_PricingRule pricingRule = newInstance(I_C_PricingRule.class);
+		pricingRule.setName(classname);
+		pricingRule.setClassname(classname);
+		pricingRule.setIsActive(true);
+		pricingRule.setSeqNo(seqNo);
+		saveRecord(pricingRule);
+	}
+
 }

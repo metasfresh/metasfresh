@@ -8,16 +8,15 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.MimeType;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,10 +31,18 @@ import ch.qos.logback.classic.Level;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.bpartner.GLN;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.ordercandidate.api.OLCandRegistry;
 import de.metas.ordercandidate.api.OLCandRepository;
+import de.metas.ordercandidate.api.OLCandValidatorService;
+import de.metas.ordercandidate.spi.impl.OLCandLocationValidator;
+import de.metas.ordercandidate.spi.impl.OLCandPriceValidator;
+import de.metas.ordercandidate.spi.impl.OLCandUOMValidator;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.rest_api.SyncAdvise;
@@ -57,6 +64,7 @@ import de.metas.rest_api.utils.PermissionService;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import mockit.Mocked;
 
@@ -95,8 +103,10 @@ public class OrderCandidatesRestControllerImplTest
 	private static final String UOM_CODE = "MJ";
 	private UomId uomId;
 
-	private static final String COUNTRY_CODE_CH = "CH";
-	private CountryId countryId_CH;
+	private CurrencyId currencyId_EUR = CurrencyId.ofRepoId(12345);
+
+	private static final String COUNTRY_CODE_DE = "DE";
+	private CountryId countryId_DE;
 
 	private static final DocBaseAndSubType DOCTYPE_SALES_INVOICE = DocBaseAndSubType.of("ARI", "KV");
 
@@ -113,7 +123,7 @@ public class OrderCandidatesRestControllerImplTest
 		{ // create the master data requested to process the data from our json file
 			testMasterdata = new TestMasterdata();
 
-			countryId_CH = testMasterdata.createCountry(COUNTRY_CODE_CH);
+			countryId_DE = testMasterdata.createCountry(COUNTRY_CODE_DE);
 
 			uomId = testMasterdata.createUOM(UOM_CODE);
 
@@ -137,8 +147,19 @@ public class OrderCandidatesRestControllerImplTest
 	// NOTE: Shall be called programatically by each test
 	private void startInterceptors()
 	{
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+
+		final OLCandRegistry olCandRegistry = new OLCandRegistry(
+				Optional.empty(),
+				Optional.empty(),
+				Optional.of(ImmutableList.of(
+						new OLCandLocationValidator(),
+						new OLCandPriceValidator(),
+						new OLCandUOMValidator())));
+		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandRegistry);
+
 		final IModelInterceptorRegistry registry = Services.get(IModelInterceptorRegistry.class);
-		registry.addModelInterceptor(new de.metas.ordercandidate.modelvalidator.C_OLCand());
+		registry.addModelInterceptor(new de.metas.ordercandidate.modelvalidator.C_OLCand(olCandValidatorService));
 	}
 
 	@Test
@@ -164,6 +185,8 @@ public class OrderCandidatesRestControllerImplTest
 	public void createOrderLineCandidates()
 	{
 		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
+		testMasterdata.createCountry("CH");
 
 		final JsonOLCandCreateBulkRequest bulkRequestFromFile = JsonOLCandUtil.fromResource("/JsonOLCandCreateBulkRequest.json");
 		assertThat(bulkRequestFromFile.getRequests()).hasSize(21); // guards
@@ -248,7 +271,7 @@ public class OrderCandidatesRestControllerImplTest
 	{
 		testMasterdata.prepareBPartnerAndLocation()
 				.bpValue("bpCode")
-				.countryId(countryId_CH)
+				.countryId(countryId_DE)
 				.build();
 
 		testMasterdata.createProduct("productCode", uomId);
@@ -335,16 +358,18 @@ public class OrderCandidatesRestControllerImplTest
 	{
 		final TaxCategoryId taxCategoryId = testMasterdata.createTaxCategory();
 		final PricingSystemId pricingSystemId = testMasterdata.createPricingSystem();
-		final PriceListId priceListId = testMasterdata.createSalesPriceList(pricingSystemId, countryId_CH, taxCategoryId);
+		final PriceListId priceListId = testMasterdata.createSalesPriceList(pricingSystemId, countryId_DE, currencyId_EUR, taxCategoryId);
 		testMasterdata.createPriceListVersion(priceListId, LocalDate.of(2019, Month.SEPTEMBER, 1));
 		testMasterdata.prepareBPartnerAndLocation()
 				.bpValue("bpCode")
 				.salesPricingSystemId(pricingSystemId)
-				.countryId(countryId_CH)
+				.countryId(countryId_DE)
 				.gln(GLN.ofString("gln1"))
 				.build();
 
-		// startInterceptors(); // FIXME: interceptors are not working yet (spring shit)
+		testMasterdata.createPricingRules();
+
+		startInterceptors();
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
 				.dataSourceInternalName(DATA_SOURCE_INTERNALNAME)
@@ -386,9 +411,8 @@ public class OrderCandidatesRestControllerImplTest
 
 		final JsonOLCand olCand = olCands.get(0);
 		System.out.println(olCand);
-		// assertThat(olCand.getDateOrdered()).isEqualTo(dateOrdered);
 
-		POJOLookupMap.get().dumpStatus("", I_M_ProductPrice.Table_Name);
+		assertThat(olCand.getPrice()).isEqualByComparingTo(new BigDecimal("13.24"));
 	}
 
 }
