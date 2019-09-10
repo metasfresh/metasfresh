@@ -40,9 +40,7 @@ import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.api.OLCandRegistry;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.ordercandidate.api.OLCandValidatorService;
-import de.metas.ordercandidate.spi.impl.OLCandLocationValidator;
-import de.metas.ordercandidate.spi.impl.OLCandPriceValidator;
-import de.metas.ordercandidate.spi.impl.OLCandUOMValidator;
+import de.metas.ordercandidate.spi.impl.DefaultOLCandValidator;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.rest_api.SyncAdvise;
@@ -152,10 +150,7 @@ public class OrderCandidatesRestControllerImplTest
 		final OLCandRegistry olCandRegistry = new OLCandRegistry(
 				Optional.empty(),
 				Optional.empty(),
-				Optional.of(ImmutableList.of(
-						new OLCandLocationValidator(),
-						new OLCandPriceValidator(),
-						new OLCandUOMValidator())));
+				Optional.of(ImmutableList.of(new DefaultOLCandValidator())));
 		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandRegistry);
 
 		final IModelInterceptorRegistry registry = Services.get(IModelInterceptorRegistry.class);
