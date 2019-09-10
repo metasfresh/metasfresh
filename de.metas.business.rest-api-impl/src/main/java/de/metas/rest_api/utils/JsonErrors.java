@@ -48,6 +48,7 @@ public class JsonErrors
 				.message(AdempiereException.extractMessageTrl(cause).translate(adLanguage))
 				.stackTrace(Trace.toOneLineStackTraceString(cause.getStackTrace()))
 				.parameters(extractParameters(throwable, adLanguage))
+				.throwable(throwable)
 				.build();
 	}
 

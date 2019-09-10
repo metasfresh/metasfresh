@@ -13,15 +13,14 @@ package org.adempiere.server.rpl.trx.process;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -41,17 +40,18 @@ import org.adempiere.server.rpl.trx.spi.IReplicationIssueSolver;
 import org.adempiere.server.rpl.trx.spi.NoOpIssueSolver;
 import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
+import org.compiere.SpringContextHolder;
 
 import de.metas.i18n.IMsgBL;
-import de.metas.ordercandidate.api.IOLCandValidatorBL;
-import de.metas.process.ProcessInfoParameter;
+import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
+import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
- * Uses {@link IOLCandValidatorBL} to check the prices and other aspects of all {@link I_C_OLCand} for a certain {@link I_EXP_ReplicationTrx#COLUMNNAME_EXP_ReplicationTrx_ID EXP_ReplicationTrx_ID}. <br>
+ * Uses {@link OLCandValidatorService} to check the prices and other aspects of all {@link I_C_OLCand} for a certain {@link I_EXP_ReplicationTrx#COLUMNNAME_EXP_ReplicationTrx_ID EXP_ReplicationTrx_ID}. <br>
  * Then, if all prices are OK, uses {@link NoOpIssueSolver} to flag the {@link I_C_OLCand}s of that trx-ID as solved.
  * Finally, the process performs an update to set <code>C_OLCand.IsImportedWithIssues='N'</code> to all olcands.
  */
@@ -59,10 +59,11 @@ public class OLCandIssueSolverProcess extends JavaProcess
 {
 
 	private int p_EXP_ReplicationTrx_ID;
-	private final Map<String, Object> params = new HashMap<String, Object>();
+	private final Map<String, Object> params = new HashMap<>();
 
 	//
 	// services
+	private final OLCandValidatorService olCandValidatorService = SpringContextHolder.instance.getBean(OLCandValidatorService.class);
 	private final IReplicationIssueSolverBL replicationIssueSolverBL = Services.get(IReplicationIssueSolverBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
@@ -75,20 +76,20 @@ public class OLCandIssueSolverProcess extends JavaProcess
 
 		final ProcessInfoParameter[] para = getParametersAsArray();
 
-		for (int i = 0; i < para.length; i++)
+		for (ProcessInfoParameter element : para)
 		{
-			final String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
+			final String name = element.getParameterName();
+			if (element.getParameter() == null)
 			{
 				// do nothing
 			}
 			else if (I_C_OLCand.COLUMNNAME_EXP_ReplicationTrx_ID.equals(name))
 			{
-				p_EXP_ReplicationTrx_ID = para[i].getParameterAsInt();
+				p_EXP_ReplicationTrx_ID = element.getParameterAsInt();
 			}
 			else
 			{
-				final Object value = para[i].getParameter();
+				final Object value = element.getParameter();
 				params.put(name, value);
 			}
 		}
@@ -105,7 +106,7 @@ public class OLCandIssueSolverProcess extends JavaProcess
 
 		//
 		// task 08072: verify that all candidates have proper pricing
-		final Mutable<Integer> candidatesUpdatedDuringValidation = new Mutable<Integer>(0);
+		final Mutable<Integer> candidatesUpdatedDuringValidation = new Mutable<>(0);
 		if (!validateReplicationTrx(candidatesUpdatedDuringValidation))
 		{
 			// In case one of the candidates with the given EXP_ReplicationTrx_ID, do not solve issues
@@ -136,15 +137,14 @@ public class OLCandIssueSolverProcess extends JavaProcess
 				.create()
 				.iterate(I_C_OLCand.class);
 
-		final IOLCandValidatorBL olCandValdiatorBL = Services.get(IOLCandValidatorBL.class);
 		int candidatesWithErorr = 0;
 
-		olCandValdiatorBL.setValidationProcessInProgress(true); // avoid the InterfaceWrapperHelper.save to trigger another validation from a MV.
+		olCandValidatorService.setValidationProcessInProgress(true); // avoid the InterfaceWrapperHelper.save to trigger another validation from a MV.
 		try
 		{
 			for (final I_C_OLCand cand : IteratorUtils.asIterable(selectedCands))
 			{
-				olCandValdiatorBL.validate(cand);
+				olCandValidatorService.validate(cand);
 				if (InterfaceWrapperHelper.hasChanges(cand))
 				{
 					candidatesUpdated.setValue(candidatesUpdated.getValue() + 1);
@@ -158,14 +158,14 @@ public class OLCandIssueSolverProcess extends JavaProcess
 
 			if (candidatesWithErorr != 0)
 			{
-				addLog(msgBL.getMsg(getCtx(), IOLCandValidatorBL.MSG_ERRORS_FOUND, new Object[] { candidatesWithErorr }));
+				addLog(msgBL.getMsg(getCtx(), OLCandValidatorService.MSG_ERRORS_FOUND, new Object[] { candidatesWithErorr }));
 			}
 
 			return (candidatesWithErorr == 0); // return true if there were no errors
 		}
 		finally
 		{
-			olCandValdiatorBL.setValidationProcessInProgress(false);
+			olCandValidatorService.setValidationProcessInProgress(false);
 		}
 	}
 

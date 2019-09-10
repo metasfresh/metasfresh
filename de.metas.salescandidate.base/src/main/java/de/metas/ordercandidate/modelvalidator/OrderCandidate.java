@@ -58,7 +58,7 @@ public class OrderCandidate extends AbstractModuleInterceptor
 
 		engine.addModelValidator(new AD_Scheduler(), client);
 		engine.addModelValidator(new AD_Note(), client);
-		engine.addModelValidator(new C_OLCand(), client);
+		//engine.addModelValidator(new C_OLCand(), client); // spring component
 		engine.addModelValidator(new C_OLCandProcessor(), client);
 		engine.addModelValidator(new C_OrderLine(), client);
 

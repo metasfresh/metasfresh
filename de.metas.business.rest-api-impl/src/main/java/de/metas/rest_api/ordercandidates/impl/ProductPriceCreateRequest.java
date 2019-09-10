@@ -1,17 +1,15 @@
-package de.metas.rest_api.utils;
+package de.metas.rest_api.ordercandidates.impl;
 
-import java.util.Map;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.ImmutableMap;
-
-import io.swagger.annotations.ApiModel;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import lombok.Builder;
-import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -37,27 +35,25 @@ import lombok.Value;
  * #L%
  */
 
-@ApiModel(description = "Error informations")
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 @Builder
-public class JsonError
+public class ProductPriceCreateRequest
 {
 	@NonNull
-	String message;
+	BPartnerLocationId bpartnerAndLocationId;
 
 	@Nullable
-	String stackTrace;
+	final PricingSystemId pricingSystemId;
 
 	@NonNull
-	@Default
-	Map<String, String> parameters = ImmutableMap.of();
+	ZonedDateTime date;
 
-	/**
-	 * Local exception.
-	 * It won't be serialized. It's just used for local troubleshooting.
-	 */
-	@Nullable
-	@JsonIgnore
-	transient Throwable throwable;
+	@NonNull
+	ProductId productId;
+
+	@NonNull
+	UomId uomId;
+
+	@NonNull
+	BigDecimal price;
 }

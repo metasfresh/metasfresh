@@ -25,7 +25,7 @@ public class ErrorManager implements IErrorManager
 		}
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		return trxManager.call(() -> createIssue0(t));
+		return trxManager.callInNewTrx(() -> createIssue0(t));
 	}
 
 	private AdIssueId createIssue0(@NonNull final Throwable t)
