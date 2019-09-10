@@ -192,4 +192,31 @@ public class CompareQueryFilterTest
 				.as("filter=" + filter)
 				.isEqualTo(expectedResult);
 	}
+
+	@Test
+	public void testCompare_equals_Booleans_NotSet()
+	{
+		final CompareQueryFilter<I_Test> processedIsFalse = new CompareQueryFilter<>(I_Test.COLUMNNAME_Processed, Operator.EQUAL, false);
+		final I_Test model = newInstance(I_Test.class);
+		// model.setProcessed(false); // IMPORTANT: do not set it! that's what we are testing actually
+		assertThat(processedIsFalse.accept(model)).isTrue();
+	}
+
+	@Test
+	public void testCompare_equals_Booleans_False()
+	{
+		final CompareQueryFilter<I_Test> processedIsFalse = new CompareQueryFilter<>(I_Test.COLUMNNAME_Processed, Operator.EQUAL, false);
+		final I_Test model = newInstance(I_Test.class);
+		model.setProcessed(false);
+		assertThat(processedIsFalse.accept(model)).isTrue();
+	}
+
+	@Test
+	public void testCompare_equals_Booleans_True()
+	{
+		final CompareQueryFilter<I_Test> processedIsFalse = new CompareQueryFilter<>(I_Test.COLUMNNAME_Processed, Operator.EQUAL, true);
+		final I_Test model = newInstance(I_Test.class);
+		model.setProcessed(true);
+		assertThat(processedIsFalse.accept(model)).isTrue();
+	}
 }
