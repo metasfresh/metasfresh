@@ -135,7 +135,7 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 			// invoke creatOrderLineCandidates with the unchanged bulkRequest, because the request's bpartner and product instances are
 			// (at least currently) part of the respective caching keys.
 			final JsonOLCandCreateBulkResponse //
-			jsonOLCandCreateBulkResponse = trxManager.call(() -> creatOrderLineCandidates(bulkRequest, masterdataProvider));
+			jsonOLCandCreateBulkResponse = trxManager.callInNewTrx(() -> creatOrderLineCandidates(bulkRequest, masterdataProvider));
 
 			//
 			return new ResponseEntity<>(jsonOLCandCreateBulkResponse, HttpStatus.CREATED);
