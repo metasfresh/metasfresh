@@ -44,15 +44,15 @@ function applyTourVersion(tourVersion) {
 
     cy.setCheckBoxValue('IsWeekly', true);
     cy.setCheckBoxValue('OnMonday', true);
-    cy.writeIntoStringField('PreparationTime_1', '5:00 P', false, null, true);
+    cy.writeIntoStringField('PreparationTime_1', '17:00', false, null, true);
     cy.setCheckBoxValue('OnTuesday', true);
-    cy.writeIntoStringField('PreparationTime_2', '5:00 P', false, null, true);
+    cy.writeIntoStringField('PreparationTime_2', '17:00', false, null, true);
     cy.setCheckBoxValue('OnWednesday', true);
-    cy.writeIntoStringField('PreparationTime_3', '5:00 P', false, null, true);
+    cy.writeIntoStringField('PreparationTime_3', '17:00', false, null, true);
     cy.setCheckBoxValue('OnThursday', true);
-    cy.writeIntoStringField('PreparationTime_4', '5:00 P', false, null, true);
+    cy.writeIntoStringField('PreparationTime_4', '17:00', false, null, true);
     cy.setCheckBoxValue('OnFriday', true);
-    cy.writeIntoStringField('PreparationTime_5', '5:00 P', false, null, true);
+    cy.writeIntoStringField('PreparationTime_5', '17:00', false, null, true);
 
     tourVersion.tourVersionLines.forEach(line => {
       applyLine(line);
