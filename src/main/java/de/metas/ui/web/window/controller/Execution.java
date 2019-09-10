@@ -191,7 +191,7 @@ public class Execution implements IAutoCloseable
 
 					try
 					{
-						return trxManager.call(beforeCall);
+						return trxManager.callInNewTrx(beforeCall);
 					}
 					catch (final Exception ex)
 					{

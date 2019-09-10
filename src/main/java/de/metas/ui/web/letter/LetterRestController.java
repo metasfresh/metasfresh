@@ -205,7 +205,7 @@ public class LetterRestController
 		userSession.assertLoggedIn();
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final WebuiLetterChangeResult result = changeLetter(letterId, letter -> trxManager.call(() -> complete0(letter)));
+		final WebuiLetterChangeResult result = changeLetter(letterId, letter -> trxManager.callInNewTrx(() -> complete0(letter)));
 
 		//
 		// Remove the letter
