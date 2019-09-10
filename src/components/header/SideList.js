@@ -1,4 +1,5 @@
 import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
@@ -185,6 +186,30 @@ class SideList extends Component {
     );
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} closeOverlays
+ * @prop {*} closeSideList
+ * @prop {*} defaultTab
+ * @prop {*} docId
+ * @prop {*} isSideListShow
+ * @prop {*} pagination
+ * @prop {*} sorting
+ * @prop {*} viewId
+ * @prop {*} windowType
+ */
+SideList.propTypes = {
+  closeOverlays: PropTypes.any,
+  closeSideList: PropTypes.any,
+  defaultTab: PropTypes.any,
+  docId: PropTypes.any,
+  isSideListShow: PropTypes.any,
+  pagination: PropTypes.any,
+  sorting: PropTypes.any,
+  viewId: PropTypes.any,
+  windowType: PropTypes.any,
+};
 
 /**
  * @method mapStateToProps
