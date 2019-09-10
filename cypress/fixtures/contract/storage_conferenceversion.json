@@ -4,7 +4,7 @@
     "ProductWitholding": "ProductWitholdingTest",
     "ProductRegularPPOrder": "ProductRegularPPOrderTest",
     "ProductScrap": "ProductScrapTest",
-    "UOMScrap": "Kilogramm",
+    "UOMScrap": "Kilogram",
     "ValidFrom": "01/01/2019",
     "ValidTo": "01/01/2022",
     "PercentageScrapTreshhold": "1.00",
