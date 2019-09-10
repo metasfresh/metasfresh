@@ -227,7 +227,7 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 
 	private void pickCUs()
 	{
-		final HuId splitCUId = Services.get(ITrxManager.class).call(this::performPickCU);
+		final HuId splitCUId = Services.get(ITrxManager.class).callInNewTrx(this::performPickCU);
 
 		if (isAutoProcess)
 		{
