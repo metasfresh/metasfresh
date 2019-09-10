@@ -43,6 +43,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
 import org.compiere.model.GridField;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Table;
@@ -578,7 +579,9 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 				}
 				catch (SQLException e)
 				{
-					log.warn("(" + columnName + ") " + sql, e);
+					throw new DBException(e, sql)
+							.setParameter("columnName", columnName)
+							.appendParametersToMessage();
 				}
 				finally
 				{
