@@ -29,6 +29,12 @@ export class Warehouse {
     return this;
   }
 
+  setPlant(plant) {
+    cy.log(`Warehouse - set plant = ${plant}`);
+    this.plant = plant;
+    return this;
+  }
+
   setBPartnerLocation(C_BPartner_Location_ID) {
     cy.log(`BPartnerLocation - set C_BPartner_Location_ID=${C_BPartner_Location_ID}`);
     this.C_BPartner_Location_ID = C_BPartner_Location_ID;
@@ -106,6 +112,11 @@ function applyWarehouse(warehouse) {
   cy.writeIntoStringField('Name', warehouse.name);
   // .clearField('Value')
   cy.writeIntoStringField('Value', warehouse.value);
+
+  if (warehouse.plant) {
+    cy.selectInListField('PP_Plant_ID', warehouse.plant);
+  }
+
   cy.selectNthInListField('C_BPartner_Location_ID', 1);
   if (warehouse.isQualityIssueWarehouse) {
     cy.setCheckBoxValue('IsIssueWarehouse', warehouse.isQualityIssueWarehouse);

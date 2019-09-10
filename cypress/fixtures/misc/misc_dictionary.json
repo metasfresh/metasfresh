@@ -42,5 +42,8 @@
   "de_DE__c_uom_KGM": "Kilogramm",
 
   "c_country_CH": "Switzerland",
-  "de_DE__c_country_CH": "Schweiz"
+  "de_DE__c_country_CH": "Schweiz",
+
+  "S_Resource_MFG_Type_Plant": "Plant",
+  "de_DE__S_Resource_MFG_Type_Plant": "Produktionsstätte"
 }
