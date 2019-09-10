@@ -330,13 +330,13 @@ final class BPartnerMasterDataProvider
 				.build();
 	}
 
-	private BPartnerId getCreateBPartnerId(@NonNull final JsonRequestBPartner json, final BPartnerMasterDataContext context)
+	private BPartnerId getCreateBPartnerId(
+			@NonNull final JsonRequestBPartner json,
+			@NonNull final BPartnerMasterDataContext context)
 	{
-		final BPartnerId result = bpartnerIdsByJson
-				.compute(
-						json,
-						(existingJson, existingBPartnerId) -> createOrUpdateBPartnerId(json, context.setIfNotNull(existingBPartnerId)));
-		return result;
+		return bpartnerIdsByJson.compute(
+				json,
+				(existingJson, existingBPartnerId) -> createOrUpdateBPartnerId(json, context.setIfNotNull(existingBPartnerId)));
 	}
 
 	private BPartnerId createOrUpdateBPartnerId(
