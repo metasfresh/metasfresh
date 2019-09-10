@@ -88,7 +88,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 	protected Map<String, Object> getImportTableDefaultValues()
 	{
 		return ImmutableMap.<String, Object> builder()
-				.put(I_I_Inventory.COLUMNNAME_MovementDate, SystemTime.asDayTimestamp())
+				.put(I_I_Inventory.COLUMNNAME_InventoryDate, SystemTime.asDayTimestamp())
 				.build();
 	}
 
@@ -106,7 +106,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 	protected String getImportOrderBySql()
 	{
 		return I_I_Inventory.COLUMNNAME_WarehouseValue
-				+ ", " + I_I_Inventory.COLUMNNAME_MovementDate
+				+ ", " + I_I_Inventory.COLUMNNAME_InventoryDate
 				+ ", " + I_I_Inventory.COLUMNNAME_I_Inventory_ID;
 	}
 
@@ -115,7 +115,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 	{
 		return ImportGroupKey.builder()
 				.value("warehouse", importRecord.getWarehouseValue())
-				.value("movementDate", TimeUtil.asLocalDate(importRecord.getMovementDate()).toString())
+				.value("movementDate", TimeUtil.asLocalDate(importRecord.getInventoryDate()).toString())
 				.build();
 	}
 
@@ -153,10 +153,10 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 		final I_M_Inventory inventory = newInstance(I_M_Inventory.class);
 		inventory.setExternalId(importRecord.getExternalHeaderId());
 		inventory.setAD_Org_ID(importRecord.getAD_Org_ID());
-		inventory.setDescription("I " + importRecord.getM_Warehouse_ID() + " " + importRecord.getMovementDate());
+		inventory.setDescription("I " + importRecord.getM_Warehouse_ID() + " " + importRecord.getInventoryDate());
 		inventory.setC_DocType_ID(docTypeId.getRepoId());
 		inventory.setM_Warehouse_ID(importRecord.getM_Warehouse_ID());
-		inventory.setMovementDate(importRecord.getMovementDate());
+		inventory.setMovementDate(importRecord.getInventoryDate());
 		saveRecord(inventory);
 		return inventory;
 	}

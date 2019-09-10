@@ -339,6 +339,31 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_I_IsImported = "I_IsImported";
 
 	/**
+	 * Set Inventurdatum.
+	 * Datum zu dem die Inventur gilt, d.h. Belegedatum des Inventurbelegs
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setInventoryDate (java.sql.Timestamp InventoryDate);
+
+	/**
+	 * Get Inventurdatum.
+	 * Datum zu dem die Inventur gilt, d.h. Belegedatum des Inventurbelegs
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getInventoryDate();
+
+    /** Column definition for InventoryDate */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_InventoryDate = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "InventoryDate", null);
+    /** Column name InventoryDate */
+    public static final String COLUMNNAME_InventoryDate = "InventoryDate";
+
+	/**
 	 * Set Aktiv.
 	 * The record is active in the system
 	 *
@@ -570,31 +595,6 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Bewegungsdatum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setMovementDate (java.sql.Timestamp MovementDate);
-
-	/**
-	 * Get Bewegungsdatum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getMovementDate();
-
-    /** Column definition for MovementDate */
-    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_MovementDate = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "MovementDate", null);
-    /** Column name MovementDate */
-    public static final String COLUMNNAME_MovementDate = "MovementDate";
-
-	/**
 	 * Set Verarbeitet.
 	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *
@@ -644,7 +644,10 @@ public interface I_I_Inventory
 
 	/**
 	 * Set Produktschlüssel.
-	 * Schlüssel des Produktes
+	 * Can be:
+	* The exact product value
+	* The product id
+	* Part of the product value, using this pattern val-%
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -654,7 +657,10 @@ public interface I_I_Inventory
 
 	/**
 	 * Get Produktschlüssel.
-	 * Schlüssel des Produktes
+	 * Can be:
+	* The exact product value
+	* The product id
+	* Part of the product value, using this pattern val-%
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -843,7 +849,7 @@ public interface I_I_Inventory
 
 	/**
 	 * Set Warehouse Locator Identifier.
-	 * Text that contains identifier of earehosue and locator
+	 * Text that contains identifier of warehouse. locator and dimensions
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -853,7 +859,7 @@ public interface I_I_Inventory
 
 	/**
 	 * Get Warehouse Locator Identifier.
-	 * Text that contains identifier of earehosue and locator
+	 * Text that contains identifier of warehouse. locator and dimensions
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
