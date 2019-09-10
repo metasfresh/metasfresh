@@ -23,7 +23,7 @@
   "validTo": "05/31/2016",
   "scrapFeeAmt": "0.06",
   "percentageScrapTreshhold": "10.00",
-  "uomScrap": "Kilogramm",
+  "uomScrap": "Kilogram",
   "cUomId": "Each",
   "percentFrom1": "0.00",
   "percentFrom2": "15.00",
