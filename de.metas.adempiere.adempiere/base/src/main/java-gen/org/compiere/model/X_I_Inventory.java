@@ -15,7 +15,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1841714447L;
+	private static final long serialVersionUID = 1328292846L;
 
     /** Standard Constructor */
     public X_I_Inventory (Properties ctx, int I_Inventory_ID, String trxName)
@@ -253,6 +253,25 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 		return false;
 	}
 
+	/** Set Inventurdatum.
+		@param InventoryDate 
+		Datum zu dem die Inventur gilt, d.h. Belegedatum des Inventurbelegs
+	  */
+	@Override
+	public void setInventoryDate (java.sql.Timestamp InventoryDate)
+	{
+		set_Value (COLUMNNAME_InventoryDate, InventoryDate);
+	}
+
+	/** Get Inventurdatum.
+		@return Datum zu dem die Inventur gilt, d.h. Belegedatum des Inventurbelegs
+	  */
+	@Override
+	public java.sql.Timestamp getInventoryDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_InventoryDate);
+	}
+
 	/** Set Lot Blocked.
 		@param IsLotBlocked Lot Blocked	  */
 	@Override
@@ -463,25 +482,6 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 		return ii.intValue();
 	}
 
-	/** Set Bewegungsdatum.
-		@param MovementDate 
-		Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	  */
-	@Override
-	public void setMovementDate (java.sql.Timestamp MovementDate)
-	{
-		set_Value (COLUMNNAME_MovementDate, MovementDate);
-	}
-
-	/** Get Bewegungsdatum.
-		@return Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	  */
-	@Override
-	public java.sql.Timestamp getMovementDate () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_MovementDate);
-	}
-
 	/** Set Verarbeitet.
 		@param Processed 
 		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
@@ -533,7 +533,10 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 
 	/** Set Produktschlüssel.
 		@param ProductValue 
-		Schlüssel des Produktes
+		Can be:
+	* The exact product value
+	* The product id
+	* Part of the product value, using this pattern val-%
 	  */
 	@Override
 	public void setProductValue (java.lang.String ProductValue)
@@ -542,7 +545,10 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	/** Get Produktschlüssel.
-		@return Schlüssel des Produktes
+		@return Can be:
+	* The exact product value
+	* The product id
+	* Part of the product value, using this pattern val-%
 	  */
 	@Override
 	public java.lang.String getProductValue () 
@@ -672,7 +678,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 
 	/** Set Warehouse Locator Identifier.
 		@param WarehouseLocatorIdentifier 
-		Text that contains identifier of earehosue and locator
+		Text that contains identifier of warehouse. locator and dimensions
 	  */
 	@Override
 	public void setWarehouseLocatorIdentifier (java.lang.String WarehouseLocatorIdentifier)
@@ -681,7 +687,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	/** Get Warehouse Locator Identifier.
-		@return Text that contains identifier of earehosue and locator
+		@return Text that contains identifier of warehouse. locator and dimensions
 	  */
 	@Override
 	public java.lang.String getWarehouseLocatorIdentifier () 
