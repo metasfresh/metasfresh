@@ -114,7 +114,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 	protected ImportGroupKey extractImportGroupKey(final I_I_Inventory importRecord)
 	{
 		return ImportGroupKey.builder()
-				.value("warehouse", importRecord.getWarehouseValue())
+				.value("warehouse", Integer.toString(importRecord.getM_Warehouse_ID())) // importRecord.getWarehouseValue might be empty/null if the warehouse was looked up only via locatorValue
 				.value("movementDate", TimeUtil.asLocalDate(importRecord.getInventoryDate()).toString())
 				.build();
 	}
