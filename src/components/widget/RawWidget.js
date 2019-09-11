@@ -25,6 +25,11 @@ import Link from './Link';
 import List from './List/List';
 import Lookup from './Lookup/Lookup';
 
+/**
+ * @file Class based component.
+ * @module RawWidget
+ * @extends Component
+ */
 export class RawWidget extends Component {
   constructor(props) {
     super(props);
@@ -41,6 +46,10 @@ export class RawWidget extends Component {
     this.generateMomentObj = generateMomentObj.bind(this);
   }
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method.
+   */
   componentDidMount() {
     const { autoFocus, textSelected } = this.props;
     const { rawWidget } = this;
@@ -55,7 +64,8 @@ export class RawWidget extends Component {
   }
 
   /**
-   * Function used specifically for list widgets. It blocks outside clicks, which are
+   * @method focus
+   * @summary Function used specifically for list widgets. It blocks outside clicks, which are
    * then enabled again in handleBlur. This is to avoid closing the list as it's a separate
    * DOM element outside of it's parent's tree.
    */
@@ -71,6 +81,11 @@ export class RawWidget extends Component {
     handleFocus && handleFocus();
   };
 
+  /**
+   * @method handleFocus
+   * @summary ToDo: Describe the method.
+   * @param {*} e
+   */
   handleFocus = e => {
     const { dispatch, handleFocus, listenOnKeysFalse } = this.props;
     const el = e.target;
@@ -91,6 +106,13 @@ export class RawWidget extends Component {
     }, 0);
   };
 
+  /**
+   * @method handleBlurBlur
+   * @summary ToDo: Describe the method.
+   * @param {*} widgetField
+   * @param {*} value
+   * @param {*} id
+   */
   handleBlur = (widgetField, value, id) => {
     const {
       dispatch,
@@ -117,6 +139,13 @@ export class RawWidget extends Component {
     );
   };
 
+  /**
+   * @method handleKeyDown
+   * @summary ToDo: Describe the method.
+   * @param {*} e
+   * @param {*} property
+   * @param {*} value
+   */
   handleKeyDown = (e, property, value) => {
     const { lastFormField } = this.props;
 
@@ -131,6 +160,15 @@ export class RawWidget extends Component {
   // isForce will be used for Datepicker
   // Datepicker is checking the cached value in datepicker component itself
   // and send a patch request only if date is changed
+  /**
+   * @method handlePatch
+   * @summary ToDo: Describe the method.
+   * @param {*} property
+   * @param {*} value
+   * @param {*} id
+   * @param {*} valueTo
+   * @param {*} isForce
+   */
   handlePatch = (property, value, id, valueTo, isForce) => {
     const { handlePatch, inProgress, widgetType } = this.props;
     const willPatch = this.willPatch(property, value, valueTo);
@@ -153,6 +191,10 @@ export class RawWidget extends Component {
     return Promise.resolve(null);
   };
 
+  /**
+   * @method handleProcess
+   * @summary ToDo: Describe the method.
+   */
   handleProcess = () => {
     const {
       handleProcess,
@@ -168,12 +210,24 @@ export class RawWidget extends Component {
       handleProcess(caption, buttonProcessId, tabId, rowId, dataId, windowType);
   };
 
+  /**
+   * @method handleErrorPopup
+   * @summary ToDo: Describe the method.
+   * @param {*} value
+   */
   handleErrorPopup = value => {
     this.setState({
       errorPopup: value,
     });
   };
 
+  /**
+   * @method willPatch
+   * @summary ToDo: Describe the method.
+   * @param {*} property
+   * @param {*} value
+   * @param {*} valueTo
+   */
   willPatch = (property, value, valueTo) => {
     const { widgetData } = this.props;
     const { cachedValue } = this.state;
@@ -197,6 +251,11 @@ export class RawWidget extends Component {
     return allowPatching;
   };
 
+  /**
+   * @method clearFieldWarning
+   * @summary ToDo: Describe the method.
+   * @param {*} warning
+   */
   clearFieldWarning = warning => {
     if (warning) {
       this.setState({
@@ -205,12 +264,22 @@ export class RawWidget extends Component {
     }
   };
 
+  /**
+   * @method toggleTooltip
+   * @summary ToDo: Describe the method.
+   * @param {*} show
+   */
   toggleTooltip = show => {
     this.setState({
       tooltipToggled: show,
     });
   };
 
+  /**
+   * @method renderErrorPopup
+   * @summary ToDo: Describe the method.
+   * @param {*} reason
+   */
   renderErrorPopup = reason => {
     return (
       <div className="input-error-popup">{reason ? reason : 'Input error'}</div>
