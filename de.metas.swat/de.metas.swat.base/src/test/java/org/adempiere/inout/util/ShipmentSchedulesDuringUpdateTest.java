@@ -15,6 +15,7 @@ import org.junit.Test;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.DeliveryRule;
+import de.metas.order.OrderId;
 import de.metas.shipping.ShipperId;
 
 /*
@@ -52,7 +53,7 @@ public class ShipmentSchedulesDuringUpdateTest
 	{
 		AdempiereTestHelper.get().init();
 		group = DeliveryGroupCandidate.builder()
-				.groupId(20)
+				.groupId(DeliveryGroupCandidateGroupId.of(OrderId.ofRepoId(10)))
 				.shipperId(ShipperId.optionalOfRepoId(30))
 				.warehouseId(WarehouseId.ofRepoId(40))
 				.bPartnerAddress("bPartnerAddress")

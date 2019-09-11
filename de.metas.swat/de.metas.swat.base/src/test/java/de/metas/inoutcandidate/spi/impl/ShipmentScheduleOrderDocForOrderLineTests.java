@@ -4,7 +4,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZonedDateTime;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -18,6 +20,7 @@ import org.junit.Test;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -54,7 +57,9 @@ public class ShipmentScheduleOrderDocForOrderLineTests
 	@Test
 	public void createForOrderLineSchedule()
 	{
-		final Timestamp deliveryDate = TimeUtil.parseTimestamp("2017-09-26");
+		final ZonedDateTime deliveryDate = LocalDate.of(2017, Month.SEPTEMBER, 26)
+				.atStartOfDay()
+				.atZone(SystemTime.zoneId());
 
 		final I_M_Warehouse wh = newInstance(I_M_Warehouse.class);
 		save(wh);
@@ -65,7 +70,7 @@ public class ShipmentScheduleOrderDocForOrderLineTests
 		final I_C_Order order = newInstance(I_C_Order.class);
 		order.setBill_BPartner_ID(billBPartner.getC_BPartner_ID());
 		order.setM_Warehouse_ID(wh.getM_Warehouse_ID());
-		order.setDatePromised(deliveryDate);
+		order.setDatePromised(TimeUtil.asTimestamp(deliveryDate));
 		save(order);
 
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);

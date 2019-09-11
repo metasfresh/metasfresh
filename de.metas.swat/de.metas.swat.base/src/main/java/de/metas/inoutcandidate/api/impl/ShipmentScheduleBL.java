@@ -45,6 +45,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.inout.util.DeliveryGroupCandidate;
+import org.adempiere.inout.util.DeliveryGroupCandidateGroupId;
 import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
@@ -102,6 +103,7 @@ import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineFactory;
 import de.metas.inoutcandidate.spi.impl.CompositeCandidateProcessor;
 import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderReferenceProvider;
+import de.metas.lang.SOTrx;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
 import de.metas.material.cockpit.stock.StockRepository;
@@ -260,7 +262,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			final IDeliverRequest deliverRequest = olAndSched.getDeliverRequest();
 			final I_C_BPartner bPartner = shipmentScheduleEffectiveBL.getBPartner(sched); // task 08756: we don't really care for the ol's partner, but for the partner who will actually receive the shipment.
 
-			final boolean isBPAllowConsolidateInOut = bpartnerBL.isAllowConsolidateInOutEffective(bPartner, true);
+			final boolean isBPAllowConsolidateInOut = bpartnerBL.isAllowConsolidateInOutEffective(bPartner, SOTrx.SALES);
 			sched.setAllowConsolidateInOut(isBPAllowConsolidateInOut);
 
 			updatePreparationAndDeliveryDate(sched);
@@ -408,8 +410,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	{
 		final ShipmentScheduleReferencedLine shipmentScheduleOrderDoc = shipmentScheduleReferencedLineFactory.createFor(sched);
 
-		sched.setPreparationDate(shipmentScheduleOrderDoc.getPreparationDate());
-		sched.setDeliveryDate(shipmentScheduleOrderDoc.getDeliveryDate());
+		sched.setPreparationDate(TimeUtil.asTimestamp(shipmentScheduleOrderDoc.getPreparationDate()));
+		sched.setDeliveryDate(TimeUtil.asTimestamp(shipmentScheduleOrderDoc.getDeliveryDate()));
 	}
 
 	private void updateLineNetAmt(final OlAndSched olAndSched)
@@ -745,28 +747,29 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 		final I_C_BPartner partner = loadOutOfTrx(sched.getC_BPartner_ID(), I_C_BPartner.class);
 
-		final ShipmentScheduleReferencedLine scheduleSourcedoc = shipmentScheduleReferencedLineFactory.createFor(sched);
-		final String bPartnerAddress = sched.getBPartnerAddress_Override();
+		final ShipmentScheduleReferencedLine scheduleSourceDoc = shipmentScheduleReferencedLineFactory.createFor(sched);
+		final String bpartnerAddress = sched.getBPartnerAddress_Override();
 
 		DeliveryGroupCandidate candidate = null;
 
 		final WarehouseId warehouseId = Services.get(IShipmentScheduleEffectiveBL.class).getWarehouseId(sched);
-		final boolean consolidateAllowed = bpartnerBL.isAllowConsolidateInOutEffective(partner, true);
+		final boolean consolidateAllowed = bpartnerBL.isAllowConsolidateInOutEffective(partner, SOTrx.SALES);
 		if (consolidateAllowed)
 		{
 			// see if there is an existing shipment for this location and shipper
-			candidate = candidates.getInOutForShipper(scheduleSourcedoc.getShipperId(), warehouseId, bPartnerAddress);
+			candidate = candidates.getInOutForShipper(scheduleSourceDoc.getShipperId(), warehouseId, bpartnerAddress);
 		}
 		else
 		{
 			// see if there is an existing shipment for this order
-			candidate = candidates.getInOutForOrderId(scheduleSourcedoc.getGroupId(), warehouseId, bPartnerAddress);
+			final OrderId orderId = scheduleSourceDoc.getRecordRef().getIdAssumingTableName(I_C_Order.Table_Name, OrderId::ofRepoId);
+			candidate = candidates.getInOutForOrderId(orderId, warehouseId, bpartnerAddress);
 		}
 
 		if (candidate == null)
 		{
 			// create a new Shipment
-			candidate = createGroup(scheduleSourcedoc, sched);
+			candidate = createGroup(scheduleSourceDoc, sched);
 			candidates.addGroup(candidate);
 		}
 		return candidate;
@@ -859,7 +862,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		return DeliveryGroupCandidate.builder()
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(sched))
 				.bPartnerAddress(sched.getBPartnerAddress_Override())
-				.groupId(scheduleSourceDoc.getGroupId())
+				.groupId(DeliveryGroupCandidateGroupId.of(scheduleSourceDoc.getRecordRef()))
 				.shipperId(scheduleSourceDoc.getShipperId())
 				.build();
 	}
@@ -892,7 +895,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
-		final boolean bpAllowsConsolidate = bPartnerBL.isAllowConsolidateInOutEffective(shipmentScheduleEffectiveBL.getBPartner(sched), true);
+		final boolean bpAllowsConsolidate = bPartnerBL.isAllowConsolidateInOutEffective(shipmentScheduleEffectiveBL.getBPartner(sched), SOTrx.SALES);
 		if (!bpAllowsConsolidate)
 		{
 			logger.debug("According to the effective C_BPartner of shipment candidate '" + sched + "', consolidation into one shipment is not allowed");

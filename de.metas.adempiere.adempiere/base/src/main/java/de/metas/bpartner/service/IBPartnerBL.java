@@ -122,7 +122,7 @@ public interface IBPartnerBL extends ISingletonService
 	 * @param isSOTrx
 	 * @return true if InOut consolidation is allowed for given partner
 	 */
-	boolean isAllowConsolidateInOutEffective(I_C_BPartner partner, boolean isSOTrx);
+	boolean isAllowConsolidateInOutEffective(I_C_BPartner partner, SOTrx soTrx);
 
 	/**
 	 * Use {@link IBPartnerAware} to get BPartner from given model.
