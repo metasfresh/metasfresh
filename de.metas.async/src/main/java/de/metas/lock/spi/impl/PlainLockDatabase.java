@@ -41,7 +41,6 @@ import org.adempiere.util.concurrent.CloseableReentrantLock;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
-import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
@@ -58,6 +57,8 @@ import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.Value;
 
 /**
  * In-memory locks database
@@ -70,7 +71,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	private static final Logger logger = LogManager.getLogger(PlainLockDatabase.class);
 
 	private final CloseableReentrantLock mainLock = new CloseableReentrantLock();
-	private final Map<ArrayKey, RecordLocks> locks = new LinkedHashMap<>();
+	private final Map<LockKey, RecordLocks> locks = new LinkedHashMap<>();
 
 	public void dump()
 	{
@@ -80,17 +81,16 @@ public class PlainLockDatabase extends AbstractLockDatabase
 				.forEach(lock -> System.out.println(lock));
 	}
 
-	private final ArrayKey createKey(final int adTableId, final int recordId)
+	private final LockKey createKey(final int adTableId, final int recordId)
 	{
 		Check.assume(adTableId > 0, "adTableId > 0");
 		Check.assume(recordId > 0, "recordId > 0");
-		final ArrayKey key = new ArrayKey(adTableId, recordId);
-		return key;
+		return LockKey.of(adTableId, recordId);
 	}
 
-	private ArrayKey createKeyForRecord(final TableRecordReference record)
+	private LockKey createKeyForRecord(final TableRecordReference record)
 	{
-		return new ArrayKey(
+		return LockKey.of(
 				record.getAD_Table_ID(),
 				record.getRecord_ID());
 	}
@@ -100,7 +100,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	{
 		try (final CloseableReentrantLock lock = mainLock.open())
 		{
-			final ArrayKey key = createKey(adTableId, recordId);
+			final LockKey key = createKey(adTableId, recordId);
 			final RecordLocks recordLock = locks.get(key);
 			if (recordLock == null)
 			{
@@ -178,7 +178,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	@Override
 	protected boolean lockRecord(final ILockCommand lockCommand, final TableRecordReference record)
 	{
-		final ArrayKey recordKey = createKeyForRecord(record);
+		final LockKey recordKey = createKeyForRecord(record);
 
 		try (final CloseableReentrantLock lock = mainLock.open())
 		{
@@ -190,7 +190,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	@Override
 	protected boolean changeLockRecord(final ILockCommand lockCommand, final TableRecordReference record)
 	{
-		final ArrayKey recordKey = createKeyForRecord(record);
+		final LockKey recordKey = createKeyForRecord(record);
 
 		try (final CloseableReentrantLock lock = mainLock.open())
 		{
@@ -227,7 +227,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		return unlockForRecord;
 	}
 
-	private boolean unlockForKey(final LockOwner ownerRequired, final ArrayKey recordKey)
+	private boolean unlockForKey(final LockOwner ownerRequired, final LockKey recordKey)
 	{
 		try (final CloseableReentrantLock lock = mainLock.open())
 		{
@@ -322,7 +322,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		return records;
 	}
 
-	public List<ArrayKey> getLocks()
+	public List<LockKey> getLocks()
 	{
 		try (final CloseableReentrantLock lock = mainLock.open())
 		{
@@ -342,17 +342,17 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		return pojoQueryFinal;
 	}
 
-	private Object getObjectForKey(final ArrayKey key)
+	private Object getObjectForKey(final LockKey key)
 	{
-		final int tableId = (Integer)key.getArray()[0];
-		final int recordId = (Integer)key.getArray()[1];
+		final int tableId = key.getAdTableId();
+		final int recordId = key.getRecordId();
 		return POJOLookupMap.get().lookup(tableId, recordId);
 	}
 
 	public List<Object> getLockedObjects()
 	{
 		final List<Object> result = new ArrayList<>();
-		for (final ArrayKey key : getLocks())
+		for (final LockKey key : getLocks())
 		{
 			final Object model = getObjectForKey(key);
 			if (model != null)
@@ -369,7 +369,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		try (final CloseableReentrantLock lock = mainLock.open())
 		{
 			final StringBuilder sb = new StringBuilder();
-			for (final ArrayKey key : locks.keySet())
+			for (final LockKey key : locks.keySet())
 			{
 				if (sb.length() > 0)
 				{
@@ -409,9 +409,9 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	private static class RecordLocks
 	{
 		private final Map<LockOwner, LockInfo> locksByLockOwner = new HashMap<>();
-		private final ArrayKey key;
+		private final LockKey key;
 
-		private RecordLocks(final ArrayKey key)
+		private RecordLocks(final LockKey key)
 		{
 			this.key = key;
 		}
@@ -424,7 +424,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 					.toString();
 		}
 
-		public ArrayKey getKey()
+		public LockKey getKey()
 		{
 			return key;
 		}
@@ -554,7 +554,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	private static class LockInfo
 	{
 		@SuppressWarnings("unused")
-		private final ArrayKey key;
+		private final LockKey key;
 		private LockOwner _lockOwner;
 		private boolean autoCleanup;
 		private final boolean allowMultipleOwners;
@@ -566,13 +566,8 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		@SuppressWarnings("unused")
 		private final String aquiredThreadName;
 
-		public LockInfo(final ArrayKey key, final ILockCommand lockCommand)
+		public LockInfo(@NonNull final LockKey key, @NonNull final ILockCommand lockCommand)
 		{
-			super();
-
-			Check.assumeNotNull(lockCommand, "lockCommand not null");
-
-			Check.assumeNotNull(key, "key not null");
 			this.key = key;
 
 			aquiredStackTrace = new Exception("Aquired stack trace");
@@ -672,5 +667,12 @@ public class PlainLockDatabase extends AbstractLockDatabase
 
 			return newLock(lockOwner, lockInfo.isAutoCleanup(), 1);
 		}
+	}
+
+	@Value(staticConstructor = "of")
+	public static class LockKey
+	{
+		final int adTableId;
+		final int recordId;
 	}
 }
