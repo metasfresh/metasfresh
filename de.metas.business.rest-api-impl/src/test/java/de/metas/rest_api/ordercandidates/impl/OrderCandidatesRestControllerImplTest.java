@@ -15,6 +15,7 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.MimeType;
@@ -349,12 +350,18 @@ public class OrderCandidatesRestControllerImplTest
 	}
 
 	@Test
-	public void testCreatProductPrice()
+	public void test_CreateProductPrice_WarehouseDestId()
 	{
+		//
+		// Masterdata: pricing
 		final TaxCategoryId taxCategoryId = testMasterdata.createTaxCategory();
 		final PricingSystemId pricingSystemId = testMasterdata.createPricingSystem();
 		final PriceListId priceListId = testMasterdata.createSalesPriceList(pricingSystemId, countryId_DE, currencyId_EUR, taxCategoryId);
 		testMasterdata.createPriceListVersion(priceListId, LocalDate.of(2019, Month.SEPTEMBER, 1));
+		testMasterdata.createPricingRules();
+
+		//
+		// Masterdata: BPartner & Location
 		testMasterdata.prepareBPartnerAndLocation()
 				.bpValue("bpCode")
 				.salesPricingSystemId(pricingSystemId)
@@ -362,7 +369,9 @@ public class OrderCandidatesRestControllerImplTest
 				.gln(GLN.ofString("gln1"))
 				.build();
 
-		testMasterdata.createPricingRules();
+		//
+		// Masterdata: Warehouse
+		final WarehouseId testWarehouseDestId = testMasterdata.createWarehouse("testWarehouseDest");
 
 		startInterceptors();
 
@@ -380,7 +389,7 @@ public class OrderCandidatesRestControllerImplTest
 						.name("productName")
 						.type(Type.ITEM)
 						.uomCode(UOM_CODE)
-						.price(new BigDecimal("13.24"))
+						.priceStd(new BigDecimal("13.24"))
 						.syncAdvise(SyncAdvise.JUST_CREATE_IF_NOT_EXISTS)
 						.build())
 				.bpartner(JsonBPartnerInfo.builder()
@@ -391,6 +400,7 @@ public class OrderCandidatesRestControllerImplTest
 								.gln("gln1")
 								.build())
 						.build())
+				.warehouseDestCode("testWarehouseDest")
 				.invoiceDocType(JsonDocTypeInfo.builder()
 						.docBaseType("ARI")
 						.docSubType("KV")
@@ -408,6 +418,6 @@ public class OrderCandidatesRestControllerImplTest
 		System.out.println(olCand);
 
 		assertThat(olCand.getPrice()).isEqualByComparingTo(new BigDecimal("13.24"));
+		assertThat(olCand.getWarehouseDestId()).isEqualTo(testWarehouseDestId.getRepoId());
 	}
-
 }

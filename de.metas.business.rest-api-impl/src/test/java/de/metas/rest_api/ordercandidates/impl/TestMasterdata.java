@@ -8,6 +8,8 @@ import java.time.LocalDate;
 import javax.annotation.Nullable;
 
 import org.adempiere.pricing.model.I_C_PricingRule;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.model.I_M_Warehouse;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
@@ -194,6 +196,14 @@ final class TestMasterdata
 		pricingRule.setIsActive(true);
 		pricingRule.setSeqNo(seqNo);
 		saveRecord(pricingRule);
+	}
+
+	public WarehouseId createWarehouse(final String value)
+	{
+		final I_M_Warehouse record = newInstance(I_M_Warehouse.class);
+		record.setValue(value);
+		saveRecord(record);
+		return WarehouseId.ofRepoId(record.getM_Warehouse_ID());
 	}
 
 }

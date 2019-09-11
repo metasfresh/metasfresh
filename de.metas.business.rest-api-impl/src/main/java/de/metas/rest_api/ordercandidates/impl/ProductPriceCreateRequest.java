@@ -55,5 +55,5 @@ public class ProductPriceCreateRequest
 	UomId uomId;
 
 	@NonNull
-	BigDecimal price;
+	BigDecimal priceStd;
 }

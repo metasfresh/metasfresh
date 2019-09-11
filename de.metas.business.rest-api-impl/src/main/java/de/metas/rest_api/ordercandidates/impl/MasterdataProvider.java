@@ -11,6 +11,8 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
 import org.compiere.util.Env;
 
@@ -73,20 +75,17 @@ import lombok.NonNull;
 final class MasterdataProvider
 {
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
-
 	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
-
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-
-	private final OrgId defaultOrgId;
-
-	private final Map<String, OrgId> orgIdsByCode = new HashMap<>();
+	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 
 	private final PermissionService permissionService;
-
 	private final BPartnerMasterDataProvider bpartnerMasterDataProvider;
 	private final ProductMasterDataProvider productMasterDataProvider;
 	private final ProductPriceMasterDataProvider productPricesMasterDataProvider;
+
+	private final OrgId defaultOrgId;
+	private final Map<String, OrgId> orgIdsByCode = new HashMap<>();
 
 	@Builder
 	private MasterdataProvider(
@@ -118,6 +117,11 @@ final class MasterdataProvider
 		}
 
 		return priceListsRepo.getPricingSystemIdByValue(pricingSystemCode);
+	}
+
+	public WarehouseId getWarehouseIdByValue(@NonNull final String warehouseCode)
+	{
+		return warehousesRepo.getWarehouseIdByValue(warehouseCode);
 	}
 
 	public OrgId getCreateOrgId(@Nullable final JsonOrganization json)

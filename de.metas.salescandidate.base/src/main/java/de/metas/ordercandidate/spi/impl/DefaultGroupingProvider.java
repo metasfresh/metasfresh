@@ -53,7 +53,7 @@ public class DefaultGroupingProvider implements IOLCandGroupingProvider
 		groupingValues.add(olCand.getM_AttributeSet_ID());
 		groupingValues.add(olCand.getM_AttributeSetInstance_ID());
 		groupingValues.add(olCand.getC_UOM_ID());
-		groupingValues.add(olCand.getM_Warehouse_Dest_ID());
+		groupingValues.add(olCand.getWarehouseDestId());
 
 		groupingValues.add(olCand.getBPartnerInfo());
 		groupingValues.add(olCand.getBillBPartnerInfo());
