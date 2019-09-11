@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -20,6 +21,7 @@ import de.metas.impexp.DataImportConfig;
 import de.metas.impexp.DataImportRequest;
 import de.metas.impexp.DataImportResult;
 import de.metas.impexp.DataImportService;
+import de.metas.logging.LogManager;
 import de.metas.util.rest.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
@@ -51,6 +53,7 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App)
 public class DataImportRestController
 {
+	private static final Logger logger = LogManager.getLogger(DataImportRestController.class);
 	private final DataImportService dataImportService;
 
 	public DataImportRestController(@NonNull final DataImportService dataImportService)
@@ -59,7 +62,7 @@ public class DataImportRestController
 	}
 
 	@PostMapping("/text")
-	public ResponseEntity<JsonDataImportResponse> importFile(
+	public ResponseEntity<JsonDataImportResponseWrapper> importFile(
 			@ApiParam("Data Import internal name (i.e. `C_DataImport.InternalName`)") //
 			@RequestParam("dataImportConfig") @NonNull final String dataImportConfigInternalName,
 
@@ -74,7 +77,7 @@ public class DataImportRestController
 	}
 
 	@PostMapping
-	public ResponseEntity<JsonDataImportResponse> importFile(
+	public ResponseEntity<JsonDataImportResponseWrapper> importFile(
 			@ApiParam("Data Import internal name (i.e. `C_DataImport.InternalName`)") //
 			@RequestParam("dataImportConfig") @NonNull final String dataImportConfigInternalName,
 
@@ -88,25 +91,36 @@ public class DataImportRestController
 		return importFile(dataImportConfigInternalName, completeDocuments, data);
 	}
 
-	private ResponseEntity<JsonDataImportResponse> importFile(
+	private ResponseEntity<JsonDataImportResponseWrapper> importFile(
 			@NonNull final String dataImportConfigInternalName,
 			final boolean completeDocuments,
 			@NonNull final Resource data)
 	{
-		final DataImportConfig dataImportConfig = dataImportService.getDataImportConfigByInternalName(dataImportConfigInternalName)
-				.orElseThrow(() -> new AdempiereException("No data import configuration found for: " + dataImportConfigInternalName));
+		try
+		{
+			final DataImportConfig dataImportConfig = dataImportService.getDataImportConfigByInternalName(dataImportConfigInternalName)
+					.orElseThrow(() -> new AdempiereException("No data import configuration found for: " + dataImportConfigInternalName));
 
-		final DataImportResult result = dataImportService.importData(DataImportRequest.builder()
-				.data(data)
-				.dataImportConfigId(dataImportConfig.getId())
-				.clientId(Env.getClientId())
-				.orgId(Env.getOrgId())
-				.userId(Env.getLoggedUserId())
-				.completeDocuments(completeDocuments)
-				.build());
+			final DataImportResult result = dataImportService.importData(DataImportRequest.builder()
+					.data(data)
+					.dataImportConfigId(dataImportConfig.getId())
+					.clientId(Env.getClientId())
+					.orgId(Env.getOrgId())
+					.userId(Env.getLoggedUserId())
+					.completeDocuments(completeDocuments)
+					.build());
 
-		return ResponseEntity.accepted()
-				.body(toJsonDataImportResponse(result));
+			return ResponseEntity.accepted()
+					.body(toJsonDataImportResponse(result));
+		}
+		catch (final Exception ex)
+		{
+			logger.debug("Got error", ex);
+
+			final String adLanguage = Env.getADLanguageOrBaseLanguage();
+			return ResponseEntity.badRequest()
+					.body(JsonDataImportResponseWrapper.error(ex, adLanguage));
+		}
 	}
 
 	private static Resource toResource(final MultipartFile file)
@@ -126,9 +140,9 @@ public class DataImportRestController
 		return new ByteArrayResource(data, filename);
 	}
 
-	private static JsonDataImportResponse toJsonDataImportResponse(final DataImportResult result)
+	private static JsonDataImportResponseWrapper toJsonDataImportResponse(final DataImportResult result)
 	{
-		return JsonDataImportResponse.builder()
+		return JsonDataImportResponseWrapper.ok(JsonDataImportResponse.builder()
 				.dataImportConfigId(result.getDataImportConfigId().getRepoId())
 				.importFormatName(result.getImportFormatName())
 				//
@@ -140,6 +154,6 @@ public class DataImportRestController
 				//
 				.targetTableName(result.getTargetTableName())
 				//
-				.build();
+				.build());
 	}
 }
