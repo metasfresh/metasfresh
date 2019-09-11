@@ -1,6 +1,6 @@
 -- View: public.edi_cctop_invoic_500_v
 
--- DROP VIEW public.edi_cctop_invoic_500_v;
+DROP VIEW IF EXISTS public.edi_cctop_invoic_500_v;
 
 CREATE OR REPLACE VIEW public.edi_cctop_invoic_500_v AS
  SELECT sum(il.qtyentered) AS qtyinvoiced,
