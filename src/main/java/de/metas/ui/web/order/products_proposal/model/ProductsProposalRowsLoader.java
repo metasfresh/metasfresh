@@ -11,9 +11,9 @@ import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_ProductPrice;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
@@ -25,6 +25,8 @@ import de.metas.bpartner.product.stats.BPartnerProductStatsService;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
@@ -152,6 +154,7 @@ public final class ProductsProposalRowsLoader
 	private Stream<ProductsProposalRow> loadAndStreamRowsForPriceListVersionId(final PriceListVersionId priceListVersionId)
 	{
 		return priceListsRepo.retrieveProductPrices(priceListVersionId, productIdsToExclude)
+				.map(productPriceRecord -> InterfaceWrapperHelper.create(productPriceRecord, I_M_ProductPrice.class))
 				.map(productPriceRecord -> toProductsProposalRowOrNull(productPriceRecord))
 				.filter(Predicates.notNull());
 	}
@@ -168,6 +171,7 @@ public final class ProductsProposalRowsLoader
 		return ProductsProposalRow.builder()
 				.id(nextRowIdSequence.nextDocumentId())
 				.product(product)
+				.packingMaterialId(HUPIItemProductId.ofRepoIdOrNull(record.getM_HU_PI_Item_Product_ID()))
 				.asiDescription(extractProductASIDescription(record))
 				.price(extractProductProposalPrice(record))
 				.qty(null)

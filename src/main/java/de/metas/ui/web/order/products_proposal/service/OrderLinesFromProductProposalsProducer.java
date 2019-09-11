@@ -19,6 +19,7 @@ import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.OrderLineHUPackingAware;
 import de.metas.adempiere.gui.search.impl.PlainHUPackingAware;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -143,7 +144,7 @@ public final class OrderLinesFromProductProposalsProducer
 		huPackingAware.setM_Product_ID(fromRow.getProductId().getRepoId());
 		huPackingAware.setC_UOM_ID(uomId.getRepoId());
 		// huPackingAware.setM_AttributeSetInstance_ID(...);
-		// huPackingAware.setM_HU_PI_Item_Product_ID(...);
+		huPackingAware.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(fromRow.getPackingMaterialId()));
 
 		return huPackingAware;
 	}
