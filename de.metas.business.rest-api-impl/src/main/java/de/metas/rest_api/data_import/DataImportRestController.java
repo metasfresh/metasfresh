@@ -23,6 +23,7 @@ import de.metas.impexp.DataImportResult;
 import de.metas.impexp.DataImportService;
 import de.metas.logging.LogManager;
 import de.metas.util.rest.MetasfreshRestAPIConstants;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 
@@ -61,6 +62,7 @@ public class DataImportRestController
 		this.dataImportService = dataImportService;
 	}
 
+	@ApiOperation("Uploads a text file. This endpoint is oftentimes simpler for clients of this API than to upload a multipart file via the other endpoint.")
 	@PostMapping("/text")
 	public ResponseEntity<JsonDataImportResponseWrapper> importFile(
 			@ApiParam("Data Import internal name (i.e. `C_DataImport.InternalName`)") //
