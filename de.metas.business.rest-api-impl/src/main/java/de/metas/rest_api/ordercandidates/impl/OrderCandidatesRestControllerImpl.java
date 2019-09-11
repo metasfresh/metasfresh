@@ -47,7 +47,6 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.rest_api.attachment.JsonAttachmentType;
 import de.metas.rest_api.ordercandidates.JsonAttachment;
-import de.metas.rest_api.ordercandidates.JsonOLCand;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest;
@@ -107,13 +106,9 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 
 	@PostMapping
 	@Override
-	public ResponseEntity<JsonOLCand> createOrderLineCandidate(@RequestBody final JsonOLCandCreateRequest request)
+	public ResponseEntity<JsonOLCandCreateBulkResponse> createOrderLineCandidate(@RequestBody @NonNull final JsonOLCandCreateRequest request)
 	{
-		final ResponseEntity<JsonOLCandCreateBulkResponse> //
-		bulkResponse = createOrderLineCandidates(JsonOLCandCreateBulkRequest.of(request));
-
-		final JsonOLCand result = bulkResponse.getBody().getSingleResult();
-		return new ResponseEntity<>(result, HttpStatus.CREATED);
+		return createOrderLineCandidates(JsonOLCandCreateBulkRequest.of(request));
 	}
 
 	@PostMapping(PATH_BULK)
@@ -135,10 +130,10 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 			// invoke creatOrderLineCandidates with the unchanged bulkRequest, because the request's bpartner and product instances are
 			// (at least currently) part of the respective caching keys.
 			final JsonOLCandCreateBulkResponse //
-			jsonOLCandCreateBulkResponse = trxManager.callInNewTrx(() -> creatOrderLineCandidates(bulkRequest, masterdataProvider));
+			response = trxManager.callInNewTrx(() -> creatOrderLineCandidates(bulkRequest, masterdataProvider));
 
 			//
-			return new ResponseEntity<>(jsonOLCandCreateBulkResponse, HttpStatus.CREATED);
+			return new ResponseEntity<>(response, HttpStatus.CREATED);
 		}
 		catch (Exception ex)
 		{

@@ -103,17 +103,4 @@ public final class JsonOLCandCreateBulkResponse
 		}
 		return result;
 	}
-
-	public JsonOLCand getSingleResult()
-	{
-		final List<JsonOLCand> result = getResult();
-		if (result.size() == 1)
-		{
-			return result.get(0);
-		}
-		else
-		{
-			throw new OrderCandidateRestApiException("Expected single result but we got: " + result);
-		}
-	}
 }
