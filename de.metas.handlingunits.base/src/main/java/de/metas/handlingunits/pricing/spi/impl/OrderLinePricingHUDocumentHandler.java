@@ -167,7 +167,7 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 			final I_M_ProductPrice huProductPrice = ProductPrices.newQuery(plv)
 					.setProductId(productId)
 					.onlyAttributePricing()
-					.ignoreInvalid(true)
+					.onlyValidPrices(true)
 					.matching(HUPricing.createHUPIItemProductMatcher(packingMaterialId))
 					.retrieveDefault(I_M_ProductPrice.class);
 			if(huProductPrice != null)

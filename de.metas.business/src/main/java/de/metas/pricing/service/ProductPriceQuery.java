@@ -72,7 +72,7 @@ public class ProductPriceQuery
 
 	private Map<String, IProductPriceQueryMatcher> _additionalMatchers = null;
 
-	private boolean _ignoreInvalid = true;
+	private boolean _onlyValidPrices = true;
 
 	/* package */ ProductPriceQuery()
 	{
@@ -87,7 +87,7 @@ public class ProductPriceQuery
 				.add("productId", _productId)
 				//
 				.add("attributePricing", _attributePricing)
-				.add("ignoreInvalid", _ignoreInvalid)
+				.add("onlyValidPrices", _onlyValidPrices)
 				.add("asiToMatch", _attributePricing_asiToMatch)
 				//
 				.add("scalePrice", _scalePrice)
@@ -200,9 +200,9 @@ public class ProductPriceQuery
 				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_Product_ID, getProductId());
 
 		// Ignore invalid prices
-		final boolean isIgnoreInvalid = isIgnoreInvalid();
+		final boolean isOnlyValidPrices = isOnlyValidPrices();
 
-		if (isIgnoreInvalid)
+		if (isOnlyValidPrices)
 		{
 			queryBuilder.addNotEqualsFilter(I_M_ProductPrice.COLUMN_IsInvalidPrice, true);
 		}
@@ -282,15 +282,15 @@ public class ProductPriceQuery
 		return this;
 	}
 
-	public ProductPriceQuery ignoreInvalid(final boolean ignoreInvalid)
+	public ProductPriceQuery onlyValidPrices(final boolean onlyValidPrices)
 	{
-		_ignoreInvalid = ignoreInvalid;
+		_onlyValidPrices = onlyValidPrices;
 		return this;
 	}
 
-	public boolean isIgnoreInvalid()
+	public boolean isOnlyValidPrices()
 	{
-		return _ignoreInvalid;
+		return _onlyValidPrices;
 	}
 
 	/** Matches any product price which is marked as "attributed pricing" */

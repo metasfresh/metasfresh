@@ -142,7 +142,7 @@ public class ProductPrices
 		return newQuery(plv)
 				.setProductId(productId)
 				.noAttributePricing()
-				.ignoreInvalid(true)
+				.onlyValidPrices(true)
 				//
 				.addMatchersIfAbsent(MATCHERS_MainProductPrice); // IMORTANT: keep it last
 	}

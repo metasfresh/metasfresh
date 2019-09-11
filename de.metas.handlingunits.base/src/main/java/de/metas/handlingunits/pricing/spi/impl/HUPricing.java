@@ -158,7 +158,7 @@ public class HUPricing extends AttributePricing
 				priceListVersion -> ProductPrices.newQuery(priceListVersion)
 						.setProductId(pricingCtx.getProductId())
 						.onlyAttributePricing()
-						.ignoreInvalid(true)
+						.onlyValidPrices(true)
 						.matching(HUPIItemProductMatcher_Any)
 						.retrieveStrictDefault(I_M_ProductPrice.class));
 		if (defaultPrice == null)

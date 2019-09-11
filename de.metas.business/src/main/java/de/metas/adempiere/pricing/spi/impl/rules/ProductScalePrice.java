@@ -90,7 +90,7 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 		final I_M_ProductPrice productPrice = ProductPrices.newQuery(priceListVersion)
 				.setProductId(pricingCtx.getProductId())
 				.noAttributePricing()
-				.ignoreInvalid(true)
+				.onlyValidPrices(true)
 				.onlyScalePrices()
 				.firstMatching();
 		if (productPrice == null)
