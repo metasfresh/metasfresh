@@ -287,14 +287,15 @@ UPDATE AD_Field SET Name='Catch Weight Einheit', Description='Aus dem Produktsta
 ;
 
 -- 2019-07-29T08:20:50.572Z
+-- will be dropped again further down this file!
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('M_InOutLine','ALTER TABLE public.M_InOutLine ADD COLUMN CatchWeight_UOM_ID NUMERIC(10)')
-;
+--/* DDL */ SELECT public.db_alter_table('M_InOutLine','ALTER TABLE public.M_InOutLine ADD COLUMN CatchWeight_UOM_ID NUMERIC(10)')
+--;
 
 -- 2019-07-29T08:20:50.999Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE M_InOutLine ADD CONSTRAINT CatchWeightUOM_MInOutLine FOREIGN KEY (CatchWeight_UOM_ID) REFERENCES public.C_UOM DEFERRABLE INITIALLY DEFERRED
-;
+--ALTER TABLE M_InOutLine ADD CONSTRAINT CatchWeightUOM_MInOutLine FOREIGN KEY (CatchWeight_UOM_ID) REFERENCES public.C_UOM DEFERRABLE INITIALLY DEFERRED
+--;
 
 -- 2019-07-29T08:28:24.796Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
