@@ -286,6 +286,10 @@ export class RawWidget extends Component {
     );
   };
 
+  /**
+   * @method renderWidget
+   * @summary ToDo: Describe the method.
+   */
   renderWidget = () => {
     const {
       handleChange,
@@ -938,6 +942,10 @@ export class RawWidget extends Component {
     }
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const {
       caption,
