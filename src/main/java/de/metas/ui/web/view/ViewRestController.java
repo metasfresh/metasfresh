@@ -468,6 +468,7 @@ public class ViewRestController
 					.rowIds(DocumentIdsSelection.ofCommaSeparatedString(selectedIdsListStr))
 					.layout(viewsRepo.getViewLayout(viewId.getWindowId(), JSONViewDataType.grid, ViewProfileId.NULL))
 					.language(userSession.getLanguage())
+					.zoneId(userSession.getTimeZone())
 					.build()
 					.export(out);
 		}

@@ -71,14 +71,14 @@ import lombok.NonNull;
 			@NonNull final DocumentIdsSelection rowIds,
 			@NonNull final ViewLayout layout,
 			@NonNull final Language language,
-			@Nullable final ZoneId zoneId)
+			@NonNull final ZoneId zoneId)
 	{
 		super(excelFormat, constants);
 		this.layout = layout;
 		setLanguage(language);
 		jsonOpts = JSONOptions.builder()
 				.adLanguage(language.getAD_Language())
-				.zoneId(zoneId != null ? zoneId : ZoneId.systemDefault())
+				.zoneId(zoneId)
 				.build();
 
 		if (rowIds.isAll())
