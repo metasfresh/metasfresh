@@ -1,9 +1,6 @@
 import { BPartner } from '../../support/utils/bpartner';
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { ProductCategory } from '../../support/utils/product';
-import { PackingMaterial } from '../../support/utils/packing_material';
-import { PackingInstructions } from '../../support/utils/packing_instructions';
-import { PackingInstructionsVersion } from '../../support/utils/packing_instructions_version';
 import { Builder } from '../../support/utils/builder';
 import { appendHumanReadableNow } from '../../support/utils/utils';
 import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_order';
@@ -50,24 +47,7 @@ describe('Change warehouse to Materialentnahmelager', function() {
   });
   it('Create packing related entities', function() {
     Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productForPackingMaterial, productType, '24_Gebinde');
-    cy.fixture('product/packing_material.json').then(packingMaterialJson => {
-      Object.assign(new PackingMaterial(), packingMaterialJson)
-        .setName(productForPackingMaterial)
-        .setProduct(productForPackingMaterial)
-        .apply();
-    });
-    cy.fixture('product/packing_instructions.json').then(packingInstructionsJson => {
-      Object.assign(new PackingInstructions(), packingInstructionsJson)
-        .setName(packingInstructionsName)
-        .apply();
-    });
-    cy.fixture('product/packing_instructions_version.json').then(pivJson => {
-      Object.assign(new PackingInstructionsVersion(), pivJson)
-        .setName(packingInstructionsName)
-        .setPackingInstructions(packingInstructionsName)
-        .setPackingMaterial(productForPackingMaterial)
-        .apply();
-    });
+    Builder.createPackingMaterial(productForPackingMaterial, packingInstructionsName);
   });
 
   it('Create category', function() {
@@ -78,7 +58,7 @@ describe('Change warehouse to Materialentnahmelager', function() {
     });
   });
 
-  it('Create product1', function() {
+  it('Create product', function() {
     Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(productCategoryName, productCategoryName, priceListName, productName1, productName1, productType, packingInstructionsName);
   });
 
@@ -112,7 +92,7 @@ describe('Create a purchase order and Material Receipts', function() {
 
   it('Create Material Receipt 1', function() {
     cy.selectNthRow(0).click();
-    cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults');
+    cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults', false, true);
     cy.selectNthRow(0, true);
     cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams');
     cy.pressDoneButton();
