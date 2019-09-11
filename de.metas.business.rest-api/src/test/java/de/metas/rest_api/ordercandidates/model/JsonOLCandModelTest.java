@@ -169,6 +169,7 @@ public class JsonOLCandModelTest
 		final JsonOLCandCreateBulkResponse response = JsonOLCandCreateBulkResponse.error(JsonError.builder()
 				.message("error message")
 				.stackTrace("error stacktrace")
+				.throwable(null) // REMEMBER: throwable is not serialized
 				.build());
 		testSerializeDeserialize(response, jsonObjectMapper);
 	}

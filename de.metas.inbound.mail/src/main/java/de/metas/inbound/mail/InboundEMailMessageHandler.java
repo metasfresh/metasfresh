@@ -1,10 +1,9 @@
 package de.metas.inbound.mail;
 
-import java.time.Instant;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import org.compiere.util.TimeUtil;
 import org.springframework.integration.mail.MailHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
@@ -105,19 +104,7 @@ class InboundEMailMessageHandler implements MessageHandler
 
 	private static ZonedDateTime toZonedDateTime(final Object dateObj)
 	{
-		if (dateObj == null)
-		{
-			return null;
-		}
-		else if (dateObj instanceof java.util.Date)
-		{
-			final Instant instant = ((java.util.Date)dateObj).toInstant();
-			return ZonedDateTime.ofInstant(instant, ZoneId.systemDefault());
-		}
-		else
-		{
-			throw new IllegalArgumentException("Cannot convert " + dateObj + " (" + dateObj.getClass() + ") to " + ZonedDateTime.class);
-		}
+		return TimeUtil.asZonedDateTime(dateObj);
 	}
 
 	private static final ImmutableMap<String, Object> convertMailHeadersToJson(final MultiValueMap<String, Object> mailRawHeaders)

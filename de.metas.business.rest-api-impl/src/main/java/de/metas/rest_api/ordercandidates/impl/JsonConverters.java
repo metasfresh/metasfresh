@@ -65,15 +65,11 @@ class JsonConverters
 
 		final OrgId orgId = masterdataProvider.getCreateOrgId(request.getOrg());
 
-		final ProductMasterDataProvider productMasterDataProvider = masterdataProvider.getProductMasterDataProvider();
-		final ProductInfo productInfo = productMasterDataProvider.getCreateProductInfo(request.getProduct(), orgId);
+		final ProductInfo productInfo = masterdataProvider.getCreateProductInfo(request.getProduct(), orgId);
 
 		final PricingSystemId pricingSystemId = masterdataProvider.getPricingSystemIdByValue(request.getPricingSystemCode());
 
 		final CurrencyId currencyId = masterdataProvider.getCurrencyId(request.getCurrencyCode());
-
-		final BPartnerMasterDataProvider //
-		bpartnerMasterdataProvider = masterdataProvider.getBPartnerMasterDataProvider();
 
 		return OLCandCreateRequest.builder()
 				//
@@ -86,10 +82,10 @@ class JsonConverters
 				//
 				.dataDestInternalName(request.getDataDestInternalName())
 				//
-				.bpartner(bpartnerMasterdataProvider.getCreateBPartnerInfo(request.getBpartner(), orgId))
-				.billBPartner(bpartnerMasterdataProvider.getCreateBPartnerInfo(request.getBillBPartner(), orgId))
-				.dropShipBPartner(bpartnerMasterdataProvider.getCreateBPartnerInfo(request.getDropShipBPartner(), orgId))
-				.handOverBPartner(bpartnerMasterdataProvider.getCreateBPartnerInfo(request.getHandOverBPartner(), orgId))
+				.bpartner(masterdataProvider.getCreateBPartnerInfo(request.getBpartner(), orgId))
+				.billBPartner(masterdataProvider.getCreateBPartnerInfo(request.getBillBPartner(), orgId))
+				.dropShipBPartner(masterdataProvider.getCreateBPartnerInfo(request.getDropShipBPartner(), orgId))
+				.handOverBPartner(masterdataProvider.getCreateBPartnerInfo(request.getHandOverBPartner(), orgId))
 				//
 				.poReference(request.getPoReference())
 				//
@@ -127,13 +123,10 @@ class JsonConverters
 		final BPartnerLocationId bpartnerLocationId = bpartnerInfo.getBpartnerLocationId();
 		final BPartnerContactId contactId = bpartnerInfo.getContactId();
 
-		final BPartnerMasterDataProvider //
-		bpartnerMasterdataProvider = masterdataProvider.getBPartnerMasterDataProvider();
-
 		return JsonBPartnerInfo.builder()
-				.bpartner(bpartnerMasterdataProvider.getJsonBPartnerById(bpartnerId))
-				.location(bpartnerMasterdataProvider.getJsonBPartnerLocationById(bpartnerLocationId))
-				.contact(bpartnerMasterdataProvider.getJsonBPartnerContactById(contactId))
+				.bpartner(masterdataProvider.getJsonBPartnerById(bpartnerId))
+				.location(masterdataProvider.getJsonBPartnerLocationById(bpartnerLocationId))
+				.contact(masterdataProvider.getJsonBPartnerContactById(contactId))
 				.build();
 	}
 

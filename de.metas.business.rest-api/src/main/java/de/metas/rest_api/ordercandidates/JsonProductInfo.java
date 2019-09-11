@@ -2,6 +2,8 @@ package de.metas.rest_api.ordercandidates;
 
 import static de.metas.util.lang.CoalesceUtil.coalesce;
 
+import java.math.BigDecimal;
+
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -66,10 +68,17 @@ public class JsonProductInfo
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			value = "This translates to `C_UOM.X12DE355`.\n"
-			+"The respective UOM needs to exist in metasfresh and then its ID is set as `M_Product.C_UOM_ID`.\n"
-			+ "If this property is empty, and a product with the given `code` does not yet exist, then the request will fail.")
+					+ "The respective UOM needs to exist in metasfresh and then its ID is set as `M_Product.C_UOM_ID`.\n"
+					+ "If this property is empty, and a product with the given `code` does not yet exist, then the request will fail.")
 	@JsonInclude(Include.NON_NULL)
 	private String uomCode;
+
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
+			value = "This translates to `M_ProductPrice.PriceStd`. \n"
+					+ "")
+	@JsonInclude(Include.NON_NULL)
+	private BigDecimal price;
 
 	@JsonInclude(Include.NON_NULL)
 	private SyncAdvise syncAdvise;
@@ -81,12 +90,19 @@ public class JsonProductInfo
 			@JsonProperty("name") @Nullable final String name,
 			@JsonProperty("type") @Nullable final Type type,
 			@JsonProperty("uomCode") @Nullable final String uomCode,
+			@JsonProperty("price") @Nullable final BigDecimal price,
 			@JsonProperty("syncAdvise") @Nullable final SyncAdvise syncAdvise)
 	{
 		this.code = code;
 		this.name = name;
 		this.type = type;
 		this.uomCode = uomCode;
+		this.price = price;
 		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
+
+		if (this.syncAdvise.getIfExists().isUpdate() && price != null)
+		{
+			throw new IllegalArgumentException("Updating existing prices is not allowed: " + this);
+		}
 	}
 }

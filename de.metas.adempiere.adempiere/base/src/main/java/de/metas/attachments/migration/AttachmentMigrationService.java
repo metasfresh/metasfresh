@@ -95,7 +95,7 @@ public class AttachmentMigrationService
 	public List<AttachmentEntry> convertAttachmentLOBToEntries(@NonNull final I_AD_Attachment attachment)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		return trxManager.call(() -> {
+		return trxManager.callInNewTrx(() -> {
 
 			return convertAttachmentLOBToEntries0(attachment);
 		});

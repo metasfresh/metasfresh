@@ -137,7 +137,7 @@ import lombok.NonNull;
 	@Override
 	public final List<I_M_HU> createReceiptCandidatesAndPlanningHUs()
 	{
-		return trxManager.call(() -> {
+		return trxManager.callInNewTrx(() -> {
 
 			final I_M_HU_LUTU_Configuration lutuConfig = getCreateLUTUConfiguration();
 			final Quantity qtyCUsTotal = lutuConfigurationFactory.calculateQtyCUsTotal(lutuConfig);
@@ -157,7 +157,7 @@ import lombok.NonNull;
 	@Override
 	public final List<I_M_HU> createReceiptCandidatesAndPlanningHUs(final BigDecimal qtyToReceive, final I_C_UOM uom)
 	{
-		return trxManager.call(() -> createHUsInTrx(qtyToReceive, uom));
+		return trxManager.callInNewTrx(() -> createHUsInTrx(qtyToReceive, uom));
 	}
 
 	private final List<I_M_HU> createHUsInTrx(final BigDecimal qtyToReceive, final I_C_UOM uom)
