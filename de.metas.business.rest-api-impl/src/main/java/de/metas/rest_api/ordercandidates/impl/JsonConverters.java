@@ -3,6 +3,7 @@ package de.metas.rest_api.ordercandidates.impl;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -71,6 +72,10 @@ class JsonConverters
 
 		final CurrencyId currencyId = masterdataProvider.getCurrencyId(request.getCurrencyCode());
 
+		final WarehouseId warehouseDestId = !Check.isEmpty(request.getWarehouseDestCode())
+				? masterdataProvider.getWarehouseIdByValue(request.getWarehouseDestCode())
+				: null;
+
 		return OLCandCreateRequest.builder()
 				//
 				.orgId(orgId)
@@ -106,8 +111,11 @@ class JsonConverters
 				.pricingSystemId(pricingSystemId)
 				.price(request.getPrice())
 				.currencyId(currencyId)
-
-				.discount(Percent.ofNullable(request.getDiscount()));
+				.discount(Percent.ofNullable(request.getDiscount()))
+				//
+				.warehouseDestId(warehouseDestId)
+		//
+		;
 	}
 
 	private final JsonBPartnerInfo toJson(
@@ -167,6 +175,8 @@ class JsonConverters
 				.pricingSystemId(PricingSystemId.toRepoId(olCand.getPricingSystemId()))
 				.price(olCand.getPriceActual())
 				.discount(olCand.getDiscount())
+				//
+				.warehouseDestId(WarehouseId.toRepoId(olCand.getWarehouseDestId()))
 				//
 				.build();
 	}

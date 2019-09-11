@@ -281,7 +281,7 @@ class OLCandOrderFactory
 			currentOrderLine = newOrderLine(candidate);
 		}
 
-		currentOrderLine.setM_Warehouse_Dest_ID(candidate.getM_Warehouse_Dest_ID());
+		currentOrderLine.setM_Warehouse_Dest_ID(WarehouseId.toRepoId(candidate.getWarehouseDestId()));
 		currentOrderLine.setProductDescription(candidate.getProductDescription()); // 08626: Propagate ProductDescription to C_OrderLine
 		currentOrderLine.setLine(candidate.getLine());
 

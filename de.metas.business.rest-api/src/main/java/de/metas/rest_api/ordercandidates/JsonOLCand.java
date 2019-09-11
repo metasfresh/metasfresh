@@ -77,4 +77,6 @@ public class JsonOLCand
 	private int pricingSystemId;
 	private BigDecimal price;
 	private BigDecimal discount;
+
+	private int warehouseDestId;
 }

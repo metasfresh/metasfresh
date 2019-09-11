@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.base.MoreObjects;
@@ -185,9 +186,9 @@ public final class OLCand implements IProductPriceAware
 		return candidate.getM_AttributeSetInstance_ID();
 	}
 
-	public int getM_Warehouse_Dest_ID()
+	public WarehouseId getWarehouseDestId()
 	{
-		return candidate.getM_Warehouse_Dest_ID();
+		return WarehouseId.ofRepoIdOrNull(candidate.getM_Warehouse_Dest_ID());
 	}
 
 	public boolean isManualPrice()

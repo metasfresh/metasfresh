@@ -148,6 +148,11 @@ public class OLCandRepository
 			olCandPO.setDiscount(request.getDiscount().toBigDecimal());
 		}
 
+		if (request.getWarehouseDestId() != null)
+		{
+			olCandPO.setM_Warehouse_Dest_ID(request.getWarehouseDestId().getRepoId());
+		}
+
 		olCandPO.setAD_User_EnteredBy_ID(Env.getAD_User_ID());
 
 		final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);

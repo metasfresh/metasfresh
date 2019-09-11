@@ -7,6 +7,8 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.warehouse.WarehouseId;
+
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.money.CurrencyId;
@@ -86,6 +88,8 @@ public class OLCandCreateRequest
 	CurrencyId currencyId; // mandatory if price is provided
 	Percent discount;
 
+	WarehouseId warehouseDestId;
+
 	@Builder
 	private OLCandCreateRequest(
 			@Nullable final String externalLineId,
@@ -111,7 +115,8 @@ public class OLCandCreateRequest
 			@Nullable final PricingSystemId pricingSystemId,
 			final BigDecimal price,
 			final CurrencyId currencyId,
-			final Percent discount)
+			final Percent discount,
+			@Nullable final WarehouseId warehouseDestId)
 	{
 		// Check.assume(qty.signum() > 0, "qty > 0"); qty might very well also be <= 0
 
@@ -144,5 +149,7 @@ public class OLCandCreateRequest
 		this.price = price;
 		this.currencyId = currencyId;
 		this.discount = discount;
+
+		this.warehouseDestId = warehouseDestId;
 	}
 }

@@ -169,6 +169,11 @@ public final class JsonOLCandCreateRequest
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
+			value = "Translates to C_OLCand.M_Warehouse_Dest_ID.")
+	private String warehouseDestCode;
+
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
 			value = "Can be set if the invoice's document date is already known from the external system and shall be forwarded to the invoice candidate.\n"
 					+ "This works only if not an order line but an invoice candidate is directly created for the respective order line candidate.\n"
 					+ "Therefore, please make sure to have <code>dataDestInternalName='DEST.de.metas.invoicecandidate'</code>.\n"
@@ -214,6 +219,7 @@ public final class JsonOLCandCreateRequest
 			@JsonProperty("currencyCode") final @Nullable String currencyCode,
 			@JsonProperty("discount") final @Nullable BigDecimal discount,
 			@JsonProperty("poReference") final @NonNull String poReference,
+			@JsonProperty("warehouseDestCode") final @Nullable String warehouseDestCode,
 			@JsonProperty("dateInvoiced") final @Nullable LocalDate dateInvoiced,
 			@JsonProperty("invoiceDocType") final @Nullable JsonDocTypeInfo invoiceDocType)
 	{
@@ -239,6 +245,7 @@ public final class JsonOLCandCreateRequest
 		this.currencyCode = currencyCode;
 		this.discount = discount;
 		this.poReference = poReference;
+		this.warehouseDestCode = warehouseDestCode;
 		this.dateInvoiced = dateInvoiced;
 		this.invoiceDocType = invoiceDocType;
 	}

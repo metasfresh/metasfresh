@@ -65,6 +65,8 @@ public interface IWarehouseDAO extends ISingletonService
 	 */
 	boolean isDocTypeAllowed(WarehouseId warehouseId, final String docBaseType);
 
+	WarehouseId getWarehouseIdByValue(String value);
+
 	@Deprecated
 	WarehouseId getWarehouseIdByLocatorRepoId(int locatorId);
 
