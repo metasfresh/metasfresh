@@ -30,6 +30,7 @@ public class OrderPricingHUDocumentHandler implements IHUDocumentHandler
 		final I_M_ProductPrice productPrice = ProductPrices.newQuery(plv)
 				.setProductId(productId)
 				.onlyAttributePricing()
+				.onlyValidPrices(true)
 				.retrieveDefault(I_M_ProductPrice.class);
 
 		if (productPrice != null)

@@ -72,6 +72,8 @@ public class ProductPriceQuery
 
 	private Map<String, IProductPriceQueryMatcher> _additionalMatchers = null;
 
+	private boolean _onlyValidPrices = true;
+
 	/* package */ ProductPriceQuery()
 	{
 	}
@@ -85,6 +87,7 @@ public class ProductPriceQuery
 				.add("productId", _productId)
 				//
 				.add("attributePricing", _attributePricing)
+				.add("onlyValidPrices", _onlyValidPrices)
 				.add("asiToMatch", _attributePricing_asiToMatch)
 				//
 				.add("scalePrice", _scalePrice)
@@ -137,7 +140,7 @@ public class ProductPriceQuery
 	}
 
 	/**
-	 * 
+	 *
 	 * @param strictDefault if {@code true}, the method throws an exception if there is more than one match.
 	 *            If {@code false, it silently returns the first match which has the lowest sequence number.
 	 * 			@param type
@@ -195,6 +198,14 @@ public class ProductPriceQuery
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, getPriceListVersionId())
 				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_Product_ID, getProductId());
+
+		// Ignore invalid prices
+		final boolean isOnlyValidPrices = isOnlyValidPrices();
+
+		if (isOnlyValidPrices)
+		{
+			queryBuilder.addNotEqualsFilter(I_M_ProductPrice.COLUMN_IsInvalidPrice, true);
+		}
 
 		//
 		// Attribute pricing records
@@ -269,6 +280,17 @@ public class ProductPriceQuery
 		_attributePricing = Boolean.FALSE;
 		_attributePricing_asiToMatch = null;
 		return this;
+	}
+
+	public ProductPriceQuery onlyValidPrices(final boolean onlyValidPrices)
+	{
+		_onlyValidPrices = onlyValidPrices;
+		return this;
+	}
+
+	public boolean isOnlyValidPrices()
+	{
+		return _onlyValidPrices;
 	}
 
 	/** Matches any product price which is marked as "attributed pricing" */
@@ -527,4 +549,5 @@ public class ProductPriceQuery
 			return productPriceAttributes;
 		}
 	}
+
 }
