@@ -362,4 +362,14 @@ public final class OLCand implements IProductPriceAware
 	{
 		return InvoicableQtyBasedOn.fromRecordString(candidate.getInvoicableQtyBasedOn());
 	}
+
+	public LocalDate getPresetDateInvoiced()
+	{
+		return TimeUtil.asLocalDate(candidate.getPresetDateInvoiced());
+	}
+
+	public LocalDate getPresetDateShipped()
+	{
+		return TimeUtil.asLocalDate(candidate.getPresetDateShipped());
+	}
 }
