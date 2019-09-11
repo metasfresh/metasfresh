@@ -389,7 +389,7 @@ public class OrderCandidatesRestControllerImplTest
 						.name("productName")
 						.type(Type.ITEM)
 						.uomCode(UOM_CODE)
-						.price(new BigDecimal("13.24"))
+						.priceStd(new BigDecimal("13.24"))
 						.syncAdvise(SyncAdvise.JUST_CREATE_IF_NOT_EXISTS)
 						.build())
 				.bpartner(JsonBPartnerInfo.builder()

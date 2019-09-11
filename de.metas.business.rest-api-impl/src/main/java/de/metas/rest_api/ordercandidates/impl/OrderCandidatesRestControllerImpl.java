@@ -213,10 +213,10 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 			return ExplainedOptional.emptyBecause("product was already created");
 		}
 
-		final BigDecimal price = json.getProduct().getPrice();
-		if (price == null)
+		final BigDecimal priceStd = json.getProduct().getPriceStd();
+		if (priceStd == null)
 		{
-			return ExplainedOptional.emptyBecause("price was not specified");
+			return ExplainedOptional.emptyBecause("priceStd was not specified");
 		}
 
 		final BPartnerLocationId bpartnerAndLocationId = bpartnerInfo.getBpartnerLocationId();
@@ -238,7 +238,7 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 				.date(dateEffective)
 				.productId(productInfo.getProductId())
 				.uomId(productInfo.getUomId())
-				.price(price)
+				.priceStd(priceStd)
 				.build();
 
 		return ExplainedOptional.of(request);
