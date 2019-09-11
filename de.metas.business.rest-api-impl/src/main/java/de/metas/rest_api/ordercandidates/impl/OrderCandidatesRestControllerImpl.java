@@ -225,9 +225,10 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 			throw new AdempiereException("@NotFound@ @C_BPartner_Location_ID@");
 		}
 
-		final ZonedDateTime dateEffective = json.getDateOrdered() != null
-				? TimeUtil.asZonedDateTime(json.getDateOrdered())
-				: SystemTime.asZonedDateTime();
+		final ZonedDateTime dateEffective = CoalesceUtil.coalesceSuppliers(
+				() -> TimeUtil.asZonedDateTime(json.getDateRequired()),
+				() -> TimeUtil.asZonedDateTime(json.getDateOrdered()),
+				() -> SystemTime.asZonedDateTime());
 
 		final PricingSystemId pricingSystemId = masterdataProvider.getPricingSystemIdByValue(json.getPricingSystemCode());
 
