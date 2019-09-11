@@ -16,15 +16,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -88,7 +87,7 @@ public class C_Dunning_Candidate_SetDunningGrace extends JavaProcess
 
 	private void setDunningGrace(final I_C_Dunning_Candidate candidate, final Timestamp dunningGrace)
 	{
-			candidate.setDunningGrace(dunningGrace);
+		candidate.setDunningGrace(dunningGrace);
 
 		// We want to make sure that model validators are triggered EVEN if the old DunningGrace value equals with new DunningGrace value
 		markColumnChanged(candidate, I_C_Dunning_Candidate.COLUMNNAME_DunningGrace);
@@ -103,13 +102,13 @@ public class C_Dunning_Candidate_SetDunningGrace extends JavaProcess
 		if (!Check.isEmpty(getProcessInfo().getWhereClause(), true))
 		{
 			sqlWhere.append(getProcessInfo().getWhereClause())
-				.append(" AND "+ I_C_Dunning_Candidate.COLUMNNAME_Processed + " = 'N'"); //03663 : Must make sure to take only unprocessed candidates.
+					.append(" AND " + I_C_Dunning_Candidate.COLUMNNAME_Processed + " = 'N'"); // 03663 : Must make sure to take only unprocessed candidates.
 		}
 		else
 		{
-			//We have no where clause. Assume all unprocessed candidates.
+			// We have no where clause. Assume all unprocessed candidates.
 			sqlWhere.append(I_C_Dunning_Candidate.COLUMNNAME_IsActive + " = 'Y'")
-				.append(" AND "+ I_C_Dunning_Candidate.COLUMNNAME_Processed + " = 'N'");
+					.append(" AND " + I_C_Dunning_Candidate.COLUMNNAME_Processed + " = 'N'");
 		}
 
 		return new Query(getCtx(), I_C_Dunning_Candidate.Table_Name, sqlWhere.toString(), get_TrxName())
