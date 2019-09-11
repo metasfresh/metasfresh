@@ -9,6 +9,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -57,6 +58,21 @@ public class DataImportRestController
 		this.dataImportService = dataImportService;
 	}
 
+	@PostMapping("/text")
+	public ResponseEntity<JsonDataImportResponse> importFile(
+			@ApiParam("Data Import internal name (i.e. `C_DataImport.InternalName`)") //
+			@RequestParam("dataImportConfig") @NonNull final String dataImportConfigInternalName,
+
+			@ApiParam("Try complete documents in case it applies") //
+			@RequestParam(name = "completeDocuments", required = false, defaultValue = "false") final boolean completeDocuments,
+
+			@ApiParam("The text file you are importing") //
+			@RequestBody @NonNull final String content)
+	{
+		final Resource data = new ByteArrayResource(content.getBytes());
+		return importFile(dataImportConfigInternalName, completeDocuments, data);
+	}
+
 	@PostMapping
 	public ResponseEntity<JsonDataImportResponse> importFile(
 			@ApiParam("Data Import internal name (i.e. `C_DataImport.InternalName`)") //
@@ -68,11 +84,20 @@ public class DataImportRestController
 			@ApiParam("The text file you are importing") //
 			@RequestParam("file") @NonNull final MultipartFile file)
 	{
+		final Resource data = toResource(file);
+		return importFile(dataImportConfigInternalName, completeDocuments, data);
+	}
+
+	private ResponseEntity<JsonDataImportResponse> importFile(
+			@NonNull final String dataImportConfigInternalName,
+			final boolean completeDocuments,
+			@NonNull final Resource data)
+	{
 		final DataImportConfig dataImportConfig = dataImportService.getDataImportConfigByInternalName(dataImportConfigInternalName)
 				.orElseThrow(() -> new AdempiereException("No data import configuration found for: " + dataImportConfigInternalName));
 
 		final DataImportResult result = dataImportService.importData(DataImportRequest.builder()
-				.data(toResource(file))
+				.data(data)
 				.dataImportConfigId(dataImportConfig.getId())
 				.clientId(Env.getClientId())
 				.orgId(Env.getOrgId())
