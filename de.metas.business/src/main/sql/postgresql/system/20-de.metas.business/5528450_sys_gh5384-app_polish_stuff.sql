@@ -1,3 +1,12 @@
+
+-- modify the unique index to only apply to active records
+-- might be needed further down, when we rename a legacy C_UOM record
+DROP INDEX public.c_uom_name;
+CREATE UNIQUE INDEX c_uom_name
+    ON public.c_uom (ad_client_id, name) where IsActive='Y';
+
+COMMIT;
+
 -- 2019-08-01T14:17:56.042Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRangeFilter,IsSelectionColumn,IsShowFilterIncrementButtons,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,568550,576982,0,29,540542,'QtyDeliveredCatch',TO_TIMESTAMP('2019-08-01 16:17:55','YYYY-MM-DD HH24:MI:SS'),100,'N','Tatsächlich gelieferte Menge','de.metas.inoutcandidate',10,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','Geliefert Catch',0,0,TO_TIMESTAMP('2019-08-01 16:17:55','YYYY-MM-DD HH24:MI:SS'),100,0)
@@ -1019,7 +1028,8 @@ INSERT INTO t_alter_column values('m_shipmentschedule','QtyToDeliverCatch_Overri
 ;
 
 
-ALTER TABLE M_ShipmentSchedule DROP COLUMN IF EXISTS QtyPickedCatch;
+select db_alter_table('M_ShipmentSchedule','ALTER TABLE M_ShipmentSchedule DROP COLUMN IF EXISTS QtyPickedCatch;');
+
 -- 2019-08-02T06:23:59.897Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,551617,582527,0,500221,TO_TIMESTAMP('2019-08-02 08:23:59','YYYY-MM-DD HH24:MI:SS'),100,10,'de.metas.inoutcandidate','Y','N','N','N','N','N','N','N','Menge TU (berechnet)',TO_TIMESTAMP('2019-08-02 08:23:59','YYYY-MM-DD HH24:MI:SS'),100)
@@ -1492,6 +1502,18 @@ INSERT INTO C_UOM_Conversion (AD_Client_ID,AD_Org_ID,Created,CreatedBy,C_UOM_Con
 -- 2019-08-02T11:16:45.592Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE C_UOM SET IsActive='N',Updated=TO_TIMESTAMP('2019-08-02 13:16:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_UOM_ID=540016
+;
+
+-- copied this from 5528460_sys_gh5384-app_deactivate_legacy_KGM_uom.sql to avoid a name conflict
+-- 2019-08-02T11:22:05.495Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_UOM SET Description='Please don''t use this UOM (anymore). Instead, please use the "KGM" UOM with ID=540017', IsActive='N',Updated=TO_TIMESTAMP('2019-08-02 13:22:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_UOM_ID=1000000
+/*added additional conditions only here: */and AD_Client_ID=0 and Name='Kilogramm'
+;
+-- 2019-08-02T11:22:05.502Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_UOM_Trl SET Description='Please don''t use this UOM (anymore). Instead, please use the "KGM" UOM with ID=540017', Name='Kilogramm', UOMSymbol='kg', IsTranslated='Y' WHERE C_UOM_ID=1000000
+/*added additional conditions only here: */and AD_Client_ID=0 and Name='Kilogramm'
 ;
 
 -- 2019-08-02T11:21:06.898Z
