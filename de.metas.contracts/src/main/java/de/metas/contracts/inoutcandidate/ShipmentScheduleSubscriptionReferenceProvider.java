@@ -3,7 +3,7 @@ package de.metas.contracts.inoutcandidate;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import org.adempiere.warehouse.WarehouseId;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
@@ -38,7 +38,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@Service
+@Component
 public class ShipmentScheduleSubscriptionReferenceProvider implements ShipmentScheduleReferencedLineProvider
 {
 	/**
@@ -81,5 +81,5 @@ public class ShipmentScheduleSubscriptionReferenceProvider implements ShipmentSc
 				.subscriptionProgressId(subscriptionLine.getC_SubscriptionProgress_ID())
 				.subscriptionBillBPartnerId(subscriptionLine.getC_Flatrate_Term().getBill_BPartner_ID())
 				.build();
-	};
+	}
 }

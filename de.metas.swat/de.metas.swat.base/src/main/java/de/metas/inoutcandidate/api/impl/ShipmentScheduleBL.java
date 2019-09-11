@@ -32,8 +32,8 @@ import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Timer;
@@ -61,7 +61,6 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_Product;
@@ -137,28 +136,26 @@ import lombok.NonNull;
 @Service
 public class ShipmentScheduleBL implements IShipmentScheduleBL
 {
-	private static final String DYNATTR_ProcessedByBackgroundProcess = IShipmentScheduleBL.class.getName() + "#ProcessedByBackgroundProcess";
-
-	private final static Logger logger = LogManager.getLogger(ShipmentScheduleBL.class);
-
-	private final CompositeCandidateProcessor candidateProcessors = new CompositeCandidateProcessor();
-
-	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
-
 	// services
+	private final static Logger logger = LogManager.getLogger(ShipmentScheduleBL.class);
 	private final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory;
 	private final ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory;
+
+	private static final String DYNATTR_ProcessedByBackgroundProcess = IShipmentScheduleBL.class.getName() + "#ProcessedByBackgroundProcess";
+
+	private final CompositeCandidateProcessor candidateProcessors = new CompositeCandidateProcessor();
+	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
 
 	@VisibleForTesting
 	public static ShipmentScheduleBL newInstanceForUnitTesting()
 	{
 		final StockRepository stockRepository = new StockRepository();
 		final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory = new ShipmentScheduleQtyOnHandStorageFactory(stockRepository);
-		final ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory = new ShipmentScheduleReferencedLineFactory();
-		shipmentScheduleReferencedLineFactory.registerProviders(ImmutableList.of(new ShipmentScheduleOrderReferenceProvider()));
+		final ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory = new ShipmentScheduleReferencedLineFactory(Optional.of(ImmutableList.of(new ShipmentScheduleOrderReferenceProvider())));
 
-		return new ShipmentScheduleBL(shipmentScheduleQtyOnHandStorageFactory, shipmentScheduleReferencedLineFactory);
-
+		return new ShipmentScheduleBL(
+				shipmentScheduleQtyOnHandStorageFactory,
+				shipmentScheduleReferencedLineFactory);
 	}
 
 	public ShipmentScheduleBL(
@@ -409,8 +406,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public void updatePreparationAndDeliveryDate(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final ShipmentScheduleReferencedLineFactory shipmentScheduleOrderDocFactory = SpringContextHolder.instance.getBean(ShipmentScheduleReferencedLineFactory.class);
-		final ShipmentScheduleReferencedLine shipmentScheduleOrderDoc = shipmentScheduleOrderDocFactory.createFor(sched);
+		final ShipmentScheduleReferencedLine shipmentScheduleOrderDoc = shipmentScheduleReferencedLineFactory.createFor(sched);
 
 		sched.setPreparationDate(shipmentScheduleOrderDoc.getPreparationDate());
 		sched.setDeliveryDate(shipmentScheduleOrderDoc.getDeliveryDate());
@@ -792,9 +788,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	 *
 	 * @param sched
 	 */
-	private static void updateWarehouseId(@NonNull final I_M_ShipmentSchedule sched)
+	private void updateWarehouseId(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final WarehouseId warehouseId = SpringContextHolder.instance.getBean(ShipmentScheduleReferencedLineFactory.class)
+		final WarehouseId warehouseId = shipmentScheduleReferencedLineFactory
 				.createFor(sched)
 				.getWarehouseId();
 		sched.setM_Warehouse_ID(warehouseId.getRepoId());
@@ -1134,12 +1130,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	{
 		return Services.get(IShipmentSchedulePA.class).getByIdsOutOfTrx(ids);
 
-
-
-
-
 	}
-
 
 	@Override
 	public BPartnerId getBPartnerId(@NonNull final I_M_ShipmentSchedule schedule)
