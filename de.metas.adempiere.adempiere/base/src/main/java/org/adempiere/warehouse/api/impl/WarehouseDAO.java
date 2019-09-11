@@ -207,6 +207,25 @@ public class WarehouseDAO implements IWarehouseDAO
 	}
 
 	@Override
+	public WarehouseId getWarehouseIdByValue(@NonNull final String value)
+	{
+		final WarehouseId warehouseId = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_Warehouse.class)
+				.addEqualsFilter(I_M_Warehouse.COLUMN_Value, value)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstIdOnly(WarehouseId::ofRepoIdOrNull);
+
+		if (warehouseId == null)
+		{
+			throw new AdempiereException("@NotFound@ @M_Warehouse_ID@")
+					.setParameter("value", value);
+		}
+
+		return warehouseId;
+	}
+
+	@Override
 	public WarehouseId getWarehouseIdByLocatorRepoId(final int locatorId)
 	{
 		final I_M_Locator locator = getLocatorByRepoId(locatorId);

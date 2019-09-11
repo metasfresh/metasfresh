@@ -298,13 +298,6 @@ public class Util
 			this.array = input;
 		}
 
-		public Object[] getArray()
-		{
-			final Object[] newArray = new Object[array.length];
-			System.arraycopy(array, 0, newArray, 0, array.length);
-			return newArray;
-		}
-
 		@Override
 		public int hashCode()
 		{
@@ -320,7 +313,7 @@ public class Util
 			}
 			if (other instanceof ArrayKey)
 			{
-				return Arrays.equals(this.array, ((ArrayKey)other).getArray());
+				return Arrays.equals(this.array, ((ArrayKey)other).array);
 			}
 			return false;
 		}
@@ -328,11 +321,16 @@ public class Util
 		@Override
 		public String toString()
 		{
-			if (_stringBuilt != null)
+			String stringBuilt = this._stringBuilt;
+			if (stringBuilt == null)
 			{
-				return _stringBuilt;
+				stringBuilt = _stringBuilt = buildToString();
 			}
+			return stringBuilt;
+		}
 
+		private String buildToString()
+		{
 			final StringBuilder sb = new StringBuilder();
 			for (final Object k : array)
 			{
@@ -350,8 +348,7 @@ public class Util
 				}
 			}
 
-			_stringBuilt = sb.toString();
-			return _stringBuilt;
+			return sb.toString();
 		}
 
 		@Override

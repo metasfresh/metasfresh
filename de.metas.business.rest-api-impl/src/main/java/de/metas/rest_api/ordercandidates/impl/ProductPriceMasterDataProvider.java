@@ -58,7 +58,7 @@ final class ProductPriceMasterDataProvider
 		final ZonedDateTime date = request.getDate();
 		final ProductId productId = request.getProductId();
 		final UomId uomId = request.getUomId();
-		final BigDecimal price = request.getPrice();
+		final BigDecimal priceStd = request.getPriceStd();
 		final SOTrx soTrx = SOTrx.SALES;
 
 		final PricingSystemId pricingSystemId;
@@ -105,7 +105,7 @@ final class ProductPriceMasterDataProvider
 				.priceListVersionId(priceListVersionId)
 				.productId(productId)
 				.uomId(uomId)
-				.priceStd(price)
+				.priceStd(priceStd)
 				// .priceList(price)
 				// .priceLimit(price)
 				.taxCategoryId(taxCategoryId)

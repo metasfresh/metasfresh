@@ -76,9 +76,9 @@ public class JsonProductInfo
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			value = "This translates to `M_ProductPrice.PriceStd`. \n"
-					+ "")
+					+ "IMPORTANT: this is used only when the product is created. If product exists, priceStd is IGNORED.")
 	@JsonInclude(Include.NON_NULL)
-	private BigDecimal price;
+	private BigDecimal priceStd;
 
 	@JsonInclude(Include.NON_NULL)
 	private SyncAdvise syncAdvise;
@@ -90,19 +90,14 @@ public class JsonProductInfo
 			@JsonProperty("name") @Nullable final String name,
 			@JsonProperty("type") @Nullable final Type type,
 			@JsonProperty("uomCode") @Nullable final String uomCode,
-			@JsonProperty("price") @Nullable final BigDecimal price,
+			@JsonProperty("price") @Nullable final BigDecimal priceStd,
 			@JsonProperty("syncAdvise") @Nullable final SyncAdvise syncAdvise)
 	{
 		this.code = code;
 		this.name = name;
 		this.type = type;
 		this.uomCode = uomCode;
-		this.price = price;
+		this.priceStd = priceStd;
 		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
-
-		if (this.syncAdvise.getIfExists().isUpdate() && price != null)
-		{
-			throw new IllegalArgumentException("Updating existing prices is not allowed: " + this);
-		}
 	}
 }
