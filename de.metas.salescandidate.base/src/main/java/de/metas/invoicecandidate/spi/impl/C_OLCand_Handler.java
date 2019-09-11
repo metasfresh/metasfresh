@@ -207,7 +207,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		// 05265
 		ic.setIsSOTrx(true);
 
-		ic.setDateInvoiced(olc.getDateInvoiced());
+		ic.setDateInvoiced(olc.getPresetDateInvoiced());
 		ic.setC_DocTypeInvoice_ID(olc.getC_DocTypeInvoice_ID());
 
 		// 07442 activity and tax
@@ -223,7 +223,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				ic, // model
 				TaxCategoryId.ofRepoIdOrNull(olc.getC_TaxCategory_ID()),
 				ProductId.toRepoId(productId),
-				CoalesceUtil.coalesce(olc.getDatePromised_Override(), olc.getDatePromised(), olc.getDateInvoiced()),
+				CoalesceUtil.coalesce(olc.getDatePromised_Override(), olc.getDatePromised(), olc.getPresetDateInvoiced()),
 				orgId,
 				(WarehouseId)null,
 				BPartnerLocationId.toRepoId(olCandEffectiveValuesBL.getDropShipLocationEffectiveId(olc)),

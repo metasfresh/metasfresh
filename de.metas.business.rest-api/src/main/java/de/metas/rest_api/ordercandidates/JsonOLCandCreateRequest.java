@@ -174,10 +174,7 @@ public final class JsonOLCandCreateRequest
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
-			value = "Can be set if the invoice's document date is already known from the external system and shall be forwarded to the invoice candidate.\n"
-					+ "This works only if not an order line but an invoice candidate is directly created for the respective order line candidate.\n"
-					+ "Therefore, please make sure to have <code>dataDestInternalName='DEST.de.metas.invoicecandidate'</code>.\n"
-					+ "Otherwise, this property will be ignored.")
+			value = "Can be set if the invoice's document date is already known from the external system. ")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonInclude(Include.NON_NULL)
 	private LocalDate dateInvoiced;
@@ -193,6 +190,13 @@ public final class JsonOLCandCreateRequest
 					+ "and <code>docSubType</code> to one of <code>EA</code> (\"Patient\"), <code>GM</code> (\"Gemeinde\" or <code>KV</code> (\"Krankenversicherung\"")
 	@JsonInclude(Include.NON_NULL)
 	private JsonDocTypeInfo invoiceDocType;
+
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
+			value = "Can be set if the shipment's document date is already known from the external system. ")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	@JsonInclude(Include.NON_NULL)
+	private LocalDate presetDateShipped;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
@@ -221,7 +225,8 @@ public final class JsonOLCandCreateRequest
 			@JsonProperty("poReference") final @NonNull String poReference,
 			@JsonProperty("warehouseDestCode") final @Nullable String warehouseDestCode,
 			@JsonProperty("dateInvoiced") final @Nullable LocalDate dateInvoiced,
-			@JsonProperty("invoiceDocType") final @Nullable JsonDocTypeInfo invoiceDocType)
+			@JsonProperty("invoiceDocType") final @Nullable JsonDocTypeInfo invoiceDocType,
+			@JsonProperty("presetDateShipped") final @Nullable LocalDate presetDateShipped)
 	{
 		this.org = org;
 		this.externalLineId = externalLineId;
@@ -248,6 +253,7 @@ public final class JsonOLCandCreateRequest
 		this.warehouseDestCode = warehouseDestCode;
 		this.dateInvoiced = dateInvoiced;
 		this.invoiceDocType = invoiceDocType;
+		this.presetDateShipped = presetDateShipped;
 	}
 
 	/**
