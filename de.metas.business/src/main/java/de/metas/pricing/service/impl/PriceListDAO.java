@@ -589,7 +589,7 @@ public class PriceListDAO implements IPriceListDAO
 		record.setPriceLimit(request.getPriceLimit());
 
 		record.setC_TaxCategory_ID(request.getTaxCategoryId().getRepoId());
-		
+
 		record.setIsAttributeDependant(false);
 
 		saveRecord(record);
@@ -652,7 +652,7 @@ public class PriceListDAO implements IPriceListDAO
 	{
 		final I_M_PriceList_Version newBasePLV = getPriceListVersionById(newBasePLVId);
 
-		final PriceListVersionId basePriceListVersionId = PriceListVersionId.ofRepoId(newBasePLV.getM_Pricelist_Version_Base_ID());
+		final PriceListVersionId basePriceListVersionId = PriceListVersionId.ofRepoIdOrNull(newBasePLV.getM_Pricelist_Version_Base_ID());
 		if (basePriceListVersionId == null)
 		{
 			// nothing to do
@@ -772,7 +772,12 @@ public class PriceListDAO implements IPriceListDAO
 				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsAllowPriceMutation, true)
 				.create();
 
+		final I_M_PriceList basePriceList = getById(basePLV.getM_PriceList_ID());
+
 		final List<I_M_PriceList_Version> newestVersions = queryBL.createQueryBuilder(I_M_PriceList.class)
+
+				.addEqualsFilter(I_M_PriceList.COLUMNNAME_C_Country_ID, basePriceList.getC_Country_ID())
+				.addEqualsFilter(I_M_PriceList.COLUMNNAME_C_Currency_ID, basePriceList.getC_Currency_ID())
 
 				.addInSubQueryFilter()
 				.matchingColumnNames(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, I_C_BPartner.COLUMNNAME_M_PricingSystem_ID)
