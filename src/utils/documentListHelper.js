@@ -1,7 +1,8 @@
 import PropTypes from 'prop-types';
 import { push } from 'react-router-redux';
 import { Map } from 'immutable';
-import Moment from 'moment';
+import Moment from 'moment-timezone';
+
 import { getItemsByProperty, nullToEmptyStrings } from './index';
 import { getSelection, getSelectionInstant } from '../reducers/windowHandler';
 
@@ -249,7 +250,7 @@ export function parseToDisplay(fieldsByName) {
 }
 
 // This doesn't set the TZ anymore, as we're handling this globally/in datepicker
-export function parseDateWithCurrenTimezone(value) {
+export function parseDateWithCurrentTimezone(value) {
   if (value) {
     if (Moment.isMoment(value)) {
       return value;
@@ -260,16 +261,17 @@ export function parseDateWithCurrenTimezone(value) {
 }
 
 function parseDateToReadable(fieldsByName) {
-  const dateParse = ['Date', 'ZonedDateTime'];
+  const dateParse = ['Date', 'ZonedDateTime', 'Time', 'Timestamp'];
 
   return Object.keys(fieldsByName).reduce((acc, fieldName) => {
     const field = fieldsByName[fieldName];
     const isDateField = dateParse.indexOf(field.widgetType) > -1;
+
     acc[fieldName] =
       isDateField && field.value
         ? {
             ...field,
-            value: parseDateWithCurrenTimezone(field.value),
+            value: parseDateWithCurrentTimezone(field.value),
           }
         : field;
     return acc;
