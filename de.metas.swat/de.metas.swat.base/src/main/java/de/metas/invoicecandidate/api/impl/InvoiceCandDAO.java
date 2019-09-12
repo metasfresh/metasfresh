@@ -1469,13 +1469,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			return; // nothing to do for us
 		}
 
-		final ImmutableList<Integer> icIds = ics.stream()
+		final ImmutableSet<InvoiceCandidateId> icIds = ics.stream()
 				.filter(Predicates.notNull())
-				.filter(ic -> ic.getC_Invoice_Candidate_ID() > 0)
-				.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
+				.map(ic -> InvoiceCandidateId.ofRepoIdOrNull(ic.getC_Invoice_Candidate_ID()))
+				.filter(Predicates.notNull())
 				.distinct()
-				.collect(ImmutableList.toImmutableList());
-
+				.collect(ImmutableSet.toImmutableSet());
 		if (icIds.isEmpty())
 		{
 			return;
@@ -1484,7 +1483,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		// note: invalidate, no matter if Processed or not
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, icIds);
+				.addInArrayFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, icIds);
 
 		invalidateCandsFor(icQueryBuilder);
 	}
