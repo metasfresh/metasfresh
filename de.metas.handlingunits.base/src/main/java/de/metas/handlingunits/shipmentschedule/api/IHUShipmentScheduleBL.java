@@ -1,6 +1,6 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
@@ -42,7 +42,7 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	 * @param movementDate shipment's movement date (used to filter only if we have an consolidation period set)
 	 * @return shipment which is still open for the shipment schedule (first) and it's HU specifications (shipper transportation) or null if none is found
 	 */
-	I_M_InOut getOpenShipmentOrNull(ShipmentScheduleWithHU candidate, Date movementDate);
+	I_M_InOut getOpenShipmentOrNull(ShipmentScheduleWithHU candidate, LocalDate movementDate);
 
 	/**
 	 * Update all allocations from given TU and call {@link I_M_ShipmentSchedule_QtyPicked#setM_LU_HU(I_M_HU)} by setting the current TU's LU.

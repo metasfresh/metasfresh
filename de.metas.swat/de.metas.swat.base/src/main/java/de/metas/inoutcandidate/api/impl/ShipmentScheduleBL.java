@@ -28,7 +28,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -358,22 +357,22 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 			if (sched.getDeliveryDate_Override() != null && sched.getPreparationDate_Override() == null)
 			{
-				final Timestamp deliveryDate = shipmentScheduleEffectiveBL.getDeliveryDate(sched);
+				final ZonedDateTime deliveryDate = shipmentScheduleEffectiveBL.getDeliveryDate(sched);
 
 				final IDeliveryDayBL deliveryDayBL = Services.get(IDeliveryDayBL.class);
 				final IContextAware contextAwareSched = InterfaceWrapperHelper.getContextAware(sched);
 				final BPartnerLocationId bpLocationId = shipmentScheduleEffectiveBL.getBPartnerLocationId(sched);
 
-				final Timestamp dateOrdered = sched.getCreated();
-				final Timestamp preparationDate = deliveryDayBL.calculatePreparationDateOrNull(
+				final ZonedDateTime calculationTime = TimeUtil.asZonedDateTime(sched.getCreated());
+				final ZonedDateTime preparationDate = deliveryDayBL.calculatePreparationDateOrNull(
 						contextAwareSched,
-						true/* isSOTrx */,
-						dateOrdered,
+						SOTrx.SALES,
+						calculationTime,
 						deliveryDate,
-						bpLocationId.getRepoId());
+						bpLocationId);
 
 				// In case the DeliveryDate Override is set, also update the preparationDate override
-				sched.setPreparationDate_Override(preparationDate);
+				sched.setPreparationDate_Override(TimeUtil.asTimestamp(preparationDate));
 
 			}
 			save(sched);

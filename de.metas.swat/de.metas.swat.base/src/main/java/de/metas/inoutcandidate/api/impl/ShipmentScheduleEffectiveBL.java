@@ -4,6 +4,7 @@ import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
@@ -11,6 +12,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_User;
@@ -165,11 +167,12 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	}
 
 	@Override
-	public Timestamp getDeliveryDate(final I_M_ShipmentSchedule sched)
+	public ZonedDateTime getDeliveryDate(final I_M_ShipmentSchedule sched)
 	{
-		return CoalesceUtil.coalesceSuppliers(
-				sched::getDeliveryDate_Override,
-				sched::getDeliveryDate);
+		return TimeUtil.asZonedDateTime(
+				CoalesceUtil.coalesceSuppliers(
+						sched::getDeliveryDate_Override,
+						sched::getDeliveryDate));
 	}
 
 	@Override
