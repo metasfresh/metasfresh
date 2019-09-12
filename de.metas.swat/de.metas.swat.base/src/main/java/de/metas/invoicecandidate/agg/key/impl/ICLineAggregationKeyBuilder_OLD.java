@@ -15,15 +15,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
@@ -128,12 +127,12 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 		{
 			if (ic.getM_Product_ID() > 0)
 			{
-				final I_M_Product product =productDAO.getById(ic.getM_Product_ID());
+				final I_M_Product product = productDAO.getById(ic.getM_Product_ID());
 				sb.append(product.getValue());
 			}
 			else if (ic.getC_Charge_ID() > 0)
 			{
-				sb.append(ic.getC_Charge().getName());
+				sb.append("C_Charge_ID=" + ic.getC_Charge_ID());
 			}
 			else
 			{

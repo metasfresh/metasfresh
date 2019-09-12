@@ -941,7 +941,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		// 07442
 		// also set activity and tax
-		splitCand.setC_Activity(ic.getC_Activity());
+		splitCand.setC_Activity_ID(ic.getC_Activity_ID());
 
 		// 07814: setting both tax and tax-override to get an exact copy
 		splitCand.setC_Tax_ID(ic.getC_Tax_ID());
@@ -1471,7 +1471,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	public void resetError(final I_C_Invoice_Candidate ic)
 	{
 		ic.setIsError(false);
-		ic.setAD_Note(null);
+		ic.setAD_Note_ID(-1);
 		ic.setErrorMsg(null);
 	}
 
@@ -1573,7 +1573,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		ic.setIsError(true);
 		ic.setErrorMsg(errorMessageToUse);
-		ic.setAD_Note(note);
+		ic.setAD_Note_ID(note != null ? note.getAD_Note_ID() : -1);
 
 		//
 		// If we are running in batch update process, append the error message to SchedulerResult just to not lose it in case more issues are coming

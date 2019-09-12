@@ -193,7 +193,7 @@ public class InvoiceCandBLCreateInvoicesTest
 
 		Assert.assertEquals("Invalid " + ic + ": IsError", true, ic.isError());
 		Assert.assertNotNull("Invalid " + ic + ": ErrorMsg", ic.getErrorMsg());
-		Assert.assertNull("Invalid " + ic + ": AD_Note", ic.getAD_Note());
+		Assert.assertTrue("Invalid " + ic + ": AD_Note", ic.getAD_Note_ID() <= 0);
 	}
 
 	/**
