@@ -207,7 +207,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		// 05265
 		ic.setIsSOTrx(true);
 
-		ic.setDateInvoiced(olc.getPresetDateInvoiced());
+		ic.setPresetDateInvoiced(olc.getPresetDateInvoiced());
 		ic.setC_DocTypeInvoice_ID(olc.getC_DocTypeInvoice_ID());
 
 		// 07442 activity and tax
