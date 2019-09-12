@@ -32,7 +32,6 @@ import java.util.Properties;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.util.Evaluatee2;
 
 import de.metas.aggregation.api.IAggregationKey;
 import de.metas.aggregation.api.impl.AggregationKey;
@@ -71,7 +70,7 @@ public class DefaultAggregator implements IAggregator
 	 *
 	 * After aggregation this map will be cleared.
 	 */
-	private final Map<String, List<InvoiceCandidateWithInOutLine>> aggKey2iciol = new LinkedHashMap<String, List<InvoiceCandidateWithInOutLine>>();
+	private final Map<String, List<InvoiceCandidateWithInOutLine>> aggKey2iciol = new LinkedHashMap<>();
 
 	@Override
 	public String toString()
@@ -135,10 +134,10 @@ public class DefaultAggregator implements IAggregator
 
 				final I_C_InvoiceCandidate_InOutLine iciol = request.getC_InvoiceCandidate_InOutLine();
 				final I_M_InOutLine inoutLine = iciol == null ? null : iciol.getM_InOutLine();
-				final Evaluatee2 evalCtx = AggregationKeyEvaluationContext.builder()
-						.setC_Invoice_Candidate(request.getC_Invoice_Candidate())
-						.setM_InOutLine(inoutLine)
-						.setInvoiceLineAttributes(request.getInvoiceLineAttributes())
+				final AggregationKeyEvaluationContext evalCtx = AggregationKeyEvaluationContext.builder()
+						.invoiceCandidate(request.getC_Invoice_Candidate())
+						.inoutLine(inoutLine)
+						.invoiceLineAttributes(request.getInvoiceLineAttributes())
 						.build();
 				final IAggregationKey lineAggregationKey = lineAggregationKeyUnparsed.parse(evalCtx);
 				aggregationKeyToUse.append(lineAggregationKey.getAggregationKeyString());
@@ -183,7 +182,7 @@ public class DefaultAggregator implements IAggregator
 	@Override
 	public List<IInvoiceCandAggregate> aggregate()
 	{
-		final List<IInvoiceCandAggregate> invoiceCandAggregates = new ArrayList<IInvoiceCandAggregate>();
+		final List<IInvoiceCandAggregate> invoiceCandAggregates = new ArrayList<>();
 
 		// ic2QtyInvoiceable keeps track of the qty that we have left to invoice,
 		// to make sure that we don't invoice more that the invoice candidate allows us to

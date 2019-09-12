@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -44,7 +46,6 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
-import org.compiere.util.Evaluatee2;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -185,12 +186,18 @@ public class AggregationEngine implements IAggregationEngine
 		if (alwaysUseDefaultHeaderAggregationKeyBuilder)
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
-			final IAggregationKeyBuilder<I_C_Invoice_Candidate> defaultAggregationKeyBuilder = aggregationFactory.getDefaultAggregationKeyBuilder(ctx, I_C_Invoice_Candidate.class, ic.isSOTrx(),
+			final IAggregationKeyBuilder<I_C_Invoice_Candidate> defaultAggregationKeyBuilder = aggregationFactory.getDefaultAggregationKeyBuilder(
+					ctx,
+					I_C_Invoice_Candidate.class,
+					ic.isSOTrx(),
 					X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header);
-			final IAggregationKey defaultAggregationKey = defaultAggregationKeyBuilder.buildAggregationKey(ic);
-			return defaultAggregationKey;
+
+			return defaultAggregationKeyBuilder.buildAggregationKey(ic);
 		}
-		return new AggregationKey(ic.getHeaderAggregationKey(), ic.getHeaderAggregationKeyBuilder_ID());
+		else
+		{
+			return new AggregationKey(ic.getHeaderAggregationKey(), ic.getHeaderAggregationKeyBuilder_ID());
+		}
 	}
 
 	/**
@@ -203,8 +210,8 @@ public class AggregationEngine implements IAggregationEngine
 	 * @param isLastIcIol if true, then we need to allocate all the given <code>ic</code>'s remaining qtyToInvoice to the given icIol.
 	 */
 	private void addInvoiceCandidateForInOutLine(
-			final I_C_Invoice_Candidate ic,
-			final I_C_InvoiceCandidate_InOutLine iciol,
+			@NonNull final I_C_Invoice_Candidate ic,
+			@Nullable final I_C_InvoiceCandidate_InOutLine iciol,
 			final boolean isLastIcIol)
 	{
 		final I_M_InOutLine icInOutLine = iciol == null ? null : iciol.getM_InOutLine();
@@ -216,9 +223,9 @@ public class AggregationEngine implements IAggregationEngine
 		final IAggregationKey headerAggregationKey;
 		{
 			final IAggregationKey headerAggregationKeyUnparsed = getHeaderAggregationKey(ic);
-			final Evaluatee2 evalCtx = AggregationKeyEvaluationContext.builder()
-					.setC_Invoice_Candidate(ic)
-					.setM_InOutLine(icInOutLine)
+			final AggregationKeyEvaluationContext evalCtx = AggregationKeyEvaluationContext.builder()
+					.invoiceCandidate(ic)
+					.inoutLine(icInOutLine)
 					.build();
 			headerAggregationKey = headerAggregationKeyUnparsed.parse(evalCtx);
 		}
