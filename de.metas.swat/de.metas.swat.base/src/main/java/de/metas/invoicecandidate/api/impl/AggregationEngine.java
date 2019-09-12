@@ -45,6 +45,7 @@ import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee2;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -57,6 +58,7 @@ import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocTypeDAO;
+import de.metas.inout.InOutId;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IAggregationEngine;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
@@ -200,12 +202,13 @@ public class AggregationEngine implements IAggregationEngine
 	 * @param iciol IC-IOL association (could be <code>null</code>)
 	 * @param isLastIcIol if true, then we need to allocate all the given <code>ic</code>'s remaining qtyToInvoice to the given icIol.
 	 */
-	private void addInvoiceCandidateForInOutLine(final I_C_Invoice_Candidate ic,
+	private void addInvoiceCandidateForInOutLine(
+			final I_C_Invoice_Candidate ic,
 			final I_C_InvoiceCandidate_InOutLine iciol,
 			final boolean isLastIcIol)
 	{
 		final I_M_InOutLine icInOutLine = iciol == null ? null : iciol.getM_InOutLine();
-		final int inoutId = icInOutLine == null ? -1 : icInOutLine.getM_InOut_ID();
+		final InOutId inoutId = icInOutLine != null ? InOutId.ofRepoIdOrNull(icInOutLine.getM_InOut_ID()) : null;
 
 		//
 		// Get and parse aggregation key
@@ -223,30 +226,29 @@ public class AggregationEngine implements IAggregationEngine
 		//
 		// Get/Create InvoiceHeaderAndLineAggregators structure for current header aggregation key
 		InvoiceHeaderAndLineAggregators headerAndAggregators = key2headerAndAggregators.get(headerAggregationKey);
+		if (headerAndAggregators == null)
 		{
-			if (headerAndAggregators == null)
-			{
-				final InvoiceHeaderImplBuilder invoiceHeader = InvoiceHeaderImpl.builder();
-				invoiceHeader.setToday(invoiceCandBL.getToday());
-				addToInvoiceHeader(invoiceHeader, ic, inoutId);
-				headerAndAggregators = new InvoiceHeaderAndLineAggregators(headerAggregationKey, invoiceHeader);
-				key2headerAndAggregators.put(headerAggregationKey, headerAndAggregators);
+			final InvoiceHeaderImplBuilder invoiceHeader = InvoiceHeaderImpl.builder()
+					.setToday(TimeUtil.asLocalDate(invoiceCandBL.getToday()));
 
-				final ILoggable loggable = Loggables.get();
-				// task 08451: log why we create a new invoice header
-				if (!Loggables.isNull(loggable))
-				{
-					loggable.addLog("Created new InvoiceHeaderAndLineAggregators instance. current number: " + key2headerAndAggregators.size() + "\n"
-							+ "Params: ['ic'=" + ic + ", 'headerAggregationKey'=" + headerAggregationKey + ", 'inutId'=" + inoutId + ", 'iciol'=" + iciol + "];\n"
-							+ " ic's own headerAggregationKey = " + ic.getHeaderAggregationKey() + ";\n"
-							+ " new headerAndAggregators = " + headerAndAggregators);
-				}
-			}
-			else
+			addToInvoiceHeader(invoiceHeader, ic, inoutId);
+			headerAndAggregators = new InvoiceHeaderAndLineAggregators(headerAggregationKey, invoiceHeader);
+			key2headerAndAggregators.put(headerAggregationKey, headerAndAggregators);
+
+			final ILoggable loggable = Loggables.get();
+			// task 08451: log why we create a new invoice header
+			if (!Loggables.isNull(loggable))
 			{
-				final InvoiceHeaderImplBuilder invoiceHeader = headerAndAggregators.getInvoiceHeader();
-				addToInvoiceHeader(invoiceHeader, ic, inoutId);
+				loggable.addLog("Created new InvoiceHeaderAndLineAggregators instance. current number: " + key2headerAndAggregators.size() + "\n"
+						+ "Params: ['ic'=" + ic + ", 'headerAggregationKey'=" + headerAggregationKey + ", 'inutId'=" + inoutId + ", 'iciol'=" + iciol + "];\n"
+						+ " ic's own headerAggregationKey = " + ic.getHeaderAggregationKey() + ";\n"
+						+ " new headerAndAggregators = " + headerAndAggregators);
 			}
+		}
+		else
+		{
+			final InvoiceHeaderImplBuilder invoiceHeader = headerAndAggregators.getInvoiceHeader();
+			addToInvoiceHeader(invoiceHeader, ic, inoutId);
 		}
 
 		//
@@ -310,9 +312,11 @@ public class AggregationEngine implements IAggregationEngine
 		lineAggregator.addInvoiceCandidate(icAggregationRequest);
 	}
 
-	private void addToInvoiceHeader(final InvoiceHeaderImplBuilder invoiceHeader, final I_C_Invoice_Candidate ic, final int inoutId)
+	private void addToInvoiceHeader(
+			final InvoiceHeaderImplBuilder invoiceHeader,
+			final I_C_Invoice_Candidate ic,
+			final InOutId inoutId)
 	{
-
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
@@ -327,8 +331,8 @@ public class AggregationEngine implements IAggregationEngine
 		// why not using DateToInvoice[_Override] if available?
 		// ts: DateToInvoice[_Override] is "just" the field saying from which date onwards this ic may be invoiced
 		// tsa: true, but as far as i can see, using the Override is available could be also intuitive for user. More, in some test this logic is also assumed.
-		invoiceHeader.setDateInvoiced(ic.getDateInvoiced());
-		invoiceHeader.setDateAcct(ic.getDateAcct());
+		invoiceHeader.setDateInvoiced(TimeUtil.asLocalDate(ic.getDateInvoiced()));
+		invoiceHeader.setDateAcct(TimeUtil.asLocalDate(ic.getDateAcct()));
 
 		// #367 Invoice candidates invoicing Pricelist not found
 		// https://github.com/metasfresh/metasfresh/issues/367
@@ -375,7 +379,7 @@ public class AggregationEngine implements IAggregationEngine
 		}
 
 		// 06630: set shipment id to header
-		invoiceHeader.setM_InOut_ID(inoutId);
+		invoiceHeader.setM_InOut_ID(InOutId.toRepoId(inoutId));
 	}
 
 	private int getBill_Location_ID(@NonNull final I_C_Invoice_Candidate ic)

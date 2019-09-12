@@ -56,6 +56,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
@@ -65,6 +66,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IADMessageDAO;
@@ -287,11 +289,13 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			{
 				final I_C_Order order = create(ctx, invoiceHeader.getC_Order_ID(), I_C_Order.class, trxName);
 
+				final DocTypeId invoiceDocTypeId = invoiceHeader.getC_DocTypeInvoice() != null
+						? DocTypeId.ofRepoId(invoiceHeader.getC_DocTypeInvoice().getC_DocType_ID())
+						: null;
 				invoice = create(
 						invoiceBL.createInvoiceFromOrder(
 								order,
-								// C_DocTypeTarget_ID => get it from Order Doc Type
-								invoiceHeader.getC_DocTypeInvoice() != null ? invoiceHeader.getC_DocTypeInvoice().getC_DocType_ID() : 0,
+								invoiceDocTypeId,
 								invoiceHeader.getDateInvoiced(),
 								invoiceHeader.getDateAcct() // task 08437
 						),
@@ -315,8 +319,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoice.setAD_Org_ID(invoiceHeader.getAD_Org_ID());
 				setC_DocType(invoice, invoiceHeader);
 
-				invoice.setDateInvoiced(invoiceHeader.getDateInvoiced());
-				invoice.setDateAcct(invoiceHeader.getDateAcct()); // 03905: also updating DateAcct
+				invoice.setDateInvoiced(TimeUtil.asTimestamp(invoiceHeader.getDateInvoiced()));
+				invoice.setDateAcct(TimeUtil.asTimestamp(invoiceHeader.getDateAcct())); // 03905: also updating DateAcct
 
 				invoice.setM_PriceList_ID(invoiceHeader.getM_PriceList_ID()); // #367: get M_PriceList_ID directly from invoiceHeader.
 			}
@@ -628,7 +632,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					for (final I_C_Invoice_Candidate candForIlVO : candsForIlVO)
 					{
 						final StockQtyAndUOMQty qtysInvoiced = aggregate.getAllocatedQty(candForIlVO, ilVO);
-						invoiceCandBL.createUpdateIla(candForIlVO, invoiceLine, qtysInvoiced, null/*note*/); // TODO
+						invoiceCandBL.createUpdateIla(candForIlVO, invoiceLine, qtysInvoiced, null/* note */); // TODO
 
 						// #870
 						// Make sure the Qty and Price override are set to null when an invoiceline is created

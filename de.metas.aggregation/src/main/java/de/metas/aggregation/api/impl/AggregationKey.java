@@ -13,15 +13,14 @@ package de.metas.aggregation.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
@@ -49,13 +48,13 @@ public final class AggregationKey implements IAggregationKey
 
 	public AggregationKey(final String keyString, final int aggregationId)
 	{
-		super();
 		this.keyString = keyString;
 		keyStringExpr = Services.get(IExpressionFactory.class).compile(keyString, IStringExpression.class);
 		this.aggregationId = aggregationId <= 0 ? -1 : aggregationId;
 	}
 
 	@Override
+	@Deprecated
 	public String toString()
 	{
 		return getAggregationKeyString();
@@ -76,16 +75,16 @@ public final class AggregationKey implements IAggregationKey
 		}
 
 		return new EqualsBuilder()
-		.append(keyString, other.keyString)
-		.isEqual();
+				.append(keyString, other.keyString)
+				.isEqual();
 	}
 
 	@Override
 	public int hashCode()
 	{
 		return new HashcodeBuilder()
-		.append(keyString)
-		.toHashcode();
+				.append(keyString)
+				.toHashcode();
 	}
 
 	@Override
