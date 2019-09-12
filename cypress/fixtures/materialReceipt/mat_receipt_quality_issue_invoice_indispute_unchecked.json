@@ -18,6 +18,5 @@
     "product1Quantity" : 100,
     "product2Quantity" : 250,
     "docBaseType": "Match PO",
-    "deduction": "-5",
-    "qtyEnteredColumnName": "QtyEntered"
+    "deduction": "-5"
    }

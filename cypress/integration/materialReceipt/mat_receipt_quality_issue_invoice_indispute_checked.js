@@ -28,6 +28,7 @@ let product2Quantity;
 let docBaseType;
 
 let purchaseOrderRecordId;
+const productColumnName = 'M_Product_ID';
 
 it('Read the fixture', function() {
   cy.fixture('materialReceipt/mat_receipt_quality_issue_invoice_indispute_checked.json').then(f => {
@@ -103,7 +104,7 @@ it('Create Product Category', function() {
 it('Create product 1', function() {
   Builder.createProductWithPriceUsingExistingCategory(priceListName, productName1, productName1, productType, productCategoryName);
 });
-it('Create product 1 and vendor', function() {
+it('Create product 2 and vendor', function() {
   Builder.createProductWithPriceUsingExistingCategory(priceListName, productName2, productName2, productType, productCategoryName);
   cy.fixture('sales/simple_vendor.json').then(vendorJson => {
     new BPartner({ ...vendorJson, name: vendorName })
@@ -131,7 +132,7 @@ it('Save values needed for the next steps', function() {
   });
 });
 
-it('Visit referenced Material Receipt Candidates, expect 1 row', function() {
+it('Visit referenced Material Receipt Candidates, expect 2 rows', function() {
   cy.openReferencedDocuments('M_ReceiptSchedule');
   cy.expectNumberOfRows(2);
 });
@@ -154,6 +155,7 @@ it('Select the second row and Receive the CUs with 5% alteration', function() {
 });
 it('Select the row and create material receipt for it', function() {
   cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', true, false);
+  cy.waitForSaveIndicator();
   cy.pressDoneButton();
 });
 
@@ -166,11 +168,11 @@ it('Go to Invoice Disposition and check the billing candidates', function() {
   cy.visitWindow(purchaseOrders.windowId, purchaseOrderRecordId);
   cy.openReferencedDocuments('C_Invoice_Candidate');
   cy.expectNumberOfRows(2);
-  cy.selectNthRow(1).dblclick();
+  cy.selectRowByColumnAndValue({ column: productColumnName, value: productName1 }).dblclick();
   cy.expectCheckboxValue('IsInDispute', true);
   cy.getStringFieldValue('QtyToInvoice').should('equal', qtyToInvoice1.toString());
   filterInBillingCandidatesWindow();
-  cy.selectNthRow(0).dblclick();
+  cy.selectRowByColumnAndValue({ column: productColumnName, value: productName2 }).dblclick();
   cy.expectCheckboxValue('IsInDispute', false);
   cy.getStringFieldValue('QtyToInvoice').should('equal', qtyToInvoice2.toString());
   filterInBillingCandidatesWindow();
