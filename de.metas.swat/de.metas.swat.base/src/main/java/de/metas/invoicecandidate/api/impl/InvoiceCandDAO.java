@@ -115,12 +115,14 @@ import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -1168,8 +1170,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		{
 			return;
 		}
-		final Integer paymentTermId = retrievePaymentTermId(selectionId);
-		if (paymentTermId <= 0)
+		final PaymentTermId paymentTermId = retrievePaymentTermId(selectionId);
+		if (paymentTermId == null)
 		{
 			return;
 		}
@@ -1212,7 +1214,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		return selectionToUpdateId;
 	}
 
-	private int retrievePaymentTermId(final PInstanceId selectionId)
+	private PaymentTermId retrievePaymentTermId(final PInstanceId selectionId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -1234,13 +1236,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		{
 			Loggables.withLogger(logger, Level.INFO)
 					.addLog("updateMissingPaymentTermIds - No C_Invoice_Candidate selected by selectionId={} has a C_PaymentTerm_ID; nothing to update", selectionId);
-			return -1;
+			return null;
 		}
 
-		final Integer paymentTermId = InterfaceWrapperHelper.getValueOverrideOrValue(
-				firstInvoiceCandidateWithPaymentTermId,
-				I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_ID);
-		return paymentTermId;
+		return CoalesceUtil.coalesceSuppliers(
+				() -> PaymentTermId.ofRepoIdOrNull(firstInvoiceCandidateWithPaymentTermId.getC_PaymentTerm_Override_ID()),
+				() -> PaymentTermId.ofRepoIdOrNull(firstInvoiceCandidateWithPaymentTermId.getC_PaymentTerm_ID()));
 	}
 
 	@Override
