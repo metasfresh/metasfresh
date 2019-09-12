@@ -35,6 +35,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -63,7 +64,6 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocTypeDAO;
 import de.metas.inout.InOutId;
 import de.metas.invoicecandidate.api.IAggregationBL;
-import de.metas.invoicecandidate.api.IAggregationEngine;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -85,27 +85,55 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 
-public class AggregationEngine implements IAggregationEngine
+/**
+ * Aggregates multiple {@link I_C_Invoice_Candidate} records and returns a result that that is suitable to create invoices.
+ * 
+ * @see IAggregator
+ */
+public final class AggregationEngine
 {
-	private static final String ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P = "InvoiceCand_PriceList_Missing";
+	public static AggregationEngine newInstance()
+	{
+		return builder().build();
+	}
 
 	//
 	// services
 	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(AggregationEngine.class);
-	private final transient IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+	private final transient IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
 	private final transient IAggregationFactory aggregationFactory = Services.get(IAggregationFactory.class);
+	private final transient IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
+	private static final String ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P = "InvoiceCand_PriceList_Missing";
+
+	private final boolean alwaysUseDefaultHeaderAggregationKeyBuilder;
+	private final LocalDate today;
+
+	private final AdTableId inoutLineTableId;
 	/**
 	 * Map: HeaderAggregationKey to {@link InvoiceHeaderAndLineAggregators}
 	 */
 	private final Map<IAggregationKey, InvoiceHeaderAndLineAggregators> key2headerAndAggregators = new LinkedHashMap<>();
-	private boolean alwaysUseDefaultHeaderAggregationKeyBuilder = false;
+
+	@Builder
+	private AggregationEngine(
+			final boolean alwaysUseDefaultHeaderAggregationKeyBuilder)
+	{
+		this.alwaysUseDefaultHeaderAggregationKeyBuilder = alwaysUseDefaultHeaderAggregationKeyBuilder;
+
+		today = TimeUtil.asLocalDate(invoiceCandBL.getToday());
+
+		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+		inoutLineTableId = AdTableId.ofRepoId(adTableDAO.retrieveTableId(I_M_InOutLine.Table_Name));
+	}
 
 	@Override
 	public String toString()
@@ -116,14 +144,7 @@ public class AggregationEngine implements IAggregationEngine
 				.toString();
 	}
 
-	@Override
-	public void setAlwaysUseDefaultHeaderAggregationKeyBuilder(boolean alwaysUseDefaultHeaderAggregationKeyBuilder)
-	{
-		this.alwaysUseDefaultHeaderAggregationKeyBuilder = alwaysUseDefaultHeaderAggregationKeyBuilder;
-	}
-
-	@Override
-	public final IAggregationEngine addInvoiceCandidate(@NonNull final I_C_Invoice_Candidate ic)
+	public AggregationEngine addInvoiceCandidate(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		Check.assume(!ic.isToClear(), "{} has IsToClear='N'", ic);
 		Check.assume(!ic.isProcessed(), "{} not processed", ic);
@@ -136,7 +157,7 @@ public class AggregationEngine implements IAggregationEngine
 		if (iciols.isEmpty())
 		{
 			// Log a possible internal error: no IC-IOL association although invoice candidate was created from inout line.
-			if (ic.getAD_Table_ID() == adTableDAO.retrieveTableId(I_M_InOutLine.Table_Name))
+			if (ic.getAD_Table_ID() == inoutLineTableId.getRepoId())
 			{
 				final AdempiereException ex = new AdempiereException(
 						"No IC-IOL associations were found although invoice candidate points to M_InOutLine."
@@ -183,7 +204,7 @@ public class AggregationEngine implements IAggregationEngine
 		return this;
 	}
 
-	private final IAggregationKey getHeaderAggregationKey(final I_C_Invoice_Candidate ic)
+	private IAggregationKey getHeaderAggregationKey(final I_C_Invoice_Candidate ic)
 	{
 		IAggregationKey aggregationKey;
 		if (alwaysUseDefaultHeaderAggregationKeyBuilder)
@@ -246,7 +267,7 @@ public class AggregationEngine implements IAggregationEngine
 		if (headerAndAggregators == null)
 		{
 			final InvoiceHeaderImplBuilder invoiceHeader = InvoiceHeaderImpl.builder()
-					.setToday(TimeUtil.asLocalDate(invoiceCandBL.getToday()));
+					.setToday(today);
 
 			addToInvoiceHeader(invoiceHeader, ic, inoutId);
 			headerAndAggregators = new InvoiceHeaderAndLineAggregators(headerAggregationKey, invoiceHeader);
@@ -334,10 +355,6 @@ public class AggregationEngine implements IAggregationEngine
 			final I_C_Invoice_Candidate ic,
 			final InOutId inoutId)
 	{
-		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-
 		invoiceHeader.setAD_Org_ID(ic.getAD_Org_ID());
 		invoiceHeader.setBill_BPartner_ID(ic.getBill_BPartner_ID());
 		invoiceHeader.setBill_Location_ID(getBill_Location_ID(ic));
@@ -409,7 +426,6 @@ public class AggregationEngine implements IAggregationEngine
 		return ic.getBill_User_ID_Override_ID() > 0 ? ic.getBill_User_ID_Override_ID() : ic.getBill_User_ID();
 	}
 
-	@Override
 	public List<IInvoiceHeader> aggregate()
 	{
 		final List<IInvoiceHeader> invoiceHeaders = new ArrayList<>();

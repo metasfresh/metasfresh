@@ -73,7 +73,6 @@ import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.invoice.InvoiceUtil;
-import de.metas.invoicecandidate.api.IAggregationEngine;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
@@ -780,7 +779,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		final ICNetAmtToInvoiceChecker netAmtToInvoiceChecker = new ICNetAmtToInvoiceChecker();
 
 		// get our service instance to aggregate the invoice candidates
-		final IAggregationEngine aggregationEngine = newAggregationEngine();
+		final AggregationEngine aggregationEngine = newAggregationEngine();
 
 		final List<I_C_Invoice_Candidate> icToUnlock = new ArrayList<>();
 
@@ -826,23 +825,20 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		return getCollector();
 	}
 
-	private final IAggregationEngine newAggregationEngine()
+	private final AggregationEngine newAggregationEngine()
 	{
-		final IAggregationEngine aggregationEngine = Services.newMultiton(IAggregationEngine.class);
-
 		final IInvoicingParams invoicingParams = getInvoicingParams();
-		if (invoicingParams != null && invoicingParams.isConsolidateApprovedICs())
-		{
-			aggregationEngine.setAlwaysUseDefaultHeaderAggregationKeyBuilder(true);
-		}
-		return aggregationEngine;
+
+		return AggregationEngine.builder()
+				.alwaysUseDefaultHeaderAggregationKeyBuilder(invoicingParams != null && invoicingParams.isConsolidateApprovedICs())
+				.build();
 	}
 
 	/**
 	 *
 	 * @param aggregationEngine note that this is a {@link de.metas.util.IMultitonService}, i.e. a service with internal state.
 	 */
-	private void aggregateAndInvoice(final IAggregationEngine aggregationEngine)
+	private void aggregateAndInvoice(final AggregationEngine aggregationEngine)
 	{
 		final List<IInvoiceHeader> aggregationResult = aggregationEngine.aggregate();
 
