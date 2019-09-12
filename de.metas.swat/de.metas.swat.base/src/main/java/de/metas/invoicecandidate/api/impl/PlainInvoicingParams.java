@@ -23,7 +23,7 @@ package de.metas.invoicecandidate.api.impl;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
@@ -36,25 +36,23 @@ public class PlainInvoicingParams implements IInvoicingParams
 	private Boolean onlyApprovedForInvoicing = null;
 	private Boolean consolidateApprovedICs = null;
 	private Boolean ignoreInvoiceSchedule = null;
-	private Boolean supplementMissingPaymentTermIds = null;
+	private final Boolean supplementMissingPaymentTermIds = null;
 
 	private boolean storeInvoicesInResult = false;
 	private boolean assumeOneInvoice = false;
 
-	private Timestamp dateInvoiced;
+	private LocalDate dateInvoiced;
 	private boolean dateInvoicedSet = false;
 
-	private Timestamp dateAcct;
+	private LocalDate dateAcct;
 	private boolean dateAcctSet = false;
 
 	private String poReference;
 	private boolean poReferenceSet = false;
 
-
-	private BigDecimal check_NetAmtToInvoice = null;
+	private final BigDecimal check_NetAmtToInvoice = null;
 
 	private final IInvoicingParams defaults;
-
 
 	public PlainInvoicingParams()
 	{
@@ -86,7 +84,7 @@ public class PlainInvoicingParams implements IInvoicingParams
 		}
 	}
 
-	public void setOnlyApprovedForInvoicing(boolean onlyApprovedForInvoicing)
+	public void setOnlyApprovedForInvoicing(final boolean onlyApprovedForInvoicing)
 	{
 		this.onlyApprovedForInvoicing = onlyApprovedForInvoicing;
 	}
@@ -136,7 +134,7 @@ public class PlainInvoicingParams implements IInvoicingParams
 	}
 
 	@Override
-	public Timestamp getDateInvoiced()
+	public LocalDate getDateInvoiced()
 	{
 		if (dateInvoicedSet)
 		{
@@ -152,14 +150,14 @@ public class PlainInvoicingParams implements IInvoicingParams
 		}
 	}
 
-	public void setDateInvoiced(Timestamp dateInvoiced)
+	public void setDateInvoiced(final LocalDate dateInvoiced)
 	{
 		this.dateInvoiced = dateInvoiced;
-		this.dateInvoicedSet = true;
+		dateInvoicedSet = true;
 	}
 
 	@Override
-	public Timestamp getDateAcct()
+	public LocalDate getDateAcct()
 	{
 		if (dateAcctSet)
 		{
@@ -175,10 +173,10 @@ public class PlainInvoicingParams implements IInvoicingParams
 		}
 	}
 
-	public void setDateAcct(Timestamp dateAcct)
+	public void setDateAcct(final LocalDate dateAcct)
 	{
 		this.dateAcct = dateAcct;
-		this.dateAcctSet = true;
+		dateAcctSet = true;
 	}
 
 	@Override
@@ -201,7 +199,7 @@ public class PlainInvoicingParams implements IInvoicingParams
 	public void setPOReference(@Nullable final String poReference)
 	{
 		this.poReference = poReference;
-		this.poReferenceSet = true;
+		poReferenceSet = true;
 	}
 
 	@Override

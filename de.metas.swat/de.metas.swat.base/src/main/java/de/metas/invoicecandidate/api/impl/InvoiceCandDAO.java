@@ -51,6 +51,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.IQueryOrderByBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -1128,24 +1129,40 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public final void updateDateInvoiced(final Timestamp dateInvoiced, final PInstanceId selectionId)
+	public final void updateDateInvoiced(
+			@Nullable final LocalDate dateInvoiced,
+			@NonNull final PInstanceId selectionId,
+			final boolean updateOnlyIfNull)
 	{
 		updateColumnForSelection(
 				I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced,    // invoiceCandidateColumnName
 				dateInvoiced,    // value
-				false,    // updateOnlyIfNull
+				updateOnlyIfNull, // updateOnlyIfNull
 				selectionId    // selectionId
 		);
 	}
 
 	@Override
-	public final void updateDateAcct(final Timestamp dateAcct, final PInstanceId selectionId)
+	public final void updateDateAcct(
+			@Nullable final LocalDate dateAcct,
+			@NonNull final PInstanceId selectionId)
 	{
 		updateColumnForSelection(
 				I_C_Invoice_Candidate.COLUMNNAME_DateAcct,    // invoiceCandidateColumnName
 				dateAcct,    // value
 				false,    // updateOnlyIfNull
 				selectionId    // selectionId
+		);
+	}
+
+	@Override
+	public final void updateNullDateAcctFromDateInvoiced(final PInstanceId selectionId)
+	{
+		updateColumnForSelection(
+				I_C_Invoice_Candidate.COLUMNNAME_DateAcct,
+				ModelColumnNameValue.forColumnName(I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced), // value
+				true, // updateOnlyIfNull
+				selectionId // selectionId
 		);
 	}
 
@@ -1244,12 +1261,21 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				() -> PaymentTermId.ofRepoIdOrNull(firstInvoiceCandidateWithPaymentTermId.getC_PaymentTerm_ID()));
 	}
 
-	@Override
-	public final <T> void updateColumnForSelection(
-			final String columnName,
-			final T value,
+	/**
+	 * Mass-update a given invoice candidate column.
+	 *
+	 * If there were any changes, those invoice candidates will be invalidated.
+	 *
+	 * @param invoiceCandidateColumnName {@link I_C_Invoice_Candidate}'s column to update
+	 * @param value value to set (you can also use {@link ModelColumnNameValue})
+	 * @param updateOnlyIfNull if true then it will update only if column value is null (not set)
+	 * @param selectionId invoice candidates selection (AD_PInstance_ID)
+	 */
+	private final <T> void updateColumnForSelection(
+			@NonNull final String columnName,
+			@Nullable final T value,
 			final boolean updateOnlyIfNull,
-			final PInstanceId selectionId)
+			@NonNull final PInstanceId selectionId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 

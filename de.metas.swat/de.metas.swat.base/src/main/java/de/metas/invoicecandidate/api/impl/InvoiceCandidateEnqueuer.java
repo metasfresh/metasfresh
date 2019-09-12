@@ -25,12 +25,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Iterator;
+import java.time.LocalDate;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -38,6 +36,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.base.Joiner;
 
@@ -61,6 +60,7 @@ import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /**
@@ -290,7 +290,7 @@ import lombok.NonNull;
 
 	private final void prepareSelectionForEnqueueing(final PInstanceId selectionId)
 	{
-		final Timestamp today = invoiceCandBL.getToday();
+		final LocalDate todayDate = TimeUtil.asLocalDate(invoiceCandBL.getToday());
 
 		//
 		// Check incomplete compensation groups
@@ -305,13 +305,17 @@ import lombok.NonNull;
 		// Updating candidates previous to enqueueing, if the parameter has been set (task 03905)
 		// task 08628: always make sure that every IC has the *same* dateInvoiced. possible other dates that were previously set don't matter.
 		// this is critical because we assume that dateInvoiced is not part of the aggregation key, so different values would fail the invoicing
-		final Timestamp dateInvoiced = getInvoicingParams().getDateInvoiced() != null ? getInvoicingParams().getDateInvoiced() : invoiceCandBL.getToday();
-		invoiceCandDAO.updateDateInvoiced(dateInvoiced, selectionId);
+		final LocalDate dateInvoiced = CoalesceUtil.coalesce(
+				getInvoicingParams().getDateInvoiced(),
+				todayDate);
+		invoiceCandDAO.updateDateInvoiced(dateInvoiced, selectionId, false/* updateOnlyIfNull */);
 
 		//
 		// Updating candidates previous to enqueueing, if the parameter has been set (task 08437)
 		// task 08628: same as for dateInvoiced
-		final Timestamp dateAcct = getInvoicingParams().getDateAcct() != null ? getInvoicingParams().getDateAcct() : dateInvoiced;
+		final LocalDate dateAcct = CoalesceUtil.coalesce(
+				getInvoicingParams().getDateAcct(),
+				dateInvoiced);
 		invoiceCandDAO.updateDateAcct(dateAcct, selectionId);
 
 		//
@@ -336,33 +340,18 @@ import lombok.NonNull;
 		// NOTE: before we group the invoices by their header aggregation key,
 		// we need to make sure that all of them have the DateInvoiced and DateAcct set.
 		// If not, they will have different aggregation key in case one has a implicit DateInvoiced (i.e. today) and other IC has an explicit DateInvoiced.
-		invoiceCandDAO.updateColumnForSelection(
-				I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced,
-				today, // value
-				true, // updateOnlyIfNull
-				selectionId // selectionId
-		);
-		invoiceCandDAO.updateColumnForSelection(
-				I_C_Invoice_Candidate.COLUMNNAME_DateAcct,
-				ModelColumnNameValue.forColumnName(I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced), // value
-				true, // updateOnlyIfNull
-				selectionId // selectionId
-		);
+		invoiceCandDAO.updateDateInvoiced(todayDate, selectionId, true/* updateOnlyIfNull */);
+		invoiceCandDAO.updateNullDateAcctFromDateInvoiced(selectionId);
 	}
 
 	private final Iterable<I_C_Invoice_Candidate> retrieveSelection(final PInstanceId pinstanceId)
 	{
 		// NOTE: we designed this method for the case of enqueuing 1mio invoice candidates.
 
-		return new Iterable<I_C_Invoice_Candidate>()
-		{
-			@Override
-			public Iterator<I_C_Invoice_Candidate> iterator()
-			{
-				final Properties ctx = getCtx();
-				trxManager.assertThreadInheritedTrxExists();
-				return invoiceCandDAO.retrieveIcForSelection(ctx, pinstanceId, ITrx.TRXNAME_ThreadInherited);
-			}
+		return () -> {
+			final Properties ctx = getCtx();
+			trxManager.assertThreadInheritedTrxExists();
+			return invoiceCandDAO.retrieveIcForSelection(ctx, pinstanceId, ITrx.TRXNAME_ThreadInherited);
 		};
 	}
 
