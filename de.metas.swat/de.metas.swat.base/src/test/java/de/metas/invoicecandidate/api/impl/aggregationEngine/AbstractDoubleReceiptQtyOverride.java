@@ -33,6 +33,7 @@ import java.util.List;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inout.model.I_M_InOut;
@@ -81,7 +82,7 @@ public abstract class AbstractDoubleReceiptQtyOverride extends AbstractNewAggreg
 		ic1.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Immediate); // need this for tests where we have _Override > Delivered
 		ic1.setInvoiceRule_Override(null);
 		ic1.setPOReference(IC_PO_REFERENCE);
-		ic1.setDateAcct(IC_DATE_ACCT);
+		ic1.setDateAcct(TimeUtil.asTimestamp(IC_DATE_ACCT));
 		InterfaceWrapperHelper.save(ic1);
 
 		return Collections.singletonList(ic1);

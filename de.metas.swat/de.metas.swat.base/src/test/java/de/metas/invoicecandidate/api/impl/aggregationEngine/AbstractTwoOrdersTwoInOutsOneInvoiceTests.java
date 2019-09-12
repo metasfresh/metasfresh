@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inout.model.I_M_InOut;
@@ -104,7 +105,7 @@ public abstract class AbstractTwoOrdersTwoInOutsOneInvoiceTests extends Abstract
 		ic2.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_AfterDelivery);
 		ic2.setInvoiceRule_Override(null);
 		ic2.setPOReference(IC_PO_REFERENCE);
-		ic2.setDateAcct(IC_DATE_ACCT); // task 08437
+		ic2.setDateAcct(TimeUtil.asTimestamp(IC_DATE_ACCT)); // task 08437
 		InterfaceWrapperHelper.save(ic2);
 
 		return Arrays.asList(ic1, ic2);

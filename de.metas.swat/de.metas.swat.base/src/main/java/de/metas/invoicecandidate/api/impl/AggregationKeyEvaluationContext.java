@@ -127,34 +127,15 @@ public class AggregationKeyEvaluationContext implements Evaluatee2
 		return null;
 	}
 
-	/**
-	 * Gets current shipment/receipt line. It evaluates in following order:
-	 * <ul>
-	 * <li>current shipment/receipt line if any
-	 * <li>IC's shipment/receipt line, if the IC was created from a shipment/receipt line
-	 * </ul>
-	 * 
-	 * @return current shipment/receipt line or <code>null</code>
-	 */
 	private final Optional<I_M_InOutLine> getInOutLine()
 	{
 		if (_inoutLine == null)
 		{
-			_inoutLine = Optional.ofNullable(M_InOutLine_Handler.getM_InOutLine(invoiceCandidate));
+			_inoutLine = Optional.ofNullable(M_InOutLine_Handler.getM_InOutLineOrNull(invoiceCandidate));
 		}
 		return _inoutLine;
 	}
 
-	/**
-	 * Gets actual shipment/receipt C_BPartner_Location_ID. It evaluates:
-	 * <ul>
-	 * <li>current shipment/receipt line ({@link #getM_InOutLine()}) and takes the BP location from there
-	 * <li>IC's order if any
-	 * <li>returns <code>-1</code>
-	 * </ul>
-	 * 
-	 * @return actual shipment/receipt bpartner location
-	 */
 	private final Optional<BPartnerLocationId> getShipReceiptBPLocationId()
 	{
 		Optional<BPartnerLocationId> shipReceiptBPLocationId = this._shipReceiptBPLocationId;

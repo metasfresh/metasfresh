@@ -29,12 +29,13 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.TimeUtil;
 import org.junit.Test;
+
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
 import de.metas.inout.model.I_M_InOutLine;
@@ -56,7 +57,7 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 
 	protected static final String IC_PO_REFERENCE = "ic-POReference";
 
-	protected static final Timestamp IC_DATE_ACCT = TimeUtil.getDay(2015, 01, 15); // task 08437
+	protected static final LocalDate IC_DATE_ACCT = LocalDate.of(2015, Month.JANUARY, 15); // task 08437
 
 	protected static final BigDecimal FIVE = new BigDecimal("5");
 	protected static final BigDecimal TEN = new BigDecimal("10");

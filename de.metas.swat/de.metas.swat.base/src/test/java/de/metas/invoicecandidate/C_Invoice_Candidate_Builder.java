@@ -24,7 +24,7 @@ import static de.metas.util.Check.assumeNotNull;
  * #L%
  */
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -87,7 +87,7 @@ public class C_Invoice_Candidate_Builder
 	private String invoiceRule_Override;
 	private boolean invoiceRule_OverrideSet;
 	private String poReference;
-	private Timestamp dateAcct;
+	private LocalDate dateAcct;
 	private BigDecimal qualityDiscountPercent_Override;
 
 	private int M_PriceList_Version_ID;
@@ -125,7 +125,7 @@ public class C_Invoice_Candidate_Builder
 
 		//
 		// Dates
-		ic.setDateAcct(dateAcct);
+		ic.setDateAcct(TimeUtil.asTimestamp(dateAcct));
 
 		// InvoiceRule
 		ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Immediate);
@@ -437,7 +437,7 @@ public class C_Invoice_Candidate_Builder
 		return this;
 	}
 
-	public C_Invoice_Candidate_Builder setDateAcct(Timestamp dateAcct)
+	public C_Invoice_Candidate_Builder setDateAcct(LocalDate dateAcct)
 	{
 		this.dateAcct = dateAcct;
 		return this;
