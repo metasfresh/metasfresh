@@ -280,6 +280,8 @@ public class Util
 	@Immutable
 	public static class ArrayKey implements Comparable<ArrayKey>
 	{
+		private static final String SEPARATOR = "#";
+
 		public static final ArrayKey of(final Object... input)
 		{
 			return new ArrayKey(input);
@@ -336,7 +338,7 @@ public class Util
 			{
 				if (sb.length() > 0)
 				{
-					sb.append("#");
+					sb.append(SEPARATOR);
 				}
 				if (k == null)
 				{
