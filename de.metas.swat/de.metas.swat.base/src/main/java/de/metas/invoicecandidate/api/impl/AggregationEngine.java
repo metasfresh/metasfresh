@@ -36,7 +36,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
@@ -47,6 +46,8 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee2;
 import org.slf4j.Logger;
+
+import com.google.common.base.MoreObjects;
 
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKey;
@@ -104,7 +105,10 @@ public class AggregationEngine implements IAggregationEngine
 	@Override
 	public String toString()
 	{
-		return ObjectUtils.toString(this);
+		return MoreObjects.toStringHelper(this)
+				.add("key2headerAndAggregators", key2headerAndAggregators)
+				.add("alwaysUseDefaultHeaderAggregationKeyBuilder", alwaysUseDefaultHeaderAggregationKeyBuilder)
+				.toString();
 	}
 
 	@Override
