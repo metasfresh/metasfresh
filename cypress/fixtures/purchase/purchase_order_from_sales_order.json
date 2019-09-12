@@ -1,0 +1,17 @@
+{
+    "productForPackingMaterial" : "ProductPackingMaterial",
+    "packingInstructionsName" : "ProductPackingInstrutions",
+    "productName" : "ProductTest",
+    "productCategoryName" : "ProductCategoryName",
+    "discountSchemaName" : "DiscountSchemaTest",
+    "purchasePriceSystem" : "PurchasePriceSystem",
+    "purchasePriceList" : "PurchasePriceList",
+    "purchasePriceListVersion" : "PurchasePriceListVersion",
+    "salesPriceSystem" : "SalesPriceSystem",
+    "salesPriceList" : "SalesPriceList",
+    "salesPriceListVersion" : "SalesPriceListVersion",
+    "productType" : "Item",
+    "vendorName" : "Vendor",
+    "customerName" : "Customer",
+    "soQty": 1
+}
