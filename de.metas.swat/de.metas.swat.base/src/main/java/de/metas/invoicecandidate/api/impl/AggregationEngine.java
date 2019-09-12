@@ -2,6 +2,8 @@ package de.metas.invoicecandidate.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+import java.time.LocalDate;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -183,6 +185,7 @@ public class AggregationEngine implements IAggregationEngine
 
 	private final IAggregationKey getHeaderAggregationKey(final I_C_Invoice_Candidate ic)
 	{
+		IAggregationKey aggregationKey;
 		if (alwaysUseDefaultHeaderAggregationKeyBuilder)
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
@@ -192,12 +195,19 @@ public class AggregationEngine implements IAggregationEngine
 					ic.isSOTrx(),
 					X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header);
 
-			return defaultAggregationKeyBuilder.buildAggregationKey(ic);
+			aggregationKey = defaultAggregationKeyBuilder.buildAggregationKey(ic);
 		}
 		else
 		{
-			return new AggregationKey(ic.getHeaderAggregationKey(), ic.getHeaderAggregationKeyBuilder_ID());
+			aggregationKey = new AggregationKey(ic.getHeaderAggregationKey(), ic.getHeaderAggregationKeyBuilder_ID());
 		}
+
+		//
+		// Append DateInvoiced to our aggregation key
+		final LocalDate dateInvoiced = TimeUtil.asLocalDate(ic.getDateInvoiced());
+		aggregationKey = aggregationKey.append("DateInvoiced=" + dateInvoiced);
+
+		return aggregationKey;
 	}
 
 	/**

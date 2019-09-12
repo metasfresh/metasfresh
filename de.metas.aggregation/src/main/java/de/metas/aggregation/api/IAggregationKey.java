@@ -13,15 +13,14 @@ package de.metas.aggregation.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.compiere.util.Evaluatee;
 
@@ -40,14 +39,11 @@ public interface IAggregationKey
 	int getC_Aggregation_ID();
 
 	/** Same as {@link #getAggregationKeyString()} */
-	@Override
-	public String toString();
+	@Override String toString();
 
-	@Override
-	public boolean equals(final Object obj);
+	@Override boolean equals(final Object obj);
 
-	@Override
-	public int hashCode();
+	@Override int hashCode();
 
 	/**
 	 * Parse any existing variables which are still included in aggregation key.
@@ -58,4 +54,6 @@ public interface IAggregationKey
 	 * @return a new key with found variables replaced
 	 */
 	IAggregationKey parse(Evaluatee ctx);
+
+	IAggregationKey append(String keyPart);
 }

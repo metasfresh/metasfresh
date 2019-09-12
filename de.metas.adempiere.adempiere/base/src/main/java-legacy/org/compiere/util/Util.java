@@ -280,7 +280,7 @@ public class Util
 	@Immutable
 	public static class ArrayKey implements Comparable<ArrayKey>
 	{
-		private static final String SEPARATOR = "#";
+		public static final String SEPARATOR = "#";
 
 		public static final ArrayKey of(final Object... input)
 		{

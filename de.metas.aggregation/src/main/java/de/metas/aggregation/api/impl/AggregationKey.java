@@ -25,14 +25,15 @@ package de.metas.aggregation.api.impl;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.aggregation.api.IAggregationKey;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode(of = "keyString", doNotUseGetters = true)
 public final class AggregationKey implements IAggregationKey
 {
 	public static final transient AggregationKey NULL = new AggregationKey((String)null, -1);
@@ -61,33 +62,6 @@ public final class AggregationKey implements IAggregationKey
 	}
 
 	@Override
-	public boolean equals(final Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-
-		final AggregationKey other = EqualsBuilder.getOther(this, obj);
-		if (other == null)
-		{
-			return false;
-		}
-
-		return new EqualsBuilder()
-				.append(keyString, other.keyString)
-				.isEqual();
-	}
-
-	@Override
-	public int hashCode()
-	{
-		return new HashcodeBuilder()
-				.append(keyString)
-				.toHashcode();
-	}
-
-	@Override
 	public String getAggregationKeyString()
 	{
 		return keyString;
@@ -103,6 +77,15 @@ public final class AggregationKey implements IAggregationKey
 	public IAggregationKey parse(final Evaluatee ctx)
 	{
 		final String keyStringNew = keyStringExpr.evaluate(ctx, OnVariableNotFound.Preserve);
+		return new AggregationKey(keyStringNew, aggregationId);
+	}
+
+	@Override
+	public IAggregationKey append(final String keyPart)
+	{
+		Check.assumeNotEmpty(keyPart, "keyPart is not empty");
+
+		final String keyStringNew = this.keyString + ArrayKey.SEPARATOR + keyPart;
 		return new AggregationKey(keyStringNew, aggregationId);
 	}
 }

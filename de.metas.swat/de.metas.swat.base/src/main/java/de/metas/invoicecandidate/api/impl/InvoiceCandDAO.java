@@ -179,9 +179,14 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final IQueryOrderByBuilder<T> orderBy = queryBuilder.orderBy();
 		orderBy
 				.clear()
-
+				//
 				// order by they header aggregation key to make sure candidates with the same key end up in the same invoice
 				.addColumn(I_C_Invoice_Candidate.COLUMNNAME_HeaderAggregationKey)
+				//
+				// We need to aggregate by DateInvoiced too
+				.addColumn(I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced)
+				.addColumn(I_C_Invoice_Candidate.COLUMNNAME_DateAcct)
+				//
 				// task 08241: return ICs with a set Bill_User_ID first, because, we can aggregate ICs with different Bill_User_IDs into one invoice, however, if there are any ICs with a Bill_User_ID
 				// set, and others with no Bill_User_ID, then we want the Bill_User_ID to end up in the C_Invoice (header) record.
 				.addColumn(I_C_Invoice_Candidate.COLUMNNAME_Bill_User_ID, Direction.Ascending, Nulls.Last)
