@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
@@ -99,6 +100,10 @@ import lombok.NonNull;
 		else if (value instanceof RepoIdAware)
 		{
 			return ((RepoIdAware)value).getRepoId();
+		}
+		else if (TimeUtil.isDateOrTimeObject(value))
+		{
+			return TimeUtil.asTimestamp(value);
 		}
 		else
 		{
