@@ -36,10 +36,10 @@ public class PlainInvoicingParams implements IInvoicingParams
 	private Boolean onlyApprovedForInvoicing = null;
 	private Boolean consolidateApprovedICs = null;
 	private Boolean ignoreInvoiceSchedule = null;
-	private final Boolean supplementMissingPaymentTermIds = null;
+	private Boolean supplementMissingPaymentTermIds = null;
 
-	private boolean storeInvoicesInResult = false;
-	private boolean assumeOneInvoice = false;
+	private Boolean storeInvoicesInResult = null;
+	private Boolean assumeOneInvoice = null;
 
 	private LocalDate dateInvoiced;
 	private boolean dateInvoicedSet = false;
@@ -50,7 +50,7 @@ public class PlainInvoicingParams implements IInvoicingParams
 	private String poReference;
 	private boolean poReferenceSet = false;
 
-	private final BigDecimal check_NetAmtToInvoice = null;
+	private BigDecimal check_NetAmtToInvoice = null;
 
 	private final IInvoicingParams defaults;
 
@@ -202,6 +202,11 @@ public class PlainInvoicingParams implements IInvoicingParams
 		poReferenceSet = true;
 	}
 
+	public void setSupplementMissingPaymentTermIds(final boolean supplementMissingPaymentTermIds)
+	{
+		this.supplementMissingPaymentTermIds = supplementMissingPaymentTermIds;
+	}
+
 	@Override
 	public boolean isSupplementMissingPaymentTermIds()
 	{
@@ -214,6 +219,11 @@ public class PlainInvoicingParams implements IInvoicingParams
 			return defaults.isSupplementMissingPaymentTermIds();
 		}
 		return false;
+	}
+
+	public void setCheck_NetAmtToInvoice(final BigDecimal check_NetAmtToInvoice)
+	{
+		this.check_NetAmtToInvoice = check_NetAmtToInvoice;
 	}
 
 	@Override
@@ -240,7 +250,18 @@ public class PlainInvoicingParams implements IInvoicingParams
 	@Override
 	public boolean isStoreInvoicesInResult()
 	{
-		return storeInvoicesInResult;
+		if (storeInvoicesInResult != null)
+		{
+			return storeInvoicesInResult;
+		}
+		else if (defaults != null)
+		{
+			return defaults.isStoreInvoicesInResult();
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	public PlainInvoicingParams setAssumeOneInvoice(final boolean assumeOneInvoice)
@@ -252,6 +273,17 @@ public class PlainInvoicingParams implements IInvoicingParams
 	@Override
 	public boolean isAssumeOneInvoice()
 	{
-		return assumeOneInvoice;
+		if (assumeOneInvoice != null)
+		{
+			return assumeOneInvoice;
+		}
+		else if (defaults != null)
+		{
+			return defaults.isAssumeOneInvoice();
+		}
+		else
+		{
+			return false;
+		}
 	}
 }
