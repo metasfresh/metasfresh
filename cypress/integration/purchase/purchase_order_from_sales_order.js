@@ -121,10 +121,11 @@ describe('Create Purchase order from sales order', function() {
     cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
       new SalesOrder()
         .setBPartner(customerName)
+        .setPriceSystem(salesPriceSystem)
         .addLine(new SalesOrderLine().setProduct(productName).setQuantity(1))
         .apply();
     });
-    cy.selectInListField('M_PricingSystem_ID', salesPriceSystem, false, null, true);
+    // cy.selectInListField('M_PricingSystem_ID', salesPriceSystem, false, null, true);
     cy.completeDocument();
   });
 
