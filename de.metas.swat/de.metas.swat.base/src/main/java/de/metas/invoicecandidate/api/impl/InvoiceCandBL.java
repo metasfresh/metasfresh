@@ -934,6 +934,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		splitCand.setDiscount(ZERO);
 		splitCand.setSplitAmt(ZERO);
 
+		splitCand.setPresetDateInvoiced(ic.getPresetDateInvoiced());
 		splitCand.setDateInvoiced(ic.getDateInvoiced());
 		splitCand.setDateOrdered(ic.getDateOrdered());
 		splitCand.setDateToInvoice(ic.getDateToInvoice());
