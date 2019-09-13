@@ -76,16 +76,16 @@ public class HUReservationRepositoryTests
 		assertThat(huReservation.getSalesOrderLineId()).isEqualTo(orderLineId);
 
 		final Quantity reservedQtySum = huReservation.getReservedQtySum();
-		assertThat(reservedQtySum.getAsBigDecimal()).isEqualByComparingTo(ELEVEN);
+		assertThat(reservedQtySum.toBigDecimal()).isEqualByComparingTo(ELEVEN);
 		assertThat(reservedQtySum.getUOMId()).isEqualTo(uomRecord.getC_UOM_ID());
 
 		final HuId expectedVhu1Id = HuId.ofRepoId(vhu1.getM_HU_ID());
 		assertThat(huReservation.getVhuIds()).contains(expectedVhu1Id);
-		assertThat(huReservation.getReservedQtyByVhuId(expectedVhu1Id).getAsBigDecimal()).isEqualByComparingTo(TEN);
+		assertThat(huReservation.getReservedQtyByVhuId(expectedVhu1Id).toBigDecimal()).isEqualByComparingTo(TEN);
 
 		final HuId expectedVhu2Id = HuId.ofRepoId(vhu2.getM_HU_ID());
 		assertThat(huReservation.getVhuIds()).contains(expectedVhu2Id);
-		assertThat(huReservation.getReservedQtyByVhuId(expectedVhu2Id).getAsBigDecimal()).isEqualByComparingTo(ONE);
+		assertThat(huReservation.getReservedQtyByVhuId(expectedVhu2Id).toBigDecimal()).isEqualByComparingTo(ONE);
 	}
 
 	@Test

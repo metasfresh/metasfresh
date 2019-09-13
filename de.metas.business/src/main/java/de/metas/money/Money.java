@@ -122,18 +122,18 @@ public final class Money
 		this.currencyId = currencyId;
 	}
 
-	public BigDecimal getAsBigDecimal()
+	public BigDecimal toBigDecimal()
 	{
 		return value;
 	}
 
-	public static BigDecimal getAsBigDecimalOrZero(@Nullable final Money money)
+	public static BigDecimal toBigDecimalOrZero(@Nullable final Money money)
 	{
 		if (money == null)
 		{
 			return ZERO;
 		}
-		return money.getAsBigDecimal();
+		return money.toBigDecimal();
 	}
 
 	public int signum()
@@ -272,6 +272,15 @@ public final class Money
 		return this.value.compareTo(other.value) <= 0;
 	}
 
+	public boolean isEqualByComparingTo(@Nullable final Money other)
+	{
+		if (other == null)
+		{
+			return false;
+		}
+		return other.getCurrencyId().equals(currencyId) && other.toBigDecimal().compareTo(toBigDecimal()) == 0;
+	}
+
 	public static Collector<Money, ?, Stream<Money>> sumByCurrencyAndStream()
 	{
 		return sumByCurrencyAnd(map -> map.values().stream());
@@ -298,7 +307,7 @@ public final class Money
 
 	public Amount toAmount(@NonNull final Function<CurrencyId, CurrencyCode> currencyCodeMapper)
 	{
-		return Amount.of(getAsBigDecimal(), currencyCodeMapper.apply(getCurrencyId()));
+		return Amount.of(toBigDecimal(), currencyCodeMapper.apply(getCurrencyId()));
 	}
 
 }

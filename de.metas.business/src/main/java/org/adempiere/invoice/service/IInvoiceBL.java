@@ -42,6 +42,7 @@ import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
 import de.metas.payment.PaymentRule;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
 
@@ -248,20 +249,14 @@ public interface IInvoiceBL extends ISingletonService
 	 * Product ID and UOM ID are set to the product and it's respective UOM or to 0 if the given <code>productId</code> is 0. The ASI ID is always set to 0.
 	 * <p>
 	 * Important note: what we do <b>not</b> set there is the price UOM because that one is set only together with the price.
-	 *
-	 * @param invoiceLine
-	 * @param productId
 	 */
 	void setProductAndUOM(I_C_InvoiceLine invoiceLine, int productId);
 
 	/**
 	 * Set the given invoiceline's QtyInvoiced, QtyEntered and QtyInvoicedInPriceUOM.
 	 * This method assumes that the given invoice Line has a product (with an UOM) and a C_UOM and Price_UOM set.
-	 *
-	 * @param invoiceLine
-	 * @param qtyInvoiced qtyInvoice to be set. The other two values are computed from it, using UOM conversions.
 	 */
-	void setQtys(I_C_InvoiceLine invoiceLine, BigDecimal qtyInvoiced);
+	void setQtys(I_C_InvoiceLine invoiceLine, StockQtyAndUOMQty qtyInvoiced);
 
 	void setLineNetAmt(I_C_InvoiceLine invoiceLine);
 
@@ -295,7 +290,6 @@ public interface IInvoiceBL extends ISingletonService
 	 * different DocSubTypes. For example we have: "Nachbelastung - Mengendifferenz" which copies the Invoice but sets the product prices readOnly. "Nachbelastung - Preisdifferenz" which copies the
 	 * Invoice but sets the quantity read only.
 	 *
-	 * @param invoice
 	 * @return adjustmentCharge {@link de.metas.adempiere.model.I_C_Invoice}
 	 */
 	de.metas.adempiere.model.I_C_Invoice adjustmentCharge(I_C_Invoice invoice, String docSubType);

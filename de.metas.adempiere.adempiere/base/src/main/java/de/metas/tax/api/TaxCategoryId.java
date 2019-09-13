@@ -1,6 +1,7 @@
 package de.metas.tax.api;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
@@ -59,6 +60,11 @@ public class TaxCategoryId implements RepoIdAware
 	public static TaxCategoryId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
 		return repoId != null && repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
+	public static Optional<TaxCategoryId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
 	public static int toRepoId(final TaxCategoryId id)

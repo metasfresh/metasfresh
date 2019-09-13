@@ -47,6 +47,11 @@ public class BPartnerContactId implements RepoIdAware
 			throw new AdempiereException("@Invalid@ @Contact_ID@");
 		}
 
+		return of(bpartnerId, userId);
+	}
+
+	public static BPartnerContactId of(@NonNull final BPartnerId bpartnerId, @NonNull final UserId userId)
+	{
 		return new BPartnerContactId(bpartnerId, userId);
 	}
 
@@ -60,7 +65,7 @@ public class BPartnerContactId implements RepoIdAware
 			throw new AdempiereException("@Invalid@ @Contact_ID@");
 		}
 
-		return new BPartnerContactId(bpartnerId, userId);
+		return of(bpartnerId, userId);
 	}
 
 	public static BPartnerContactId ofRepoIdOrNull(
@@ -68,7 +73,7 @@ public class BPartnerContactId implements RepoIdAware
 			@Nullable final Integer contactRepoId)
 	{
 		final UserId userId = toValidContactUserIdOrNull(contactRepoId);
-		return userId != null ? new BPartnerContactId(bpartnerId, userId) : null;
+		return userId != null ? of(bpartnerId, userId) : null;
 	}
 
 	public static BPartnerContactId ofRepoIdOrNull(
@@ -87,7 +92,7 @@ public class BPartnerContactId implements RepoIdAware
 			return null;
 		}
 
-		return new BPartnerContactId(bpartnerId, userId);
+		return of(bpartnerId, userId);
 	}
 
 	private static UserId toValidContactUserIdOrNull(final Integer userRepoId)

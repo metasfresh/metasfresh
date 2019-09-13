@@ -36,6 +36,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -126,7 +127,6 @@ public class ProductDAO implements IProductDAO
 	@Override
 	public ProductId retrieveProductIdBy(@NonNull final ProductQuery query)
 	{
-
 		final IQueryBuilder<I_M_Product> queryBuilder;
 		if (query.isOutOfTrx())
 		{
@@ -160,6 +160,16 @@ public class ProductDAO implements IProductDAO
 				.firstId();
 
 		return ProductId.ofRepoIdOrNull(productRepoId);
+	}
+
+	@Override
+	public Stream<I_M_Product> streamAllProducts()
+	{
+		return Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_M_Product.COLUMNNAME_M_Product_ID)
+				.create()
+				.iterateAndStream();
 	}
 
 	@Override
@@ -290,6 +300,16 @@ public class ProductDAO implements IProductDAO
 	public String getProductCategoryNameById(@NonNull final ProductCategoryId id)
 	{
 		return getProductCategoryById(id).getName();
+	}
+
+	@Override
+	public Stream<I_M_Product_Category> streamAllProductCategories()
+	{
+		return Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_M_Product_Category.class)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_M_Product_Category.COLUMN_M_Product_Category_ID)
+				.create()
+				.iterateAndStream();
 	}
 
 	@Cached(cacheName = I_M_Product.Table_Name + "#by#" + I_M_Product.COLUMNNAME_S_Resource_ID)

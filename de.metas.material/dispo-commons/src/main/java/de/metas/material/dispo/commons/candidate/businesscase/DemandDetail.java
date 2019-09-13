@@ -82,13 +82,15 @@ public class DemandDetail implements BusinessCaseDetail
 				.qty(plannedQty).build();
 	}
 
-	public static DemandDetail forSupplyRequiredDescriptorOrNull(
-			@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor)
+	public static DemandDetail forSupplyRequiredDescriptorOrNull(@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
-		if (supplyRequiredDescriptor == null)
-		{
-			return null;
-		}
+		return supplyRequiredDescriptor != null
+				? forSupplyRequiredDescriptor(supplyRequiredDescriptor)
+				: null;
+	}
+
+	public static DemandDetail forSupplyRequiredDescriptor(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
+	{
 		return DemandDetail.builder()
 				.demandCandidateId(toUnspecifiedIfZero(supplyRequiredDescriptor.getDemandCandidateId()))
 				.forecastId(toUnspecifiedIfZero(supplyRequiredDescriptor.getForecastId()))

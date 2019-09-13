@@ -4,13 +4,14 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.event.IEventBusFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -43,7 +44,7 @@ import de.metas.util.Services;
  */
 
 @Interceptor(I_M_Inventory.class)
-@Component("de.metas.inventory.interceptor.M_Inventory")
+@Component
 public class M_Inventory
 {
 	public static final String MSG_NOT_ALL_LINES_COUNTED = "de.metas.inventory.interceptor.NotAllLinesCounted";
@@ -81,15 +82,14 @@ public class M_Inventory
 
 	private boolean isPhysicalInventoryDocType(final I_M_Inventory inventoryRecord)
 	{
-		if (inventoryRecord.getC_DocType_ID() <= 0)
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(inventoryRecord.getC_DocType_ID());
+		if (docTypeId == null)
 		{
 			return false;
 		}
-		final I_C_DocType docTypeRecord = inventoryRecord.getC_DocType();
-
-		final DocBaseAndSubType docBaseAndSubType = DocBaseAndSubType.of(
-				docTypeRecord.getDocBaseType(),
-				docTypeRecord.getDocSubType());
+		
+		final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
+		final DocBaseAndSubType docBaseAndSubType = docTypesRepo.getDocBaseAndSubTypeById(docTypeId);
 
 		return AggregationType.MULTIPLE_HUS.getDocBaseAndSubType().equals(docBaseAndSubType)
 				|| AggregationType.SINGLE_HU.getDocBaseAndSubType().equals(docBaseAndSubType);

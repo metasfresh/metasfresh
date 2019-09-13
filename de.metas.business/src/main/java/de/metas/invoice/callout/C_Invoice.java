@@ -1,7 +1,6 @@
 package de.metas.invoice.callout;
 
 import java.time.LocalDate;
-import java.util.Properties;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -17,6 +16,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
@@ -30,7 +30,7 @@ import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
 @Callout(I_C_Invoice.class)
-@Component("de.metas.invoice.callout.C_Invoice")
+@Component
 public class C_Invoice
 {
 	public C_Invoice()
@@ -70,16 +70,14 @@ public class C_Invoice
 			return;
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
-		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
-
 		final I_C_BPartner_Location location = invoice.getC_BPartner_Location();
 		if (location == null)
 		{
 			return;
 		}
 
-		final PricingSystemId pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(ctx, partner.getC_BPartner_ID(), soTrx, trxName);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
+		final PricingSystemId pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(bpartnerId, soTrx);
 		if (pricingSystemId == null)
 		{
 			return;

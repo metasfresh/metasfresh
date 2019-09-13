@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -31,6 +30,7 @@ import de.metas.location.geocoding.GeographicalCoordinates;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /*
@@ -174,9 +174,9 @@ public class NominatimOSMGeoCoordinatesProviderImpl implements GeoCoordinatesPro
 		final String  defaultEmptyValue = "";
 
 		final Map<String, String> m = new HashMap<>();
-		m.put("numberAndStreet", Util.coalesce(request.getAddress(), defaultEmptyValue));
-		m.put("postalcode", Util.coalesce(request.getPostal(), defaultEmptyValue));
-		m.put("city", Util.coalesce(request.getCity(), defaultEmptyValue));
+		m.put("numberAndStreet", CoalesceUtil.coalesce(request.getAddress(), defaultEmptyValue));
+		m.put("postalcode", CoalesceUtil.coalesce(request.getPostal(), defaultEmptyValue));
+		m.put("city", CoalesceUtil.coalesce(request.getCity(), defaultEmptyValue));
 		m.put("countrycodes", request.getCountryCode2());
 		m.put("format", "json");
 		m.put("dedupe", "1");

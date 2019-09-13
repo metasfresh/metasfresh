@@ -6,7 +6,6 @@ import java.util.Collection;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Profile;
@@ -98,7 +97,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				event.getSalesOrderLineRepoId());
 
 		final Product product = productRepository.getById(ProductId.ofRepoId(materialDescriptor.getProductId()));
-		final OrgId orgId = OrgId.ofRepoId(event.getEventDescriptor().getOrgId());
+		final OrgId orgId = event.getEventDescriptor().getOrgId();
 
 		final VendorProductInfo vendorProductInfos = vendorProductInfosRepo
 				.getDefaultVendorProductInfo(product.getId(), orgId)
@@ -122,7 +121,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.qtyToPurchase(Quantity.of(materialDescriptor.getQuantity(), uomRecord))
 				.salesOrderAndLineIdOrNull(orderandLineIdOrNull)
 
-				.warehouseId(WarehouseId.ofRepoId(materialDescriptor.getWarehouseId()))
+				.warehouseId(materialDescriptor.getWarehouseId())
 				.build();
 
 		saveCandidateAndPostCreatedEvent(event, newPurchaseCandidate);
@@ -156,7 +155,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 			@NonNull final PurchaseCandidateId newPurchaseCandidateId)
 	{
 		final PurchaseCandidateCreatedEvent purchaseCandidateCreatedEvent = PurchaseCandidateCreatedEvent.builder()
-				.eventDescriptor(requestedEvent.getEventDescriptor().copy())
+				.eventDescriptor(requestedEvent.getEventDescriptor())
 				.purchaseCandidateRepoId(newPurchaseCandidateId.getRepoId())
 				.vendorId(vendorId.getRepoId())
 				.purchaseMaterialDescriptor(requestedEvent.getPurchaseMaterialDescriptor())

@@ -3,6 +3,10 @@ package de.metas.material.event.stock;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+import org.adempiere.warehouse.WarehouseId;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -36,13 +40,14 @@ import lombok.Value;
  */
 
 @Value
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class StockChangedEvent implements MaterialEvent
 {
 	public static final String TYPE = "StockChangedEvent";
 
 	EventDescriptor eventDescriptor;
 	ProductDescriptor productDescriptor;
-	int warehouseId;
+	WarehouseId warehouseId;
 
 	/** may be negative if a storage attribute is changed! */
 	BigDecimal qtyOnHand;
@@ -59,7 +64,7 @@ public class StockChangedEvent implements MaterialEvent
 	public StockChangedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("productDescriptor") final ProductDescriptor productDescriptor,
-			@JsonProperty("warehouseId") final int warehouseId,
+			@JsonProperty("warehouseId") final WarehouseId warehouseId,
 			@JsonProperty("qtyOnHand") final BigDecimal qtyOnHand,
 			@JsonProperty("qtyOnHandOld") final BigDecimal qtyOnHandOld,
 			@JsonProperty("changeDate") final Instant changeDate,
@@ -80,7 +85,7 @@ public class StockChangedEvent implements MaterialEvent
 		Check.errorIf(productDescriptor == null, "productDescriptor may not be null; this={}", this);
 		Check.errorIf(qtyOnHand == null, "qtyOnHand may not be null; this={}", this);
 		Check.errorIf(qtyOnHandOld == null, "qtyOnHandOld may not be null; this={}", this);
-		Check.errorIf(warehouseId <= 0, "warehouseId needs to be > 0; this={}", this);
+		Check.errorIf(warehouseId == null, "warehouseId needs to set; this={}", this);
 		Check.errorIf(stockChangeDetails == null, "stockChangeDetails may not be null; this={}", this);
 		Check.errorIf(stockChangeDetails.getStockId() <= 0, "stockChangeDetails.stockId may not be null; this={}", this);
 	}

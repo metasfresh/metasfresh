@@ -8,8 +8,10 @@ import java.time.Instant;
 import java.util.List;
 
 import org.compiere.util.TimeUtil;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -25,6 +27,7 @@ import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.MaterialDescriptorQueryBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.util.Check;
 import lombok.NonNull;
 
@@ -51,6 +54,7 @@ import lombok.NonNull;
  */
 
 @Service
+@Profile(Profiles.PROFILE_MaterialDispo)
 public class StockCandidateService
 {
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
@@ -101,14 +105,13 @@ public class StockCandidateService
 				.getMaterialDescriptor()
 				.withQuantity(newQty);
 
-		final Integer groupId = previousStockOrNull != null
+		final MaterialDispoGroupId groupId = previousStockOrNull != null
 				? previousStockOrNull.getGroupId()
-				: 0;
+				: null;
 
 		final Candidate stockCandidate = Candidate.builder()
 				.type(CandidateType.STOCK)
-				.orgId(candidate.getOrgId())
-				.clientId(candidate.getClientId())
+				.clientAndOrgId(candidate.getClientAndOrgId())
 				.materialDescriptor(materialDescriptor)
 				.parentId(candidate.getParentId())
 				.seqNo(candidate.getSeqNo())

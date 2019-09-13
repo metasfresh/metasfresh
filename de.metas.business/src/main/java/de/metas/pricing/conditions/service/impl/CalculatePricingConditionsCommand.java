@@ -197,7 +197,7 @@ import lombok.NonNull;
 							.setParameter("surcharge", pricingSystemSurcharge);
 				}
 
-				final BigDecimal priceStdOverride = priceStd.add(pricingSystemSurcharge.getAsBigDecimal());
+				final BigDecimal priceStdOverride = priceStd.add(pricingSystemSurcharge.toBigDecimal());
 				result.priceStdOverride(priceStdOverride);
 			}
 		}
@@ -205,7 +205,7 @@ import lombok.NonNull;
 		{
 			final Money fixedPrice = priceOverride.getFixedPrice();
 			result.currencyId(fixedPrice != null ? fixedPrice.getCurrencyId() : null);
-			result.priceStdOverride(fixedPrice != null ? fixedPrice.getAsBigDecimal() : null);
+			result.priceStdOverride(fixedPrice != null ? fixedPrice.toBigDecimal() : null);
 		}
 		else
 		{

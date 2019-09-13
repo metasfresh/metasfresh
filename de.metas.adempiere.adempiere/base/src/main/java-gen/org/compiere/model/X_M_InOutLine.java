@@ -15,7 +15,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1897911123L;
+	private static final long serialVersionUID = -1250076057L;
 
     /** Standard Constructor */
     public X_M_InOutLine (Properties ctx, int M_InOutLine_ID, String trxName)
@@ -51,18 +51,6 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_AD_Org getAD_OrgTrx() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_OrgTrx_ID, org.compiere.model.I_AD_Org.class);
-	}
-
-	@Override
-	public void setAD_OrgTrx(org.compiere.model.I_AD_Org AD_OrgTrx)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_OrgTrx_ID, org.compiere.model.I_AD_Org.class, AD_OrgTrx);
-	}
-
 	/** Set Buchende Organisation.
 		@param AD_OrgTrx_ID 
 		Performing or initiating organization
@@ -89,7 +77,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public org.compiere.model.I_C_Activity getC_Activity() throws RuntimeException
+	public org.compiere.model.I_C_Activity getC_Activity()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class);
 	}
@@ -125,8 +113,33 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		return ii.intValue();
 	}
 
+	/** Set Catch Einheit.
+		@param Catch_UOM_ID 
+		Aus dem Produktstamm übenommene Catch Weight Einheit.
+	  */
 	@Override
-	public org.compiere.model.I_C_Campaign getC_Campaign() throws RuntimeException
+	public void setCatch_UOM_ID (int Catch_UOM_ID)
+	{
+		if (Catch_UOM_ID < 1) 
+			set_Value (COLUMNNAME_Catch_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Catch_UOM_ID, Integer.valueOf(Catch_UOM_ID));
+	}
+
+	/** Get Catch Einheit.
+		@return Aus dem Produktstamm übenommene Catch Weight Einheit.
+	  */
+	@Override
+	public int getCatch_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Catch_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Campaign getC_Campaign()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class);
 	}
@@ -163,7 +176,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public org.compiere.model.I_C_Charge getC_Charge() throws RuntimeException
+	public org.compiere.model.I_C_Charge getC_Charge()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Charge_ID, org.compiere.model.I_C_Charge.class);
 	}
@@ -200,7 +213,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public org.compiere.model.I_C_Customs_Invoice_Line getC_Customs_Invoice_Line() throws RuntimeException
+	public org.compiere.model.I_C_Customs_Invoice_Line getC_Customs_Invoice_Line()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Customs_Invoice_Line_ID, org.compiere.model.I_C_Customs_Invoice_Line.class);
 	}
@@ -233,8 +246,30 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		return ii.intValue();
 	}
 
+	/** Set Bestätigte Menge.
+		@param ConfirmedQty 
+		Confirmation of a received quantity
+	  */
 	@Override
-	public org.compiere.model.I_C_OrderLine getC_OrderLine() throws RuntimeException
+	public void setConfirmedQty (java.math.BigDecimal ConfirmedQty)
+	{
+		set_Value (COLUMNNAME_ConfirmedQty, ConfirmedQty);
+	}
+
+	/** Get Bestätigte Menge.
+		@return Confirmation of a received quantity
+	  */
+	@Override
+	public java.math.BigDecimal getConfirmedQty () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ConfirmedQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	@Override
+	public org.compiere.model.I_C_OrderLine getC_OrderLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class);
 	}
@@ -271,7 +306,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public org.compiere.model.I_C_Project getC_Project() throws RuntimeException
+	public org.compiere.model.I_C_Project getC_Project()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class);
 	}
@@ -308,7 +343,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public org.compiere.model.I_C_ProjectPhase getC_ProjectPhase() throws RuntimeException
+	public org.compiere.model.I_C_ProjectPhase getC_ProjectPhase()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_ProjectPhase_ID, org.compiere.model.I_C_ProjectPhase.class);
 	}
@@ -345,7 +380,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public org.compiere.model.I_C_ProjectTask getC_ProjectTask() throws RuntimeException
+	public org.compiere.model.I_C_ProjectTask getC_ProjectTask()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_ProjectTask_ID, org.compiere.model.I_C_ProjectTask.class);
 	}
@@ -381,18 +416,6 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
-	}
-
 	/** Set Maßeinheit.
 		@param C_UOM_ID 
 		Unit of Measure
@@ -416,28 +439,6 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Bestätigte Menge.
-		@param ConfirmedQty 
-		Confirmation of a received quantity
-	  */
-	@Override
-	public void setConfirmedQty (java.math.BigDecimal ConfirmedQty)
-	{
-		set_Value (COLUMNNAME_ConfirmedQty, ConfirmedQty);
-	}
-
-	/** Get Bestätigte Menge.
-		@return Confirmation of a received quantity
-	  */
-	@Override
-	public java.math.BigDecimal getConfirmedQty () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ConfirmedQty);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
 	}
 
 	/** Set Beschreibung.
@@ -531,7 +532,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
 	}
@@ -568,7 +569,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public org.compiere.model.I_M_InOut getM_InOut() throws RuntimeException
+	public org.compiere.model.I_M_InOut getM_InOut()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class);
 	}
@@ -629,18 +630,6 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Locator getM_Locator() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class);
-	}
-
-	@Override
-	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class, M_Locator);
-	}
-
 	/** Set Lagerort.
 		@param M_Locator_ID 
 		Warehouse Locator
@@ -666,16 +655,26 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		return ii.intValue();
 	}
 
+	/** Set Bewegungs-Menge.
+		@param MovementQty 
+		Quantity of a product moved.
+	  */
 	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	public void setMovementQty (java.math.BigDecimal MovementQty)
 	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+		set_Value (COLUMNNAME_MovementQty, MovementQty);
 	}
 
+	/** Get Bewegungs-Menge.
+		@return Quantity of a product moved.
+	  */
 	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+	public java.math.BigDecimal getMovementQty () 
 	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_MovementQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Produkt.
@@ -704,7 +703,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public org.compiere.model.I_M_RMALine getM_RMALine() throws RuntimeException
+	public org.compiere.model.I_M_RMALine getM_RMALine()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_RMALine_ID, org.compiere.model.I_M_RMALine.class);
 	}
@@ -738,28 +737,6 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Bewegungs-Menge.
-		@param MovementQty 
-		Quantity of a product moved.
-	  */
-	@Override
-	public void setMovementQty (java.math.BigDecimal MovementQty)
-	{
-		set_Value (COLUMNNAME_MovementQty, MovementQty);
-	}
-
-	/** Get Bewegungs-Menge.
-		@return Quantity of a product moved.
-	  */
-	@Override
-	public java.math.BigDecimal getMovementQty () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_MovementQty);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
 	}
 
 	/** Set Picked Quantity.
@@ -826,6 +803,28 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		return (java.lang.String)get_Value(COLUMNNAME_ProductDescription);
 	}
 
+	/** Set Geliefert Catch.
+		@param QtyDeliveredCatch 
+		Tatsächlich gelieferte Menge
+	  */
+	@Override
+	public void setQtyDeliveredCatch (java.math.BigDecimal QtyDeliveredCatch)
+	{
+		set_Value (COLUMNNAME_QtyDeliveredCatch, QtyDeliveredCatch);
+	}
+
+	/** Get Geliefert Catch.
+		@return Tatsächlich gelieferte Menge
+	  */
+	@Override
+	public java.math.BigDecimal getQtyDeliveredCatch () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDeliveredCatch);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** Set Menge.
 		@param QtyEntered 
 		The Quantity Entered is based on the selected UoM
@@ -871,7 +870,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public org.compiere.model.I_M_InOutLine getReversalLine() throws RuntimeException
+	public org.compiere.model.I_M_InOutLine getReversalLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_ReversalLine_ID, org.compiere.model.I_M_InOutLine.class);
 	}
@@ -949,7 +948,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public org.compiere.model.I_C_ElementValue getUser1() throws RuntimeException
+	public org.compiere.model.I_C_ElementValue getUser1()
 	{
 		return get_ValueAsPO(COLUMNNAME_User1_ID, org.compiere.model.I_C_ElementValue.class);
 	}
@@ -986,7 +985,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public org.compiere.model.I_C_ElementValue getUser2() throws RuntimeException
+	public org.compiere.model.I_C_ElementValue getUser2()
 	{
 		return get_ValueAsPO(COLUMNNAME_User2_ID, org.compiere.model.I_C_ElementValue.class);
 	}

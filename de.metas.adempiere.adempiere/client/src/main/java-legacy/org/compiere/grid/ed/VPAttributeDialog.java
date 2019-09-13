@@ -136,7 +136,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	private final int m_WindowNo;
 	private final IVPAttributeContext attributeContext;
 	private final MAttributeSet _attributeSet;
-	private final MAttributeSetInstance _asiTemplate;
+	private final I_M_AttributeSetInstance _asiTemplate;
 	private final List<I_M_Attribute> _availableAttributes;
 	private final boolean _allowSelectExistingASI;
 
@@ -250,14 +250,14 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		return asiTemplate == null || asiTemplate.getM_AttributeSetInstance_ID() <= 0;
 	}
 
-	private MAttributeSetInstance getASITemplate()
+	private I_M_AttributeSetInstance getASITemplate()
 	{
 		return _asiTemplate;
 	}
 
 	private MAttributeInstance getAITemplate(final I_M_Attribute attribute)
 	{
-		final MAttributeSetInstance asiTemplate = getASITemplate();
+		final I_M_AttributeSetInstance asiTemplate = getASITemplate();
 		if (asiTemplate == null)
 		{
 			return null;
@@ -901,7 +901,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	private I_M_AttributeSetInstance saveSelection()
 	{
 		final IMutable<I_M_AttributeSetInstance> asiRef = new Mutable<>();
-		trxManager.run(new TrxRunnableAdapter()
+		trxManager.runInNewTrx(new TrxRunnableAdapter()
 		{
 			@Override
 			public void run(String localTrxName) throws Exception
@@ -919,7 +919,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		log.info("");
 
 		final MAttributeSet attributeSet = getM_AttributeSet();
-		final MAttributeSetInstance asiTemplate2 = getASITemplate();
+		final I_M_AttributeSetInstance asiTemplate2 = getASITemplate();
 
 		// Create a new ASI which is copying the existing one
 

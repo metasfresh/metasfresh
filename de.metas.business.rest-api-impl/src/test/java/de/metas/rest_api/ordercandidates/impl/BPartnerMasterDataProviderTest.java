@@ -119,7 +119,7 @@ public class BPartnerMasterDataProviderTest
 		assertThatThrownBy(() -> bpartnerMasterDataProvider.getCreateBPartnerInfo(jsonBPartnerInfoToUse, OrgId.ofRepoId(10)))
 				.isInstanceOf(BPartnerIdNotFoundException.class)
 				.hasMessageContaining("Code=jsonBPartner.Code")
-				.hasMessageContaining("GLN=jsonBPartnerLocation.GLN");
+				.hasMessageContaining("GLNs=[jsonBPartnerLocation.GLN]");
 	}
 
 	@Test

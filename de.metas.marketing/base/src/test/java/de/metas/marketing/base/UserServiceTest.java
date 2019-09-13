@@ -4,7 +4,7 @@ import static de.metas.i18n.Language.AD_Language_en_AU;
 import static de.metas.i18n.Language.AD_Language_en_GB;
 import static de.metas.i18n.Language.AD_Language_en_US;
 import static de.metas.i18n.Language.asLanguage;
-import static de.metas.i18n.Language.asLanguageString;
+import static de.metas.i18n.Language.asLanguageStringOrNull;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -214,7 +214,7 @@ public class UserServiceTest
 
 		userRecord.setName(name);
 		userRecord.setEMail(mail);
-		userRecord.setAD_Language(asLanguageString(language));
+		userRecord.setAD_Language(asLanguageStringOrNull(language));
 
 		save(userRecord);
 		return userRecord;
@@ -230,7 +230,7 @@ public class UserServiceTest
 
 		contactPersonRecord.setAD_User_ID(userId);
 		contactPersonRecord.setEMail(emailAddress);
-		contactPersonRecord.setAD_Language(asLanguageString(language));
+		contactPersonRecord.setAD_Language(asLanguageStringOrNull(language));
 		contactPersonRecord.setMKTG_Platform_ID(platformId.getRepoId());
 
 		save(contactPersonRecord);

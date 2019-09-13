@@ -1,5 +1,20 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Invoice_Rejection_Detail;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import com.google.common.collect.ImmutableList;
+
 /*
  * #%L
  * metasfresh-pharma
@@ -23,6 +38,7 @@ package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process
  */
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.GLN;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.event.Topic;
@@ -33,6 +49,7 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.Recipient;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.user.User;
 import de.metas.user.UserId;
@@ -40,20 +57,6 @@ import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceRejectionDetailId;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_PInstance;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Invoice_Rejection_Detail;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
-import com.google.common.collect.ImmutableList;
-
-import java.util.List;
-import java.util.Optional;
 
 // package visibility
 @Service
@@ -164,17 +167,17 @@ class ImportInvoiceResponseService
 	}
 
 	// package visibility
-	int retrieveOrgByGLN(final String gln)
+	OrgId retrieveOrgByGLN(final GLN gln)
 	{
 		final BPartnerQuery query = BPartnerQuery.builder()
-				.locationGln(gln)
+				.gln(gln)
 				.build();
 		final Optional<BPartnerId> partnerIdOptional = ibPartnerDAO.retrieveBPartnerIdBy(query);
-		int billerOrg = 0;
+		OrgId billerOrg = OrgId.ANY;
 		if (partnerIdOptional.isPresent())
 		{
 			ibPartnerDAO.getById(partnerIdOptional.get()).getAD_OrgBP_ID();
-			billerOrg = ibPartnerDAO.getById(partnerIdOptional.get()).getAD_Org_ID();
+			billerOrg = OrgId.ofRepoIdOrAny(ibPartnerDAO.getById(partnerIdOptional.get()).getAD_Org_ID());
 		}
 		return billerOrg;
 	}

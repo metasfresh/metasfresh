@@ -59,6 +59,17 @@ public interface ITrxItemExceptionHandler
 	void onCompleteChunkError(Throwable e);
 
 	/**
+	 * Called after complete chunk failed.
+	 * 
+	 * This method is called after current transaction was closed (commited or rolled back).
+	 * So at the moment when this method is called we are running out of transaction.
+	 * Also, if {@link #onCompleteChunkError(Throwable)} throws exception, this method won't be called.
+	 *
+	 * @param e exception
+	 */
+	void afterCompleteChunkError(Throwable e);
+
+	/**
 	 * Called after completing a chunk, if commiting the transaction fails.
 	 *
 	 * @param e exception

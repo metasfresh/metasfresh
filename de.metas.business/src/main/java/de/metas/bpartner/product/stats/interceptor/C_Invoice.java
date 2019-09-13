@@ -46,7 +46,7 @@ import de.metas.util.Services;
  */
 
 @Interceptor(I_C_Invoice.class)
-@Component("de.metas.bpartner.product.stats.interceptor.C_Invoice")
+@Component
 public class C_Invoice
 {
 	private final BPartnerProductStatsEventSender eventSender;

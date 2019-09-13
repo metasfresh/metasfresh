@@ -129,7 +129,7 @@ public class AssignableInvoiceCandidateFactoryTest
 
 		// TODO move to dedicated test case
 		// assertThat(cast.getAssignmentsToRefundCandidates().get(0).getRefundInvoiceCandidate().getId().getRepoId()).isEqualTo(refundContractIcRecord.getC_Invoice_Candidate_ID());
-		assertThat(ofRecord.getMoney().getAsBigDecimal()).isEqualByComparingTo(TEN);
+		assertThat(ofRecord.getMoney().toBigDecimal()).isEqualByComparingTo(TEN);
 		assertThat(ofRecord.getInvoiceableFrom()).isEqualTo(TimeUtil.asLocalDate(dateToInvoiceOfAssignableCand));
 	}
 }

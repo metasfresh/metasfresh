@@ -89,7 +89,7 @@ public class OrdersCollector implements IOrdersCollector
 	@Override
 	public void add(final I_C_Order order)
 	{
-		Loggables.get().addLog("@Created@ " + order.getDocumentNo());
+		Loggables.addLog("@Created@ " + order.getDocumentNo());
 
 		orderGeneratedNotifier.notify(order, defaultNotificationRecipientId);
 

@@ -119,7 +119,7 @@ public abstract class AbstractDLMService implements IDLMService
 		table.setIsDLM(true);
 		InterfaceWrapperHelper.save(table);
 
-		Loggables.get().addLog("Table {} is now added to DLM", table.getTableName());
+		Loggables.addLog("Table {} is now added to DLM", table.getTableName());
 	}
 
 	private void createOrUpdateDlmColumn(final I_AD_Table table, final String columnName)
@@ -272,14 +272,7 @@ public abstract class AbstractDLMService implements IDLMService
 		{
 			final Mutable<Partition> result = new Mutable<>();
 
-			Services.get(ITrxManager.class).run(new TrxRunnable()
-			{
-				@Override
-				public void run(final String localTrxName) throws Exception
-				{
-					result.setValue(storePartition0(partition));
-				}
-			});
+			Services.get(ITrxManager.class).runInNewTrx((TrxRunnable)localTrxName -> result.setValue(storePartition0(partition)));
 			return result.getValue();
 		}
 
@@ -344,7 +337,7 @@ public abstract class AbstractDLMService implements IDLMService
 		final String msg = "Stored the partition {} with {} records; configChanged={}; recordsChanged={}";
 		final Object[] msgParameters = { partitionDB, intermediatePartition.getRecordsFlat().size(), intermediatePartition.isConfigChanged(), intermediatePartition.isRecordsChanged() };
 		logger.info(msg, msgParameters);
-		Loggables.get().addLog(msg, msgParameters);
+		Loggables.addLog(msg, msgParameters);
 
 		final Partition result = intermediatePartition.withJustStored(partitionDB.getDLM_Partition_ID());
 		return result;

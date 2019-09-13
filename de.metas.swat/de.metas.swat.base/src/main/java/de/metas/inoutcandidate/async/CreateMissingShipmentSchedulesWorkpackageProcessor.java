@@ -103,7 +103,7 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 		final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
 		invalidSchedulesService.invalidateShipmentSchedules(shipmentScheduleIds);
 
-		Loggables.get().addLog("Created " + shipmentSchedules.size() + " candidates");
+		Loggables.addLog("Created " + shipmentSchedules.size() + " candidates");
 		return Result.SUCCESS;
 	}
 

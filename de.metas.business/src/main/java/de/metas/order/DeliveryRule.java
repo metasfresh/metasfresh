@@ -69,4 +69,9 @@ public enum DeliveryRule implements ReferenceListAwareEnum
 	}
 
 	private static final ImmutableMap<String, DeliveryRule> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), DeliveryRule::getCode);
+
+	public static String toCodeOrNull(final DeliveryRule type)
+	{
+		return type != null ? type.getCode() : null;
+	}
 }

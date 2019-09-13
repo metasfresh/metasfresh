@@ -95,7 +95,7 @@ public class PaymentReservationRepository
 	{
 		InterfaceWrapperHelper.setValue(record, "AD_Client_ID", from.getClientId().getRepoId());
 		record.setAD_Org_ID(from.getOrgId().getRepoId());
-		record.setAmount(from.getAmount().getAsBigDecimal());
+		record.setAmount(from.getAmount().toBigDecimal());
 		record.setBill_BPartner_ID(from.getPayerContactId().getBpartnerId().getRepoId());
 		record.setBill_User_ID(from.getPayerContactId().getUserId().getRepoId());
 		record.setBill_EMail(from.getPayerEmail().getAsString());

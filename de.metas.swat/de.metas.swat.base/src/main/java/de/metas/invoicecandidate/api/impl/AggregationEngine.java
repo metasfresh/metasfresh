@@ -24,7 +24,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  * #L%
  */
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -71,6 +70,7 @@ import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.lang.SOTrx;
+import de.metas.money.Money;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -78,7 +78,6 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
-import de.metas.util.NullLoggable;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -231,7 +230,7 @@ public class AggregationEngine implements IAggregationEngine
 
 				final ILoggable loggable = Loggables.get();
 				// task 08451: log why we create a new invoice header
-				if (!NullLoggable.isNull(loggable))
+				if (!Loggables.isNull(loggable))
 				{
 					loggable.addLog("Created new InvoiceHeaderAndLineAggregators instance. current number: " + key2headerAndAggregators.size() + "\n"
 							+ "Params: ['ic'=" + ic + ", 'headerAggregationKey'=" + headerAggregationKey + ", 'inutId'=" + inoutId + ", 'iciol'=" + iciol + "];\n"
@@ -395,7 +394,7 @@ public class AggregationEngine implements IAggregationEngine
 			final IInvoiceHeader invoiceHeader = aggregate(headerAndAggregators);
 
 			final ILoggable loggable = Loggables.get();
-			if (!NullLoggable.isNull(loggable))
+			if (!Loggables.isNull(loggable))
 			{
 				loggable.addLog("Aggregated InvoiceHeaderAndLineAggregators=" + headerAndAggregators + "; result IInvoiceHeader=" + invoiceHeader);
 			}
@@ -471,7 +470,7 @@ public class AggregationEngine implements IAggregationEngine
 		// We need to find out the DocBaseType based on Total Amount and IsSOTrx
 		else
 		{
-			final BigDecimal totalAmt = invoiceHeader.calculateTotalNetAmtFromLines();
+			final Money totalAmt = invoiceHeader.calculateTotalNetAmtFromLines();
 
 			if (invoiceIsSOTrx)
 			{

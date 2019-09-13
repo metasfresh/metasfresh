@@ -60,6 +60,8 @@ public class BPartner
 	public static final String URL_2 = "url2";
 	public static final String URL_3 = "url3";
 	public static final String GROUP_ID = "groupId";
+	public static final String VENDOR = "vendor";
+	public static final String CUSTOMER = "customer";
 
 	/** May be null if the bpartner was not yet saved. */
 	private BPartnerId id;
@@ -89,6 +91,9 @@ public class BPartner
 	private String url3;
 
 	private BPGroupId groupId;
+	
+	private final boolean vendor;
+	private final boolean customer;
 
 	private final RecordChangeLog changeLog;
 
@@ -110,6 +115,8 @@ public class BPartner
 			@Nullable final String url2,
 			@Nullable final String url3,
 			@Nullable final BPGroupId groupId,
+			@Nullable final Boolean vendor,
+			@Nullable final Boolean customer,
 			@Nullable final RecordChangeLog changeLog)
 	{
 		this.id = id;
@@ -127,6 +134,8 @@ public class BPartner
 		this.url2 = url2;
 		this.url3 = url3;
 		this.groupId = groupId;
+		this.vendor = coalesce(vendor, false);
+		this.customer = coalesce(customer, false);
 
 		this.changeLog = changeLog;
 	}

@@ -262,7 +262,7 @@ import lombok.NonNull;
 		if (getInvoicingParams().isOnlyApprovedForInvoicing() && !ic.isApprovalForInvoicing())
 		{
 			final String msg = msgBL.getMsg(getCtx(), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_APPROVAL, new Object[] { ic.getC_Invoice_Candidate_ID() });
-			Loggables.get().addLog(msg);
+			Loggables.addLog(msg);
 			return false;
 		}
 
@@ -276,12 +276,12 @@ import lombok.NonNull;
 		}
 
 		//
-		// task 04372: we will enqueue invoice candidates with QtyToInvoice = 0, *if* they also have QtyOrdered = 0
+		// task 04372: we will enqueue invoice candidates with QtyToInvoice = 0, *only if* they also have QtyOrdered = 0
 		// task 08343: logic moved here from the where clause in C_Invoice_Candidate_EnqueueSelection
-		if (ic.getQtyOrdered().signum() != 0 && invoiceCandBL.getQtyToInvoice(ic).signum() == 0)
+		if (ic.getQtyOrdered().signum() != 0 && ic.getQtyToInvoice().signum() == 0)
 		{
 			final String msg = msgBL.getMsg(getCtx(), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_QTY_TO_INVOICE, new Object[] { ic.getC_Invoice_Candidate_ID() });
-			Loggables.get().addLog(msg);
+			Loggables.addLog(msg);
 			return false;
 		}
 

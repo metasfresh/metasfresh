@@ -91,7 +91,7 @@ public class RefundInvoiceCandidateService_exceed_config_qty_Test
 		final RefundInvoiceCandidate refundCandidate = prepareRefundCandidateAndConfigs(RefundMode.APPLY_TO_EXCEEDING_QTY);
 
 		final AssignableInvoiceCandidate assignableCandidate = refundTestTools.createAssignableCandidateStandlone(TWENTY);
-		assertThat(assignableCandidate.getQuantity().getAsBigDecimal()).isEqualByComparingTo(TWENTY);// guard
+		assertThat(assignableCandidate.getQuantity().toBigDecimal()).isEqualByComparingTo(TWENTY);// guard
 
 		final RefundConfig refundConfig = extractSingleConfig(refundCandidate);
 
@@ -109,7 +109,7 @@ public class RefundInvoiceCandidateService_exceed_config_qty_Test
 		final RefundInvoiceCandidate refundCandidate = prepareRefundCandidateAndConfigs(RefundMode.APPLY_TO_ALL_QTIES);
 
 		final AssignableInvoiceCandidate assignableCandidate = refundTestTools.createAssignableCandidateStandlone(TWENTY);
-		assertThat(assignableCandidate.getQuantity().getAsBigDecimal()).isEqualByComparingTo(TWENTY);// guard
+		assertThat(assignableCandidate.getQuantity().toBigDecimal()).isEqualByComparingTo(TWENTY);// guard
 
 		final RefundConfig refundConfig = extractSingleConfig(refundCandidate);
 

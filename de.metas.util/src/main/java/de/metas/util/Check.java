@@ -134,7 +134,7 @@ public final class Check
 	{
 		final RuntimeException ex = mkEx(exClazz, msg);
 
-		Loggables.get().addLog("{}; Exception: {}", msg, ex);
+		Loggables.addLog("{}; Exception: {}", msg, ex);
 
 		if (throwException || logger == null)
 		{
@@ -232,8 +232,6 @@ public final class Check
 	 *
 	 * If <code>obj</code> is <code>null</code>, then an exception will be thrown.
 	 *
-	 * @param obj
-	 * @param interfaceClass
 	 * @param objectName user readable object name (i.e. variable name)
 	 */
 	public static void assumeInstanceOf(final Object obj, final Class<?> interfaceClass, final String objectName)

@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_PricingSystem;
 import org.compiere.util.TimeUtil;
 
 import de.metas.bpartner.BPartnerId;
@@ -36,9 +37,11 @@ import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Helper class used to create the inital pricing context when invoicing.
@@ -55,18 +58,21 @@ public class PricingContextBuilder
 	// Parameters
 	private IVendorInvoicingInfo _vendorInvoicingInfo = null;
 
-	public PricingContextBuilder setVendorInvoicingInfo(final IVendorInvoicingInfo vendorInvoicingInfo)
+	public PricingContextBuilder setVendorInvoicingInfo(@NonNull final IVendorInvoicingInfo vendorInvoicingInfo)
 	{
-		Check.assumeNotNull(vendorInvoicingInfo, "Param 'vendorInvoicingInfo' not null");
-
+		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 		// these checks are also intended to guard against poorly set up AITs
 		final I_M_PriceList_Version plv = vendorInvoicingInfo.getM_PriceList_Version();
 		Check.assumeNotNull(plv,
 				"Param 'vendorInvoicingInfo.M_PriceList_Version' not null; vendorInvoicingInfo={}", vendorInvoicingInfo);
+		
 		final I_M_PriceList pl = plv.getM_PriceList();
 		Check.assumeNotNull(pl,
 				"Param 'vendorInvoicingInfo.M_PriceList_Version.M_PriceList' not null; vendorInvoicingInfo={}", vendorInvoicingInfo);
-		Check.assumeNotNull(pl.getM_PricingSystem(),
+		
+		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(pl.getM_PricingSystem_ID());
+		final I_M_PricingSystem pricingSystem = priceListsRepo.getPricingSystemById(pricingSystemId);
+		Check.assumeNotNull(pricingSystem,
 				"Param 'vendorInvoicingInfo.M_PriceList_Version.M_PriceList.M_PricingSystem' not null; vendorInvoicingInfo={}", vendorInvoicingInfo);
 
 		_vendorInvoicingInfo = vendorInvoicingInfo;

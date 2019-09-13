@@ -11,6 +11,7 @@ import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContact.BPartnerContactBuilder;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.InvalidIdentifierException;
+import de.metas.user.UserId;
 import de.metas.util.rest.ExternalId;
 import lombok.NonNull;
 import lombok.Value;
@@ -68,8 +69,8 @@ public class ShortTermContactIndex
 			case METASFRESH_ID:
 				if (bpartnerId != null)
 				{
-					final BPartnerContactId bpartnerLocationId = BPartnerContactId.ofRepoId(bpartnerId, contactIdentifier.asMetasfreshId().getValue());
-					return id2Contact.get(bpartnerLocationId);
+					final BPartnerContactId bpartnerContactId = BPartnerContactId.of(bpartnerId, contactIdentifier.asMetasfreshId(UserId::ofRepoId));
+					return id2Contact.get(bpartnerContactId);
 				}
 				else
 				{
@@ -78,7 +79,7 @@ public class ShortTermContactIndex
 			case EXTERNAL_ID:
 				return externalId2Contact.get(contactIdentifier.asExternalId());
 			default:
-				throw new InvalidIdentifierException(contactIdentifier.toString());
+				throw new InvalidIdentifierException(contactIdentifier);
 		}
 	}
 
@@ -92,9 +93,9 @@ public class ShortTermContactIndex
 			case METASFRESH_ID:
 				if (bpartnerId != null)
 				{
-					final BPartnerContactId bpartnerLocationId = BPartnerContactId.ofRepoId(bpartnerId, contactIdentifier.asMetasfreshId().getValue());
-					contact = contactBuilder.id(bpartnerLocationId).build();
-					id2Contact.put(bpartnerLocationId, contact);
+					final BPartnerContactId bpartnerContactId = BPartnerContactId.of(bpartnerId, contactIdentifier.asMetasfreshId(UserId::ofRepoId));
+					contact = contactBuilder.id(bpartnerContactId).build();
+					id2Contact.put(bpartnerContactId, contact);
 				}
 				else
 				{
@@ -106,7 +107,7 @@ public class ShortTermContactIndex
 				externalId2Contact.put(contactIdentifier.asExternalId(), contact);
 				break;
 			default:
-				throw new InvalidIdentifierException(contactIdentifier.toString());
+				throw new InvalidIdentifierException(contactIdentifier);
 		}
 
 		bpartnerComposite

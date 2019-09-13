@@ -27,7 +27,7 @@ import org.springframework.stereotype.Component;
  * #L%
  */
 @Interceptor(I_C_Order.class)
-@Component("de.metas.material.dispo.commons.interceptor.C_Order")
+@Component
 public class C_Order
 {
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)

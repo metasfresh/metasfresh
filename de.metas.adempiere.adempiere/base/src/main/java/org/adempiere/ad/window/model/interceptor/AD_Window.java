@@ -41,7 +41,7 @@ import de.metas.util.Services;
  */
 @Interceptor(I_AD_Window.class)
 @Callout(I_AD_Window.class)
-@Component("org.adempiere.ad.window.model.interceptor.AD_Window")
+@Component
 public class AD_Window
 {
 	@Init

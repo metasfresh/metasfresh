@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -60,12 +60,12 @@ public class TestTwoOrdersTwoReceiptsOneInvoice extends AbstractTwoOrdersTwoInOu
 
 		final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol111);
 		assertNotNull("Missing IInvoiceLineRW for iol11=" + iol111, il1);
-		assertThat(il1.getQtyToInvoice(), comparesEqualTo(TEN.add(TWENTY)));
+		assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(TEN.add(TWENTY)));
 
 		assertThat(getSingleForInOutLine(invoiceLines1, iol121), is(il1));
 
 		final IInvoiceLineRW il2 = getSingleForInOutLine(invoiceLines1, iol211);
 		assertNotNull("Missing IInvoiceLineRW for iol21=" + iol121, il2);
-		assertThat(il2.getQtyToInvoice(), comparesEqualTo(FIFTY));
+		assertThat(il2.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(FIFTY));
 	}
 }

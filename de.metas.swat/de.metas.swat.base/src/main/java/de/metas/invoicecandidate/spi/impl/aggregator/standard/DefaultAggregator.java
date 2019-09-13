@@ -13,19 +13,17 @@ package de.metas.invoicecandidate.spi.impl.aggregator.standard;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.IdentityHashMap;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +36,7 @@ import org.compiere.util.Evaluatee2;
 
 import de.metas.aggregation.api.IAggregationKey;
 import de.metas.aggregation.api.impl.AggregationKey;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -47,6 +46,8 @@ import de.metas.invoicecandidate.api.impl.AggregationKeyEvaluationContext;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -79,16 +80,15 @@ public class DefaultAggregator implements IAggregator
 	}
 
 	@Override
-	public void addInvoiceCandidate(final IInvoiceLineAggregationRequest request)
+	public void addInvoiceCandidate(@NonNull final IInvoiceLineAggregationRequest request)
 	{
-		Check.assumeNotNull(request, "request not null");
-
 		final I_C_InvoiceCandidate_InOutLine icIol = request.getC_InvoiceCandidate_InOutLine();
 		if (icIol != null && aggregationBL.isIolInDispute(icIol))
 		{
-			return; // this implementation does not deal with iols which are in dispute. Note that generally, those iols shall not be invoiced, but not dealing with them at all as this aggregator does
-					// is just one variant.
-					// That's why the decision is made here in the aggregator and not in the aggregation engine.
+			return; // this implementation does not deal with iols which are in dispute.
+			// Note that generally, those iols shall not be invoiced.
+			// However, but not dealing with them at all as this aggregator does is just one variant.
+			// That's why the decision is made here in the aggregator and not in the aggregation engine.
 		}
 
 		final String aggregationKeyToUse = mkLineAggregationKeyToUse(request);
@@ -187,7 +187,7 @@ public class DefaultAggregator implements IAggregator
 
 		// ic2QtyInvoiceable keeps track of the qty that we have left to invoice,
 		// to make sure that we don't invoice more that the invoice candidate allows us to
-		final IdentityHashMap<I_C_Invoice_Candidate, BigDecimal> ic2QtyInvoiceable = createInvoiceableQtysMap();
+		final HashMap<InvoiceCandidateId, StockQtyAndUOMQty> ic2QtyInvoiceable = createInvoiceableQtysMap();
 
 		for (final String aggKey : new ArrayList<>(aggKey2iciol.keySet()))
 		{
@@ -219,27 +219,30 @@ public class DefaultAggregator implements IAggregator
 		return invoiceCandAggregates;
 	}
 
-	/** @return a map of {@link I_C_Invoice_Candidate} to quantity that could be invoiced */
-	private IdentityHashMap<I_C_Invoice_Candidate, BigDecimal> createInvoiceableQtysMap()
+	/** @return a map of {@link I_C_Invoice_Candidate} to stockQty that could be invoiced */
+	private HashMap<InvoiceCandidateId, StockQtyAndUOMQty> createInvoiceableQtysMap()
 	{
-		// ic2QtyInvoiceable keeps track of the qty that we have left to invoice, to make sure that we don't invoice more that the invoice candidate allows us to
-		final IdentityHashMap<I_C_Invoice_Candidate, BigDecimal> ic2QtyInvoicable = new IdentityHashMap<>();
+		// ic2QtyInvoiceable keeps track of the stockQty that we have left to invoice, to make sure that we don't invoice more that the invoice candidate allows us to
+		final HashMap<InvoiceCandidateId, StockQtyAndUOMQty> ic2QtyInvoicable = new HashMap<>();
 
 		// we initialize the map with all ICs' qtyToInvoice values
 		for (final List<InvoiceCandidateWithInOutLine> icsForKey : aggKey2iciol.values())
 		{
 			for (final InvoiceCandidateWithInOutLine ics : icsForKey)
 			{
+
 				final I_C_Invoice_Candidate ic = ics.getC_Invoice_Candidate();
-				if (!ic2QtyInvoicable.containsKey(ic))
+				if (!ic2QtyInvoicable.containsKey(ics.getInvoicecandidateId()))
 				{
 					// Initialize, if necessary
 
-					// task 08507: ic.getQtyToInvoice() is already the "effective". Qty even if QtyToInvoice_Override is set, the system will decide what to invoice (e.g. based on RnvoiceRule and
-					// QtDdelivered)
+					// task 08507: ic.getQtyToInvoice() is already the "effective" Qty.
+					// Even if QtyToInvoice_Override is set, the system will decide what to invoice (e.g. based on RnvoiceRule and QtyDelivered)
 					// and update QtyToInvoice accordingly, possibly to a value that is different from QtyToInvoice_Override.
-					final BigDecimal qtyToInvoice = ic.getQtyToInvoice(); // invoiceCandBL.getQtyToInvoice(ic);
-					ic2QtyInvoicable.put(ic, qtyToInvoice);
+					final StockQtyAndUOMQty qtyToInvoice = StockQtyAndUOMQtys.create(
+							ic.getQtyToInvoice(), ics.getProductId(),
+							ic.getQtyToInvoiceInUOM(), ics.getIcUomId());
+					ic2QtyInvoicable.put(ics.getInvoicecandidateId(), qtyToInvoice);
 				}
 			}
 		}

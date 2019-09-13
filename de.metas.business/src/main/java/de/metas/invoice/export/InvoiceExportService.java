@@ -80,7 +80,7 @@ public class InvoiceExportService
 			final Optional<InvoiceToExport> invoiceToExport = invoiceToExportFactory.getCreateForId(invoiceIdToExport);
 			if (!invoiceToExport.isPresent())
 			{
-				Loggables.get().addLog("InvoiceExportService - invoiceToExportFactory was unable to create an exportable representation for the invoice with InvoiceId={}; skipping.", invoiceIdToExport);
+				Loggables.addLog("InvoiceExportService - invoiceToExportFactory was unable to create an exportable representation for the invoice with InvoiceId={}; skipping.", invoiceIdToExport);
 				continue;
 			}
 			exportInvoice(invoiceToExport.get());
@@ -89,7 +89,7 @@ public class InvoiceExportService
 
 	private void exportInvoice(@NonNull final InvoiceToExport invoiceToExport)
 	{
-		final ILoggable loggable = Loggables.get().withLogger(logger, Level.DEBUG);
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 
 		final List<InvoiceExportClient> exportClients = invoiceExportServiceRegistry.createExportClients(invoiceToExport);
 		if (exportClients.isEmpty())

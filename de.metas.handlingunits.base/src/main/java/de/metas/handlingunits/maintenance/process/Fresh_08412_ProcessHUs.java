@@ -121,7 +121,7 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 
 	private void process(final HUToProcess huToProcess)
 	{
-		trxManager.run(new TrxRunnable2()
+		trxManager.runInNewTrx(new TrxRunnable2()
 		{
 
 			@Override
@@ -237,7 +237,7 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 		// Planning dimension
 		order.setAD_Org_ID(adOrgId);
 		order.setS_Resource(plant);
-		order.setM_Warehouse(warehouse);
+		order.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 
 		//
 		// Document Type & Status
@@ -250,7 +250,7 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 		// Product, ASI, UOM
 		order.setM_Product_ID(productBOM.getM_Product_ID());
 		order.setM_AttributeSetInstance_ID(productBOM.getM_AttributeSetInstance_ID());
-		order.setC_UOM(productBOM.getC_UOM());
+		order.setC_UOM_ID(productBOM.getC_UOM_ID());
 
 		//
 		// BOM & Workflow
@@ -276,7 +276,7 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 
 		//
 		// Misc
-		order.setC_OrderLine(null);
+		order.setC_OrderLine_ID(-1);
 		order.setC_BPartner_ID(hu.getC_BPartner_ID());
 		order.setDescription(huToProcess.getReference());
 

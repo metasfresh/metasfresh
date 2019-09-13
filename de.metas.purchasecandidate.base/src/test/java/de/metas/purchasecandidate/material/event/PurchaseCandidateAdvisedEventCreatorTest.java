@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_Product;
@@ -114,7 +115,7 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 
 		return MaterialDescriptor.builder()
 				.productDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(product.getM_Product_ID()))
-				.warehouseId(40)
+				.warehouseId(WarehouseId.ofRepoId(40))
 				.quantity(TEN)
 				.date(SystemTime.asInstant())
 				.build();

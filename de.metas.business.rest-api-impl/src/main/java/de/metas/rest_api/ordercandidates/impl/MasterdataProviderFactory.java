@@ -4,7 +4,6 @@ import javax.annotation.Nullable;
 
 import org.springframework.stereotype.Service;
 
-import de.metas.rest_api.product.impl.ProductMasterDataProvider;
 import de.metas.rest_api.utils.PermissionService;
 import lombok.Builder;
 
@@ -31,7 +30,7 @@ import lombok.Builder;
  */
 
 @Service
-public class MasterdataProviderFactory
+class MasterdataProviderFactory
 {
 	private BPartnerMasterDataProvider bpartnerMasterDataProvider;
 	private PermissionService permissionService;

@@ -2,6 +2,8 @@ package de.metas.material.dispo.service.event.handler.pporder;
 
 import java.util.Collection;
 
+import javax.annotation.Nullable;
+
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -13,13 +15,13 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
-import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.AbstractPPOrderEvent;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
-import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 
@@ -81,16 +83,19 @@ public final class PPOrderCreatedHandler
 	}
 
 	@Override
-	protected CandidatesQuery createPreExistingCandidatesQuery(@NonNull final AbstractPPOrderEvent ppOrderEvent)
+	protected CandidatesQuery createPreExistingCandidatesQuery(
+			@NonNull final PPOrder ppOrder,
+			@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor_NOTUSED)
 	{
-		final PPOrderCreatedEvent ppOrderCreatedEvent = (PPOrderCreatedEvent)ppOrderEvent;
-		final PPOrder ppOrder = ppOrderCreatedEvent.getPpOrder();
+		return createPreExistingCandidatesQuery(ppOrder);
+	}
 
-		final int groupId = ppOrder.getMaterialDispoGroupId();
-		if (groupId <= 0)
+	private static CandidatesQuery createPreExistingCandidatesQuery(@NonNull final PPOrder ppOrder)
+	{
+		final MaterialDispoGroupId groupId = ppOrder.getMaterialDispoGroupId();
+		if (groupId == null)
 		{
-			Loggables.get().addLog(
-					"The given ppOrderCreatedEvent has no groupId, so it was created by a user and not via material-dispo. Going to create new candidate records.");
+			Loggables.addLog("The given ppOrderCreatedEvent has no groupId, so it was created manually by a user and not via material-dispo. Going to create new candidate records.");
 			return CandidatesQuery.FALSE;
 		}
 
@@ -102,46 +107,10 @@ public final class PPOrderCreatedHandler
 				.groupId(groupId)
 
 				// there might also be supply candidates for co-products, so the groupId alone is not sufficient
-				.materialDescriptorQuery(createMaterialDescriptorQuery(productDescriptor))
+				.materialDescriptorQuery(PPOrderHandlerUtils.createMaterialDescriptorQuery(productDescriptor))
 				.build();
 
 		return query;
-	}
-
-	@Override
-	protected CandidatesQuery createPreExistingCandidatesQuery(
-			@NonNull final PPOrderLine ppOrderLine,
-			@NonNull final AbstractPPOrderEvent ppOrderEvent)
-	{
-		final PPOrderCreatedEvent ppOrderCreatedEvent = (PPOrderCreatedEvent)ppOrderEvent;
-
-		final PPOrder ppOrder = ppOrderCreatedEvent.getPpOrder();
-		final int groupId = ppOrder.getMaterialDispoGroupId();
-		if (groupId <= 0)
-		{
-			// returned false, but don't write another log message; we already logged in the other createQuery() method
-			return CandidatesQuery.FALSE;
-		}
-
-		final CandidatesQuery query = CandidatesQuery.builder()
-				.type(extractCandidateType(ppOrderLine))
-				.businessCase(CandidateBusinessCase.PRODUCTION)
-				.groupId(groupId)
-				.materialDescriptorQuery(
-						createMaterialDescriptorQuery(
-								ppOrderLine.getProductDescriptor()))
-				.build();
-
-		return query;
-	}
-
-	private static MaterialDescriptorQuery createMaterialDescriptorQuery(
-			@NonNull final ProductDescriptor productDescriptor)
-	{
-		return MaterialDescriptorQuery.builder()
-				.productId(productDescriptor.getProductId())
-				.storageAttributesKey(productDescriptor.getStorageAttributesKey())
-				.build();
 	}
 
 	@Override

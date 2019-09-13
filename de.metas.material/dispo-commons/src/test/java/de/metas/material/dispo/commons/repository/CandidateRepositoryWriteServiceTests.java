@@ -3,9 +3,8 @@ package de.metas.material.dispo.commons.repository;
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
 import static de.metas.material.event.EventTestHelper.ATTRIBUTE_SET_INSTANCE_ID;
 import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
-import static de.metas.material.event.EventTestHelper.CLIENT_ID;
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
@@ -29,6 +28,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -48,6 +48,8 @@ import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.product.ResourceId;
 import de.metas.util.Services;
 
 /*
@@ -101,6 +103,7 @@ public class CandidateRepositoryWriteServiceTests
 				.withQuantity(new BigDecimal("0.00000000000000"));
 
 		final Candidate candidate = Candidate.builder()
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 1))
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(materialDescriptorWithAlotOfDigits)
 				.businessCaseDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(shipmentScheduleId, 30, orderId, TEN))
@@ -123,6 +126,7 @@ public class CandidateRepositoryWriteServiceTests
 	public void addOrRecplaceDemandDetail()
 	{
 		final Candidate candidate = Candidate.builder()
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 1))
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(createMaterialDescriptor())
 				.businessCaseDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(20, -1, -1, TEN))
@@ -144,6 +148,7 @@ public class CandidateRepositoryWriteServiceTests
 	public void addOrRecplaceTransactionDetails()
 	{
 		final Candidate candidate = Candidate.builder()
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 1))
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(createMaterialDescriptor())
 				.transactionDetail(TransactionDetail.builder().quantity(ONE).storageAttributesKey(AttributesKey.ALL).transactionId(15).transactionDate(NOW).complete(true).build())
@@ -221,16 +226,15 @@ public class CandidateRepositoryWriteServiceTests
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.materialDescriptor(createMaterialDescriptor())
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.businessCaseDetail(ProductionDetail.builder()
 						.description("description")
-						.plantId(60)
+						.plantId(ResourceId.ofRepoId(60))
 						.productBomLineId(70)
 						.productPlanningId(80)
 						.ppOrderId(100)
 						.ppOrderLineId(110)
-						.ppOrderDocStatus("ppOrderDocStatus")
+						.ppOrderDocStatus(DocStatus.Completed)
 						.advised(Flag.TRUE)
 						.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE)
 						.qty(TEN)
@@ -256,7 +260,7 @@ public class CandidateRepositoryWriteServiceTests
 		assertThat(productionDetailRecord.getPP_Product_Planning_ID()).isEqualTo(80);
 		assertThat(productionDetailRecord.getPP_Order_ID()).isEqualTo(100);
 		assertThat(productionDetailRecord.getPP_Order_BOMLine_ID()).isEqualTo(110);
-		assertThat(productionDetailRecord.getPP_Order_DocStatus()).isEqualTo("ppOrderDocStatus");
+		assertThat(productionDetailRecord.getPP_Order_DocStatus()).isEqualTo(DocStatus.Completed.getCode());
 	}
 
 	/**
@@ -269,14 +273,14 @@ public class CandidateRepositoryWriteServiceTests
 		final Candidate candidateWithOutGroupId = repositoryTestHelper.stockCandidate
 				.withType(CandidateType.DEMAND)
 				.withDate(AFTER_NOW.plus(1, ChronoUnit.MINUTES)) // pick a different time from the other candidates
-				.withGroupId(-1);
+				.withGroupId(null);
 
 		final Candidate result1 = candidateRepositoryWriteService
 				.addOrUpdateOverwriteStoredSeqNo(candidateWithOutGroupId)
 				.getCandidate();
 		// result1 was assigned an id and a groupId
 		assertThat(result1.getId().getRepoId()).isGreaterThan(0);
-		assertThat(result1.getGroupId()).isEqualTo(result1.getId().getRepoId());
+		assertThat(result1.getGroupId().toInt()).isEqualTo(result1.getId().getRepoId());
 
 		final Candidate candidateWithGroupId = candidateWithOutGroupId
 				.withId(null)
@@ -293,11 +297,11 @@ public class CandidateRepositoryWriteServiceTests
 
 		final I_MD_Candidate result1Record = load(result1.getId().getRepoId(), I_MD_Candidate.class);
 		assertThat(result1Record.getMD_Candidate_ID()).isEqualTo(result1.getId().getRepoId());
-		assertThat(result1Record.getMD_Candidate_GroupId()).isEqualTo(result1.getGroupId());
+		assertThat(result1Record.getMD_Candidate_GroupId()).isEqualTo(result1.getGroupId().toInt());
 
 		final I_MD_Candidate result2Record = load(result2.getId().getRepoId(), I_MD_Candidate.class);
 		assertThat(result2Record.getMD_Candidate_ID()).isEqualTo(result2.getId().getRepoId());
-		assertThat(result2Record.getMD_Candidate_GroupId()).isEqualTo(result2.getGroupId());
+		assertThat(result2Record.getMD_Candidate_GroupId()).isEqualTo(result2.getGroupId().toInt());
 	}
 
 	/**
@@ -308,17 +312,17 @@ public class CandidateRepositoryWriteServiceTests
 	{
 		final Candidate candidateWithOutGroupId = repositoryTestHelper.stockCandidate
 				.withDate(AFTER_NOW.plus(1, ChronoUnit.MINUTES)) // pick a different time from the other candidates
-				.withGroupId(-1);
+				.withGroupId(null);
 
 		final Candidate result1 = candidateRepositoryWriteService
 				.addOrUpdateOverwriteStoredSeqNo(candidateWithOutGroupId)
 				.getCandidate();
 		assertThat(result1.getId().getRepoId()).isGreaterThan(0);
-		assertThat(result1.getGroupId()).isGreaterThan(0);
+		assertThat(result1.getGroupId()).isNotNull();
 
 		final I_MD_Candidate result1Record = load(result1.getId().getRepoId(), I_MD_Candidate.class);
 		assertThat(result1Record.getMD_Candidate_ID()).isEqualTo(result1.getId().getRepoId());
-		assertThat(result1Record.getMD_Candidate_GroupId()).isEqualTo(result1.getGroupId());
+		assertThat(result1Record.getMD_Candidate_GroupId()).isEqualTo(result1.getGroupId().toInt());
 	}
 
 	/**
@@ -330,8 +334,7 @@ public class CandidateRepositoryWriteServiceTests
 		final Candidate distributionCandidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(createMaterialDescriptor())
 				.businessCaseDetail(DistributionDetail.builder()
 						.productPlanningId(80)
@@ -373,8 +376,7 @@ public class CandidateRepositoryWriteServiceTests
 		final Candidate productionCandidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.SHIPMENT)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(createMaterialDescriptor())
 				.businessCaseDetail(DemandDetail.forForecastLineId(61, 71, TEN))
 				.build();
@@ -403,8 +405,7 @@ public class CandidateRepositoryWriteServiceTests
 		final Candidate productionCandidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.SHIPMENT)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(createMaterialDescriptor()
 						.withProductDescriptor(createProductDescriptorWithOffSet(productIdOffSet)))
 				.businessCaseDetail(DemandDetail.forForecastLineId(61, 62, TEN))

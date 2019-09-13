@@ -144,7 +144,7 @@ class TablePrimaryKeyGenerator
 
 	private TablePrimaryKeyGenerator generateForTableIfPossible(final I_AD_Table adTable)
 	{
-		trxManager.run(new TrxRunnableAdapter()
+		trxManager.runInNewTrx(new TrxRunnableAdapter()
 		{
 
 			@Override
@@ -172,7 +172,7 @@ class TablePrimaryKeyGenerator
 
 	private void addLog(final String msg, final Object... msgParameters)
 	{
-		Loggables.get().addLog(msg, msgParameters);
+		Loggables.addLog(msg, msgParameters);
 	}
 
 	private final boolean hasColumnPK(final I_AD_Table table)

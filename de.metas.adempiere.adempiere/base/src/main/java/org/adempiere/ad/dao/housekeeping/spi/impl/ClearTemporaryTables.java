@@ -58,7 +58,7 @@ public class ClearTemporaryTables implements IStartupHouseKeepingTask
 		try
 		{
 			DB.executeUpdateEx("TRUNCATE TABLE " + tableName, ITrx.TRXNAME_None);
-			Loggables.get().addLog("Truncated table {}", tableName);
+			Loggables.addLog("Truncated table {}", tableName);
 		}
 		catch (final Exception ex)
 		{

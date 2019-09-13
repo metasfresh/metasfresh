@@ -27,19 +27,19 @@ import de.metas.util.Services;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 @Interceptor(I_C_UOM_Conversion.class)
-@Component("de.metas.uom.interceptor.C_UOM_Conversion")
+@Component
 public class C_UOM_Conversion
 {
 	private static final String SYSCONFIG_ProductUOMConversionUOMValidate = "ProductUOMConversionUOMValidate";
@@ -73,7 +73,7 @@ public class C_UOM_Conversion
 					&& (changeType.isNew() || InterfaceWrapperHelper.isValueChanged(uomConversion, I_C_UOM_Conversion.COLUMNNAME_M_Product_ID)))
 			{
 				final UomId fromUomId = UomId.ofRepoId(uomConversion.getC_UOM_ID());
-				final UomId productStockingUomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+				final UomId productStockingUomId = Services.get(IProductBL.class).getStockUOMId(productId);
 				if (!productStockingUomId.equals(fromUomId))
 				{
 					final I_C_UOM uom = Services.get(IUOMDAO.class).getById(productStockingUomId);

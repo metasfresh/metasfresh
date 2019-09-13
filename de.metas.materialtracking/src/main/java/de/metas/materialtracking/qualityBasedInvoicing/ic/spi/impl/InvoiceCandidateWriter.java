@@ -203,7 +203,7 @@ public class InvoiceCandidateWriter
 		// Make sure the invoice candidate is saved, so that we can use its ID further down (e.g. to reference if from the detail lines)
 		InterfaceWrapperHelper.save(invoiceCandidate);
 
-		Loggables.get().addLog((newIc ? "Created new IC " : "Updated existing IC ") + invoiceCandidate);
+		Loggables.addLog((newIc ? "Created new IC " : "Updated existing IC ") + invoiceCandidate);
 
 		//
 		// delete/recreate Invoice Clearing Allocation
@@ -416,10 +416,10 @@ public class InvoiceCandidateWriter
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final Quantity qtyOrdered = uomConversionBL.convertToProductUOM(qty, ProductId.ofRepoId(product.getM_Product_ID()));
-		ic.setQtyOrdered(qtyOrdered.getAsBigDecimal());
+		ic.setQtyOrdered(qtyOrdered.toBigDecimal());
 
 		ic.setQtyToInvoice(BigDecimal.ZERO); // to be computed
-		ic.setQtyEntered(qty.getAsBigDecimal());
+		ic.setQtyEntered(qty.toBigDecimal());
 		ic.setC_UOM_ID(UomId.toRepoId(qty.getUomId()));
 
 		ic.setDateOrdered(materialTrackingPPOrderBL.getDateOfProduction(order.getPP_Order()));
@@ -432,13 +432,13 @@ public class InvoiceCandidateWriter
 
 		//
 		// Pricing
-		ic.setM_PricingSystem_ID(PricingSystemId.getRepoId(pricingResult.getPricingSystemId()));
+		ic.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingResult.getPricingSystemId()));
 		ic.setM_PriceList_Version_ID(PriceListVersionId.toRepoId(pricingResult.getPriceListVersionId()));
 		ic.setPrice_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId()));
 		ic.setPriceEntered(pricingResult.getPriceStd());
 		ic.setPriceActual(pricingResult.getPriceStd());
 		ic.setIsTaxIncluded(pricingResult.isTaxIncluded()); // 08457: Configure new IC from pricing result
-		ic.setDiscount(pricingResult.getDiscount().getValue());
+		ic.setDiscount(pricingResult.getDiscount().toBigDecimal());
 		ic.setC_Currency_ID(pricingResult.getCurrencyRepoId());
 
 		// InvoiceRule
@@ -508,7 +508,7 @@ public class InvoiceCandidateWriter
 				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 				.registerHandlingMethod(innerTrx -> {
 
-					trxManager.run(new TrxRunnableAdapter()
+					trxManager.runInNewTrx(new TrxRunnableAdapter()
 					{
 						@Override
 						public void run(final String localTrxName) throws Exception

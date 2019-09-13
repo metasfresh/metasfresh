@@ -29,9 +29,9 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_PaySelectionLine;
-import org.compiere.util.Util;
 
 import de.metas.util.Check;
+import de.metas.util.lang.CoalesceUtil;
 
 /**
  * {@link I_C_PaySelectionLine} candidate used to create or update pay selection lines.
@@ -204,7 +204,7 @@ class PaySelectionLineCandidate
 
 		public BigDecimal getOpenAmt()
 		{
-			return Util.coalesce(_openAmt, BigDecimal.ZERO);
+			return CoalesceUtil.coalesce(_openAmt, BigDecimal.ZERO);
 		}
 
 		public BigDecimal getPayAmt()
@@ -223,7 +223,7 @@ class PaySelectionLineCandidate
 
 		public BigDecimal getDiscountAmt()
 		{
-			return Util.coalesce(_discountAmt, BigDecimal.ZERO);
+			return CoalesceUtil.coalesce(_discountAmt, BigDecimal.ZERO);
 		}
 
 		public BigDecimal getDifferenceAmt()

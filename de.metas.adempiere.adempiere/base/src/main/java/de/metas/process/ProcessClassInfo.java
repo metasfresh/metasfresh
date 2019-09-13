@@ -202,8 +202,9 @@ public final class ProcessClassInfo
 		return ProcessClassParamInfo.builder()
 				.field(paramField)
 				.parameterName(paramAnn.parameterName())
-				.mandatory(paramAnn.mandatory())
 				.parameterTo(paramAnn.parameterTo())
+				.mandatory(paramAnn.mandatory())
+				.barcodeScannerType(paramAnn.barcodeScannerType().getTypeOrNull())
 				.build();
 	}
 
@@ -360,7 +361,7 @@ public final class ProcessClassInfo
 	{
 		return getParameterInfos(parameterName, parameterTo)
 				.stream()
-				.anyMatch(paramInfo -> paramInfo.isMandatory());
+				.anyMatch(ProcessClassParamInfo::isMandatory);
 	}
 
 	public Collection<ProcessClassParamInfo> getParameterInfos()

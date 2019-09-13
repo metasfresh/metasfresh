@@ -36,7 +36,6 @@ import org.compiere.model.MCharge;
 import org.compiere.model.PO;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -65,6 +64,7 @@ import de.metas.uom.UomId;
 import de.metas.util.NumberUtils;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 
@@ -349,7 +349,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	{
 		if (m_DateAcct == null)
 		{
-			m_DateAcct = Util.coalesceSuppliers(
+			m_DateAcct = CoalesceUtil.coalesceSuppliers(
 					() -> getValueAsLocalDateOrNull("DateAcct"),
 					() -> getDoc().getDateAcct());
 		}
@@ -365,7 +365,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	{
 		if (m_DateDoc == null)
 		{
-			m_DateDoc = Util.coalesceSuppliers(
+			m_DateDoc = CoalesceUtil.coalesceSuppliers(
 					() -> getValueAsLocalDateOrNull("DateDoc"),
 					() -> getValueAsLocalDateOrNull("DateTrx"),
 					() -> getDoc().getDateAcct());
@@ -600,12 +600,12 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 	protected final I_C_UOM getProductStockingUOM()
 	{
-		return productBL.getStockingUOM(getProductId());
+		return productBL.getStockUOM(getProductId());
 	}
-	
+
 	protected final UomId getProductStockingUOMId()
 	{
-		return productBL.getStockingUOMId(getProductId());
+		return productBL.getStockUOMId(getProductId());
 	}
 
 
@@ -723,7 +723,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 	private final int getC_BPartner_Location_ID()
 	{
-		return Util.coalesceSuppliers(
+		return CoalesceUtil.coalesceSuppliers(
 				() -> getValue("C_BPartner_Location_ID"),
 				() -> m_doc.getC_BPartner_Location_ID());
 	}

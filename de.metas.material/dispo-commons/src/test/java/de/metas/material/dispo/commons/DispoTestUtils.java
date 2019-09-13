@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.warehouse.WarehouseId;
 
 import com.google.common.collect.ImmutableList;
 
@@ -80,17 +81,17 @@ public class DispoTestUtils
 			@NonNull final CandidateType type,
 			@NonNull final Instant date,
 			final int productId,
-			final int warehouseId)
+			final WarehouseId warehouseId)
 	{
 		return filter(type, date, productId).stream()
-				.filter(r -> r.getM_Warehouse_ID() == warehouseId)
+				.filter(r -> r.getM_Warehouse_ID() == warehouseId.getRepoId())
 				.collect(Collectors.toList());
 	}
 
-	public List<I_MD_Candidate> filter(@NonNull final CandidateType type, final int warehouseId)
+	public List<I_MD_Candidate> filter(@NonNull final CandidateType type, final WarehouseId warehouseId)
 	{
 		return filter(type).stream()
-				.filter(r -> r.getM_Warehouse_ID() == warehouseId)
+				.filter(r -> r.getM_Warehouse_ID() == warehouseId.getRepoId())
 				.collect(Collectors.toList());
 	}
 

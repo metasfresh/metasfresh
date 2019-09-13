@@ -6,12 +6,12 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.NonNull;
 import lombok.Value;
 
@@ -61,11 +61,21 @@ public class ShipmentScheduleId implements RepoIdAware
 		return ids.stream().map(ShipmentScheduleId::getRepoId).collect(ImmutableSet.toImmutableSet());
 	}
 
+	public static ImmutableSet<ShipmentScheduleId> fromIntSet(@NonNull final Collection<Integer> repoIds)
+	{
+		if (repoIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return repoIds.stream().map(ShipmentScheduleId::ofRepoIdOrNull).filter(Predicates.notNull()).collect(ImmutableSet.toImmutableSet());
+	}
+
 	int repoId;
 
-	private ShipmentScheduleId(final int shipmentScheduleRepoId)
+	private ShipmentScheduleId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(shipmentScheduleRepoId, "shipmentScheduleRepoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "M_ShipmentSchedule_ID");
 	}
 
 	@Override

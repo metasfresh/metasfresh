@@ -90,7 +90,7 @@ import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.currency.ICurrencyBL;
-import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -381,6 +381,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		return retrieveICIOLAssociationsExclRE(invoiceCandidateId);
 	}
 
+	@Override
 	public List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(@NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
 		// load all I_C_InvoiceCandidate_InOutLine and filter locally.
@@ -398,10 +399,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 	private boolean isInOutCompletedOrClosed(@NonNull final I_C_InvoiceCandidate_InOutLine iciol)
 	{
-		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-
 		final I_M_InOut inOut = iciol.getM_InOutLine().getM_InOut();
-		return inOut.isActive() && docActionBL.isDocumentCompletedOrClosed(inOut);
+
+		return inOut.isActive() && DocStatus.ofCode(inOut.getDocStatus()).isCompletedOrClosed();
 	}
 
 	@Override
@@ -604,11 +604,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public final List<I_C_Invoice_Line_Alloc> retrieveIlaForIc(final I_C_Invoice_Candidate invoiceCand)
+	public final List<I_C_Invoice_Line_Alloc> retrieveIlaForIc(@NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
-		final IQueryBuilder<I_C_Invoice_Line_Alloc> ilaQueryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Line_Alloc.class, invoiceCand)
+		final IQueryBuilder<I_C_Invoice_Line_Alloc> ilaQueryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Invoice_Line_Alloc.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Invoice_Line_Alloc.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCand.getC_Invoice_Candidate_ID());
+				.addEqualsFilter(I_C_Invoice_Line_Alloc.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId);
 
 		ilaQueryBuilder.orderBy()
 				.addColumn(I_C_Invoice_Line_Alloc.COLUMN_C_Invoice_Line_Alloc_ID);
@@ -973,7 +974,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addSetColumnValue(I_C_Invoice_Candidate_Recompute.COLUMNNAME_AD_PInstance_ID, recomputeTag.getPinstanceId())
 				.execute();
 
-		Loggables.get().withLogger(logger, Level.DEBUG)
+		Loggables.withLogger(logger, Level.DEBUG)
 				.addLog("Marked {} {} records with recompute tag={}", count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag);
 
 		logger.debug("Query: {}", query);
@@ -1018,7 +1019,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final IQuery<I_C_Invoice_Candidate_Recompute> query = queryBuilder.create();
 		final int count = query.deleteDirectly();
 
-		Loggables.get().withLogger(logger, Level.DEBUG)
+		Loggables.withLogger(logger, Level.DEBUG)
 				.addLog("Deleted {} {} entries for tag={}, onlyInvoiceCandidateIds={}", count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag, onlyInvoiceCandidateIds);
 		logger.debug("Query: {}", query);
 
@@ -1181,7 +1182,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addSetColumnValue(I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_Override_ID, paymentTermId)
 				.execute();
 
-		Loggables.get().withLogger(logger, Level.INFO)
+		Loggables.withLogger(logger, Level.INFO)
 				.addLog("updateMissingPaymentTermIds - {} C_Invoice_Candidates were updated; selectionId={}, paymentTermId={}",
 						updateCount, selectionId, paymentTermId);
 
@@ -1204,7 +1205,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		if (selectionToUpdateId == null)
 		{
-			Loggables.get().withLogger(logger, Level.INFO)
+			Loggables.withLogger(logger, Level.INFO)
 					.addLog("updateMissingPaymentTermIds - No C_Invoice_Candidate needs to be updated; selectionId={}",
 							selectionId);
 		}
@@ -1231,7 +1232,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.first();
 		if (firstInvoiceCandidateWithPaymentTermId == null)
 		{
-			Loggables.get().withLogger(logger, Level.INFO)
+			Loggables.withLogger(logger, Level.INFO)
 					.addLog("updateMissingPaymentTermIds - No C_Invoice_Candidate selected by selectionId={} has a C_PaymentTerm_ID; nothing to update", selectionId);
 			return -1;
 		}
@@ -1265,7 +1266,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final PInstanceId selectionToUpdateId = selectionQueryBuilder.create().createSelection();
 		if (selectionToUpdateId == null)
 		{
-			Loggables.get().withLogger(logger, Level.INFO)
+			Loggables.withLogger(logger, Level.INFO)
 					.addLog("updateColumnForSelection - No C_Invoice_Candidate needs to be updated; selectionId={}, columnName={}; updateOnlyIfNull={}, newValue={}",
 							selectionId, columnName, updateOnlyIfNull, value);
 			return;
@@ -1283,7 +1284,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		final int updateCount = updateQuery.updateDirectly(updater);
 
-		Loggables.get().withLogger(logger, Level.INFO)
+		Loggables.withLogger(logger, Level.INFO)
 				.addLog("updateColumnForSelection - {} C_Invoice_Candidates were updated; selectionId={}, columnName={}; updateOnlyIfNull={}, newValue={}",
 						updateCount, selectionId, columnName, updateOnlyIfNull, value);
 
@@ -1386,14 +1387,14 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				}
 				final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(rs.getInt(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID));
 				final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(rs.getInt(I_C_Invoice_Candidate.COLUMNNAME_C_ConversionType_ID));
-				
+
 				HashMap<CurrencyConversionTypeId, BigDecimal> conversion2Amt = currencyId2conversion2Amt.get(currencyId);
 				if (conversion2Amt == null)
 				{
 					conversion2Amt = new HashMap<>();
 					currencyId2conversion2Amt.put(currencyId, conversion2Amt);
 				}
-				
+
 				conversion2Amt.put(conversionTypeId, netAmt);
 			}
 		}
@@ -1454,9 +1455,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				ic.getSchedulerResult(), ic.isError(), ic.getErrorMsg(), ic.getAD_Note_ID(), ic.getC_Invoice_Candidate_ID()
 		};
 
-		final boolean ignoreError = false;
 		final String trxName = InterfaceWrapperHelper.getTrxName(ic);
-		DB.executeUpdate(sql, sqlParams, ignoreError, trxName);
+		DB.executeUpdateEx(sql, sqlParams, trxName);
 	}
 
 	@Override

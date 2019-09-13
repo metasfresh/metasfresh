@@ -134,7 +134,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	@Override
 	public void createMissingCandidates(@NonNull final List<I_C_ILCandHandler> handlerRecords)
 	{
-		Services.get(ITrxManager.class).run(trxName -> createInvoiceCandidates(handlerRecords, InvoiceCandidateHandlerBL.NO_MODEL));
+		Services.get(ITrxManager.class).runInNewTrx(() -> createInvoiceCandidates(handlerRecords, InvoiceCandidateHandlerBL.NO_MODEL));
 	}
 
 	@Override
@@ -325,7 +325,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 				{
 					final String msg = "Caught {} while trying to create candidate for request={} with requestInitial={}";
 
-					Loggables.get().addLog(msg, e.getClass(), request, requestInitial);
+					Loggables.addLog(msg, e.getClass(), request, requestInitial);
 					logger.error(msg, e.getClass(), request, requestInitial, e);
 				}
 			}

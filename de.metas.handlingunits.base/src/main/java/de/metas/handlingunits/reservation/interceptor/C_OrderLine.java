@@ -30,7 +30,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@Component("de.metas.handlingunits.reservation.interceptor.C_OrderLine")
+@Component
 @Interceptor(I_C_OrderLine.class)
 public class C_OrderLine
 {

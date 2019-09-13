@@ -1,11 +1,11 @@
 
 package de.metas.handlingunits.inventory;
 
+import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.compiere.util.Util.coalesceSuppliers;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -406,7 +406,7 @@ public class InventoryRepository
 			final Quantity qtyInternalUse = from.getQtyInternalUse();
 
 			uomId = qtyInternalUse.getUomId();
-			qtyInternalUseBD = qtyInternalUse.getAsBigDecimal();
+			qtyInternalUseBD = qtyInternalUse.toBigDecimal();
 			qtyBookBD = BigDecimal.ZERO; // using ZERO instead of null because the column is mandatory in DB
 			qtyCountBD = BigDecimal.ZERO; // using ZERO instead of null because the column is mandatory in DB
 		}
@@ -417,8 +417,8 @@ public class InventoryRepository
 
 			uomId = Quantity.getCommonUomIdOfAll(qtyCount, qtyBook);
 			qtyInternalUseBD = null;
-			qtyBookBD = qtyBook.getAsBigDecimal();
-			qtyCountBD = qtyCount.getAsBigDecimal();
+			qtyBookBD = qtyBook.toBigDecimal();
+			qtyCountBD = qtyCount.toBigDecimal();
 		}
 
 		lineRecord.setQtyInternalUse(qtyInternalUseBD);
@@ -491,7 +491,7 @@ public class InventoryRepository
 			final Quantity qtyInternalUse = from.getQtyInternalUse();
 
 			uomId = qtyInternalUse.getUomId();
-			qtyInternalUseBD = qtyInternalUse.getAsBigDecimal();
+			qtyInternalUseBD = qtyInternalUse.toBigDecimal();
 			qtyBookBD = BigDecimal.ZERO; // using ZERO instead of null because the column is mandatory in DB
 			qtyCountBD = BigDecimal.ZERO; // using ZERO instead of null because the column is mandatory in DB
 		}
@@ -502,8 +502,8 @@ public class InventoryRepository
 
 			uomId = Quantity.getCommonUomIdOfAll(qtyCount, qtyBook);
 			qtyInternalUseBD = null;
-			qtyBookBD = qtyBook.getAsBigDecimal();
-			qtyCountBD = qtyCount.getAsBigDecimal();
+			qtyBookBD = qtyBook.toBigDecimal();
+			qtyCountBD = qtyCount.toBigDecimal();
 		}
 
 		lineRecord.setQtyInternalUse(qtyInternalUseBD);

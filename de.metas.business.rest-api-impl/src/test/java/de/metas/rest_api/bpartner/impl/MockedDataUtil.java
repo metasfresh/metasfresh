@@ -10,7 +10,6 @@ import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner.JsonRequestBPartnerBuilder;
 import de.metas.rest_api.bpartner.request.JsonRequestComposite;
 import de.metas.rest_api.bpartner.request.JsonRequestComposite.JsonRequestCompositeBuilder;
-import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert.JsonRequestContactUpsertBuilder;
@@ -19,6 +18,7 @@ import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert.JsonRequestLocationUpsertBuilder;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsertItem;
+import de.metas.rest_api.utils.IdentifierString;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -79,7 +79,7 @@ public class MockedDataUtil
 				bPartner.externalId(bpartnerIdentifier.asJsonExternalId());
 				break;
 			case VALUE:
-				bPartner.code(bpartnerIdentifier.getValue());
+				bPartner.code(bpartnerIdentifier.asValue());
 				bPartner.externalId(JsonExternalId.of("externalId"));
 				break;
 			default:

@@ -1,6 +1,7 @@
 package org.adempiere.warehouse;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -12,7 +13,6 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -41,8 +41,6 @@ import lombok.Value;
 @Value
 public class WarehouseId implements RepoIdAware
 {
-	int repoId;
-
 	@JsonCreator
 	public static WarehouseId ofRepoId(final int repoId)
 	{
@@ -72,9 +70,11 @@ public class WarehouseId implements RepoIdAware
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	int repoId;
+
 	private WarehouseId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "warehouseId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "M_Warehouse_ID");
 	}
 
 	@Override
@@ -82,5 +82,10 @@ public class WarehouseId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static boolean equals(final WarehouseId id1, final WarehouseId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

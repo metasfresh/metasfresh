@@ -26,6 +26,7 @@ import java.util.Collection;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.warehouse.LocatorId;
@@ -64,6 +65,8 @@ public interface IWarehouseDAO extends ISingletonService
 	 */
 	boolean isDocTypeAllowed(WarehouseId warehouseId, final String docBaseType);
 
+	WarehouseId getWarehouseIdByValue(String value);
+
 	@Deprecated
 	WarehouseId getWarehouseIdByLocatorRepoId(int locatorId);
 
@@ -78,7 +81,7 @@ public interface IWarehouseDAO extends ISingletonService
 	I_M_Locator getLocatorById(final LocatorId locatorId);
 
 	<T extends I_M_Locator> T getLocatorById(final LocatorId locatorId, Class<T> modelClass);
-	
+
 	<T extends I_M_Locator> T getLocatorByIdInTrx(LocatorId locatorId, Class<T> modelClass);
 
 	List<I_M_Locator> getLocators(WarehouseId warehouseId);
@@ -111,6 +114,8 @@ public interface IWarehouseDAO extends ISingletonService
 
 	OrgId retrieveOrgIdByLocatorId(int locatorId);
 
+	LocatorId createOrUpdateLocator(CreateOrUpdateLocatorRequest request);
+
 	LocatorId retrieveLocatorIdByValueAndWarehouseId(String locatorValue, WarehouseId warehouseId);
 
 	I_M_Locator getOrCreateLocatorByCoordinates(WarehouseId warehouseId, String value, String x, String y, String z);
@@ -118,4 +123,19 @@ public interface IWarehouseDAO extends ISingletonService
 	LocatorId createDefaultLocator(WarehouseId warehouseId);
 
 	WarehouseType getWarehouseTypeById(WarehouseTypeId id);
+
+	/**
+	 * Retrieve the warehouse marked as IsIssueWarehouse; There should be one and only one entry of this kind (unique index).
+	 */
+	I_M_Warehouse retrieveWarehouseForIssuesOrNull(Properties ctx);
+
+	/**
+	 * Same as {@link #retrieveWarehouseForIssuesOrNull(Properties)} but it will fail if no warehouse found.
+	 */
+	I_M_Warehouse retrieveWarehouseForIssues(Properties ctx);
+
+	/**
+	 * Retrieve the warehouse marked as IsQuarantineWarehouse.
+	 */
+	org.adempiere.warehouse.model.I_M_Warehouse retrieveQuarantineWarehouseOrNull();
 }

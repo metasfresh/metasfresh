@@ -383,7 +383,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 		final IQualityInspectionOrder qualityInspectionOrder = _materialTrackingDocuments.getQualityInspectionOrderOrNull();
 		// if qualityInspectionOrder was null, we shouldn't be here
-		Check.assumeNotNull(qualityInspectionOrder, "the IQualityInspectionOrder of IMAterialTrackingDocuments {} are not null", _materialTrackingDocuments);
+		Check.assumeNotNull(qualityInspectionOrder, "The IQualityInspectionOrder of IMAterialTrackingDocuments may not be null; materialTrackingDocuments={}", _materialTrackingDocuments);
 
 		final IQualityInspectionLinesCollection qualityInspectionLines = getQualityInspectionLinesCollection();
 		final IQualityInspectionLine producedWithoutByProducts = qualityInspectionLines.getByType(QualityInspectionLineType.ProducedTotalWithoutByProducts);
@@ -446,7 +446,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		final QualityInvoiceLine invoicableDetailLineOverride = createDetailForSingleRegularOrder(
 				overallRawUOM,
 				huInfo,
-				invoiceableLine.getQty().getAsBigDecimal(),
+				invoiceableLine.getQty().toBigDecimal(),
 				labelToUse);
 		invoicableDetailLineOverride.setDisplayed(displayRegularOrderData);
 
@@ -556,7 +556,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 			final QualityInvoiceLine invoicableDetailLineOverride = createDetailForSingleRegularOrder(
 					overallRawUOM,
 					huInfo,
-					invoiceableLine.getQty().getAsBigDecimal(),
+					invoiceableLine.getQty().toBigDecimal(),
 					labelToUse);
 			invoicableDetailLineOverride.setDisplayed(displayRegularOrderData);
 
@@ -1026,7 +1026,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 	 * Creates and returns a single QualityInvoiceLine that references the given <code>productionOrder</code>.
 	 * <p>
 	 * Note: we also return a line if there is no QualityAdjustment to be invoiced, in order to keep track of every single regular PP_Order.
-	 *
+	 * TODO cleanup javadoc
 	 * @param productionOrder
 	 * @param overallAvgProducedQtyPerTU
 	 * @param labelToUse
@@ -1039,7 +1039,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 			final String labelToUse)
 	{
 		//
-		// Extract parameters from regular manufacturing norder
+		// Extract parameters from regular manufacturing order
 		final IQualityInspectionLinesCollection qualityInspectionLines = getQualityInspectionLinesCollection();
 
 		final IProductionMaterial currentRawProductionMaterial = productionOrder.getRawProductionMaterial();
@@ -1144,7 +1144,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		final IEditablePricingContext pricingContext = pricingContextInitial.copy();
 
 		pricingContext.setProductId(line.getProductId());
-		pricingContext.setQty(line.getQty().getAsBigDecimal());
+		pricingContext.setQty(line.getQty().toBigDecimal());
 		pricingContext.setUomId(line.getQty().getUomId());
 
 		return pricingContext;
@@ -1207,7 +1207,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 		final CurrencyPrecision pricePrecision = pricingResult.getPrecision();
 
-		final BigDecimal netAmt = pricePrecision.round(price.multiply(qtyInPricingUom.getAsBigDecimal()));
+		final BigDecimal netAmt = pricePrecision.round(price.multiply(qtyInPricingUom.toBigDecimal()));
 		return netAmt;
 	}
 

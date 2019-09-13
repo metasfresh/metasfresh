@@ -80,7 +80,7 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 		}
 		else
 		{
-			qty = capacity.getCapacityQty();
+			qty = capacity.toBigDecimal();
 		}
 
 		return Util.same(Capacity.DEFAULT, qty);

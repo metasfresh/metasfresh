@@ -103,7 +103,7 @@ public class Fresh_QtyOnHand
 		final AbstractStockEstimateEvent
 		event = StockEstimateCreatedEvent.builder()
 				.date(TimeUtil.asInstant(qtyOnHandRecord.getDateDoc()))
-				.eventDescriptor(EventDescriptor.createNew(line))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(line.getAD_Client_ID(), line.getAD_Org_ID()))
 				.plantId(line.getPP_Plant_ID())
 				.productDescriptor(productDescriptor)
 				.quantity(line.getQtyCount())
@@ -119,7 +119,7 @@ public class Fresh_QtyOnHand
 
 		final AbstractStockEstimateEvent event = StockEstimateDeletedEvent.builder()
 				.date(TimeUtil.asInstant(qtyOnHandRecord.getDateDoc()))
-				.eventDescriptor(EventDescriptor.createNew(line))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(line.getAD_Client_ID(), line.getAD_Org_ID()))
 				.plantId(line.getPP_Plant_ID())
 				.productDescriptor(productDescriptor)
 				.quantity(line.getQtyCount())

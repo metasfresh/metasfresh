@@ -63,23 +63,19 @@ public interface XmlService
 		public static class ServiceMod
 		{
 			@NonNull
-			BigDecimal externalFactor;
-
-			@NonNull
 			BigDecimal amount;
 		}
 
 		@Builder
 		public ServiceModWithSelector(
 				@NonNull final Integer recordId,
-				@Nullable final BigDecimal externalFactor,
 				@Nullable final BigDecimal amount)
 		{
 			this.recordId = recordId;
 
-			if (externalFactor != null && amount != null)
+			if (amount != null)
 			{
-				this.serviceMod = new ServiceMod(externalFactor, amount);
+				this.serviceMod = new ServiceMod(amount);
 			}
 			else
 			{

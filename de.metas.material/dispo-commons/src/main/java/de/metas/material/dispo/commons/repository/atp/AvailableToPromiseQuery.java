@@ -8,6 +8,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -58,7 +59,7 @@ public class AvailableToPromiseQuery
 				.build();
 	}
 
-	ImmutableSet<Integer> warehouseIds;
+	ImmutableSet<WarehouseId> warehouseIds;
 
 	/** optional; if null, then "now" is used */
 	ZonedDateTime date;
@@ -70,7 +71,7 @@ public class AvailableToPromiseQuery
 
 	@Builder(toBuilder = true)
 	private AvailableToPromiseQuery(
-			@Singular final Set<Integer> warehouseIds,
+			@Singular final Set<WarehouseId> warehouseIds,
 			@Nullable final ZonedDateTime date,
 			@Singular final List<Integer> productIds,
 			@Singular final List<AttributesKey> storageAttributesKeys,

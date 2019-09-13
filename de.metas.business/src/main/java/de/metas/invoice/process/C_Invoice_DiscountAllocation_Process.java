@@ -118,7 +118,7 @@ public class C_Invoice_DiscountAllocation_Process extends JavaProcess
 					? invoiceOpenAmt
 					: invoiceOpenAmt.negate();
 
-			trxManager.run(new TrxRunnableAdapter()
+			trxManager.runInNewTrx(new TrxRunnableAdapter()
 			{
 				@Override
 				public void run(final String localTrxName) throws Exception

@@ -92,7 +92,7 @@ public final class ShipmentScheduleDeliveryDayHandler extends DeliveryDayHandler
 		deliveryDayAlloc.setQtyDelivered(qtyDelivered);
 
 		final Quantity qtyToDeliver = shipmentScheduleBL.getQtyToDeliver(sched);
-		deliveryDayAlloc.setQtyToDeliver(qtyToDeliver.getAsBigDecimal());
+		deliveryDayAlloc.setQtyToDeliver(qtyToDeliver.toBigDecimal());
 	}
 
 	/**

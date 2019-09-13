@@ -79,10 +79,6 @@ public interface IShipmentScheduleHandlerBL extends ISingletonService
 
 	/**
 	 * Invokes all registered {@link ShipmentScheduleHandler}s to create missing InOut candidates.
-	 *
-	 * @param ctx
-	 * @param trxName
-	 * @return
 	 */
 	List<I_M_ShipmentSchedule> createMissingCandidates(Properties ctx, String trxName);
 

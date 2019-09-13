@@ -102,7 +102,7 @@ public class InvoiceToExportFactory
 		}
 		catch (final InvoiceNotExportableException e)
 		{
-			Loggables.get().addLog("InvoiceToExportFactory - unable to export InvoiceId={}: Message={}", id, e.getMessage());
+			Loggables.addLog("InvoiceToExportFactory - unable to export InvoiceId={}: Message={}", id, e.getMessage());
 			return Optional.empty();
 		}
 	}

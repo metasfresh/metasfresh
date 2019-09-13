@@ -556,7 +556,7 @@ public final class Msg
 				}
 				else
 				{
-					s_log.warn("Unknow element field {} in {}", display, columnName, new Exception());
+					s_log.warn("Unknow element field {} in {}", display, columnName);
 				}
 				elementName = columnName.substring(0, idx);
 			}

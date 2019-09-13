@@ -60,7 +60,7 @@ public abstract class AbstractTestQualityDiscountPercentOverride extends Abstrac
 				.setInstanceName("ic1")
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(1)
-				.setQty(100)
+				.setQtyOrdered(100)
 				.setSOTrx(false)
 				.setOrderDocNo("order1")
 				.setOrderLineDescription("orderline1_1")

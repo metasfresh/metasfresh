@@ -171,7 +171,7 @@ public class JavaClassTypeBL implements IJavaClassTypeBL
 				existingRecord.setIsActive(true);
 				existingRecord.setIsInterface(clazz.isInterface());
 				InterfaceWrapperHelper.save(existingRecord);
-				Loggables.get().addLog(
+				Loggables.addLog(
 						"Reactived AD_JavaClass record {} for AD_JavaClass_Type {} and class {}",
 						existingRecord, javaClassType, existingRecord.getClassname());
 			}
@@ -187,7 +187,7 @@ public class JavaClassTypeBL implements IJavaClassTypeBL
 				newJavaClassRecord.setIsInterface(clazz.isInterface());
 				InterfaceWrapperHelper.save(newJavaClassRecord);
 
-				Loggables.get().addLog(
+				Loggables.addLog(
 						"Created new AD_JavaClass record {} for AD_JavaClass_Type {} and class {}",
 						newJavaClassRecord, javaClassType, clazzName);
 			}
@@ -199,7 +199,7 @@ public class JavaClassTypeBL implements IJavaClassTypeBL
 		{
 			staleClassRecord.setIsActive(false);
 			InterfaceWrapperHelper.save(staleClassRecord);
-			Loggables.get().addLog(
+			Loggables.addLog(
 					"Deactived AD_JavaClass record {} for AD_JavaClass_Type {} and class {}",
 					staleClassRecord, javaClassType, staleClassRecord.getClassname());
 		}

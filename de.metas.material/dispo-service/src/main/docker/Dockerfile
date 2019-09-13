@@ -19,7 +19,7 @@ RUN apt update \
     && apt -y autoremove \
     && apt -y autoclean
 
-COPY ./metasfresh-material-dispo-service.jar /opt/metasfresh/metasfresh-material-dispo/metasfresh-material-dispo.jar
+COPY ./metasfresh-material-dispo-service-standalone.jar /opt/metasfresh/metasfresh-material-dispo/metasfresh-material-dispo.jar
 
 # Explode the uber jar to make it easier to work with the docker image; 
 # e.g. with the exploded uber jar, we can later copy or overwrite config files into the docker image that change the applications behavior.

@@ -37,7 +37,6 @@ import de.metas.product.ProductId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
-import de.metas.util.NullLoggable;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
@@ -204,7 +203,7 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 	private void createNotice(final ProductId productId, final String msg)
 	{
 		final ILoggable loggable = Loggables.get();
-		if (NullLoggable.isNull(loggable))
+		if (Loggables.isNull(loggable))
 		{
 			return;
 		}

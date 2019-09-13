@@ -38,7 +38,7 @@ public class SequenceCheckHouseKeepingTask implements IStartupHouseKeepingTask
 	{
 		// #1124: checking native sequences is sufficient and takes less time than also checking AD_Sequence records.
 		DB.executeFunctionCallEx(ITrx.TRXNAME_None, "select dba_seq_check_native()", new Object[0]);
-		Loggables.get().addLog("Called the DB function dba_seq_check_native() to ensure that the native sequences are OK");
+		Loggables.addLog("Called the DB function dba_seq_check_native() to ensure that the native sequences are OK");
 	}
 
 }

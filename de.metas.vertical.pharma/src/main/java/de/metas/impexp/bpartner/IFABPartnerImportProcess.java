@@ -7,10 +7,11 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult;
 import de.metas.vertical.pharma.model.I_C_BPartner;
 import de.metas.vertical.pharma.model.I_I_Pharma_BPartner;
 import de.metas.vertical.pharma.model.X_I_Pharma_BPartner;
@@ -39,7 +40,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class IFABPartnerImportProcess extends AbstractImportProcess<I_I_Pharma_BPartner>
+public class IFABPartnerImportProcess extends SimpleImportProcessTemplate<I_I_Pharma_BPartner>
 {
 	private final String DEACTIVATE_OPERATION_CODE = "2";
 

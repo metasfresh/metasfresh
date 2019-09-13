@@ -80,7 +80,7 @@ public class ShipmentScheduleDeletedHandler implements MaterialEventHandler<Ship
 		final Candidate candidate = candidateRepository.retrieveLatestMatchOrNull(candidatesQuery);
 		if (candidate == null)
 		{
-			Loggables.get().addLog("Found no records to change for shipmentScheduleId={}", event.getShipmentScheduleId());
+			Loggables.addLog("Found no records to change for shipmentScheduleId={}", event.getShipmentScheduleId());
 			return;
 		}
 

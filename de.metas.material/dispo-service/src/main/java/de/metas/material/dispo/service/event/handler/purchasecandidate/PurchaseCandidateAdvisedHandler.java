@@ -102,8 +102,7 @@ public final class PurchaseCandidateAdvisedHandler
 		final Candidate supplyCandidate = Candidate.builder()
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PURCHASE)
-				.clientId(event.getEventDescriptor().getClientId())
-				.orgId(event.getEventDescriptor().getOrgId())
+				.clientAndOrgId(event.getEventDescriptor().getClientAndOrgId())
 				//.status(CandidateStatus.doc_planned)
 				.materialDescriptor(materialDescriptor)
 				.businessCaseDetail(purchaseDetail)
@@ -113,7 +112,7 @@ public final class PurchaseCandidateAdvisedHandler
 		final Candidate createdCandidate = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
 		if (event.isDirectlyCreatePurchaseCandidate())
 		{
-			requestMaterialOrderService.requestMaterialOrder(createdCandidate.getGroupId());
+			requestMaterialOrderService.requestMaterialOrderForCandidates(createdCandidate.getGroupId());
 		}
 	}
 }

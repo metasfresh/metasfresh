@@ -135,7 +135,7 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 
 		final BigDecimal amtToWriteOff = paymentOpenAmt;
 
-		trxManager.run(new TrxRunnableAdapter()
+		trxManager.runInNewTrx(new TrxRunnableAdapter()
 		{
 			@Override
 			public void run(String localTrxName) throws Exception

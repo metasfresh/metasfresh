@@ -346,7 +346,7 @@ import lombok.NonNull;
 		final Duration countDuration = Duration.ofNanos(stopwatch.stop().elapsed(TimeUnit.NANOSECONDS));
 		query.setRecordCount(count, countDuration);
 
-		Loggables.get().addLog("GenericZoomInfoDescriptor {} took {}", zoomInfoDescriptor, countDuration);
+		Loggables.addLog("GenericZoomInfoDescriptor {} took {}", zoomInfoDescriptor, countDuration);
 	}
 
 	private static final class GenericZoomInfoDescriptor

@@ -1,5 +1,7 @@
 package de.metas.inout.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -51,7 +53,7 @@ public class MaterialBalanceConfigDAO implements IMaterialBalanceConfigDAO
 		final IQueryBuilder<I_M_Material_Balance_Config> queryBuilder = queryBL.createQueryBuilder(I_M_Material_Balance_Config.class, line);
 
 		// product id
-		final I_M_Product product = line.getM_Product();
+		final I_M_Product product = loadOutOfTrx(line.getM_Product_ID(), I_M_Product.class);
 		queryBuilder.addInArrayOrAllFilter(I_M_Material_Balance_Config.COLUMNNAME_M_Product_ID, product.getM_Product_ID(), null);
 
 		// product category

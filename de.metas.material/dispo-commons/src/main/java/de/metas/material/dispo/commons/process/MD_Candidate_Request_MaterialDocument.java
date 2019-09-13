@@ -3,12 +3,13 @@ package de.metas.material.dispo.commons.process;
 import java.util.function.Predicate;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -38,7 +39,7 @@ import de.metas.util.Services;
  */
 
 /**
- * Invokes {@link RequestMaterialOrderService#requestMaterialOrder(Integer)} so that some other part of the system should create a production order for the selected {@link I_MD_Candidate}(s).
+ * Invokes {@link RequestMaterialOrderService#requestMaterialOrderForCandidates(Integer)} so that some other part of the system should create a production order for the selected {@link I_MD_Candidate}(s).
  *
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -47,7 +48,7 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 {
 	private static final String MSG_MISSING_PRODUCTION_OR_DISTRIBUTRION_RECORDS = "de.metas.material.dispo.MD_Candidate_Request_MaterialDocument_No_Matching_Records_Selected";
 
-	private final RequestMaterialOrderService service = Adempiere.getBean(RequestMaterialOrderService.class);
+	private final RequestMaterialOrderService service = SpringContextHolder.instance.getBean(RequestMaterialOrderService.class);
 
 	private final Predicate<I_MD_Candidate> hasSupportedBusinessCase = r -> {
 
@@ -77,10 +78,10 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 				.stream()
 				.filter(hasSupportedBusinessCase)
 				.filter(statusIsDocPlanned)
-				.map(r -> r.getMD_Candidate_GroupId())
+				.map(r -> MaterialDispoGroupId.ofInt(r.getMD_Candidate_GroupId()))
 				.distinct()
 				.peek(groupId -> addLog("Calling {}.requestOrder() for groupId={}", RequestMaterialOrderService.class.getSimpleName(), groupId))
-				.forEach(service::requestMaterialOrder);
+				.forEach(service::requestMaterialOrderForCandidates);
 
 		return MSG_OK;
 	}

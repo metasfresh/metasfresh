@@ -99,7 +99,7 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 		{
 			final I_C_DunningDoc_Line_Source source = sources.next();
 
-			trxManager.run(new TrxRunnable2()
+			trxManager.runInNewTrx(new TrxRunnable2()
 			{
 				@Override
 				public void run(final String localTrxName)
@@ -123,7 +123,7 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 					logger.error(errmsg, e);
 
 					// notify monitor too about this issue
-					Loggables.get().addLog(errmsg);
+					Loggables.addLog(errmsg);
 
 					return true; // rollback
 				}

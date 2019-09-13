@@ -177,11 +177,11 @@ public class CustomsInvoiceRepository
 		record.setAD_Org_ID(orgId.getRepoId());
 
 		final Quantity quantity = line.getQuantity();
-		record.setInvoicedQty(quantity.getAsBigDecimal());
+		record.setInvoicedQty(quantity.toBigDecimal());
 		record.setC_UOM_ID(quantity.getUomId().getRepoId());
 
 		final Money lineNetAmt = line.getLineNetAmt();
-		record.setLineNetAmt(lineNetAmt.getAsBigDecimal());
+		record.setLineNetAmt(lineNetAmt.toBigDecimal());
 
 		final ProductId productId = line.getProductId();
 		record.setM_Product_ID(productId.getRepoId());

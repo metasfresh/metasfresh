@@ -129,7 +129,7 @@ import lombok.NonNull;
 		final ArrayList<IQualityInspectionOrder> result = new ArrayList<>();
 		for (final IQualityInspectionOrder order : allProductionOrders)
 		{
-			if (materialTrackingPPOrderDAO.isInvoiced(order.getPP_Order()))
+			if (materialTrackingPPOrderDAO.isPPOrderInvoicedForMaterialTracking(order.getPP_Order(), _materialTracking))
 			{
 				continue;
 			}

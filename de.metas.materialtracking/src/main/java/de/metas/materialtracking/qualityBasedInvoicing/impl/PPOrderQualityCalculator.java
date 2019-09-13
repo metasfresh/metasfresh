@@ -86,7 +86,7 @@ public class PPOrderQualityCalculator
 				continue;
 			}
 
-			Loggables.get().addLog("Processing PP_Order {0}", qiOrder.getPP_Order());
+			Loggables.addLog("Processing PP_Order {0}", qiOrder.getPP_Order());
 
 			//
 			// Update QM_QtyDeliveredPercOfRaw
@@ -169,13 +169,12 @@ public class PPOrderQualityCalculator
 	}
 
 	/**
-	 *
-	 * @param materialTracking
-	 * @param product
-	 * @param uomTo
 	 * @return quantity received (in <code>uomTo</code>) from linked material receipt lines
 	 */
-	private final BigDecimal retrieveQtyReceived(final I_M_Material_Tracking materialTracking, final I_M_Product product, final I_C_UOM uomTo)
+	private final BigDecimal retrieveQtyReceived(
+			@NonNull final I_M_Material_Tracking materialTracking,
+			@NonNull final I_M_Product product,
+			@NonNull final I_C_UOM uomTo)
 	{
 		// Services
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
@@ -323,8 +322,8 @@ public class PPOrderQualityCalculator
 				previousQtyDeliveredAvg = getQtyDeliveredAvg(previousProductionMaterial, qtyDelivered.getUOM());
 			}
 
-			final Quantity qtyDeliveredAvg = qtyDelivered.weightedAverage(previousQtyDeliveredAvg.getAsBigDecimal(), previousInspectionNumber);
-			productionMaterial.setQM_QtyDeliveredAvg(qtyDeliveredAvg.getAsBigDecimal());
+			final Quantity qtyDeliveredAvg = qtyDelivered.weightedAverage(previousQtyDeliveredAvg.toBigDecimal(), previousInspectionNumber);
+			productionMaterial.setQM_QtyDeliveredAvg(qtyDeliveredAvg.toBigDecimal());
 
 			save(productionMaterial);
 		}

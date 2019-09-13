@@ -68,6 +68,6 @@ public class PPOrderRequestedEvent implements MaterialEvent
 	public void validate()
 	{
 		// we need the PPOrder's MaterialDispoGroupId to map the order that was created to its respective candidates
-		Check.errorIf(ppOrder.getMaterialDispoGroupId() <= 0, "The ppOrder of a PPOrderRequestedEvent needs to have a group id");
+		Check.errorIf(ppOrder.getMaterialDispoGroupId() == null, "The ppOrder of a PPOrderRequestedEvent needs to have a group id");
 	}
 }

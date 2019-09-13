@@ -14,7 +14,6 @@ import javax.swing.SwingWorker;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.MetasfreshGlassPane;
 import org.compiere.apps.AEnv;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -22,6 +21,7 @@ import com.google.common.base.MoreObjects;
 import de.metas.adempiere.form.IClientUIAsyncInvoker;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.lang.CoalesceUtil;
 
 /*
  * #%L
@@ -145,7 +145,7 @@ class SwingClientUIAsyncInvoker implements IClientUIAsyncInvoker
 		}
 
 		@Override
-		public final InitialValueType getInitialValue()
+		public InitialValueType getInitialValue()
 		{
 			return initialValue;
 		}
@@ -194,7 +194,7 @@ class SwingClientUIAsyncInvoker implements IClientUIAsyncInvoker
 			return _waitingMessage;
 		}
 
-		public final void prepareAndExecute()
+		public void prepareAndExecute()
 		{
 			if (SwingUtilities.isEventDispatchThread())
 			{
@@ -205,7 +205,7 @@ class SwingClientUIAsyncInvoker implements IClientUIAsyncInvoker
 			SwingUtilities.invokeLater(() -> prepareAndExecuteInUI());
 		}
 
-		private final void prepareAndExecuteInUI()
+		private void prepareAndExecuteInUI()
 		{
 			logger.debug("Preparing and executing in UI thread: {}", this);
 
@@ -339,7 +339,7 @@ class SwingClientUIAsyncInvoker implements IClientUIAsyncInvoker
 			}
 			catch (final ExecutionException ex)
 			{
-				final Throwable cause = Util.coalesce(ex.getCause(), ex);
+				final Throwable cause = CoalesceUtil.coalesce(ex.getCause(), ex);
 				handleExceptionInUI(cause);
 			}
 			finally
@@ -377,7 +377,7 @@ class SwingClientUIAsyncInvoker implements IClientUIAsyncInvoker
 			publish(partialResult);
 		}
 
-		private final RootPaneContainer findRootPaneContainer(@Nullable final Component comp)
+		private RootPaneContainer findRootPaneContainer(@Nullable final Component comp)
 		{
 			final RootPaneContainer rootPaneContainer = AEnv.getParentComponent(comp, RootPaneContainer.class);
 			if (rootPaneContainer == null)
@@ -391,7 +391,7 @@ class SwingClientUIAsyncInvoker implements IClientUIAsyncInvoker
 			return rootPaneContainer;
 		}
 
-		private final Window findWindow(@Nullable final RootPaneContainer rootPaneContainer)
+		private Window findWindow(@Nullable final RootPaneContainer rootPaneContainer)
 		{
 			final Component comp;
 			if (rootPaneContainer == null)

@@ -50,7 +50,7 @@ import lombok.NonNull;
  * #L%
  */
 @Interceptor(I_M_Inventory.class)
-@Component("de.metas.handlingunits.inventory.interceptor.M_Inventory")
+@Component
 public class M_Inventory
 {
 	private InventoryLineRecordService inventoryLineRecordService;

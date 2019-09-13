@@ -11,11 +11,12 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
-import com.jgoodies.common.base.Objects;
 
-import de.metas.bpartner.composite.BPartnerCompositeRepository.NextPageQuery;
-import de.metas.bpartner.composite.BPartnerCompositeRepository.SinceQuery;
+import de.metas.bpartner.GLN;
+import de.metas.bpartner.composite.repository.NextPageQuery;
+import de.metas.bpartner.composite.repository.SinceQuery;
 import de.metas.dao.selection.pagination.QueryResultPage;
+import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.JsonPagingDescriptor;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverService;
@@ -27,6 +28,7 @@ import de.metas.rest_api.bpartner.response.JsonResponseContactList;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonConverters;
+import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -53,7 +55,7 @@ import lombok.NonNull;
  */
 
 @Service
-public class BPartnerEndpointService
+class BPartnerEndpointService
 {
 	public static final String SYSCFG_BPARTNER_PAGE_SIZE = "de.metas.rest_api.bpartner.PageSize";
 	private final JsonRetrieverService jsonRetriever;
@@ -63,23 +65,21 @@ public class BPartnerEndpointService
 		this.jsonRetriever = jsonServiceFactory.createRetriever(); // we can have one long-term-instance
 	}
 
-	public Optional<JsonResponseComposite> retrieveBPartner(@NonNull final String bpartnerIdentifierStr)
+	public Optional<JsonResponseComposite> retrieveBPartner(@NonNull final IdentifierString bpartnerIdentifier)
 	{
-		final Optional<JsonResponseComposite> optBpartnerComposite = jsonRetriever.retrieveJsonBPartnerComposite(bpartnerIdentifierStr);
+		final Optional<JsonResponseComposite> optBpartnerComposite = jsonRetriever.getJsonBPartnerComposite(bpartnerIdentifier);
 		return optBpartnerComposite;
 	}
 
 	public Optional<JsonResponseLocation> retrieveBPartnerLocation(
-			@NonNull final String bpartnerIdentifierStr,
-			@NonNull final String locationIdentifierStr)
+			@NonNull final IdentifierString bpartnerIdentifier,
+			@NonNull final IdentifierString locationIdentifier)
 	{
-		final Optional<JsonResponseComposite> optBpartnerComposite = jsonRetriever.retrieveJsonBPartnerComposite(bpartnerIdentifierStr);
+		final Optional<JsonResponseComposite> optBpartnerComposite = jsonRetriever.getJsonBPartnerComposite(bpartnerIdentifier);
 		if (!optBpartnerComposite.isPresent())
 		{
 			return Optional.empty();
 		}
-
-		final IdentifierString locationIdentifier = IdentifierString.of(locationIdentifierStr);
 
 		final Optional<JsonResponseLocation> result = optBpartnerComposite.get()
 				.getLocations()
@@ -96,11 +96,11 @@ public class BPartnerEndpointService
 		switch (locationIdentifier.getType())
 		{
 			case EXTERNAL_ID:
-				return Objects.equals(jsonBPartnerLocation.getExternalId(), locationIdentifier.asJsonExternalId());
+				return JsonExternalIds.equals(jsonBPartnerLocation.getExternalId(), locationIdentifier.asJsonExternalId());
 			case GLN:
-				return Objects.equals(jsonBPartnerLocation.getGln(), locationIdentifier.getValue());
+				return GLN.equals(GLN.ofNullableString(jsonBPartnerLocation.getGln()), locationIdentifier.asGLN());
 			case METASFRESH_ID:
-				return Objects.equals(locationIdentifier.asMetasfreshId(), jsonBPartnerLocation.getMetasfreshId());
+				return MetasfreshId.equals(locationIdentifier.asMetasfreshId(), jsonBPartnerLocation.getMetasfreshId());
 			default:
 				// note: currently, "val-" is not supported with bpartner locations
 				throw new AdempiereException("Unexpected type=" + locationIdentifier.getType());
@@ -108,37 +108,32 @@ public class BPartnerEndpointService
 	}
 
 	public Optional<JsonResponseContact> retrieveBPartnerContact(
-			@NonNull final String bpartnerIdentifierStr,
-			@NonNull final String contactIdentifierStr)
+			@NonNull final IdentifierString bpartnerIdentifier,
+			@NonNull final IdentifierString contactIdentifier)
 	{
-		final Optional<JsonResponseComposite> optBPartnerComposite = jsonRetriever.retrieveJsonBPartnerComposite(bpartnerIdentifierStr);
+		final Optional<JsonResponseComposite> optBPartnerComposite = jsonRetriever.getJsonBPartnerComposite(bpartnerIdentifier);
 		if (!optBPartnerComposite.isPresent())
 		{
 			return Optional.empty();
 		}
 
-		final IdentifierString contactIdentifier = IdentifierString.of(contactIdentifierStr);
-
-		final Optional<JsonResponseContact> result = optBPartnerComposite.get()
+		return optBPartnerComposite.get()
 				.getContacts()
 				.stream()
 				.filter(l -> isJsonContactMatches(l, contactIdentifier))
 				.findAny();
-		return result;
 	}
 
-	private boolean isJsonContactMatches(
+	private static boolean isJsonContactMatches(
 			@NonNull final JsonResponseContact jsonContact,
 			@NonNull final IdentifierString contactIdentifier)
 	{
 		switch (contactIdentifier.getType())
 		{
 			case EXTERNAL_ID:
-				return Objects.equals(jsonContact.getExternalId(), contactIdentifier.asJsonExternalId());
+				return JsonExternalId.equals(jsonContact.getExternalId(), contactIdentifier.asJsonExternalId());
 			case METASFRESH_ID:
-				final MetasfreshId contactIdentifierMetasfreshId = contactIdentifier.asMetasfreshId();
-				final MetasfreshId contactMetasfreshId = jsonContact.getMetasfreshId();
-				return Objects.equals(contactIdentifierMetasfreshId, contactMetasfreshId);
+				return MetasfreshId.equals(jsonContact.getMetasfreshId(), contactIdentifier.asMetasfreshId());
 			default:
 				// note: currently, "val-" and GLN are supported with contacts
 				throw new AdempiereException("Unexpected type=" + contactIdentifier.getType());
@@ -155,25 +150,15 @@ public class BPartnerEndpointService
 
 		final NextPageQuery nextPageQuery = NextPageQuery.anyEntityOrNull(nextPageId);
 
-		final Optional<QueryResultPage<JsonResponseComposite>> optionalPage = jsonRetriever.retrieveJsonBPartnerComposites(nextPageQuery, sinceQuery);
-		if (!optionalPage.isPresent())
+		final QueryResultPage<JsonResponseComposite> page = jsonRetriever.getJsonBPartnerComposites(nextPageQuery, sinceQuery).orElse(null);
+		if (page == null)
 		{
 			return Optional.empty();
 		}
 
-		final QueryResultPage<JsonResponseComposite> page = optionalPage.get();
-
-		final ImmutableList<JsonResponseComposite> jsonItems = page
-				.getItems()
-				.stream()
-				.collect(ImmutableList.toImmutableList());
-
+		final ImmutableList<JsonResponseComposite> jsonItems = page.getItems();
 		final JsonPagingDescriptor jsonPagingDescriptor = JsonConverters.createJsonPagingDescriptor(page);
-
-		final JsonResponseCompositeList result = JsonResponseCompositeList.builder()
-				.items(jsonItems)
-				.pagingDescriptor(jsonPagingDescriptor)
-				.build();
+		final JsonResponseCompositeList result = JsonResponseCompositeList.ok(jsonPagingDescriptor, jsonItems);
 
 		return Optional.of(result);
 	}
@@ -188,7 +173,7 @@ public class BPartnerEndpointService
 
 		final NextPageQuery nextPageQuery = NextPageQuery.onlyContactsOrNull(nextPageId);
 
-		final Optional<QueryResultPage<JsonResponseComposite>> optionalPage = jsonRetriever.retrieveJsonBPartnerComposites(nextPageQuery, sinceQuery);
+		final Optional<QueryResultPage<JsonResponseComposite>> optionalPage = jsonRetriever.getJsonBPartnerComposites(nextPageQuery, sinceQuery);
 		if (!optionalPage.isPresent())
 		{
 			return Optional.empty();
@@ -213,7 +198,7 @@ public class BPartnerEndpointService
 		return Optional.of(result);
 	}
 
-	private Instant extractInstant(@Nullable final Long epochMilli)
+	private static Instant extractInstant(@Nullable final Long epochMilli)
 	{
 		if (epochMilli == null || epochMilli <= 0)
 		{
@@ -231,8 +216,8 @@ public class BPartnerEndpointService
 				Env.getOrgId().getRepoId());
 	}
 
-	public Optional<JsonResponseContact> retrieveContact(@NonNull final String contactIdentifierStr)
+	public Optional<JsonResponseContact> retrieveContact(@NonNull final IdentifierString contactIdentifier)
 	{
-		return jsonRetriever.retrieveContact(contactIdentifierStr);
+		return jsonRetriever.getContact(contactIdentifier);
 	}
 }

@@ -51,7 +51,7 @@ import lombok.NonNull;
 	}, afterCommit = true)
 	public void addTraceEvent(@NonNull final I_M_Movement movement)
 	{
-		Services.get(ITrxManager.class).run(() -> addTraceEvent0(movement));
+		Services.get(ITrxManager.class).runInNewTrx(() -> addTraceEvent0(movement));
 	}
 
 	private void addTraceEvent0(@NonNull final I_M_Movement movement)

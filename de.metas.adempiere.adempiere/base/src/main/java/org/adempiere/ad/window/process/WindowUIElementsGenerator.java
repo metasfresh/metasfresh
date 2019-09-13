@@ -101,7 +101,7 @@ public final class WindowUIElementsGenerator
 
 	private final void log(final String msg, final Object... msgParameters)
 	{
-		Loggables.get().addLog(msg, msgParameters);
+		Loggables.addLog(msg, msgParameters);
 	}
 
 	public void generate(final I_AD_Window adWindow)

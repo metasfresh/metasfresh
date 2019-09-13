@@ -39,29 +39,27 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class SupplyRequiredEventCreator
 {
-	public SupplyRequiredEvent createSupplyRequiredEvent(
+	public static SupplyRequiredEvent createSupplyRequiredEvent(
 			@NonNull final Candidate demandCandidate,
 			@NonNull final BigDecimal requiredAdditionalQty)
 	{
 		verifyCandidateType(demandCandidate);
 
-		final SupplyRequiredDescriptor descriptor = createSupplyRequiredDescriptor(
-				demandCandidate, requiredAdditionalQty);
+		final SupplyRequiredDescriptor descriptor = createSupplyRequiredDescriptor(demandCandidate, requiredAdditionalQty);
 
-		final SupplyRequiredEvent materialDemandEvent = SupplyRequiredEvent.builder()
-				.supplyRequiredDescriptor(descriptor).build();
-
-		return materialDemandEvent;
+		return SupplyRequiredEvent.builder()
+				.supplyRequiredDescriptor(descriptor)
+				.build();
 	}
 
-	private void verifyCandidateType(final Candidate demandCandidate)
+	private static void verifyCandidateType(final Candidate demandCandidate)
 	{
 		final CandidateType candidateType = demandCandidate.getType();
 		Preconditions.checkArgument(candidateType == CandidateType.DEMAND || candidateType == CandidateType.STOCK_UP,
 				"Given parameter demandCandidate needs to have DEMAND or STOCK_UP as type; demandCandidate=%s", demandCandidate);
 	}
 
-	private SupplyRequiredDescriptor createSupplyRequiredDescriptor(
+	private static SupplyRequiredDescriptor createSupplyRequiredDescriptor(
 			@NonNull final Candidate demandCandidate,
 			@NonNull final BigDecimal requiredAdditionalQty)
 	{
@@ -83,13 +81,13 @@ public class SupplyRequiredEventCreator
 		return descriptorBuilder.build();
 	}
 
-	private SupplyRequiredDescriptorBuilder createAndInitSupplyRequiredDescriptor(
+	private static SupplyRequiredDescriptorBuilder createAndInitSupplyRequiredDescriptor(
 			@NonNull final Candidate candidate,
 			@NonNull final BigDecimal qty)
 	{
 		return SupplyRequiredDescriptor.builder()
 				.demandCandidateId(candidate.getId().getRepoId())
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(candidate.getClientId(), candidate.getOrgId()))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(candidate.getClientAndOrgId()))
 				.materialDescriptor(candidate.getMaterialDescriptor().withQuantity(qty));
 	}
 

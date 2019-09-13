@@ -74,11 +74,11 @@ public class HUWithExpiryDatesService
 			try
 			{
 				markExpiredUsingHuContext(huId, huContext);
-				Loggables.get().addLog("Successfully processed M_HU_ID={}", huId);
+				Loggables.addLog("Successfully processed M_HU_ID={}", huId);
 			}
 			catch (final AdempiereException ex)
 			{
-				Loggables.get().addLog("!!! Failed processing M_HU_ID={}: {} !!!", huId, ex.getLocalizedMessage());
+				Loggables.addLog("!!! Failed processing M_HU_ID={}: {} !!!", huId, ex.getLocalizedMessage());
 				logger.warn("Failed processing M_HU_ID={}. Skipped", huId, ex);
 			}
 		});

@@ -2,10 +2,9 @@ package de.metas.material.dispo.commons.repository.query;
 
 import javax.annotation.Nullable;
 
-import org.compiere.util.Util;
-
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.util.Check;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.Value;
 
@@ -70,7 +69,7 @@ public class PurchaseDetailsQuery
 		this.purchaseCandidateRepoId = purchaseCandidateRepoId;
 		this.receiptScheduleRepoId = receiptScheduleRepoId;
 
-		this.orderLineRepoIdMustBeNull = Util.coalesce(orderLineRepoIdMustBeNull, false);
+		this.orderLineRepoIdMustBeNull = CoalesceUtil.coalesce(orderLineRepoIdMustBeNull, false);
 
 		Check.errorIf(
 				purchaseCandidateRepoId <= 0 && receiptScheduleRepoId <= 0 && productPlanningRepoId <= 0,

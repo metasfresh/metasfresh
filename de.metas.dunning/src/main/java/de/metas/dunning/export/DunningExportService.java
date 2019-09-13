@@ -85,7 +85,7 @@ public class DunningExportService
 
 	private void exportDunning(@NonNull final DunningToExport dunningToExport)
 	{
-		final ILoggable loggable = Loggables.get().withLogger(logger, Level.DEBUG);
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 
 		final List<DunningExportClient> exportClients = dunningExportServiceRegistry.createExportClients(dunningToExport);
 		if (exportClients.isEmpty())

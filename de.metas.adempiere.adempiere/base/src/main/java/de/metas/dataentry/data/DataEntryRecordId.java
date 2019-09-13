@@ -48,7 +48,7 @@ public class DataEntryRecordId implements RepoIdAware
 
 	public DataEntryRecordId(final int repoId)
 	{
-		this.repoId = assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = assumeGreaterThanZero(repoId, "DataEntry_Record_ID");
 	}
 
 	@Override

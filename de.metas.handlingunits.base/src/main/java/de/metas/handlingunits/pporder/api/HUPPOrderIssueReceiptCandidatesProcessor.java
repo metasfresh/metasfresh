@@ -251,7 +251,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		//
 		// Update candidate's qty to issue
 		// NOTE: in case of "IssueOnlyReceived" issue method the qty to issue is calculated just in time. We assume it's saved by caller
-		candidate.setQty(qtyToIssue.getAsBigDecimal());
+		candidate.setQty(qtyToIssue.toBigDecimal());
 		//
 		if (qtyToIssue.isZero())
 		{

@@ -481,7 +481,7 @@ public class FreshPackingMd
 		final BPartnerId bpartnerId = item.getCustomerId();
 		keyBuilder.bpartnerId(bpartnerId.getRepoId());
 
-		final BigDecimal qtyToDeliver = item.getQtyToDeliver().getAsBigDecimal();
+		final BigDecimal qtyToDeliver = item.getQtyToDeliver().toBigDecimal();
 
 		final BPartnerLocationId bpartnerLocationId = item.getCustomerLocationId();
 		final String bPartnerAddress = item.getCustomerAddress();

@@ -296,7 +296,7 @@ public class ReceiptScheduleHUGenerator
 		// Update receipt schedule's LU/TU configuration
 		if (isUpdateReceiptScheduleDefaultConfiguration())
 		{
-			trxManager.run(() -> {
+			trxManager.runInNewTrx(() -> {
 				final I_M_HU_LUTU_Configuration lutuConfiguration = getM_HU_LUTU_Configuration();
 				getLUTUConfigurationManager().setCurrentLUTUConfigurationAndSave(lutuConfiguration);
 			});

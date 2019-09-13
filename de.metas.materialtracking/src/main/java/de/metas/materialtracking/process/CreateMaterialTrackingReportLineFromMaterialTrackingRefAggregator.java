@@ -79,7 +79,7 @@ public class CreateMaterialTrackingReportLineFromMaterialTrackingRefAggregator e
 		}
 		catch (final Throwable t)
 		{
-			Loggables.get().addLog("@Error@: " + t);
+			Loggables.addLog("@Error@: " + t);
 			throw AdempiereException.wrapIfNeeded(t);
 		}
 
