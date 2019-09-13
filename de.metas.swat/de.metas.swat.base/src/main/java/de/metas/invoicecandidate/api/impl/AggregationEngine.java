@@ -54,10 +54,10 @@ import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.aggregation.api.AggregationId;
+import de.metas.aggregation.api.AggregationKey;
 import de.metas.aggregation.api.IAggregationFactory;
-import de.metas.aggregation.api.IAggregationKey;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
-import de.metas.aggregation.api.impl.AggregationKey;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -121,7 +121,7 @@ public final class AggregationEngine
 	/**
 	 * Map: HeaderAggregationKey to {@link InvoiceHeaderAndLineAggregators}
 	 */
-	private final Map<IAggregationKey, InvoiceHeaderAndLineAggregators> key2headerAndAggregators = new LinkedHashMap<>();
+	private final Map<AggregationKey, InvoiceHeaderAndLineAggregators> key2headerAndAggregators = new LinkedHashMap<>();
 
 	@Builder
 	private AggregationEngine(
@@ -204,9 +204,9 @@ public final class AggregationEngine
 		return this;
 	}
 
-	private IAggregationKey getHeaderAggregationKey(final I_C_Invoice_Candidate ic)
+	private AggregationKey getHeaderAggregationKey(final I_C_Invoice_Candidate ic)
 	{
-		IAggregationKey aggregationKey;
+		AggregationKey aggregationKey;
 		if (alwaysUseDefaultHeaderAggregationKeyBuilder)
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
@@ -220,7 +220,7 @@ public final class AggregationEngine
 		}
 		else
 		{
-			aggregationKey = new AggregationKey(ic.getHeaderAggregationKey(), ic.getHeaderAggregationKeyBuilder_ID());
+			aggregationKey = new AggregationKey(ic.getHeaderAggregationKey(), AggregationId.ofRepoIdOrNull(ic.getHeaderAggregationKeyBuilder_ID()));
 		}
 
 		//
@@ -251,9 +251,9 @@ public final class AggregationEngine
 		//
 		// Get and parse aggregation key
 		// => resolve last variables, right before invoicing
-		final IAggregationKey headerAggregationKey;
+		final AggregationKey headerAggregationKey;
 		{
-			final IAggregationKey headerAggregationKeyUnparsed = getHeaderAggregationKey(ic);
+			final AggregationKey headerAggregationKeyUnparsed = getHeaderAggregationKey(ic);
 			final AggregationKeyEvaluationContext evalCtx = AggregationKeyEvaluationContext.builder()
 					.invoiceCandidate(ic)
 					.inoutLine(icInOutLine)

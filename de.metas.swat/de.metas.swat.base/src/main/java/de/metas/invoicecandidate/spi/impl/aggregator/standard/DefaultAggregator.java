@@ -33,8 +33,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_InOutLine;
 
-import de.metas.aggregation.api.IAggregationKey;
-import de.metas.aggregation.api.impl.AggregationKey;
+import de.metas.aggregation.api.AggregationId;
+import de.metas.aggregation.api.AggregationKey;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
@@ -129,8 +129,8 @@ public class DefaultAggregator implements IAggregator
 			//
 			// Parse IC's LineAggregationKey
 			{
-				final int lineAggregationKeyBuilderId = ic.getLineAggregationKeyBuilder_ID();
-				final IAggregationKey lineAggregationKeyUnparsed = new AggregationKey(lineAggregationKeyStr, lineAggregationKeyBuilderId);
+				final AggregationId lineAggregationKeyBuilderId = AggregationId.ofRepoIdOrNull(ic.getLineAggregationKeyBuilder_ID());
+				final AggregationKey lineAggregationKeyUnparsed = new AggregationKey(lineAggregationKeyStr, lineAggregationKeyBuilderId);
 
 				final I_C_InvoiceCandidate_InOutLine iciol = request.getC_InvoiceCandidate_InOutLine();
 				final I_M_InOutLine inoutLine = iciol == null ? null : iciol.getM_InOutLine();
@@ -139,7 +139,7 @@ public class DefaultAggregator implements IAggregator
 						.inoutLine(inoutLine)
 						.invoiceLineAttributes(request.getInvoiceLineAttributes())
 						.build();
-				final IAggregationKey lineAggregationKey = lineAggregationKeyUnparsed.parse(evalCtx);
+				final AggregationKey lineAggregationKey = lineAggregationKeyUnparsed.parse(evalCtx);
 				aggregationKeyToUse.append(lineAggregationKey.getAggregationKeyString());
 			}
 

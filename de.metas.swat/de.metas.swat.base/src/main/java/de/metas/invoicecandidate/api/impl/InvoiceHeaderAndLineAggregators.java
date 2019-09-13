@@ -25,7 +25,7 @@ package de.metas.invoicecandidate.api.impl;
 import java.util.Collection;
 import java.util.HashMap;
 
-import de.metas.aggregation.api.IAggregationKey;
+import de.metas.aggregation.api.AggregationKey;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.util.Check;
 import lombok.Getter;
@@ -35,7 +35,7 @@ import lombok.ToString;
 @ToString(doNotUseGetters = true)
 /* package */class InvoiceHeaderAndLineAggregators
 {
-	private final IAggregationKey headerAggregationKey;
+	private final AggregationKey headerAggregationKey;
 	@Getter
 	private final InvoiceHeaderImplBuilder invoiceHeader;
 
@@ -43,7 +43,7 @@ import lombok.ToString;
 	private final HashMap<Object, IAggregator> lineAggregators = new HashMap<>();
 
 	public InvoiceHeaderAndLineAggregators(
-			@NonNull final IAggregationKey headerAggregationKey,
+			@NonNull final AggregationKey headerAggregationKey,
 			@NonNull final InvoiceHeaderImplBuilder invoiceHeader)
 	{
 		this.headerAggregationKey = headerAggregationKey;
