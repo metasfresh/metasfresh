@@ -32,7 +32,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -805,7 +804,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			}
 			catch (final AdempiereException e)
 			{
-				createNoticesAndMarkICs(Collections.singletonList(ic), e);
+				createNoticesAndMarkICs(ImmutableList.of(ic), e);
 			}
 		}
 
