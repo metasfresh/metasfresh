@@ -24,7 +24,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  * #L%
  */
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -71,6 +70,7 @@ import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.lang.SOTrx;
+import de.metas.money.Money;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -470,7 +470,7 @@ public class AggregationEngine implements IAggregationEngine
 		// We need to find out the DocBaseType based on Total Amount and IsSOTrx
 		else
 		{
-			final BigDecimal totalAmt = invoiceHeader.calculateTotalNetAmtFromLines();
+			final Money totalAmt = invoiceHeader.calculateTotalNetAmtFromLines();
 
 			if (invoiceIsSOTrx)
 			{

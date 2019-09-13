@@ -83,4 +83,9 @@ public enum FreightCostRule implements ReferenceListAwareEnum
 	{
 		return !isFixPrice();
 	}
+
+	public static String toCodeOrNull(final FreightCostRule type)
+	{
+		return type != null ? type.getCode() : null;
+	}
 }

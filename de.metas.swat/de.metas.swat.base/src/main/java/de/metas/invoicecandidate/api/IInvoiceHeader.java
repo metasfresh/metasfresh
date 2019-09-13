@@ -28,6 +28,8 @@ import java.util.List;
 
 import org.compiere.model.I_C_DocType;
 
+import de.metas.money.CurrencyId;
+
 /**
  * Invoice predecessor returned by {@link IAggregationBL#aggregate()}.
  *
@@ -65,7 +67,7 @@ public interface IInvoiceHeader
 	int getBill_User_ID();
 
 	// 03805 : add getter for C_Currency_ID
-	int getC_Currency_ID();
+	CurrencyId getCurrencyId();
 
 	/**
 	 * Returns a mapping from invoice candidates to the invoice line predecessor(s) into which the respective invoice candidate has been aggregated.

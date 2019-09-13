@@ -95,7 +95,7 @@ public class UserRepository
 		userRecord.setLastname(user.getLastName());
 		userRecord.setBirthday(TimeUtil.asTimestamp(user.getBirthday()));
 		userRecord.setEMail(user.getEmailAddress());
-		userRecord.setAD_Language(Language.asLanguageString(user.getUserLanguage()));
+		userRecord.setAD_Language(Language.asLanguageStringOrNull(user.getUserLanguage()));
 		saveRecord(userRecord);
 
 		return user

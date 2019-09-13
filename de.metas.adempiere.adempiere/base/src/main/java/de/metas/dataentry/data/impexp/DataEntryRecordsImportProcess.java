@@ -8,7 +8,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -34,6 +33,8 @@ import de.metas.dataentry.model.I_DataEntry_Record;
 import de.metas.dataentry.model.I_I_DataEntry_Record;
 import de.metas.dataentry.model.X_I_DataEntry_Record;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -64,7 +65,7 @@ import lombok.ToString;
  * #L%
  */
 
-public class DataEntryRecordsImportProcess extends AbstractImportProcess<I_I_DataEntry_Record>
+public class DataEntryRecordsImportProcess extends SimpleImportProcessTemplate<I_I_DataEntry_Record>
 {
 	private final DataEntryLayoutRepository dataEntryLayoutRepo = Adempiere.getBean(DataEntryLayoutRepository.class);
 	private final DataEntryRecordRepository dataEntryRecordRepo = Adempiere.getBean(DataEntryRecordRepository.class);

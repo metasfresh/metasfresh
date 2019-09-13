@@ -28,18 +28,21 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.impexp.product.ProductPriceCreateRequest;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_ProductPrice;
 
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.impexp.processing.product.ProductPriceCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.pricing.PriceListId;
@@ -48,7 +51,10 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.ProductPriceId;
 import de.metas.pricing.exceptions.PriceListVersionNotFoundException;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IPriceListDAO extends ISingletonService
 {
@@ -93,7 +99,7 @@ public interface IPriceListDAO extends ISingletonService
 	 * @param processed optional, can be <code>null</code>. Allow to filter by <code>I_M_PriceList.Processed</code>
 	 */
 	I_M_PriceList_Version retrievePriceListVersionOrNull(org.compiere.model.I_M_PriceList priceList, LocalDate date, @Nullable Boolean processed);
-	
+
 	/**
 	 * Retrieves the plv for the given price list and date. Never returns <code>null</code>
 	 *
@@ -121,22 +127,6 @@ public interface IPriceListDAO extends ISingletonService
 		return priceListVersionId;
 	}
 
-	/**
-	 * Retrieve the price list version that has <code>Processed='Y'</code> and and was valid before after the the given <code>plv</code>.
-	 *
-	 * @param plv
-	 * @return
-	 */
-	I_M_PriceList_Version retrieveNextVersionOrNull(I_M_PriceList_Version plv);
-
-	/**
-	 * Retrieve the price list version that has <code>Processed='Y'</code> and and was valid before before the the given <code>plv</code> .
-	 *
-	 * @param plv
-	 * @return
-	 */
-	I_M_PriceList_Version retrievePreviousVersionOrNull(I_M_PriceList_Version plv);
-
 	/** @return next product price's MatchSeqNo */
 	int retrieveNextMatchSeqNo(final I_M_ProductPrice productPrice);
 
@@ -144,13 +134,19 @@ public interface IPriceListDAO extends ISingletonService
 
 	I_M_PriceList_Version retrieveNewestPriceListVersion(PriceListId priceListId);
 
-	String getPricingSystemName(final PricingSystemId pricingSystemId);
+	String getPricingSystemName(@Nullable final PricingSystemId pricingSystemId);
 
 	String getPriceListName(final PriceListId priceListId);
 
 	Set<CountryId> retrieveCountryIdsByPricingSystem(final PricingSystemId pricingSystemId);
 
 	Set<ProductId> retrieveHighPriceProducts(BigDecimal minimumPrice, LocalDate date);
+
+	default Stream<I_M_ProductPrice> retrieveProductPrices(@NonNull final PriceListVersionId priceListVersionId)
+	{
+		final Set<ProductId> productIdsToExclude = ImmutableSet.of();
+		return retrieveProductPrices(priceListVersionId, productIdsToExclude);
+	}
 
 	Stream<I_M_ProductPrice> retrieveProductPrices(PriceListVersionId priceListVersionId, Set<ProductId> productIdsToExclude);
 
@@ -183,4 +179,12 @@ public interface IPriceListDAO extends ISingletonService
 	void updateProductPrice(UpdateProductPriceRequest request);
 
 	void deleteProductPricesByIds(Set<ProductPriceId> productPriceIds);
+
+	I_M_PriceList_Version retrievePreviousVersionOrNull(I_M_PriceList_Version plv, boolean onlyProcessed);
+
+	I_M_PriceList_Version retrieveNextVersionOrNull(I_M_PriceList_Version plv, final boolean onlyProcessed);
+
+	void mutateCustomerPrices(PriceListVersionId priceListVersionId, UserId userId);
+
+	Optional<TaxCategoryId> getDefaultTaxCategoryByPriceListVersionId(final PriceListVersionId priceListVersionId);
 }

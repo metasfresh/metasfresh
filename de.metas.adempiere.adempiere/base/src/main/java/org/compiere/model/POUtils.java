@@ -4,10 +4,11 @@ import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.logging.LogManager;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -72,8 +73,8 @@ public class POUtils
 				bdValue.scale(), bpWithoutTrailingZeroes.scale());
 		final String lastMessagePart = StringUtils.formatMessage(" value={}; po={}", bdValue, po);
 
-		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(new AdempiereException(firstMessagePart + lastMessagePart));
-		logger.warn(firstMessagePart + " created AD_Issue_ID={}" + lastMessagePart, issue.getAD_Issue_ID());
+		final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(new AdempiereException(firstMessagePart + lastMessagePart));
+		logger.warn(firstMessagePart + " created AD_Issue_ID={}" + lastMessagePart, issueId);
 
 		return bpWithoutTrailingZeroes;
 	}

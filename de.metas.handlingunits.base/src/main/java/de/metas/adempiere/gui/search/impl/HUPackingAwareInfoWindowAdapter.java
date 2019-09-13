@@ -10,12 +10,12 @@ package de.metas.adempiere.gui.search.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -23,7 +23,6 @@ package de.metas.adempiere.gui.search.impl;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.apps.search.IInfoSimple;
@@ -149,7 +148,7 @@ import de.metas.util.Services;
 	@Override
 	public int getC_UOM_ID()
 	{
-		return Services.get(IProductBL.class).getStockingUOMId(getM_Product_ID()).getRepoId();
+		return Services.get(IProductBL.class).getStockUOMId(getM_Product_ID()).getRepoId();
 	}
 
 	@Override
@@ -169,19 +168,6 @@ import de.metas.util.Services;
 	{
 		final KeyNamePair bpartnerKNP = infoWindow.getValue(rowIndexModel, IHUPackingAware.COLUMNNAME_C_BPartner_ID);
 		return bpartnerKNP != null ? bpartnerKNP.getKey() : -1;
-	}
-
-	// DateOrdered does not exist yet in Info Windows
-	@Override
-	public void setDateOrdered(final Timestamp dateOrdered)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Timestamp getDateOrdered()
-	{
-		throw new UnsupportedOperationException();
 	}
 
 	@Override

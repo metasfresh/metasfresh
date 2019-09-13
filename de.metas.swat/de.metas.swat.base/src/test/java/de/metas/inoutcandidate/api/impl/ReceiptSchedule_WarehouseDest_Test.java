@@ -89,8 +89,8 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 				order1_line1_product1_wh1.getC_BPartner_ID(),
 				schedule.getC_BPartner_ID());
 		Assert.assertEquals("Invalid M_ReceiptSchedule.M_Warehouse_Override_ID",
-				null, // shall not be set
-				schedule.getM_Warehouse_Override());
+				0, // shall not be set
+				schedule.getM_Warehouse_Override_ID());
 
 		Assert.assertEquals("Invalid M_ReceiptSchedule.M_Warehouse_Dest_ID",
 				extractProductWarehouseId(order1_line1_product1_wh1),
@@ -134,8 +134,8 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 				receipt.getM_Warehouse(),
 				movementLine.getM_Locator().getM_Warehouse());
 		Assert.assertEquals("Invalid movement line Locator (to)",
-				schedule.getM_Warehouse_Dest(),
-				movementLine.getM_LocatorTo().getM_Warehouse());
+				schedule.getM_Warehouse_Dest_ID(),
+				movementLine.getM_LocatorTo().getM_Warehouse_ID());
 		// Check Movement Line product & qty
 		Assert.assertEquals("Invalid movement line product (compared with order line's product)",
 				order1_line1_product1_wh1.getM_Product_ID(),

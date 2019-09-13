@@ -1,7 +1,5 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
-import static org.compiere.util.Util.coalesce;
-
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -23,6 +21,8 @@ import static org.compiere.util.Util.coalesce;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.util.Comparator;
 
@@ -90,7 +90,7 @@ public class ShipmentScheduleWithHUComparator implements Comparator<ShipmentSche
 			final int huId2 = getM_HU_ID(o2);
 			if (huId1 != huId2)
 			{
-				// o1 has a smaller M_HU_ID => result is < 0 =>  o1 is smaller and goes first
+				// o1 has a smaller M_HU_ID => result is < 0 => o1 is smaller and goes first
 				return huId1 - huId2;
 			}
 		}

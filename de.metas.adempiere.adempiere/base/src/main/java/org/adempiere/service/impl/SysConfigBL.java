@@ -346,7 +346,7 @@ public class SysConfigBL implements ISysConfigBL
 		final Properties ctx = Env.getCtx();
 		final int AD_Client_ID = Env.getAD_Client_ID(ctx);
 
-		Services.get(ITrxManager.class).run(new TrxRunnable()
+		Services.get(ITrxManager.class).runInNewTrx(new TrxRunnable()
 		{
 
 			@Override

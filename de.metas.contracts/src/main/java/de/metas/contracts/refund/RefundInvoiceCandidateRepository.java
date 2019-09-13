@@ -1,5 +1,6 @@
 package de.metas.contracts.refund;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -21,7 +22,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.IQuery;
-import org.compiere.util.Util;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -37,6 +37,7 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.Money;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -255,9 +256,10 @@ public class RefundInvoiceCandidateRepository
 
 		record.setM_Product_ID(RefundConfigs.extractProductId(refundCandidate.getRefundConfigs()).getRepoId());
 
+		// note that Quantity = 1 is set elsewhere, in the invoice candidate handler
 		final Money money = refundCandidate.getMoney();
-		record.setPriceActual(money.getAsBigDecimal());
-		record.setPriceEntered(money.getAsBigDecimal());
+		record.setPriceActual(money.toBigDecimal());
+		record.setPriceEntered(money.toBigDecimal());
 		record.setC_Currency_ID(money.getCurrencyId().getRepoId());
 
 		final RefundContract refundContract = refundCandidate.getRefundContract();
@@ -287,7 +289,7 @@ public class RefundInvoiceCandidateRepository
 				@NonNull final LocalDate invoicableFrom)
 		{
 			this.refundContract = refundContract;
-			this.invoicableFrom = Util.coalesce(invoicableFrom, refundContract.getStartDate());
+			this.invoicableFrom = CoalesceUtil.coalesce(invoicableFrom, refundContract.getStartDate());
 		}
 	}
 }

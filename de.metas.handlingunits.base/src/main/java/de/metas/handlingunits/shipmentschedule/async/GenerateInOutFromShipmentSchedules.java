@@ -10,7 +10,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.util.api.IParams;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -106,7 +106,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	private final List<ShipmentScheduleWithHU> retrieveCandidates(
 			@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules)
 	{
-		final ShipmentScheduleWithHUService shipmentScheduleWithHUService = Adempiere.getBean(ShipmentScheduleWithHUService.class);
+		final ShipmentScheduleWithHUService shipmentScheduleWithHUService = SpringContextHolder.instance.getBean(ShipmentScheduleWithHUService.class);
 
 		final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
 

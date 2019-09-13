@@ -37,23 +37,22 @@ import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.invoicecandidate.api.IInvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
+import de.metas.invoicecandidate.api.InvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.expectations.InvoiceCandidateExpectation;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 
 /**
- * Similar to {@link AbstractTwoInOutsOneInvoicePurchaseTests}, but each InOut has two lines, one of them has <code>IsInDispute=Y</code>.
+ * Similar to {@link AbstractTwoInOutsOneInvoicePurchaseTests}, but each InOut has two lines, one of each has <code>IsInDispute=Y</code>.
  * <p>
- * => Expectation: the MovementQty that is in dispute is not invoiced.
+ * => Expectation: the MovementQty that is in dispute and is not invoiced.
  * <p>
- *
- * @author ts
- *
  */
-public class TestTwoReceiptsOneInvoice_QualityDiscount1 extends AbstractNewAggregationEngineTests
+public abstract class TestTwoReceiptsOneInvoice_QualityDiscount1 extends AbstractNewAggregationEngineTests
 {
 	protected static final BigDecimal THREE = new BigDecimal("3");
 	protected static final BigDecimal FIVE = new BigDecimal("5");
@@ -90,11 +89,13 @@ public class TestTwoReceiptsOneInvoice_QualityDiscount1 extends AbstractNewAggre
 		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
 
 		{
+			final StockQtyAndUOMQty qtysDelivered_3 = StockQtyAndUOMQtys.create(new BigDecimal("3"), productId, new BigDecimal("30"), uomId);
 			final String inOutDocumentNo = "1";
 			inOut1 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo);
-			iol11_three = createInvoiceCandidateInOutLine(ic, inOut1, THREE, inOutDocumentNo + "_1");
+			iol11_three = createInvoiceCandidateInOutLine(ic, inOut1, qtysDelivered_3, inOutDocumentNo + "_1");
 
-			iol12_five_disp = createInvoiceCandidateInOutLine(ic, inOut1, FIVE, inOutDocumentNo + "_2");
+			final StockQtyAndUOMQty qtysDelivered_5 = StockQtyAndUOMQtys.create(new BigDecimal("5"), productId, new BigDecimal("50"), uomId);
+			iol12_five_disp = createInvoiceCandidateInOutLine(ic, inOut1, qtysDelivered_5, inOutDocumentNo + "_2");
 			iol12_five_disp.setIsInDispute(true);
 			InterfaceWrapperHelper.save(iol12_five_disp);
 
@@ -103,10 +104,12 @@ public class TestTwoReceiptsOneInvoice_QualityDiscount1 extends AbstractNewAggre
 
 		{
 			final String inOutDocumentNo = "2";
+			final StockQtyAndUOMQty qtysDelivered_10 = StockQtyAndUOMQtys.create(new BigDecimal("10"), productId, new BigDecimal("100"), uomId);
 			inOut2 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo);
-			iol21_ten = createInvoiceCandidateInOutLine(ic, inOut2, TEN, inOutDocumentNo + "_1");
+			iol21_ten = createInvoiceCandidateInOutLine(ic, inOut2, qtysDelivered_10, inOutDocumentNo + "_1");
 
-			iol22_twenty_disp = createInvoiceCandidateInOutLine(ic, inOut2, TWENTY, inOutDocumentNo + "_2");
+			final StockQtyAndUOMQty qtysDelivered_20 = StockQtyAndUOMQtys.create(new BigDecimal("20"), productId, new BigDecimal("200"), uomId);
+			iol22_twenty_disp = createInvoiceCandidateInOutLine(ic, inOut2, qtysDelivered_20, inOutDocumentNo + "_2");
 			iol22_twenty_disp.setIsInDispute(true);
 			InterfaceWrapperHelper.save(iol22_twenty_disp);
 
@@ -149,23 +152,26 @@ public class TestTwoReceiptsOneInvoice_QualityDiscount1 extends AbstractNewAggre
 		// expecting one line with the summed qty of both non-in-dispute iols icIol11 and icIol21
 		final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol11_three);
 		assertNotNull("Missing IInvoiceLineRW for iol11=" + iol11_three, il1);
-		assertThat(il1.getQtyToInvoice(), comparesEqualTo(THREE.add(TEN)));
+		assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(THREE.add(TEN)));
 
 		assertThat("iol21=" + iol21_ten + " is aggregated into il1=" + il1, getSingleForInOutLine(invoiceLines1, iol21_ten), is(il1));
 
-		final IInvoiceCandidateInOutLineToUpdate icIol11 = retrieveIcIolToUpdateIfExists(il1, iol11_three);
-		assertThat(icIol11.getQtyInvoiced(), comparesEqualTo(THREE));
-		final IInvoiceCandidateInOutLineToUpdate icIol21 = retrieveIcIolToUpdateIfExists(il1, iol21_ten);
-		assertThat(icIol21.getQtyInvoiced(), comparesEqualTo(TEN));
+		final InvoiceCandidateInOutLineToUpdate icIol11 = retrieveIcIolToUpdateIfExists(il1, iol11_three);
+		assertThat(icIol11.getQtyInvoiced().getStockQty().toBigDecimal(), comparesEqualTo(THREE));
+		assertThat(icIol11.getQtyInvoiced().getUOMQtyNotNull().toBigDecimal(), comparesEqualTo(THIRTY));
+
+		final InvoiceCandidateInOutLineToUpdate icIol21 = retrieveIcIolToUpdateIfExists(il1, iol21_ten);
+		assertThat(icIol21.getQtyInvoiced().getStockQty().toBigDecimal(), comparesEqualTo(TEN));
+		assertThat(icIol21.getQtyInvoiced().getUOMQtyNotNull().toBigDecimal(), comparesEqualTo(HUNDRET));
 
 		//
 		// checking the in-dispute-iols
 		assertNull("Unexpected IInvoiceLineRW for iol12=" + iol12_five_disp, getSingleForInOutLine(invoiceLines1, iol12_five_disp));
-		final IInvoiceCandidateInOutLineToUpdate icIol12 = retrieveIcIolToUpdateIfExists(il1, iol12_five_disp);
+		final InvoiceCandidateInOutLineToUpdate icIol12 = retrieveIcIolToUpdateIfExists(il1, iol12_five_disp);
 		assertNull(icIol12);
 
 		assertNull("Unexpected IInvoiceLineRW for iol22=" + iol22_twenty_disp, getSingleForInOutLine(invoiceLines1, iol22_twenty_disp));
-		final IInvoiceCandidateInOutLineToUpdate icIol22 = retrieveIcIolToUpdateIfExists(il1, iol22_twenty_disp);
+		final InvoiceCandidateInOutLineToUpdate icIol22 = retrieveIcIolToUpdateIfExists(il1, iol22_twenty_disp);
 		assertNull(icIol22);
 	}
 }

@@ -157,7 +157,7 @@ public class ProductBOMBL implements IProductBOMBL
 		// We also need to multiply by BOM UOM to BOM Line UOM multiplier
 		// see http://dewiki908/mediawiki/index.php/06973_Fix_percentual_BOM_line_quantities_calculation_%28108941319640%29
 		final IProductBL productBL = Services.get(IProductBL.class);
-		final I_C_UOM endUOM = productBL.getStockingUOM(endProductId);
+		final I_C_UOM endUOM = productBL.getStockUOM(endProductId);
 
 		final I_C_UOM bomLineUOM = productBomLine.getC_UOM();
 		Check.assumeNotNull(bomLineUOM, "bomLineUOM not null");
@@ -189,13 +189,13 @@ public class ProductBOMBL implements IProductBOMBL
 		final BOMComponentType bomComponentType = BOMComponentType.ofCode(bomLine.getComponentType());
 		Check.assume(bomComponentType.isCoProduct(), "Only co-products are allowing cost distribution percent but not {}, {}", bomComponentType, bomLine);
 
-		final BigDecimal qty = getQtyExcludingScrap(bomLine).getAsBigDecimal().negate();
+		final BigDecimal qty = getQtyExcludingScrap(bomLine).toBigDecimal().negate();
 		return Percent.of(BigDecimal.ONE, qty, 4);
 	}
 
 	/**
 	 * Return absolute (unified) quantity value. If IsQtyPercentage then QtyBatch / 100 will be returned. Else QtyBOM will be returned.
-	 * 
+	 *
 	 * @param includeScrapQty if true, scrap qty will be used for calculating qty
 	 * @return qty
 	 */

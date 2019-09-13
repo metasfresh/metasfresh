@@ -250,7 +250,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 		defaultLineAgg.setName("Default");
 		defaultLineAgg.setClassname(DefaultAggregator.class.getName());
 		defaultLineAgg.setIsActive(true);
-		defaultLineAgg.setC_BPartner(null);
+		defaultLineAgg.setC_BPartner_ID(0);
 		defaultLineAgg.setM_ProductGroup(null);
 		save(defaultLineAgg);
 

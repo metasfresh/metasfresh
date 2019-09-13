@@ -47,6 +47,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
@@ -246,7 +247,6 @@ public class MOrderLine extends X_C_OrderLine
 		super(ctx, rs, trxName);
 	}	// MOrderLine
 
-
 	/** Tax */
 	private MTax m_tax = null;
 
@@ -314,7 +314,7 @@ public class MOrderLine extends X_C_OrderLine
 
 		final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(this);
 		final CountryId countryFromId = Services.get(IWarehouseBL.class).getCountryId(warehouseId);
-		
+
 		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(getC_BPartner_ID(), getC_BPartner_Location_ID());
 		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(bpLocationId);
 
@@ -818,15 +818,23 @@ public class MOrderLine extends X_C_OrderLine
 			throw new AdempiereException("@NotFound@ @M_Product_ID@/@C_Charge_ID@ (@QtyEntered@>0)");
 		}
 		// UOM
-		if (getC_UOM_ID() <= 0
-				&& (getM_Product_ID() > 0
-						|| getC_Charge_ID() > 0
-						|| getPriceEntered().signum() != 0))
+		if (getC_UOM_ID() <= 0)
 		{
-			int C_UOM_ID = MUOM.getDefault_UOM_ID(getCtx());
-			if (C_UOM_ID > 0)
+			// attempt to provide a UOM
+			if (getM_Product_ID() > 0)
 			{
-				setC_UOM_ID(C_UOM_ID);
+				final ProductId productId = ProductId.ofRepoId(getM_Product_ID());
+				final IProductBL productBL = Services.get(IProductBL.class);
+				setC_UOM_ID(productBL.getStockUOMId(productId).getRepoId());
+			}
+			else if (getC_Charge_ID() > 0
+					|| getPriceEntered().signum() != 0)
+			{
+				int C_UOM_ID = MUOM.getDefault_UOM_ID(getCtx());
+				if (C_UOM_ID > 0)
+				{
+					setC_UOM_ID(C_UOM_ID);
+				}
 			}
 		}
 
@@ -1024,7 +1032,7 @@ public class MOrderLine extends X_C_OrderLine
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
 				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 				.registerHandlingMethod(innerTrx -> {
-					trxManager.run(new TrxRunnableAdapter()
+					trxManager.runInNewTrx(new TrxRunnableAdapter()
 					{
 						@Override
 						public void run(final String localTrxName) throws Exception

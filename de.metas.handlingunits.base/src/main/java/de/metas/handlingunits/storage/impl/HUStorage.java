@@ -32,7 +32,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -54,6 +53,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /* package */class HUStorage implements IHUStorage
@@ -169,7 +169,7 @@ import lombok.NonNull;
 		final IGenericHUStorage parentStorage = getParentStorage();
 		if (parentStorage != null)
 		{
-			parentStorage.addQty(productId, qtyDelta.getAsBigDecimal(), qtyDelta.getUOM());
+			parentStorage.addQty(productId, qtyDelta.toBigDecimal(), qtyDelta.getUOM());
 		}
 	}
 
@@ -348,7 +348,7 @@ import lombok.NonNull;
 		{
 			final I_C_UOM uomWEach = Services.get(IUOMDAO.class).retrieveEachUOM(Env.getCtx());
 
-			return Quantity.zero(Util.coalesce(getC_UOMOrNull(), uomWEach));
+			return Quantity.zero(CoalesceUtil.coalesce(getC_UOMOrNull(), uomWEach));
 		}
 		return getQtyForProductStorages(productStorages.get(0).getC_UOM());
 	}

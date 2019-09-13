@@ -1,8 +1,8 @@
 package de.metas.impexp.product;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.IImportProcess;
 
+import de.metas.impexp.processing.IImportProcess;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 import de.metas.vertical.pharma.model.I_I_Pharma_Product;

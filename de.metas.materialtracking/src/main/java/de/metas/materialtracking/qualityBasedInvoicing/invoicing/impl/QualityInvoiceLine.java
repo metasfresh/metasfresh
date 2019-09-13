@@ -131,7 +131,7 @@ public class QualityInvoiceLine implements IQualityInvoiceLine
 
 	public void setQty(@NonNull final Quantity qty)
 	{
-		this.qty = qty.getAsBigDecimal();
+		this.qty = qty.toBigDecimal();
 		this.uom = qty.getUOM();
 	}
 

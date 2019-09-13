@@ -74,7 +74,6 @@ public interface IPricingResult
 	void setEnforcePriceLimit(BooleanWithReason enforcePriceLimit);
 
 	/**
-	 *
 	 * @return discount (between 0 and 100); never null
 	 */
 	Percent getDiscount();
@@ -98,7 +97,6 @@ public interface IPricingResult
 	void setDisallowDiscount(boolean disallowDiscount);
 
 	/**
-	 *
 	 * @return true if the price was calculated successfully
 	 */
 	boolean isCalculated();
@@ -160,4 +158,9 @@ public interface IPricingResult
 	boolean isDiscountEditable();
 
 	void setDiscountEditable(boolean isDiscountEditable);
+
+	/** This info is contained in the pricing master data; it's not relevant for the price per unit, but to compute the invoicable quantity.*/
+	InvoicableQtyBasedOn getInvoicableQtyBasedOn();
+
+	void setInvoicableQtyBasedOn(InvoicableQtyBasedOn invoicableQtyBasedOn);
 }

@@ -398,7 +398,7 @@ public class PartitionerService implements IPartitionerService
 
 	private void storeOutOfTrx(final PartitionConfig newConfig)
 	{
-		Services.get(ITrxManager.class).run((TrxRunnable)localTrxName -> Services.get(IDLMService.class).storePartitionConfig(newConfig));
+		Services.get(ITrxManager.class).runInNewTrx((TrxRunnable)localTrxName -> Services.get(IDLMService.class).storePartitionConfig(newConfig));
 	}
 
 	private void checkIfTableIsDLM(final String tableName, final OnNotDLMTable onNotDLMTable)
@@ -433,7 +433,7 @@ public class PartitionerService implements IPartitionerService
 		//
 		// then the the table, and if necessary, DLM it.
 		//
-		trxManager.run((TrxRunnable)localTrxName -> {
+		trxManager.runInNewTrx((TrxRunnable)localTrxName -> {
 			final IDLMService dlmService = Services.get(IDLMService.class);
 
 			if (!referencingTable.isDLM())

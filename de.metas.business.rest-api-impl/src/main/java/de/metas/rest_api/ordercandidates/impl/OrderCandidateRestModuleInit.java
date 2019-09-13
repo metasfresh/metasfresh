@@ -32,7 +32,7 @@ import de.metas.util.Services;
  */
 
 @Component
-public class OrderCandidateRestModuleInit extends AbstractModuleInterceptor
+class OrderCandidateRestModuleInit extends AbstractModuleInterceptor
 {
 	public OrderCandidateRestModuleInit()
 	{

@@ -118,7 +118,7 @@ public class ProcessDocuments extends JavaProcess
 		while (documents.hasNext())
 		{
 			final Object doc = documents.next();
-			trxManager.run(new TrxRunnable2()
+			trxManager.runInNewTrx(new TrxRunnable2()
 			{
 				@Override
 				public void run(final String localTrxName) throws Exception

@@ -94,6 +94,6 @@ public class RefundInvoiceCandidateTest
 		// invoke the method under test
 		final Quantity result = refundInvoiceCandidate.computeAssignableQuantity(refundConfig1);
 
-		assertThat(result.getAsBigDecimal()).isEqualByComparingTo("9");
+		assertThat(result.toBigDecimal()).isEqualByComparingTo("9");
 	}
 }

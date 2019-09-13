@@ -1,6 +1,6 @@
 package de.metas.rest_api.bpartner.request;
 
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.CREATE_OR_MERGE_SYNC_ADVISE_DOC;
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
 import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.util.List;
@@ -47,7 +47,7 @@ public class JsonRequestLocationUpsert
 	@ApiModelProperty(position = 10)
 	List<JsonRequestLocationUpsertItem> requestItems;
 
-	@ApiModelProperty(position = 20, value = "Sync-advise for individual items.\n" + CREATE_OR_MERGE_SYNC_ADVISE_DOC)
+	@ApiModelProperty(position = 20, value = "Sync-advise for individual items.\n" + PARENT_SYNC_ADVISE_DOC)
 	SyncAdvise syncAdvise;
 
 	@JsonCreator
@@ -57,6 +57,6 @@ public class JsonRequestLocationUpsert
 			@Nullable @JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
 	{
 		this.requestItems = coalesce(requestItems, ImmutableList.of());
-		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.CREATE_OR_MERGE);
+		this.syncAdvise = syncAdvise;
 	}
 }

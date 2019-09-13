@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
@@ -25,6 +26,7 @@ import org.compiere.util.TimeUtil;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -60,12 +62,12 @@ import lombok.NonNull;
  */
 public final class ImmutableAttributeSet implements IAttributeSet
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
 
-	public static final ImmutableAttributeSet ofValuesByAttributeIdMap(@Nullable final Map<Object, Object> valuesByAttributeIdMap)
+	public static ImmutableAttributeSet ofValuesByAttributeIdMap(@Nullable final Map<Object, Object> valuesByAttributeIdMap)
 	{
 		if (valuesByAttributeIdMap == null || valuesByAttributeIdMap.isEmpty())
 		{
@@ -183,7 +185,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		return attributesById.containsKey(attributeId);
 	}
 
-	private final void assertAttributeExists(final String attributeKey)
+	private void assertAttributeExists(final String attributeKey)
 	{
 		if (!hasAttribute(attributeKey))
 		{
@@ -191,7 +193,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		}
 	}
 
-	private final void assertAttributeExists(final AttributeId attributeId)
+	private void assertAttributeExists(final AttributeId attributeId)
 	{
 		if (!hasAttribute(attributeId))
 		{
@@ -236,13 +238,12 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	public BigDecimal getValueAsBigDecimal(final String attributeKey)
 	{
 		final Object valueObj = getValue(attributeKey);
-		return toBigDecimal(valueObj);
+		return invokeWithAttributeKey(attributeKey, () -> toBigDecimal(valueObj));
 	}
 
-	public BigDecimal getValueAsBigDecimal(final AttributeId attributeId)
+	public BigDecimal getValueAsBigDecimal(@NonNull final AttributeId attributeId)
 	{
-		final Object valueObj = getValue(attributeId);
-		return toBigDecimal(valueObj);
+		return invokeWithAttributeId(attributeId, () -> toBigDecimal(getValue(attributeId)));
 	}
 
 	private static BigDecimal toBigDecimal(final Object valueObj)
@@ -280,7 +281,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 				return 0;
 			}
 
-			return Integer.parseInt(valueStr);
+			return invokeWithAttributeKey(attributeKey, () -> Integer.parseInt(valueStr));
 		}
 	}
 
@@ -292,9 +293,17 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		{
 			return null;
 		}
+		else if (valueObj instanceof Date)
+		{
+			return (Date)valueObj;
+		}
 		else if (valueObj instanceof Number)
 		{
 			return new Date(((Number)valueObj).longValue());
+		}
+		else if (TimeUtil.isDateOrTimeObject(valueObj))
+		{
+			return invokeWithAttributeKey(attributeKey, () -> TimeUtil.asDate(valueObj));
 		}
 		else
 		{
@@ -303,14 +312,58 @@ public final class ImmutableAttributeSet implements IAttributeSet
 			{
 				return null;
 			}
-
-			return Env.parseTimestamp(valueStr);
+			try
+			{
+				return invokeWithAttributeKey(attributeKey, () -> Env.parseTimestamp(valueStr));
+			}
+			catch (final Exception ex)
+			{
+				throw AdempiereException.wrapIfNeeded(ex)
+						.setParameter("valueObj", valueObj)
+						.setParameter("valueObj.class", valueObj != null ? valueObj.getClass() : null)
+						.appendParametersToMessage();
+			}
 		}
 	}
 
+	@Override
 	public LocalDate getValueAsLocalDate(final String attributeKey)
 	{
-		return TimeUtil.asLocalDate(getValueAsDate(attributeKey));
+		return invokeWithAttributeKey(attributeKey, () -> TimeUtil.asLocalDate(getValueAsDate(attributeKey)));
+	}
+
+	private <T> T invokeWithAttributeKey(
+			@Nullable final String attributeKey,
+			@NonNull final Supplier<T> supplier)
+	{
+		try
+		{
+			return supplier.get();
+		}
+		catch (final Exception e)
+		{
+			throw AdempiereException
+					.wrapIfNeeded(e)
+					.setParameter("immutableAttributeSet", this)
+					.setParameter("attributeKey", Check.isEmpty(attributeKey, true) ? "<EMPTY>" : attributeKey);
+		}
+	}
+
+	private <T> T invokeWithAttributeId(
+			@NonNull final AttributeId attributeId,
+			@NonNull final Supplier<T> supplier)
+	{
+		try
+		{
+			return supplier.get();
+		}
+		catch (final Exception e)
+		{
+			throw AdempiereException
+					.wrapIfNeeded(e)
+					.setParameter("immutableAttributeSet", this)
+					.setParameter("attributeId", attributeId);
+		}
 	}
 
 	public Optional<LocalDate> getValueAsLocalDateIfExists(final String attributeKey)
@@ -362,7 +415,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 
 	public Boolean getValueAsBoolean(final String attributeKey)
 	{
-		return StringUtils.toBoolean(getValueAsString(attributeKey), null);
+		return invokeWithAttributeKey(attributeKey, () -> StringUtils.toBoolean(getValueAsString(attributeKey), null));
 	}
 
 	public Optional<Boolean> getValueAsBooleanIfExists(final String attributeKey)

@@ -12,12 +12,12 @@ import java.math.BigDecimal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -69,8 +69,8 @@ public class MaterialBalanceDetailDAO implements IMaterialBalanceDetailDAO
 		// set info from line
 
 		newBalanceDetail.setM_InOutLine(line);
-		newBalanceDetail.setM_Product(line.getM_Product());
-		newBalanceDetail.setC_UOM(line.getC_UOM());
+		newBalanceDetail.setM_Product_ID(line.getM_Product_ID());
+		newBalanceDetail.setC_UOM_ID(line.getC_UOM_ID());
 
 		// set qty based on SOTrx of the inout
 

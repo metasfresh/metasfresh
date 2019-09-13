@@ -2,7 +2,9 @@ package de.metas.util.lang;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.function.IntFunction;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -175,5 +177,10 @@ public class RepoIdAwares
 		IntFunction<RepoIdAware> ofRepoIdFunction;
 		@NonNull
 		IntFunction<RepoIdAware> ofRepoIdOrNullFunction;
+	}
+
+	public static <T, R extends RepoIdAware> Comparator<T> comparingNullsLast(@NonNull final Function<T, R> keyMapper)
+	{
+		return Comparator.comparing(keyMapper, Comparator.nullsLast(Comparator.naturalOrder()));
 	}
 }

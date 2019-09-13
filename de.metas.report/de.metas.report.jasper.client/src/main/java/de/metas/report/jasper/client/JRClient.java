@@ -35,7 +35,6 @@ import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.report.jasper.IJasperServer;
@@ -52,6 +51,7 @@ import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfo.ProcessInfoBuilder;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 import net.sf.jasperreports.engine.JasperPrint;
 
@@ -154,12 +154,12 @@ public final class JRClient
 		}
 
 		final Language language = extractLanguage(pi);
-		final OutputType outputTypeEffective = Util.coalesce(outputType, pi.getJRDesiredOutputType());
+		final OutputType outputTypeEffective = CoalesceUtil.coalesce(outputType, pi.getJRDesiredOutputType());
 		final byte[] data = report(pi.getAdProcessId(), pi.getPinstanceId(), language, outputTypeEffective);
 		return data;
 	}
 
-	private final IJasperServer createJasperServer()
+	private IJasperServer createJasperServer()
 	{
 		final String jrClassname = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_JRServerClass, SYSCONFIG_JRServerClass_DEFAULT);
 		logger.info("JasperServer classname: {}", jrClassname);

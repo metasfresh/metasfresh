@@ -10,9 +10,76 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.116
+# metasfresh 5.119
+
+## Features
+* metasfresh
+  * [#4352](https://github.com/metasfresh/metasfresh/issues/4352) WebUI Project and ProjectType Window
+  * [#5384](https://github.com/metasfresh/metasfresh/issues/5384) Catch Weight invoicing
+  * [#5450](https://github.com/metasfresh/metasfresh/issues/5450) New Action Price update für basepricelist and customer pricelist
+  * [#5453](https://github.com/metasfresh/metasfresh/issues/5453) Data Import REST endpoints
+  * [#5461](https://github.com/metasfresh/metasfresh/issues/5461) Have a way to fix native sequence problems from metasfresh
+  * [#5465](https://github.com/metasfresh/metasfresh/issues/5465) requests: when sales rep is changed, notify the new sales rep about the change
+  * [#5470](https://github.com/metasfresh/metasfresh/issues/5470) Copy discount schema breaks of product - new process
+  * [#5471](https://github.com/metasfresh/metasfresh/issues/5471) Date Filter in Payment Window
+  * [#5478](https://github.com/metasfresh/metasfresh/issues/5478) Allow copy with details for Payment
+  * [#5479](https://github.com/metasfresh/metasfresh/issues/5479) Ändert MF etwas beim external_factor im xml an den Kanton (KT_xx)
+  * [#5494](https://github.com/metasfresh/metasfresh/issues/5494) Change inventory import for the generic case
+
+* metasfresh-webui-frontend
+  * [#2350](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2350) Respect new lines in webui texts
+
+## Fixes
+* metasfresh
+  * [#5466](https://github.com/metasfresh/metasfresh/issues/5466) Assumption failure: repoId > 0 but it was 0 Additional parameters in notifications
+  * [#5477](https://github.com/metasfresh/metasfresh/issues/5477) NullPointer Exception beim Import von Rückweisungen der Krankenkasse
+  
+* metasfresh-webui-frontend
+  * [#2351](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2351) The date is displayed differently in grid view vs. single view
+
+
+# metasfresh 5.118
 
 # Features
+* metasfresh
+  * [#5423](https://github.com/metasfresh/metasfresh/issues/5423) Drafted PP Orders shall not create demands
+  * [#5440](https://github.com/metasfresh/metasfresh/issues/5440) Easy shipment candidate recording (Modal Overlay)
+  * [#5447](https://github.com/metasfresh/metasfresh/issues/5447) Optionally include C_Location changes in parent record's changelog
+  * [#5457](https://github.com/metasfresh/metasfresh/issues/5457) MaterialTracking - Support regular PP_Orders with heterogenous components
+  * [#5471](https://github.com/metasfresh/metasfresh/issues/5471) Date Filter in Payment Window
+
+* metasfresh-webui-api
+  * [#1245](https://github.com/metasfresh/metasfresh-webui-api/issues/1245) webui cache reset: don't invalidate new/changed documents
+
+## Fixes
+* metasfresh 
+  * [#5380](https://github.com/metasfresh/metasfresh/issues/5380) Fix timezone issues
+
+* metasfresh-webui-api
+  * [#1248](https://github.com/metasfresh/metasfresh-webui-api/issues/1248) webui: don't apply role permissions when loading layout fields
+
+# metasfresh 5.117
+
+## Features
+* metasfresh
+  * [#5426](https://github.com/metasfresh/metasfresh/issues/5426) Implement MetasfreshBeanNameGenerator to avoid spring bean name collisions in case of model Interceptors
+
+* metasfresh-e2e
+  * [#125](https://github.com/metasfresh/metasfresh-e2e/issues/125) Open Handling Unit Editor
+  * [#145](https://github.com/metasfresh/metasfresh-e2e/issues/145) Purchase order from sales order
+  * [#210](https://github.com/metasfresh/metasfresh-e2e/issues/210) Create material receipt with quality issue
+
+## Fixes
+* metasfresh
+  * [#5193](https://github.com/metasfresh/metasfresh/issues/5193) Error when trying to issue for >1 component in manufacturing
+
+
+* metasfresh-webui-api
+  * [#2334](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2334) Error when layout shortcuts is not defined
+
+# metasfresh 5.116
+
+## Features
 * metasfresh-e2e
   * [#116](https://github.com/metasfresh/metasfresh-e2e/issues/116) Create new tour and transportation order
   * [#136](https://github.com/metasfresh/metasfresh-e2e/issues/136) Change product price (product window) and use it

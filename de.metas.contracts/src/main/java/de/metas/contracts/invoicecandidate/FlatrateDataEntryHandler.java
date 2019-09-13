@@ -145,6 +145,8 @@ public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 	{
 		// note: we can assume that #setQtyOrdered() was already called
 		ic.setQtyDelivered(ic.getQtyOrdered()); // when changing this, make sure to threat ProductType.Service specially
+		ic.setQtyDeliveredInUOM(ic.getQtyEntered());
+
 		ic.setDeliveryDate(ic.getDateOrdered());
 	}
 

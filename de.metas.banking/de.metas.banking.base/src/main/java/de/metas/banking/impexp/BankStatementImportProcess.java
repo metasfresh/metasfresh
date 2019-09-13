@@ -12,8 +12,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.impexp.AbstractImportProcess;
-import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_I_BankStatement;
 import org.compiere.model.ModelValidationEngine;
@@ -22,6 +20,9 @@ import org.compiere.model.X_I_BankStatement;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.service.IBankStatementDAO;
+import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
@@ -49,7 +50,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class BankStatementImportProcess extends AbstractImportProcess<I_I_BankStatement>
+public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_BankStatement>
 {
 
 	private int p_C_BP_BankAccount_ID = 0;

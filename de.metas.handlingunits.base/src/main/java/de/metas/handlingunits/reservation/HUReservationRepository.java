@@ -101,7 +101,7 @@ public class HUReservationRepository
 
 			final I_M_HU_Reservation huReservationRecord = createOrLoadRecordFor(vhuId);
 			huReservationRecord.setC_OrderLineSO_ID(huReservation.getSalesOrderLineId().getRepoId());
-			huReservationRecord.setQtyReserved(qtyReserved.getAsBigDecimal());
+			huReservationRecord.setQtyReserved(qtyReserved.toBigDecimal());
 			huReservationRecord.setC_UOM_ID(qtyReserved.getUOMId());
 			saveRecord(huReservationRecord);
 		}

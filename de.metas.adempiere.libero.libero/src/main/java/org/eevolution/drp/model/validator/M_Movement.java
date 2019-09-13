@@ -94,18 +94,18 @@ public class M_Movement
 			if (!isMovementReceipt)
 			{
 				final Quantity qtyInTransitNew = qtyInTransit.add(movementQty);
-				ddOrderLineOrAlt.setQtyInTransit(qtyInTransitNew.getAsBigDecimal());
+				ddOrderLineOrAlt.setQtyInTransit(qtyInTransitNew.toBigDecimal());
 			}
 			//
 			// Movement-Receipt: InTransit Warehouse -> Destination Warehouse
 			else
 			{
 				final Quantity qtyInTransitNew = qtyInTransit.subtract(movementQty);
-				ddOrderLineOrAlt.setQtyInTransit(qtyInTransitNew.getAsBigDecimal());
+				ddOrderLineOrAlt.setQtyInTransit(qtyInTransitNew.toBigDecimal());
 
 				final Quantity qtyDelivered = new Quantity(ddOrderLineOrAlt.getQtyDelivered(), uom);
 				final Quantity qtyDeliveredNew = qtyDelivered.add(movementQty);
-				ddOrderLineOrAlt.setQtyDelivered(qtyDeliveredNew.getAsBigDecimal());
+				ddOrderLineOrAlt.setQtyDelivered(qtyDeliveredNew.toBigDecimal());
 			}
 
 			ddOrdersRepo.save(ddOrderLineOrAlt);

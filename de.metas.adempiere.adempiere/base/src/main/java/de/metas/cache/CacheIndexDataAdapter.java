@@ -27,11 +27,11 @@ import org.adempiere.util.lang.impl.TableRecordReference;
  */
 
 /** Implementations should be thread-safe; so far, no implementation had to have any state, so I hope that won't be a problem. */
-public interface CacheIndexDataAdapter<RK, CK, V>
+public interface CacheIndexDataAdapter<DataItemId, CacheKey, DataItem>
 {
-	Collection<CK> extractCKs(V record);
+	DataItemId extractDataItemId(DataItem dataItem);
 
-	RK extractRK(V record);
+	Collection<CacheKey> extractCacheKeys(DataItem dataItem);
 
-	RK extractRK(TableRecordReference recordRef);
+	Collection<TableRecordReference> extractRecordRefs(DataItem dataItem);
 }

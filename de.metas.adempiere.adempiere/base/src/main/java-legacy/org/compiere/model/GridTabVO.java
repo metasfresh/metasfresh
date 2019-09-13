@@ -219,15 +219,17 @@ public class GridTabVO implements Evaluatee, Serializable
 			// Apply role permissions
 			if(vo.applyRolePermissions)
 			{
+				final IUserRolePermissions role = Env.getUserRolePermissions(vo.ctx);
+				
 				// If EntityType is not displayed, hide this tab; note that this decision is role-specific
 				vo.entityType = rs.getString("EntityType");
-				if (!Check.isEmpty(vo.entityType, true) && !UIDisplayedEntityTypes.isEntityTypeDisplayedInUIOrTrueIfNull(vo.entityType))
+				if (!Check.isEmpty(vo.entityType, true)
+						&& !UIDisplayedEntityTypes.isEntityTypeDisplayedInUIOrTrueIfNull(role, vo.entityType))
 				{
 					vo.addLoadErrorMessage("EntityType not displayed");
 					return false;
 				}
 
-				final IUserRolePermissions role = Env.getUserRolePermissions(vo.ctx);
 
 				if (!role.canView(vo.AccessLevel))	// No Access
 				{
@@ -579,6 +581,7 @@ public class GridTabVO implements Evaluatee, Serializable
 							.setTemplateTabId(getTemplateTabId())
 							.setTabReadOnly(isReadOnly())
 							.setLoadAllLanguages(loadAllLanguages)
+							.setApplyRolePermissions(applyRolePermissions)
 							.load();
 				}
 			}
@@ -1199,5 +1202,10 @@ public class GridTabVO implements Evaluatee, Serializable
 				.filter(field -> field.isParentLink())
 				.map(field -> field.getColumnName())
 				.collect(GuavaCollectors.toImmutableSet());
+	}
+	
+	boolean isApplyRolePermissions()
+	{
+		return applyRolePermissions;
 	}
 }

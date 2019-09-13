@@ -212,7 +212,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 
 		final CostElement costElement = costElementRepo.getById(costSegmentAndElement.getCostElementId());
 		final AcctSchema acctSchema = acctSchemasRepo.getById(costSegmentAndElement.getAcctSchemaId());
-		final I_C_UOM uom = productBL.getStockingUOM(costSegmentAndElement.getProductId());
+		final I_C_UOM uom = productBL.getStockUOM(costSegmentAndElement.getProductId());
 
 		final CurrentCost currentCost = CurrentCost.builder()
 				.costSegment(costSegmentAndElement.toCostSegment())
@@ -312,9 +312,9 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 
 		cost.setCurrentCostPrice(from.getCostPrice().getOwnCostPrice().getValue());
 		cost.setCurrentCostPriceLL(from.getCostPrice().getComponentsCostPrice().getValue());
-		cost.setCurrentQty(from.getCurrentQty().getAsBigDecimal());
+		cost.setCurrentQty(from.getCurrentQty().toBigDecimal());
 		cost.setCumulatedAmt(from.getCumulatedAmt().getValue());
-		cost.setCumulatedQty(from.getCumulatedQty().getAsBigDecimal());
+		cost.setCumulatedQty(from.getCumulatedQty().toBigDecimal());
 	}
 
 	@Override

@@ -6,9 +6,9 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.compiere.model.I_C_BPartner;
-import org.compiere.util.Util;
 
 import de.metas.util.ISingletonService;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -58,8 +58,8 @@ public interface IBPartnerStatsBL extends ISingletonService
 		{
 			this.stat = stat;
 			this.date = date;
-			this.additionalAmt = Util.coalesce(additionalAmt, ZERO);
-			this.forceCheckCreditStatus = Util.coalesce(forceCheckCreditStatus, false);
+			this.additionalAmt = CoalesceUtil.coalesce(additionalAmt, ZERO);
+			this.forceCheckCreditStatus = CoalesceUtil.coalesce(forceCheckCreditStatus, false);
 		}
 	}
 

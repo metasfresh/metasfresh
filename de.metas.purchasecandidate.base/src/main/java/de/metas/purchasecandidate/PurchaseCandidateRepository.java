@@ -324,7 +324,7 @@ public class PurchaseCandidateRepository
 
 		final Quantity qtyToPurchase = purchaseCandidate.getQtyToPurchase();
 		record.setC_UOM_ID(qtyToPurchase.getUomId().getRepoId());
-		record.setQtyToPurchase(qtyToPurchase.getAsBigDecimal());
+		record.setQtyToPurchase(qtyToPurchase.toBigDecimal());
 
 		final ZonedDateTime purchaseDateOrdered = calculatePurchaseDateOrdered(purchaseCandidate);
 		record.setPurchaseDatePromised(TimeUtil.asTimestamp(purchaseCandidate.getPurchaseDatePromised()));

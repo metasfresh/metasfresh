@@ -1,9 +1,5 @@
 package de.metas.document.archive.api.impl;
 
-import static org.compiere.util.Util.coalesce;
-
-import java.util.List;
-
 /*
  * #%L
  * de.metas.document.archive.base
@@ -26,6 +22,9 @@ import java.util.List;
  * #L%
  */
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+
+import java.util.List;
 import java.util.Properties;
 
 import javax.annotation.Nullable;

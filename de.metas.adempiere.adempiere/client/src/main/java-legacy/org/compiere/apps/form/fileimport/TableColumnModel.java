@@ -1,7 +1,7 @@
 package org.compiere.apps.form.fileimport;
 
-import org.compiere.impexp.CellErrorMessage;
-import org.compiere.impexp.ImpDataLine;
+import de.metas.impexp.CellErrorMessage;
+import de.metas.impexp.ImpDataLine;
 
 abstract class TableColumnModel
 {

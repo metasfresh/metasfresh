@@ -2,6 +2,7 @@ package org.adempiere.ad.table;
 
 import java.util.List;
 
+import org.adempiere.ad.table.LogEntriesRepository.LogEntriesQuery;
 import org.adempiere.ad.table.RecordChangeLog.RecordChangeLogBuilder;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.POInfo;
@@ -98,7 +99,7 @@ final class RecordChangeLogLoader
 		});
 	}
 
-	private List<RecordChangeLogEntry> retrieveLogEntries(final ComposedRecordId recordId)
+	private List<RecordChangeLogEntry> retrieveLogEntries(@NonNull final ComposedRecordId recordId)
 	{
 		if (!recordId.isSingleKey())
 		{
@@ -110,7 +111,7 @@ final class RecordChangeLogLoader
 		final TableRecordReference recordRef = TableRecordReference.of(poInfo.getAD_Table_ID(), singleRecordId);
 
 		final ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> //
-		logEntries = RecordChangeLogEntryEntryLoader.retrieveLogEntries(ImmutableList.of(recordRef));
+		logEntries = RecordChangeLogEntryLoader.retrieveLogEntries(LogEntriesQuery.of(recordRef));
 
 		return (logEntries.get(recordRef));
 	}

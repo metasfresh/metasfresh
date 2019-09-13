@@ -1,0 +1,36 @@
+{
+  "requestItems": [
+      {
+          "bpartnerIdentifier": "val-bpartnerRecord.value",
+          "bpartnerComposite": {
+              "locations": {
+                  "requestItems": [
+                    {
+                        "locationIdentifier": 40,
+                        "location": {
+                          "active": true,
+                          "address1": "address1_metasfreshId",
+                          "address2": "address2_metasfreshId"
+                        }
+                    },
+                      {
+                          "locationIdentifier": "ext-bpartnerLocation.externalId",
+                          "location": {
+                            "active": false,
+                            "address2": "address2_extId"
+                          }
+                      }
+                  ],
+                  "syncAdvise": {
+                      "ifNotExists": "CREATE",
+                      "ifExists": "UPDATE_MERGE"
+                  }
+              }
+          }
+      }
+  ],
+  "syncAdvise": {
+      "ifNotExists": "CREATE",
+      "ifExists": "UPDATE_MERGE"
+  }
+}

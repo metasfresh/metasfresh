@@ -39,7 +39,7 @@ import de.metas.util.Services;
  */
 
 /**
- * Invokes {@link RequestMaterialOrderService#requestMaterialOrder(Integer)} so that some other part of the system should create a production order for the selected {@link I_MD_Candidate}(s).
+ * Invokes {@link RequestMaterialOrderService#requestMaterialOrderForCandidates(Integer)} so that some other part of the system should create a production order for the selected {@link I_MD_Candidate}(s).
  *
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -81,7 +81,7 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 				.map(r -> MaterialDispoGroupId.ofInt(r.getMD_Candidate_GroupId()))
 				.distinct()
 				.peek(groupId -> addLog("Calling {}.requestOrder() for groupId={}", RequestMaterialOrderService.class.getSimpleName(), groupId))
-				.forEach(service::requestMaterialOrder);
+				.forEach(service::requestMaterialOrderForCandidates);
 
 		return MSG_OK;
 	}

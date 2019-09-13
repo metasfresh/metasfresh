@@ -27,8 +27,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -41,8 +39,6 @@ import com.google.common.io.BaseEncoding;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
-import de.metas.util.lang.CoalesceUtil;
-import lombok.NonNull;
 
 /**
  * General Utilities
@@ -302,13 +298,6 @@ public class Util
 			this.array = input;
 		}
 
-		public Object[] getArray()
-		{
-			final Object[] newArray = new Object[array.length];
-			System.arraycopy(array, 0, newArray, 0, array.length);
-			return newArray;
-		}
-
 		@Override
 		public int hashCode()
 		{
@@ -324,7 +313,7 @@ public class Util
 			}
 			if (other instanceof ArrayKey)
 			{
-				return Arrays.equals(this.array, ((ArrayKey)other).getArray());
+				return Arrays.equals(this.array, ((ArrayKey)other).array);
 			}
 			return false;
 		}
@@ -332,11 +321,16 @@ public class Util
 		@Override
 		public String toString()
 		{
-			if (_stringBuilt != null)
+			String stringBuilt = this._stringBuilt;
+			if (stringBuilt == null)
 			{
-				return _stringBuilt;
+				stringBuilt = _stringBuilt = buildToString();
 			}
+			return stringBuilt;
+		}
 
+		private String buildToString()
+		{
 			final StringBuilder sb = new StringBuilder();
 			for (final Object k : array)
 			{
@@ -354,8 +348,7 @@ public class Util
 				}
 			}
 
-			_stringBuilt = sb.toString();
-			return _stringBuilt;
+			return sb.toString();
 		}
 
 		@Override
@@ -571,75 +564,6 @@ public class Util
 		}
 
 		return msg;
-	}
-
-	/**
-	 * @deprecated please use {@link CoalesceUtil#coalesce(Object, Object)} instead.
-	 */
-	// NOTE: this method is optimized for common usage
-	@Deprecated
-	public static final <T> T coalesce(final T value1, final T value2)
-	{
-		return CoalesceUtil.coalesce(value1, value2);
-	}
-
-	/**
-	 * @deprecated please use {@link CoalesceUtil#coalesce(Object, Object, Object)} instead.
-	 */
-	// NOTE: this method is optimized for common usage
-	@Deprecated
-	public static final <T> T coalesce(final T value1, final T value2, final T value3)
-	{
-		return CoalesceUtil.coalesce(value1, value2, value3);
-	}
-
-	/**
-	 * @deprecated please use {@link CoalesceUtil#coalesce(Object...)} instead.
-	 */
-	@Deprecated
-	@SafeVarargs
-	public static final <T> T coalesce(final T... values)
-	{
-		return CoalesceUtil.coalesce(values);
-	}
-
-	/**
-	 * @deprecated please use {@link CoalesceUtil#coalesceSuppliers(Supplier...)} instead.
-	 */
-	@Deprecated
-	@SafeVarargs
-	public static final <T> T coalesceSuppliers(final Supplier<T>... values)
-	{
-		return CoalesceUtil.coalesceSuppliers(values);
-	}
-
-	/**
-	 * @deprecated please use {@link CoalesceUtil#firstValidValue(Predicate, Supplier...)} instead.
-	 */
-	@Deprecated
-	@SafeVarargs
-	public static final <T> T firstValidValue(@NonNull final Predicate<T> isValidPredicate, final Supplier<T>... values)
-	{
-		return CoalesceUtil.firstValidValue(isValidPredicate, values);
-	}
-
-	/**
-	 * @deprecated please use {@link CoalesceUtil#firstGreaterThanZeroSupplier(Supplier...)} instead.
-	 */
-	@Deprecated
-	public static final int firstGreaterThanZero(int... values)
-	{
-		return CoalesceUtil.firstGreaterThanZero(values);
-	}
-
-	/**
-	 * @return the first non-empty string or {@code null}.
-	 * @deprecated please use {@link CoalesceUtil#firstNotEmptyTrimmed(String...)} instead
-	 */
-	@Deprecated
-	public static final String firstNotEmptyTrimmed(@NonNull final String... values)
-	{
-		return CoalesceUtil.firstNotEmptyTrimmed(values);
 	}
 
 	public static String replaceNonDigitCharsWithZero(String stringToModify)

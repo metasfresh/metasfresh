@@ -87,7 +87,7 @@ public class M_ReceiptSchedule_Close extends JavaProcess implements IProcessPrec
 	private void closeInTrx(final I_M_ReceiptSchedule receiptSchedule)
 	{
 		Services.get(ITrxManager.class)
-				.run(new TrxRunnable()
+				.runInNewTrx(new TrxRunnable()
 				{
 					@Override
 					public void run(String localTrxName) throws Exception

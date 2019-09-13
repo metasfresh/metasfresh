@@ -3,15 +3,21 @@ package de.metas.rest_api.bpartner.impl.bpartnercomposite;
 import static de.metas.util.Check.isEmpty;
 
 import java.util.Collection;
-import java.util.List;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner_Location;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartnerComposite;
+import de.metas.bpartner.composite.BPartnerContact;
+import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.cache.CacheIndexDataAdapter;
+import de.metas.interfaces.I_C_BPartner;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.utils.JsonConverters;
 import de.metas.util.rest.ExternalId;
@@ -39,33 +45,59 @@ import lombok.NonNull;
  * #L%
  */
 
-public final class BPartnerCompositeCacheIndex implements CacheIndexDataAdapter<BPartnerId/* RK */, BPartnerCompositeLookupKey/* CK */, BPartnerComposite/* V */>
+final class BPartnerCompositeCacheIndex
+		implements CacheIndexDataAdapter<BPartnerId/* RK */, BPartnerCompositeLookupKey/* CK */, BPartnerComposite/* V */>
 {
+	@Override
+	public BPartnerId extractDataItemId(@NonNull final BPartnerComposite dataItem)
+	{
+		return dataItem.getBpartner().getId();
+	}
 
 	@Override
-	public Collection<BPartnerCompositeLookupKey> extractCKs(@NonNull final BPartnerComposite record)
+	public ImmutableSet<TableRecordReference> extractRecordRefs(final BPartnerComposite dataItem)
+	{
+		final ImmutableSet.Builder<TableRecordReference> recordRefs = ImmutableSet.builder();
+
+		recordRefs.add(TableRecordReference.of(I_C_BPartner.Table_Name, dataItem.getBpartner().getId()));
+
+		for (final BPartnerLocation location : dataItem.getLocations())
+		{
+			recordRefs.add(TableRecordReference.of(I_C_BPartner_Location.Table_Name, location.getId()));
+		}
+
+		for (final BPartnerContact contact : dataItem.getContacts())
+		{
+			recordRefs.add(TableRecordReference.of(I_AD_User.Table_Name, contact.getId()));
+		}
+
+		return recordRefs.build();
+	}
+
+	@Override
+	public Collection<BPartnerCompositeLookupKey> extractCacheKeys(@NonNull final BPartnerComposite dataItem)
 	{
 		final ImmutableList.Builder<BPartnerCompositeLookupKey> result = ImmutableList.builder();
 
-		final String value = record.getBpartner().getValue();
+		final String value = dataItem.getBpartner().getValue();
 		if (!isEmpty(value, true))
 		{
 			result.add(BPartnerCompositeLookupKey.ofCode(value));
 		}
 
-		final List<String> locationGlns = record.extractLocationGlns();
-		for (final String locationGln : locationGlns)
+		final ImmutableSet<GLN> locationGlns = dataItem.extractLocationGlns();
+		for (final GLN locationGln : locationGlns)
 		{
 			result.add(BPartnerCompositeLookupKey.ofGln(locationGln));
 		}
 
-		final ExternalId externalId = record.getBpartner().getExternalId();
+		final ExternalId externalId = dataItem.getBpartner().getExternalId();
 		if (externalId != null)
 		{
 			result.add(BPartnerCompositeLookupKey.ofJsonExternalId(JsonConverters.toJsonOrNull(externalId)));
 		}
 
-		final MetasfreshId metasfreshId = MetasfreshId.ofOrNull(record.getBpartner().getId());
+		final MetasfreshId metasfreshId = MetasfreshId.ofOrNull(dataItem.getBpartner().getId());
 		if (metasfreshId != null)
 		{
 			result.add(BPartnerCompositeLookupKey.ofMetasfreshId(metasfreshId));
@@ -73,17 +105,4 @@ public final class BPartnerCompositeCacheIndex implements CacheIndexDataAdapter<
 
 		return result.build();
 	}
-
-	@Override
-	public BPartnerId extractRK(@NonNull final BPartnerComposite record)
-	{
-		return record.getBpartner().getId();
-	}
-
-	@Override
-	public BPartnerId extractRK(@NonNull final TableRecordReference recordRef)
-	{
-		return BPartnerId.ofRepoId(recordRef.getRecord_ID());
-	}
-
 }

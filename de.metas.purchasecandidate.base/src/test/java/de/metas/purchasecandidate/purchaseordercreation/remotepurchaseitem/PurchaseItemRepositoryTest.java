@@ -143,7 +143,7 @@ public class PurchaseItemRepositoryTest
 		final I_C_OrderLine purchaseOrderLine = newInstance(I_C_OrderLine.class);
 		purchaseOrderLine.setC_Order_ID(50);
 		purchaseOrderLine.setM_Product_ID(product.getM_Product_ID());
-		purchaseOrderLine.setQtyOrdered(qtyOrdered.getAsBigDecimal());
+		purchaseOrderLine.setQtyOrdered(qtyOrdered.toBigDecimal());
 		save(purchaseOrderLine);
 		return purchaseOrderLine;
 	}

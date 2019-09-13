@@ -4,8 +4,6 @@ import static de.metas.rest_api.bpartner.SwaggerDocConstants.READ_ONLY_SYNC_ADVI
 import static de.metas.util.Check.isEmpty;
 import static de.metas.util.lang.CoalesceUtil.coalesce;
 
-import java.util.Objects;
-
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -15,14 +13,12 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.SyncAdvise;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -52,25 +48,28 @@ import lombok.Value;
 public final class JsonRequestComposite
 {
 	// TODO if an org is given, then verify whether the current user has access to the given org
-	@ApiModelProperty(required = false)
+	@ApiModelProperty(position = 10)
 	@JsonInclude(Include.NON_NULL)
 	String orgCode;
 
+	@ApiModelProperty(position = 20)
 	JsonRequestBPartner bpartner;
 
-	@ApiModelProperty(required = false, value = "The location's GLN can be used to lookup the whole bpartner; if multiple locations with GLN are provided, then only the first one is used")
+	@ApiModelProperty(value = "The location's GLN can be used to lookup the whole bpartner; if multiple locations with GLN are provided, then only the first one is used", //
+			position = 30)
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonProperty("locations")
 	@Getter(AccessLevel.PRIVATE)
 	JsonRequestLocationUpsert locations;
 
+	@ApiModelProperty(position = 40)
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonProperty("contacts")
 	@Getter(AccessLevel.PRIVATE)
 	JsonRequestContactUpsert contacts;
 
-	@ApiModelProperty(required = false, value = "Ths advise is applied to this composite's bpartner or any of its contacts\n"
-			+ READ_ONLY_SYNC_ADVISE_DOC)
+	@ApiModelProperty(value = "Ths advise is applied to this composite's bpartner or any of its contacts\n"
+			+ READ_ONLY_SYNC_ADVISE_DOC, position = 50)
 	@JsonInclude(Include.NON_NULL)
 	SyncAdvise syncAdvise;
 
@@ -78,7 +77,7 @@ public final class JsonRequestComposite
 	@JsonCreator
 	private JsonRequestComposite(
 			@JsonProperty("orgCode") @Nullable final String orgCode,
-			@JsonProperty("bpartner") @NonNull final JsonRequestBPartner bpartner,
+			@JsonProperty("bpartner") @Nullable final JsonRequestBPartner bpartner,
 			@JsonProperty("locations") @Nullable final JsonRequestLocationUpsert locations,
 			@JsonProperty("contacts") @Nullable final JsonRequestContactUpsert contacts,
 			@JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
@@ -97,17 +96,6 @@ public final class JsonRequestComposite
 				.map(JsonRequestLocation::getGln)
 				.filter(gln -> !isEmpty(gln, true))
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	public JsonRequestComposite withExternalId(@NonNull final JsonExternalId externalId)
-	{
-		if (Objects.equals(externalId, bpartner.getExternalId()))
-		{
-			return this; // nothing to do
-		}
-		return toBuilder()
-				.bpartner(bpartner.toBuilder().externalId(externalId).build())
-				.build();
 	}
 
 	@JsonIgnore
