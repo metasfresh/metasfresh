@@ -32,7 +32,6 @@ public class InvoiceHeaderImplBuilder
 
 	private final Set<String> POReferences = new HashSet<>();
 
-	private LocalDate _today;
 	private LocalDate _dateInvoiced;
 	private LocalDate _dateAcct;
 
@@ -108,17 +107,6 @@ public class InvoiceHeaderImplBuilder
 		return invoiceHeader;
 	}
 
-	public InvoiceHeaderImplBuilder setToday(final LocalDate today)
-	{
-		this._today = today;
-		return this;
-	}
-
-	public final LocalDate getToday()
-	{
-		return _today;
-	}
-
 	public I_C_DocType getC_DocTypeInvoice()
 	{
 		return docTypeInvoice;
@@ -141,10 +129,7 @@ public class InvoiceHeaderImplBuilder
 
 	public LocalDate getDateInvoiced()
 	{
-		if (_dateInvoiced == null)
-		{
-			return getToday();
-		}
+		Check.assumeNotNull(_dateInvoiced, "Parameter _dateInvoiced is not null");
 		return _dateInvoiced;
 	}
 
@@ -334,20 +319,20 @@ public class InvoiceHeaderImplBuilder
 		{
 			return valueNew;
 		}
-
-		if (valueNew == null)
+		else if (valueNew == null)
 		{
 			return value;
 		}
-
-		if (value.equals(valueNew))
+		else if (value.equals(valueNew))
 		{
 			return value;
 		}
-
-		throw new AdempiereException("Overriding field " + name + " not allowed"
-				+ "\n Current value: " + value
-				+ "\n New value: " + valueNew);
+		else
+		{
+			throw new AdempiereException("Overriding field " + name + " not allowed"
+					+ "\n Current value: " + value
+					+ "\n New value: " + valueNew);
+		}
 	}
 
 	private static final int checkOverrideID(final String name, final int id, final int idNew)
@@ -356,20 +341,20 @@ public class InvoiceHeaderImplBuilder
 		{
 			return idNew <= 0 ? -1 : idNew;
 		}
-
-		if (idNew <= 0)
+		else if (idNew <= 0)
 		{
 			return id <= 0 ? -1 : id;
 		}
-
-		if (id == idNew)
+		else if (id == idNew)
 		{
 			return id;
 		}
-
-		throw new AdempiereException("Overriding field " + name + " not allowed"
-				+ "\n Current value: " + id
-				+ "\n New value: " + idNew);
+		else
+		{
+			throw new AdempiereException("Overriding field " + name + " not allowed"
+					+ "\n Current value: " + id
+					+ "\n New value: " + idNew);
+		}
 	}
 
 	private static final <T> T checkOverrideModel(final String name, final T model, final T modelNew)

@@ -266,15 +266,14 @@ public final class AggregationEngine
 		InvoiceHeaderAndLineAggregators headerAndAggregators = key2headerAndAggregators.get(headerAggregationKey);
 		if (headerAndAggregators == null)
 		{
-			final InvoiceHeaderImplBuilder invoiceHeader = InvoiceHeaderImpl.builder()
-					.setToday(today);
-
-			addToInvoiceHeader(invoiceHeader, ic, inoutId);
-			headerAndAggregators = new InvoiceHeaderAndLineAggregators(headerAggregationKey, invoiceHeader);
+			headerAndAggregators = new InvoiceHeaderAndLineAggregators(headerAggregationKey);
 			key2headerAndAggregators.put(headerAggregationKey, headerAndAggregators);
 
-			final ILoggable loggable = Loggables.get();
+			final InvoiceHeaderImplBuilder invoiceHeader = headerAndAggregators.getInvoiceHeader();
+			addToInvoiceHeader(invoiceHeader, ic, inoutId);
+
 			// task 08451: log why we create a new invoice header
+			final ILoggable loggable = Loggables.get();
 			if (!Loggables.isNull(loggable))
 			{
 				loggable.addLog("Created new InvoiceHeaderAndLineAggregators instance. current number: " + key2headerAndAggregators.size() + "\n"

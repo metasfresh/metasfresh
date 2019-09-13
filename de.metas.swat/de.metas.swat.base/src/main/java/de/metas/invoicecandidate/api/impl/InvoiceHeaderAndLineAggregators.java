@@ -42,12 +42,10 @@ import lombok.ToString;
 	/** Map: C_Invoice_Candidate_Agg_ID to invoice line aggregator ({@link IAggregator}) */
 	private final HashMap<Object, IAggregator> lineAggregators = new HashMap<>();
 
-	public InvoiceHeaderAndLineAggregators(
-			@NonNull final AggregationKey headerAggregationKey,
-			@NonNull final InvoiceHeaderImplBuilder invoiceHeader)
+	public InvoiceHeaderAndLineAggregators(@NonNull final AggregationKey headerAggregationKey)
 	{
 		this.headerAggregationKey = headerAggregationKey;
-		this.invoiceHeader = invoiceHeader;
+		this.invoiceHeader = InvoiceHeaderImpl.builder();
 	}
 
 	public IAggregator getLineAggregator(final int invoiceCandidateAggId)
