@@ -1,8 +1,6 @@
-import { salesOrders } from '../../page_objects/sales_orders';
-
 import { SalesOrder } from '../../support/utils/sales_order_api';
 import { BPartner } from '../../support/utils/bpartner';
-import {humanReadableNow} from "../../support/utils/utils";
+import { humanReadableNow } from '../../support/utils/utils';
 
 const date = humanReadableNow();
 const customer1Name = `Customer1-${date}`;
@@ -16,10 +14,7 @@ describe('New sales order test', function() {
       new BPartner({ ...customerJson, name: customer1Name })
         .clearContacts()
         .setBank(undefined)
-        .apply()
-        .then(() => {
-          cy.visitWindow(salesOrders.windowId, 'NEW');
-        });
+        .apply();
     });
 
     cy.fixture('sales/sales_order.json').then(orderJson => {
