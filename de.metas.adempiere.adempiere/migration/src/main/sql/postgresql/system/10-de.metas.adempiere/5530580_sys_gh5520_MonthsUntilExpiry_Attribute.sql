@@ -33,3 +33,13 @@ INSERT INTO M_HU_PI_Attribute (AD_Client_ID,AD_Org_ID,C_UOM_ID,Created,CreatedBy
 UPDATE M_Attribute SET IsAttrDocumentRelevant='N',Updated=TO_TIMESTAMP('2019-09-16 16:12:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Attribute_ID=540044
 ;
 
+-- 2019-09-16T15:59:18.256Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE M_Attribute SET ValueMax=NULL, ValueMin=NULL,Updated=TO_TIMESTAMP('2019-09-16 18:59:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Attribute_ID=540044
+;
+
+-- 2019-09-16T16:09:09.088Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE M_Attribute SET C_UOM_ID=100,Updated=TO_TIMESTAMP('2019-09-16 19:09:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Attribute_ID=540044
+;
+
