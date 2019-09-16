@@ -2,10 +2,10 @@ package de.metas.inoutcandidate.spi;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.compiere.Adempiere;
 import org.compiere.model.I_C_OrderLine;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -46,12 +46,13 @@ import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderReferenceProvider;
 })
 public class ShipmentScheduleOrderDocFactoryTest
 {
+	@Autowired
+	private ShipmentScheduleReferencedLineFactory bean;
+
 	@Test
 	public void factoryAndOrderLineImplCanBeDiscoveredAndConfigured()
 	{
-		final ShipmentScheduleReferencedLineFactory bean = Adempiere.getBean(ShipmentScheduleReferencedLineFactory.class);
-
-		final ShipmentScheduleReferencedLineProvider providerForOrderLineScheds = bean.getProviderForTableName(I_C_OrderLine.Table_Name);
+		final ShipmentScheduleReferencedLineProvider providerForOrderLineScheds = bean.getProviderForTableNameOrNull(I_C_OrderLine.Table_Name);
 		assertThat(providerForOrderLineScheds).isNotNull();
 		assertThat(providerForOrderLineScheds).isInstanceOf(ShipmentScheduleOrderReferenceProvider.class);
 	}

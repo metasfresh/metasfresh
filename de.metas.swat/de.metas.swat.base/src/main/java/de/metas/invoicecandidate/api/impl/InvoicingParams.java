@@ -24,7 +24,7 @@ package de.metas.invoicecandidate.api.impl;
 
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 
 import org.adempiere.util.api.IParams;
 
@@ -37,7 +37,6 @@ import lombok.NonNull;
  */
 public class InvoicingParams implements IInvoicingParams
 {
-
 	private static final String PARA_OnlyApprovedForInvoicing = "OnlyApprovedForInvoicing";
 	private static final String PARA_IsConsolidateApprovedICs = "IsConsolidateApprovedICs";
 	private static final String PARA_IgnoreInvoiceSchedule = "IgnoreInvoiceSchedule";
@@ -73,15 +72,15 @@ public class InvoicingParams implements IInvoicingParams
 	}
 
 	@Override
-	public Timestamp getDateInvoiced()
+	public LocalDate getDateInvoiced()
 	{
-		return params.getParameterAsTimestamp(PARA_DateInvoiced);
+		return params.getParameterAsLocalDate(PARA_DateInvoiced);
 	}
 
 	@Override
-	public Timestamp getDateAcct()
+	public LocalDate getDateAcct()
 	{
-		return params.getParameterAsTimestamp(PARA_DateAcct);
+		return params.getParameterAsLocalDate(PARA_DateAcct);
 	}
 
 	@Override

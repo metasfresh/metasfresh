@@ -699,31 +699,6 @@ public interface I_C_OLCand
     public static final String COLUMNNAME_DateCandidate = "DateCandidate";
 
 	/**
-	 * Set Rechnungsdatum.
-	 * Datum auf der Rechnung
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setDateInvoiced (java.sql.Timestamp DateInvoiced);
-
-	/**
-	 * Get Rechnungsdatum.
-	 * Datum auf der Rechnung
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getDateInvoiced();
-
-    /** Column definition for DateInvoiced */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_DateInvoiced = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "DateInvoiced", null);
-    /** Column name DateInvoiced */
-    public static final String COLUMNNAME_DateInvoiced = "DateInvoiced";
-
-	/**
 	 * Set Auftragsdatum.
 	 * Datum des Auftrags
 	 *
@@ -1833,6 +1808,52 @@ public interface I_C_OLCand
     public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_POReference = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "POReference", null);
     /** Column name POReference */
     public static final String COLUMNNAME_POReference = "POReference";
+
+	/**
+	 * Set Vorbelegtes Rechnungsdatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPresetDateInvoiced (java.sql.Timestamp PresetDateInvoiced);
+
+	/**
+	 * Get Vorbelegtes Rechnungsdatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getPresetDateInvoiced();
+
+    /** Column definition for PresetDateInvoiced */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_PresetDateInvoiced = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "PresetDateInvoiced", null);
+    /** Column name PresetDateInvoiced */
+    public static final String COLUMNNAME_PresetDateInvoiced = "PresetDateInvoiced";
+
+	/**
+	 * Set Vorbelegtes Lieferdatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPresetDateShipped (java.sql.Timestamp PresetDateShipped);
+
+	/**
+	 * Get Vorbelegtes Lieferdatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getPresetDateShipped();
+
+    /** Column definition for PresetDateShipped */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_PresetDateShipped = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "PresetDateShipped", null);
+    /** Column name PresetDateShipped */
+    public static final String COLUMNNAME_PresetDateShipped = "PresetDateShipped";
 
 	/**
 	 * Set Preiseinheit int..

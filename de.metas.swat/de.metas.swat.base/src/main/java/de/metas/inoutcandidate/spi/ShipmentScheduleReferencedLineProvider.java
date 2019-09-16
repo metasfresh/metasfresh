@@ -1,6 +1,6 @@
 package de.metas.inoutcandidate.spi;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
@@ -30,7 +30,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
  * Implementations create {@link ShipmentScheduleReferencedLine} instances for shipment schedules that reference a particular table.
  * They are automatically discovered and added to {@link ShipmentScheduleReferencedLineProvider} on startup.
  * <p>
- * Please annotate your implementations also with {@link Service} to enable auto detection.
+ * Please annotate your implementations also with {@link Component} to enable auto detection.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -38,7 +38,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 public interface ShipmentScheduleReferencedLineProvider
 {
 	/**
-	 * @return he name of the table (as references by {@link I_M_ShipmentSchedule#COLUMN_AD_Table_ID}) this implementation is in charge of.
+	 * @return the name of the table (as references by {@link I_M_ShipmentSchedule#COLUMN_AD_Table_ID}) this implementation is in charge of.
 	 */
 	String getTableName();
 

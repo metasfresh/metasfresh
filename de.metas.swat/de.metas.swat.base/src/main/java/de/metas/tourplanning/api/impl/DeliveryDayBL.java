@@ -23,6 +23,8 @@ package de.metas.tourplanning.api.impl;
  */
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +37,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.TimeUtil;
 
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.lang.SOTrx;
 import de.metas.tourplanning.api.IDeliveryDayAllocable;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IDeliveryDayDAO;
@@ -173,7 +177,7 @@ public class DeliveryDayBL implements IDeliveryDayBL
 	private PlainDeliveryDayQueryParams createDeliveryDayQueryParams(final IDeliveryDayAllocable deliveryDayAllocable)
 	{
 		final PlainDeliveryDayQueryParams params = new PlainDeliveryDayQueryParams();
-		params.setC_BPartner_Location_ID(deliveryDayAllocable.getC_BPartner_Location_ID());
+		params.setBPartnerLocationId(deliveryDayAllocable.getBPartnerLocationId());
 		params.setDeliveryDate(deliveryDayAllocable.getDeliveryDate());
 		params.setToBeFetched(deliveryDayAllocable.isToBeFetched());
 
@@ -233,12 +237,12 @@ public class DeliveryDayBL implements IDeliveryDayBL
 	}
 
 	@Override
-	public Timestamp calculatePreparationDateOrNull(
+	public ZonedDateTime calculatePreparationDateOrNull(
 			final IContextAware context,
-			final boolean isSOTrx,
-			final Timestamp dateOrdered,
-			final Timestamp datePromised,
-			final int bpartnerLocationId)
+			final SOTrx soTrx,
+			final ZonedDateTime calculationTime,
+			final ZonedDateTime datePromised,
+			final BPartnerLocationId bpartnerLocationId)
 	{
 		// #1211
 		// Note: I am commenting this out instead of deleting it for traceability. This functionality changed several times in the past.
@@ -249,18 +253,14 @@ public class DeliveryDayBL implements IDeliveryDayBL
 		// The search will initially be made for the first deliveryDay of the day of the promised date
 		// For example, if there are 3 deliveryDay entries for a certain date and the products are
 		// promised to be shipped in that day's evening, the first deliveryDay of that day will be chosen.
-		Timestamp preparationDay = TimeUtil.getDay(datePromised);
-
-		// the date+time when the calculation is made, generically named DateOrdered.
-		// It will usually be when the date+time when the order was created, or the system time
-		final Timestamp calculationTime = dateOrdered;
+		LocalDate preparationDay = datePromised.toLocalDate();
 
 		//
 		// Create Delivery Day Query Parameters
 		final PlainDeliveryDayQueryParams deliveryDayQueryParams = new PlainDeliveryDayQueryParams();
-		deliveryDayQueryParams.setC_BPartner_Location_ID(bpartnerLocationId);
+		deliveryDayQueryParams.setBPartnerLocationId(bpartnerLocationId);
 		deliveryDayQueryParams.setDeliveryDate(datePromised);
-		deliveryDayQueryParams.setToBeFetched(!isSOTrx);
+		deliveryDayQueryParams.setToBeFetched(soTrx.isPurchase());
 		deliveryDayQueryParams.setProcessed(false);
 		deliveryDayQueryParams.setCalculationTime(calculationTime);
 		deliveryDayQueryParams.setPreparationDay(preparationDay);
@@ -283,14 +283,14 @@ public class DeliveryDayBL implements IDeliveryDayBL
 
 		//
 		// Extract PreparationDate from DeliveryDay record
-		final Timestamp preparationDate;
+		final ZonedDateTime preparationDate;
 		if (dd == null)
 		{
 			preparationDate = null;
 		}
 		else
 		{
-			preparationDate = dd.getDeliveryDate();
+			preparationDate = TimeUtil.asZonedDateTime(dd.getDeliveryDate());
 		}
 
 		return preparationDate;

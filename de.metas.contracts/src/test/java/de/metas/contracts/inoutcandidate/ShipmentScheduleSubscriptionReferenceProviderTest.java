@@ -78,7 +78,8 @@ public class ShipmentScheduleSubscriptionReferenceProviderTest
 
 		final ShipmentScheduleReferencedLine result = new ShipmentScheduleSubscriptionReferenceProvider().provideFor(sched);
 		assertThat(result).isNotNull();
-		assertThat(result.getGroupId()).isEqualTo(term.getC_Flatrate_Term_ID());
+		assertThat(result.getRecordRef().getRecordIdAssumingTableName(I_C_Flatrate_Term.Table_Name))
+				.isEqualTo(term.getC_Flatrate_Term_ID());
 		assertThat(result.getWarehouseId().getRepoId()).isEqualTo(23);
 	}
 

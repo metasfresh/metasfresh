@@ -10,7 +10,9 @@ import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_Order;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -74,9 +76,9 @@ public class M_ShipmentScheduleTest
 
 	private static final BPartnerId BPARTNER_ID1 = BPartnerId.ofRepoId(40);
 	private static final BPartnerId BPARTNER_ID2 = BPartnerId.ofRepoId(45);
-	
+
 	private static final WarehouseId WAREHOUSE_ID = WarehouseId.ofRepoId(30);
-	
+
 	private static final int PRODUCT_ID = 20;
 
 	private static final BigDecimal ONE = BigDecimal.ONE;
@@ -151,7 +153,7 @@ public class M_ShipmentScheduleTest
 	{
 		final ShipmentScheduleReferencedLine shipmentScheduleReferencedLine = //
 				ShipmentScheduleReferencedLine.builder()
-						.groupId(10)
+						.recordRef(TableRecordReference.of(I_C_Order.Table_Name, 10))
 						.shipperId(ShipperId.optionalOfRepoId(20))
 						.warehouseId(WAREHOUSE_ID)
 						.documentLineDescriptor(orderLineDescriptor).build();

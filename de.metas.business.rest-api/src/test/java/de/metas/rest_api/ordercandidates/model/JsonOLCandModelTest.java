@@ -140,7 +140,7 @@ public class JsonOLCandModelTest
 		final JsonOLCandCreateRequest requestForInvoiceCandidate = requestForOrderLine
 				.toBuilder()
 				.dataDestInternalName("DEST.de.metas.invoicecandidate")
-				.dateInvoiced(LocalDate.of(2019, 03, 13))
+				.presetDateInvoiced(LocalDate.of(2019, 03, 13))
 				.build();
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.builder()

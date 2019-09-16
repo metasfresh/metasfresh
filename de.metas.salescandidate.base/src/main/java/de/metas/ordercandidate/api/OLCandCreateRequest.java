@@ -72,8 +72,10 @@ public class OLCandCreateRequest
 	LocalDate dateOrdered;
 	LocalDate dateRequired;
 
-	LocalDate dateInvoiced;
+	LocalDate presetDateInvoiced;
 	DocTypeId docTypeInvoiceId;
+
+	LocalDate presetDateShipped;
 
 	int flatrateConditionsId;
 
@@ -104,7 +106,8 @@ public class OLCandCreateRequest
 			final String poReference,
 			@Nullable final LocalDate dateOrdered,
 			@Nullable final LocalDate dateRequired,
-			@Nullable final LocalDate dateInvoiced,
+			@Nullable final LocalDate presetDateInvoiced,
+			@Nullable final LocalDate presetDateShipped,
 			@Nullable final DocTypeId docTypeInvoiceId,
 			final int flatrateConditionsId,
 			@NonNull final ProductId productId,
@@ -136,8 +139,10 @@ public class OLCandCreateRequest
 		this.dateRequired = dateRequired;
 
 		this.dateOrdered = dateOrdered;
-		this.dateInvoiced = dateInvoiced;
+		this.presetDateInvoiced = presetDateInvoiced;
 		this.docTypeInvoiceId = docTypeInvoiceId;
+
+		this.presetDateShipped = presetDateShipped;
 
 		this.flatrateConditionsId = flatrateConditionsId;
 		this.productId = productId;

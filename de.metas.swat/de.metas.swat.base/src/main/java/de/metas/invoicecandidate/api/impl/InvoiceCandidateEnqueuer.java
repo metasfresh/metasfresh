@@ -25,12 +25,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -290,8 +287,6 @@ import lombok.NonNull;
 
 	private final void prepareSelectionForEnqueueing(final PInstanceId selectionId)
 	{
-		final Timestamp today = invoiceCandBL.getToday();
-
 		//
 		// Check incomplete compensation groups
 		final Set<String> incompleteOrderDocumentNo = invoiceCandDAO.retrieveOrderDocumentNosForIncompleteGroupsFromSelection(selectionId);
@@ -300,19 +295,6 @@ import lombok.NonNull;
 			final String incompleteOrderDocumentNoStr = Joiner.on(", ").join(incompleteOrderDocumentNo);
 			throw new AdempiereException(MSG_IncompleteGroupsFound_1P, new Object[] { incompleteOrderDocumentNoStr });
 		}
-
-		//
-		// Updating candidates previous to enqueueing, if the parameter has been set (task 03905)
-		// task 08628: always make sure that every IC has the *same* dateInvoiced. possible other dates that were previously set don't matter.
-		// this is critical because we assume that dateInvoiced is not part of the aggregation key, so different values would fail the invoicing
-		final Timestamp dateInvoiced = getInvoicingParams().getDateInvoiced() != null ? getInvoicingParams().getDateInvoiced() : invoiceCandBL.getToday();
-		invoiceCandDAO.updateDateInvoiced(dateInvoiced, selectionId);
-
-		//
-		// Updating candidates previous to enqueueing, if the parameter has been set (task 08437)
-		// task 08628: same as for dateInvoiced
-		final Timestamp dateAcct = getInvoicingParams().getDateAcct() != null ? getInvoicingParams().getDateAcct() : dateInvoiced;
-		invoiceCandDAO.updateDateAcct(dateAcct, selectionId);
 
 		//
 		// Update POReference (task 07978)
@@ -327,42 +309,16 @@ import lombok.NonNull;
 		{
 			invoiceCandDAO.updateMissingPaymentTermIds(selectionId);
 		}
-
-		//
-		// Make sure invoicing dates are correctly set
-		// * DateInvoiced - set it to today if null
-		// * DateAcct - set it to DateInvoiced if null
-		//
-		// NOTE: before we group the invoices by their header aggregation key,
-		// we need to make sure that all of them have the DateInvoiced and DateAcct set.
-		// If not, they will have different aggregation key in case one has a implicit DateInvoiced (i.e. today) and other IC has an explicit DateInvoiced.
-		invoiceCandDAO.updateColumnForSelection(
-				I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced,
-				today, // value
-				true, // updateOnlyIfNull
-				selectionId // selectionId
-		);
-		invoiceCandDAO.updateColumnForSelection(
-				I_C_Invoice_Candidate.COLUMNNAME_DateAcct,
-				ModelColumnNameValue.forColumnName(I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced), // value
-				true, // updateOnlyIfNull
-				selectionId // selectionId
-		);
 	}
 
 	private final Iterable<I_C_Invoice_Candidate> retrieveSelection(final PInstanceId pinstanceId)
 	{
 		// NOTE: we designed this method for the case of enqueuing 1mio invoice candidates.
 
-		return new Iterable<I_C_Invoice_Candidate>()
-		{
-			@Override
-			public Iterator<I_C_Invoice_Candidate> iterator()
-			{
-				final Properties ctx = getCtx();
-				trxManager.assertThreadInheritedTrxExists();
-				return invoiceCandDAO.retrieveIcForSelection(ctx, pinstanceId, ITrx.TRXNAME_ThreadInherited);
-			}
+		return () -> {
+			final Properties ctx = getCtx();
+			trxManager.assertThreadInheritedTrxExists();
+			return invoiceCandDAO.retrieveIcForSelection(ctx, pinstanceId, ITrx.TRXNAME_ThreadInherited);
 		};
 	}
 

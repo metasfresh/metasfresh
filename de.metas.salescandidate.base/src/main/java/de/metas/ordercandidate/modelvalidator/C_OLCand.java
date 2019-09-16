@@ -210,7 +210,7 @@ public class C_OLCand
 	@CalloutMethod(columnNames = { I_C_OLCand.COLUMNNAME_DropShip_BPartner_Override_ID })
 	public void onDropShipPartnerOverride(final I_C_OLCand olCand)
 	{
-		final BPartnerId dropShipPartnerOverrideId = BPartnerId.ofRepoId(olCand.getDropShip_BPartner_Override_ID());
+		final BPartnerId dropShipPartnerOverrideId = BPartnerId.ofRepoIdOrNull(olCand.getDropShip_BPartner_Override_ID());
 		if (dropShipPartnerOverrideId == null)
 		{
 			// in case the drop-ship bpartner Override was deleted, also delete the drop-ship Location Override
