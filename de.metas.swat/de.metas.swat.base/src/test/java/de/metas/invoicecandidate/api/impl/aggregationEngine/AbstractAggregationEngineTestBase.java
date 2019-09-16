@@ -238,7 +238,6 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 	protected final List<IInvoiceHeader> invokeAggregationEngine(@NonNull final AggregationEngine engine)
 	{
 		final List<IInvoiceHeader> invoices = engine.aggregate();
-
 		return invoices;
 	}
 
