@@ -1,7 +1,7 @@
 package org.adempiere.server.rpl.imp;
 
-import static org.compiere.util.Util.firstGreaterThanZero;
-import static org.compiere.util.Util.firstNotEmptyTrimmed;
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+import static de.metas.util.lang.CoalesceUtil.firstNotEmptyTrimmed;
 
 import java.util.Properties;
 

@@ -94,6 +94,7 @@ import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.AdProcessId;
 import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.SelectionSize;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -496,7 +497,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 				final int sortNo = field.getSortNo();
 				if (sortNo == 0)
 				{
-					
+
 				}
 				else if (Math.abs(sortNo) == 1)
 				{
@@ -547,32 +548,66 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 
 			// FIXME: metas: i think this is not needed because the AD_Field_v is returning also the missing fields
 			// Add Standard Fields
+			final boolean tabReadOnly = false;
+			final boolean applyRolePermissions = m_vo.isApplyRolePermissions();
 			if (m_mTable.getField("Created") == null)
 			{
-				final GridField created = new GridField(GridFieldVO.createStdField(ctx,
-						m_vo.getWindowNo(), m_vo.getTabNo(),
-						m_vo.getAdWindowId(), m_vo.getAD_Tab_ID(), false, true, true));
+				final GridField created = new GridField(GridFieldVO.createStdField(
+						ctx,
+						m_vo.getWindowNo(),
+						m_vo.getTabNo(),
+						m_vo.getAdWindowId(),
+						m_vo.getAD_Tab_ID(),
+						tabReadOnly,
+						applyRolePermissions,
+						true, // isCreated
+						true // isTimestamp
+				));
 				m_mTable.addField(created);
 			}
 			if (m_mTable.getField("CreatedBy") == null)
 			{
-				final GridField createdBy = new GridField(GridFieldVO.createStdField(ctx,
-						m_vo.getWindowNo(), m_vo.getTabNo(),
-						m_vo.getAdWindowId(), m_vo.getAD_Tab_ID(), false, true, false));
+				final GridField createdBy = new GridField(GridFieldVO.createStdField(
+						ctx,
+						m_vo.getWindowNo(),
+						m_vo.getTabNo(),
+						m_vo.getAdWindowId(),
+						m_vo.getAD_Tab_ID(),
+						tabReadOnly,
+						applyRolePermissions,
+						true, // isCreated
+						false // isTimestamp
+				));
 				m_mTable.addField(createdBy);
 			}
 			if (m_mTable.getField("Updated") == null)
 			{
-				final GridField updated = new GridField(GridFieldVO.createStdField(ctx,
-						m_vo.getWindowNo(), m_vo.getTabNo(),
-						m_vo.getAdWindowId(), m_vo.getAD_Tab_ID(), false, false, true));
+				final GridField updated = new GridField(GridFieldVO.createStdField(
+						ctx,
+						m_vo.getWindowNo(),
+						m_vo.getTabNo(),
+						m_vo.getAdWindowId(),
+						m_vo.getAD_Tab_ID(),
+						tabReadOnly,
+						applyRolePermissions,
+						false, // isCreated
+						true // isTimestamp
+				));
 				m_mTable.addField(updated);
 			}
 			if (m_mTable.getField("UpdatedBy") == null)
 			{
-				final GridField updatedBy = new GridField(GridFieldVO.createStdField(ctx,
-						m_vo.getWindowNo(), m_vo.getTabNo(),
-						m_vo.getAdWindowId(), m_vo.getAD_Tab_ID(), false, false, false));
+				final GridField updatedBy = new GridField(GridFieldVO.createStdField(
+						ctx,
+						m_vo.getWindowNo(),
+						m_vo.getTabNo(),
+						m_vo.getAdWindowId(),
+						m_vo.getAD_Tab_ID(),
+						tabReadOnly,
+						applyRolePermissions,
+						false, // isCreated
+						false // isTimestamp
+				));
 				m_mTable.addField(updatedBy);
 			}
 		}
@@ -2628,11 +2663,11 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	{
 		event.setCreated((Integer)getValue("CreatedBy"), (Timestamp)getValue("Created"));
 		event.setUpdated((Integer)getValue("UpdatedBy"), (Timestamp)getValue("Updated"));
-		
-		
+
+
 		final int adTableId = getAD_Table_ID();
 		final String singleKeyColumnName = getKeyColumnName();
-		
+
 		// We have a key column
 		if(!Check.isEmpty(singleKeyColumnName, true))
 		{
@@ -2655,7 +2690,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 				final Object keyValue = getValue(keyColumnName);
 				valuesByColumnName.put(keyColumnName, keyValue);
 			}
-			
+
 			event.setRecord(adTableId, ComposedRecordId.composedKey(valuesByColumnName));
 		}
 	}
@@ -4340,7 +4375,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			return gridTab.getAdWindowId();
 		}
-		
+
 		@Override
 		public AdTabId getAdTabId()
 		{
@@ -4374,10 +4409,10 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 
 		@Override
-		public int getSelectionSize()
+		public SelectionSize getSelectionSize()
 		{
 			// backward compatibility
-			return 1;
+			return SelectionSize.ofSize(1);
 		}
 
 	}

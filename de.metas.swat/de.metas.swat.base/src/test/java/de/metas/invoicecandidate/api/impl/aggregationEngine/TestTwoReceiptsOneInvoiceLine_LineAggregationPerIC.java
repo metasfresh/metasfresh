@@ -36,18 +36,26 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
 import org.junit.Assert;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
 import de.metas.aggregation.model.C_Aggregation_Builder;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.aggregation.model.X_C_AggregationItem;
+import de.metas.currency.CurrencyRepository;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.expectations.InvoiceLineAttributeExpectations;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.MoneyService;
 import de.metas.util.collections.CollectionUtils;
 
 /**
@@ -60,9 +68,10 @@ import de.metas.util.collections.CollectionUtils;
  *
  * Expectation: we expect only one invoice line to be generated (and NOT two, one for each receipt)
  *
- * @author tsa
  * @task 08489
  */
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
 public class TestTwoReceiptsOneInvoiceLine_LineAggregationPerIC extends AbstractTwoInOutsTests
 {
 	protected I_M_Attribute attribute1;
@@ -228,7 +237,7 @@ public class TestTwoReceiptsOneInvoiceLine_LineAggregationPerIC extends Abstract
 
 		// Make sure our line aggregation builder was used
 		assertEquals(lineAggregation_PerInvoiceCandidate.getC_Aggregation_ID(), invoiceCandidate.getLineAggregationKeyBuilder_ID());
-	};
+	}
 
 	@Override
 	protected void step_validate_after_aggregation(List<I_C_Invoice_Candidate> invoiceCandidates, List<I_M_InOutLine> inOutLines, List<IInvoiceHeader> invoices)
@@ -238,8 +247,8 @@ public class TestTwoReceiptsOneInvoiceLine_LineAggregationPerIC extends Abstract
 		final IInvoiceLineRW invoiceLine = CollectionUtils.singleElement(invoiceLineAggregate.getAllLines());
 
 		// Assert we invoiced all inout lines
-		final BigDecimal qtyToInvoice_Expected = partialQty1.add(partialQty2).add(partialQty3);
-		assertThat(invoiceLine.getQtyToInvoice(), comparesEqualTo(qtyToInvoice_Expected));
+		final BigDecimal qtyToInvoice_Expected = partialQty1_32.add(partialQty2_8).add(partialQty3_4);
+		assertThat(invoiceLine.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(qtyToInvoice_Expected));
 
 		// Make sure attributes were not aggregated
 		assertThat(invoiceLine.getInvoiceLineAttributes(), empty());

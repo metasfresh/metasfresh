@@ -1,5 +1,6 @@
 package de.metas.inout.api;
 
+import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
@@ -9,19 +10,21 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
-import de.metas.adempiere.service.IWarehouseDAO;
+
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /*
@@ -65,16 +68,18 @@ public class ReceiptLineFindForwardToLocatorTool
 			final I_M_Warehouse warehouseForIssues = Services.get(IWarehouseDAO.class).retrieveWarehouseForIssuesOrNull(Env.getCtx());
 			Check.assumeNotNull(warehouseForIssues, "Warehouse for issues shall be defined");
 			final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-			final I_M_Locator locatorForIssues = warehouseBL.getDefaultLocator(warehouseForIssues);
+			final LocatorId locatorIdForIssues = warehouseBL.getDefaultLocatorId(WarehouseId.ofRepoId(warehouseForIssues.getM_Warehouse_ID()));
 
-			return LocatorId.ofRecordOrNull(locatorForIssues);
+			return locatorIdForIssues;
 		}
 
-		final LocatorId effectiveLocatorToId = Util.coalesceSuppliers(
+		final LocatorId effectiveLocatorToId = coalesceSuppliers(
 				() -> locatorToId,
 				() -> ReceiptLineFindForwardToLocatorTool.findDestinationLocatorOrNull(receiptLine));
 
-		if (Objects.equals(effectiveLocatorToId, LocatorId.ofRecordOrNull(receiptLine.getM_Locator())))
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+		final LocatorId receiptLineLocatorId = warehouseDAO.getLocatorIdByRepoIdOrNull(receiptLine.getM_Locator_ID());
+		if (Objects.equals(effectiveLocatorToId, receiptLineLocatorId))
 		{
 			return null;
 		}

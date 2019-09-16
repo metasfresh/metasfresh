@@ -1,10 +1,10 @@
 package de.metas.document.sequence.impl;
 
 import org.compiere.model.I_C_DocType;
-import org.compiere.util.Util;
 
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.util.lang.CoalesceUtil;
 
 /*
  * #%L
@@ -73,7 +73,7 @@ public interface IPreliminaryDocumentNoBuilder
 	 */
 	static String withPreliminaryMarkers(final String documentNo)
 	{
-		return DOCUMENTNO_MARKER_BEGIN + Util.coalesce(documentNo, "") + DOCUMENTNO_MARKER_END;
+		return DOCUMENTNO_MARKER_BEGIN + CoalesceUtil.coalesce(documentNo, "") + DOCUMENTNO_MARKER_END;
 	}
 
 	/**

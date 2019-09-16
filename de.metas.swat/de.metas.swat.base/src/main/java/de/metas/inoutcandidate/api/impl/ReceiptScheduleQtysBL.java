@@ -30,8 +30,7 @@ import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
-import de.metas.inoutcandidate.spi.impl.IQtyAndQuality;
-import de.metas.inoutcandidate.spi.impl.MutableQtyAndQuality;
+import de.metas.inoutcandidate.spi.impl.ReceiptQty;
 import de.metas.inoutcandidate.spi.impl.QualityNoticesCollection;
 
 /**
@@ -77,9 +76,9 @@ public class ReceiptScheduleQtysBL implements IReceiptScheduleQtysBL
 		return rs.getQtyOrderedOverUnder();
 	}
 
-	private final MutableQtyAndQuality getQtysIfActive(final I_M_ReceiptSchedule_Alloc rsa)
+	private final ReceiptQty getQtysIfActive(final I_M_ReceiptSchedule_Alloc rsa)
 	{
-		final MutableQtyAndQuality qtys = new MutableQtyAndQuality();
+		final ReceiptQty qtys = new ReceiptQty();
 
 		if (rsa.isActive())
 		{
@@ -108,19 +107,19 @@ public class ReceiptScheduleQtysBL implements IReceiptScheduleQtysBL
 	 * @param rs
 	 * @return receipt schedule quantities
 	 */
-	private final MutableQtyAndQuality getQtysForUpdate(final I_M_ReceiptSchedule rs)
+	private final ReceiptQty getQtysForUpdate(final I_M_ReceiptSchedule rs)
 	{
 		final BigDecimal qtyMoved = rs.getQtyMoved();
 		final BigDecimal qtyMovedWithIssues = rs.getQtyMovedWithIssues();
 		final QualityNoticesCollection qualityNotices = QualityNoticesCollection.valueOfQualityNoticesString(rs.getQualityNote());
-		final MutableQtyAndQuality qtys = new MutableQtyAndQuality();
+		final ReceiptQty qtys = new ReceiptQty();
 		qtys.addQtyAndQtyWithIssues(qtyMoved, qtyMovedWithIssues);
 		qtys.addQualityNotices(qualityNotices);
 
 		return qtys;
 	}
 
-	private final void setQtys(final I_M_ReceiptSchedule rs, final IQtyAndQuality qtys)
+	private final void setQtys(final I_M_ReceiptSchedule rs, final ReceiptQty qtys)
 	{
 		rs.setQtyMoved(qtys.getQtyTotal());
 		rs.setQtyMovedWithIssues(qtys.getQtyWithIssuesExact());
@@ -141,7 +140,7 @@ public class ReceiptScheduleQtysBL implements IReceiptScheduleQtysBL
 	@Override
 	public void onReceiptScheduleAdded(final I_M_ReceiptSchedule_Alloc receiptScheduleAlloc)
 	{
-		final MutableQtyAndQuality qtyDiff = getQtysIfActive(receiptScheduleAlloc);
+		final ReceiptQty qtyDiff = getQtysIfActive(receiptScheduleAlloc);
 		updateQtyMoved(receiptScheduleAlloc, qtyDiff);
 	}
 
@@ -150,11 +149,11 @@ public class ReceiptScheduleQtysBL implements IReceiptScheduleQtysBL
 	{
 		final I_M_ReceiptSchedule_Alloc receiptScheduleAllocOld = InterfaceWrapperHelper.createOld(receiptScheduleAlloc, I_M_ReceiptSchedule_Alloc.class);
 
-		final MutableQtyAndQuality qtysNew = getQtysIfActive(receiptScheduleAlloc);
-		final MutableQtyAndQuality qtysOld = getQtysIfActive(receiptScheduleAllocOld);
+		final ReceiptQty qtysNew = getQtysIfActive(receiptScheduleAlloc);
+		final ReceiptQty qtysOld = getQtysIfActive(receiptScheduleAllocOld);
 
 		qtysNew.subtractQtys(qtysOld);
-		final MutableQtyAndQuality qtysDiff = qtysNew;
+		final ReceiptQty qtysDiff = qtysNew;
 
 		updateQtyMoved(receiptScheduleAlloc, qtysDiff);
 	}
@@ -162,11 +161,11 @@ public class ReceiptScheduleQtysBL implements IReceiptScheduleQtysBL
 	@Override
 	public void onReceiptScheduleDeleted(final I_M_ReceiptSchedule_Alloc receiptScheduleAlloc)
 	{
-		final MutableQtyAndQuality qtyDiff = getQtysIfActive(receiptScheduleAlloc);
+		final ReceiptQty qtyDiff = getQtysIfActive(receiptScheduleAlloc);
 		updateQtyMoved(receiptScheduleAlloc, qtyDiff.negateQtys());
 	}
 
-	private final void updateQtyMoved(final I_M_ReceiptSchedule_Alloc receiptScheduleAlloc, final IQtyAndQuality qtysDiff)
+	private final void updateQtyMoved(final I_M_ReceiptSchedule_Alloc receiptScheduleAlloc, final ReceiptQty qtysDiff)
 	{
 		if (qtysDiff.isZero())
 		{
@@ -179,7 +178,7 @@ public class ReceiptScheduleQtysBL implements IReceiptScheduleQtysBL
 		// because we need QtyMoved(old) to be fresh
 		InterfaceWrapperHelper.refresh(receiptSchedule);
 
-		final MutableQtyAndQuality receiptScheduleQtys = getQtysForUpdate(receiptSchedule);
+		final ReceiptQty receiptScheduleQtys = getQtysForUpdate(receiptSchedule);
 		receiptScheduleQtys.add(qtysDiff);
 		setQtys(receiptSchedule, receiptScheduleQtys);
 

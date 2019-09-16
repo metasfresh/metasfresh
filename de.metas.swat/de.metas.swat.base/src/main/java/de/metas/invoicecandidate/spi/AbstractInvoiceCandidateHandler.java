@@ -24,23 +24,30 @@ package de.metas.invoicecandidate.spi;
 
 import java.math.BigDecimal;
 
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 
-import de.metas.currency.CurrencyPrecision;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceRule;
+import de.metas.invoicecandidate.internalbusinesslogic.ToInvoiceData;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomIds;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
  * Simple abstract base class that implements {@link #setHandlerRecord(I_C_ILCandHandler)} and {@link #setNetAmtToInvoice(I_C_Invoice_Candidate)}.
- *
- * @author ts
  *
  */
 public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandidateHandler
@@ -62,41 +69,45 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	@Override
 	public void setNetAmtToInvoice(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		// task 08507: ic.getQtyToInvoice() is already the "effective". Qty even if QtyToInvoice_Override is set, the system will decide what to invoice (e.g. based on RnvoiceRule and QtDdelivered)
+		// task 08507: ic.getQtyToInvoice() is already the "effective" qty.
+		// Even if QtyToInvoice_Override is set, the system will decide what to invoice (e.g. based on InvoiceRule and QtyDelivered)
 		// and update QtyToInvoice accordingly, possibly to a value that is different from QtyToInvoice_Override. Therefore we don't use invoiceCandBL.getQtyToInvoice(ic), but the getter directly
-		final BigDecimal qtyToInvoice = ic.getQtyToInvoice();
-		final BigDecimal netAmtToInvoice = computeNetAmtUsingQty(ic, qtyToInvoice);
 
-		ic.setNetAmtToInvoice(netAmtToInvoice);
+		final Quantity qtyToInvoiceInUOM = Quantitys.create(ic.getQtyToInvoiceInUOM(), UomIds.ofRecord(ic));
+		final Money netAmtToInvoice = computeNetAmtUsingQty(ic, qtyToInvoiceInUOM);
+
+		ic.setNetAmtToInvoice(netAmtToInvoice.toBigDecimal());
 		ic.setSplitAmt(BigDecimal.ZERO);
 	}
 
 	@Override
-	public void setLineNetAmt(@NonNull final I_C_Invoice_Candidate ic)
+	public void setLineNetAmt(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+		final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
 
-		final BigDecimal openQty = invoiceCandBL.computeOpenQty(ic);
-		final BigDecimal netAmtToInvoice = computeNetAmtUsingQty(ic, openQty);
+		// get the quantity that would/could be invoiced "right now"
+		// (note: for negative qtyOrdered the result is negative)
+		final ToInvoiceData imediateInvoiceData = invoiceCandidateRecordService
+				.ofRecord(icRecord)
+				.changeInvoiceRule(InvoiceRule.Immediate)
+				.computeToInvoiceData();
+		final Quantity openQty = imediateInvoiceData.getQtysEffective().getUOMQtyNotNull();
 
-		ic.setLineNetAmt(netAmtToInvoice);
+		final Money netAmtToInvoice = computeNetAmtUsingQty(icRecord, openQty);
+
+		icRecord.setLineNetAmt(netAmtToInvoice.toBigDecimal());
 	}
 
-	private BigDecimal computeNetAmtUsingQty(
+	private Money computeNetAmtUsingQty(
 			@NonNull final I_C_Invoice_Candidate ic,
-			@NonNull final BigDecimal qty)
+			@NonNull final Quantity qty)
 	{
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+		final ProductPrice priceActual = invoiceCandBL.getPriceActual(ic);
 
-		final CurrencyPrecision precision = invoiceCandBL.getPrecisionFromCurrency(ic);
+		final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
 
-		final BigDecimal priceActual = invoiceCandBL.getPriceActual(ic);
-		final BigDecimal qtyToInvoice = invoiceCandBL.convertToPriceUOM(
-				qty,
-				ic);
-
-		final BigDecimal amt = qtyToInvoice.multiply(priceActual);
-		return precision.round(amt);
+		return moneyService.multiply(qty, priceActual);
 	}
 
 	/**

@@ -108,7 +108,7 @@ public class AWindowSaveStateModel
 
 	public void save(final GridTab gridTab)
 	{
-		Services.get(ITrxManager.class).run((TrxRunnable)localTrxName -> save0(gridTab, localTrxName));
+		Services.get(ITrxManager.class).runInNewTrx((TrxRunnable)localTrxName -> save0(gridTab, localTrxName));
 	}
 
 	private void save0(final GridTab gridTab, final String trxName)

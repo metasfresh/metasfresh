@@ -153,7 +153,7 @@ public class ShipmentDeclarationRepository
 		record.setAD_Org_ID(orgId.getRepoId());
 
 		final Quantity quantity = line.getQuantity();
-		record.setQty(quantity.getAsBigDecimal());
+		record.setQty(quantity.toBigDecimal());
 		record.setC_UOM_ID(quantity.getUOMId());
 
 		final ProductId productId = line.getProductId();

@@ -1,5 +1,7 @@
 package de.metas.customs;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
@@ -184,11 +186,11 @@ public class CustomsInvoiceService
 		{
 			final Quantity inoutLineQtyCoverted = getInOutLineQtyConverted(inoutAndLineId, uomId);
 
-			qty = qty.add(inoutLineQtyCoverted.getAsBigDecimal());
+			qty = qty.add(inoutLineQtyCoverted.toBigDecimal());
 
 			final Money inoutLinePriceConverted = getInOutLinePriceConverted(inoutAndLineId, currencyId);
 
-			final Money shipmentLineNetAmt = inoutLinePriceConverted.multiply(inoutLineQtyCoverted.getAsBigDecimal());
+			final Money shipmentLineNetAmt = inoutLinePriceConverted.multiply(inoutLineQtyCoverted.toBigDecimal());
 
 			lineNetAmt = lineNetAmt.add(shipmentLineNetAmt);
 
@@ -227,7 +229,7 @@ public class CustomsInvoiceService
 		final Money priceActual = orderLine.getPriceActual();
 
 		final BigDecimal shipmentLinePriceConverted = currencyBL.convert(
-				priceActual.getAsBigDecimal(),
+				priceActual.toBigDecimal(),
 				priceActual.getCurrencyId(),
 				currencyId,
 				Env.getClientId(),
@@ -253,7 +255,7 @@ public class CustomsInvoiceService
 
 		final BigDecimal movementQty = inoutLineRecord.getMovementQty();
 
-		final Quantity lineQty = Quantity.of(movementQty, inoutLineRecord.getC_UOM());
+		final Quantity lineQty = Quantity.of(movementQty, loadOutOfTrx(inoutLineRecord.getC_UOM_ID(), I_C_UOM.class));
 
 		final ProductId productId = ProductId.ofRepoId(inoutLineRecord.getM_Product_ID());
 

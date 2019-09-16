@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;

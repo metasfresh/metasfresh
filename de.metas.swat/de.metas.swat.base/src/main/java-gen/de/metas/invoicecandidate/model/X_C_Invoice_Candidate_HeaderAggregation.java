@@ -14,7 +14,7 @@ public class X_C_Invoice_Candidate_HeaderAggregation extends org.compiere.model.
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 8714273L;
+	private static final long serialVersionUID = -1233694513L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate_HeaderAggregation (Properties ctx, int C_Invoice_Candidate_HeaderAggregation_ID, String trxName)
@@ -45,18 +45,6 @@ public class X_C_Invoice_Candidate_HeaderAggregation extends org.compiere.model.
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
 
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 

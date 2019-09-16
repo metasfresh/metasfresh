@@ -13,15 +13,14 @@ package de.metas.lock.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.Collections;
@@ -31,9 +30,10 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.process.PInstanceId;
 import lombok.NonNull;
@@ -46,37 +46,64 @@ import lombok.NonNull;
  */
 /* package */final class LockRecords
 {
-	private Set<ITableRecordReference> _records = null;
+	private Set<TableRecordReference> _records = null;
 	//
 	private int _selection_AD_Table_ID = -1;
 	private PInstanceId _selection_pinstanceId;
 
 	private IQueryFilter<?> _selection_filters = null;
-	
+
 	@Override
 	public String toString()
 	{
-		return ObjectUtils.toString(this);
+		if (_selection_filters != null)
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("type", "queryFilter")
+					.add("queryFilter", _selection_filters)
+					.toString();
+		}
+		else if (_selection_pinstanceId != null)
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("type", "selectionId")
+					.add("selectionId", _selection_pinstanceId)
+					.add("adTableId", _selection_AD_Table_ID)
+					.toString();
+		}
+		else if (_records != null)
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("type", "records")
+					.add("recordsCount", _records.size())
+					.toString();
+		}
+		else
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("type", "unknown")
+					.toString();
+		}
 	}
 
 	public void setRecordByModel(final Object model)
 	{
-		final ITableRecordReference record = TableRecordReference.of(model);
+		final TableRecordReference record = TableRecordReference.of(model);
 		setRecords(Collections.singleton(record));
 	}
 
 	public void setRecordsByModels(final Collection<?> models)
 	{
-		final Collection<ITableRecordReference> records = convertModelsToRecords(models);
+		final Collection<TableRecordReference> records = convertModelsToRecords(models);
 		setRecords(records);
 	}
 
-	private final Collection<ITableRecordReference> convertModelsToRecords(final Collection<?> models)
+	private static Collection<TableRecordReference> convertModelsToRecords(final Collection<?> models)
 	{
-		final Set<ITableRecordReference> records = new HashSet<>(models.size());
+		final Set<TableRecordReference> records = new HashSet<>(models.size());
 		for (final Object model : models)
 		{
-			final ITableRecordReference record = TableRecordReference.of(model);
+			final TableRecordReference record = TableRecordReference.of(model);
 			records.add(record);
 		}
 
@@ -85,18 +112,17 @@ import lombok.NonNull;
 
 	public void setRecordByTableRecordId(final int tableId, final int recordId)
 	{
-		final ITableRecordReference record = new TableRecordReference(tableId, recordId);
-		setRecords(Collections.singleton(record));
+		final TableRecordReference record = TableRecordReference.of(tableId, recordId);
+		setRecords(ImmutableSet.of(record));
 	}
-	
+
 	public void setRecordByTableRecordId(final String tableName, final int recordId)
 	{
-		final ITableRecordReference record = new TableRecordReference(tableName, recordId);
+		final TableRecordReference record = TableRecordReference.of(tableName, recordId);
 		setRecords(Collections.singleton(record));
 	}
 
-
-	private final void setRecords(final Collection<ITableRecordReference> records)
+	private void setRecords(final Collection<TableRecordReference> records)
 	{
 		_records = new HashSet<>(records);
 		// Reset selection
@@ -104,7 +130,7 @@ import lombok.NonNull;
 		_selection_pinstanceId = null;
 	}
 
-	public final void addRecords(final Collection<ITableRecordReference> records)
+	public void addRecords(final Collection<TableRecordReference> records)
 	{
 		if (_records == null)
 		{
@@ -126,7 +152,6 @@ import lombok.NonNull;
 
 		_records = null;
 	}
-	
 
 	public <T> void setSetRecordsByFilter(final Class<T> modelClass, final IQueryFilter<T> filters)
 	{
@@ -134,35 +159,35 @@ import lombok.NonNull;
 		_selection_filters = filters;
 	}
 
-	public final IQueryFilter<?> getSelection_Filters()
+	public IQueryFilter<?> getSelection_Filters()
 	{
 		return _selection_filters;
 	}
-	
-	public final int getSelection_AD_Table_ID()
+
+	public int getSelection_AD_Table_ID()
 	{
 		return _selection_AD_Table_ID;
 	}
 
-	public final PInstanceId getSelection_PInstanceId()
+	public PInstanceId getSelection_PInstanceId()
 	{
 		return _selection_pinstanceId;
 	}
 
-	public final Iterator<ITableRecordReference> getRecordsIterator()
+	public Iterator<TableRecordReference> getRecordsIterator()
 	{
 		return _records == null ? null : _records.iterator();
 	}
 
 	public void addRecordByModel(final Object model)
 	{
-		final ITableRecordReference record = TableRecordReference.of(model);
+		final TableRecordReference record = TableRecordReference.of(model);
 		addRecords(Collections.singleton(record));
 	}
 
 	public void addRecordByModels(final Collection<?> models)
 	{
-		final Collection<ITableRecordReference> records = convertModelsToRecords(models);
+		final Collection<TableRecordReference> records = convertModelsToRecords(models);
 		addRecords(records);
 	}
 }

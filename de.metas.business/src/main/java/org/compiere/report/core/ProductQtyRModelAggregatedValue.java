@@ -101,7 +101,7 @@ public class ProductQtyRModelAggregatedValue extends AbstractRModelAggregatedVal
 		if (!isInitialized)
 		{
 			uomConversionCtx = UOMConversionContext.of(rowProductId);
-			uom = productBL.getStockingUOM(rowProductId);
+			uom = productBL.getStockUOM(rowProductId);
 			qty = BigDecimal.ZERO;
 		}
 		//

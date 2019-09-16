@@ -47,6 +47,7 @@ import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -216,7 +217,9 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inventoryLine.getM_AttributeSetInstance_ID());
 		final ImmutableAttributeSet attributes = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
 
-		Services.get(IInvoiceCandBL.class).setQualityDiscountPercent_Override(ic, attributes);
+		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+
+		invoiceCandBL.setQualityDiscountPercent_Override(ic, attributes);
 
 		//
 		// Update InOut Line and flag it as Invoice Candidate generated
@@ -227,15 +230,11 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		// Create IC-IOL association (07969)
 		// Even if our IC is directly linked to M_InOutLine (by AD_Table_ID/Record_ID),
 		// we need this association in order to let our engine know this and create the M_MatchInv records.
-		{
-			final I_C_InvoiceCandidate_InOutLine iciol = InterfaceWrapperHelper.newInstance(I_C_InvoiceCandidate_InOutLine.class, ic);
-			iciol.setC_Invoice_Candidate(ic);
-			iciol.setM_InOutLine(originInOutLine);
-			// iciol.setQtyInvoiced(QtyInvoiced); // will be set during invoicing to keep track of which movementQty is already invoiced in case of partial invoicing
-			InterfaceWrapperHelper.save(iciol);
-		}
+		final I_C_InvoiceCandidate_InOutLine iciol = InterfaceWrapperHelper.newInstance(I_C_InvoiceCandidate_InOutLine.class, ic);
+		// iciol.setQtyInvoiced(QtyInvoiced); // will be set during invoicing to keep track of which movementQty is already invoiced in case of partial invoicing
+		iciol.setC_Invoice_Candidate(ic);
+		invoiceCandBL.updateICIOLAssociationFromIOL(iciol, originInOutLine);
 
-		//
 		return ic;
 	}
 
@@ -255,7 +254,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		final org.compiere.model.I_M_InOutLine originInOutLine = inventoryLine.getM_InOutLine();
 		Check.assumeNotNull(originInOutLine, "InventoryLine {0} must have an origin inoutline set", inventoryLine);
 
-		return M_InOutLine_Handler.calculatePriceAndQuantity(ic, originInOutLine);
+		return M_InOutLine_Handler.calculatePriceAndTax(ic, originInOutLine);
 	}
 
 	@Override
@@ -307,7 +306,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 
 			final I_C_BPartner_Location billBPLocation = bPartnerDAO.retrieveBillToLocation(ctx, inOut.getC_BPartner_ID(), alsoTryBilltoRelation, ITrx.TRXNAME_None);
 			billBPLocationId = BPartnerLocationId.ofRepoId(billBPLocation.getC_BPartner_ID(), billBPLocation.getC_BPartner_Location_ID());
-			
+
 			final I_AD_User billBPContact = bPartnerBL.retrieveBillContact(ctx, billBPLocationId.getBpartnerId().getRepoId(), ITrx.TRXNAME_None);
 			billBPContactId = billBPContact != null
 					? BPartnerContactId.ofRepoIdOrNull(billBPContact.getC_BPartner_ID(), billBPContact.getAD_User_ID())
@@ -388,7 +387,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 
 		final I_M_Inventory inventory = inventoryLine.getM_Inventory();
 		final DocStatus inventoryDocStatus = DocStatus.ofCode(inventory.getDocStatus());
-		if(inventoryDocStatus.isCompletedOrClosed())
+		if (inventoryDocStatus.isCompletedOrClosed())
 		{
 			final BigDecimal qtyMultiplier = ONE.negate();
 			final BigDecimal qtyDelivered = inventoryLine.getQtyInternalUse().multiply(qtyMultiplier);
@@ -403,7 +402,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 
 		final IProductBL productBL = Services.get(IProductBL.class);
-		final UomId stockingUOMId = productBL.getStockingUOMId(inventoryLine.getM_Product_ID());
+		final UomId stockingUOMId = productBL.getStockUOMId(inventoryLine.getM_Product_ID());
 
 		ic.setC_UOM_ID(UomId.toRepoId(stockingUOMId));
 	}
@@ -413,6 +412,15 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final BigDecimal qtyDelivered = ic.getQtyOrdered();
 		ic.setQtyDelivered(qtyDelivered); // when changing this, make sure to threat ProductType.Service specially
+
+		final BigDecimal qtyInUOM = Services.get(IUOMConversionBL.class)
+				.convertFromProductUOM(
+						ProductId.ofRepoId(ic.getM_Product_ID()),
+						UomId.ofRepoId(ic.getC_UOM_ID()),
+						qtyDelivered);
+		ic.setQtyDeliveredInUOM(qtyInUOM);
+
+		ic.setDeliveryDate(ic.getDateOrdered());
 
 	}
 }

@@ -341,7 +341,7 @@ public class HUIssueModel implements IDisposable
 			if (edited)
 			{
 				final Set<I_M_HU> selectedHUs = editorModel.getSelectedHUs();
-				trxManager.run(() -> {
+				trxManager.runInNewTrx(() -> {
 					//
 					// Create manufacturing issue candidates
 					final List<I_PP_Order_Qty> candidates = huPPOrderBL.createIssueProducer()

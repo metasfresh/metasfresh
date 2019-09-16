@@ -17,43 +17,26 @@
 package org.compiere.model;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import java.io.File;
 import java.math.BigDecimal;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
-import org.adempiere.exceptions.DBException;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.Adempiere;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
-import org.springframework.core.io.FileSystemResource;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.service.IBPGroupDAO;
-import de.metas.event.Topic;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStringBuilder;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
-import de.metas.notification.INotificationBL;
-import de.metas.notification.UserNotificationRequest;
-import de.metas.notification.UserNotificationRequest.TargetRecordAction;
-import de.metas.notification.UserNotificationRequest.UserNotificationRequestBuilder;
-import de.metas.notification.UserNotificationsConfig;
+import de.metas.request.RequestId;
+import de.metas.request.notifications.RequestNotificationsSender;
+import de.metas.request.notifications.RequestSalesRepChanged;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
@@ -66,18 +49,6 @@ import de.metas.util.Services;
  */
 public class MRequest extends X_R_Request
 {
-	/**
-	 * Shall we notify users if something changed?
-	 * 
-	 * @see http://dewiki908/mediawiki/index.php/06113_E-Mail_Notice_Fenster_Rechtsberatung_Org._015_%28107601692471%29
-	 */
-	public static final String SYSCONFIG_EnableNotifications = "org.compiere.model.MRequest.EnableNotifications";
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 3989278951102963994L;
-
 	/**
 	 * Get Request ID from mail text
 	 * 
@@ -122,14 +93,12 @@ public class MRequest extends X_R_Request
 	/** Request Tag End */
 	private static final String TAG_END = "#ID]";
 	/** Separator line */
-	public static final String SEPARATOR = "\n---------.----------.----------.----------.----------.----------\n";
-
-	public static final Topic TOPIC_Requests = Topic.remote("de.metas.requests");
+	private static final String SEPARATOR = "\n---------.----------.----------.----------.----------.----------\n";
 
 	/** Request Type */
 	private MRequestType m_requestType = null;
-	/** Changed */
-	private boolean m_changed = false;
+	// /** Changed */
+	// private boolean m_changed = false;
 
 	public MRequest(Properties ctx, int R_Request_ID, String trxName)
 	{
@@ -166,7 +135,7 @@ public class MRequest extends X_R_Request
 			int R_RequestType_ID, String Summary, boolean isSelfService, String trxName)
 	{
 		this(ctx, 0, trxName);
-		set_Value("SalesRep_ID", SalesRep_ID < 0 ? null : new Integer(SalesRep_ID));	// could be 0
+		set_Value(I_R_Request.COLUMNNAME_SalesRep_ID, SalesRep_ID < 0 ? null : new Integer(SalesRep_ID));	// could be 0
 		set_Value("R_RequestType_ID", new Integer(R_RequestType_ID));
 		setSummary(Summary);
 		setIsSelfService(isSelfService);
@@ -233,7 +202,7 @@ public class MRequest extends X_R_Request
 		String oldResult = getResult();
 		if (Result == null || Result.length() == 0)
 		{
-			
+
 		}
 		else if (oldResult == null || oldResult.length() == 0)
 		{
@@ -496,40 +465,6 @@ public class MRequest extends X_R_Request
 		return sb.toString();
 	}	// toString
 
-	/**
-	 * Create PDF
-	 * 
-	 * @return pdf or null
-	 */
-	public File createPDF()
-	{
-		// globalqss - comment to solve bug [ 1688794 ] System is generating lots of temp files
-		// try
-		// {
-		// File temp = File.createTempFile(get_TableName()+get_ID()+"_", ".pdf");
-		// return createPDF (temp);
-		// }
-		// catch (Exception e)
-		// {
-		// log.error("Could not create PDF - " + e.getMessage());
-		// }
-		return null;
-	}	// getPDF
-
-	/**
-	 * Create PDF file
-	 * 
-	 * @param file output file
-	 * @return file if success
-	 */
-	public File createPDF(File file)
-	{
-		// ReportEngine re = ReportEngine.get (getCtx(), ReportEngine.INVOICE, getC_Invoice_ID());
-		// if (re == null)
-		return null;
-		// return re.getPDF(file);
-	}	// createPDF
-
 	/**************************************************************************
 	 * Before Save
 	 * 
@@ -561,7 +496,7 @@ public class MRequest extends X_R_Request
 				MStatus sta = MStatus.get(getCtx(), getR_Status_ID());
 				MRequestType rt = MRequestType.get(getCtx(), getR_RequestType_ID());
 				if (sta.getR_StatusCategory_ID() != rt.getR_StatusCategory_ID())
-				 {
+				{
 					setR_Status_ID();	// set to default
 				}
 			}
@@ -636,123 +571,31 @@ public class MRequest extends X_R_Request
 		}
 
 		// Change Log
-		m_changed = false;
-		ArrayList<String> sendInfo = new ArrayList<>();
-		MRequestAction ra = new MRequestAction(this, false);
-		//
-		if (checkChange(ra, "R_RequestType_ID"))
+		// ArrayList<String> sendInfo = new ArrayList<>();
+		MRequestAction requestAction = new MRequestAction(this);
+		if (checkChanges(requestAction))
 		{
-			sendInfo.add("R_RequestType_ID");
-		}
-		if (checkChange(ra, "R_Group_ID"))
-		{
-			sendInfo.add("R_Group_ID");
-		}
-		if (checkChange(ra, "R_Category_ID"))
-		{
-			sendInfo.add("R_Category_ID");
-		}
-		if (checkChange(ra, "R_Status_ID"))
-		{
-			sendInfo.add("R_Status_ID");
-		}
-		if (checkChange(ra, "R_Resolution_ID"))
-		{
-			sendInfo.add("R_Resolution_ID");
-		}
-		//
-		if (checkChange(ra, "SalesRep_ID"))
-		{
-			// Sender
-			int AD_User_ID = Env.getAD_User_ID(getCtx());
-			if (AD_User_ID == 0)
-			{
-				AD_User_ID = getUpdatedBy();
-			}
-			// Old
-			Object oo = get_ValueOld("SalesRep_ID");
-			int oldSalesRep_ID = 0;
-			if (oo instanceof Integer)
-			{
-				oldSalesRep_ID = ((Integer)oo).intValue();
-			}
-			if (oldSalesRep_ID != 0)
-			{
-				final IUserDAO userDAO = Services.get(IUserDAO.class);
-				// RequestActionTransfer - Request {} was transfered by {} from {} to {}
-				Object[] args = new Object[] { getDocumentNo(),
-						userDAO.getById(AD_User_ID),
-						userDAO.getById(oldSalesRep_ID),
-						userDAO.getById(getSalesRep_ID())
-				};
-				String msg = Services.get(IMsgBL.class).getMsg(getCtx(), "RequestActionTransfer", args);
-				addToResult(msg);
-				sendInfo.add("SalesRep_ID");
-			}
-		}
-		checkChange(ra, "AD_Role_ID");
-		//
-		checkChange(ra, "Priority");
-		if (checkChange(ra, "PriorityUser"))
-		{
-			sendInfo.add("PriorityUser");
-		}
-		if (checkChange(ra, "IsEscalated"))
-		{
-			sendInfo.add("IsEscalated");
-		}
-		//
-		checkChange(ra, "ConfidentialType");
-		checkChange(ra, "Summary");
-		checkChange(ra, "IsSelfService");
-		checkChange(ra, "C_BPartner_ID");
-		checkChange(ra, "AD_User_ID");
-		checkChange(ra, "C_Project_ID");
-		checkChange(ra, "A_Asset_ID");
-		checkChange(ra, "C_Order_ID");
-		checkChange(ra, "C_Invoice_ID");
-		checkChange(ra, "M_Product_ID");
-		checkChange(ra, "C_Payment_ID");
-		checkChange(ra, "M_InOut_ID");
-		checkChange(ra, "M_RMA_ID");
-		// checkChange(ra, "C_Campaign_ID");
-		// checkChange(ra, "RequestAmt");
-		checkChange(ra, "IsInvoiced");
-		checkChange(ra, "C_Activity_ID");
-		checkChange(ra, "DateNextAction");
-		checkChange(ra, "M_ProductSpent_ID");
-		checkChange(ra, "QtySpent");
-		checkChange(ra, "QtyInvoiced");
-		checkChange(ra, "StartDate");
-		checkChange(ra, "CloseDate");
-		checkChange(ra, "TaskStatus");
-		checkChange(ra, "DateStartPlan");
-		checkChange(ra, "DateCompletePlan");
-		//
-		if (m_changed)
-		{
-			ra.save();
-		}
-
-		// Current Info
-		MRequestUpdate update = new MRequestUpdate(this);
-		if (update.isNewInfo())
-		{
-			update.save();
+			saveRecord(requestAction);
 		}
 		else
 		{
-			update = null;
+			requestAction = null;
 		}
-		//
-		if (update != null || sendInfo.size() > 0)
-		{
-			// Note that calling the notifications from beforeSave is causing the
-			// new interested are not notified if the RV_RequestUpdates view changes
-			// this is, when changed the sales rep (solved in sendNotices)
-			// or when changed the request category or group or contact (unsolved - the old ones are notified)
-			sendNotices(sendInfo);
 
+		// Current Info
+		MRequestUpdate requestUpdate = new MRequestUpdate(this);
+		if (requestUpdate.isNewInfo())
+		{
+			requestUpdate.save();
+		}
+		else
+		{
+			requestUpdate = null;
+		}
+
+		//
+		if (requestUpdate != null || requestAction != null)
+		{
 			// Update
 			setDateLastAction(getUpdated());
 			setLastResult(getResult());
@@ -769,8 +612,62 @@ public class MRequest extends X_R_Request
 			// setQtySpent(null);
 			// setQtyInvoiced(null);
 		}
+
 		return true;
 	}	// beforeSave
+
+	private static final ImmutableSet<String> //
+	columnsToCheckForRequestActionChanges = ImmutableSet.of(
+			I_R_Request.COLUMNNAME_R_RequestType_ID,
+			I_R_Request.COLUMNNAME_R_Group_ID,
+			I_R_Request.COLUMNNAME_R_Category_ID,
+			I_R_Request.COLUMNNAME_R_Status_ID,
+			I_R_Request.COLUMNNAME_R_Resolution_ID,
+			I_R_Request.COLUMNNAME_SalesRep_ID,
+			I_R_Request.COLUMNNAME_AD_Role_ID,
+			I_R_Request.COLUMNNAME_Priority,
+			I_R_Request.COLUMNNAME_PriorityUser,
+			I_R_Request.COLUMNNAME_IsEscalated,
+			I_R_Request.COLUMNNAME_ConfidentialType,
+			I_R_Request.COLUMNNAME_Summary,
+			I_R_Request.COLUMNNAME_IsSelfService,
+			I_R_Request.COLUMNNAME_C_BPartner_ID,
+			I_R_Request.COLUMNNAME_AD_User_ID,
+			I_R_Request.COLUMNNAME_C_Project_ID,
+			I_R_Request.COLUMNNAME_A_Asset_ID,
+			I_R_Request.COLUMNNAME_C_Order_ID,
+			I_R_Request.COLUMNNAME_C_Invoice_ID,
+			I_R_Request.COLUMNNAME_M_Product_ID,
+			I_R_Request.COLUMNNAME_C_Payment_ID,
+			I_R_Request.COLUMNNAME_M_InOut_ID,
+			I_R_Request.COLUMNNAME_M_RMA_ID,
+			// I_R_Request.COLUMNNAME_C_Campaign_ID,
+			// I_R_Request.COLUMNNAME_RequestAmt,
+			I_R_Request.COLUMNNAME_IsInvoiced,
+			I_R_Request.COLUMNNAME_C_Activity_ID,
+			I_R_Request.COLUMNNAME_DateNextAction,
+			I_R_Request.COLUMNNAME_M_ProductSpent_ID,
+			I_R_Request.COLUMNNAME_QtySpent,
+			I_R_Request.COLUMNNAME_QtyInvoiced,
+			I_R_Request.COLUMNNAME_StartDate,
+			I_R_Request.COLUMNNAME_CloseDate,
+			I_R_Request.COLUMNNAME_TaskStatus,
+			I_R_Request.COLUMNNAME_DateStartPlan,
+			I_R_Request.COLUMNNAME_DateCompletePlan);
+
+	private boolean checkChanges(final MRequestAction ra)
+	{
+		boolean hasChanges = false;
+		for (final String columnName : columnsToCheckForRequestActionChanges)
+		{
+			if (checkChangeAndUpdateRequestAction(ra, columnName))
+			{
+				hasChanges = true;
+			}
+		}
+
+		return hasChanges;
+	}
 
 	/**
 	 * Check for changes
@@ -779,7 +676,7 @@ public class MRequest extends X_R_Request
 	 * @param columnName column
 	 * @return true if changes
 	 */
-	private boolean checkChange(MRequestAction ra, String columnName)
+	private boolean checkChangeAndUpdateRequestAction(final MRequestAction ra, final String columnName)
 	{
 		if (is_ValueChanged(columnName))
 		{
@@ -792,10 +689,13 @@ public class MRequest extends X_R_Request
 			{
 				ra.set_ValueNoCheck(columnName, value);
 			}
-			m_changed = true;
+
 			return true;
 		}
-		return false;
+		else
+		{
+			return false;
+		}
 	}	// checkChange
 
 	/**
@@ -834,16 +734,12 @@ public class MRequest extends X_R_Request
 		// Create Update
 		if (newRecord && getResult() != null)
 		{
-			MRequestUpdate update = new MRequestUpdate(this);
+			final MRequestUpdate update = new MRequestUpdate(this);
 			update.save();
 		}
 
 		//
-		// Send Initial Mail
-		if (newRecord)
-		{
-			sendNotices(new ArrayList<String>());
-		}
+		sendNotifications();
 
 		// ChangeRequest - created in Request Processor
 		if (getM_ChangeRequest_ID() != 0
@@ -876,156 +772,43 @@ public class MRequest extends X_R_Request
 		return success;
 	}	// afterSave
 
-	/**
-	 * Send Update EMail/Notices
-	 * 
-	 * @param list list of changes
-	 */
-	private void sendNotices(final List<String> changedColumnNames)
+	private void sendNotifications()
 	{
-		//
-		// Shall we send notifications?
-		if (!Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_EnableNotifications, true, getAD_Client_ID(), getAD_Org_ID()))
+		final UserId oldSalesRepId = getOldSalesRepId();
+		final UserId newSalesRepId = getNewSalesRepId();
+		if (!UserId.equals(oldSalesRepId, newSalesRepId))
 		{
-			return;
+			RequestNotificationsSender.newInstance()
+					.notifySalesRepChanged(RequestSalesRepChanged.builder()
+							.changedById(UserId.ofRepoIdOrNull(getUpdatedBy()))
+							.fromSalesRepId(oldSalesRepId)
+							.toSalesRepId(newSalesRepId)
+							.requestDocumentNo(getDocumentNo())
+							.requestId(RequestId.ofRepoId(getR_Request_ID()))
+							.build());
 		}
+	}
 
-		final Set<UserId> userIdsToNotify = getUserIdsToNotify();
-		if (userIdsToNotify.isEmpty())
-		{
-			return;
-		}
-
-		// Subject
-		final ITranslatableString subject = TranslatableStrings.builder()
-				.appendADElement("R_Request_ID").append(" ").appendADElement("Updated").append(": " + getDocumentNo())
-				.build();
-
-		// Content
-		final int updatedByUserId = Env.getAD_User_ID(getCtx());
-		final I_AD_User updatedByUser = Services.get(IUserDAO.class).retrieveUserOrNull(getCtx(), updatedByUserId);
-		final ITranslatableString content = buildEMailNotificationContent(updatedByUser, changedColumnNames);
-
-		final File pdf = createPDF();
-
-		final INotificationBL notifications = Services.get(INotificationBL.class);
-		final List<UserNotificationRequest> notificationRequests = userIdsToNotify.stream()
-				.map(userId -> {
-					final UserNotificationsConfig notificationsConfig = notifications.getUserNotificationsConfig(userId);
-					final String adLanguage = notificationsConfig.getUserADLanguageOrGet(Env::getADLanguageOrBaseLanguage);
-					final UserNotificationRequestBuilder builder = UserNotificationRequest.builder()
-							.notificationsConfig(notificationsConfig)
-							.topic(TOPIC_Requests)
-							.subjectPlain(subject.translate(adLanguage))
-							.contentPlain(content.translate(adLanguage))
-							.targetAction(TargetRecordAction.of(I_R_Request.Table_Name, getR_Request_ID()));
-
-					if (pdf != null)
-					{
-						builder.attachment(new FileSystemResource(pdf));
-					}
-
-					return builder.build();
-				})
-				.collect(ImmutableList.toImmutableList());
-
-		Services.get(INotificationBL.class).sendAfterCommit(notificationRequests);
-	}	// sendNotice
-
-	private ITranslatableString buildEMailNotificationContent(final I_AD_User from, final List<String> changedColumnNames)
+	private UserId getOldSalesRepId()
 	{
-		// Message
-		final TranslatableStringBuilder messageBuilder = TranslatableStrings.builder();
-
-		// UpdatedBy: Joe
-		if (from != null)
+		final Object oldSalesRepIdObj = get_ValueOld(I_R_Request.COLUMNNAME_SalesRep_ID);
+		if (oldSalesRepIdObj instanceof Integer)
 		{
-			messageBuilder.appendADElement(COLUMNNAME_UpdatedBy).append(": ").append(from.getName());
-		}
-		// LastAction/Created: ...
-		if (getDateLastAction() != null)
-		{
-			messageBuilder.append("\n").appendADElement(COLUMNNAME_DateLastAction).append(": ").appendDateTime(getDateLastAction());
+			final int repoId = ((Integer)oldSalesRepIdObj).intValue();
+			return UserId.ofRepoId(repoId);
 		}
 		else
 		{
-			messageBuilder.append("\n").appendADElement(COLUMNNAME_Created).append(": ").appendDateTime(getCreated());
+			return null;
 		}
-
-		// Changes
-		for (final String columnName : changedColumnNames)
-		{
-			messageBuilder.append("\n").appendADElement(columnName)
-					.append(": ").append(get_DisplayValue(columnName, false))
-					.append(" -> ").append(get_DisplayValue(columnName, true));
-		}
-
-		// NextAction
-		if (getDateNextAction() != null)
-		{
-			messageBuilder.append("\n").appendADElement(COLUMNNAME_DateNextAction).append(": ").appendDateTime(getDateNextAction());
-		}
-
-		messageBuilder.append(SEPARATOR)
-				.append(getSummary());
-
-		if (getResult() != null)
-		{
-			messageBuilder.append("\n----------\n").append(getResult());
-		}
-
-		// Mail Trailer
-		messageBuilder.append(SEPARATOR)
-				.appendADElement("R_Request_ID").append(": ").append(getDocumentNo()).append("  ").append(TAG_START + getR_Request_ID() + TAG_END)
-				.append("\nSent by ").append(Adempiere.getName());
-
-		return messageBuilder.build();
 	}
 
-	private Set<UserId> getUserIdsToNotify()
+	private UserId getNewSalesRepId()
 	{
-		final String sql = "SELECT u.AD_User_ID, MAX(r.AD_Role_ID) as AD_Role_ID"
-				+ " FROM RV_RequestUpdates_Only ru"
-				+ " INNER JOIN AD_User u ON (ru.AD_User_ID=u.AD_User_ID OR u.AD_User_ID=?)"
-				+ " LEFT OUTER JOIN AD_User_Roles r ON (u.AD_User_ID=r.AD_User_ID and r.IsActive='Y') "
-				+ " WHERE ru.R_Request_ID=? "
-				+ " GROUP BY u.AD_User_ID";
-		final Object[] sqlParams = new Object[] { getSalesRep_ID(), getR_Request_ID() };
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, get_TrxName());
-			DB.setParameters(pstmt, sqlParams);
-			rs = pstmt.executeQuery();
-
-			final ImmutableSet.Builder<UserId> userIds = ImmutableSet.builder();
-			while (rs.next())
-			{
-				rs.getInt("AD_Role_ID");
-				final boolean isInternalUser = !rs.wasNull();
-
-				// No confidential to externals
-				if (isInternalUser
-						&& (CONFIDENTIALTYPE_Internal.equals(getConfidentialTypeEntry())
-								|| CONFIDENTIALTYPE_PrivateInformation.equals(getConfidentialTypeEntry())))
-				{
-					continue;
-				}
-
-				final UserId adUserId = UserId.ofRepoId(rs.getInt("AD_User_ID"));
-				userIds.add(adUserId);
-			}
-
-			return userIds.build();
-		}
-		catch (SQLException ex)
-		{
-			throw new DBException(ex, sql, sqlParams);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
+		final int repoId = getSalesRep_ID();
+		// NOTE: System(=0) is not a valid SalesRep anyways
+		return repoId > 0
+				? UserId.ofRepoId(repoId)
+				: null;
 	}
 }

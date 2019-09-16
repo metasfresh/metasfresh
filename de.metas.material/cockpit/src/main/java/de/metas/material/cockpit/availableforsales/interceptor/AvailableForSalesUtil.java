@@ -14,7 +14,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -35,6 +34,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 
 import de.metas.Profiles;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfig;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesMultiQuery;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesMultiResult;
@@ -207,7 +208,7 @@ public class AvailableForSalesUtil
 		// We cannot use a thread-inherited transaction that would otherwise be used by default.
 		// Because when this method is called, it means that the thread-inherited transaction is already committed
 		// Therefore, let's create our own trx to work in
-		final Runnable runnable = () -> Services.get(ITrxManager.class).run(innerTrx -> retrieveDataAndUpdateOrderLines(requests, config));
+		final Runnable runnable = () -> Services.get(ITrxManager.class).runInNewTrx(innerTrx -> retrieveDataAndUpdateOrderLines(requests, config));
 
 		final ExecutorService executor = Executors.newSingleThreadExecutor();
 		final Future<?> future = executor.submit(runnable);
@@ -224,11 +225,11 @@ public class AvailableForSalesUtil
 	private void handleAsyncException(@NonNull final UserId errorNotificationRecipient, @NonNull Exception e1)
 	{
 		final Throwable cause = AdempiereException.extractCause(e1);
-		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(cause);
+		final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(cause);
 
 		final TargetRecordAction targetAction = TargetRecordAction
 				.ofRecordAndWindow(
-						TableRecordReference.of(I_AD_Issue.Table_Name, issue.getAD_Issue_ID()),
+						TableRecordReference.of(I_AD_Issue.Table_Name, issueId),
 						IErrorManager.AD_ISSUE_WINDOW_ID.getRepoId());
 
 		final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()

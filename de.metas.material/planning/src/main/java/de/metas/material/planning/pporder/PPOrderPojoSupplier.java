@@ -8,6 +8,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Product;
@@ -84,6 +85,20 @@ public class PPOrderPojoSupplier
 
 	public PPOrder supplyPPOrderPojoWithLines(@NonNull final IMaterialRequest request)
 	{
+		try
+		{
+			return supplyPPOrderPojoWithLines0(request);
+		}
+		catch (final RuntimeException e)
+		{
+			throw new AdempiereException("Caught " + e.getClass().getSimpleName() + " trying to create PPOrder instance for an IMaterialRequest", e)
+					.appendParametersToMessage()
+					.setParameter("request", request);
+		}
+	}
+
+	public PPOrder supplyPPOrderPojoWithLines0(@NonNull final IMaterialRequest request)
+	{
 		final PPOrder ppOrder = supplyPPOrderPojo(request);
 
 		final PPOrder ppOrderWithLines = ppOrder.toBuilder()
@@ -121,7 +136,7 @@ public class PPOrderPojoSupplier
 
 		//
 		// Calculate duration & Planning dates
-		final int durationDays = calculateDurationDays(mrpContext, qtyToSupply.getAsBigDecimal());
+		final int durationDays = calculateDurationDays(mrpContext, qtyToSupply.toBigDecimal());
 		final Instant dateFinishSchedule = demandDateStartSchedule;
 
 		final Instant dateStartSchedule = dateFinishSchedule.minus(durationDays, ChronoUnit.DAYS);
@@ -146,11 +161,10 @@ public class PPOrderPojoSupplier
 				.datePromised(dateFinishSchedule)
 				.dateStartSchedule(dateStartSchedule)
 
-				.qtyRequired(ppOrderQuantity.getAsBigDecimal())
+				.qtyRequired(ppOrderQuantity.toBigDecimal())
 
 				.orderLineId(request.getMrpDemandOrderLineSOId())
-				.bpartnerId(BPartnerId.ofRepoId(request.getMrpDemandBPartnerId()))
-				//
+				.bpartnerId(BPartnerId.ofRepoIdOrNull(request.getMrpDemandBPartnerId()))
 				.build();
 	}
 
@@ -235,11 +249,10 @@ public class PPOrderPojoSupplier
 			final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 			final Quantity qtyRequired = ppOrderBOMBL.calculateQtyRequired(intermedidatePPOrderLine, ppOrder.getQtyRequired());
 
-			final PPOrderLine ppOrderLine = intermedidatePPOrderLine.withQtyRequired(qtyRequired.getAsBigDecimal());
+			final PPOrderLine ppOrderLine = intermedidatePPOrderLine.withQtyRequired(qtyRequired.toBigDecimal());
 
 			result.add(ppOrderLine);
 		}
-
 		return result;
 	}
 

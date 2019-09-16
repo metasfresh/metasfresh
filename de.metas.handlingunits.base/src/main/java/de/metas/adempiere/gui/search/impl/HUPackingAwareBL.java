@@ -120,7 +120,7 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 			return null;
 		}
 
-		return capacityMult.getCapacityQty();
+		return capacityMult.toBigDecimal();
 	}
 
 	@Override

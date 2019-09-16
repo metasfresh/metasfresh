@@ -7,9 +7,9 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 import de.metas.rest_api.JsonPagingDescriptor;
+import de.metas.rest_api.utils.JsonError;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -35,15 +35,34 @@ import lombok.Value;
  */
 
 @Value
-@Builder
+@Builder(builderMethodName = "_builder")
 public class JsonResponseCompositeList
 {
+
 	@JsonInclude(Include.NON_NULL)
 	@JsonUnwrapped
-	@NonNull
 	JsonPagingDescriptor pagingDescriptor;
 
-	@JsonInclude(Include.ALWAYS)
-	@Singular
+	@JsonInclude(Include.NON_NULL)
 	List<JsonResponseComposite> items;
+
+	@JsonInclude(Include.NON_NULL)
+	JsonError error;
+
+	public static JsonResponseCompositeList ok(
+			@NonNull final JsonPagingDescriptor pagingDescriptor,
+			@NonNull final List<JsonResponseComposite> items)
+	{
+		return _builder()
+				.pagingDescriptor(pagingDescriptor)
+				.items(items)
+				.build();
+	}
+
+	public static JsonResponseCompositeList error(@NonNull final JsonError error)
+	{
+		return _builder()
+				.error(error)
+				.build();
+	}
 }

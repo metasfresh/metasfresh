@@ -64,7 +64,7 @@ public class AD_User_SortPref_Hdr_RecalculateSeqNo extends JavaProcess
 
 		final Properties ctx = getCtx();
 
-		trxManager.run(new TrxRunnable()
+		trxManager.runInNewTrx(new TrxRunnable()
 		{
 			@Override
 			public void run(final String localTrxName) throws Exception

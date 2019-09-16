@@ -14,7 +14,7 @@ public class X_M_ProductGroup_Product extends org.compiere.model.PO implements I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -16842506L;
+	private static final long serialVersionUID = -305623020L;
 
     /** Standard Constructor */
     public X_M_ProductGroup_Product (Properties ctx, int M_ProductGroup_Product_ID, String trxName)
@@ -44,7 +44,7 @@ public class X_M_ProductGroup_Product extends org.compiere.model.PO implements I
     }
 
 	@Override
-	public org.compiere.model.I_M_Product_Category getM_Product_Category() throws RuntimeException
+	public org.compiere.model.I_M_Product_Category getM_Product_Category()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class);
 	}
@@ -81,7 +81,7 @@ public class X_M_ProductGroup_Product extends org.compiere.model.PO implements I
 	}
 
 	@Override
-	public de.metas.invoicecandidate.model.I_M_ProductGroup getM_ProductGroup() throws RuntimeException
+	public de.metas.invoicecandidate.model.I_M_ProductGroup getM_ProductGroup()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_ProductGroup_ID, de.metas.invoicecandidate.model.I_M_ProductGroup.class);
 	}
@@ -137,18 +137,6 @@ public class X_M_ProductGroup_Product extends org.compiere.model.PO implements I
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.

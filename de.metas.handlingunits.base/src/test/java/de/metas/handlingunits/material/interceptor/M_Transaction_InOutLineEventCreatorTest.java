@@ -114,7 +114,7 @@ public class M_Transaction_InOutLineEventCreatorTest
 		save(inout);
 
 		inoutLine = newInstance(I_M_InOutLine.class);
-		inoutLine.setM_Product(product);
+		inoutLine.setM_Product_ID(product.getM_Product_ID());
 		inoutLine.setM_InOut(inout);
 		save(inoutLine);
 

@@ -45,7 +45,7 @@ public class QualityExpectation<ParentExpectationType> extends AbstractHUExpecta
 	}
 
 	// Expectations
-	private QtyAndQualityExpectation<?> qtyAndQualityExpectation;
+	private ReceiptQtyExpectation<?> qtyAndQualityExpectation;
 	@ToStringBuilder(skip = true)
 	private I_C_UOM uom;
 	private String attributesId;
@@ -170,11 +170,11 @@ public class QualityExpectation<ParentExpectationType> extends AbstractHUExpecta
 	//
 	//
 
-	private QtyAndQualityExpectation<?> qtyAndQuality()
+	private ReceiptQtyExpectation<?> qtyAndQuality()
 	{
 		if (qtyAndQualityExpectation == null)
 		{
-			qtyAndQualityExpectation = QtyAndQualityExpectation.newInstance();
+			qtyAndQualityExpectation = ReceiptQtyExpectation.newInstance();
 		}
 		return qtyAndQualityExpectation;
 	}

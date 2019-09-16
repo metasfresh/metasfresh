@@ -19,8 +19,8 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -52,7 +52,7 @@ public class ArrayExcelExporter extends AbstractExcelExporter
 		m_ctx = ctx != null ? ctx : Env.getCtx();
 		m_data = data;
 		m_columnHeaders = columnHeaders;
-		this.translateHeaders = Util.coalesce(translateHeaders, true);
+		this.translateHeaders = CoalesceUtil.coalesce(translateHeaders, true);
 	}
 
 	@Override

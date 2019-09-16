@@ -41,6 +41,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterialQuery;
 import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /* package */class ProductionMaterialQueryExecutor
 {
@@ -56,11 +57,8 @@ import de.metas.util.Services;
 
 	private List<I_PP_Order_BOMLine> _ppOrderBOMLines;
 
-	public ProductionMaterialQueryExecutor(final IProductionMaterialQuery query)
+	public ProductionMaterialQueryExecutor(@NonNull final IProductionMaterialQuery query)
 	{
-		super();
-
-		Check.assumeNotNull(query, "query not null");
 		this.query = query;
 
 		final I_PP_Order ppOrder = query.getPP_Order();

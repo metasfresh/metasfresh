@@ -22,7 +22,6 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -31,7 +30,11 @@ import org.compiere.model.I_C_DocType;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.util.Check;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Default implementation for {@link IInvoiceHeader}
@@ -70,7 +73,8 @@ import de.metas.util.Check;
 	private int Bill_User_ID;
 
 	// 03805: add attribute C_Currency_ID
-	private int C_Currency_ID;
+	@Getter @Setter
+	private CurrencyId currencyId;
 
 	// 04258
 	private String Description;
@@ -85,7 +89,7 @@ import de.metas.util.Check;
 
 	private boolean taxIncluded;
 
-	private int C_PaymentTerm_ID = -1;;
+	private int C_PaymentTerm_ID = -1;
 
 	/* package */ InvoiceHeaderImpl()
 	{
@@ -104,7 +108,7 @@ import de.metas.util.Check;
 				+ ", Bill_BPartner_ID=" + Bill_BPartner_ID
 				+ ", Bill_Location_ID=" + Bill_Location_ID
 				+ ", Bill_User_ID=" + Bill_User_ID
-				+ ", C_Currency_ID=" + C_Currency_ID
+				+ ", currencyId=" + currencyId
 				+ ", C_Order_ID=" + C_Order_ID
 				+ ", docTypeInvoiceId=" + docTypeInvoice
 				+ ", lines=" + lines
@@ -177,12 +181,6 @@ import de.metas.util.Check;
 		return AD_Org_ID;
 	}
 
-	@Override
-	public int getC_Currency_ID()
-	{
-		return C_Currency_ID;
-	}
-
 	public void setLines(final List<IInvoiceCandAggregate> lines)
 	{
 		this.lines = lines;
@@ -236,11 +234,6 @@ import de.metas.util.Check;
 	public void setBill_User_ID(final int bill_User_ID)
 	{
 		Bill_User_ID = bill_User_ID;
-	}
-
-	public void setC_Currency_ID(final int currency_ID)
-	{
-		C_Currency_ID = currency_ID;
 	}
 
 	@Override
@@ -325,17 +318,17 @@ import de.metas.util.Check;
 	 *
 	 * @return total net amount
 	 */
-	public BigDecimal calculateTotalNetAmtFromLines()
+	public Money calculateTotalNetAmtFromLines()
 	{
 		final List<IInvoiceCandAggregate> lines = getLines();
 		Check.assume(lines != null && !lines.isEmpty(), "Invoice {} was not aggregated yet", this);
 
-		BigDecimal totalNetAmt = BigDecimal.ZERO;
+		Money totalNetAmt = Money.zero(currencyId);
 		for (final IInvoiceCandAggregate lineAgg : lines)
 		{
 			for (final IInvoiceLineRW line : lineAgg.getAllLines())
 			{
-				final BigDecimal lineNetAmt = line.getNetLineAmt();
+				final Money lineNetAmt = line.getNetLineAmt();
 				totalNetAmt = totalNetAmt.add(lineNetAmt);
 			}
 		}

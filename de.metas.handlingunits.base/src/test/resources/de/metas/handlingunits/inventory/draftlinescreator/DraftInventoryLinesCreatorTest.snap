@@ -22,16 +22,12 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
             "huId": 100,
             "inventoryType": "PHYSICAL",
             "qtyBook": {
-              "qty": 10,
-              "sourceQty": 10,
-              "infinite": false,
-              "zero": false
+              "qty": "10",
+              "uomId": 100001
             },
             "qtyCount": {
-              "qty": 10,
-              "sourceQty": 10,
-              "infinite": false,
-              "zero": false
+              "qty": "10",
+              "uomId": 100001
             }
           },
           {
@@ -39,16 +35,12 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
             "huId": 200,
             "inventoryType": "PHYSICAL",
             "qtyBook": {
-              "qty": 1,
-              "sourceQty": 1,
-              "infinite": false,
-              "zero": false
+              "qty": "1",
+              "uomId": 100001
             },
             "qtyCount": {
-              "qty": 1,
-              "sourceQty": 1,
-              "infinite": false,
-              "zero": false
+              "qty": "1",
+              "uomId": 100001
             }
           }
         ]
@@ -68,16 +60,12 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
             "huId": 300,
             "inventoryType": "PHYSICAL",
             "qtyBook": {
-              "qty": 2,
-              "sourceQty": 2,
-              "infinite": false,
-              "zero": false
+              "qty": "2",
+              "uomId": 100001
             },
             "qtyCount": {
-              "qty": 2,
-              "sourceQty": 2,
-              "infinite": false,
-              "zero": false
+              "qty": "2",
+              "uomId": 100001
             }
           }
         ]
@@ -110,16 +98,12 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
             "huId": 300,
             "inventoryType": "PHYSICAL",
             "qtyBook": {
-              "qty": 2,
-              "sourceQty": 2,
-              "infinite": false,
-              "zero": false
+              "qty": "2",
+              "uomId": 100001
             },
             "qtyCount": {
-              "qty": 2,
-              "sourceQty": 2,
-              "infinite": false,
-              "zero": false
+              "qty": "2",
+              "uomId": 100001
             }
           }
         ]
@@ -138,16 +122,12 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
             "huId": 100,
             "inventoryType": "PHYSICAL",
             "qtyBook": {
-              "qty": 10,
-              "sourceQty": 10,
-              "infinite": false,
-              "zero": false
+              "qty": "10",
+              "uomId": 100001
             },
             "qtyCount": {
-              "qty": 10,
-              "sourceQty": 10,
-              "infinite": false,
-              "zero": false
+              "qty": "10",
+              "uomId": 100001
             }
           }
         ]
@@ -166,16 +146,12 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
             "huId": 200,
             "inventoryType": "PHYSICAL",
             "qtyBook": {
-              "qty": 1,
-              "sourceQty": 1,
-              "infinite": false,
-              "zero": false
+              "qty": "1",
+              "uomId": 100001
             },
             "qtyCount": {
-              "qty": 1,
-              "sourceQty": 1,
-              "infinite": false,
-              "zero": false
+              "qty": "1",
+              "uomId": 100001
             }
           }
         ]

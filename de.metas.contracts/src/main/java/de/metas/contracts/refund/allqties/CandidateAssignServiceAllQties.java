@@ -134,7 +134,7 @@ public class CandidateAssignServiceAllQties
 		//
 		// second part: now see if the biggest applicable refund config changed.
 		// if it did change, then add or remove assignments for the respective configs that now apply as well or don't apply anymore
-		final List<RefundConfig> relevantConfigsAfterAssignment = refundContract.getRefundConfigsToApplyForQuantity(refundCandidateWithAsignedMoneyAndQty.getAssignedQuantity().getAsBigDecimal());
+		final List<RefundConfig> relevantConfigsAfterAssignment = refundContract.getRefundConfigsToApplyForQuantity(refundCandidateWithAsignedMoneyAndQty.getAssignedQuantity().toBigDecimal());
 
 		final RefundConfig newRefundConfig = RefundConfigs.largestMinQty(relevantConfigsAfterAssignment);
 

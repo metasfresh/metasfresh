@@ -77,7 +77,7 @@ public class PaymentTermService
 				.createQueryBuilderOutOfTrx(I_C_PaymentTerm.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsValid, true)
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Discount, discount.getValue())
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Discount, discount.toBigDecimal())
 				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_AD_Client_ID, basePaymentTermRecord.getAD_Client_ID())
 				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_AD_Org_ID, basePaymentTermRecord.getAD_Org_ID())
 				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Discount2, basePaymentTermRecord.getDiscount2())
@@ -101,9 +101,9 @@ public class PaymentTermService
 
 		final I_C_PaymentTerm newPaymentTerm = newInstance(I_C_PaymentTerm.class);
 		InterfaceWrapperHelper.copyValues(basePaymentTermRecord, newPaymentTerm);
-		newPaymentTerm.setDiscount(discount.getValue());
+		newPaymentTerm.setDiscount(discount.toBigDecimal());
 
-		final String newName = basePaymentTermRecord.getName() + " (=>" + discount.getValue() + " %)";
+		final String newName = basePaymentTermRecord.getName() + " (=>" + discount.toBigDecimal() + " %)";
 		newPaymentTerm.setName(newName);
 		saveRecord(newPaymentTerm);
 

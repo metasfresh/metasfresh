@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 
 /*
  * #%L
@@ -42,8 +43,13 @@ class BPartnerCompositeTest
 				.id(bpartnerContactId)
 				.build();
 
+		final BPartnerLocation location = BPartnerLocation.builder()
+				.id(BPartnerLocationId.ofRepoId(bpartnerId, 10))
+				.build();
+
 		final BPartnerComposite bpartnerComposite = BPartnerComposite.builder()
 				.contact(contact)
+				.location(location)
 				.build();
 
 		assertThat(bpartnerComposite.getContact(bpartnerContactId)).contains(contact);

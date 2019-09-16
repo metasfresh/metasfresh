@@ -1,7 +1,9 @@
 /**
- * 
+ *
  */
 package de.metas.banking.payment.modelvalidator;
+
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 
 /*
  * #%L
@@ -13,12 +15,12 @@ package de.metas.banking.payment.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,9 +29,11 @@ package de.metas.banking.payment.modelvalidator;
 
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Payment;
@@ -42,12 +46,19 @@ import de.metas.util.Services;
 
 /**
  * @author cg
- * 
+ *
  */
 @Interceptor(I_C_Payment.class)
 public class C_Payment
 {
 	public static final transient C_Payment instance = new C_Payment();
+
+	@Init
+	public void init(final IModelValidationEngine engine)
+	{
+
+		CopyRecordFactory.enableForTableName(I_C_Payment.Table_Name);
+	}
 
 	private C_Payment()
 	{
@@ -85,7 +96,7 @@ public class C_Payment
 		{
 			throw new AdempiereException("@void.payment@");
 		}
-		
+
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT })
@@ -97,13 +108,13 @@ public class C_Payment
 		{
 			payment.setIsReconciled(true);
 			InterfaceWrapperHelper.save(payment);
-			
+
 			final I_C_Payment reversal = payment.getReversal();
 			reversal.setIsReconciled(true);
 			InterfaceWrapperHelper.save(reversal);
 		}
 	}
-	
+
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void createCashStatementLineIfNeeded(final I_C_Payment payment)
 	{
@@ -111,13 +122,13 @@ public class C_Payment
 		{
 			return;
 		}
-		
+
 		if (!Services.get(ISysConfigBL.class).getBooleanValue("CASH_AS_PAYMENT", true, payment.getAD_Client_ID()))
 		{
 			return;
 		}
-		
+
 		Services.get(ICashStatementBL.class).createCashStatementLine(payment);
 	}
-	
+
 }

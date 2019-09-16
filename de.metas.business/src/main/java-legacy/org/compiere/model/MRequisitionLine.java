@@ -34,10 +34,10 @@ import de.metas.util.Services;
 
 /**
  * Requisition Line Model
- * 
+ *
  * @author Jorg Janke
  * @version $Id: MRequisitionLine.java,v 1.2 2006/07/30 00:51:03 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, www.arhipac.ro
  *         <li>BF [ 2419978 ] Voiding PO, requisition don't set on NULL
  *         <li>BF [ 2608617 ] Error when I want to delete a PO document
@@ -48,13 +48,13 @@ import de.metas.util.Services;
 public class MRequisitionLine extends X_M_RequisitionLine
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 3556301115666692794L;
 
 	/**
 	 * Get corresponding Requisition Line for given Order Line
-	 * 
+	 *
 	 * @param ctx
 	 * @param C_OrderLine_ID order line
 	 * @param trxName
@@ -73,7 +73,7 @@ public class MRequisitionLine extends X_M_RequisitionLine
 
 	/**
 	 * UnLink Requisition Lines for given Order
-	 * 
+	 *
 	 * @param ctx
 	 * @param C_Order_ID
 	 * @param trxName
@@ -89,7 +89,7 @@ public class MRequisitionLine extends X_M_RequisitionLine
 
 	/**
 	 * Get corresponding Requisition Line(s) for given Order Line
-	 * 
+	 *
 	 * @param ctx
 	 * @param C_OrderLine_ID order line
 	 * @param trxName
@@ -106,7 +106,7 @@ public class MRequisitionLine extends X_M_RequisitionLine
 
 	/**
 	 * UnLink Requisition Lines for given Order Line
-	 * 
+	 *
 	 * @param ctx
 	 * @param C_OrderLine_ID
 	 * @param trxName
@@ -205,7 +205,7 @@ public class MRequisitionLine extends X_M_RequisitionLine
 		// Product UOM
 		if (getM_Product_ID() > 0 && getC_UOM_ID() <= 0)
 		{
-			final UomId productUomId = Services.get(IProductBL.class).getStockingUOMId(getM_Product_ID());
+			final UomId productUomId = Services.get(IProductBL.class).getStockUOMId(getM_Product_ID());
 			setC_UOM_ID(productUomId.getRepoId());
 		}
 

@@ -4,7 +4,7 @@ import static de.metas.i18n.Language.AD_Language_en_AU;
 import static de.metas.i18n.Language.AD_Language_en_GB;
 import static de.metas.i18n.Language.AD_Language_en_US;
 import static de.metas.i18n.Language.asLanguage;
-import static de.metas.i18n.Language.asLanguageString;
+import static de.metas.i18n.Language.asLanguageStringOrNull;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -227,7 +227,7 @@ public class ContactPersonServiceTest
 
 		contactPerson.setAD_User_ID(user.getId().getRepoId());
 		contactPerson.setEMail(emailAddress);
-		contactPerson.setAD_Language(asLanguageString(language));
+		contactPerson.setAD_Language(asLanguageStringOrNull(language));
 		contactPerson.setMKTG_Platform_ID(platformId.getRepoId());
 
 		save(contactPerson);

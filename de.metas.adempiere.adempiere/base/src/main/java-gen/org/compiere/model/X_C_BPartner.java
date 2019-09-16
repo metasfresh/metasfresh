@@ -15,7 +15,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1271109502L;
+	private static final long serialVersionUID = -365132164L;
 
     /** Standard Constructor */
     public X_C_BPartner (Properties ctx, int C_BPartner_ID, String trxName)
@@ -28,6 +28,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 			setC_BPartner_ID (0);
 			setIsAggregatePO (false); // N
 			setIsAllowActionPrice (false); // N
+			setIsAllowPriceMutation (false); // N
 			setIsCreateDefaultPOReference (false); // N
 			setIsCustomer (false);
 			setIsEmployee (false);
@@ -1085,20 +1086,43 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return false;
 	}
 
-	/** Set IsAllowActionPrice.
-		@param IsAllowActionPrice IsAllowActionPrice	  */
+	/** Set Aktionsbezug.
+		@param IsAllowActionPrice Aktionsbezug	  */
 	@Override
 	public void setIsAllowActionPrice (boolean IsAllowActionPrice)
 	{
 		set_Value (COLUMNNAME_IsAllowActionPrice, Boolean.valueOf(IsAllowActionPrice));
 	}
 
-	/** Get IsAllowActionPrice.
-		@return IsAllowActionPrice	  */
+	/** Get Aktionsbezug.
+		@return Aktionsbezug	  */
 	@Override
 	public boolean isAllowActionPrice () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsAllowActionPrice);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Preise mutieren.
+		@param IsAllowPriceMutation Preise mutieren	  */
+	@Override
+	public void setIsAllowPriceMutation (boolean IsAllowPriceMutation)
+	{
+		set_Value (COLUMNNAME_IsAllowPriceMutation, Boolean.valueOf(IsAllowPriceMutation));
+	}
+
+	/** Get Preise mutieren.
+		@return Preise mutieren	  */
+	@Override
+	public boolean isAllowPriceMutation () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsAllowPriceMutation);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

@@ -34,13 +34,13 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.MetasfreshGlassPane;
 import org.compiere.apps.AEnv;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import com.google.common.base.Throwables;
 
 import de.metas.adempiere.form.AbstractClientUIInvoker;
 import de.metas.adempiere.form.IClientUIInstance;
 import de.metas.adempiere.form.IClientUIInvoker;
+import de.metas.util.lang.CoalesceUtil;
 
 /* package */class SwingClientUIInvoker extends AbstractClientUIInvoker
 {
@@ -240,7 +240,7 @@ import de.metas.adempiere.form.IClientUIInvoker;
 
 			private final void showWaitingCursor()
 			{
-				cursorHolder = Util.coalesce(window, componentSwing);
+				cursorHolder = CoalesceUtil.coalesce(window, componentSwing);
 				if (cursorHolder != null)
 				{
 					cursorOld = cursorHolder.getCursor();

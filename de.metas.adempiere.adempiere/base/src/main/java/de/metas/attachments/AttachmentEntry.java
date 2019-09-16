@@ -8,7 +8,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.MimeType;
 
 import com.google.common.base.Preconditions;
@@ -45,7 +45,7 @@ public final class AttachmentEntry
 	private final AttachmentTags tags;
 
 	/** The records to which this instance is attached. */
-	private final Set<ITableRecordReference> linkedRecords;
+	private final Set<TableRecordReference> linkedRecords;
 
 	@Builder(toBuilder = true)
 	private AttachmentEntry(
@@ -56,7 +56,7 @@ public final class AttachmentEntry
 			@Nullable final String mimeType,
 			@Nullable final URI url,
 			@Nullable AttachmentTags tags,
-			@Singular final Set<ITableRecordReference> linkedRecords)
+			@Singular final Set<TableRecordReference> linkedRecords)
 	{
 		this.id = id;
 		this.name = name == null ? "?" : name;
@@ -102,7 +102,7 @@ public final class AttachmentEntry
 		return name.endsWith(".gif") || name.endsWith(".jpg") || name.endsWith(".png");
 	}
 
-	public AttachmentEntry withAdditionalLinkedRecord(@NonNull final ITableRecordReference modelRef)
+	public AttachmentEntry withAdditionalLinkedRecord(@NonNull final TableRecordReference modelRef)
 	{
 		if (getLinkedRecords().contains(modelRef))
 		{
@@ -111,9 +111,9 @@ public final class AttachmentEntry
 		return toBuilder().linkedRecord(modelRef).build();
 	}
 
-	public AttachmentEntry withRemovedLinkedRecord(@NonNull final ITableRecordReference modelRef)
+	public AttachmentEntry withRemovedLinkedRecord(@NonNull final TableRecordReference modelRef)
 	{
-		final HashSet<ITableRecordReference> linkedRecords = new HashSet<>(getLinkedRecords());
+		final HashSet<TableRecordReference> linkedRecords = new HashSet<>(getLinkedRecords());
 		if (linkedRecords.remove(modelRef))
 		{
 			return toBuilder().clearLinkedRecords().linkedRecords(linkedRecords).build();

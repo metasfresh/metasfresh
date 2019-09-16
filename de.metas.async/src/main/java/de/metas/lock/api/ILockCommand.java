@@ -27,7 +27,7 @@ import java.util.Iterator;
 import java.util.concurrent.Future;
 
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.process.PInstanceId;
 
@@ -63,7 +63,7 @@ public interface ILockCommand
 		 * See {@link ILockCommand#setAllowAdditionalLocks(AllowAdditionalLocks)} for a use case where this feature makes sense.
 		 */
 		FOR_DIFFERENT_OWNERS
-	};
+	}
 
 	/**
 	 * Default value for {@link #isFailIfNothingLocked()} is <code>true</code>.
@@ -139,13 +139,13 @@ public interface ILockCommand
 
 	ILockCommand setRecordByTableRecordId(final int tableId, final int recordId);
 
-	ILockCommand addRecord(ITableRecordReference record);
+	ILockCommand addRecord(TableRecordReference record);
 
 	ILockCommand addRecordByModel(Object model);
 
 	ILockCommand addRecordsByModel(Collection<?> models);
 
-	Iterator<ITableRecordReference> getRecordsToLockIterator();
+	Iterator<TableRecordReference> getRecordsToLockIterator();
 
 	ILockCommand setRecordsBySelection(Class<?> modelClass, PInstanceId adPIstanceId);
 

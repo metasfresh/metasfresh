@@ -15,7 +15,7 @@ public class X_C_Order_Line_Alloc extends org.compiere.model.PO implements I_C_O
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -216211607L;
+	private static final long serialVersionUID = 424419379L;
 
     /** Standard Constructor */
     public X_C_Order_Line_Alloc (Properties ctx, int C_Order_Line_Alloc_ID, String trxName)
@@ -46,7 +46,7 @@ public class X_C_Order_Line_Alloc extends org.compiere.model.PO implements I_C_O
     }
 
 	@Override
-	public de.metas.ordercandidate.model.I_C_OLCand getC_OLCand() throws RuntimeException
+	public de.metas.ordercandidate.model.I_C_OLCand getC_OLCand()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_OLCand_ID, de.metas.ordercandidate.model.I_C_OLCand.class);
 	}
@@ -80,7 +80,7 @@ public class X_C_Order_Line_Alloc extends org.compiere.model.PO implements I_C_O
 	}
 
 	@Override
-	public de.metas.ordercandidate.model.I_C_OLCandProcessor getC_OLCandProcessor() throws RuntimeException
+	public de.metas.ordercandidate.model.I_C_OLCandProcessor getC_OLCandProcessor()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_OLCandProcessor_ID, de.metas.ordercandidate.model.I_C_OLCandProcessor.class);
 	}
@@ -136,7 +136,7 @@ public class X_C_Order_Line_Alloc extends org.compiere.model.PO implements I_C_O
 	}
 
 	@Override
-	public org.compiere.model.I_C_OrderLine getC_OrderLine() throws RuntimeException
+	public org.compiere.model.I_C_OrderLine getC_OrderLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class);
 	}

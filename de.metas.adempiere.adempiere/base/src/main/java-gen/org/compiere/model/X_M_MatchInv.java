@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_MatchInv
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 289046779L;
+	private static final long serialVersionUID = 753518359L;
 
     /** Standard Constructor */
     public X_M_MatchInv (Properties ctx, int M_MatchInv_ID, String trxName)
@@ -43,15 +26,14 @@ public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv,
 			setC_InvoiceLine_ID (0);
 			setDateAcct (new Timestamp( System.currentTimeMillis() ));
 			setDateTrx (new Timestamp( System.currentTimeMillis() ));
-			setIsSOTrx (false);
-// N
+			setIsSOTrx (false); // N
 			setM_InOutLine_ID (0);
 			setM_MatchInv_ID (0);
 			setM_Product_ID (0);
-			setPosted (false);
+			setPosted (false); // N
 			setProcessed (false);
 			setProcessing (false);
-			setQty (Env.ZERO);
+			setQty (BigDecimal.ZERO);
         } */
     }
 
@@ -71,7 +53,7 @@ public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv,
     }
 
 	@Override
-	public org.compiere.model.I_C_InvoiceLine getC_InvoiceLine() throws RuntimeException
+	public org.compiere.model.I_C_InvoiceLine getC_InvoiceLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_InvoiceLine_ID, org.compiere.model.I_C_InvoiceLine.class);
 	}
@@ -102,6 +84,31 @@ public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv,
 	public int getC_InvoiceLine_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_InvoiceLine_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Maßeinheit.
+		@param C_UOM_ID 
+		Maßeinheit
+	  */
+	@Override
+	public void setC_UOM_ID (int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+	}
+
+	/** Get Maßeinheit.
+		@return Maßeinheit
+	  */
+	@Override
+	public int getC_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -161,7 +168,7 @@ public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv,
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** Set Beleg Nr..
+	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
@@ -171,7 +178,7 @@ public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv,
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Beleg Nr..
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
 	@Override
@@ -207,7 +214,7 @@ public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv,
 	}
 
 	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
 	}
@@ -218,9 +225,9 @@ public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv,
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Ausprägung Merkmals-Satz.
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Product Attribute Set Instance
+		Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
@@ -231,8 +238,8 @@ public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv,
 			set_ValueNoCheck (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Ausprägung Merkmals-Satz.
-		@return Product Attribute Set Instance
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public int getM_AttributeSetInstance_ID () 
@@ -244,7 +251,7 @@ public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv,
 	}
 
 	@Override
-	public org.compiere.model.I_M_InOutLine getM_InOutLine() throws RuntimeException
+	public org.compiere.model.I_M_InOutLine getM_InOutLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class);
 	}
@@ -303,18 +310,6 @@ public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.
@@ -435,7 +430,26 @@ public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv,
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Menge in Maßeinheit.
+		@param QtyInUOM Menge in Maßeinheit	  */
+	@Override
+	public void setQtyInUOM (java.math.BigDecimal QtyInUOM)
+	{
+		set_Value (COLUMNNAME_QtyInUOM, QtyInUOM);
+	}
+
+	/** Get Menge in Maßeinheit.
+		@return Menge in Maßeinheit	  */
+	@Override
+	public java.math.BigDecimal getQtyInUOM () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInUOM);
+		if (bd == null)
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

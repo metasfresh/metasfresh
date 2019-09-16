@@ -12,7 +12,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -20,6 +19,7 @@ import de.metas.procurement.base.balance.IPMMBalanceChangeEventProcessor;
 import de.metas.procurement.base.balance.PMMBalanceChangeEvent;
 import de.metas.procurement.base.order.model.I_C_OrderLine;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 
 /*
  * #%L
@@ -118,7 +118,7 @@ public class C_OrderLine
 			return;
 		}
 
-		final Timestamp date = Util.coalesceSuppliers(
+		final Timestamp date = CoalesceUtil.coalesceSuppliers(
 				() -> orderLine.getDatePromised(),
 				() -> orderLine.getC_Order().getDatePromised());
 

@@ -69,12 +69,8 @@ public class PPOrderRequestedEventHandler implements MaterialEventHandler<PPOrde
 	}
 
 	/**
-	 * Creates a production order. Note that is does not fire an event, because production orders can be created and changed for many resons,<br>
+	 * Creates a production order. Note that it does not fire an event, because production orders can be created and changed for many reasons,<br>
 	 * and therefore we leave the event-firing to a model interceptor.
-	 *
-	 * @param ppOrder
-	 * @param dateOrdered
-	 * @return
 	 */
 	@VisibleForTesting
 	I_PP_Order createProductionOrder(@NonNull final PPOrderRequestedEvent ppOrderRequestedEvent)

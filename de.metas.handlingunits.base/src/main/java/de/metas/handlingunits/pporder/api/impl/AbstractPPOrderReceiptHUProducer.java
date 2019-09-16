@@ -137,7 +137,7 @@ import lombok.NonNull;
 	@Override
 	public final List<I_M_HU> createReceiptCandidatesAndPlanningHUs()
 	{
-		return trxManager.call(() -> {
+		return trxManager.callInNewTrx(() -> {
 
 			final I_M_HU_LUTU_Configuration lutuConfig = getCreateLUTUConfiguration();
 			final Quantity qtyCUsTotal = lutuConfigurationFactory.calculateQtyCUsTotal(lutuConfig);
@@ -150,14 +150,14 @@ import lombok.NonNull;
 				throw new AdempiereException("Quantity to receive was not determined");
 			}
 
-			return createHUsInTrx(qtyCUsTotal.getAsBigDecimal(), qtyCUsTotal.getUOM());
+			return createHUsInTrx(qtyCUsTotal.toBigDecimal(), qtyCUsTotal.getUOM());
 		});
 	}
 
 	@Override
 	public final List<I_M_HU> createReceiptCandidatesAndPlanningHUs(final BigDecimal qtyToReceive, final I_C_UOM uom)
 	{
-		return trxManager.call(() -> createHUsInTrx(qtyToReceive, uom));
+		return trxManager.callInNewTrx(() -> createHUsInTrx(qtyToReceive, uom));
 	}
 
 	private final List<I_M_HU> createHUsInTrx(final BigDecimal qtyToReceive, final I_C_UOM uom)
@@ -294,7 +294,7 @@ import lombok.NonNull;
 		candidate.setM_Locator_ID(request.getLocatorId());
 		candidate.setM_HU_ID(request.getTopLevelHUId());
 		candidate.setM_Product_ID(ProductId.toRepoId(request.getProductId()));
-		candidate.setQty(request.getQty().getAsBigDecimal());
+		candidate.setQty(request.getQty().toBigDecimal());
 		candidate.setC_UOM_ID(request.getQty().getUOMId());
 		candidate.setMovementDate(TimeUtil.asTimestamp(movementDate));
 		candidate.setProcessed(false);

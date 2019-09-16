@@ -68,6 +68,7 @@ public class PickingCandidate
 	@Default
 	private PickingCandidateApprovalStatus approvalStatus = PickingCandidateApprovalStatus.TO_BE_APPROVED;
 
+	@Nullable
 	private final HuId pickFromHuId;
 
 	@NonNull
@@ -240,7 +241,7 @@ public class PickingCandidate
 		}
 		else
 		{
-			qtyReviewToMatch = qtyPicked.getAsBigDecimal();
+			qtyReviewToMatch = qtyPicked.toBigDecimal();
 		}
 
 		//

@@ -135,10 +135,6 @@ public class MaterialEventHandlerRegistryTests
 						candidateRepositoryCommands,
 						stockCandidateService)));
 
-		final RequestMaterialOrderService candidateService = new RequestMaterialOrderService(
-				candidateRepositoryRetrieval,
-				postMaterialEventService);
-
 		final DDOrderAdvisedHandler distributionAdvisedEventHandler = new DDOrderAdvisedHandler(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands,
@@ -149,7 +145,7 @@ public class MaterialEventHandlerRegistryTests
 		final PPOrderAdvisedHandler ppOrderAdvisedHandler = new PPOrderAdvisedHandler(
 				candidateChangeHandler,
 				candidateRepositoryRetrieval,
-				candidateService);
+				postMaterialEventService);
 
 		final ForecastCreatedHandler forecastCreatedEventHandler = new ForecastCreatedHandler(candidateChangeHandler);
 

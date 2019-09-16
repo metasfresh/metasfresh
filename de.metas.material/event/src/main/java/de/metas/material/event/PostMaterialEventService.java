@@ -62,8 +62,6 @@ public class PostMaterialEventService
 
 	/**
 	 * Fires the given event using our (distributed) event framework. If {@link #subscribeToEventBus()} was not yet invoked, an exception is thrown.
-	 *
-	 * @param event
 	 */
 	public void postEventNow(final MaterialEvent event)
 	{

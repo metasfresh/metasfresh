@@ -34,7 +34,6 @@ import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerId;
@@ -74,6 +73,7 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
@@ -735,7 +735,7 @@ public class CalloutOrder extends CalloutEngine
 					{
 						final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 						final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bill_BPartner_ID, order.getDateOrdered());
-						final BigDecimal creditUsed = Util.coalesce(rs.getBigDecimal(I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed), BigDecimal.ZERO);
+						final BigDecimal creditUsed = CoalesceUtil.coalesce(rs.getBigDecimal(I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed), BigDecimal.ZERO);
 						final BigDecimal creditAvailable = creditLimit.subtract(creditUsed);
 						if (creditAvailable.signum() < 0)
 						{
@@ -857,7 +857,7 @@ public class CalloutOrder extends CalloutEngine
 
 		//
 		// UOMs: reset them to avoid UOM conversion errors between previous UOM and current product's UOMs (see FRESH-936 #69)
-		orderLine.setC_UOM_ID(Services.get(IProductBL.class).getStockingUOMId(orderLine.getM_Product_ID()).getRepoId());
+		orderLine.setC_UOM_ID(Services.get(IProductBL.class).getStockUOMId(orderLine.getM_Product_ID()).getRepoId());
 		orderLine.setPrice_UOM_ID(-1); // reset; will be set when we update pricing
 
 		// Set Attribute
@@ -1250,7 +1250,7 @@ public class CalloutOrder extends CalloutEngine
 		if (M_Product_ID > 0 && orderLine.getC_Order().isSOTrx()
 				&& QtyOrdered.signum() > 0)  // no negative (returns)
 		{
-			if (Services.get(IProductBL.class).isStocked(M_Product_ID))
+			if (Services.get(IProductBL.class).isStocked(ProductId.ofRepoIdOrNull(M_Product_ID)))
 			{
 				final int M_Warehouse_ID = orderLine.getM_Warehouse_ID();
 				final int M_AttributeSetInstance_ID = orderLine.getM_AttributeSetInstance_ID();

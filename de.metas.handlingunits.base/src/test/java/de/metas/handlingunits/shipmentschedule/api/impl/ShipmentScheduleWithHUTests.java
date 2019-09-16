@@ -35,7 +35,8 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 
@@ -75,7 +76,7 @@ public class ShipmentScheduleWithHUTests
 
 	private IHUContext huContext;
 
-	private Quantity ninetyNine;
+	private StockQtyAndUOMQty ninetyNineNoCatch;
 
 	@Before
 	public void init()
@@ -85,12 +86,13 @@ public class ShipmentScheduleWithHUTests
 		contextProvider = PlainContextAware.newOutOfTrx(Env.getCtx());
 
 		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setC_UOM_ID(testSupport.helper.uomEach.getC_UOM_ID());
 		saveRecord(product);
-		productId = testSupport.helper.pTomatoProductId;
+		productId = ProductId.ofRepoId(product.getM_Product_ID());
 
 		huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
 
-		ninetyNine = Quantity.of(99, testSupport.helper.uomEach);
+		ninetyNineNoCatch = StockQtyAndUOMQtys.create(new BigDecimal("99"), productId, null, null);
 
 		Services.registerService(IShipmentScheduleBL.class, ShipmentScheduleBL.newInstanceForUnitTesting());
 	}
@@ -107,7 +109,7 @@ public class ShipmentScheduleWithHUTests
 				.ofShipmentScheduleWithoutHu(
 						huContext,
 						schedule,
-						ninetyNine,
+						ninetyNineNoCatch,
 						M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
 				.setM_InOutLine(iol)
 				.setM_InOut(io)
@@ -129,7 +131,7 @@ public class ShipmentScheduleWithHUTests
 				.ofShipmentScheduleWithoutHu(
 						huContext,
 						schedule,
-						ninetyNine,
+						ninetyNineNoCatch,
 						M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
 				.setM_InOutLine(iol)
 				.setM_InOut(io)
@@ -151,7 +153,7 @@ public class ShipmentScheduleWithHUTests
 				.ofShipmentScheduleWithoutHu(
 						huContext,
 						schedule,
-						ninetyNine,
+						ninetyNineNoCatch,
 						M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
 				.setM_InOutLine(iol)
 				.setM_InOut(io)
@@ -173,7 +175,7 @@ public class ShipmentScheduleWithHUTests
 				.ofShipmentScheduleWithoutHu(
 						huContext,
 						schedule,
-						ninetyNine,
+						ninetyNineNoCatch,
 						M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
 				.setM_InOutLine(iol)
 				.setM_InOut(io)
@@ -195,7 +197,7 @@ public class ShipmentScheduleWithHUTests
 				.ofShipmentScheduleWithoutHu(
 						huContext,
 						schedule,
-						ninetyNine,
+						ninetyNineNoCatch,
 						M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
 				.setM_InOutLine(iol)
 				.setM_InOut(io)

@@ -9,7 +9,7 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.function.Consumer;
 
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 
 import com.google.common.collect.ImmutableList;
@@ -116,7 +116,7 @@ public class FlatrateTermRefund_Handler
 
 			final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(ic.getRecord_ID());
 
-			RefundContractRepository refundContractRepository = Adempiere.getBean(RefundContractRepository.class);
+			RefundContractRepository refundContractRepository = SpringContextHolder.instance.getBean(RefundContractRepository.class);
 			final RefundContract refundContract = refundContractRepository.getById(flatrateTermId);
 			final NextInvoiceDate nextInvoiceDate = refundContract.computeNextInvoiceDate(asLocalDate(ic.getDeliveryDate()));
 

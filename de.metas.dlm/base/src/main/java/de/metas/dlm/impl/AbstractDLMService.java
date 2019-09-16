@@ -272,7 +272,7 @@ public abstract class AbstractDLMService implements IDLMService
 		{
 			final Mutable<Partition> result = new Mutable<>();
 
-			Services.get(ITrxManager.class).run((TrxRunnable)localTrxName -> result.setValue(storePartition0(partition)));
+			Services.get(ITrxManager.class).runInNewTrx((TrxRunnable)localTrxName -> result.setValue(storePartition0(partition)));
 			return result.getValue();
 		}
 

@@ -35,7 +35,7 @@ public class HUReceiptLineCandidatesBuilderTest
 		uomHelper = new UOMTestHelper(context.getCtx());
 		uom = uomHelper.createUOM("UOM1", 2);
 		receiptSchedule = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class, context);
-		receiptSchedule.setC_UOM(uom);
+		receiptSchedule.setC_UOM_ID(uom.getC_UOM_ID());
 		InterfaceWrapperHelper.save(receiptSchedule);
 	}
 
@@ -142,7 +142,7 @@ public class HUReceiptLineCandidatesBuilderTest
 				.copyFrom(aggregatedExpectations.aggregatedExpectation())
 				.endExpectation()
 			.assertExpected(huReceiptLineCandidatesBuilder);
-		;
+		
 		//@formatter:off
 	}
 

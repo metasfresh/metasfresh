@@ -13,8 +13,8 @@ import de.metas.util.Services;
 
 public class C_BPartner_Stats_ComputeBPartnerStats extends JavaProcess implements IProcessPrecondition
 {
-	final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
-	final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+	private final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+	private final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 
 	@Override

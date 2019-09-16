@@ -15,7 +15,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.ISingletonService;
 
 public interface IHUShipmentScheduleBL extends ISingletonService
@@ -29,9 +29,9 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	 * @param tuOrVHU TU or VirtualHU to link on
 	 * @return qtyPicked record for this addition
 	 */
-	ShipmentScheduleWithHU addQtyPicked(I_M_ShipmentSchedule sched, Quantity qtyPicked, I_M_HU tuOrVHU, IHUContext huContext);
+	ShipmentScheduleWithHU addQtyPicked(I_M_ShipmentSchedule sched, StockQtyAndUOMQty qtyPicked, I_M_HU tuOrVHU, IHUContext huContext);
 
-	ShipmentScheduleWithHU addQtyPickedAndUpdateHU(ShipmentScheduleId shipmentScheduleId, Quantity qtyPicked, HuId tuOrVHUId, IHUContext huContext);
+	ShipmentScheduleWithHU addQtyPickedAndUpdateHU(ShipmentScheduleId shipmentScheduleId, StockQtyAndUOMQty qtyPicked, HuId tuOrVHUId, IHUContext huContext);
 
 	/**
 	 * Creates a producer which will create shipments ({@link I_M_InOut}) from {@link IShipmentScheduleWithHU}s.

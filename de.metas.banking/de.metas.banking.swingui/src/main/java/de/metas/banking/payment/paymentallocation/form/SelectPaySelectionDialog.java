@@ -279,7 +279,7 @@ final class SelectPaySelectionDialog
 
 		//
 		// Create C_PaySelection in transaction
-		trxManager.run((TrxRunnable)localTrxName -> {
+		trxManager.runInNewTrx((TrxRunnable)localTrxName -> {
 			final I_C_PaySelection paySelection = InterfaceWrapperHelper.create(Env.getCtx(), paySelectionId, I_C_PaySelection.class, localTrxName);
 			handleForPaySelection(paySelection);
 		});
@@ -289,7 +289,7 @@ final class SelectPaySelectionDialog
 	{
 		//
 		// Create C_PaySelection in transaction
-		trxManager.run((TrxRunnable)localTrxName -> {
+		trxManager.runInNewTrx((TrxRunnable)localTrxName -> {
 			final IContextAware contextProvider = PlainContextAware.newWithTrxName(Env.getCtx(), localTrxName);
 			final I_C_PaySelection paySelection = InterfaceWrapperHelper.newInstance(I_C_PaySelection.class, contextProvider);
 

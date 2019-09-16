@@ -97,8 +97,6 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 
 	/**
 	 * Retrieve the {@link IInvoiceCandidateHandler} of the given <code>ic</code> and calls its {@link IInvoiceCandidateHandler#setDeliveredData(I_C_Invoice_Candidate) setDeliveredData()} method.
-	 *
-	 * @param ic
 	 */
 	void setDeliveredData(I_C_Invoice_Candidate ic);
 

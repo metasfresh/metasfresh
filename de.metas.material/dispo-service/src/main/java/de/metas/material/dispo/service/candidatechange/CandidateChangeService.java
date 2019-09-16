@@ -5,11 +5,13 @@ import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -38,6 +40,7 @@ import lombok.NonNull;
  * #L%
  */
 @Service
+@Profile(Profiles.PROFILE_MaterialDispo)
 public class CandidateChangeService
 {
 	private static final Logger logger = LogManager.getLogger(CandidateChangeService.class);

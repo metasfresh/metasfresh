@@ -6,14 +6,19 @@ import java.time.LocalDate;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
-import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
+import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.ordercandidates.JsonBPartnerInfo;
 import de.metas.rest_api.ordercandidates.JsonDocTypeInfo;
+import de.metas.rest_api.ordercandidates.JsonOLCand;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkRequest;
+import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest;
-import de.metas.rest_api.product.JsonProductInfo;
+import de.metas.rest_api.ordercandidates.JsonProductInfo;
+import de.metas.rest_api.utils.JsonError;
 import de.metas.util.JSONObjectMapper;
 import lombok.NonNull;
 
@@ -143,6 +148,30 @@ public class JsonOLCandModelTest
 				.request(requestForInvoiceCandidate)
 				.build();
 		testSerializeDeserialize(request, JSONObjectMapper.forClass(JsonOLCandCreateBulkRequest.class));
+	}
+
+	@Test
+	public void test_JsonOLCandCreateBulkResponse_OK() throws Exception
+	{
+		final JSONObjectMapper<JsonOLCandCreateBulkResponse> jsonObjectMapper = JSONObjectMapper.forClass(JsonOLCandCreateBulkResponse.class);
+
+		final JsonOLCandCreateBulkResponse response = JsonOLCandCreateBulkResponse.ok(
+				ImmutableList.of(JsonOLCand.builder()
+						.build()));
+		testSerializeDeserialize(response, jsonObjectMapper);
+	}
+
+	@Test
+	public void test_JsonOLCandCreateBulkResponse_Error() throws Exception
+	{
+		final JSONObjectMapper<JsonOLCandCreateBulkResponse> jsonObjectMapper = JSONObjectMapper.forClass(JsonOLCandCreateBulkResponse.class);
+
+		final JsonOLCandCreateBulkResponse response = JsonOLCandCreateBulkResponse.error(JsonError.builder()
+				.message("error message")
+				.stackTrace("error stacktrace")
+				.throwable(null) // REMEMBER: throwable is not serialized
+				.build());
+		testSerializeDeserialize(response, jsonObjectMapper);
 	}
 
 	private JsonOLCandCreateRequest createDummyJsonOLCandCreateRequest()

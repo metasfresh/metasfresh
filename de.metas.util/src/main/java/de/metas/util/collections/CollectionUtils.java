@@ -154,11 +154,8 @@ public final class CollectionUtils
 	 * @return matching element; returns null ONLY if the element is null
 	 * @see de.metas.util.reducers.Reducers#singleValue()
 	 */
-	public static <T> T singleElement(final Collection<T> collection, final java.util.function.Predicate<T> filter)
+	public static <T> T singleElement(@NonNull final Collection<T> collection, @NonNull final java.util.function.Predicate<T> filter)
 	{
-		Check.assumeNotEmpty(collection, "collection not empty");
-		Check.assumeNotNull(filter, "filter not null");
-
 		final List<T> result = new ArrayList<>();
 
 		final Iterator<T> it = collection.iterator();

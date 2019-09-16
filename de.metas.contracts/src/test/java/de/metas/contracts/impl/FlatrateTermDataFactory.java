@@ -309,10 +309,10 @@ public class FlatrateTermDataFactory
 	{
 		final I_M_PriceList priceList = newInstance(I_M_PriceList.class);
 		priceList.setName(valuePricingSystem);
-		priceList.setM_PricingSystem(pricingSystem);
+		priceList.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
 		priceList.setIsSOPriceList(true);
 		priceList.setIsTaxIncluded(isTaxInclcuded);
-		priceList.setC_Country(country);
+		priceList.setC_Country_ID(country.getC_Country_ID());
 		priceList.setC_Currency_ID(currencyId.getRepoId());
 		save(priceList);
 		return priceList;
@@ -342,10 +342,10 @@ public class FlatrateTermDataFactory
 		}
 
 		final I_M_ProductPrice productPrice = newInstance(I_M_ProductPrice.class);
-		productPrice.setM_Product(product);
+		productPrice.setM_Product_ID(product.getM_Product_ID());
 		productPrice.setC_UOM_ID(uomId);
-		productPrice.setC_TaxCategory(taxCategory);
-		productPrice.setM_PriceList_Version(priceListVersion);
+		productPrice.setC_TaxCategory_ID(taxCategory.getC_TaxCategory_ID());
+		productPrice.setM_PriceList_Version_ID(priceListVersion.getM_PriceList_Version_ID());
 		productPrice.setPriceLimit(BigDecimal.valueOf(2));
 		productPrice.setPriceList(BigDecimal.valueOf(2));
 		productPrice.setPriceStd(BigDecimal.valueOf(2));

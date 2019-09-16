@@ -194,7 +194,7 @@
 							<goal>repackage</goal>
 						</goals>
 						<configuration>
-							<!-- we *also* need the normal main jar to be use in app
+							<!-- we *also* need the normal main jar to be used in app
 							so don't replace the normal jar, but create the executable jar with this classifier -->
 							<classifier>standalone</classifier>
 

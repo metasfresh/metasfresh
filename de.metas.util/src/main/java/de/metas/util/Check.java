@@ -232,8 +232,6 @@ public final class Check
 	 *
 	 * If <code>obj</code> is <code>null</code>, then an exception will be thrown.
 	 *
-	 * @param obj
-	 * @param interfaceClass
 	 * @param objectName user readable object name (i.e. variable name)
 	 */
 	public static void assumeInstanceOf(final Object obj, final Class<?> interfaceClass, final String objectName)

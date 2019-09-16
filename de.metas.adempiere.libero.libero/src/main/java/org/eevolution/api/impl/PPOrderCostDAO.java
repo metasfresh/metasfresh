@@ -158,7 +158,7 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 
 		if (from.getTrxType().isCoProduct())
 		{
-			record.setCostDistributionPercent(from.getCoProductCostDistributionPercent().getValueAsBigDecimal());
+			record.setCostDistributionPercent(from.getCoProductCostDistributionPercent().toBigDecimal());
 		}
 		else
 		{

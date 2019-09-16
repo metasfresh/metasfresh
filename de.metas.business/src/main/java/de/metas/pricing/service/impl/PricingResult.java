@@ -36,6 +36,7 @@ import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingAttribute;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -77,13 +78,13 @@ final class PricingResult implements IPricingResult
 	private CurrencyId currencyId;
 	private UomId priceUomId;
 	private CurrencyPrecision precision;
-	
+
 	private ProductId productId;
 	private ProductCategoryId productCategoryId;
-	
+
 	private TaxCategoryId taxCategoryId;
 	private boolean taxIncluded = false;
-	
+
 	private PricingConditionsResult pricingConditions;
 
 
@@ -103,6 +104,8 @@ final class PricingResult implements IPricingResult
 	private boolean priceEditable = true;
 
 	private boolean discountEditable = true;
+
+	private InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.NominalWeight;
 
 	@Getter(AccessLevel.NONE)
 	private final List<IPricingRule> rulesApplied = new ArrayList<>();
@@ -124,7 +127,7 @@ final class PricingResult implements IPricingResult
 			final boolean disallowDiscount)
 	{
 		this.calculated = false;
-		
+
 		this.priceDate = priceDate;
 
 		this.pricingSystemId = pricingSystemId;
@@ -138,7 +141,7 @@ final class PricingResult implements IPricingResult
 	}
 
 	/**
-	 * @return the discount
+	 * @return discount, never {@code null}
 	 */
 	@Override
 	public Percent getDiscount()

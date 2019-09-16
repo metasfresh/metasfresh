@@ -1,7 +1,5 @@
 package org.adempiere.ad.table;
 
-import java.util.List;
-
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Repository;
@@ -67,8 +65,8 @@ public class RecordChangeLogRepository implements LogEntriesRepository
 
 	@Override
 	public ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> getLogEntriesForRecordReferences(
-			@NonNull final List<TableRecordReference> tableRecordReference)
+			@NonNull final LogEntriesQuery logEntriesQuery)
 	{
-		return RecordChangeLogEntryEntryLoader.retrieveLogEntries(tableRecordReference);
+		return RecordChangeLogEntryLoader.retrieveLogEntries(logEntriesQuery);
 	}
 }

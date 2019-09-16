@@ -1,5 +1,7 @@
 package de.metas.rest_api;
 
+import java.util.Objects;
+
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -37,7 +39,7 @@ public class MetasfreshId
 {
 	int value;
 
-	public static MetasfreshId ofOrNull(int id)
+	public static MetasfreshId ofOrNull(final int id)
 	{
 		if (id <= 0)
 		{
@@ -48,14 +50,14 @@ public class MetasfreshId
 
 	public static MetasfreshId ofOrNull(@Nullable final RepoIdAware id)
 	{
-		if (id ==null)
+		if (id == null)
 		{
 			return null;
 		}
 		return new MetasfreshId(id.getRepoId());
 	}
 
-	public static MetasfreshId of(int id)
+	public static MetasfreshId of(final int id)
 	{
 		return new MetasfreshId(id);
 	}
@@ -65,8 +67,13 @@ public class MetasfreshId
 		return new MetasfreshId(id.getRepoId());
 	}
 
+	public static MetasfreshId ofNullable(@Nullable final RepoIdAware id)
+	{
+		return id != null ? new MetasfreshId(id.getRepoId()) : null;
+	}
+
 	@JsonCreator
-	private MetasfreshId(int value)
+	private MetasfreshId(final int value)
 	{
 		this.value = Check.assumeGreaterOrEqualToZero(value, "value"); // zero occurs when e.g. an AD_was created by the system-user
 	}
@@ -84,5 +91,10 @@ public class MetasfreshId
 			return false;
 		}
 		return otherId.getRepoId() == value;
+	}
+
+	public static boolean equals(@Nullable final MetasfreshId id1, @Nullable final MetasfreshId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

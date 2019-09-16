@@ -9,7 +9,6 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import com.google.common.base.Optional;
 
@@ -21,6 +20,7 @@ import de.metas.printing.api.IPrintJobDAO;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.spi.impl.DefaultPrintingRecordTextProvider;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 
 /*
  * #%L
@@ -116,6 +116,6 @@ public final class C_Order_MFGWarehouse_Report_RecordTextProvider implements IRe
 
 		final String textMessge = Services.get(IMsgBL.class).getMsg(ctx, MSG_PrintingInfo_MFGWarehouse_Report, new Object[] { orderDocNo, mfgWarehouseReportID.toString() });
 
-		return Optional.of(Util.coalesce(textMessge, ""));
+		return Optional.of(CoalesceUtil.coalesce(textMessge, ""));
 	}
 }

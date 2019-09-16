@@ -160,9 +160,9 @@ public class CandidateAssignmentServiceTest
 		final RefundInvoiceCandidate refundInvoiceCandidate = assignmentToRefundCandidate.getRefundInvoiceCandidate();
 
 		// guards
-		assertThat(assignmentToRefundCandidate.getQuantityAssigendToRefundCandidate().getAsBigDecimal()).isEqualByComparingTo(ONE);
-		assertThat(refundInvoiceCandidate.getMoney().getAsBigDecimal()).isEqualByComparingTo(HUNDRED);
-		assertThat(refundInvoiceCandidate.getAssignedQuantity().getAsBigDecimal()).isEqualByComparingTo(ONE);
+		assertThat(assignmentToRefundCandidate.getQuantityAssigendToRefundCandidate().toBigDecimal()).isEqualByComparingTo(ONE);
+		assertThat(refundInvoiceCandidate.getMoney().toBigDecimal()).isEqualByComparingTo(HUNDRED);
+		assertThat(refundInvoiceCandidate.getAssignedQuantity().toBigDecimal()).isEqualByComparingTo(ONE);
 
 		// invoke the method under test
 		final UnassignResult result = invoiceCandidateAssignmentService.unassignCandidate(assignableInvoiceCandidate);
@@ -179,7 +179,7 @@ public class CandidateAssignmentServiceTest
 
 		final InvoiceCandidateId invoiceCandidateId = unAssignedRefundInvoiceCandidate.getId();
 		assertThat(invoiceCandidateId).isEqualTo(refundInvoiceCandidate.getId());
-		assertThat(unAssignedRefundInvoiceCandidate.getMoney().getAsBigDecimal()).isEqualByComparingTo("98"); // we subtract 20% of 10 from 100; 20% is set in the refund config
+		assertThat(unAssignedRefundInvoiceCandidate.getMoney().toBigDecimal()).isEqualByComparingTo("98"); // we subtract 20% of 10 from 100; 20% is set in the refund config
 
 		// make
 		final I_C_Invoice_Candidate unAssignedRefundInvoiceCandidateRecord = RefundTestTools.retrieveRecord(invoiceCandidateId);
@@ -202,11 +202,11 @@ public class CandidateAssignmentServiceTest
 				.getAssignmentsToRefundCandidates()
 				.get(0);
 		assertThat(assignmentToRefundCandidate.getMoneyAssignedToRefundCandidate()).isNotNull();
-		assertThat(assignmentToRefundCandidate.getMoneyAssignedToRefundCandidate().getAsBigDecimal()).isEqualByComparingTo("2");
+		assertThat(assignmentToRefundCandidate.getMoneyAssignedToRefundCandidate().toBigDecimal()).isEqualByComparingTo("2");
 
 		assertThat(assignmentToRefundCandidate.getRefundInvoiceCandidate()).isNotNull();
 		assertThat(assignmentToRefundCandidate.getRefundInvoiceCandidate().getId()).isEqualTo(refundInvoiceCandidate.getId()); // guard
-		assertThat(assignmentToRefundCandidate.getRefundInvoiceCandidate().getMoney().getAsBigDecimal()).isEqualByComparingTo("102"); // according to the assignable candidate's money and the config's percentage
+		assertThat(assignmentToRefundCandidate.getRefundInvoiceCandidate().getMoney().toBigDecimal()).isEqualByComparingTo("102"); // according to the assignable candidate's money and the config's percentage
 	}
 
 	/**
@@ -276,14 +276,14 @@ public class CandidateAssignmentServiceTest
 		assertThat(assignableCandidate.getAssignmentsToRefundCandidates()).hasSize(1); // guard
 
 		final AssignmentToRefundCandidate assignementToRefundCandidate = singleElement(assignableCandidate.getAssignmentsToRefundCandidates());
-		assertThat(assignableCandidate.getMoney().getAsBigDecimal()).isEqualByComparingTo(TEN);// guard
-		assertThat(assignementToRefundCandidate.getMoneyAssignedToRefundCandidate().getAsBigDecimal()).isEqualByComparingTo(TWO); // guard
+		assertThat(assignableCandidate.getMoney().toBigDecimal()).isEqualByComparingTo(TEN);// guard
+		assertThat(assignementToRefundCandidate.getMoneyAssignedToRefundCandidate().toBigDecimal()).isEqualByComparingTo(TWO); // guard
 
 		// guard: we work with 20%, so if the assignableInvoiceCandidate has 10, then 2 is assigned to the refundCandiate
-		assertThat(extractSingleConfig(assignementToRefundCandidate.getRefundInvoiceCandidate()).getPercent().getValue()).isEqualByComparingTo(TWENTY);
+		assertThat(extractSingleConfig(assignementToRefundCandidate.getRefundInvoiceCandidate()).getPercent().toBigDecimal()).isEqualByComparingTo(TWENTY);
 
 		// guard: we assume that the refund candidate has already 100 assigned, and btw, we know that 2 of those are "contributed" by 20% of 10 = 2 of our 'assignableCandidate'
-		assertThat(assignementToRefundCandidate.getRefundInvoiceCandidate().getMoney().getAsBigDecimal()).isEqualByComparingTo("100");
+		assertThat(assignementToRefundCandidate.getRefundInvoiceCandidate().getMoney().toBigDecimal()).isEqualByComparingTo("100");
 
 		final I_C_Invoice_Candidate assignableCandidateRecord = load(assignableCandidate.getId(), I_C_Invoice_Candidate.class);
 		assignableCandidateRecord.setNetAmtInvoiced(TWENTY);
@@ -291,7 +291,7 @@ public class CandidateAssignmentServiceTest
 		saveRecord(assignableCandidateRecord);
 
 		final AssignableInvoiceCandidate assignableCandidateWithChange = assignableInvoiceCandidateRepository.ofRecord(assignableCandidateRecord);
-		assertThat(assignableCandidateWithChange.getMoney().getAsBigDecimal()).isEqualByComparingTo(TWENTY); // guard
+		assertThat(assignableCandidateWithChange.getMoney().toBigDecimal()).isEqualByComparingTo(TWENTY); // guard
 
 		// invoke the method under test
 		final UpdateAssignmentResult result = invoiceCandidateAssignmentService.updateAssignment(assignableCandidateWithChange);
@@ -304,11 +304,11 @@ public class CandidateAssignmentServiceTest
 		final AssignmentToRefundCandidate resultAssignmentToRefundCandidate = singleElement(assignedCandidate.getAssignmentsToRefundCandidates());
 
 		assertThat(resultAssignmentToRefundCandidate.getMoneyAssignedToRefundCandidate()).isNotNull();
-		assertThat(resultAssignmentToRefundCandidate.getMoneyAssignedToRefundCandidate().getAsBigDecimal()).isEqualByComparingTo(FOUR);
+		assertThat(resultAssignmentToRefundCandidate.getMoneyAssignedToRefundCandidate().toBigDecimal()).isEqualByComparingTo(FOUR);
 
 		assertThat(resultAssignmentToRefundCandidate.getRefundInvoiceCandidate()).isNotNull();
 		assertThat(resultAssignmentToRefundCandidate.getRefundInvoiceCandidate().getId()).isEqualTo(assignementToRefundCandidate.getRefundInvoiceCandidate().getId());
-		assertThat(resultAssignmentToRefundCandidate.getRefundInvoiceCandidate().getMoney().getAsBigDecimal()).isEqualByComparingTo("102"); // according to the assignable candidate's money and the config's percentage
+		assertThat(resultAssignmentToRefundCandidate.getRefundInvoiceCandidate().getMoney().toBigDecimal()).isEqualByComparingTo("102"); // according to the assignable candidate's money and the config's percentage
 	}
 
 	/**
@@ -321,18 +321,18 @@ public class CandidateAssignmentServiceTest
 	public void assignCandidate_perScaleConfig1()
 	{
 		final RefundInvoiceCandidate savedRefundCandidate = repareContractAndRefundCandidate(RefundMode.APPLY_TO_EXCEEDING_QTY);
-		assertThat(savedRefundCandidate.getMoney().getAsBigDecimal()).isEqualByComparingTo(ONE); // guard
-		assertThat(savedRefundCandidate.getAssignedQuantity().getAsBigDecimal()).isEqualByComparingTo(THIRTEEN); // guard
+		assertThat(savedRefundCandidate.getMoney().toBigDecimal()).isEqualByComparingTo(ONE); // guard
+		assertThat(savedRefundCandidate.getAssignedQuantity().toBigDecimal()).isEqualByComparingTo(THIRTEEN); // guard
 
 		final AssignableInvoiceCandidate assignableCandidate = refundTestTools.createAssignableCandidateStandlone(THREE);
 		// guards
 		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(1);
 		assertThat(assignableCandidate.getId()).isNotNull();
-		assertThat(assignableCandidate.getMoney().getAsBigDecimal()).isEqualByComparingTo(TEN);
-		assertThat(assignableCandidate.getQuantity().getAsBigDecimal()).isEqualByComparingTo(THREE);
+		assertThat(assignableCandidate.getMoney().toBigDecimal()).isEqualByComparingTo(TEN);
+		assertThat(assignableCandidate.getQuantity().toBigDecimal()).isEqualByComparingTo(THREE);
 
 		// guard: for quantities less than 15 we work with 10%, so if the assignableInvoiceCandidate has 10, then 1 is assigned to the refundCandiate
-		assertThat(extractSingleConfig(savedRefundCandidate).getPercent().getValue()).isEqualByComparingTo(TEN);
+		assertThat(extractSingleConfig(savedRefundCandidate).getPercent().toBigDecimal()).isEqualByComparingTo(TEN);
 
 		// invoke the method under test
 		final UpdateAssignmentResult result = invoiceCandidateAssignmentService.updateAssignment(assignableCandidate);
@@ -375,8 +375,8 @@ public class CandidateAssignmentServiceTest
 		final AssignableInvoiceCandidate assignableCandidate = refundTestTools.createAssignableCandidateStandlone(SIXTEEN);
 		// guards
 		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(1);
-		assertThat(assignableCandidate.getMoney().getAsBigDecimal()).isEqualByComparingTo(TEN);
-		assertThat(assignableCandidate.getQuantity().getAsBigDecimal()).isEqualByComparingTo(SIXTEEN);
+		assertThat(assignableCandidate.getMoney().toBigDecimal()).isEqualByComparingTo(TEN);
+		assertThat(assignableCandidate.getQuantity().toBigDecimal()).isEqualByComparingTo(SIXTEEN);
 
 		// invoke the method under test
 		final UpdateAssignmentResult result = invoiceCandidateAssignmentService.updateAssignment(assignableCandidate);
@@ -538,8 +538,8 @@ public class CandidateAssignmentServiceTest
 		assertThat(savedRefundCandidate.getAssignedQuantity()).isEqualTo(Quantity.of(THIRTEEN, uom));
 
 		final AssignableInvoiceCandidate assignableCandidate = refundTestTools.createAssignableCandidateStandlone(THREE);
-		assertThat(assignableCandidate.getMoney().getAsBigDecimal()).isEqualByComparingTo(TEN);
-		assertThat(assignableCandidate.getQuantity().getAsBigDecimal()).isEqualByComparingTo(THREE);
+		assertThat(assignableCandidate.getMoney().toBigDecimal()).isEqualByComparingTo(TEN);
+		assertThat(assignableCandidate.getQuantity().toBigDecimal()).isEqualByComparingTo(THREE);
 
 		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(1);
 		assertThat(POJOLookupMap.get().getRecords(I_C_Invoice_Candidate_Assignment.class)).hasSize(1);
@@ -701,7 +701,7 @@ public class CandidateAssignmentServiceTest
 				assignmentRecord.setC_Invoice_Candidate_Assigned_ID(assignableCandidate.getId().getRepoId());
 				assignmentRecord.setAssignedQuantity(individualAssignment.getAssignedQuantity());
 				assignmentRecord.setAssignedMoneyAmount(individualAssignment.getAssignedMoney());
-				assignmentRecord.setBaseMoneyAmount(assignableCandidate.getMoney().getAsBigDecimal());
+				assignmentRecord.setBaseMoneyAmount(assignableCandidate.getMoney().toBigDecimal());
 				assignmentRecord.setIsAssignedQuantityIncludedInSum(refundConfig.isIncludeAssignmentsWithThisConfigInSum());
 				saveRecord(assignmentRecord);
 

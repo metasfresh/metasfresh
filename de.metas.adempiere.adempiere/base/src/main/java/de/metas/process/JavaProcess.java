@@ -23,6 +23,7 @@ import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.api.RangeAwareParams;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -45,6 +46,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 import de.metas.security.permissions.Access;
 import de.metas.user.UserId;
@@ -952,12 +954,22 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		return getProcessInfo().getUserId();
 	}
 
+	protected final ClientId getClientId()
+	{
+		return getProcessInfo().getClientId();
+	}
+
 	/**
 	 * @return AD_Client_ID of Process owner
 	 */
 	protected final int getAD_Client_ID()
 	{
 		return getProcessInfo().getAD_Client_ID();
+	}
+	
+	protected final OrgId getOrgId()
+	{
+		return getProcessInfo().getOrgId();
 	}
 
 	/**

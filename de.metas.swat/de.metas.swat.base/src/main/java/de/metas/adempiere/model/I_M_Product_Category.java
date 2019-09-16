@@ -30,25 +30,23 @@ package de.metas.adempiere.model;
  * @author tsa
  * 
  */
+@Deprecated
 public interface I_M_Product_Category extends org.compiere.model.I_M_Product_Category
 {
 	// public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 	// public void setC_DocType_ID(int C_DocType_ID);
 	// public int getC_DocType_ID();
 
-	public static final String COLUMNNAME_IsSummary = "IsSummary";
-	@Override
-	public void setIsSummary(boolean IsSummary);
-	@Override
-	public boolean isSummary();
+	String COLUMNNAME_IsSummary = "IsSummary";
+	@Override void setIsSummary(boolean IsSummary);
+	@Override boolean isSummary();
 
-	@Override
-	public de.metas.adempiere.model.I_M_Product_Category getM_Product_Category_Parent();
+	@Override de.metas.adempiere.model.I_M_Product_Category getM_Product_Category_Parent();
 	
 	//09779
-	public static final String COLUMNNAME_IsPackagingMaterial = "IsPackagingMaterial";
+	String COLUMNNAME_IsPackagingMaterial = "IsPackagingMaterial";
 	
-	public void setIsPackagingMaterial(boolean IsPackagingMaterial);
+	@Override void setIsPackagingMaterial(boolean IsPackagingMaterial);
 	
-	public boolean isPackagingMaterial();
+	@Override boolean isPackagingMaterial();
 }

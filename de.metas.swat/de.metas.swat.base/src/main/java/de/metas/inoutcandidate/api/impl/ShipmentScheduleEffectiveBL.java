@@ -1,6 +1,7 @@
 package de.metas.inoutcandidate.api.impl;
 
-import static org.compiere.util.Util.coalesce;
+
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 /*
  * #%L
@@ -23,6 +24,8 @@ import static org.compiere.util.Util.coalesce;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -164,7 +167,7 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	@Override
 	public I_AD_User getAD_User(final I_M_ShipmentSchedule sched)
 	{
-		final I_AD_User user = sched.getAD_User_Override_ID() <= 0 ? InterfaceWrapperHelper.create(sched.getAD_User(), I_AD_User.class) : InterfaceWrapperHelper.create(sched.getAD_User_Override(), I_AD_User.class);
+		final I_AD_User user = sched.getAD_User_Override_ID() <= 0 ? InterfaceWrapperHelper.loadOutOfTrx(sched.getAD_User_ID(), I_AD_User.class) : InterfaceWrapperHelper.loadOutOfTrx(sched.getAD_User_Override_ID(), I_AD_User.class);
 		return user;
 	}
 

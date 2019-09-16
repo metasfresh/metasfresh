@@ -254,7 +254,7 @@ public class InventoryLineRecordService
 	{
 		final Quantity qtyDiff = inventoryLineHU.getQtyCount().subtract(inventoryLineHU.getQtyBook());
 		final ProductId productId = inventoryLine.getProductId();
-		final PlainProductStorage productStorage = new PlainProductStorage(productId, qtyDiff.getUOM(), qtyDiff.getAsBigDecimal());
+		final PlainProductStorage productStorage = new PlainProductStorage(productId, qtyDiff.getUOM(), qtyDiff.toBigDecimal());
 
 		final I_M_InventoryLine inventoryLineRecord = inventoryLineRepository.getInventoryLineRecordFor(inventoryLine);
 		final IAllocationSource source = new GenericAllocationSourceDestination(productStorage, inventoryLineRecord);
@@ -329,7 +329,7 @@ public class InventoryLineRecordService
 	{
 		final ProductId productId = ProductId.ofRepoId(inventoryLine.getM_Product_ID());
 		final Quantity qtyDiff = Services.get(IInventoryBL.class).getMovementQty(inventoryLine);
-		final PlainProductStorage productStorage = new PlainProductStorage(productId, qtyDiff.getUOM(), qtyDiff.getAsBigDecimal());
+		final PlainProductStorage productStorage = new PlainProductStorage(productId, qtyDiff.getUOM(), qtyDiff.toBigDecimal());
 		return new GenericAllocationSourceDestination(productStorage, inventoryLine);
 	}
 
