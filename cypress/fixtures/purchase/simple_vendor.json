@@ -1,5 +1,4 @@
 {
-  "name": "Simple Vendor",
   "isVendor": true,
   "isCustomer": false,
   "vendorPricingSystem": "Testpreisliste Lieferanten",
