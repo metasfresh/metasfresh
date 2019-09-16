@@ -1,34 +1,29 @@
 /// <reference types="Cypress" />
 
 import { BPartner } from '../../support/utils/bpartner';
-import { BPartnerLocation, BPartnerContact } from '../../support/utils/bpartner_ui';
 import { DiscountSchema } from '../../support/utils/discountschema';
 import config from '../../config';
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 
 describe('purchase - vendor spec', function() {
-  const date = humanReadableNow();
-  const vendorName = `Vendor ${date}`;
-  const discountSchemaName = `DiscountSchema ${date}`;
+  let vendorName;
+  let discountSchemaName;
+  let discountSchemaValidFrom;
 
-  before(function() {
-    new DiscountSchema(discountSchemaName).setValidFrom('01/01/2019{enter}').apply();
+  it('Read the fixture', function() {
+    cy.fixture('purchase/purchase_create_vendor_spec.json').then(f => {
+      vendorName = appendHumanReadableNow(f['vendorName']);
+      discountSchemaName = appendHumanReadableNow(f['discountSchemaName']);
+      discountSchemaValidFrom = f['discountSchemaValidFrom'];
+    });
+  });
 
-    new BPartner({ name: vendorName })
-      .setCustomer(false)
-      .setBank(undefined)
-      .setVendor(true)
-      .setVendorPricingSystem('Testpreisliste Lieferanten')
-      .setVendorDiscountSchema(discountSchemaName)
-      .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
-      .addContact(
-        new BPartnerContact()
-          .setFirstName('Default')
-          .setLastName('Contact')
-          .setDefaultContact(true)
-      )
-      .addContact(new BPartnerContact().setFirstName('Secondary').setLastName('Contact'))
-      .apply();
+  it('Create test data', function() {
+    new DiscountSchema(discountSchemaName).setValidFrom(discountSchemaValidFrom).apply();
+
+    cy.fixture('purchase/simple_vendor.json').then(vendorJson => {
+      new BPartner({ name: vendorName, ...vendorJson }).setVendorDiscountSchema(discountSchemaName).apply();
+    });
   });
 
   it('Create a vendor with two contacts', function() {
@@ -49,9 +44,7 @@ describe('purchase - vendor spec', function() {
         expect(bpartnerJson[0].fieldsByName.Name2.value, 'bpartnerJson - Name2').to.eq(vendorName);
 
         const expectedDocumentSummary = `${vendorName} ${bpartnerJson[0].fieldsByName.Value.value}`;
-        expect(bpartnerJson[0].fieldsByName.V$DocumentSummary.value, 'V$DocumentSummary').to.eq(
-          expectedDocumentSummary
-        );
+        expect(bpartnerJson[0].fieldsByName.V$DocumentSummary.value, 'V$DocumentSummary').to.eq(expectedDocumentSummary);
 
         cy.log('create and snapshot the invariant part of the test result');
         // remove the fields that are different on each test run from the JSON; the result is invariant between test runs

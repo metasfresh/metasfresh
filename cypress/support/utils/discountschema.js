@@ -56,7 +56,6 @@ function applyDiscountSchema(discountSchema) {
   describe(`Create new discount schema ${discountSchema.name}`, function() {
     cy.visitWindow(233, 'NEW');
     cy.writeIntoStringField('Name', discountSchema.name);
-    cy.selectInListField('DiscountType', 'Breaks');
 
     cy.writeIntoStringField(
       'ValidFrom',
@@ -65,13 +64,14 @@ function applyDiscountSchema(discountSchema) {
       null /*rewriteUrl*/,
       true /*noRequest*/
     );
+    cy.selectInListField('DiscountType', 'Breaks');
 
     // Thx to https://stackoverflow.com/questions/16626735/how-to-loop-through-an-array-containing-objects-and-access-their-properties
     if (discountSchema.discountBreaks.length > 0) {
       discountSchema.discountBreaks.forEach(function(discountBreak) {
         applyDiscountBreak(discountBreak);
       });
-      cy.get('table tbody tr').should('have.length', discountSchema.discountBreaks.length);
+      cy.expectNumberOfRows(discountSchema.discountBreaks.length);
     }
   });
 }
