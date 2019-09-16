@@ -247,14 +247,14 @@ function performDocumentViewAction(windowId, documentViewAction, documentIdAlias
       responseTimeout: 20000,
     })
     .then(xhr => {
-      cy.log('frist!: ' + JSON.stringify(xhr));
+      cy.log('FULL XHR: ' + JSON.stringify(xhr));
+
       expect(xhr).to.not.be.empty;
       expect(xhr.status).to.eq(200);
       expect(xhr.response).to.not.be.empty;
       expect(xhr.response.body[0]).to.not.be.empty;
 
-      cy.log('frist! x2: ' + JSON.stringify(xhr));
-      cy.log('frist[0]: ' + JSON.stringify(xhr.response.body[0]));
+      cy.log('xhr response body: ' + JSON.stringify(xhr.response.body[0]));
       return cy.wrap({ documentId: xhr.response.body[0].id });
     })
     .as(documentIdAliasName);

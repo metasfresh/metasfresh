@@ -156,7 +156,7 @@ export class Product {
     cy.selectTab('M_ProductPrice');
     cy.pressAddNewButton();
 
-    cy.writeIntoLookupListField('M_PriceList_Version_ID', productPrice.priceList, productPrice.priceList, true, true);
+    cy.selectInListField('M_PriceList_Version_ID', productPrice.priceList, true);
     cy.writeIntoStringField('PriceList', productPrice.listPriceAmount, true, null, true);
     cy.writeIntoStringField('PriceStd', productPrice.standardPriceAmount, true /*modal*/, null /*rewriteUrl*/, true /*noRequest*/);
     cy.writeIntoStringField('PriceLimit', productPrice.limitPriceAmount, true, null, true);

@@ -173,7 +173,7 @@ it('Create calendar with years', function() {
 });
 
 it('Create transition', function() {
-  new ContractTransition({ baseName: contactTransitionName }).setCalendar(calendarName).apply();
+  new ContractTransition({ name: contactTransitionName }).setCalendar(calendarName).apply();
   cy.screenshot();
 });
 
@@ -223,7 +223,7 @@ it('Create products for additional contribution tab', function() {
 });
 
 it('Create LagerKonferenz', function() {
-  new LagerKonferenz({ baseName: lagerKonferenzName })
+  new LagerKonferenz({ name: lagerKonferenzName })
     .addSettingsLine(
       new LagerKonferenzVersion()
         .setValidFrom(validFrom)
@@ -241,7 +241,7 @@ it('Create LagerKonferenz', function() {
 
 it('Create conditions', function() {
   createProduct(rawProductName, itemProductType, productCategoryName, productPrice);
-  new ContractConditions({ baseName: contractConditionsName })
+  new ContractConditions({ name: contractConditionsName })
     .setConditionsType(ConditionsType.QualityBased)
     .setTransition(contactTransitionName)
     .setLagerKonferenz(lagerKonferenzName)
