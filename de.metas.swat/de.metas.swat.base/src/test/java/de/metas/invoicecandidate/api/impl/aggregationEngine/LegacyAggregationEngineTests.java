@@ -103,7 +103,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		InterfaceWrapperHelper.refresh(ic2);
 		InterfaceWrapperHelper.refresh(ic3);
 
-		final AggregationEngine engine = new AggregationEngine();
+		final AggregationEngine engine = AggregationEngine.newInstance();
 		engine.addInvoiceCandidate(ic1);
 		engine.addInvoiceCandidate(ic2);
 		engine.addInvoiceCandidate(ic3);
@@ -166,7 +166,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 
 		updateInvalidCandidates();
 
-		final AggregationEngine engine = new AggregationEngine();
+		final AggregationEngine engine = AggregationEngine.newInstance();
 		engine.addInvoiceCandidate(ic1);
 		engine.addInvoiceCandidate(ic2);
 		engine.addInvoiceCandidate(ic3);
@@ -216,7 +216,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 
 		updateInvalidCandidates();
 
-		final AggregationEngine engine = new AggregationEngine();
+		final AggregationEngine engine = AggregationEngine.newInstance();
 		engine.addInvoiceCandidate(manualIc1);
 
 		final List<IInvoiceHeader> invoices = invokeAggregationEngine(engine);
@@ -267,7 +267,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 
 		updateInvalidCandidates();
 
-		final AggregationEngine engine = new AggregationEngine();
+		final AggregationEngine engine = AggregationEngine.newInstance();
 		engine.addInvoiceCandidate(manualIc1);
 
 		final List<IInvoiceHeader> invoices = invokeAggregationEngine(engine);
@@ -321,7 +321,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		//
 		// Generate invoice
 		{
-			final AggregationEngine engine = new AggregationEngine();
+			final AggregationEngine engine = AggregationEngine.newInstance();
 			engine.addInvoiceCandidate(ic1);
 			engine.addInvoiceCandidate(ic2);
 
@@ -447,7 +447,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		//
 		// Generate invoice (again) for IC2_split, IC3
 		{
-			final AggregationEngine engine = new AggregationEngine();
+			final AggregationEngine engine = AggregationEngine.newInstance();
 			// engine2.addIC(ic1); // already processed
 			// engine2.addIC(ic2); // already processed
 			engine.addInvoiceCandidate(ic2_split);

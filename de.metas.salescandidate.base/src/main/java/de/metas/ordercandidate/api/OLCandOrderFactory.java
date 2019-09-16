@@ -355,6 +355,7 @@ class OLCandOrderFactory
 		{
 			order = newOrder(candToProcess);
 		}
+
 		final I_C_OrderLine orderLine = create(new MOrderLine(LegacyAdapters.convertToPO(order)), I_C_OrderLine.class);
 
 		if (candToProcess.getC_Charge_ID() > 0)
@@ -375,6 +376,10 @@ class OLCandOrderFactory
 
 		// make sure that both records have their independent ASI to avoid unwanted side effects if the order line's ASI is altered.
 		attributeSetInstanceBL.cloneASI(orderLine, candToProcess);
+
+		orderLine.setPresetDateInvoiced(TimeUtil.asTimestamp(candToProcess.getPresetDateInvoiced()));
+		orderLine.setPresetDateShipped(TimeUtil.asTimestamp(candToProcess.getPresetDateShipped()));
+
 		return orderLine;
 	}
 

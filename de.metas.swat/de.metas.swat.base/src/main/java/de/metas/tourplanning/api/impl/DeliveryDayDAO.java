@@ -26,6 +26,8 @@ package de.metas.tourplanning.api.impl;
  */
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -72,7 +74,7 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 				.addOnlyActiveRecordsFilter()
 				//
 				// for given BP Location
-				.addInArrayFilter(I_M_DeliveryDay.COLUMN_C_BPartner_Location_ID, null, params.getC_BPartner_Location_ID())
+				.addInArrayFilter(I_M_DeliveryDay.COLUMN_C_BPartner_Location_ID, null, params.getBPartnerLocationId())
 				//
 				// DeliveryDateTimeMax <= given DeliveryDate
 				.addCompareFilter(I_M_DeliveryDay.COLUMN_DeliveryDateTimeMax, Operator.LESS_OR_EQUAL, params.getDeliveryDate())
@@ -81,7 +83,7 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 				.addEqualsFilter(I_M_DeliveryDay.COLUMN_IsToBeFetched, params.isToBeFetched());
 
 		// task 09004 : In case calculation time is set, fetch the next date that fits.
-		final Timestamp preparationDay = params.getPreparationDay();
+		final LocalDate preparationDay = params.getPreparationDay();
 
 		if (preparationDay != null)
 		{
@@ -104,17 +106,15 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 				.createQueryBuilder(I_M_DeliveryDay.class, context)
 				.filter(createDeliveryDayMatcher(params));
 
-		final Timestamp calculationTime = params.getCalculationTime();
-
 		// Make sure the deliveryDay is after the time of calculation
+		final ZonedDateTime calculationTime = params.getCalculationTime();
 		if (calculationTime != null)
 		{
 			queryBuilder.addCompareFilter(I_M_DeliveryDay.COLUMN_DeliveryDate, Operator.GREATER_OR_EQUAL, calculationTime);
 		}
 
-		final Timestamp preparationDay = params.getPreparationDay();
-
 		// the delivery days that are in the same day as the datePromised have priority over the earlier ones.
+		final LocalDate preparationDay = params.getPreparationDay();
 		if (preparationDay != null)
 		{
 			queryBuilder.addCompareFilter(I_M_DeliveryDay.COLUMN_DeliveryDate, Operator.GREATER_OR_EQUAL, preparationDay);

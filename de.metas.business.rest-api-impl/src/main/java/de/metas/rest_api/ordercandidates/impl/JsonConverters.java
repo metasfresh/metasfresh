@@ -97,9 +97,11 @@ class JsonConverters
 				.dateOrdered(request.getDateOrdered())
 				.dateRequired(request.getDateRequired())
 				//
-				.dateInvoiced(request.getDateInvoiced())
 				.docTypeInvoiceId(masterdataProvider.getDocTypeId(request.getInvoiceDocType(), orgId))
-
+				.presetDateInvoiced(request.getPresetDateInvoiced())
+				//
+				.presetDateShipped(request.getPresetDateShipped())
+				//
 				.flatrateConditionsId(request.getFlatrateConditionsId())
 				//
 				.productId(productInfo.getProductId())

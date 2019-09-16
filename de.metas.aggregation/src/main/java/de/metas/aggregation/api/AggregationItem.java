@@ -1,4 +1,6 @@
-package de.metas.aggregation.api.impl;
+package de.metas.aggregation.api;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -13,55 +15,48 @@ package de.metas.aggregation.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
-import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.util.Evaluatee;
 
-import de.metas.aggregation.api.IAggregationAttribute;
-import de.metas.aggregation.api.IAggregationItem;
 import de.metas.util.Check;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
-/**
- * Immutable {@link IAggregationItem} implementation
- *
- * @author tsa
- *
- */
-/* package */final class AggregationItem implements IAggregationItem
+@Value
+public final class AggregationItem
 {
-	private final String id;
+	public enum Type
+	{
+		ModelColumn, Attribute
+	}
+
+	private final AggregationItemId id;
 	private final ILogicExpression includeLogic;
 	private final Type type;
 	private final String columnName;
 	private final int displayType;
-	private final IAggregationAttribute attribute;
+	private final AggregationAttribute attribute;
 
-	/* package */AggregationItem(
-			final int aggregationItemId,
-			final Type type,
-			final String columnName,
+	@Builder
+	private AggregationItem(
+			@NonNull final AggregationItemId id,
+			@NonNull final Type type,
+			@Nullable final String columnName,
 			final int displayType,
-			final IAggregationAttribute attribute,
-			final ILogicExpression includeLogic)
+			@Nullable final AggregationAttribute attribute,
+			@NonNull final ILogicExpression includeLogic)
 	{
-		super();
-
-		Check.assume(aggregationItemId > 0, "aggregationItemId > 0");
-		id = String.valueOf(aggregationItemId);
-
-		Check.assumeNotNull(type, "type not null");
-		this.type = type;
 		if (type == Type.ModelColumn)
 		{
 			Check.assumeNotEmpty(columnName, "columnName not empty");
@@ -71,66 +66,19 @@ import de.metas.util.Check;
 			Check.assumeNotNull(attribute, "attribute not null");
 		}
 
-		Check.assumeNotNull(includeLogic, "includeLogic not null");
+		this.id = id;
+		this.type = type;
 		this.includeLogic = includeLogic;
-
 		this.columnName = columnName;
 		this.displayType = displayType;
 		this.attribute = attribute;
 	}
 
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
-	}
-
-	@Override
-	public String getId()
-	{
-		return id;
-	}
-
-	@Override
-	public Type getType()
-	{
-		return type;
-	}
-
-	@Override
-	public String getColumnName()
-	{
-		return columnName;
-	}
-
-	@Override
-	public int getDisplayType()
-	{
-		return displayType;
-	}
-
-	@Override
-	public ILogicExpression getIncludeLogic()
-	{
-		return includeLogic;
-	}
-
-	@Override
 	public boolean isInclude(final Evaluatee context)
 	{
 		final ILogicExpression includeLogic = getIncludeLogic();
 		final Boolean include = includeLogic.evaluate(context, OnVariableNotFound.ReturnNoResult);
-		if (include == null || !include)
-		{
-			return false;
-		}
-
-		return true;
+		return include != null && include;
 	}
 
-	@Override
-	public IAggregationAttribute getAttribute()
-	{
-		return attribute;
-	}
 }

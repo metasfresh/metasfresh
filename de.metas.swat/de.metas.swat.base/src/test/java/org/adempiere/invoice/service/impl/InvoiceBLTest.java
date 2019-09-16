@@ -36,6 +36,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.document.DocTypeId;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -61,7 +62,11 @@ public class InvoiceBLTest extends AbstractICTestSupport
 		orderLine.setLineNetAmt(new BigDecimal("100.00"));
 		db.save(orderLine);
 
-		final I_C_Invoice invoice = invoiceBL.createInvoiceFromOrder(order, 0, SystemTime.asTimestamp(), null);
+		final I_C_Invoice invoice = invoiceBL.createInvoiceFromOrder(
+				order,
+				(DocTypeId)null,
+				SystemTime.asLocalDate(),
+				null);
 
 		Assert.assertNotNull(invoice);
 	}

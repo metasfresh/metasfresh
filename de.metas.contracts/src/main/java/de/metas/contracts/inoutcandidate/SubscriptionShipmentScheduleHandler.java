@@ -143,8 +143,8 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 				.provideFor(newSched);
 
 		newSched.setM_Warehouse_ID(subscriptionFromgressInfos.getWarehouseId().getRepoId());
-		newSched.setPreparationDate(subscriptionFromgressInfos.getPreparationDate());
-		newSched.setDeliveryDate(subscriptionFromgressInfos.getDeliveryDate());
+		newSched.setPreparationDate(TimeUtil.asTimestamp(subscriptionFromgressInfos.getPreparationDate()));
+		newSched.setDeliveryDate(TimeUtil.asTimestamp(subscriptionFromgressInfos.getDeliveryDate()));
 	}
 
 	@Override

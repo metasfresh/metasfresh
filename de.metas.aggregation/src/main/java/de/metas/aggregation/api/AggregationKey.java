@@ -1,4 +1,4 @@
-package de.metas.aggregation.api.impl;
+package de.metas.aggregation.api;
 
 /*
  * #%L
@@ -13,97 +13,83 @@ package de.metas.aggregation.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.HashcodeBuilder;
+import org.adempiere.ad.expression.api.NullStringExpression;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Util.ArrayKey;
 
-import de.metas.aggregation.api.IAggregationKey;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.EqualsAndHashCode;
 
-public final class AggregationKey implements IAggregationKey
+@EqualsAndHashCode(of = "keyString", doNotUseGetters = true)
+public final class AggregationKey
 {
-	public static final transient AggregationKey NULL = new AggregationKey((String)null, -1);
+	public static final AggregationKey NULL = new AggregationKey();
 
 	private final String keyString;
 	private final IStringExpression keyStringExpr;
-	private final int aggregationId;
+	private final AggregationId aggregationId;
 
-	public AggregationKey(final ArrayKey key, final int aggregationId)
+	public AggregationKey(final ArrayKey key, final AggregationId aggregationId)
 	{
 		this(key == null ? null : key.toString(), aggregationId);
 	}
 
-	public AggregationKey(final String keyString, final int aggregationId)
+	public AggregationKey(final String keyString, final AggregationId aggregationId)
 	{
-		super();
 		this.keyString = keyString;
 		keyStringExpr = Services.get(IExpressionFactory.class).compile(keyString, IStringExpression.class);
-		this.aggregationId = aggregationId <= 0 ? -1 : aggregationId;
+		this.aggregationId = aggregationId;
+	}
+
+	/** Null ctor */
+	private AggregationKey()
+	{
+		this.keyString = null;
+		this.keyStringExpr = NullStringExpression.instance;
+		this.aggregationId = null;
 	}
 
 	@Override
+	@Deprecated
 	public String toString()
 	{
 		return getAggregationKeyString();
 	}
 
-	@Override
-	public boolean equals(final Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-
-		final AggregationKey other = EqualsBuilder.getOther(this, obj);
-		if (other == null)
-		{
-			return false;
-		}
-
-		return new EqualsBuilder()
-		.append(keyString, other.keyString)
-		.isEqual();
-	}
-
-	@Override
-	public int hashCode()
-	{
-		return new HashcodeBuilder()
-		.append(keyString)
-		.toHashcode();
-	}
-
-	@Override
 	public String getAggregationKeyString()
 	{
 		return keyString;
 	}
 
-	@Override
-	public int getC_Aggregation_ID()
+	public AggregationId getAggregationId()
 	{
 		return aggregationId;
 	}
 
-	@Override
-	public IAggregationKey parse(final Evaluatee ctx)
+	public AggregationKey parse(final Evaluatee ctx)
 	{
 		final String keyStringNew = keyStringExpr.evaluate(ctx, OnVariableNotFound.Preserve);
+		return new AggregationKey(keyStringNew, aggregationId);
+	}
+
+	public AggregationKey append(final String keyPart)
+	{
+		Check.assumeNotEmpty(keyPart, "keyPart is not empty");
+
+		final String keyStringNew = this.keyString + ArrayKey.SEPARATOR + keyPart;
 		return new AggregationKey(keyStringNew, aggregationId);
 	}
 }

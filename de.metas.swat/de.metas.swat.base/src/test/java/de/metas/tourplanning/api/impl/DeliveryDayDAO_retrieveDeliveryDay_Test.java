@@ -28,6 +28,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.tourplanning.TourPlanningTestBase;
 import de.metas.tourplanning.api.IDeliveryDayQueryParams;
 import de.metas.tourplanning.api.PlainDeliveryDayQueryParams;
@@ -110,9 +111,9 @@ public class DeliveryDayDAO_retrieveDeliveryDay_Test extends TourPlanningTestBas
 	private IDeliveryDayQueryParams createDeliveryDayQueryParams(final String deliveryDateStr)
 	{
 		final PlainDeliveryDayQueryParams params = new PlainDeliveryDayQueryParams();
-		params.setC_BPartner_Location_ID(bpLocation.getC_BPartner_Location_ID());
+		params.setBPartnerLocationId(BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID()));
 		params.setToBeFetched(false);
-		params.setDeliveryDate(toDateTimeTimestamp(deliveryDateStr));
+		params.setDeliveryDate(toZonedDateTime(deliveryDateStr));
 		params.setProcessed(false);
 		return params;
 	}
