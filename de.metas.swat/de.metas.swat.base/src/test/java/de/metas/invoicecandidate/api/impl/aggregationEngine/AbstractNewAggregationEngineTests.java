@@ -79,7 +79,7 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 	}
 
 	@Test
-	public void testStandardScenario()
+	public final void testStandardScenario()
 	{
 		final List<I_C_Invoice_Candidate> invoiceCandidates = step_createInvoiceCandidates();
 		final List<I_M_InOutLine> inOutLines = step_createInOutLines(invoiceCandidates);
@@ -147,7 +147,7 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 	 * @param invoiceLine
 	 * @param expectedAllocatedQty
 	 */
-	protected void validateIcIlAllocationQty(
+	protected final void validateIcIlAllocationQty(
 			final I_C_Invoice_Candidate ic,
 			final IInvoiceHeader invoice,
 			final IInvoiceLineRW invoiceLine,
