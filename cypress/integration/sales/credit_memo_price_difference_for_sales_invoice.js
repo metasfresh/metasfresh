@@ -24,10 +24,19 @@
 
 import { salesInvoices } from '../../page_objects/sales_invoices';
 import { SalesInvoice, SalesInvoiceLine } from '../../support/utils/sales_invoice';
-import { DocumentStatusKey, RewriteURL } from '../../support/utils/constants';
+import { DocumentStatusKey } from '../../support/utils/constants';
 
 describe('Create a Credit memo price difference for Sales Invoice', function() {
-  const creditMemoPriceDiff = 'Credit Memo - Price diff';
+  let creditMemoPriceDiff;
+  let salesInvoiceTargetDocumentType;
+
+  let businessPartnerName;
+  let productName;
+  let originalQuantity;
+  // must be lower than the original price
+  let newProductPrice;
+
+  // test
   let originalSalesInvoiceNumber;
   let originalPriceList;
   let originalCurrency;
@@ -35,15 +44,22 @@ describe('Create a Credit memo price difference for Sales Invoice', function() {
   let originalSalesInvoiceTotalAmount;
   let originalSalesInvoiceID;
 
-  const newProductPrice = '0.123456'; // must be lower than the original price
+  it('Read the fixture', function() {
+    cy.fixture('sales/credit_memo_price_difference_for_sales_invoice.json').then(f => {
+      creditMemoPriceDiff = f['creditMemoPriceDiff'];
+      salesInvoiceTargetDocumentType = f['salesInvoiceTargetDocumentType'];
 
-  // Sales Invoice
-  const salesInvoiceTargetDocumentType = 'Sales Invoice';
-  let originalQuantity = 20;
+      businessPartnerName = f['businessPartnerName'];
+      productName = f['productName'];
+      originalQuantity = f['originalQuantity'];
+      newProductPrice = f['newProductPrice'];
+    });
+  });
 
   it('Prepare sales invoice', function() {
-    new SalesInvoice('Test Lieferant 1', salesInvoiceTargetDocumentType)
-      .addLine(new SalesInvoiceLine().setProduct('Convenience Salat 250g').setQuantity(originalQuantity))
+    // eslint-disable-next-line
+    new SalesInvoice(businessPartnerName, salesInvoiceTargetDocumentType)
+      .addLine(new SalesInvoiceLine().setProduct(productName).setQuantity(originalQuantity))
       .apply();
     cy.completeDocument();
   });
@@ -79,9 +95,7 @@ describe('Create a Credit memo price difference for Sales Invoice', function() {
       originalProduct = product;
     });
 
-    cy.get('.header-breadcrumb-sitename').then(si => {
-      originalSalesInvoiceTotalAmount = parseFloat(si.html().split(' ')[2]); // the format is "DOC_NO MM/DD/YYYY total"
-    });
+    cy.getSalesInvoiceTotalAmount().then(am => (originalSalesInvoiceTotalAmount = am));
     cy.pressDoneButton();
   });
 
@@ -91,10 +105,10 @@ describe('Create a Credit memo price difference for Sales Invoice', function() {
     cy.selectInListField('C_DocType_ID', creditMemoPriceDiff, true, null, true);
 
     // ensure all the checkboxes are ok
-    cy.setCheckBoxValue('CompleteIt', false, true, RewriteURL.PROCESS);
-    cy.setCheckBoxValue('IsReferenceOriginalOrder', true, true, RewriteURL.PROCESS);
-    cy.setCheckBoxValue('IsReferenceInvoice', true, true, RewriteURL.PROCESS);
-    cy.setCheckBoxValue('IsCreditedInvoiceReinvoicable', false, true, RewriteURL.PROCESS);
+    cy.setCheckBoxValue('CompleteIt', false, true);
+    cy.setCheckBoxValue('IsReferenceOriginalOrder', true, true);
+    cy.setCheckBoxValue('IsReferenceInvoice', true, true);
+    cy.setCheckBoxValue('IsCreditedInvoiceReinvoicable', false, true);
 
     cy.pressStartButton(100);
     cy.getNotificationModal(/Created.*Document No/);
