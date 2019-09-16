@@ -146,8 +146,12 @@ public class DocumentPermissionsHelper
 		}
 
 		final int recordId = getRecordId(document);
-
-		final String errmsg = permissions.checkCanView(document.getClientId(), document.getOrgId(), adTableId, recordId);
+		OrgId orgId = document.getOrgId();
+		if (orgId == null)
+		{
+			return;
+		}
+		final String errmsg = permissions.checkCanView(document.getClientId(), orgId, adTableId, recordId);
 		if (errmsg != null)
 		{
 			throw DocumentPermissionException.of(DocumentPermission.View, errmsg);
@@ -205,6 +209,10 @@ public class DocumentPermissionsHelper
 
 		ClientId adClientId = document.getClientId();
 		OrgId adOrgId = document.getOrgId();
+		if (adOrgId == null)
+		{
+			return null;
+		}
 		return permissions.checkCanUpdate(adClientId, adOrgId, adTableId, recordId);
 	}
 
