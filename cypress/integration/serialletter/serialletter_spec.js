@@ -1,26 +1,44 @@
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 
 describe('Serial letter tests', function() {
-  const date = humanReadableNow();
-  const printFormatName = `${date} Serial letter printformat`;
-  const marketingPlatformName = `${date} Serial letter marketing platform`;
-  const boilerPlateName = `${date}_Serial_letter_text_snippet`;
-  const marketingCampaignName = `${date} Serial letter marketing campaign`;
-  const marketingContactName = `${date} Serial letter marketing contact`;
+  let printFormatName;
+  let marketingPlatformName;
+  let boilerPlateName;
+  let marketingCampaignName;
+  let marketingContactName;
+  let boilerPlateSubject;
+  let boilerPlateTextSnippet;
+  let printFormatLetter;
+  let printFormatSerialLetter;
+
+  it('Read the fixture', function() {
+    cy.fixture('serialletter/serialletter_spec.json').then(f => {
+      printFormatName = appendHumanReadableNow(f['printFormatName']);
+      marketingPlatformName = appendHumanReadableNow(f['marketingPlatformName']);
+      boilerPlateName = appendHumanReadableNow(f['boilerPlateName']);
+      marketingCampaignName = appendHumanReadableNow(f['marketingCampaignName']);
+      marketingContactName = appendHumanReadableNow(f['marketingContactName']);
+
+      boilerPlateSubject = f['boilerPlateSubject'];
+      boilerPlateTextSnippet = f['boilerPlateTextSnippet'];
+      printFormatLetter = f['printFormatLetter'];
+      printFormatSerialLetter = f['printFormatSerialLetter'];
+    });
+  });
 
   it('Create print format', function() {
     cy.visitWindow('240', 'NEW');
 
     cy.writeIntoStringField('Name', printFormatName);
-    cy.writeIntoLookupListField('AD_Table_ID', 'Letter', 'Letter');
-    cy.writeIntoLookupListField('JasperProcess_ID', 'Serial Letter', 'Serial Letter');
+    cy.writeIntoLookupListField('AD_Table_ID', printFormatLetter, printFormatLetter);
+    cy.writeIntoLookupListField('JasperProcess_ID', printFormatSerialLetter, printFormatSerialLetter);
     cy.url().should('not.contain', 'NEW');
     cy.get('.header-breadcrumb-sitename').should('not.contain', '<');
   });
 
   it('Create outbound document', function() {
     cy.visitWindow('540173', 'NEW');
-    cy.writeIntoLookupListField('AD_Table_ID', 'Letter', 'Letter');
+    cy.writeIntoLookupListField('AD_Table_ID', printFormatLetter, printFormatLetter);
     cy.writeIntoLookupListField('AD_PrintFormat_ID', printFormatName, printFormatName);
     cy.clickOnCheckBox('IsCreatePrintJob');
   });
@@ -29,14 +47,13 @@ describe('Serial letter tests', function() {
     cy.visitWindow('540437', 'NEW');
     cy.writeIntoStringField('Name', marketingPlatformName);
     cy.clickOnCheckBox('IsRequiredLocation');
-    //cy.wait(500);
   });
 
   it('Creates boiler plate (text-snippet)', function() {
     cy.visitWindow('504410', 'NEW');
     cy.writeIntoStringField('Name', boilerPlateName);
-    cy.writeIntoStringField('Subject', 'Subject');
-    cy.writeIntoTextField('TextSnippet', 'TextSnippet');
+    cy.writeIntoStringField('Subject', boilerPlateSubject);
+    cy.writeIntoTextField('TextSnippet', boilerPlateTextSnippet);
     cy.selectTab('AD_BoilerPlate_Ref'); // need to click somewhere outside of the text field
   });
 
@@ -60,13 +77,7 @@ describe('Serial letter tests', function() {
   it('add contact person to campaign', function() {
     cy.selectTab('MKTG_Campaign_ContactPerson');
     cy.pressAddNewButton();
-    cy.writeIntoLookupListField(
-      'MKTG_ContactPerson_ID',
-      marketingContactName,
-      marketingContactName,
-      false /*typeList*/,
-      true /*modal*/
-    );
+    cy.writeIntoLookupListField('MKTG_ContactPerson_ID', marketingContactName, marketingContactName, false /*typeList*/, true /*modal*/);
     cy.pressDoneButton();
 
     // needs https://github.com/metasfresh/metasfresh-webui-frontend/issues/1978#issuecomment-445274540
