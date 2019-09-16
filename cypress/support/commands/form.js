@@ -124,7 +124,7 @@ Cypress.Commands.add('clickOnIsActive', modal => {
 Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal, rewriteUrl = null, skipPatch = false) => {
   cy.log(`clickOnCheckBox - fieldName=${fieldName}`);
 
-  const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
+  const patchUrlPattern = rewriteUrl || RewriteURL.Generic;
   const patchCheckBoxAliasName = `patchCheckBox-${fieldName}-${new Date().getTime()}`;
   if (!skipPatch) {
     cy.server();
