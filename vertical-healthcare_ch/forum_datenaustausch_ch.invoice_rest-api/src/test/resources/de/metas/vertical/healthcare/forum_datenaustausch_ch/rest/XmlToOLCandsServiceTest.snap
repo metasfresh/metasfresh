@@ -1,7 +1,7 @@
 de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTest.createJsonOLCandCreateBulkRequest=[ {
   "requests" : [ {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -79,7 +79,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -157,7 +157,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -235,7 +235,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -313,7 +313,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -391,7 +391,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -469,7 +469,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -547,7 +547,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -625,7 +625,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -703,7 +703,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -781,7 +781,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -859,7 +859,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -937,7 +937,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1015,7 +1015,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1093,7 +1093,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1171,7 +1171,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1249,7 +1249,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1327,7 +1327,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1405,7 +1405,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1483,7 +1483,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1561,7 +1561,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1644,7 +1644,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
 de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTest.createJsonOLCandCreateBulkRequest2=[ {
   "requests" : [ {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1722,7 +1722,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1800,7 +1800,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1878,7 +1878,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1956,7 +1956,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2034,7 +2034,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2112,7 +2112,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2190,7 +2190,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2268,7 +2268,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2346,7 +2346,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2424,7 +2424,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2502,7 +2502,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2580,7 +2580,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2658,7 +2658,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2736,7 +2736,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2814,7 +2814,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2892,7 +2892,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2970,7 +2970,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -3048,7 +3048,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -3126,7 +3126,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -3204,7 +3204,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
