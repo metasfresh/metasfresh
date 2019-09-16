@@ -168,7 +168,7 @@ public class Group
 			final Percent percentage = compensationLine.getPercentage();
 			final GroupCompensationType compensationType = compensationLine.getType();
 
-			final BigDecimal compensationAmt = percentage.multiply(baseAmt, pricePrecision.toInt());
+			final BigDecimal compensationAmt = percentage.computePercentageOf(baseAmt, pricePrecision.toInt());
 			final BigDecimal amt = OrderGroupCompensationUtils.adjustAmtByCompensationType(compensationAmt, compensationType);
 
 			final Quantity one = Quantity.of(ONE,

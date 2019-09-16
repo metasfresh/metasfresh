@@ -217,11 +217,11 @@ public class Percent
 
 	/**
 	 * Example:
-	 * <li>{@code Percent.of(ONE).multiply(new BigDecimal("200"))} returns {@code 2}.
+	 * <li>{@code Percent.of(ONE).computePercentageOf(new BigDecimal("200"))} returns {@code 2}.
 	 *
 	 * @param precision scale of the result; may be less than the scale of the given {@code base}
 	 */
-	public BigDecimal multiply(@NonNull final BigDecimal base, final int precision)
+	public BigDecimal computePercentageOf(@NonNull final BigDecimal base, final int precision)
 	{
 		Check.assumeGreaterOrEqualToZero(precision, "precision");
 

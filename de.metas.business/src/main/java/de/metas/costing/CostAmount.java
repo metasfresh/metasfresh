@@ -155,7 +155,7 @@ public class CostAmount
 		}
 		else
 		{
-			return new CostAmount(percent.multiply(value, precision.toInt()), currencyId);
+			return new CostAmount(percent.computePercentageOf(value, precision.toInt()), currencyId);
 		}
 	}
 
