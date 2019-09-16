@@ -282,3 +282,18 @@ UPDATE AD_Process_Trl SET IsTranslated='Y', Name='MHD Restlaufzeit in Monaten Ak
 UPDATE AD_Process_Trl SET IsTranslated='Y', Name='MHD Restlaufzeit in Monaten Aktualisieren',Updated=TO_TIMESTAMP('2019-09-16 17:21:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=541193
 ;
 
+-- 2019-09-16T14:59:22.749Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Name=' MHD Restlaufzeit in Monaten aktualisieren',Updated=TO_TIMESTAMP('2019-09-16 17:59:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=541193
+;
+
+-- 2019-09-16T14:59:28.874Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Name='MHD Restlaufzeit in Monaten aktualisieren',Updated=TO_TIMESTAMP('2019-09-16 17:59:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=541193
+;
+
+-- 2019-09-16T14:59:33.977Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Name='MHD Restlaufzeit in Monaten aktualisieren',Updated=TO_TIMESTAMP('2019-09-16 17:59:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=541193
+;
+
