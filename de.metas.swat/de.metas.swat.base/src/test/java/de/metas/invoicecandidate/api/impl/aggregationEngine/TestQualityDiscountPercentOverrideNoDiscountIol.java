@@ -30,10 +30,21 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.currency.CurrencyRepository;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.MoneyService;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import lombok.NonNull;
@@ -41,6 +52,15 @@ import lombok.NonNull;
 /**
  * There is no inoutLine with inDispute, so the quality discount is actually zero. This test sets an override discount and verifies the aggregation result.
  */
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = {
+		StartupListener.class,
+		ShutdownListener.class,
+		//
+		CurrencyRepository.class,
+		MoneyService.class,
+		InvoiceCandidateRecordService.class })
+@DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
 public class TestQualityDiscountPercentOverrideNoDiscountIol extends AbstractTestQualityDiscountPercentOverride
 {
 
