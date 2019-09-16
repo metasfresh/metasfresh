@@ -31,16 +31,14 @@ export class Year {
 }
 
 function applyCalendar(calendar) {
-  describe(`Create new calendar ${calendar.name}`, function() {
-    cy.visitWindow('117', 'NEW');
-    cy.writeIntoStringField('Name', calendar.name);
+  cy.visitWindow('117', 'NEW');
+  cy.writeIntoStringField('Name', calendar.name);
 
-    // Thx to https://stackoverflow.com/questions/16626735/how-to-loop-through-an-array-containing-objects-and-access-their-properties
-    calendar.years.forEach(function(year) {
-      applyYear(year);
-    });
-    cy.expectNumberOfRows(calendar.years.length);
+  // Thx to https://stackoverflow.com/questions/16626735/how-to-loop-through-an-array-containing-objects-and-access-their-properties
+  calendar.years.forEach(function(year) {
+    applyYear(year);
   });
+  cy.expectNumberOfRows(calendar.years.length);
 }
 
 function applyYear(year) {
