@@ -57,7 +57,6 @@ import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.invoicecandidate.AbstractICTestSupport;
-import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
@@ -128,12 +127,9 @@ public class InvoiceCandBLCreateInvoicesTest
 			final InvoiceCandidateExpectation<Object> expectation = InvoiceCandidateExpectation.newExpectation()
 					.processed(false);
 
-			for (IInvoiceCandAggregate line : header.getLines())
+			for (I_C_Invoice_Candidate ic : header.getAllInvoiceCandidates())
 			{
-				for (I_C_Invoice_Candidate ic : line.getAllCands())
-				{
-					expectation.assertExpected(ic);
-				}
+				expectation.assertExpected(ic);
 			}
 		}
 
