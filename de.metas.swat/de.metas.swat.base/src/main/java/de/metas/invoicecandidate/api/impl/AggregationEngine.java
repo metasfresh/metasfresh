@@ -85,6 +85,7 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -114,8 +115,12 @@ public final class AggregationEngine
 
 	private static final String ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P = "InvoiceCand_PriceList_Missing";
 
+	//
+	// Parameters
 	private final boolean alwaysUseDefaultHeaderAggregationKeyBuilder;
 	private final LocalDate today;
+	private final LocalDate defaultDateInvoiced;
+	private final LocalDate defaultDateAcct;
 
 	private final AdTableId inoutLineTableId;
 	/**
@@ -125,11 +130,16 @@ public final class AggregationEngine
 
 	@Builder
 	private AggregationEngine(
-			final boolean alwaysUseDefaultHeaderAggregationKeyBuilder)
+			final boolean alwaysUseDefaultHeaderAggregationKeyBuilder,
+			@Nullable final LocalDate defaultDateInvoiced,
+			@Nullable final LocalDate defaultDateAcct)
 	{
 		this.alwaysUseDefaultHeaderAggregationKeyBuilder = alwaysUseDefaultHeaderAggregationKeyBuilder;
 
-		today = TimeUtil.asLocalDate(invoiceCandBL.getToday());
+		this.today = TimeUtil.asLocalDate(invoiceCandBL.getToday());
+
+		this.defaultDateInvoiced = defaultDateInvoiced;
+		this.defaultDateAcct = defaultDateAcct;
 
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		inoutLineTableId = AdTableId.ofRepoId(adTableDAO.retrieveTableId(I_M_InOutLine.Table_Name));
@@ -225,8 +235,13 @@ public final class AggregationEngine
 
 		//
 		// Append DateInvoiced to our aggregation key
-		final LocalDate dateInvoiced = TimeUtil.asLocalDate(ic.getDateInvoiced());
+		final LocalDate dateInvoiced = computeDateInvoiced(ic);
 		aggregationKey = aggregationKey.append("DateInvoiced=" + dateInvoiced);
+
+		//
+		// Append DateAcct to our aggregation key
+		final LocalDate dateAcct = computeDateInvoiced(ic);
+		aggregationKey = aggregationKey.append("DateAcct=" + dateAcct);
 
 		return aggregationKey;
 	}
@@ -364,8 +379,8 @@ public final class AggregationEngine
 		// why not using DateToInvoice[_Override] if available?
 		// ts: DateToInvoice[_Override] is "just" the field saying from which date onwards this ic may be invoiced
 		// tsa: true, but as far as i can see, using the Override is available could be also intuitive for user. More, in some test this logic is also assumed.
-		invoiceHeader.setDateInvoiced(TimeUtil.asLocalDate(ic.getDateInvoiced()));
-		invoiceHeader.setDateAcct(TimeUtil.asLocalDate(ic.getDateAcct()));
+		invoiceHeader.setDateInvoiced(computeDateInvoiced(ic));
+		invoiceHeader.setDateAcct(computeDateAcct(ic));
 
 		// #367 Invoice candidates invoicing Pricelist not found
 		// https://github.com/metasfresh/metasfresh/issues/367
@@ -413,6 +428,24 @@ public final class AggregationEngine
 
 		// 06630: set shipment id to header
 		invoiceHeader.setM_InOut_ID(InOutId.toRepoId(inoutId));
+	}
+
+	private LocalDate computeDateInvoiced(final I_C_Invoice_Candidate ic)
+	{
+		return CoalesceUtil.coalesceSuppliers(
+				() -> TimeUtil.asLocalDate(ic.getPresetDateInvoiced()),
+				() -> TimeUtil.asLocalDate(ic.getDateInvoiced()),
+				() -> defaultDateInvoiced,
+				() -> today);
+	}
+
+	private LocalDate computeDateAcct(final I_C_Invoice_Candidate ic)
+	{
+		return CoalesceUtil.coalesceSuppliers(
+				() -> TimeUtil.asLocalDate(ic.getPresetDateInvoiced()),
+				() -> TimeUtil.asLocalDate(ic.getDateAcct()),
+				() -> defaultDateAcct,
+				() -> computeDateInvoiced(ic));
 	}
 
 	private int getBill_Location_ID(@NonNull final I_C_Invoice_Candidate ic)

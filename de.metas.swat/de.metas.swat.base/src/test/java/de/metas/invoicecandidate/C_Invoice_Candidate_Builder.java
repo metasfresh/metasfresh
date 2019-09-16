@@ -88,6 +88,7 @@ public class C_Invoice_Candidate_Builder
 	private boolean invoiceRule_OverrideSet;
 	private String poReference;
 	private LocalDate dateAcct;
+	private LocalDate presetDateInvoiced;
 	private BigDecimal qualityDiscountPercent_Override;
 
 	private int M_PriceList_Version_ID;
@@ -126,6 +127,7 @@ public class C_Invoice_Candidate_Builder
 		//
 		// Dates
 		ic.setDateAcct(TimeUtil.asTimestamp(dateAcct));
+		ic.setPresetDateInvoiced(TimeUtil.asTimestamp(presetDateInvoiced));
 
 		// InvoiceRule
 		ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Immediate);
@@ -446,6 +448,12 @@ public class C_Invoice_Candidate_Builder
 	public C_Invoice_Candidate_Builder setQualityDiscountPercent_Override(BigDecimal qualityDiscountPercent_Override)
 	{
 		this.qualityDiscountPercent_Override = qualityDiscountPercent_Override;
+		return this;
+	}
+
+	public C_Invoice_Candidate_Builder setPresetDateInvoiced(final LocalDate presetDateInvoiced)
+	{
+		this.presetDateInvoiced = presetDateInvoiced;
 		return this;
 	}
 }

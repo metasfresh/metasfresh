@@ -25,7 +25,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  */
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.Properties;
 import java.util.Set;
 
@@ -36,7 +35,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import com.google.common.base.Joiner;
 
@@ -60,7 +58,6 @@ import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /**
@@ -290,8 +287,6 @@ import lombok.NonNull;
 
 	private final void prepareSelectionForEnqueueing(final PInstanceId selectionId)
 	{
-		final LocalDate todayDate = TimeUtil.asLocalDate(invoiceCandBL.getToday());
-
 		//
 		// Check incomplete compensation groups
 		final Set<String> incompleteOrderDocumentNo = invoiceCandDAO.retrieveOrderDocumentNosForIncompleteGroupsFromSelection(selectionId);
@@ -300,23 +295,6 @@ import lombok.NonNull;
 			final String incompleteOrderDocumentNoStr = Joiner.on(", ").join(incompleteOrderDocumentNo);
 			throw new AdempiereException(MSG_IncompleteGroupsFound_1P, new Object[] { incompleteOrderDocumentNoStr });
 		}
-
-		//
-		// Updating candidates previous to enqueueing, if the parameter has been set (task 03905)
-		// task 08628: always make sure that every IC has the *same* dateInvoiced. possible other dates that were previously set don't matter.
-		// this is critical because we assume that dateInvoiced is not part of the aggregation key, so different values would fail the invoicing
-		final LocalDate dateInvoiced = CoalesceUtil.coalesce(
-				getInvoicingParams().getDateInvoiced(),
-				todayDate);
-		invoiceCandDAO.updateDateInvoiced(dateInvoiced, selectionId, false/* updateOnlyIfNull */);
-
-		//
-		// Updating candidates previous to enqueueing, if the parameter has been set (task 08437)
-		// task 08628: same as for dateInvoiced
-		final LocalDate dateAcct = CoalesceUtil.coalesce(
-				getInvoicingParams().getDateAcct(),
-				dateInvoiced);
-		invoiceCandDAO.updateDateAcct(dateAcct, selectionId);
 
 		//
 		// Update POReference (task 07978)
@@ -331,17 +309,6 @@ import lombok.NonNull;
 		{
 			invoiceCandDAO.updateMissingPaymentTermIds(selectionId);
 		}
-
-		//
-		// Make sure invoicing dates are correctly set
-		// * DateInvoiced - set it to today if null
-		// * DateAcct - set it to DateInvoiced if null
-		//
-		// NOTE: before we group the invoices by their header aggregation key,
-		// we need to make sure that all of them have the DateInvoiced and DateAcct set.
-		// If not, they will have different aggregation key in case one has a implicit DateInvoiced (i.e. today) and other IC has an explicit DateInvoiced.
-		invoiceCandDAO.updateDateInvoiced(todayDate, selectionId, true/* updateOnlyIfNull */);
-		invoiceCandDAO.updateNullDateAcctFromDateInvoiced(selectionId);
 	}
 
 	private final Iterable<I_C_Invoice_Candidate> retrieveSelection(final PInstanceId pinstanceId)
