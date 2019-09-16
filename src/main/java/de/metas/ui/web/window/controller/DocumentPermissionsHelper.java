@@ -75,7 +75,7 @@ public class DocumentPermissionsHelper
 
 	/**
 	 * Asserts view access
-	 * 
+	 *
 	 * @param windowId
 	 * @param viewId optional viewId, used only for error reporting
 	 * @param permissions
@@ -146,10 +146,10 @@ public class DocumentPermissionsHelper
 		}
 
 		final int recordId = getRecordId(document);
-		OrgId orgId = document.getOrgId();
+		final OrgId orgId = document.getOrgId();
 		if (orgId == null)
 		{
-			return;
+			return; // the user cleared the field; field is flagged as mandatory; until the user set the field, don't make a fuss.
 		}
 		final String errmsg = permissions.checkCanView(document.getClientId(), orgId, adTableId, recordId);
 		if (errmsg != null)
@@ -207,11 +207,11 @@ public class DocumentPermissionsHelper
 		}
 		final int recordId = getRecordId(document);
 
-		ClientId adClientId = document.getClientId();
-		OrgId adOrgId = document.getOrgId();
+		final ClientId adClientId = document.getClientId();
+		final OrgId adOrgId = document.getOrgId();
 		if (adOrgId == null)
 		{
-			return null;
+			return null; // the user cleared the field; field is flagged as mandatory; until user set the field, don't make a fuss.
 		}
 		return permissions.checkCanUpdate(adClientId, adOrgId, adTableId, recordId);
 	}
