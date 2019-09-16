@@ -1,8 +1,12 @@
-package de.metas.contracts.commission.businesslogic;
+package de.metas.contracts.commission.services;
 
-import lombok.Builder;
+import java.util.Optional;
+
+import org.springframework.stereotype.Repository;
+
+import de.metas.contracts.commission.businesslogic.CommissionInstance;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -17,22 +21,21 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@Value
-@Builder
-public class CommissionTriggerChange
+@Repository
+public class CommissionInstanceRepository
 {
-	@NonNull
-	CommissionInstance oldCommissionInstance;
-
-	@NonNull
-	CommissionTriggerData newCommissionTriggerData;
+	public Optional<CommissionInstance> getForInvoiceCandidate(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
+		// TODO
+		return null;
+	}
 }

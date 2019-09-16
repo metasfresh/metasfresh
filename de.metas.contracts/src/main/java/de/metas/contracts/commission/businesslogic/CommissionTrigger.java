@@ -1,7 +1,5 @@
 package de.metas.contracts.commission.businesslogic;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
-
 import java.time.Instant;
 
 import javax.annotation.Nullable;
@@ -38,19 +36,13 @@ public class CommissionTrigger
 {
 	CommissionTriggerId id;
 
-	/** Exact timestamp of this trigger. E.g. if one invoice candidate is changed, there might be two triggers wit different timestamps that relate to the same IC. */
-	Instant timestamp;
-
 	Customer customer;
 
 	/** The direct beneficiary; usually the customer's "direct" sales rep. Will probably be part of a hierarchy. */
 	Beneficiary beneficiary;
 
-	CommissionPoints forecastedPoints;
-
-	CommissionPoints pointsToInvoice;
-
-	CommissionPoints invoicedPoints;
+	@NonNull
+	CommissionTriggerData commissionTriggerData;
 
 	@Builder
 	private CommissionTrigger(
@@ -58,21 +50,18 @@ public class CommissionTrigger
 			@NonNull final Instant timestamp,
 			@NonNull final Customer customer,
 			@NonNull final Beneficiary beneficiary,
-			@Nullable final CommissionPoints forecastedPoints,
-			@Nullable final CommissionPoints pointsToInvoice,
-			@Nullable final CommissionPoints invoicedPoints)
+			@Nullable final CommissionTriggerData commissionTriggerData)
 	{
 		this.id = id;
-		this.timestamp = timestamp;
 		this.customer = customer;
 		this.beneficiary = beneficiary;
-		this.forecastedPoints = coalesce(forecastedPoints, CommissionPoints.ZERO);
-		this.pointsToInvoice = coalesce(pointsToInvoice, CommissionPoints.ZERO);
-		this.invoicedPoints = coalesce(invoicedPoints, CommissionPoints.ZERO);
+		this.commissionTriggerData = commissionTriggerData;
 	}
 
 	public CommissionPoints getCommissionBase()
 	{
-		return forecastedPoints.add(pointsToInvoice).add(invoicedPoints);
+		return commissionTriggerData.getForecastedPoints()
+				.add(commissionTriggerData.getPointsToInvoice())
+				.add(commissionTriggerData.getInvoicedPoints());
 	}
 }
