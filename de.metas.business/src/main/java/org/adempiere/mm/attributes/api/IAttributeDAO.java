@@ -47,6 +47,10 @@ import de.metas.util.ISingletonService;
 
 public interface IAttributeDAO extends ISingletonService
 {
+	void save(I_M_AttributeSetInstance asi);
+
+	void save(I_M_AttributeInstance ai);
+
 	I_M_AttributeSet getAttributeSetById(AttributeSetId attributeSetId);
 
 	I_M_Attribute getAttributeById(int attributeId);
