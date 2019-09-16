@@ -1,6 +1,7 @@
 package de.metas.handlingunits.expiry;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.stream.Stream;
 
@@ -9,12 +10,24 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_BestBefore_V;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -63,6 +76,7 @@ public class HUWithExpiryDatesRepository
 		{
 			return null;
 		}
+
 		return HUWithExpiryDates
 				.builder()
 				.huId(HuId.ofRepoId(record.getM_HU_ID()))
@@ -86,5 +100,43 @@ public class HUWithExpiryDatesRepository
 				.firstOnly(I_M_HU_BestBefore_V.class);
 
 		return ofRecordOrNull(recordOrdNull);
+	}
+
+	public ImmutableSet<HuId> getAllWithBestBeforeDate()
+	{
+		final ImmutableList<String> validHuStatuses = ImmutableList.<String> builder()
+				.add(X_M_HU.HUSTATUS_Active)
+				.build();
+
+		return Services.get(IHandlingUnitsDAO.class)
+				.createHUQueryBuilder()
+				.addOnlyWithAttributeNotNull(HUAttributeConstants.ATTR_BestBeforeDate)
+				.addHUStatusesToInclude(validHuStatuses)
+				.createQueryBuilder()
+				.create()
+				.listIds(HuId::ofRepoId);
+	}
+
+	public LocalDate getBestBeforeDate(final HuId huId)
+	{
+		IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final I_M_HU hu = handlingUnitsDAO.getById(huId);
+		final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
+
+		final IHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(ctxAware);
+
+		final IAttributeStorage attributeStorage = getAttributeStorage(huContext, hu);
+
+		final LocalDate bestBeforeDate = attributeStorage.getValueAsLocalDate(HUAttributeConstants.ATTR_BestBeforeDate);
+
+		return bestBeforeDate;
+
+	}
+
+	private final IAttributeStorage getAttributeStorage(final IHUContext huContext, final I_M_HU hu)
+	{
+		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
+		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
+		return attributeStorage;
 	}
 }
