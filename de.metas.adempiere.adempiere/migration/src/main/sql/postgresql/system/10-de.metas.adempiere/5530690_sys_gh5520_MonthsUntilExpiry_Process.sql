@@ -252,3 +252,33 @@ INSERT INTO AD_Scheduler (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,AD_Sch
 
 
 
+-- 2019-09-16T14:18:33.056Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Name='Update Months Until Expiry',Updated=TO_TIMESTAMP('2019-09-16 17:18:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=541193
+;
+
+-- 2019-09-16T14:18:37.229Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Name='Update Months Until Expiry',Updated=TO_TIMESTAMP('2019-09-16 17:18:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=541193
+;
+
+-- 2019-09-16T14:18:40.133Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Name='Update Months Until Expiry',Updated=TO_TIMESTAMP('2019-09-16 17:18:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=541193
+;
+
+-- 2019-09-16T14:18:43.931Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Name='Update Months Until Expiry',Updated=TO_TIMESTAMP('2019-09-16 17:18:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=541193
+;
+
+-- 2019-09-16T14:21:15.446Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='MHD Restlaufzeit in Monaten Aktualisieren',Updated=TO_TIMESTAMP('2019-09-16 17:21:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=541193
+;
+
+-- 2019-09-16T14:21:18.834Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='MHD Restlaufzeit in Monaten Aktualisieren',Updated=TO_TIMESTAMP('2019-09-16 17:21:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=541193
+;
+
