@@ -1,12 +1,21 @@
 import { Product, ProductCategory } from '../../support/utils/product';
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 
 // Masterdata for Automatic End2End Tests with cypress https://github.com/metasfresh/metasfresh-e2e/issues/40
 describe('Create Product', function() {
-  const date = humanReadableNow();
-  const productName = `ProductName ${date}`;
-  const productCategoryName = `ProductCategoryName ${date}`;
+  let productName;
+  let productCategoryName;
+  let packingItemName;
+  let packingItemQty;
 
+  it('Read the fixture', function() {
+    cy.fixture('product/productcategory_product_setup_spec.json').then(f => {
+      productName = appendHumanReadableNow(f['productName']);
+      productCategoryName = appendHumanReadableNow(f['productCategoryName']);
+      packingItemName = f['packingItemName'];
+      packingItemQty = f['packingItemQty'];
+    });
+  });
   it('Create a new ProductCategory', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
@@ -19,7 +28,7 @@ describe('Create Product', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)
-        .setProductCategory(productCategoryName + '_' + productCategoryName)
+        .setProductCategory(productCategoryName)
         .apply();
     });
 
@@ -33,8 +42,8 @@ describe('Create Product', function() {
 
     cy.pressAddNewButton();
 
-    cy.selectInListField('M_HU_PI_Item_ID', 'IFCO 6410', true /*modal*/);
-    cy.writeIntoStringField('Qty', '1', true /*modal*/);
+    cy.selectInListField('M_HU_PI_Item_ID', packingItemName, true /*modal*/);
+    cy.writeIntoStringField('Qty', packingItemQty, true /*modal*/);
     cy.selectDateViaPicker('ValidFrom', true /*modal*/);
     cy.pressDoneButton();
   });
