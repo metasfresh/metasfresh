@@ -443,7 +443,7 @@ public class XmlToOLCandsService
 		final JsonOrganization org = JsonOrganization
 				.builder()
 				.syncAdvise(context.getBillerSyncAdvise())
-				.code(createBPartnerExternalId(biller).toString())
+				.code(createBPartnerExternalId(biller).getValue())
 				.name(name.getSingleStringName())
 				.bpartner(createJsonBPartnerInfo(biller, context))
 				.build();
