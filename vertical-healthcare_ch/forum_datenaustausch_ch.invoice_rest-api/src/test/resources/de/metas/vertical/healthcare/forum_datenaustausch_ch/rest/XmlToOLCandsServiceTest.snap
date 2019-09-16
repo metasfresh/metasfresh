@@ -72,11 +72,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -150,11 +150,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -228,11 +228,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -306,11 +306,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -384,11 +384,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -462,11 +462,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -540,11 +540,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -618,11 +618,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -696,11 +696,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -774,11 +774,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -852,11 +852,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -930,11 +930,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -1008,11 +1008,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -1086,11 +1086,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -1164,11 +1164,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -1242,11 +1242,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -1320,11 +1320,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -1398,11 +1398,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -1476,11 +1476,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -1554,11 +1554,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -1632,11 +1632,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   } ]
 } ]
 
@@ -1715,11 +1715,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -1793,11 +1793,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -1871,11 +1871,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -1949,11 +1949,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -2027,11 +2027,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -2105,11 +2105,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -2183,11 +2183,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -2261,11 +2261,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -2339,11 +2339,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -2417,11 +2417,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -2495,11 +2495,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -2573,11 +2573,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -2651,11 +2651,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -2729,11 +2729,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -2807,11 +2807,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -2885,11 +2885,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -2963,11 +2963,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -3041,11 +3041,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -3119,11 +3119,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -3197,11 +3197,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
       "code" : "JsonExternalId(value=EAN-2011234567890)",
@@ -3275,10 +3275,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "discount" : 0,
     "poReference" : "2009_01:001",
     "warehouseDestCode" : null,
-    "dateInvoiced" : "2013-03-20",
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   } ]
 } ]
