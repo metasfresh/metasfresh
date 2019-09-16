@@ -15,6 +15,11 @@ import Dropzone from './Dropzone';
 import Separator from './Separator';
 import { INITIALLY_OPEN, INITIALLY_CLOSED } from '../constants/Constants';
 
+/**
+ * @file Class based component.
+ * @module Window
+ * @extends Component
+ */
 class Window extends PureComponent {
   constructor(props) {
     super(props);
@@ -44,10 +49,18 @@ class Window extends PureComponent {
     this.handleBlurWidget = this.handleBlurWidget.bind(this);
   }
 
+  /**
+   * @method componentDidUpdate
+   * @summary ToDo: Describe the method.
+   */
   componentMountUpdate() {
     this._setInitialSectionsState();
   }
 
+  /**
+   * @method _setInitialSectionsState
+   * @summary ToDo: Describe the method.
+   */
   _setInitialSectionsState = () => {
     const sections = this._getInitialSectionsState();
 
@@ -56,6 +69,10 @@ class Window extends PureComponent {
     });
   };
 
+  /**
+   * @method _getInitialSectionsState
+   * @summary ToDo: Describe the method.
+   */
   _getInitialSectionsState = () => {
     const { tabs, activeTab } = this.props.layout;
 
@@ -95,12 +112,22 @@ class Window extends PureComponent {
     return {};
   };
 
+  /**
+   * @method toggleTableFullScreen
+   * @summary ToDo: Describe the method.
+   */
   toggleTableFullScreen = () => {
     this.setState({
       fullScreen: !this.state.fullScreen,
     });
   };
 
+  /**
+   * @method toggleSection
+   * @summary ToDo: Describe the method.
+   * @param {*} idx
+   * @param {*} tabId
+   */
   toggleSection = (idx, tabId = '') => {
     this.setState({
       collapsedSections: {
@@ -110,22 +137,46 @@ class Window extends PureComponent {
     });
   };
 
+  /**
+   * @method sectionCollapsed
+   * @summary ToDo: Describe the method.
+   * @param {*} idx
+   * @param {*} tabId
+   */
   sectionCollapsed = (idx, tabId = '') => {
     return this.state.collapsedSections[`${tabId}_${idx}`];
   };
 
+  /**
+   * @method hideSectionExpandTooltip
+   * @summary ToDo: Describe the method.
+   * @param {*} key
+   */
   hideSectionExpandTooltip = (key = null) => {
     this.setState({
       isSectionExpandTooltipShow: key,
     });
   };
 
+  /**
+   * @method showSectionExpandTooltip
+   * @summary ToDo: Describe the method.
+   */
   showSectionExpandTooltip = () => {
     this.setState({
       isSectionExpandTooltipShow: keymap.TOGGLE_EXPAND,
     });
   };
 
+  /**
+   * @method getTabs
+   * @summary ToDo: Describe the method.
+   * @param {*} tabs
+   * @param {*} dataId
+   * @param {*} tabsArray
+   * @param {*} tabsByIds
+   * @param {*} parentTab
+   */
   getTabs = (tabs, dataId, tabsArray, tabsByIds, parentTab) => {
     const { windowId } = this.props.layout;
     const { rowData, newRow, tabsInfo, sort, allowShortcut } = this.props;
@@ -243,6 +294,11 @@ class Window extends PureComponent {
     });
   };
 
+  /**
+   * @method renderTabs
+   * @summary ToDo: Describe the method.
+   * @param {*} tabs
+   */
   renderTabs = tabs => {
     const {
       layout: { windowId },
@@ -273,6 +329,13 @@ class Window extends PureComponent {
     );
   };
 
+  /**
+   * @method renderSections
+   * @summary ToDo: Describe the method.
+   * @param {*} sections
+   * @param {*} dataEntry
+   * @param {*} extendedData
+   */
   renderSections = (sections, dataEntry, extendedData = {}) => {
     return sections.map((elem, idx) => {
       const { title, columns, closableMode } = elem;
@@ -308,6 +371,14 @@ class Window extends PureComponent {
     });
   };
 
+  /**
+   * @method renderColumns
+   * @summary ToDo: Describe the method.
+   * @param {*} columns
+   * @param {*} isSectionFirst
+   * @param {*} dataEntry
+   * @param {*} extendedData
+   */
   renderColumns = (columns, isSectionFirst, dataEntry, extendedData) => {
     const maxRows = 12;
     const colWidth = Math.floor(maxRows / columns.length);
@@ -333,12 +404,23 @@ class Window extends PureComponent {
     });
   };
 
+  /**
+   * @method toggleSection
+   * @summary ToDo: Describe the method.
+   * @param {*} c
+   */
   addRefToWidgets = c => {
     if (c) {
       this.widgets.push(c);
     }
   };
 
+  /**
+   * @method renderEntryTable
+   * @summary ToDo: Describe the method.
+   * @param {*} idx
+   * @param {*} tabId
+   */
   renderEntryTable = (groups, extendedData) => {
     const rows = groups.reduce((rowsArray, group) => {
       const cols = [];
@@ -381,6 +463,12 @@ class Window extends PureComponent {
     );
   };
 
+  /**
+   * @method renderElementGroups
+   * @summary ToDo: Describe the method.
+   * @param {*} groups
+   * @param {*} isFirst
+   */
   renderElementGroups = (groups, isFirst) => {
     const { isModal } = this.props;
 
@@ -414,6 +502,13 @@ class Window extends PureComponent {
     });
   };
 
+  /**
+   * @method renderElementsLine
+   * @summary ToDo: Describe the method.
+   * @param {*} elementsLine
+   * @param {*} tabIndex
+   * @param {*} shouldBeFocused
+   */
   renderElementsLine = (elementsLine, tabIndex, shouldBeFocused) => {
     return elementsLine.map((elem, id) => {
       const { elements } = elem;
@@ -429,6 +524,13 @@ class Window extends PureComponent {
     });
   };
 
+  /**
+   * @method renderElements
+   * @summary ToDo: Describe the method.
+   * @param {*} elements
+   * @param {*} tabIndex
+   * @param {*} isFocused
+   */
   renderElements = (elements, tabIndex, isFocused) => {
     const { windowId } = this.props.layout;
     const { data, modal, tabId, rowId, dataId, isAdvanced } = this.props;
@@ -468,6 +570,11 @@ class Window extends PureComponent {
     });
   };
 
+  /**
+   * @method handleBlurWidget
+   * @summary ToDo: Describe the method.
+   * @param {*} fieldName
+   */
   handleBlurWidget(fieldName) {
     let currentWidgetIndex = -1;
 
@@ -500,6 +607,10 @@ class Window extends PureComponent {
     }
   }
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const { sections, tabs } = this.props.layout;
     const {
@@ -532,6 +643,25 @@ class Window extends PureComponent {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {shape} layout
+ * @prop {func} handleDropFile
+ * @prop {func} handleRejectDropped
+ * @prop {func} handleDragStart
+ * @prop {bool} isModal
+ * @prop {shape} rowData
+ * @prop {bool} newRow
+ * @prop {shape} tabsInfo
+ * @prop {func} sort
+ * @prop {bool} allowShortcut
+ * @prop {shape|array} data
+ * @prop {string} dataId
+ * @prop {bool} modal
+ * @prop {string} tabId
+ * @prop {string} rowId
+ * @prop {bool} isAdvanced
+ */
 Window.propTypes = {
   layout: PropTypes.shape(),
   handleDropFile: PropTypes.func,
