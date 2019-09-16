@@ -349,6 +349,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	void save(I_C_Invoice_Candidate invoiceCandidate);
 
+	void saveAll(Collection<I_C_Invoice_Candidate> invoiceCandidates);
+
 	/**
 	 * Return all invoice candidates that have Processed='N'
 	 *

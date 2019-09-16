@@ -528,6 +528,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
+	public void saveAll(final Collection<I_C_Invoice_Candidate> invoiceCandidates)
+	{
+		invoiceCandidates.forEach(this::save);
+	}
+
+	@Override
 	public int deleteInvoiceDetails(final I_C_Invoice_Candidate ic)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Detail.class, ic)
