@@ -262,7 +262,6 @@ public class InOutProducerFromShipmentScheduleWithHU
 		}
 
 		final ZonedDateTime deliveryDateEffective = Services.get(IShipmentScheduleEffectiveBL.class).getDeliveryDate(schedule);
-
 		if (deliveryDateEffective == null)
 		{
 			return today;

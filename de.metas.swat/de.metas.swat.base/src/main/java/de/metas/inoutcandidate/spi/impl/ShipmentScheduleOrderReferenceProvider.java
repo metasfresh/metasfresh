@@ -10,6 +10,8 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineProvider;
@@ -76,7 +78,7 @@ public class ShipmentScheduleOrderReferenceProvider implements ShipmentScheduleR
 		return ShipmentScheduleReferencedLine.builder()
 				.recordRef(TableRecordReference.of(I_C_Order.Table_Name, orderId))
 				.preparationDate(TimeUtil.asZonedDateTime(order.getPreparationDate()))
-				.deliveryDate(getOrderLineDeliveryDate(orderLine, order))
+				.deliveryDate(computeOrderLineDeliveryDate(orderLine, order))
 				.warehouseId(warehouseAdvisor.evaluateWarehouse(orderLine))
 				.shipperId(ShipperId.optionalOfRepoId(orderLine.getM_Shipper_ID()))
 				.documentLineDescriptor(createDocumentLineDescriptor(orderAndLineId, order))
@@ -88,10 +90,17 @@ public class ShipmentScheduleOrderReferenceProvider implements ShipmentScheduleR
 		return OrderAndLineId.ofRepoIds(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID());
 	}
 
-	private static ZonedDateTime getOrderLineDeliveryDate(
+	@VisibleForTesting
+	static ZonedDateTime computeOrderLineDeliveryDate(
 			@NonNull final I_C_OrderLine orderLine,
 			@NonNull final I_C_Order order)
 	{
+		final ZonedDateTime presetDateShipped = TimeUtil.asZonedDateTime(orderLine.getPresetDateShipped());
+		if (presetDateShipped != null)
+		{
+			return presetDateShipped;
+		}
+
 		// Fetch it from order line if possible
 		final ZonedDateTime datePromised = TimeUtil.asZonedDateTime(orderLine.getDatePromised());
 		if (datePromised != null)
