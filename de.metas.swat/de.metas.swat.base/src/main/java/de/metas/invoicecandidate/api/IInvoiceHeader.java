@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.compiere.model.I_C_DocType;
 
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 
 /**
@@ -52,6 +53,8 @@ public interface IInvoiceHeader
 	 * @return
 	 */
 	List<IInvoiceCandAggregate> getLines();
+	
+	List<I_C_Invoice_Candidate> getAllInvoiceCandidates();
 
 	// 04258: add header and footer
 	String getDescription();

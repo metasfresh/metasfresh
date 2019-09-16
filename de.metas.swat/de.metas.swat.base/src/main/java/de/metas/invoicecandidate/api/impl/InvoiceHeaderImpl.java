@@ -5,9 +5,12 @@ import java.util.List;
 
 import org.compiere.model.I_C_DocType;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.util.Check;
@@ -98,6 +101,15 @@ import lombok.Setter;
 	public List<IInvoiceCandAggregate> getLines()
 	{
 		return lines;
+	}
+
+	@Override
+	public List<I_C_Invoice_Candidate> getAllInvoiceCandidates()
+	{
+		return getLines()
+				.stream()
+				.flatMap(line -> line.getAllCands().stream())
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
