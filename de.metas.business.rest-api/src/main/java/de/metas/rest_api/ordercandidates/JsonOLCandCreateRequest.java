@@ -174,13 +174,6 @@ public final class JsonOLCandCreateRequest
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
-			value = "Can be set if the invoice's document date is already known from the external system. ")
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	@JsonInclude(Include.NON_NULL)
-	private LocalDate dateInvoiced;
-
-	@ApiModelProperty( //
-			allowEmptyValue = true, //
 			value = "Can be set if the invoice's document type is already known from the external system and shall be forwarded to the invoice candidate.\\n\""
 					+ "This works only if not an order line but an invoice candidate is directly created for the respective order line candidate.\n"
 					+ "Therefore, please make sure to have <code>dataDestInternalName='DEST.de.metas.invoicecandidate'</code>.\n"
@@ -190,6 +183,13 @@ public final class JsonOLCandCreateRequest
 					+ "and <code>docSubType</code> to one of <code>EA</code> (\"Patient\"), <code>GM</code> (\"Gemeinde\" or <code>KV</code> (\"Krankenversicherung\"")
 	@JsonInclude(Include.NON_NULL)
 	private JsonDocTypeInfo invoiceDocType;
+
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
+			value = "Can be set if the invoice's document date is already known from the external system. ")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	@JsonInclude(Include.NON_NULL)
+	private LocalDate presetDateInvoiced;
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
@@ -224,8 +224,8 @@ public final class JsonOLCandCreateRequest
 			@JsonProperty("discount") final @Nullable BigDecimal discount,
 			@JsonProperty("poReference") final @NonNull String poReference,
 			@JsonProperty("warehouseDestCode") final @Nullable String warehouseDestCode,
-			@JsonProperty("dateInvoiced") final @Nullable LocalDate dateInvoiced,
 			@JsonProperty("invoiceDocType") final @Nullable JsonDocTypeInfo invoiceDocType,
+			@JsonProperty("presetDateInvoiced") final @Nullable LocalDate presetDateInvoiced,
 			@JsonProperty("presetDateShipped") final @Nullable LocalDate presetDateShipped)
 	{
 		this.org = org;
@@ -251,8 +251,8 @@ public final class JsonOLCandCreateRequest
 		this.discount = discount;
 		this.poReference = poReference;
 		this.warehouseDestCode = warehouseDestCode;
-		this.dateInvoiced = dateInvoiced;
 		this.invoiceDocType = invoiceDocType;
+		this.presetDateInvoiced = presetDateInvoiced;
 		this.presetDateShipped = presetDateShipped;
 	}
 
