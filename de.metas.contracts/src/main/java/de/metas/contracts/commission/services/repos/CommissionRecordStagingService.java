@@ -32,7 +32,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -137,7 +136,7 @@ class CommissionRecordStagingService
 		return commissionRecords.build();
 	}
 
-	@Value
+	@lombok.Value
 	static class CommissionRecords
 	{
 		final static CommissionRecords EMPTY = CommissionRecords.builder().build();
