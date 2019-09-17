@@ -13,3 +13,9 @@ INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Name,Description,Help, Is
 INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,541195,540506,540747,TO_TIMESTAMP('2019-09-17 18:45:45','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.fresh','Y',TO_TIMESTAMP('2019-09-17 18:45:45','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N')
 ;
 
+
+-- 2019-09-17T20:07:38.832Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO M_HU_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,Created,CreatedBy,IsActive,IsApplyToCUs,IsApplyToLUs,IsApplyToTopLevelHUsOnly,IsApplyToTUs,IsProvideAsUserAction,M_HU_Process_ID,Updated,UpdatedBy) VALUES (0,0,541195,TO_TIMESTAMP('2019-09-17 23:07:38','YYYY-MM-DD HH24:MI:SS'),100,'Y','Y','N','N','N','Y',540018,TO_TIMESTAMP('2019-09-17 23:07:38','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
