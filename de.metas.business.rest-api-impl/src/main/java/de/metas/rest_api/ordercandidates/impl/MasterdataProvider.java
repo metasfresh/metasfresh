@@ -1,20 +1,16 @@
 package de.metas.rest_api.ordercandidates.impl;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
-import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
 import static de.metas.util.lang.CoalesceUtil.firstNotEmptyTrimmed;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
-import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -84,23 +80,15 @@ final class MasterdataProvider
 	private final ProductMasterDataProvider productMasterDataProvider;
 	private final ProductPriceMasterDataProvider productPricesMasterDataProvider;
 
-	private final OrgId defaultOrgId;
 	private final Map<String, OrgId> orgIdsByCode = new HashMap<>();
 
 	@Builder
 	private MasterdataProvider(
-			@Nullable final Properties ctx,
-			@Nullable final PermissionService permissionService,
-			@Nullable final BPartnerMasterDataProvider bpartnerMasterDataProvider,
-			@Nullable final ProductMasterDataProvider productMasterDataProvider)
+			@NonNull final PermissionService permissionService)
 	{
-		final Properties ctxToUse = coalesceSuppliers(() -> ctx, () -> Env.getCtx());
-
-		defaultOrgId = OrgId.optionalOfRepoId(Env.getAD_Org_ID(ctxToUse)).orElse(OrgId.ANY);
-
-		this.permissionService = coalesce(permissionService, PermissionService.of(ctxToUse));
-		this.bpartnerMasterDataProvider = coalesce(bpartnerMasterDataProvider, BPartnerMasterDataProvider.of(ctxToUse, permissionService));
-		this.productMasterDataProvider = coalesce(productMasterDataProvider, ProductMasterDataProvider.of(ctxToUse, permissionService));
+		this.permissionService = permissionService;
+		this.bpartnerMasterDataProvider = new BPartnerMasterDataProvider(permissionService);
+		this.productMasterDataProvider = new ProductMasterDataProvider(permissionService);
 		this.productPricesMasterDataProvider = new ProductPriceMasterDataProvider();
 	}
 
@@ -128,7 +116,7 @@ final class MasterdataProvider
 	{
 		if (json == null)
 		{
-			return defaultOrgId;
+			return permissionService.getDefaultOrgId();
 		}
 
 		return orgIdsByCode.compute(json.getCode(), (code, existingOrgId) -> createOrUpdateOrgId(json, existingOrgId));

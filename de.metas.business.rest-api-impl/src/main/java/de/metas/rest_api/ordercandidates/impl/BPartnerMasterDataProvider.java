@@ -1,6 +1,5 @@
 package de.metas.rest_api.ordercandidates.impl;
 
-import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
@@ -8,7 +7,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Properties;
 
 import javax.annotation.Nullable;
 
@@ -16,8 +14,6 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-
-import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -78,16 +74,6 @@ import lombok.Value;
 
 final class BPartnerMasterDataProvider
 {
-	public static BPartnerMasterDataProvider of(
-			@Nullable final Properties ctx,
-			@Nullable final PermissionService permissionService)
-	{
-		return new BPartnerMasterDataProvider(
-				coalesceSuppliers(
-						() -> permissionService,
-						() -> PermissionService.of(ctx)));
-	}
-
 	//
 	// Services
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
@@ -101,7 +87,6 @@ final class BPartnerMasterDataProvider
 	private final Map<JsonExternalId, BPartnerLocationId> bpartnerLocationIdsByExternalId = new HashMap<>();
 	private final Map<JsonExternalId, BPartnerContactId> bpartnerContactIdsByExternalId = new HashMap<>();
 
-	@VisibleForTesting
 	BPartnerMasterDataProvider(@NonNull final PermissionService permissionService)
 	{
 		this.permissionService = permissionService;

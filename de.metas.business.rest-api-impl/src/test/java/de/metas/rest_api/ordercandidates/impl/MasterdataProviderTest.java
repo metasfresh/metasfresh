@@ -103,8 +103,7 @@ public class MasterdataProviderTest
 		countryRecord.setCountryCode("DE");
 		saveRecord(countryRecord);
 
-		masterdataProvider = MasterdataProvider
-				.builder()
+		masterdataProvider = MasterdataProvider.builder()
 				.permissionService(permissionService)
 				.build();
 
@@ -136,7 +135,7 @@ public class MasterdataProviderTest
 	public void getCreateOrgId_createIfNotExists()
 	{
 		final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
-		
+
 		final OrgId orgId = masterdataProvider.getCreateOrgId(jsonOrganization);
 
 		// verify AD_Org

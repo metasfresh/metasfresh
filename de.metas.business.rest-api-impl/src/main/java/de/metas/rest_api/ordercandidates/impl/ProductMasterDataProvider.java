@@ -1,11 +1,9 @@
 package de.metas.rest_api.ordercandidates.impl;
 
-import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Nullable;
@@ -58,16 +56,6 @@ import lombok.experimental.Wither;
 
 final class ProductMasterDataProvider
 {
-	public static ProductMasterDataProvider of(
-			@Nullable final Properties ctx,
-			@Nullable final PermissionService permissionService)
-	{
-		return new ProductMasterDataProvider(
-				coalesceSuppliers(
-						() -> permissionService,
-						() -> PermissionService.of(ctx)));
-	}
-
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IProductBL productsBL = Services.get(IProductBL.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);

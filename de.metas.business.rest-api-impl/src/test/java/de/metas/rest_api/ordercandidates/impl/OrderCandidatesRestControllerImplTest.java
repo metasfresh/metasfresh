@@ -61,6 +61,7 @@ import de.metas.rest_api.ordercandidates.response.JsonOLCand;
 import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.utils.JsonError;
 import de.metas.rest_api.utils.PermissionService;
+import de.metas.rest_api.utils.PermissionServiceFactories;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -133,14 +134,11 @@ public class OrderCandidatesRestControllerImplTest
 			testMasterdata.createDataSource(DATA_DEST_INVOICECANDIDATE);
 		}
 
-		final MasterdataProviderFactory masterdataProviderFactory = MasterdataProviderFactory
-				.builder()
-				.permissionService(permissionService).build();
-
 		orderCandidatesRestControllerImpl = new OrderCandidatesRestControllerImpl(
-				masterdataProviderFactory,
 				new JsonConverters(),
 				new OLCandRepository());
+		orderCandidatesRestControllerImpl.setPermissionServiceFactory(PermissionServiceFactories.singleton(permissionService));
+
 		LogManager.setLoggerLevel(orderCandidatesRestControllerImpl.getClass(), Level.ALL);
 	}
 
