@@ -1,4 +1,4 @@
-package de.metas.rest_api.ordercandidates;
+package de.metas.rest_api.ordercandidates.request;
 
 import java.util.List;
 import java.util.function.UnaryOperator;

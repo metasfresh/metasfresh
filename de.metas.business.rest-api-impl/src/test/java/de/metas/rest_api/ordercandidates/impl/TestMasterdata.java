@@ -24,6 +24,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.junit.Ignore;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.document.DocBaseAndSubType;
@@ -106,14 +107,28 @@ final class TestMasterdata
 	{
 		final I_C_BPartner bpRecord = newInstance(I_C_BPartner.class);
 		bpRecord.setValue(bpValue);
+		bpRecord.setName(bpValue + "-name");
 		bpRecord.setIsCustomer(true);
 		bpRecord.setM_PricingSystem_ID(PricingSystemId.toRepoId(salesPricingSystemId));
 		saveRecord(bpRecord);
 
+		return prepareBPartnerLocation()
+				.bpartnerId(BPartnerId.ofRepoId(bpRecord.getC_BPartner_ID()))
+				.countryId(countryId)
+				.gln(gln)
+				.build();
+	}
+
+	@Builder(builderMethodName = "prepareBPartnerLocation", builderClassName = "_BPartnerLocationBuilder")
+	private BPartnerLocationId createBPartnerLocation(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final CountryId countryId,
+			@Nullable final GLN gln)
+	{
 		final LocationId locationId = createLocation(countryId);
 
 		final I_C_BPartner_Location bplRecord = newInstance(I_C_BPartner_Location.class);
-		bplRecord.setC_BPartner_ID(bpRecord.getC_BPartner_ID());
+		bplRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 		bplRecord.setC_Location_ID(locationId.getRepoId());
 		bplRecord.setGLN(gln != null ? gln.getCode() : null);
 		saveRecord(bplRecord);

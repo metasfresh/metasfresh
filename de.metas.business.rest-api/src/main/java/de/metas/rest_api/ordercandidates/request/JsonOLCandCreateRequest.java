@@ -1,4 +1,4 @@
-package de.metas.rest_api.ordercandidates;
+package de.metas.rest_api.ordercandidates.request;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -77,7 +77,7 @@ public final class JsonOLCandCreateRequest
 			allowEmptyValue = false, //
 			value = " This translates to <code>C_OLCand.C_BPartner_ID</code>.\n"
 					+ "It's the business partner that places/placed the order this candidate is about.")
-	private JsonBPartnerInfo bpartner;
+	private JsonRequestBPartnerLocationAndContact bpartner;
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
@@ -85,7 +85,7 @@ public final class JsonOLCandCreateRequest
 					+ "It's the business partner that shall receive the invoice.\n"
 					+ "Optional; if empty, then <code>bpartner</code> will receive the invoice.")
 	@JsonInclude(Include.NON_NULL)
-	private JsonBPartnerInfo billBPartner;
+	private JsonRequestBPartnerLocationAndContact billBPartner;
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
@@ -93,7 +93,7 @@ public final class JsonOLCandCreateRequest
 					+ "It's the business partner that shall receive the shipment.\n"
 					+ "Optional; if empty, then <code>bpartner</code> will receive the shipment.")
 	@JsonInclude(Include.NON_NULL)
-	private JsonBPartnerInfo dropShipBPartner;
+	private JsonRequestBPartnerLocationAndContact dropShipBPartner;
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
@@ -101,7 +101,7 @@ public final class JsonOLCandCreateRequest
 					+ "It's an intermediate partner that shall receive the shipment and forward it to the eventual recipient.\n"
 					+ "Optional; if empty, then <code>dropShipBPartner</code> or <code>bpartner</code> will directly receive the shipment.")
 	@JsonInclude(Include.NON_NULL)
-	private JsonBPartnerInfo handOverBPartner;
+	private JsonRequestBPartnerLocationAndContact handOverBPartner;
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
@@ -206,10 +206,10 @@ public final class JsonOLCandCreateRequest
 			@JsonProperty("externalHeaderId") final String externalHeaderId,
 			@JsonProperty("dataSourceInternalName") final @NonNull String dataSourceInternalName,
 			@JsonProperty("dataDestInternalName") final @Nullable String dataDestInternalName,
-			@JsonProperty("bpartner") final JsonBPartnerInfo bpartner,
-			@JsonProperty("billBPartner") final JsonBPartnerInfo billBPartner,
-			@JsonProperty("dropShipBPartner") final JsonBPartnerInfo dropShipBPartner,
-			@JsonProperty("handOverBPartner") final JsonBPartnerInfo handOverBPartner,
+			@JsonProperty("bpartner") final JsonRequestBPartnerLocationAndContact bpartner,
+			@JsonProperty("billBPartner") final JsonRequestBPartnerLocationAndContact billBPartner,
+			@JsonProperty("dropShipBPartner") final JsonRequestBPartnerLocationAndContact dropShipBPartner,
+			@JsonProperty("handOverBPartner") final JsonRequestBPartnerLocationAndContact handOverBPartner,
 			@JsonProperty("dateOrdered") final @Nullable LocalDate dateOrdered,
 			@JsonProperty("dateRequired") final LocalDate dateRequired,
 			@JsonProperty("flatrateConditionsId") final int flatrateConditionsId,
