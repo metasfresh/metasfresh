@@ -52,7 +52,6 @@ import lombok.NonNull;
 
 class HierachyAlgorithmTest
 {
-
 	@Test
 	void createInstance()
 	{
@@ -76,6 +75,7 @@ class HierachyAlgorithmTest
 				.build();
 
 		final CommissionTriggerData triggerData = CommissionTriggerData.builder()
+				.timestamp(Instant.now())
 				.invoiceCandidateId(invoiceCandiateId)
 				.forecastedPoints(CommissionPoints.of("1000.00"))
 				// it's uncommon to have a trigger with points beyond "forecasted"..but still should work
@@ -111,7 +111,7 @@ class HierachyAlgorithmTest
 		assertThat(shares.get(0)).satisfies(share -> {
 			assertThat(share.getBeneficiary()).isEqualTo(salesRep);
 			assertThat(share.getLevel()).isEqualTo(HierarchyLevel.of(0));
-			assertThat(share).extracting("forecastedPointsSum", "pointsToInvoiceSum", "invoicedPointsSum")
+			assertThat(share).extracting("forecastedPointsSum", "invoiceablePointsSum", "invoicedPointsSum")
 					.contains(CommissionPoints.of("100.00"), CommissionPoints.of("10.00"), CommissionPoints.of("1.00"));
 			assertThat(share.getFacts())
 					.extracting("state", "points")
@@ -124,7 +124,7 @@ class HierachyAlgorithmTest
 		assertThat(shares.get(1)).satisfies(share -> {
 			assertThat(share.getBeneficiary()).isEqualTo(salesSupervisor);
 			assertThat(share.getLevel()).isEqualTo(HierarchyLevel.of(1));
-			assertThat(share).extracting("forecastedPointsSum", "pointsToInvoiceSum", "invoicedPointsSum")
+			assertThat(share).extracting("forecastedPointsSum", "invoiceablePointsSum", "invoicedPointsSum")
 					.contains(CommissionPoints.of("90.00"), CommissionPoints.of("9.00"), CommissionPoints.of("0.90"));
 			assertThat(share.getFacts())
 					.extracting("state", "points")
@@ -137,7 +137,7 @@ class HierachyAlgorithmTest
 		assertThat(shares.get(2)).satisfies(share -> {
 			assertThat(share.getBeneficiary()).isEqualTo(headOfSales);
 			assertThat(share.getLevel()).isEqualTo(HierarchyLevel.of(2));
-			assertThat(share).extracting("forecastedPointsSum", "pointsToInvoiceSum", "invoicedPointsSum")
+			assertThat(share).extracting("forecastedPointsSum", "invoiceablePointsSum", "invoicedPointsSum")
 					.contains(CommissionPoints.of("81.00"), CommissionPoints.of("8.10"), CommissionPoints.of("0.81"));
 			assertThat(share.getFacts())
 					.extracting("state", "points")
@@ -175,7 +175,7 @@ class HierachyAlgorithmTest
 		assertThat(shares).hasSize(3);
 
 		assertThat(shares.get(0)).satisfies(share -> {
-			assertThat(share).extracting("forecastedPointsSum", "pointsToInvoiceSum", "invoicedPointsSum")
+			assertThat(share).extracting("forecastedPointsSum", "invoiceablePointsSum", "invoicedPointsSum")
 					.contains(CommissionPoints.of("0.00"), CommissionPoints.of("0.00"), CommissionPoints.of("111.00"));
 			assertThat(share.getFacts())
 					.extracting("state", "points")
@@ -190,7 +190,7 @@ class HierachyAlgorithmTest
 		});
 
 		assertThat(shares.get(1)).satisfies(share -> {
-			assertThat(share).extracting("forecastedPointsSum", "pointsToInvoiceSum", "invoicedPointsSum")
+			assertThat(share).extracting("forecastedPointsSum", "invoiceablePointsSum", "invoicedPointsSum")
 					.contains(CommissionPoints.of("0.00"), CommissionPoints.of("0.00"), CommissionPoints.of("99.90"));
 			assertThat(share.getFacts())
 					.extracting("state", "points")
@@ -204,7 +204,7 @@ class HierachyAlgorithmTest
 							tuple(CommissionState.INVOICED, CommissionPoints.of("99.00")));
 		});
 		assertThat(shares.get(2)).satisfies(share -> {
-			assertThat(share).extracting("forecastedPointsSum", "pointsToInvoiceSum", "invoicedPointsSum")
+			assertThat(share).extracting("forecastedPointsSum", "invoiceablePointsSum", "invoicedPointsSum")
 					.contains(CommissionPoints.of("0.00"), CommissionPoints.of("0.00"), CommissionPoints.of("89.91"));
 			assertThat(share.getFacts())
 					.extracting("state", "points")

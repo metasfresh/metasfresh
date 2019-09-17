@@ -1,5 +1,7 @@
 package de.metas.contracts.commission.businesslogic;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -36,6 +38,15 @@ public class CommissionInstanceId implements RepoIdAware
 	@JsonCreator
 	public static CommissionInstanceId ofRepoId(final int repoId)
 	{
+		return new CommissionInstanceId(repoId);
+	}
+
+	public static CommissionInstanceId ofRepoIdOrNull(@Nullable final Integer repoId)
+	{
+		if (repoId == null || repoId <= 0)
+		{
+			return null;
+		}
 		return new CommissionInstanceId(repoId);
 	}
 
