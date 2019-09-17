@@ -29,9 +29,11 @@ let product1Quantity;
 let product2Quantity;
 let docBaseType;
 let deduction;
-let qtyEnteredColumnName;
 
 let purchaseOrderRecordId;
+
+const productColumnName = 'M_Product_ID';
+const qtyEnteredColumnName = 'QtyEntered';
 
 it('Read the fixture', function() {
   cy.fixture('materialReceipt/mat_receipt_quality_issue_invoice_indispute_unchecked.json').then(f => {
@@ -55,7 +57,6 @@ it('Read the fixture', function() {
     product2Quantity = f['product2Quantity'];
     docBaseType = f['docBaseType'];
     deduction = f['deduction'];
-    qtyEnteredColumnName = f['qtyEnteredColumnName'];
   });
 });
 it('Disable all other quality issue warehouses', function() {
@@ -160,6 +161,7 @@ it('Select the second row and Receive the CUs with 5% alteration', function() {
 });
 it('Select the row and create material receipt for it', function() {
   cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', true, false);
+  cy.waitForSaveIndicator();
   cy.pressDoneButton();
 });
 
@@ -172,12 +174,12 @@ it('Go to Invoice Disposition and uncheck In Dispute', function() {
   cy.visitWindow(purchaseOrders.windowId, purchaseOrderRecordId);
   cy.openReferencedDocuments('C_Invoice_Candidate');
   cy.expectNumberOfRows(2);
-  cy.selectNthRow(1).dblclick();
+  cy.selectRowByColumnAndValue({ column: productColumnName, value: productName1 }).dblclick();
   cy.expectCheckboxValue('IsInDispute', true);
   cy.getStringFieldValue('QtyToInvoice').should('equal', qtyToInvoice1.toString());
   cy.setCheckBoxValue('IsInDispute', false);
   filterInBillingCandidatesWindow();
-  cy.selectNthRow(0).dblclick();
+  cy.selectRowByColumnAndValue({ column: productColumnName, value: productName2 }).dblclick();
   cy.expectCheckboxValue('IsInDispute', false);
   cy.getStringFieldValue('QtyToInvoice').should('equal', qtyToInvoice2.toString());
   filterInBillingCandidatesWindow();
