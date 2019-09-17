@@ -49,7 +49,7 @@ public class CommissionShare
 	private CommissionPoints forecastedPointsSum;
 
 	@Setter(AccessLevel.NONE)
-	private CommissionPoints pointsToInvoiceSum;
+	private CommissionPoints invoiceablePointsSum;
 
 	@Setter(AccessLevel.NONE)
 	private CommissionPoints invoicedPointsSum;
@@ -70,7 +70,7 @@ public class CommissionShare
 		this.facts = new ArrayList<>();
 
 		this.forecastedPointsSum = CommissionPoints.ZERO;
-		this.pointsToInvoiceSum = CommissionPoints.ZERO;
+		this.invoiceablePointsSum = CommissionPoints.ZERO;
 		this.invoicedPointsSum = CommissionPoints.ZERO;
 
 		for (final CommissionFact fact : facts)
@@ -88,8 +88,8 @@ public class CommissionShare
 			case FORECASTED:
 				forecastedPointsSum = forecastedPointsSum.add(fact.getPoints());
 				break;
-			case TO_INVOICE:
-				pointsToInvoiceSum = pointsToInvoiceSum.add(fact.getPoints());
+			case INVOICEABLE:
+				invoiceablePointsSum = invoiceablePointsSum.add(fact.getPoints());
 				break;
 			case INVOICED:
 				invoicedPointsSum = invoicedPointsSum.add(fact.getPoints());

@@ -34,8 +34,6 @@ import lombok.Value;
 @Value
 public class CommissionTrigger
 {
-	CommissionTriggerId id;
-
 	Customer customer;
 
 	/** The direct beneficiary; usually the customer's "direct" sales rep. Will probably be part of a hierarchy. */
@@ -46,13 +44,11 @@ public class CommissionTrigger
 
 	@Builder
 	private CommissionTrigger(
-			@NonNull final CommissionTriggerId id,
 			@NonNull final Instant timestamp,
 			@NonNull final Customer customer,
 			@NonNull final Beneficiary beneficiary,
 			@Nullable final CommissionTriggerData commissionTriggerData)
 	{
-		this.id = id;
 		this.customer = customer;
 		this.beneficiary = beneficiary;
 		this.commissionTriggerData = commissionTriggerData;
@@ -61,7 +57,7 @@ public class CommissionTrigger
 	public CommissionPoints getCommissionBase()
 	{
 		return commissionTriggerData.getForecastedPoints()
-				.add(commissionTriggerData.getPointsToInvoice())
+				.add(commissionTriggerData.getInvoiceablePoints())
 				.add(commissionTriggerData.getInvoicedPoints());
 	}
 }

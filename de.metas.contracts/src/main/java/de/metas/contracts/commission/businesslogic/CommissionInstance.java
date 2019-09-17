@@ -1,5 +1,7 @@
 package de.metas.contracts.commission.businesslogic;
 
+import javax.annotation.Nullable;
+
 import com.google.common.collect.ImmutableList;
 
 import lombok.Builder;
@@ -33,8 +35,12 @@ import lombok.Value;
 @Builder
 public class CommissionInstance
 {
+	/** null if this instance was not (yet) persisted */
+	@Nullable
+	CommissionInstanceId id;
+
 	@NonNull
-	CommissionTrigger trigger;
+	CommissionTriggerData currentTriggerData;
 
 	@NonNull
 	CommissionConfig config;

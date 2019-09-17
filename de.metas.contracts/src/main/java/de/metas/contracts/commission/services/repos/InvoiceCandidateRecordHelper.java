@@ -1,4 +1,4 @@
-package de.metas.contracts.commission.services;
+package de.metas.contracts.commission.services.repos;
 
 import java.math.BigDecimal;
 

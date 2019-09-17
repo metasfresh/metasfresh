@@ -9,14 +9,11 @@ import org.springframework.stereotype.Service;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.businesslogic.Beneficiary;
-import de.metas.contracts.commission.businesslogic.CommissionPoints;
 import de.metas.contracts.commission.businesslogic.CommissionTrigger;
-import de.metas.contracts.commission.businesslogic.CommissionTriggerData;
-import de.metas.contracts.commission.businesslogic.CommissionTriggerId;
 import de.metas.contracts.commission.businesslogic.Customer;
 import de.metas.contracts.commission.model.I_C_Invoice_Candidate;
+import de.metas.contracts.commission.services.repos.CommissionTriggerDataRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.money.Money;
 import lombok.NonNull;
 
 /*
@@ -44,11 +41,11 @@ import lombok.NonNull;
 @Service
 public class CommissionTriggerFactory
 {
-	private final InvoiceCandidateRecordHelper icRecordHelper;
+	private final CommissionTriggerDataRepository commissionTriggerDataRepository;
 
-	public CommissionTriggerFactory(@NonNull final InvoiceCandidateRecordHelper icRecordHelper)
+	public CommissionTriggerFactory(@NonNull final CommissionTriggerDataRepository commissionTriggerDataRepository)
 	{
-		this.icRecordHelper = icRecordHelper;
+		this.commissionTriggerDataRepository = commissionTriggerDataRepository;
 	}
 
 	public Optional<CommissionTrigger> createForId(@NonNull final InvoiceCandidateId invoiceCandidateId)
@@ -74,26 +71,11 @@ public class CommissionTriggerFactory
 		final CommissionTrigger trigger = CommissionTrigger.builder()
 				.customer(new Customer(BPartnerId.ofRepoId(icRecord.getBill_BPartner_ID())))
 				.timestamp(TimeUtil.asInstant(icRecord.getUpdated()))
-				.id(new CommissionTriggerId(invoiceCandidateId.getRepoId()))
 				.beneficiary(new Beneficiary(salesRepId))
-				.commissionTriggerData(createCommissionTriggerData(icRecord))
+				.commissionTriggerData(commissionTriggerDataRepository.getForInvoiceCandiateId(invoiceCandidateId))
 				.build();
 
 		return Optional.of(trigger);
-	}
-
-	private CommissionTriggerData createCommissionTriggerData(@NonNull final I_C_Invoice_Candidate icRecord)
-	{
-		final Money forecastNetAmt = icRecordHelper.extractForecastNetAmt(icRecord);
-		final Money netAmtToInvoice = icRecordHelper.extractNetAmtToInvoice(icRecord);
-		final Money invoicedNetAmount = icRecordHelper.extractInvoicedNetAmt(icRecord);
-
-		final CommissionTriggerData commissionTrigerData = CommissionTriggerData.builder()
-				.forecastedPoints(CommissionPoints.of(forecastNetAmt.toBigDecimal()))
-				.pointsToInvoice(CommissionPoints.of(netAmtToInvoice.toBigDecimal()))
-				.invoicedPoints(CommissionPoints.of(invoicedNetAmount.toBigDecimal()))
-				.build();
-		return commissionTrigerData;
 	}
 
 }

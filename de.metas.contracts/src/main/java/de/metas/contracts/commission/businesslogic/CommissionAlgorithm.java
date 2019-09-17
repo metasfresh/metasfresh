@@ -30,6 +30,8 @@ public interface CommissionAlgorithm
 	 */
 	CommissionInstance createInstance(CreateInstanceRequest request);
 
-	/** Apply the given {@code change} to its trigger's {@link CommissionInstance}. */
+	/**
+	 * Apply the given {@code change}'s {@code newCommissionTriggerData} to its {@link CommissionInstance}.
+	 */
 	void applyTriggerChange(CommissionTriggerChange change);
 }

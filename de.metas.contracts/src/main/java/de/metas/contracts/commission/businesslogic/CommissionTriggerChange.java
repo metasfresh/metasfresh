@@ -31,7 +31,7 @@ import lombok.Value;
 public class CommissionTriggerChange
 {
 	@NonNull
-	CommissionInstance oldCommissionInstance;
+	CommissionInstance instanceToUpdate;
 
 	@NonNull
 	CommissionTriggerData newCommissionTriggerData;

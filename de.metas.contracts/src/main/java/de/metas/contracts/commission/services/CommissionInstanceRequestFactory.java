@@ -57,7 +57,7 @@ public class CommissionInstanceRequestFactory
 		this.commissionTriggerFactory = commissionTriggerFactory;
 	}
 
-	public ImmutableList<CreateInstanceRequest> createRequestFor(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	public ImmutableList<CreateInstanceRequest> createRequestsFor(@NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
 		final I_C_Invoice_Candidate icRecord = loadOutOfTrx(invoiceCandidateId, I_C_Invoice_Candidate.class);
 		return createRequestFor(icRecord);

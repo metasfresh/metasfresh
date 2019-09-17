@@ -1,12 +1,10 @@
-package de.metas.contracts.commission.services;
+package de.metas.contracts.commission.businesslogic;
 
-import java.util.Optional;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
-import org.springframework.stereotype.Repository;
-
-import de.metas.contracts.commission.businesslogic.CommissionInstance;
-import de.metas.invoicecandidate.InvoiceCandidateId;
-import lombok.NonNull;
+import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
 
 /*
  * #%L
@@ -30,12 +28,22 @@ import lombok.NonNull;
  * #L%
  */
 
-@Repository
-public class CommissionInstanceRepository
+@Value
+public class CommissionInstanceId implements RepoIdAware
 {
-	public Optional<CommissionInstance> getForInvoiceCandidate(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	int repoId;
+
+	@JsonCreator
+	public static CommissionInstanceId ofRepoId(final int repoId)
 	{
-		// TODO
-		return null;
+		return new CommissionInstanceId(repoId);
 	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
+	}
+
 }

@@ -17,7 +17,7 @@ import de.metas.contracts.commission.businesslogic.CommissionShare;
 import de.metas.contracts.commission.businesslogic.CommissionState;
 import de.metas.contracts.commission.businesslogic.CommissionTrigger;
 import de.metas.contracts.commission.businesslogic.CommissionTriggerChange;
-import de.metas.contracts.commission.businesslogic.CommissionTriggerId;
+import de.metas.contracts.commission.businesslogic.CommissionTriggerData;
 import de.metas.contracts.commission.businesslogic.CreateInstanceRequest;
 import de.metas.contracts.commission.businesslogic.Customer;
 import de.metas.contracts.commission.businesslogic.algorithms.HierachyAlgorithm;
@@ -25,6 +25,7 @@ import de.metas.contracts.commission.businesslogic.algorithms.HierarchyConfig;
 import de.metas.contracts.commission.businesslogic.hierarchy.Hierarchy;
 import de.metas.contracts.commission.businesslogic.hierarchy.HierarchyLevel;
 import de.metas.contracts.commission.businesslogic.hierarchy.HierarchyNode;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import lombok.NonNull;
 
 /*
@@ -55,10 +56,10 @@ class HierachyAlgorithmTest
 	@Test
 	void createInstance()
 	{
-		createInstance_performTest(new CommissionTriggerId(1));
+		createInstance_performTest(InvoiceCandidateId.ofRepoId(10));
 	}
 
-	private CommissionInstance createInstance_performTest(@NonNull final CommissionTriggerId commissionTriggerId)
+	private CommissionInstance createInstance_performTest(@NonNull final InvoiceCandidateId invoiceCandiateId)
 	{
 		final Beneficiary headOfSales = new Beneficiary(BPartnerId.ofRepoId(40));
 		final HierarchyNode headOfSalesNode = HierarchyNode.of(headOfSales);
@@ -74,16 +75,19 @@ class HierachyAlgorithmTest
 				.addChildren(salesSupervisorNode, ImmutableList.of(salesrepNode))
 				.build();
 
+		final CommissionTriggerData triggerData = CommissionTriggerData.builder()
+				.invoiceCandidateId(invoiceCandiateId)
+				.forecastedPoints(CommissionPoints.of("1000.00"))
+				// it's uncommon to have a trigger with points beyond "forecasted"..but still should work
+				.invoiceablePoints(CommissionPoints.of("100.00"))
+				.invoicedPoints(CommissionPoints.of("10.00"))
+				.build();
+
 		final CommissionTrigger trigger = CommissionTrigger.builder()
-				.id(commissionTriggerId)
 				.timestamp(Instant.now())
 				.customer(new Customer(BPartnerId.ofRepoId(10)))
 				.beneficiary(salesRep)
-				.forecastedPoints(CommissionPoints.of("1000.00"))
-
-				// it's uncommon to have a trigger with points beyond "forecasted"..but still should work
-				.pointsToInvoice(CommissionPoints.of("100.00"))
-				.invoicedPoints(CommissionPoints.of("10.00"))
+				.commissionTriggerData(triggerData)
 				.build();
 
 		final HierarchyConfig config = new HierarchyConfig();
@@ -98,7 +102,7 @@ class HierachyAlgorithmTest
 		final CommissionInstance instance = new HierachyAlgorithm().createInstance(request);
 
 		assertThat(instance).isNotNull();
-		assertThat(instance.getTrigger()).isEqualTo(trigger);
+		assertThat(instance.getCurrentTriggerData()).isEqualTo(triggerData);
 		assertThat(instance.getConfig()).isEqualTo(config);
 
 		final ImmutableList<CommissionShare> shares = instance.getShares();
@@ -113,7 +117,7 @@ class HierachyAlgorithmTest
 					.extracting("state", "points")
 					.containsExactly(
 							tuple(CommissionState.FORECASTED, CommissionPoints.of("100.00")),
-							tuple(CommissionState.TO_INVOICE, CommissionPoints.of("10.00")),
+							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("10.00")),
 							tuple(CommissionState.INVOICED, CommissionPoints.of("1.00")));
 		});
 
@@ -126,7 +130,7 @@ class HierachyAlgorithmTest
 					.extracting("state", "points")
 					.containsExactly(
 							tuple(CommissionState.FORECASTED, CommissionPoints.of("90.00")/* remaining commission base=900 */),
-							tuple(CommissionState.TO_INVOICE, CommissionPoints.of("9.00")),
+							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("9.00")),
 							tuple(CommissionState.INVOICED, CommissionPoints.of("0.90")));
 		});
 
@@ -139,7 +143,7 @@ class HierachyAlgorithmTest
 					.extracting("state", "points")
 					.containsExactly(
 							tuple(CommissionState.FORECASTED, CommissionPoints.of("81.00")/* remaining commission base=810 */),
-							tuple(CommissionState.TO_INVOICE, CommissionPoints.of("8.10")),
+							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("8.10")),
 							tuple(CommissionState.INVOICED, CommissionPoints.of("0.81")));
 		});
 
@@ -149,16 +153,18 @@ class HierachyAlgorithmTest
 	@Test
 	void applyTriggerChange()
 	{
-		final CommissionTriggerId commissionTriggerId = new CommissionTriggerId(1);
-
-		final CommissionInstance instance = createInstance_performTest(commissionTriggerId);
+		final InvoiceCandidateId invoiceCandiateId = InvoiceCandidateId.ofRepoId(10);
+		final CommissionInstance instance = createInstance_performTest(invoiceCandiateId);
 
 		final CommissionTriggerChange change = CommissionTriggerChange.builder()
-				.oldCommissionInstance(instance)
-				.timestamp(Instant.now())
-				.forecastedPoints(CommissionPoints.ZERO)
-				.pointsToInvoice(CommissionPoints.ZERO)
-				.invoicedPoints(CommissionPoints.of("1110.00"))
+				.instanceToUpdate(instance)
+				.newCommissionTriggerData(CommissionTriggerData.builder()
+						.invoiceCandidateId(invoiceCandiateId)
+						.timestamp(Instant.now())
+						.forecastedPoints(CommissionPoints.ZERO)
+						.invoiceablePoints(CommissionPoints.ZERO)
+						.invoicedPoints(CommissionPoints.of("1110.00"))
+						.build())
 				.build();
 
 		// invoke the method under test
@@ -175,11 +181,11 @@ class HierachyAlgorithmTest
 					.extracting("state", "points")
 					.containsExactly(
 							tuple(CommissionState.FORECASTED, CommissionPoints.of("100.00")),
-							tuple(CommissionState.TO_INVOICE, CommissionPoints.of("10.00")),
+							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("10.00")),
 							tuple(CommissionState.INVOICED, CommissionPoints.of("1.00")),
 
 							tuple(CommissionState.FORECASTED, CommissionPoints.of("-100.00")),
-							tuple(CommissionState.TO_INVOICE, CommissionPoints.of("-10.00")),
+							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("-10.00")),
 							tuple(CommissionState.INVOICED, CommissionPoints.of("110.00")));
 		});
 
@@ -190,11 +196,11 @@ class HierachyAlgorithmTest
 					.extracting("state", "points")
 					.containsExactly(
 							tuple(CommissionState.FORECASTED, CommissionPoints.of("90.00")),
-							tuple(CommissionState.TO_INVOICE, CommissionPoints.of("9.00")),
+							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("9.00")),
 							tuple(CommissionState.INVOICED, CommissionPoints.of("0.90")),
 
 							tuple(CommissionState.FORECASTED, CommissionPoints.of("-90.00")),
-							tuple(CommissionState.TO_INVOICE, CommissionPoints.of("-9.00")),
+							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("-9.00")),
 							tuple(CommissionState.INVOICED, CommissionPoints.of("99.00")));
 		});
 		assertThat(shares.get(2)).satisfies(share -> {
@@ -204,11 +210,11 @@ class HierachyAlgorithmTest
 					.extracting("state", "points")
 					.containsExactly(
 							tuple(CommissionState.FORECASTED, CommissionPoints.of("81.00")),
-							tuple(CommissionState.TO_INVOICE, CommissionPoints.of("8.10")),
+							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("8.10")),
 							tuple(CommissionState.INVOICED, CommissionPoints.of("0.81")),
 
 							tuple(CommissionState.FORECASTED, CommissionPoints.of("-81.00")),
-							tuple(CommissionState.TO_INVOICE, CommissionPoints.of("-8.10")),
+							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("-8.10")),
 							tuple(CommissionState.INVOICED, CommissionPoints.of("89.10")));
 		});
 	}

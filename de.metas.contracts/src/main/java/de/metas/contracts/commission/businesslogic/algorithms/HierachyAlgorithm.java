@@ -14,6 +14,7 @@ import de.metas.contracts.commission.businesslogic.CommissionShare;
 import de.metas.contracts.commission.businesslogic.CommissionState;
 import de.metas.contracts.commission.businesslogic.CommissionTrigger;
 import de.metas.contracts.commission.businesslogic.CommissionTriggerChange;
+import de.metas.contracts.commission.businesslogic.CommissionTriggerData;
 import de.metas.contracts.commission.businesslogic.CreateInstanceRequest;
 import de.metas.contracts.commission.businesslogic.CommissionInstance.CommissionInstanceBuilder;
 import de.metas.contracts.commission.businesslogic.hierarchy.Hierarchy;
@@ -55,19 +56,21 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 		final Hierarchy hierarchy = request.getHierarchy();
 
 		final CommissionTrigger trigger = request.getTrigger();
+		final CommissionTriggerData triggerData = trigger.getCommissionTriggerData();
 
 		final CommissionInstanceBuilder result = CommissionInstance.builder()
-				.trigger(trigger)
+				.currentTriggerData(triggerData)
 				.config(config);
 
 		final ImmutableList<CommissionShare> shares = createNewShares(config, hierarchy, trigger);
 		result.shares(shares);
 
+
 		createAndAddFacts(shares,
-				trigger.getTimestamp(),
-				trigger.getForecastedPoints(),
-				trigger.getPointsToInvoice(),
-				trigger.getInvoicedPoints());
+				triggerData.getTimestamp(),
+				triggerData.getForecastedPoints(),
+				triggerData.getInvoiceablePoints(),
+				triggerData.getInvoicedPoints());
 
 		return result.build();
 	}
@@ -101,19 +104,20 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 	@Override
 	public void applyTriggerChange(@NonNull final CommissionTriggerChange change)
 	{
-		final CommissionInstance instanceToChange = change.getOldCommissionInstance();
+		final CommissionInstance instanceToChange = change.getInstanceToUpdate();
+		final CommissionTriggerData newTriggerData = change.getNewCommissionTriggerData();
 
-		final CommissionTrigger oldTrigger = instanceToChange.getTrigger();
+		final CommissionTriggerData oldTriggerData = instanceToChange.getCurrentTriggerData();
 
-		final CommissionPoints forecastedBaseDelta = change.getForecastedPoints().subtract(oldTrigger.getForecastedPoints());
-		final CommissionPoints toInvoiceBaseDelta = change.getPointsToInvoice().subtract(oldTrigger.getPointsToInvoice());
-		final CommissionPoints invoicedBaseDelta = change.getInvoicedPoints().subtract(oldTrigger.getInvoicedPoints());
+		final CommissionPoints forecastedBaseDelta = newTriggerData.getForecastedPoints().subtract(oldTriggerData.getForecastedPoints());
+		final CommissionPoints toInvoiceBaseDelta = newTriggerData.getInvoiceablePoints().subtract(oldTriggerData.getInvoiceablePoints());
+		final CommissionPoints invoicedBaseDelta = newTriggerData.getInvoicedPoints().subtract(oldTriggerData.getInvoicedPoints());
 
 		final ImmutableList<CommissionShare> sharesToChange = instanceToChange.getShares();
 
 		createAndAddFacts(
 				sharesToChange,
-				change.getTimestamp(),
+				newTriggerData.getTimestamp(),
 				forecastedBaseDelta,
 				toInvoiceBaseDelta,
 				invoicedBaseDelta);
@@ -135,7 +139,7 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 			final HierarchyContract contract = HierarchyContract.cast(share.getContract());
 
 			final Optional<CommissionFact> forecastedFact = createFact(timestamp, contract, CommissionState.FORECASTED, currentForecastedBase);
-			final Optional<CommissionFact> toInvoiceFact = createFact(timestamp, contract, CommissionState.TO_INVOICE, currentToInvoiceBase);
+			final Optional<CommissionFact> toInvoiceFact = createFact(timestamp, contract, CommissionState.INVOICEABLE, currentToInvoiceBase);
 			final Optional<CommissionFact> invoicedFact = createFact(timestamp, contract, CommissionState.INVOICED, currentInvoicedBase);
 
 			forecastedFact.ifPresent(share::addFact);

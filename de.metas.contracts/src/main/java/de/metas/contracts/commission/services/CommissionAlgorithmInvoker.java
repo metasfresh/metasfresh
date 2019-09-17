@@ -57,7 +57,7 @@ public class CommissionAlgorithmInvoker
 		final CommissionAlgorithm algorithm;
 		try
 		{
-			final CommissionType commissionType = change.getOldCommissionInstance().getConfig().getCommissionType();
+			final CommissionType commissionType = change.getInstanceToUpdate().getConfig().getCommissionType();
 			algorithm = createAlgorithmInstance(commissionType);
 		}
 		catch (Exception e)

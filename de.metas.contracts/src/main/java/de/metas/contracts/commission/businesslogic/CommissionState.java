@@ -22,13 +22,14 @@ package de.metas.contracts.commission.businesslogic;
  * #L%
  */
 
+/** Please keep in sync with {@code AD_Reference_ID=541042}. */
 public enum CommissionState
 {
 	/** Related to an invoice candidate's open (i.e. not-yet-invoiced) QtyOrdered. */
 	FORECASTED,
 
 	/** Related to an invoice candidate's QtyToInvoice. */
-	TO_INVOICE,
+	INVOICEABLE,
 
 	/** Related to an invoice candidate's QtyInvoiced. */
 	INVOICED

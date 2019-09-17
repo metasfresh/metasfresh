@@ -4,6 +4,7 @@ import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.time.Instant;
 
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -33,30 +34,30 @@ import lombok.Value;
 @Value
 public class CommissionTriggerData
 {
+	InvoiceCandidateId invoiceCandidateId;
+
 	/** Exact timestamp of this trigger. E.g. if one invoice candidate is changed, there might be two triggers wit different timestamps that relate to the same IC. */
-	@NonNull
 	Instant timestamp;
 
-	@NonNull
 	CommissionPoints forecastedPoints;
 
-	@NonNull
-	CommissionPoints pointsToInvoice;
+	CommissionPoints invoiceablePoints;
 
-	@NonNull
 	CommissionPoints invoicedPoints;
 
 	@Builder
 	private CommissionTriggerData(
+			@NonNull final InvoiceCandidateId invoiceCandidateId,
 			@NonNull final Instant timestamp,
 			@NonNull final CommissionPoints forecastedPoints,
-			@NonNull final CommissionPoints pointsToInvoice,
+			@NonNull final CommissionPoints invoiceablePoints,
 			@NonNull final CommissionPoints invoicedPoints)
 	{
+		this.invoiceCandidateId = invoiceCandidateId;
 		this.timestamp = timestamp;
 
 		this.forecastedPoints = coalesce(forecastedPoints, CommissionPoints.ZERO);
-		this.pointsToInvoice = coalesce(pointsToInvoice, CommissionPoints.ZERO);
+		this.invoiceablePoints = coalesce(invoiceablePoints, CommissionPoints.ZERO);
 		this.invoicedPoints = coalesce(invoicedPoints, CommissionPoints.ZERO);
 	}
 }
