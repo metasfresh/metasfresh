@@ -274,14 +274,14 @@ public class MaterialCockpitRow implements IViewRow
 
 		this.includedRows = includedRows;
 
-		this.pmmQtyPromised = Quantity.asBigDecimal(pmmQtyPromised);
-		this.qtyReservedSale = Quantity.asBigDecimal(qtyReservedSale);
-		this.qtyReservedPurchase = Quantity.asBigDecimal(qtyReservedPurchase);
-		this.qtyMaterialentnahme = Quantity.asBigDecimal(qtyMaterialentnahme);
-		this.qtyRequiredForProduction = Quantity.asBigDecimal(qtyRequiredForProduction);
-		this.qtyOnHandEstimate = Quantity.asBigDecimal(qtyOnHandEstimate);
-		this.qtyAvailableToPromiseEstimate = Quantity.asBigDecimal(qtyAvailableToPromiseEstimate);
-		this.qtyOnHandStock = Quantity.asBigDecimal(qtyOnHandStock);
+		this.pmmQtyPromised = Quantity.toBigDecimal(pmmQtyPromised);
+		this.qtyReservedSale = Quantity.toBigDecimal(qtyReservedSale);
+		this.qtyReservedPurchase = Quantity.toBigDecimal(qtyReservedPurchase);
+		this.qtyMaterialentnahme = Quantity.toBigDecimal(qtyMaterialentnahme);
+		this.qtyRequiredForProduction = Quantity.toBigDecimal(qtyRequiredForProduction);
+		this.qtyOnHandEstimate = Quantity.toBigDecimal(qtyOnHandEstimate);
+		this.qtyAvailableToPromiseEstimate = Quantity.toBigDecimal(qtyAvailableToPromiseEstimate);
+		this.qtyOnHandStock = Quantity.toBigDecimal(qtyOnHandStock);
 
 		final List<Quantity> quantitiesToVerify = Arrays.asList(
 				pmmQtyPromised,
@@ -371,14 +371,14 @@ public class MaterialCockpitRow implements IViewRow
 
 		this.includedRows = ImmutableList.of();
 
-		this.pmmQtyPromised = Quantity.asBigDecimal(pmmQtyPromised);
-		this.qtyReservedSale = Quantity.asBigDecimal(qtyReservedSale);
-		this.qtyReservedPurchase = Quantity.asBigDecimal(qtyReservedPurchase);
-		this.qtyMaterialentnahme = Quantity.asBigDecimal(qtyMaterialentnahme);
-		this.qtyRequiredForProduction = Quantity.asBigDecimal(qtyRequiredForProduction);
+		this.pmmQtyPromised = Quantity.toBigDecimal(pmmQtyPromised);
+		this.qtyReservedSale = Quantity.toBigDecimal(qtyReservedSale);
+		this.qtyReservedPurchase = Quantity.toBigDecimal(qtyReservedPurchase);
+		this.qtyMaterialentnahme = Quantity.toBigDecimal(qtyMaterialentnahme);
+		this.qtyRequiredForProduction = Quantity.toBigDecimal(qtyRequiredForProduction);
 		this.qtyOnHandEstimate = null;
-		this.qtyOnHandStock = Quantity.asBigDecimal(qtyOnHandStock);
-		this.qtyAvailableToPromiseEstimate = Quantity.asBigDecimal(qtyAvailableToPromiseEstimate);
+		this.qtyOnHandStock = Quantity.toBigDecimal(qtyOnHandStock);
+		this.qtyAvailableToPromiseEstimate = Quantity.toBigDecimal(qtyAvailableToPromiseEstimate);
 
 		this.allIncludedCockpitRecordIds = ImmutableSet.copyOf(allIncludedCockpitRecordIds);
 		this.allIncludedStockRecordIds = ImmutableSet.copyOf(allIncludedStockRecordIds);
@@ -447,8 +447,8 @@ public class MaterialCockpitRow implements IViewRow
 		this.qtyReservedPurchase = null;
 		this.qtyMaterialentnahme = null;
 		this.qtyRequiredForProduction = null;
-		this.qtyOnHandEstimate = Quantity.asBigDecimal(qtyOnHandEstimate);
-		this.qtyOnHandStock = Quantity.asBigDecimal(qtyOnHandStock);
+		this.qtyOnHandEstimate = Quantity.toBigDecimal(qtyOnHandEstimate);
+		this.qtyOnHandStock = Quantity.toBigDecimal(qtyOnHandStock);
 		this.qtyAvailableToPromiseEstimate = null;
 
 		this.allIncludedCockpitRecordIds = ImmutableSet.copyOf(allIncludedCockpitRecordIds);

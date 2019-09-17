@@ -113,7 +113,7 @@ public class AvailableToPromiseAdapter
 
 	private I_C_UOM retrieveStockingUOM(final int productId)
 	{
-		return Services.get(IProductBL.class).getStockingUOM(productId);
+		return Services.get(IProductBL.class).getStockUOM(productId);
 	}
 
 	@VisibleForTesting

@@ -19,6 +19,7 @@ import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.OrderLineHUPackingAware;
 import de.metas.adempiere.gui.search.impl.PlainHUPackingAware;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -137,14 +138,13 @@ public final class OrderLinesFromProductProposalsProducer
 
 		final PlainHUPackingAware huPackingAware = new PlainHUPackingAware();
 		huPackingAware.setC_BPartner_ID(order.getC_BPartner_ID());
-		huPackingAware.setDateOrdered(order.getDateOrdered());
 		huPackingAware.setInDispute(false);
 
-		final UomId uomId = productBL.getStockingUOMId(fromRow.getProductId());
+		final UomId uomId = productBL.getStockUOMId(fromRow.getProductId());
 		huPackingAware.setM_Product_ID(fromRow.getProductId().getRepoId());
 		huPackingAware.setC_UOM_ID(uomId.getRepoId());
 		// huPackingAware.setM_AttributeSetInstance_ID(...);
-		// huPackingAware.setM_HU_PI_Item_Product_ID(...);
+		huPackingAware.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(fromRow.getPackingMaterialId()));
 
 		return huPackingAware;
 	}

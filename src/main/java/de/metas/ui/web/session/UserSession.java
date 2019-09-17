@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.ZoneId;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
 
@@ -37,6 +38,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*
@@ -332,6 +334,11 @@ public class UserSession
 		return getData().getLoggedUserId();
 	}
 
+	public Optional<UserId> getLoggedUserIdIfExists()
+	{
+		return getData().getLoggedUserIdIfExists();
+	}
+
 	public boolean isLoggedInAs(@NonNull final UserId userId)
 	{
 		return isLoggedIn()
@@ -478,7 +485,7 @@ public class UserSession
 			return orgInfo.getTimeZone();
 		}
 
-		return ZoneId.systemDefault();
+		return SystemTime.zoneId();
 	}
 
 	/**
@@ -489,7 +496,7 @@ public class UserSession
 	public static ZoneId getTimeZoneOrSystemDefault()
 	{
 		final UserSession userSession = getCurrentOrNull();
-		return userSession != null ? userSession.getTimeZone() : ZoneId.systemDefault();
+		return userSession != null ? userSession.getTimeZone() : SystemTime.zoneId();
 	}
 
 	/**

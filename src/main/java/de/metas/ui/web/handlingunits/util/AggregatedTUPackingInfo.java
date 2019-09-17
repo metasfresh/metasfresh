@@ -138,7 +138,7 @@ class AggregatedTUPackingInfo implements IHUPackingInfo
 			return null;
 		}
 
-		final BigDecimal qtyCUTotal = huProductStorage.getQty().getAsBigDecimal();
+		final BigDecimal qtyCUTotal = huProductStorage.getQty().toBigDecimal();
 
 		final BigDecimal qtyCUsPerTU = qtyCUTotal.divide(qtyTUsPerLU, 0, RoundingMode.HALF_UP);
 		return qtyCUsPerTU;

@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -698,7 +699,9 @@ public class LayoutFactory
 				// .peek((uiElement)->System.out.println("UI ELEMENT: "+uiElement + ", SIDE="+uiElement.isDisplayed_SideList()))
 				.filter(uiElement -> uiElement.isDisplayed_SideList())
 				.sorted(Comparator.comparing(I_AD_UI_Element::getSeqNo_SideList))
-				.map(uiElement -> layoutElement(uiElement).setGridElement())
+				.map(this::layoutElement)
+				.filter(Predicates.notNull()) // avoid NPE
+				.map(layoutElement -> layoutElement.setGridElement())
 				.filter(uiElement -> uiElement != null)
 				.forEach(layoutBuilder::addElement);
 

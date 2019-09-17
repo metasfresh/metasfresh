@@ -10,6 +10,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.pricing.ProductPriceId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
@@ -101,6 +102,8 @@ public class ProductsProposalRow implements IViewRow
 
 	private final DocumentId id;
 	@Getter
+	private HUPIItemProductId packingMaterialId;
+	@Getter
 	private final ProductPriceId productPriceId;
 	@Getter
 	private final ProductPriceId copiedFromProductPriceId;
@@ -118,6 +121,7 @@ public class ProductsProposalRow implements IViewRow
 			@NonNull final DocumentId id,
 			@Nullable final LookupValue bpartner,
 			@NonNull final LookupValue product,
+			@Nullable final HUPIItemProductId packingMaterialId,
 			@Nullable final ProductASIDescription asiDescription,
 			@NonNull final ProductProposalPrice price,
 			@Nullable final BigDecimal qty,
@@ -131,6 +135,7 @@ public class ProductsProposalRow implements IViewRow
 		this.bpartner = bpartner;
 
 		this.product = product;
+		this.packingMaterialId = packingMaterialId;
 		this.asiDescription = asiDescription != null ? asiDescription : ProductASIDescription.NONE;
 
 		this.price = price;

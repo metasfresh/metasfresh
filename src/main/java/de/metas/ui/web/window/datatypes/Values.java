@@ -131,11 +131,11 @@ public final class Values
 		}
 		else if (value instanceof Quantity)
 		{
-			return bigDecimalToJson(((Quantity)value).getAsBigDecimal());
+			return bigDecimalToJson(((Quantity)value).toBigDecimal());
 		}
 		else if (value instanceof Money)
 		{
-			return bigDecimalToJson(((Money)value).getAsBigDecimal());
+			return bigDecimalToJson(((Money)value).toBigDecimal());
 		}
 		else if (value instanceof Amount)
 		{

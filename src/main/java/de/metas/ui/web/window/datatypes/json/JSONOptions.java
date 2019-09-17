@@ -15,6 +15,7 @@ import de.metas.i18n.Language;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.session.UserSession;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -90,7 +91,7 @@ public final class JSONOptions
 			@Nullable final ZoneId zoneId)
 	{
 		this.adLanguage = adLanguage;
-		this.zoneId = zoneId != null ? zoneId : ZoneId.systemDefault();
+		this.zoneId = zoneId != null ? zoneId : SystemTime.zoneId();
 	}
 
 	public JSONOptions withAdLanguage(@NonNull final String adLanguage)

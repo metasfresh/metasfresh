@@ -1,7 +1,5 @@
 package de.metas.ui.web.session.json;
 
-import java.time.ZoneId;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -65,7 +63,7 @@ public class JSONUserSessionChangesEvent
 	private final JSONLookupValue language;
 
 	@JsonProperty("timestamp")
-	private final String timestamp = DateTimeConverters.toJson(SystemTime.asInstant(), ZoneId.systemDefault());
+	private final String timestamp = DateTimeConverters.toJson(SystemTime.asInstant(), SystemTime.zoneId());
 
 	public boolean isEmpty()
 	{

@@ -101,7 +101,6 @@ public class ForecastLineQuickInputProcessor implements IQuickInputProcessor
 	{
 		final PlainHUPackingAware huPackingAware = new PlainHUPackingAware();
 		huPackingAware.setC_BPartner_ID(forecast.getC_BPartner_ID());
-		huPackingAware.setDateOrdered(forecast.getDatePromised());
 		huPackingAware.setInDispute(false);
 
 		final ProductAndAttributes productAndAttributes = ProductLookupDescriptor.toProductAndAttributes(quickInput.getM_Product_ID());

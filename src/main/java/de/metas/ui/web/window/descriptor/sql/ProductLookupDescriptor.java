@@ -681,7 +681,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		// ATP is available:
 		else
 		{
-			final ITranslatableString qtyValueStr = TranslatableStrings.number(qtyATP.getAsBigDecimal(), DisplayType.Quantity);
+			final ITranslatableString qtyValueStr = TranslatableStrings.number(qtyATP.toBigDecimal(), DisplayType.Quantity);
 
 			final ITranslatableString uomSymbolStr = productWithATP.getUomSymbolStr();
 			final ITranslatableString storageAttributeString = productWithATP.getStorageAttributesString();

@@ -1,7 +1,9 @@
 package de.metas.ui.web.window.model;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -380,11 +382,45 @@ public class DocumentCollection
 		return document;
 	}
 
-	public void cacheReset()
+	public String cacheReset(final boolean forgetNotSavedDocuments)
 	{
-		// TODO: invalidate only those which are: 1. NOT new; 2. NOT currently editing
-		rootDocuments.invalidateAll();
+		final String result;
+
+		if (forgetNotSavedDocuments)
+		{
+			final long count = rootDocuments.size();
+
+			rootDocuments.invalidateAll();
+
+			result = "invalidate all " + count + " documents";
+		}
+		else
+		{
+			long countDocumentsWithChanges = 0;
+			final List<DocumentKey> documentKeysToInvalidate = new ArrayList<>();
+			for (final Map.Entry<DocumentKey, Document> entry : rootDocuments.asMap().entrySet())
+			{
+				final Document document = entry.getValue();
+				if (document.hasChangesRecursivelly())
+				{
+					countDocumentsWithChanges++;
+				}
+				else
+				{
+					documentKeysToInvalidate.add(entry.getKey());
+				}
+			}
+
+			rootDocuments.invalidateAll(documentKeysToInvalidate);
+
+			result = "invalidate " + documentKeysToInvalidate.size() + " documents with no changes;"
+					+ " skipped " + countDocumentsWithChanges + " documents with changes";
+		}
+
 		rootDocuments.cleanUp();
+
+		logger.info("cacheReset: {}", result);
+		return result;
 	}
 
 	private void commitRootDocument(@NonNull final Document rootDocument)
@@ -507,7 +543,7 @@ public class DocumentCollection
 		{
 			zoomWindowFinder = RecordZoomWindowFinder.newInstance(zoomIntoInfo.getTableName());
 		}
-		
+
 		final AdWindowId zoomInto_adWindowId = zoomWindowFinder.findAdWindowId().orElse(null);
 		if (zoomInto_adWindowId == null)
 		{
