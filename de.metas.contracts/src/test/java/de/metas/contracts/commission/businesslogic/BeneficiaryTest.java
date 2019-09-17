@@ -1,15 +1,14 @@
 package de.metas.contracts.commission.businesslogic;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.NonNull;
+import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 import de.metas.bpartner.BPartnerId;
-import lombok.Value;
+import de.metas.util.JSONObjectMapper;
 
 /*
  * #%L
- * de.metas.commission
+ * de.metas.contracts
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -29,26 +28,18 @@ import lombok.Value;
  * #L%
  */
 
-/** Receives money from the commission system */
-@Value
-public class Beneficiary
+class BeneficiaryTest
 {
-	@JsonCreator
-	public static Beneficiary of(@JsonProperty("bPartnerId") @NonNull final BPartnerId bPartnerId)
+	@Test
+	void serialize_deserialize()
 	{
-		return new Beneficiary(bPartnerId);
-	}
+		final JSONObjectMapper<Beneficiary> objectMapper = JSONObjectMapper.forClass(Beneficiary.class);
 
-	BPartnerId bPartnerId;
+		final Beneficiary original = Beneficiary.of(BPartnerId.ofRepoId(20));
+		final String json = objectMapper.writeValueAsString(original);
 
-	private Beneficiary(BPartnerId bPartnerId)
-	{
-		this.bPartnerId = bPartnerId;
-	}
+		final Beneficiary result = objectMapper.readValue(json);
 
-	@JsonProperty("bPartnerId")
-	public BPartnerId getBPartnerId()
-	{
-		return bPartnerId;
+		assertThat(result).isEqualTo(original);
 	}
 }

@@ -5,6 +5,9 @@ import java.math.RoundingMode;
 
 import javax.annotation.Nullable;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import lombok.AccessLevel;
@@ -37,6 +40,7 @@ import lombok.Value;
 @Value
 public class Percent
 {
+	@JsonCreator
 	public static Percent of(@NonNull final String value)
 	{
 		return of(new BigDecimal(value));
@@ -149,6 +153,7 @@ public class Percent
 		this.value = NumberUtils.stripTrailingDecimalZeros(valueAsBigDecimal);
 	}
 
+	@JsonValue
 	public BigDecimal toBigDecimal()
 	{
 		return value;

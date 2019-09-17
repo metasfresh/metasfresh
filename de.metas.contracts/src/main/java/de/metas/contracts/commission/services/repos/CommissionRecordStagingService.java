@@ -6,6 +6,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.IQuery;
@@ -63,18 +65,18 @@ class CommissionRecordStagingService
 			final boolean onlyActive)
 	{
 		final IQueryBuilder<I_C_Commission_Instance> instanceQueryBuilder = createInstanceQueryBuilder(onlyActive)
-				.addEqualsFilter(I_C_Commission_Instance.COLUMN_C_Commission_Instance_ID, commissionInstanceIds);
+				.addInArrayFilter(I_C_Commission_Instance.COLUMN_C_Commission_Instance_ID, commissionInstanceIds);
 
 		return retrieveRecords(instanceQueryBuilder.create(), onlyActive);
 	}
 
 	CommissionRecords retrieveRecordsForInvoiceCandidateId(
-			@NonNull final Collection<InvoiceCandidateId> invoiceCandidateId,
+			@NonNull final Collection<InvoiceCandidateId> invoiceCandidateIds,
 			final boolean onlyActive)
 	{
 		// ------------------ I_C_Commission_Instance
 		final IQueryBuilder<I_C_Commission_Instance> instanceQueryBuilder = createInstanceQueryBuilder(onlyActive)
-				.addEqualsFilter(I_C_Commission_Instance.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateId);
+				.addInArrayFilter(I_C_Commission_Instance.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateIds);
 
 		return retrieveRecords(instanceQueryBuilder.create(), onlyActive);
 	}
@@ -151,10 +153,10 @@ class CommissionRecordStagingService
 
 		@Builder
 		private CommissionRecords(
-				@NonNull final ImmutableListMultimap<Integer, I_C_Commission_Instance> icRecordIdToInstanceRecords,
-				@NonNull final ImmutableMap<Integer, I_C_Commission_Instance> instanceRecordIdToInstance,
-				@NonNull final ImmutableListMultimap<Integer, I_C_Commission_Share> instanceRecordIdToShareRecords,
-				@NonNull final ImmutableListMultimap<Integer, I_C_Commission_Fact> shareRecordIdToFactRecords)
+				@Nullable final ImmutableListMultimap<Integer, I_C_Commission_Instance> icRecordIdToInstanceRecords,
+				@Nullable final ImmutableMap<Integer, I_C_Commission_Instance> instanceRecordIdToInstance,
+				@Nullable final ImmutableListMultimap<Integer, I_C_Commission_Share> instanceRecordIdToShareRecords,
+				@Nullable final ImmutableListMultimap<Integer, I_C_Commission_Fact> shareRecordIdToFactRecords)
 		{
 			this.icRecordIdToInstanceRecords = coalesce(icRecordIdToInstanceRecords, ImmutableListMultimap.of());
 			this.instanceRecordIdToInstance = coalesce(instanceRecordIdToInstance, ImmutableMap.of());

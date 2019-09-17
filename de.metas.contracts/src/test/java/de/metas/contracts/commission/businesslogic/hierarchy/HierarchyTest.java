@@ -48,12 +48,12 @@ class HierarchyTest
 	@BeforeEach
 	void before()
 	{
-		headOfSalesNode = HierarchyNode.of(new Beneficiary(BPartnerId.ofRepoId(40)));
+		headOfSalesNode = HierarchyNode.of(Beneficiary.of(BPartnerId.ofRepoId(40)));
 
-		salesSupervisorNode = HierarchyNode.of(new Beneficiary(BPartnerId.ofRepoId(30)));
+		salesSupervisorNode = HierarchyNode.of(Beneficiary.of(BPartnerId.ofRepoId(30)));
 
-		salesrepNode1 = HierarchyNode.of(new Beneficiary(BPartnerId.ofRepoId(20)));
-		salesrepNode2 = HierarchyNode.of(new Beneficiary(BPartnerId.ofRepoId(21)));
+		salesrepNode1 = HierarchyNode.of(Beneficiary.of(BPartnerId.ofRepoId(20)));
+		salesrepNode2 = HierarchyNode.of(Beneficiary.of(BPartnerId.ofRepoId(21)));
 
 		hierarchy = Hierarchy.builder()
 				.addChildren(headOfSalesNode, ImmutableList.of(salesSupervisorNode))
@@ -73,7 +73,7 @@ class HierarchyTest
 	@Test
 	void getUpStream()
 	{
-		final Iterable<HierarchyNode> result = hierarchy.getUpStream(new Beneficiary(BPartnerId.ofRepoId(21)));
+		final Iterable<HierarchyNode> result = hierarchy.getUpStream(Beneficiary.of(BPartnerId.ofRepoId(21)));
 		final Iterator<HierarchyNode> iterator = result.iterator();
 
 		assertThat(iterator.hasNext()).isTrue();

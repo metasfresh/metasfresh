@@ -2,6 +2,9 @@ package de.metas.contracts.commission.businesslogic.algorithms;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.contracts.commission.businesslogic.CommissionContract;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -46,6 +49,12 @@ public class HierarchyContract implements CommissionContract
 				.setParameter("contract", contract);
 	}
 
+	@JsonCreator
+	public HierarchyContract(@JsonProperty("config") @NonNull final HierarchyConfig config)
+	{
+		this.config = config;
+	}
+
 	/** Note: add "Hierarchy" as method parameters if and when we have a commission type where it makes a difference. */
 	public Percent getCommissionPercent()
 	{
@@ -56,4 +65,7 @@ public class HierarchyContract implements CommissionContract
 	{
 		return 2;
 	}
+
+
+
 }

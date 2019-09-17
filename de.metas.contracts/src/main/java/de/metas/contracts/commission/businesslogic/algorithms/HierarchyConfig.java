@@ -46,7 +46,6 @@ public class HierarchyConfig implements CommissionConfig
 				.setParameter("config", config);
 	}
 
-
 	public boolean isSubtractLowerLevelCommissionFromBase()
 	{
 		return true;

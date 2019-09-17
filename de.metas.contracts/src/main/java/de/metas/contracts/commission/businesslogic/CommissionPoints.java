@@ -5,6 +5,10 @@ import static java.math.BigDecimal.ONE;
 import java.math.BigDecimal;
 import java.util.Collection;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.Value;
@@ -44,6 +48,7 @@ public class CommissionPoints
 		return of(new BigDecimal(points));
 	}
 
+	@JsonCreator
 	public static CommissionPoints of(@NonNull final BigDecimal points)
 	{
 		return new CommissionPoints(points);
@@ -63,6 +68,7 @@ public class CommissionPoints
 		this.points = points;
 	}
 
+	@JsonValue
 	public BigDecimal toBigDecimal()
 	{
 		return points;
@@ -95,6 +101,7 @@ public class CommissionPoints
 		return CommissionPoints.of(toBigDecimal().subtract(augent.toBigDecimal()));
 	}
 
+	@JsonIgnore
 	public boolean isZero()
 	{
 		final boolean isZero = points.signum() == 0;

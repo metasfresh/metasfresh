@@ -61,13 +61,13 @@ class HierachyAlgorithmTest
 
 	private CommissionInstance createInstance_performTest(@NonNull final InvoiceCandidateId invoiceCandiateId)
 	{
-		final Beneficiary headOfSales = new Beneficiary(BPartnerId.ofRepoId(40));
+		final Beneficiary headOfSales = Beneficiary.of(BPartnerId.ofRepoId(40));
 		final HierarchyNode headOfSalesNode = HierarchyNode.of(headOfSales);
 
-		final Beneficiary salesSupervisor = new Beneficiary(BPartnerId.ofRepoId(30));
+		final Beneficiary salesSupervisor = Beneficiary.of(BPartnerId.ofRepoId(30));
 		final HierarchyNode salesSupervisorNode = HierarchyNode.of(salesSupervisor);
 
-		final Beneficiary salesRep = new Beneficiary(BPartnerId.ofRepoId(20));
+		final Beneficiary salesRep = Beneficiary.of(BPartnerId.ofRepoId(20));
 		final HierarchyNode salesrepNode = HierarchyNode.of(salesRep);
 
 		final Hierarchy hierarchy = Hierarchy.builder()
@@ -85,7 +85,7 @@ class HierachyAlgorithmTest
 
 		final CommissionTrigger trigger = CommissionTrigger.builder()
 				.timestamp(Instant.now())
-				.customer(new Customer(BPartnerId.ofRepoId(10)))
+				.customer(Customer.of(BPartnerId.ofRepoId(10)))
 				.beneficiary(salesRep)
 				.commissionTriggerData(triggerData)
 				.build();

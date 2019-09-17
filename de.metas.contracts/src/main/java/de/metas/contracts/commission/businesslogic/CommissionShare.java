@@ -1,9 +1,12 @@
 package de.metas.contracts.commission.businesslogic;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.contracts.commission.businesslogic.hierarchy.HierarchyLevel;
@@ -57,12 +60,13 @@ public class CommissionShare
 	/** Chronological list of facts that make it clear what happened when */
 	private final ArrayList<CommissionFact> facts;
 
+	@JsonCreator
 	@Builder
 	private CommissionShare(
-			@NonNull final CommissionContract contract,
-			@NonNull final HierarchyLevel level,
-			@NonNull final Beneficiary beneficiary,
-			@NonNull @Singular final ImmutableList<CommissionFact> facts)
+			@JsonProperty("contract") @NonNull final CommissionContract contract,
+			@JsonProperty("level") @NonNull final HierarchyLevel level,
+			@JsonProperty("beneficiary") @NonNull final Beneficiary beneficiary,
+			@JsonProperty("facts") @NonNull @Singular final List<CommissionFact> facts)
 	{
 		this.contract = contract;
 		this.level = level;

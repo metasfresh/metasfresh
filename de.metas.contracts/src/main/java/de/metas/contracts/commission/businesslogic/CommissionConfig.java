@@ -1,6 +1,13 @@
 package de.metas.contracts.commission.businesslogic;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+import de.metas.contracts.commission.businesslogic.algorithms.HierarchyConfig;
 import de.metas.contracts.commission.businesslogic.hierarchy.Hierarchy;
+import static com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY;
+import static com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME;
+
+import com.fasterxml.jackson.annotation.JsonSubTypes;
 
 /*
  * #%L
@@ -25,6 +32,10 @@ import de.metas.contracts.commission.businesslogic.hierarchy.Hierarchy;
  */
 
 /** Defines how a {@link CommissionInstance} is created for a given {@link CommissionTrigger} and {@link Hierarchy}. */
+@JsonTypeInfo(use = NAME, include = PROPERTY)
+@JsonSubTypes({
+		@JsonSubTypes.Type(value = HierarchyConfig.class, name = "HierarchyConfig"),
+})
 public interface CommissionConfig
 {
 	CommissionType getCommissionType();

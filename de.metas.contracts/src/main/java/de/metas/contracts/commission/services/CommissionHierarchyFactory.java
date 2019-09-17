@@ -66,6 +66,6 @@ public class CommissionHierarchyFactory
 
 	private HierarchyNode node(final BPartnerId bPartnerId)
 	{
-		return HierarchyNode.of(new Beneficiary(bPartnerId));
+		return HierarchyNode.of(Beneficiary.of(bPartnerId));
 	}
 }

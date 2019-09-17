@@ -1,15 +1,14 @@
 package de.metas.contracts.commission.businesslogic;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.NonNull;
+import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 import de.metas.bpartner.BPartnerId;
-import lombok.Value;
+import de.metas.util.JSONObjectMapper;
 
 /*
  * #%L
- * de.metas.commission
+ * de.metas.contracts
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -20,35 +19,28 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-/** Receives money from the commission system */
-@Value
-public class Beneficiary
+class CustomerTest
 {
-	@JsonCreator
-	public static Beneficiary of(@JsonProperty("bPartnerId") @NonNull final BPartnerId bPartnerId)
-	{
-		return new Beneficiary(bPartnerId);
-	}
 
-	BPartnerId bPartnerId;
-
-	private Beneficiary(BPartnerId bPartnerId)
+	@Test
+	void serialize_deserialize()
 	{
-		this.bPartnerId = bPartnerId;
-	}
+		final JSONObjectMapper<Customer> objectMapper = JSONObjectMapper.forClass(Customer.class);
 
-	@JsonProperty("bPartnerId")
-	public BPartnerId getBPartnerId()
-	{
-		return bPartnerId;
+		final Customer original = Customer.of(BPartnerId.ofRepoId(20));
+		final String json = objectMapper.writeValueAsString(original);
+
+		final Customer result = objectMapper.readValue(json);
+
+		assertThat(result).isEqualTo(original);
 	}
 }

@@ -2,6 +2,9 @@ package de.metas.contracts.commission.businesslogic.hierarchy;
 
 import static de.metas.util.Check.assumeGreaterOrEqualToZero;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Value;
@@ -33,6 +36,7 @@ public class HierarchyLevel
 {
 	public static final HierarchyLevel ZERO = of(0);
 
+	@JsonCreator
 	public static HierarchyLevel of(int level)
 	{
 		return new HierarchyLevel(level);
@@ -41,6 +45,7 @@ public class HierarchyLevel
 	@Getter(AccessLevel.NONE)
 	int level;
 
+	@JsonValue
 	public int toInt()
 	{
 		return level;

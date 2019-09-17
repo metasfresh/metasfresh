@@ -73,7 +73,7 @@ class CommissionHierarchyFactoryTest
 
 	private HierarchyNode node(final int id)
 	{
-		return HierarchyNode.of(new Beneficiary(BPartnerId.ofRepoId(id)));
+		return HierarchyNode.of(Beneficiary.of(BPartnerId.ofRepoId(id)));
 	}
 
 }

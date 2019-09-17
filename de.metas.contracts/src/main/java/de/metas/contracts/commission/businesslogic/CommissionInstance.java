@@ -1,7 +1,11 @@
 package de.metas.contracts.commission.businesslogic;
 
+import java.util.List;
+
 import javax.annotation.Nullable;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
 import lombok.Builder;
@@ -32,20 +36,31 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class CommissionInstance
 {
 	/** null if this instance was not (yet) persisted */
-	@Nullable
 	CommissionInstanceId id;
 
-	@NonNull
 	CommissionTriggerData currentTriggerData;
 
-	@NonNull
 	CommissionConfig config;
 
 	/** Each instance means that commission will be paid to some {@link Beneficiary} in accordance to some commission contract and hierarchy. */
-	@Singular
+
 	ImmutableList<CommissionShare> shares;
+
+	@JsonCreator
+	@Builder(toBuilder = true)
+	private CommissionInstance(
+			@JsonProperty("id") @Nullable final CommissionInstanceId id,
+			@JsonProperty("currentTriggerData") @NonNull final CommissionTriggerData currentTriggerData,
+			@JsonProperty("config") @NonNull final CommissionConfig config,
+			@JsonProperty("shares") @Singular final List<CommissionShare> shares)
+	{
+		this.id = id;
+		this.currentTriggerData = currentTriggerData;
+		this.config = config;
+		this.shares = ImmutableList.copyOf(shares);
+	}
+
 }

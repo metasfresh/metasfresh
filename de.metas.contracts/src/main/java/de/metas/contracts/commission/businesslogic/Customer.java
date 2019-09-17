@@ -1,6 +1,9 @@
 package de.metas.contracts.commission.businesslogic;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.bpartner.BPartnerId;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -29,5 +32,22 @@ import lombok.Value;
 @Value
 public class Customer
 {
+	@JsonCreator
+	public static Customer of(@JsonProperty("bPartnerId") @NonNull final BPartnerId bPartnerId)
+	{
+		return new Customer(bPartnerId);
+	}
+
 	BPartnerId bPartnerId;
+
+	private Customer(BPartnerId bPartnerId)
+	{
+		this.bPartnerId = bPartnerId;
+	}
+
+	@JsonProperty("bPartnerId")
+	public BPartnerId getBPartnerId()
+	{
+		return bPartnerId;
+	}
 }

@@ -69,9 +69,9 @@ public class CommissionTriggerFactory
 		}
 
 		final CommissionTrigger trigger = CommissionTrigger.builder()
-				.customer(new Customer(BPartnerId.ofRepoId(icRecord.getBill_BPartner_ID())))
+				.customer(Customer.of(BPartnerId.ofRepoId(icRecord.getBill_BPartner_ID())))
 				.timestamp(TimeUtil.asInstant(icRecord.getUpdated()))
-				.beneficiary(new Beneficiary(salesRepId))
+				.beneficiary(Beneficiary.of(salesRepId))
 				.commissionTriggerData(commissionTriggerDataRepository.getForInvoiceCandiateId(invoiceCandidateId))
 				.build();
 

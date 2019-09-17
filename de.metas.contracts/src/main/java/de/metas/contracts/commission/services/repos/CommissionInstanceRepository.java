@@ -138,7 +138,7 @@ public class CommissionInstanceRepository
 	private CommissionShareBuilder createShareBuilder(@NonNull final I_C_Commission_Share shareRecord)
 	{
 		final CommissionShareBuilder share = CommissionShare.builder()
-				.beneficiary(new Beneficiary(BPartnerId.ofRepoId(shareRecord.getC_BPartner_SalesRep_ID())))
+				.beneficiary(Beneficiary.of(BPartnerId.ofRepoId(shareRecord.getC_BPartner_SalesRep_ID())))
 				.contract(new HierarchyContract(new HierarchyConfig())) // TODO load the contract!
 				.level(HierarchyLevel.of(shareRecord.getLevelHierarchy()));
 		return share;

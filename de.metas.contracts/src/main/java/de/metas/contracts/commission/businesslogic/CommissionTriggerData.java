@@ -4,6 +4,9 @@ import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.time.Instant;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -46,12 +49,13 @@ public class CommissionTriggerData
 	CommissionPoints invoicedPoints;
 
 	@Builder
+	@JsonCreator
 	private CommissionTriggerData(
-			@NonNull final InvoiceCandidateId invoiceCandidateId,
-			@NonNull final Instant timestamp,
-			@NonNull final CommissionPoints forecastedPoints,
-			@NonNull final CommissionPoints invoiceablePoints,
-			@NonNull final CommissionPoints invoicedPoints)
+			@JsonProperty("invoiceCandidateId") @NonNull final InvoiceCandidateId invoiceCandidateId,
+			@JsonProperty("timestamp") @NonNull final Instant timestamp,
+			@JsonProperty("forecastedPoints") @NonNull final CommissionPoints forecastedPoints,
+			@JsonProperty("invoiceablePoints") @NonNull final CommissionPoints invoiceablePoints,
+			@JsonProperty("invoicedPoints") @NonNull final CommissionPoints invoicedPoints)
 	{
 		this.invoiceCandidateId = invoiceCandidateId;
 		this.timestamp = timestamp;
