@@ -44,22 +44,24 @@ import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.ordercandidate.spi.impl.DefaultOLCandValidator;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfNotExists;
 import de.metas.rest_api.attachment.JsonAttachmentType;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
-import de.metas.rest_api.ordercandidates.JsonAttachment;
-import de.metas.rest_api.ordercandidates.JsonBPartnerInfo;
-import de.metas.rest_api.ordercandidates.JsonDocTypeInfo;
-import de.metas.rest_api.ordercandidates.JsonOLCand;
-import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkRequest;
-import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkResponse;
-import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest;
-import de.metas.rest_api.ordercandidates.JsonProductInfo;
-import de.metas.rest_api.ordercandidates.JsonProductInfo.Type;
+import de.metas.rest_api.ordercandidates.request.JsonDocTypeInfo;
+import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
+import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
+import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
+import de.metas.rest_api.ordercandidates.request.JsonProductInfo.Type;
+import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
+import de.metas.rest_api.ordercandidates.response.JsonAttachment;
+import de.metas.rest_api.ordercandidates.response.JsonOLCand;
+import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.utils.JsonError;
 import de.metas.rest_api.utils.PermissionService;
+import de.metas.rest_api.utils.PermissionServiceFactories;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -132,14 +134,11 @@ public class OrderCandidatesRestControllerImplTest
 			testMasterdata.createDataSource(DATA_DEST_INVOICECANDIDATE);
 		}
 
-		final MasterdataProviderFactory masterdataProviderFactory = MasterdataProviderFactory
-				.builder()
-				.permissionService(permissionService).build();
-
 		orderCandidatesRestControllerImpl = new OrderCandidatesRestControllerImpl(
-				masterdataProviderFactory,
 				new JsonConverters(),
 				new OLCandRepository());
+		orderCandidatesRestControllerImpl.setPermissionServiceFactory(PermissionServiceFactories.singleton(permissionService));
+
 		LogManager.setLoggerLevel(orderCandidatesRestControllerImpl.getClass(), Level.ALL);
 	}
 
@@ -292,7 +291,7 @@ public class OrderCandidatesRestControllerImplTest
 				.product(JsonProductInfo.builder()
 						.code("productCode")
 						.build())
-				.bpartner(JsonBPartnerInfo.builder()
+				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
 						.bpartner(JsonRequestBPartner.builder()
 								.code("bpCode")
 								.build())
@@ -328,7 +327,7 @@ public class OrderCandidatesRestControllerImplTest
 				.product(JsonProductInfo.builder()
 						.code("productCode")
 						.build())
-				.bpartner(JsonBPartnerInfo.builder()
+				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
 						.bpartner(JsonRequestBPartner.builder()
 								.code("bpCode")
 								.build())
@@ -392,7 +391,7 @@ public class OrderCandidatesRestControllerImplTest
 						.priceStd(new BigDecimal("13.24"))
 						.syncAdvise(SyncAdvise.JUST_CREATE_IF_NOT_EXISTS)
 						.build())
-				.bpartner(JsonBPartnerInfo.builder()
+				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
 						.bpartner(JsonRequestBPartner.builder()
 								.code("bpCode")
 								.build())
@@ -419,5 +418,87 @@ public class OrderCandidatesRestControllerImplTest
 
 		assertThat(olCand.getPrice()).isEqualByComparingTo(new BigDecimal("13.24"));
 		assertThat(olCand.getWarehouseDestId()).isEqualTo(testWarehouseDestId.getRepoId());
+	}
+
+	@Test
+	public void test_sameBPartner_DifferentLocations()
+	{
+		//
+		// Masterdata
+		testMasterdata.createProduct("productCode", uomId);
+
+		//
+		//
+		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
+				.dataSourceInternalName(DATA_SOURCE_INTERNALNAME)
+				.dataDestInternalName(DATA_DEST_INVOICECANDIDATE)
+				.dateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 10))
+				.dateRequired(LocalDate.of(2019, Month.SEPTEMBER, 15))
+				.qty(new BigDecimal("66"))
+				.externalHeaderId("externalHeaderId")
+				.externalLineId("externalLineId")
+				.poReference("poRef")
+				.product(JsonProductInfo.builder()
+						.code("productCode")
+						.syncAdvise(SyncAdvise.READ_ONLY)
+						.build())
+				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
+						.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
+						.bpartner(JsonRequestBPartner.builder()
+								.code("bpCode")
+								.name("bpName")
+								.companyName("bpCompanyName")
+								.build())
+						.location(JsonRequestLocation.builder()
+								.gln("gln-ship")
+								.countryCode("DE")
+								.build())
+						.build())
+				.billBPartner(JsonRequestBPartnerLocationAndContact.builder()
+						.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
+						.bpartner(JsonRequestBPartner.builder()
+								.code("bpCode")
+								.build())
+						.location(JsonRequestLocation.builder()
+								.gln("gln-bill")
+								.countryCode("DE")
+								.build())
+						.build())
+				.dropShipBPartner(JsonRequestBPartnerLocationAndContact.builder()
+						.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
+						.bpartner(JsonRequestBPartner.builder()
+								.code("bpCode")
+								.build())
+						.location(JsonRequestLocation.builder()
+								.gln("gln-dropShip")
+								.countryCode("DE")
+								.build())
+						.build())
+				.handOverBPartner(JsonRequestBPartnerLocationAndContact.builder()
+						.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
+						.bpartner(JsonRequestBPartner.builder()
+								.code("bpCode")
+								.build())
+						.location(JsonRequestLocation.builder()
+								.gln("gln-handOver")
+								.countryCode("DE")
+								.build())
+						.build())
+				.build());
+
+		final JsonOLCandCreateBulkResponse response = orderCandidatesRestControllerImpl
+				.createOrderLineCandidates(request)
+				.getBody();
+
+		final List<JsonOLCand> olCands = response.getResult();
+		assertThat(olCands).hasSize(1);
+
+		final JsonOLCand olCand = olCands.get(0);
+		System.out.println(olCand);
+
+		final MetasfreshId bpartnerMetasfreshId = olCand.getBpartner().getBpartner().getMetasfreshId();
+		assertThat(olCand.getBillBPartner().getBpartner().getMetasfreshId()).isEqualTo(bpartnerMetasfreshId);
+		assertThat(olCand.getDropShipBPartner().getBpartner().getMetasfreshId()).isEqualTo(bpartnerMetasfreshId);
+		assertThat(olCand.getHandOverBPartner().getBpartner().getMetasfreshId()).isEqualTo(bpartnerMetasfreshId);
 	}
 }

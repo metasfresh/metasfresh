@@ -37,19 +37,19 @@ import de.metas.rest_api.bpartner.request.JsonRequestBPartner.JsonRequestBPartne
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation.JsonRequestLocationBuilder;
-import de.metas.rest_api.ordercandidates.JsonAttachment;
-import de.metas.rest_api.ordercandidates.JsonBPartnerInfo;
-import de.metas.rest_api.ordercandidates.JsonBPartnerInfo.JsonBPartnerInfoBuilder;
-import de.metas.rest_api.ordercandidates.JsonDocTypeInfo;
-import de.metas.rest_api.ordercandidates.JsonOLCand;
-import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkRequest;
-import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkResponse;
-import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest;
-import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder;
-import de.metas.rest_api.ordercandidates.JsonOrganization;
-import de.metas.rest_api.ordercandidates.JsonProductInfo;
-import de.metas.rest_api.ordercandidates.JsonProductInfo.Type;
 import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
+import de.metas.rest_api.ordercandidates.request.JsonDocTypeInfo;
+import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
+import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
+import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder;
+import de.metas.rest_api.ordercandidates.request.JsonOrganization;
+import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
+import de.metas.rest_api.ordercandidates.request.JsonProductInfo.Type;
+import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
+import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact.JsonRequestBPartnerLocationAndContactBuilder;
+import de.metas.rest_api.ordercandidates.response.JsonAttachment;
+import de.metas.rest_api.ordercandidates.response.JsonOLCand;
+import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
@@ -409,7 +409,7 @@ public class XmlToOLCandsService
 			@NonNull final InsuranceAndBiller insuranceAndBiller,
 			@NonNull final HighLevelContext context)
 	{
-		final JsonBPartnerInfo recipientBPartnerInfo = createJsonBPartnerInfo(
+		final JsonRequestBPartnerLocationAndContact recipientBPartnerInfo = createJsonBPartnerInfo(
 				insuranceAndBiller.getInsurance(),
 				context);
 
@@ -458,7 +458,7 @@ public class XmlToOLCandsService
 				.build();
 	}
 
-	private JsonBPartnerInfo createJsonBPartnerInfo(
+	private JsonRequestBPartnerLocationAndContact createJsonBPartnerInfo(
 			@NonNull final InsuranceAddressType insurance,
 			@NonNull final HighLevelContext context)
 	{
@@ -470,7 +470,7 @@ public class XmlToOLCandsService
 				.builder()
 				.externalId(recipientExternalId);
 
-		final JsonBPartnerInfoBuilder bPartnerInfo = createJsonBPartnerInfoBuilder();
+		final JsonRequestBPartnerLocationAndContactBuilder bPartnerInfo = JsonRequestBPartnerLocationAndContact.builder();
 
 		if (recipientExternalId.equals(insuranceExternalId))
 		{
@@ -501,7 +501,7 @@ public class XmlToOLCandsService
 
 	}
 
-	private JsonBPartnerInfo createJsonBPartnerInfo(
+	private JsonRequestBPartnerLocationAndContact createJsonBPartnerInfo(
 			@NonNull final BillerAddressType biller,
 			@NonNull final HighLevelContext context)
 	{
@@ -547,7 +547,7 @@ public class XmlToOLCandsService
 				.email(email)
 				.build();
 
-		final JsonBPartnerInfo bPartnerInfo = createJsonBPartnerInfoBuilder()
+		final JsonRequestBPartnerLocationAndContact bPartnerInfo = JsonRequestBPartnerLocationAndContact.builder()
 				.syncAdvise(context.getBillerSyncAdvise())
 				.bpartner(bPartnerBuilder.build())
 				.contact(contact)
@@ -657,11 +657,6 @@ public class XmlToOLCandsService
 	private JsonExternalId createLocationExternalId(@NonNull final JsonExternalId bPartnerExternalId)
 	{
 		return JsonExternalId.of(bPartnerExternalId.getValue() + "_singleAddress");
-	}
-
-	private JsonBPartnerInfoBuilder createJsonBPartnerInfoBuilder()
-	{
-		return JsonBPartnerInfo.builder();
 	}
 
 	JsonOLCandCreateRequestBuilder copyBuilder(@NonNull final JsonOLCandCreateRequestBuilder builder)

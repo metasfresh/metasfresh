@@ -19,11 +19,11 @@ import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.rest_api.ordercandidates.JsonBPartnerInfo;
-import de.metas.rest_api.ordercandidates.JsonOLCand;
-import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkResponse;
-import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
+import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
+import de.metas.rest_api.ordercandidates.response.JsonOLCand;
+import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
+import de.metas.rest_api.ordercandidates.response.JsonResponseBPartnerLocationAndContact;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -120,7 +120,7 @@ class JsonConverters
 		;
 	}
 
-	private final JsonBPartnerInfo toJson(
+	private final JsonResponseBPartnerLocationAndContact toJson(
 			final BPartnerInfo bpartnerInfo,
 			final MasterdataProvider masterdataProvider)
 	{
@@ -133,7 +133,7 @@ class JsonConverters
 		final BPartnerLocationId bpartnerLocationId = bpartnerInfo.getBpartnerLocationId();
 		final BPartnerContactId contactId = bpartnerInfo.getContactId();
 
-		return JsonBPartnerInfo.builder()
+		return JsonResponseBPartnerLocationAndContact.builder()
 				.bpartner(masterdataProvider.getJsonBPartnerById(bpartnerId))
 				.location(masterdataProvider.getJsonBPartnerLocationById(bpartnerLocationId))
 				.contact(masterdataProvider.getJsonBPartnerContactById(contactId))
