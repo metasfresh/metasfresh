@@ -11,13 +11,18 @@ import {
   getUserLang,
   localLoginRequest,
   loginCompletionRequest,
-  loginRequest,
+  loginRequest
 } from '../../api';
 import { loginSuccess } from '../../actions/AppActions';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 import RawList from '../widget/List/RawList';
 import PasswordRecovery from './PasswordRecovery';
 
+/**
+ * @file Class based component.
+ * @module LoginForm
+ * @extends Component
+ */
 class LoginForm extends Component {
   constructor(props) {
     super(props);
@@ -28,10 +33,14 @@ class LoginForm extends Component {
       err: '',
       dropdownToggled: false,
       dropdownFocused: false,
-      handleResetSubmit: false,
+      handleResetSubmit: false
     };
   }
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method.
+   */
   componentDidMount() {
     const { path } = this.props;
 
@@ -40,26 +49,44 @@ class LoginForm extends Component {
     }
   }
 
+  /**
+   * @method UNSAFE_componentWillUpdate
+   * @summary ToDo: Describe the method.
+   */
   UNSAFE_componentWillUpdate(nextProps, nextState) {
     if (this.roleSelector && nextState.roleSelect) {
       this.roleSelector.instanceRef.dropdown.focus();
     }
   }
 
+  /**
+   * @method handleKeyPress
+   * @summary ToDo: Describe the method.
+   * @param {object} event
+   */
   handleKeyPress = e => {
     if (e.key === 'Enter') {
       this.handleLogin();
     }
   };
 
+  /**
+   * @method handleOnChange
+   * @summary ToDo: Describe the method.
+   * @param {object} event
+   */
   handleOnChange = e => {
     e.preventDefault();
 
     this.setState({
-      err: '',
+      err: ''
     });
   };
 
+  /**
+   * @method handleSuccess
+   * @summary ToDo: Describe the method.
+   */
   handleSuccess = () => {
     const { redirect, dispatch } = this.props;
 
@@ -75,6 +102,11 @@ class LoginForm extends Component {
     });
   };
 
+  /**
+   * @method checkIfAlreadyLogged
+   * @summary ToDo: Describe the method.
+   * @param {*} err
+   */
   checkIfAlreadyLogged(err) {
     const { router } = this.context;
 
@@ -87,11 +119,16 @@ class LoginForm extends Component {
     });
   }
 
+  /**
+   * @method handleResetOk
+   * @summary ToDo: Describe the method.
+   * @param {*} response
+   */
   handleResetOk = response => {
     this.setState(
       {
         handleResetSubmit: true,
-        pending: true,
+        pending: true
       },
       () => {
         const responsePromise = new Promise(resolve => {
@@ -102,6 +139,11 @@ class LoginForm extends Component {
     );
   };
 
+  /**
+   * @method mapStateToProps
+   * @summary ToDo: Describe the method.
+   * @param {*} resp
+   */
   handleLoginRequest = resp => {
     let request = null;
 
@@ -121,12 +163,12 @@ class LoginForm extends Component {
         this.setState({
           roleSelect: true,
           roles,
-          role: roles.get(0),
+          role: roles.get(0)
         });
       })
       .then(() => {
         this.setState({
-          pending: false,
+          pending: false
         });
       })
       .catch(err => {
@@ -137,18 +179,22 @@ class LoginForm extends Component {
           err: err.response
             ? err.response.data.message
             : counterpart.translate('login.error.fallback'),
-          pending: false,
+          pending: false
         });
       });
   };
 
+  /**
+   * @method handleLogin
+   * @summary ToDo: Describe the method.
+   */
   handleLogin = () => {
     const { dispatch, auth } = this.props;
     const { roleSelect, role } = this.state;
 
     this.setState(
       {
-        pending: true,
+        pending: true
       },
       () => {
         if (roleSelect) {
@@ -162,7 +208,7 @@ class LoginForm extends Component {
                 err: err.response
                   ? err.response.data.message
                   : counterpart.translate('login.error.fallback'),
-                pending: false,
+                pending: false
               });
             });
         }
@@ -172,39 +218,68 @@ class LoginForm extends Component {
     );
   };
 
+  /**
+   * @method handleRoleSelect
+   * @summary ToDo: Describe the method.
+   * @param {*} option
+   */
   handleRoleSelect = option => {
     this.setState({
-      role: option,
+      role: option
     });
   };
 
+  /**
+   * @method handleForgotPassword
+   * @summary ToDo: Describe the method.
+   */
   handleForgotPassword = () => {
     const { dispatch } = this.props;
     dispatch(push('/forgottenPassword'));
   };
 
+  /**
+   * @method openDropdown
+   * @summary ToDo: Describe the method.
+   */
   openDropdown = () => {
     this.setState({
-      dropdownToggled: true,
+      dropdownToggled: true
     });
   };
 
+  /**
+   * @method closeDropdown
+   * @summary ToDo: Describe the method.
+   */
   closeDropdown = () => {
     this.setState({
-      dropdownToggled: false,
+      dropdownToggled: false
     });
   };
 
+  /**
+   * @method onFocus
+   * @summary ToDo: Describe the method.
+   */
   onFocus = () => {
     this.setState({
-      dropdownFocused: true,
+      dropdownFocused: true
     });
   };
 
+  /**
+   * @method onBlur
+   * @summary ToDo: Describe the method.
+   */
   onBlur = () => {
     this.setState({ dropdownFocused: false });
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const {
       roleSelect,
@@ -214,7 +289,7 @@ class LoginForm extends Component {
       pending,
       dropdownToggled,
       dropdownFocused,
-      handleResetSubmit,
+      handleResetSubmit
     } = this.state;
     const { token, path } = this.props;
     const onResetOk = this.handleResetOk;
@@ -267,7 +342,7 @@ class LoginForm extends Component {
                 name="username"
                 className={classnames('input-primary input-block', {
                   'input-error': err,
-                  'input-disabled': pending,
+                  'input-disabled': pending
                 })}
                 disabled={pending}
                 ref={c => (this.login = c)}
@@ -283,7 +358,7 @@ class LoginForm extends Component {
                 onChange={this.handleOnChange}
                 className={classnames('input-primary input-block', {
                   'input-error': err,
-                  'input-disabled': pending,
+                  'input-disabled': pending
                 })}
                 disabled={pending}
                 ref={c => (this.passwd = c)}
@@ -320,11 +395,11 @@ class LoginForm extends Component {
 LoginForm.propTypes = {
   dispatch: PropTypes.func.isRequired,
   path: PropTypes.string,
-  token: PropTypes.string,
+  token: PropTypes.string
 };
 
 LoginForm.contextTypes = {
-  router: PropTypes.object.isRequired,
+  router: PropTypes.object.isRequired
 };
 
 export default connect()(LoginForm);
