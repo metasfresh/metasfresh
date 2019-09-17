@@ -1,5 +1,6 @@
 package de.metas.tourplanning.api.impl;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -12,12 +13,13 @@ import org.slf4j.Logger;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IOrderDeliveryDayBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 {
@@ -26,10 +28,8 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 	private static final transient Logger logger = LogManager.getLogger(OrderDeliveryDayBL.class);
 
 	@Override
-	public boolean setPreparationDate(final I_C_Order order, final boolean fallbackToDatePromised)
+	public boolean setPreparationDate(@NonNull final I_C_Order order, final boolean fallbackToDatePromised)
 	{
-		Check.assumeNotNull(order, "order not null");
-
 		// Don't touch processed orders
 		if (order.isProcessed())
 		{
@@ -44,7 +44,8 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 			return false;
 		}
 
-		final ZonedDateTime datePromised = TimeUtil.asZonedDateTime(order.getDatePromised());
+		final ZoneId timeZone = Services.get(IOrderBL.class).getTimeZone(order);
+		final ZonedDateTime datePromised = TimeUtil.asZonedDateTime(order.getDatePromised(), timeZone);
 		if (datePromised == null)
 		{
 			return false;
@@ -72,15 +73,15 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 				TimeUtil.asZonedDateTime(order.getCreated()),
 				SystemTime.asZonedDateTime());
 		final ZonedDateTime preparationDate = deliveryDayBL.calculatePreparationDateOrNull(
-				context, 
-				soTrx, 
-				calculationTime, 
-				datePromised, 
+				context,
+				soTrx,
+				calculationTime,
+				datePromised,
 				bpartnerLocationId);
 
 		//
 		// Update order
-		final ZonedDateTime systemTime = SystemTime.asZonedDateTime();
+		final ZonedDateTime systemTime = SystemTime.asZonedDateTime(timeZone);
 		if (preparationDate != null && preparationDate.isAfter(systemTime))
 		{
 			// task 08931: only set the date if it has not yet passed.

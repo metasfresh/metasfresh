@@ -33,6 +33,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
@@ -44,6 +45,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
@@ -58,6 +60,8 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
+import de.metas.organization.OrgId;
+import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.product.ProductId;
 import de.metas.tourplanning.api.IDeliveryDayAllocable;
 import de.metas.tourplanning.api.IDeliveryDayBL;
@@ -90,6 +94,7 @@ public abstract class TourPlanningTestBase
 	protected IContextAware contextProvider;
 	protected DateFormat dateTimeFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSSS");
 	protected final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	protected final ZoneId timeZone = ZoneId.of("Europe/Berlin");
 
 	//
 	// Services
@@ -136,6 +141,12 @@ public abstract class TourPlanningTestBase
 		this.shipmentScheduleDeliveryDayBL = (ShipmentScheduleDeliveryDayBL)Services.get(IShipmentScheduleDeliveryDayBL.class);
 		this.tourInstanceBL = Services.get(ITourInstanceBL.class);
 		this.tourInstanceDAO = Services.get(ITourInstanceDAO.class);
+
+		final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(OrgId.ANY.getRepoId());
+		orgInfo.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
+		orgInfo.setTimeZone(timeZone.getId());
+		saveRecord(orgInfo);
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);
