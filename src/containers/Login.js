@@ -69,6 +69,14 @@ class Login extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {func} dispatch
+ * @prop {bool} logged
+ * @prop {string} redirect
+ * @prop {string} splat
+ * @prop {string} token
+ */
 Login.propTypes = {
   dispatch: PropTypes.func.isRequired,
   logged: PropTypes.bool,
