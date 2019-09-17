@@ -24,6 +24,7 @@ package org.adempiere.util.api;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -114,6 +115,16 @@ public final class Params implements IParams
 	{
 		final Object value = getParameterAsObject(parameterName);
 		return (Timestamp)value;
+	}
+
+	@Override
+	public LocalDate getParameterAsLocalDate(final String parameterName)
+	{
+		final Timestamp value = getParameterAsTimestamp(parameterName);
+		return value != null
+				? value.toLocalDateTime().toLocalDate()
+				: null;
+
 	}
 
 	@Override

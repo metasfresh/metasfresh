@@ -51,6 +51,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.IQueryOrderByBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -115,12 +116,14 @@ import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -176,9 +179,14 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final IQueryOrderByBuilder<T> orderBy = queryBuilder.orderBy();
 		orderBy
 				.clear()
-
+				//
 				// order by they header aggregation key to make sure candidates with the same key end up in the same invoice
 				.addColumn(I_C_Invoice_Candidate.COLUMNNAME_HeaderAggregationKey)
+				//
+				// We need to aggregate by DateInvoiced too
+				.addColumn(I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced)
+				.addColumn(I_C_Invoice_Candidate.COLUMNNAME_DateAcct)
+				//
 				// task 08241: return ICs with a set Bill_User_ID first, because, we can aggregate ICs with different Bill_User_IDs into one invoice, however, if there are any ICs with a Bill_User_ID
 				// set, and others with no Bill_User_ID, then we want the Bill_User_ID to end up in the C_Invoice (header) record.
 				.addColumn(I_C_Invoice_Candidate.COLUMNNAME_Bill_User_ID, Direction.Ascending, Nulls.Last)
@@ -517,6 +525,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 			saveErrorToDB(invoiceCandidate);
 		}
+	}
+
+	@Override
+	public void saveAll(final Collection<I_C_Invoice_Candidate> invoiceCandidates)
+	{
+		invoiceCandidates.forEach(this::save);
 	}
 
 	@Override
@@ -1126,24 +1140,40 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public final void updateDateInvoiced(final Timestamp dateInvoiced, final PInstanceId selectionId)
+	public final void updateDateInvoiced(
+			@Nullable final LocalDate dateInvoiced,
+			@NonNull final PInstanceId selectionId,
+			final boolean updateOnlyIfNull)
 	{
 		updateColumnForSelection(
 				I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced,    // invoiceCandidateColumnName
 				dateInvoiced,    // value
-				false,    // updateOnlyIfNull
+				updateOnlyIfNull, // updateOnlyIfNull
 				selectionId    // selectionId
 		);
 	}
 
 	@Override
-	public final void updateDateAcct(final Timestamp dateAcct, final PInstanceId selectionId)
+	public final void updateDateAcct(
+			@Nullable final LocalDate dateAcct,
+			@NonNull final PInstanceId selectionId)
 	{
 		updateColumnForSelection(
 				I_C_Invoice_Candidate.COLUMNNAME_DateAcct,    // invoiceCandidateColumnName
 				dateAcct,    // value
 				false,    // updateOnlyIfNull
 				selectionId    // selectionId
+		);
+	}
+
+	@Override
+	public final void updateNullDateAcctFromDateInvoiced(final PInstanceId selectionId)
+	{
+		updateColumnForSelection(
+				I_C_Invoice_Candidate.COLUMNNAME_DateAcct,
+				ModelColumnNameValue.forColumnName(I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced), // value
+				true, // updateOnlyIfNull
+				selectionId // selectionId
 		);
 	}
 
@@ -1168,8 +1198,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		{
 			return;
 		}
-		final Integer paymentTermId = retrievePaymentTermId(selectionId);
-		if (paymentTermId <= 0)
+		final PaymentTermId paymentTermId = retrievePaymentTermId(selectionId);
+		if (paymentTermId == null)
 		{
 			return;
 		}
@@ -1212,7 +1242,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		return selectionToUpdateId;
 	}
 
-	private int retrievePaymentTermId(final PInstanceId selectionId)
+	private PaymentTermId retrievePaymentTermId(final PInstanceId selectionId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -1234,21 +1264,29 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		{
 			Loggables.withLogger(logger, Level.INFO)
 					.addLog("updateMissingPaymentTermIds - No C_Invoice_Candidate selected by selectionId={} has a C_PaymentTerm_ID; nothing to update", selectionId);
-			return -1;
+			return null;
 		}
 
-		final Integer paymentTermId = InterfaceWrapperHelper.getValueOverrideOrValue(
-				firstInvoiceCandidateWithPaymentTermId,
-				I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_ID);
-		return paymentTermId;
+		return CoalesceUtil.coalesceSuppliers(
+				() -> PaymentTermId.ofRepoIdOrNull(firstInvoiceCandidateWithPaymentTermId.getC_PaymentTerm_Override_ID()),
+				() -> PaymentTermId.ofRepoIdOrNull(firstInvoiceCandidateWithPaymentTermId.getC_PaymentTerm_ID()));
 	}
 
-	@Override
-	public final <T> void updateColumnForSelection(
-			final String columnName,
-			final T value,
+	/**
+	 * Mass-update a given invoice candidate column.
+	 *
+	 * If there were any changes, those invoice candidates will be invalidated.
+	 *
+	 * @param invoiceCandidateColumnName {@link I_C_Invoice_Candidate}'s column to update
+	 * @param value value to set (you can also use {@link ModelColumnNameValue})
+	 * @param updateOnlyIfNull if true then it will update only if column value is null (not set)
+	 * @param selectionId invoice candidates selection (AD_PInstance_ID)
+	 */
+	private final <T> void updateColumnForSelection(
+			@NonNull final String columnName,
+			@Nullable final T value,
 			final boolean updateOnlyIfNull,
-			final PInstanceId selectionId)
+			@NonNull final PInstanceId selectionId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -1468,13 +1506,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			return; // nothing to do for us
 		}
 
-		final ImmutableList<Integer> icIds = ics.stream()
+		final ImmutableSet<InvoiceCandidateId> icIds = ics.stream()
 				.filter(Predicates.notNull())
-				.filter(ic -> ic.getC_Invoice_Candidate_ID() > 0)
-				.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
+				.map(ic -> InvoiceCandidateId.ofRepoIdOrNull(ic.getC_Invoice_Candidate_ID()))
+				.filter(Predicates.notNull())
 				.distinct()
-				.collect(ImmutableList.toImmutableList());
-
+				.collect(ImmutableSet.toImmutableSet());
 		if (icIds.isEmpty())
 		{
 			return;
@@ -1483,7 +1520,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		// note: invalidate, no matter if Processed or not
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, icIds);
+				.addInArrayFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, icIds);
 
 		invalidateCandsFor(icQueryBuilder);
 	}

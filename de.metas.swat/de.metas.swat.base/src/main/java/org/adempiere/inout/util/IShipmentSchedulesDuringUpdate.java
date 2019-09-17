@@ -5,17 +5,18 @@ import java.util.Optional;
 
 import org.adempiere.warehouse.WarehouseId;
 
+import de.metas.order.OrderId;
 import de.metas.shipping.ShipperId;
 
 public interface IShipmentSchedulesDuringUpdate
 {
 
-	public static enum CompleteStatus
+	public enum CompleteStatus
 	{
 		OK,
 		INCOMPLETE_LINE,
 		INCOMPLETE_ORDER
-	};
+	}
 
 	/**
 	 * 
@@ -36,9 +37,9 @@ public interface IShipmentSchedulesDuringUpdate
 	 * @param pPartnerAddress
 	 * @return
 	 */
-	public DeliveryGroupCandidate getInOutForOrderId(int orderId, WarehouseId warehouseId, String bPartnerAddress);
+	DeliveryGroupCandidate getInOutForOrderId(OrderId orderId, WarehouseId warehouseId, String bPartnerAddress);
 
-	public void addGroup(DeliveryGroupCandidate deliveryGroupCandidate);
+	void addGroup(DeliveryGroupCandidate deliveryGroupCandidate);
 
 	/**
 	 * 
@@ -48,11 +49,11 @@ public interface IShipmentSchedulesDuringUpdate
 	 * @throws IllegalStateException if no inOut with the given bPartnerLocationId and shipperId has been added
 	 * 
 	 */
-	public DeliveryGroupCandidate getInOutForShipper(Optional<ShipperId> shipperId, WarehouseId warehouseId, String bPartnerAddress);
+	DeliveryGroupCandidate getInOutForShipper(Optional<ShipperId> shipperId, WarehouseId warehouseId, String bPartnerAddress);
 
-	public void addLine(DeliveryLineCandidate deliveryLineCandidate);
+	void addLine(DeliveryLineCandidate deliveryLineCandidate);
 
-	public DeliveryLineCandidate getLineCandidateForShipmentScheduleId(int shipmentScheduleId);
+	DeliveryLineCandidate getLineCandidateForShipmentScheduleId(int shipmentScheduleId);
 
 	/**
 	 * Adds a custom status info for the given iol. Usally the info explains, why an open order line won't be delivered this time.

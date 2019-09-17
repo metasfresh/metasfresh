@@ -167,7 +167,7 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 		assertThat("Invalid QtyToDeliver on the IC level", ic.getQtyDelivered(), comparesEqualTo(partialQty1_32.add(partialQty2_8).getStockQty().toBigDecimal()));
 		assertThat("Invalid QtyToInvoice on the IC level", ic.getQtyToInvoice(), comparesEqualTo(partialQty1_32.add(partialQty2_8).getStockQty().toBigDecimal()));
 
-		final AggregationEngine engine = new AggregationEngine();
+		final AggregationEngine engine = AggregationEngine.newInstance();
 		engine.addInvoiceCandidate(ic);
 
 		final List<IInvoiceHeader> invoices = invokeAggregationEngine(engine);
@@ -261,7 +261,7 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 				assertThat("Invalid QtyToInvoice on the IC level", ic.getQtyToInvoice(), comparesEqualTo(new BigDecimal(qtyOrdered)));
 			}
 
-			final AggregationEngine engine = new AggregationEngine();
+			final AggregationEngine engine = AggregationEngine.newInstance();
 			engine.addInvoiceCandidate(ic);
 
 			final List<IInvoiceHeader> invoices = invokeAggregationEngine(engine);
@@ -328,7 +328,7 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 			// TODO this is not working atm (instead of 8, we get 32)
 			// assertThat("Invalid QtyToInvoice on the IC level", ic.getQtyToInvoice(), comparesEqualTo(partialQty2));
 
-			final AggregationEngine engine = new AggregationEngine();
+			final AggregationEngine engine = AggregationEngine.newInstance();
 			engine.addInvoiceCandidate(ic);
 
 			final List<IInvoiceHeader> invoices = invokeAggregationEngine(engine);

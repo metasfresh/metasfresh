@@ -15,7 +15,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1114369806L;
+	private static final long serialVersionUID = 999490621L;
 
     /** Standard Constructor */
     public X_C_OLCand (Properties ctx, int C_OLCand_ID, String trxName)
@@ -655,25 +655,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public java.sql.Timestamp getDateCandidate () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateCandidate);
-	}
-
-	/** Set Rechnungsdatum.
-		@param DateInvoiced 
-		Datum auf der Rechnung
-	  */
-	@Override
-	public void setDateInvoiced (java.sql.Timestamp DateInvoiced)
-	{
-		set_Value (COLUMNNAME_DateInvoiced, DateInvoiced);
-	}
-
-	/** Get Rechnungsdatum.
-		@return Datum auf der Rechnung
-	  */
-	@Override
-	public java.sql.Timestamp getDateInvoiced () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateInvoiced);
 	}
 
 	/** Set Auftragsdatum.
@@ -1663,6 +1644,38 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public java.lang.String getPOReference () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_POReference);
+	}
+
+	/** Set Vorbelegtes Rechnungsdatum.
+		@param PresetDateInvoiced Vorbelegtes Rechnungsdatum	  */
+	@Override
+	public void setPresetDateInvoiced (java.sql.Timestamp PresetDateInvoiced)
+	{
+		set_Value (COLUMNNAME_PresetDateInvoiced, PresetDateInvoiced);
+	}
+
+	/** Get Vorbelegtes Rechnungsdatum.
+		@return Vorbelegtes Rechnungsdatum	  */
+	@Override
+	public java.sql.Timestamp getPresetDateInvoiced () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_PresetDateInvoiced);
+	}
+
+	/** Set Vorbelegtes Lieferdatum.
+		@param PresetDateShipped Vorbelegtes Lieferdatum	  */
+	@Override
+	public void setPresetDateShipped (java.sql.Timestamp PresetDateShipped)
+	{
+		set_Value (COLUMNNAME_PresetDateShipped, PresetDateShipped);
+	}
+
+	/** Get Vorbelegtes Lieferdatum.
+		@return Vorbelegtes Lieferdatum	  */
+	@Override
+	public java.sql.Timestamp getPresetDateShipped () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_PresetDateShipped);
 	}
 
 	/** Set Preiseinheit int..

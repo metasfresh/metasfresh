@@ -45,7 +45,7 @@ import org.compiere.model.X_C_DocType;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.aggregation.api.IAggregation;
+import de.metas.aggregation.api.Aggregation;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.document.engine.DocStatus;
@@ -402,7 +402,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		// Get the BPartner's invoice header aggregation that will be actually used to aggregate sales invoices
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ediPartner);
 		final boolean isSOTrx = true; // we are checking only Sales side (per Tobias advice)
-		final IAggregation soAggregation = Services.get(IInvoiceAggregationFactory.class).getAggregation(ctx, ediPartner, isSOTrx, X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header);
+		final Aggregation soAggregation = Services.get(IInvoiceAggregationFactory.class).getAggregation(ctx, ediPartner, isSOTrx, X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header);
 
 		// Make sure that aggregation includes C_Order_ID or POReference
 		if (!soAggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID)

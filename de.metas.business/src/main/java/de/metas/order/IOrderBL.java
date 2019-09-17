@@ -1,5 +1,6 @@
 package de.metas.order;
 
+import java.time.ZoneId;
 import java.util.Properties;
 
 import org.compiere.model.I_AD_User;
@@ -226,4 +227,6 @@ public interface IOrderBL extends ISingletonService
 	I_C_BPartner getBPartnerOrNull(I_C_Order order);
 
 	ProjectId getProjectIdOrNull(OrderLineId orderLineId);
+
+	ZoneId getTimeZone(I_C_Order order);
 }

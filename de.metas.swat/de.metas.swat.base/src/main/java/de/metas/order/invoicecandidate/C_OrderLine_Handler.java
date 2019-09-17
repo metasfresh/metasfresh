@@ -326,6 +326,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setQtyOrdered(orderLine.getQtyOrdered());
 		ic.setDateOrdered(orderLine.getDateOrdered());
 
+		ic.setPresetDateInvoiced(orderLine.getPresetDateInvoiced());
+
 		ic.setC_Order_ID(orderLine.getC_Order_ID());
 
 		setC_PaymentTerm(ic, orderLine);

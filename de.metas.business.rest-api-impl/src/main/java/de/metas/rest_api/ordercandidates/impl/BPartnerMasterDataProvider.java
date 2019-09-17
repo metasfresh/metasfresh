@@ -488,7 +488,10 @@ final class BPartnerMasterDataProvider
 		bpLocationRecord.setIsBillTo(true);
 
 		bpLocationRecord.setGLN(json.getGln());
-		bpLocationRecord.setExternalId(json.getExternalId().getValue());
+		if (json.getExternalId() != null)
+		{
+			bpLocationRecord.setExternalId(json.getExternalId().getValue());
+		}
 
 		final boolean newOrLocationHasChanged = isNew(bpLocationRecord) || !json.equals(toJsonBPartnerLocation(bpLocationRecord));
 		if (newOrLocationHasChanged)

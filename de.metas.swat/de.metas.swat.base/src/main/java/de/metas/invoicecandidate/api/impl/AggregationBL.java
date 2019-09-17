@@ -34,7 +34,8 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Util;
 
-import de.metas.aggregation.api.IAggregationKey;
+import de.metas.aggregation.api.AggregationId;
+import de.metas.aggregation.api.AggregationKey;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IAggregationDAO;
@@ -156,13 +157,13 @@ public class AggregationBL implements IAggregationBL
 	}
 
 	@Override
-	public IAggregationKey mkHeaderAggregationKey(final I_C_Invoice_Candidate ic)
+	public AggregationKey mkHeaderAggregationKey(final I_C_Invoice_Candidate ic)
 	{
 		return headerAggregationKeyBuilder.buildAggregationKey(ic);
 	}
 
 	@Override
-	public IAggregationKey mkLineAggregationKey(final I_C_Invoice_Candidate ic)
+	public AggregationKey mkLineAggregationKey(final I_C_Invoice_Candidate ic)
 	{
 		return lineAggregationKeyBuilder.buildAggregationKey(ic);
 	}
@@ -229,7 +230,7 @@ public class AggregationBL implements IAggregationBL
 
 		//
 		// Build and set the calculated Header Aggregation Key
-		final IAggregationKey headerAggregationKeyCalculated = mkHeaderAggregationKey(ic);
+		final AggregationKey headerAggregationKeyCalculated = mkHeaderAggregationKey(ic);
 		ic.setHeaderAggregationKey_Calc(headerAggregationKeyCalculated.getAggregationKeyString());
 
 		//
@@ -252,7 +253,7 @@ public class AggregationBL implements IAggregationBL
 		{
 			ic.setHeaderAggregationKey(headerAggregationKeyCalculated.getAggregationKeyString()); // Effective HeaderAggregationKey
 			ic.setC_Invoice_Candidate_HeaderAggregation_Effective_ID(headerAggregationKeyId); // Invoicing Group
-			ic.setHeaderAggregationKeyBuilder_ID(headerAggregationKeyCalculated.getC_Aggregation_ID()); // C_Aggregation_ID
+			ic.setHeaderAggregationKeyBuilder_ID(AggregationId.toRepoId(headerAggregationKeyCalculated.getAggregationId())); // C_Aggregation_ID
 		}
 	}
 
@@ -271,9 +272,9 @@ public class AggregationBL implements IAggregationBL
 
 	private void setLineAggregationKey(final I_C_Invoice_Candidate ic)
 	{
-		final IAggregationKey lineAggregationKey = mkLineAggregationKey(ic);
+		final AggregationKey lineAggregationKey = mkLineAggregationKey(ic);
 		ic.setLineAggregationKey(lineAggregationKey.getAggregationKeyString());
-		ic.setLineAggregationKeyBuilder_ID(lineAggregationKey.getC_Aggregation_ID());
+		ic.setLineAggregationKeyBuilder_ID(AggregationId.toRepoId(lineAggregationKey.getAggregationId()));
 
 	}
 

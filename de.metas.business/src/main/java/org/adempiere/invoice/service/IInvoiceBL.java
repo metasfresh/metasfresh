@@ -24,6 +24,7 @@ package org.adempiere.invoice.service;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryFilter;
@@ -37,6 +38,7 @@ import org.compiere.model.X_C_DocType;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocTypeId;
 import de.metas.document.ICopyHandler;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
@@ -193,10 +195,11 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param dateAcct may be <code>null</code> (see task 08438)
 	 * @return created invoice
 	 */
-	de.metas.adempiere.model.I_C_Invoice createInvoiceFromOrder(org.compiere.model.I_C_Order order,
-			int C_DocTypeTarget_ID,
-			Timestamp dateInvoiced,
-			Timestamp dateAcct);
+	de.metas.adempiere.model.I_C_Invoice createInvoiceFromOrder(
+			org.compiere.model.I_C_Order order,
+			DocTypeId docTypeTargetId,
+			LocalDate dateInvoiced,
+			LocalDate dateAcct);
 
 	void setFromOrder(I_C_Invoice invoice, I_C_Order order);
 
