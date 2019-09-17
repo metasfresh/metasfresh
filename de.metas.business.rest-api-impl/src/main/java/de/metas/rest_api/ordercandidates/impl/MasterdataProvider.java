@@ -35,14 +35,14 @@ import de.metas.organization.OrgQuery;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.rest_api.SyncAdvise;
-import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
-import de.metas.rest_api.bpartner.request.JsonRequestContact;
-import de.metas.rest_api.bpartner.request.JsonRequestLocation;
-import de.metas.rest_api.ordercandidates.JsonBPartnerInfo;
-import de.metas.rest_api.ordercandidates.JsonDocTypeInfo;
-import de.metas.rest_api.ordercandidates.JsonOrganization;
-import de.metas.rest_api.ordercandidates.JsonProductInfo;
+import de.metas.rest_api.bpartner.response.JsonResponseBPartner;
+import de.metas.rest_api.bpartner.response.JsonResponseContact;
+import de.metas.rest_api.bpartner.response.JsonResponseLocation;
 import de.metas.rest_api.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
+import de.metas.rest_api.ordercandidates.request.JsonDocTypeInfo;
+import de.metas.rest_api.ordercandidates.request.JsonOrganization;
+import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
+import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.rest_api.utils.MissingPropertyException;
 import de.metas.rest_api.utils.PermissionService;
 import de.metas.util.Check;
@@ -246,23 +246,23 @@ final class MasterdataProvider
 	}
 
 	public BPartnerInfo getCreateBPartnerInfo(
-			@Nullable final JsonBPartnerInfo jsonBPartnerInfo,
+			@Nullable final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
 			final OrgId orgId)
 	{
 		return bpartnerMasterDataProvider.getCreateBPartnerInfo(jsonBPartnerInfo, orgId);
 	}
 
-	public JsonRequestBPartner getJsonBPartnerById(@NonNull final BPartnerId bpartnerId)
+	public JsonResponseBPartner getJsonBPartnerById(@NonNull final BPartnerId bpartnerId)
 	{
 		return bpartnerMasterDataProvider.getJsonBPartnerById(bpartnerId);
 	}
 
-	public JsonRequestLocation getJsonBPartnerLocationById(final BPartnerLocationId bpartnerLocationId)
+	public JsonResponseLocation getJsonBPartnerLocationById(final BPartnerLocationId bpartnerLocationId)
 	{
 		return bpartnerMasterDataProvider.getJsonBPartnerLocationById(bpartnerLocationId);
 	}
 
-	public JsonRequestContact getJsonBPartnerContactById(final BPartnerContactId bpartnerContactId)
+	public JsonResponseContact getJsonBPartnerContactById(final BPartnerContactId bpartnerContactId)
 	{
 		return bpartnerMasterDataProvider.getJsonBPartnerContactById(bpartnerContactId);
 	}

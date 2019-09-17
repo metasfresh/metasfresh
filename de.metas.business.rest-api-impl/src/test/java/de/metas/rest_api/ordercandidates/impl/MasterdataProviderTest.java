@@ -29,8 +29,8 @@ import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfNotExists;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
-import de.metas.rest_api.ordercandidates.JsonBPartnerInfo;
-import de.metas.rest_api.ordercandidates.JsonOrganization;
+import de.metas.rest_api.ordercandidates.request.JsonOrganization;
+import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.rest_api.utils.PermissionService;
 import de.metas.user.UserId;
 import de.metas.util.JSONObjectMapper;
@@ -67,7 +67,7 @@ public class MasterdataProviderTest
 
 	private JsonRequestBPartner jsonBPartner;
 
-	private JsonBPartnerInfo jsonBPartnerInfo;
+	private JsonRequestBPartnerLocationAndContact jsonBPartnerInfo;
 
 	private JsonOrganization jsonOrganization;
 
@@ -118,7 +118,7 @@ public class MasterdataProviderTest
 				.externalId(JsonExternalId.of("jsonBPartnerLocation.externalId"))
 				.build();
 
-		jsonBPartnerInfo = JsonBPartnerInfo.builder()
+		jsonBPartnerInfo = JsonRequestBPartnerLocationAndContact.builder()
 				.bpartner(jsonBPartner)
 				.location(jsonBPartnerLocation)
 				.syncAdvise(SyncAdvise.builder().ifNotExists(IfNotExists.CREATE).build())

@@ -22,7 +22,7 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
-import de.metas.rest_api.ordercandidates.JsonProductInfo;
+import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
 import de.metas.rest_api.utils.PermissionService;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
