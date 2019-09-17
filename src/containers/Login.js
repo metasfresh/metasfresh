@@ -82,7 +82,7 @@ Login.propTypes = {
   logged: PropTypes.bool,
   redirect: PropTypes.string,
   splat: PropTypes.string,
-  token: PropTypes.string
+  token: PropTypes.string,
 };
 
 export default connect()(Login);

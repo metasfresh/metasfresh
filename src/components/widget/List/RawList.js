@@ -61,7 +61,7 @@ export class RawList extends PureComponent {
 
     this.state = {
       selected: props.selected || null,
-      dropdownList: props.list
+      dropdownList: props.list,
     };
 
     this.focusDropdown = this.focusDropdown.bind(this);
@@ -96,7 +96,7 @@ export class RawList extends PureComponent {
       defaultValue,
       selected,
       emptyText,
-      listHash
+      listHash,
     } = this.props;
     let dropdownList = this.state.dropdownList;
     let changedValues = {};
@@ -108,7 +108,7 @@ export class RawList extends PureComponent {
       if (!mandatory && emptyText) {
         dropdownList = dropdownList.push({
           caption: emptyText,
-          key: null
+          key: null,
         });
       }
 
@@ -122,7 +122,7 @@ export class RawList extends PureComponent {
         }
         changedValues = {
           ...changedValues,
-          ...setSelectedValue(dropdownList, selectedOption, defaultValue)
+          ...setSelectedValue(dropdownList, selectedOption, defaultValue),
         };
       } else {
         changedValues.selected = null;
@@ -138,7 +138,7 @@ export class RawList extends PureComponent {
         if (newSelected) {
           changedValues = {
             ...changedValues,
-            ...setSelectedValue(dropdownList, newSelected, defaultValue)
+            ...setSelectedValue(dropdownList, newSelected, defaultValue),
           };
         }
       }
@@ -147,7 +147,7 @@ export class RawList extends PureComponent {
     if (Object.keys(changedValues).length) {
       this.setState(
         {
-          ...changedValues
+          ...changedValues,
         },
         () => {
           this.focusDropdown();
@@ -196,7 +196,7 @@ export class RawList extends PureComponent {
 
       this.setState(
         {
-          selected: selected || null
+          selected: selected || null,
         },
         () => {
           onCloseDropdown();
@@ -215,7 +215,7 @@ export class RawList extends PureComponent {
     const { onSelect, onCloseDropdown } = this.props;
     const { dropdownList } = this.state;
     const changedValues = {
-      ...setSelectedValue(dropdownList, selected)
+      ...setSelectedValue(dropdownList, selected),
     };
 
     this.setState(changedValues, () => {
@@ -250,7 +250,7 @@ export class RawList extends PureComponent {
    */
   handleTemporarySelection = selected => {
     this.setState({
-      selected
+      selected,
     });
   };
 
@@ -277,7 +277,7 @@ export class RawList extends PureComponent {
       loading,
       readonly,
       isToggled,
-      onOpenDropdown
+      onOpenDropdown,
     } = this.props;
 
     if (e.key === 'Tab') {
@@ -352,7 +352,7 @@ export class RawList extends PureComponent {
       lookupList,
       isToggled,
       isFocused,
-      clearable
+      clearable,
     } = this.props;
 
     let value = '';
@@ -376,12 +376,12 @@ export class RawList extends PureComponent {
         targetAttachment="bottom left"
         constraints={[
           {
-            to: 'scrollParent'
+            to: 'scrollParent',
           },
           {
             to: 'window',
-            pin: ['bottom']
-          }
+            pin: ['bottom'],
+          },
         ]}
       >
         <div
@@ -395,7 +395,7 @@ export class RawList extends PureComponent {
             'select-dropdown': !lookupList,
             focused: isFocused,
             opened: isToggled,
-            'input-mandatory': !lookupList && mandatory && !selected
+            'input-mandatory': !lookupList && mandatory && !selected,
           })}
           tabIndex={tabIndex}
           onFocus={readonly ? null : this.focusDropdown}
@@ -411,13 +411,13 @@ export class RawList extends PureComponent {
               'input-error':
                 validStatus &&
                 (!validStatus.valid && !validStatus.initialValue) &&
-                !isToggled
+                !isToggled,
             })}
             ref={c => (this.inputContainer = c)}
           >
             <div
               className={classnames('input-editable input-dropdown-focused', {
-                [`text-${align}`]: align
+                [`text-${align}`]: align,
               })}
             >
               <input
@@ -426,7 +426,7 @@ export class RawList extends PureComponent {
                   'input-field js-input-field',
                   'font-weight-semibold',
                   {
-                    'input-disabled': disabled
+                    'input-disabled': disabled,
                   }
                 )}
                 readOnly
@@ -531,12 +531,12 @@ RawList.propTypes = {
   onBlur: PropTypes.func.isRequired,
   onSelect: PropTypes.func.isRequired,
   onOpenDropdown: PropTypes.func.isRequired,
-  onCloseDropdown: PropTypes.func.isRequired
+  onCloseDropdown: PropTypes.func.isRequired,
 };
 
 RawList.defaultProps = {
   tabIndex: -1,
-  clearable: true
+  clearable: true,
 };
 
 export default onClickOutside(RawList);

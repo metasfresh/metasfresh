@@ -11,7 +11,7 @@ import {
   getUserLang,
   localLoginRequest,
   loginCompletionRequest,
-  loginRequest
+  loginRequest,
 } from '../../api';
 import { loginSuccess } from '../../actions/AppActions';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
@@ -33,7 +33,7 @@ class LoginForm extends Component {
       err: '',
       dropdownToggled: false,
       dropdownFocused: false,
-      handleResetSubmit: false
+      handleResetSubmit: false,
     };
   }
 
@@ -79,7 +79,7 @@ class LoginForm extends Component {
     e.preventDefault();
 
     this.setState({
-      err: ''
+      err: '',
     });
   };
 
@@ -128,7 +128,7 @@ class LoginForm extends Component {
     this.setState(
       {
         handleResetSubmit: true,
-        pending: true
+        pending: true,
       },
       () => {
         const responsePromise = new Promise(resolve => {
@@ -163,12 +163,12 @@ class LoginForm extends Component {
         this.setState({
           roleSelect: true,
           roles,
-          role: roles.get(0)
+          role: roles.get(0),
         });
       })
       .then(() => {
         this.setState({
-          pending: false
+          pending: false,
         });
       })
       .catch(err => {
@@ -179,7 +179,7 @@ class LoginForm extends Component {
           err: err.response
             ? err.response.data.message
             : counterpart.translate('login.error.fallback'),
-          pending: false
+          pending: false,
         });
       });
   };
@@ -194,7 +194,7 @@ class LoginForm extends Component {
 
     this.setState(
       {
-        pending: true
+        pending: true,
       },
       () => {
         if (roleSelect) {
@@ -208,7 +208,7 @@ class LoginForm extends Component {
                 err: err.response
                   ? err.response.data.message
                   : counterpart.translate('login.error.fallback'),
-                pending: false
+                pending: false,
               });
             });
         }
@@ -225,7 +225,7 @@ class LoginForm extends Component {
    */
   handleRoleSelect = option => {
     this.setState({
-      role: option
+      role: option,
     });
   };
 
@@ -244,7 +244,7 @@ class LoginForm extends Component {
    */
   openDropdown = () => {
     this.setState({
-      dropdownToggled: true
+      dropdownToggled: true,
     });
   };
 
@@ -254,7 +254,7 @@ class LoginForm extends Component {
    */
   closeDropdown = () => {
     this.setState({
-      dropdownToggled: false
+      dropdownToggled: false,
     });
   };
 
@@ -264,7 +264,7 @@ class LoginForm extends Component {
    */
   onFocus = () => {
     this.setState({
-      dropdownFocused: true
+      dropdownFocused: true,
     });
   };
 
@@ -289,7 +289,7 @@ class LoginForm extends Component {
       pending,
       dropdownToggled,
       dropdownFocused,
-      handleResetSubmit
+      handleResetSubmit,
     } = this.state;
     const { token, path } = this.props;
     const onResetOk = this.handleResetOk;
@@ -342,7 +342,7 @@ class LoginForm extends Component {
                 name="username"
                 className={classnames('input-primary input-block', {
                   'input-error': err,
-                  'input-disabled': pending
+                  'input-disabled': pending,
                 })}
                 disabled={pending}
                 ref={c => (this.login = c)}
@@ -358,7 +358,7 @@ class LoginForm extends Component {
                 onChange={this.handleOnChange}
                 className={classnames('input-primary input-block', {
                   'input-error': err,
-                  'input-disabled': pending
+                  'input-disabled': pending,
                 })}
                 disabled={pending}
                 ref={c => (this.passwd = c)}
@@ -401,11 +401,11 @@ class LoginForm extends Component {
 LoginForm.propTypes = {
   dispatch: PropTypes.func.isRequired,
   path: PropTypes.string,
-  token: PropTypes.string
+  token: PropTypes.string,
 };
 
 LoginForm.contextTypes = {
-  router: PropTypes.object.isRequired
+  router: PropTypes.object.isRequired,
 };
 
 export default connect()(LoginForm);
