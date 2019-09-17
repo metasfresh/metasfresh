@@ -64,8 +64,10 @@ it('Read fixture and prepare the names', function() {
     priceListSchemaVersionName = appendHumanReadableNow(f['priceListSchemaVersionName']);
     priceListVersion2ValidFrom = f['priceListVersion2ValidFrom'];
 
-    priceListVersionNameSearch1 = new RegExp(f['priceListVersionNameSearch1']);
-    priceListVersionNameSearch2 = new RegExp(f['priceListVersionNameSearch2']);
+    // the magics
+    const appendedDate = appendHumanReadableNow('').substr(1);
+    priceListVersionNameSearch1 = new RegExp(f['priceListVersionNameSearch1_part1'] + '.*' + appendedDate + '.*' + f['priceListVersionNameSearch1_part2']);
+    priceListVersionNameSearch2 = new RegExp(f['priceListVersionNameSearch2_part1'] + '.*' + appendedDate + '.*' + f['priceListVersionNameSearch2_part2']);
 
     categoryName = appendHumanReadableNow(f['categoryName']);
     productName1 = appendHumanReadableNow(f['productName1']);
@@ -106,7 +108,7 @@ describe('Create Price List Schema for Product', function() {
   });
 
   it('Expect PLV1 has 2 Product Prices', function() {
-    filterProductPricesByPLV(priceListName, priceListVersionNameSearch1);
+    filterProductPricesByPLV(priceListVersionNameSearch1);
     cy.expectNumberOfRows(2);
   });
 
@@ -156,12 +158,12 @@ describe('Create new Price List Version using the Price List Schema', function()
   });
 
   it('Expect PLV1 has 2 Product Prices', function() {
-    filterProductPricesByPLV(priceListName, priceListVersionNameSearch1);
+    filterProductPricesByPLV(priceListVersionNameSearch1);
     cy.expectNumberOfRows(2);
   });
 
   it('Expect PLV2 has 1 Product Price', function() {
-    filterProductPricesByPLV(priceListName, priceListVersionNameSearch2);
+    filterProductPricesByPLV(priceListVersionNameSearch2);
     cy.expectNumberOfRows(1);
   });
 
@@ -192,10 +194,10 @@ function filterProductPricesByProduct(product) {
   applyFilters();
 }
 
-function filterProductPricesByPLV(priceListName, priceListVersionMatch) {
+function filterProductPricesByPLV(priceListVersionMatch) {
   cy.visitWindow(ProductPrices.windowId);
   toggleNotFrequentFilters();
   selectNotFrequentFilterWidget('default');
-  cy.writeIntoLookupListField('M_PriceList_Version_ID', priceListName, priceListVersionMatch, false, false, null, true);
+  cy.selectInListField('M_PriceList_Version_ID', priceListVersionMatch, false, null, true);
   applyFilters();
 }

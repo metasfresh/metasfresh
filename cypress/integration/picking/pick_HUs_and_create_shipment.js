@@ -21,6 +21,7 @@ const orderColumn = 'order';
 const huSelectionHuCodeColumn = 'Value';
 const pickingHuCodeColumn = 'huCode';
 const productPartnerColumn = 'ProductOrBPartner';
+const handlingUnitsShipmentColumn = 'M_HU_ID';
 
 // test
 let soDocNumber;
@@ -160,8 +161,8 @@ describe('Generate the Shipment', function() {
     cy.getStringFieldValue('C_BPartner_ID').should('contain', businessPartnerName);
     cy.selectTab('M_HU_Assignment');
     cy.expectNumberOfRows(2);
-    cy.selectRowByColumnAndValue({ column: 'Handling Units', value: huValue1 });
-    cy.selectRowByColumnAndValue({ column: 'Handling Units', value: huValue2 });
+    cy.selectRowByColumnAndValue({ column: handlingUnitsShipmentColumn, value: huValue1 });
+    cy.selectRowByColumnAndValue({ column: handlingUnitsShipmentColumn, value: huValue2 });
   });
 
   it('Visit HU Editor and expect the 2 HUs have Packing Status Shipped', function() {
