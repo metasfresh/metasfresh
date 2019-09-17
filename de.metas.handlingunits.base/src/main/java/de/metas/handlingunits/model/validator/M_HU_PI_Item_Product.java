@@ -83,7 +83,7 @@ public class M_HU_PI_Item_Product
 			return;
 		}
 
-		final UomId stockingUOMId = Services.get(IProductBL.class).getStockingUOMId(productId);
+		final UomId stockingUOMId = Services.get(IProductBL.class).getStockUOMId(productId);
 		huPiItemProduct.setC_UOM_ID(stockingUOMId.getRepoId());
 	}
 

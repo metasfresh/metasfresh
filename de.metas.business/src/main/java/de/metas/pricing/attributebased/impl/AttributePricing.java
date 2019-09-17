@@ -1,5 +1,7 @@
 package de.metas.pricing.attributebased.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -48,7 +50,7 @@ public class AttributePricing implements IPricingRule
 
 	/**
 	 * Allows to add a matcher that will be applied when this rule looks for a matching product price.
-	 * 
+	 *
 	 * @param matcher
 	 */
 	public static final void registerDefaultMatcher(final IProductPriceQueryMatcher matcher)
@@ -112,7 +114,7 @@ public class AttributePricing implements IPricingRule
 
 	/**
 	 * Updates the {@link IPricingResult} using the given <code>productPrice</code>.
-	 * 
+	 *
 	 * @param pricingCtx
 	 * @param result
 	 * @param productPrice
@@ -125,7 +127,7 @@ public class AttributePricing implements IPricingRule
 	{
 		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
 		final ProductCategoryId productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
-		final I_M_PriceList_Version pricelistVersion = productPrice.getM_PriceList_Version();
+		final I_M_PriceList_Version pricelistVersion = loadOutOfTrx(productPrice.getM_PriceList_Version_ID(), I_M_PriceList_Version.class);
 		final I_M_PriceList priceList = pricelistVersion.getM_PriceList();
 
 		result.setPriceStd(productPrice.getPriceStd());
@@ -159,11 +161,11 @@ public class AttributePricing implements IPricingRule
 
 	/**
 	 * Gets the {@link I_M_ProductPrice} to be used for setting the prices.
-	 * 
+	 *
 	 * It checks if the referenced object from the given {@code pricingCtx} references a {@link I_M_ProductPrice} and explicitly demands a particular product price attribute.
 	 * If that's the case, if returns that product price (if valid!).
 	 * If that's not the case it tries to search for the best matching one, if any.
-	 * 
+	 *
 	 * @param pricingCtx
 	 */
 	private final Optional<? extends I_M_ProductPrice> getProductPrice(final IPricingContext pricingCtx)
@@ -272,6 +274,7 @@ public class AttributePricing implements IPricingRule
 				ctxPriceListVersion,
 				priceListVersion -> ProductPrices.newQuery(priceListVersion)
 						.setProductId(pricingCtx.getProductId())
+						.onlyValidPrices(true)
 						.matching(_defaultMatchers)
 						.matchingAttributes(attributeSetInstance)
 						.firstMatching());
@@ -287,7 +290,7 @@ public class AttributePricing implements IPricingRule
 
 	/**
 	 * Extracts an ASI from the given {@code pricingCtx}.
-	 * 
+	 *
 	 * @param pricingCtx
 	 * @return
 	 *         <ul>

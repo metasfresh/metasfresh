@@ -3,6 +3,8 @@ package de.metas.product;
 import java.math.BigDecimal;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
+
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.uom.UomId;
@@ -22,12 +24,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -47,29 +49,44 @@ public class ProductPrice
 
 	@NonNull
 	@Getter(AccessLevel.NONE)
-	Money value;
+	Money money;
 
 	public Money toMoney()
 	{
-		return value;
+		return money;
 	}
 
 	public BigDecimal toBigDecimal()
 	{
-		return value.getAsBigDecimal();
+		return money.toBigDecimal();
 	}
 
 	public CurrencyId getCurrencyId()
 	{
-		return value.getCurrencyId();
+		return money.getCurrencyId();
 	}
 
-	public ProductPrice withValueAndUomId(@NonNull final BigDecimal value, @NonNull final UomId uomId)
+	public ProductPrice withValueAndUomId(@NonNull final BigDecimal moneyAmount, @NonNull final UomId uomId)
 	{
 		return toBuilder()
-				.value(Money.of(value, getCurrencyId()))
+				.money(Money.of(moneyAmount, getCurrencyId()))
 				.uomId(uomId)
 				.build();
+	}
+
+	public ProductPrice negate()
+	{
+		return this.toBuilder().money(money.negate()).build();
+	}
+
+	public boolean isEqualByComparingTo(@Nullable final ProductPrice other)
+	{
+		if (other == null)
+		{
+			return false;
+		}
+
+		return other.uomId.equals(uomId) && other.money.isEqualByComparingTo(money);
 	}
 
 	public <T> T transform(@NonNull final Function<ProductPrice, T> mapper)

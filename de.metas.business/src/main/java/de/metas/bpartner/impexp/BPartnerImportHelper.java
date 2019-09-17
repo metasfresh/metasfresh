@@ -2,12 +2,12 @@ package de.metas.bpartner.impexp;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.ModelValidationEngine;
 
+import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.util.Check;
 
 /*

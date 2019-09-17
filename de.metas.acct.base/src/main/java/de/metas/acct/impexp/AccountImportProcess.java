@@ -14,8 +14,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.AbstractImportProcess;
-import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IMutable;
@@ -35,6 +33,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
@@ -67,7 +68,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class AccountImportProcess extends AbstractImportProcess<I_I_ElementValue>
+public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_ElementValue>
 {
 
 	@Override
@@ -274,7 +275,7 @@ public class AccountImportProcess extends AbstractImportProcess<I_I_ElementValue
 
 	private AccountDimension newAccountDimension(@NonNull final I_I_ElementValue importRecord)
 	{
-		final AcctSchemaId acctSchemaId = Services.get(IAcctSchemaDAO.class).getAcctSchemaIdByClientAndOrg(ClientId.ofRepoId(getAD_Client_ID()), OrgId.ofRepoId(importRecord.getAD_Org_ID()));
+		final AcctSchemaId acctSchemaId = Services.get(IAcctSchemaDAO.class).getAcctSchemaIdByClientAndOrg(ClientId.ofRepoId(importRecord.getAD_Client_ID()), OrgId.ofRepoId(importRecord.getAD_Org_ID()));
 
 		return AccountDimension.builder()
 				.setAcctSchemaId(acctSchemaId)
@@ -285,7 +286,7 @@ public class AccountImportProcess extends AbstractImportProcess<I_I_ElementValue
 	}
 
 	@Override
-	protected void afterImport()
+	protected void afterImport(final IMutable<Object> state)
 	{
 		AccountImportTableSqlUpdater.dbUpdateParentElementValue(getWhereClause());
 		retrieveImportedAdTrees().forEach(AccountImportTableSqlUpdater::dbUpdateParentElementValueId);

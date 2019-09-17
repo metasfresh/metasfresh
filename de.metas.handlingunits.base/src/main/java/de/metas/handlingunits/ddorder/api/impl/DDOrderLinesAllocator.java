@@ -189,7 +189,7 @@ public class DDOrderLinesAllocator
 	 */
 	public void processWithinOwnTrx()
 	{
-		Services.get(ITrxManager.class).run(localTrx -> process());
+		Services.get(ITrxManager.class).runInNewTrx(localTrx -> process());
 	}
 
 	private void process()
@@ -255,7 +255,7 @@ public class DDOrderLinesAllocator
 		{
 			// Generate direct movement: source locator -> destination locator
 			final IDDOrderMovementBuilder movementBuilder = getMovementBuilder(ddOrderId2ReceiptMovementBuilder, ddOrder);
-			final I_M_MovementLine movementLine = movementBuilder.addMovementLineDirect(ddOrderLineOrAlt, movementQty.getAsBigDecimal(), movementQty.getUOM());
+			final I_M_MovementLine movementLine = movementBuilder.addMovementLineDirect(ddOrderLineOrAlt, movementQty.toBigDecimal(), movementQty.getUOM());
 			assignHUsToMovementLine(huIdsWithPackingMaterialsTransferedReceipt, hus, movementLine);
 		}
 		else
@@ -263,14 +263,14 @@ public class DDOrderLinesAllocator
 			// Generate movement (shipment): source locator -> in transit
 			{
 				final IDDOrderMovementBuilder movementBuilder = getMovementBuilder(ddOrderId2ShipmentMovementBuilder, ddOrder);
-				final I_M_MovementLine movementLine = movementBuilder.addMovementLineShipment(ddOrderLineOrAlt, movementQty.getAsBigDecimal(), movementQty.getUOM());
+				final I_M_MovementLine movementLine = movementBuilder.addMovementLineShipment(ddOrderLineOrAlt, movementQty.toBigDecimal(), movementQty.getUOM());
 				assignHUsToMovementLine(huIdsWithPackingMaterialsTransferedShipment, hus, movementLine);
 			}
 
 			// Generate movement (receipt): in transit -> destination locator
 			{
 				final IDDOrderMovementBuilder movementBuilder = getMovementBuilder(ddOrderId2ReceiptMovementBuilder, ddOrder);
-				final I_M_MovementLine movementLine = movementBuilder.addMovementLineReceipt(ddOrderLineOrAlt, movementQty.getAsBigDecimal(), movementQty.getUOM());
+				final I_M_MovementLine movementLine = movementBuilder.addMovementLineReceipt(ddOrderLineOrAlt, movementQty.toBigDecimal(), movementQty.getUOM());
 				assignHUsToMovementLine(huIdsWithPackingMaterialsTransferedReceipt, hus, movementLine);
 			}
 		}

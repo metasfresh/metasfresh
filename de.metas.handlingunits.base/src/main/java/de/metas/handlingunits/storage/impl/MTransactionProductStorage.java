@@ -105,7 +105,7 @@ public class MTransactionProductStorage extends AbstractProductStorage
 		// then this storage is already full with that qty
 		if (inbound && !reversal)
 		{
-			qty = qty.add(capacityTotal.getCapacityQty());
+			qty = qty.add(capacityTotal.toBigDecimal());
 		}
 
 		//

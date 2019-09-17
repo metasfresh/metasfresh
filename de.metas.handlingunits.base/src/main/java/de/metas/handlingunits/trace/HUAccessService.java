@@ -115,7 +115,7 @@ public class HUAccessService
 			return Optional.empty();
 		}
 
-		final I_C_UOM stockingUOM = Services.get(IProductBL.class).getStockingUOM(vhuProductId);
+		final I_C_UOM stockingUOM = Services.get(IProductBL.class).getStockUOM(vhuProductId);
 		final Quantity qty = vhuStorage.getQuantity(vhuProductId, stockingUOM);
 
 		return Optional.of(ImmutablePair.of(vhuProductId, qty));

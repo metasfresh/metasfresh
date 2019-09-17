@@ -168,7 +168,7 @@ public class CandidateAssignServiceExceedingQty
 		final boolean partialAssignRequired = assignableCandidate.getQuantity().compareTo(quantityToAssignEffective) > 0;
 		if (partialAssignRequired)
 		{
-			final SplitResult splitResult = assignableCandidate.splitQuantity(quantityToAssignEffective.getAsBigDecimal());
+			final SplitResult splitResult = assignableCandidate.splitQuantity(quantityToAssignEffective.toBigDecimal());
 			candidateToAssign = splitResult.getNewCandidate();
 		}
 		else

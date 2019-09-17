@@ -406,7 +406,7 @@ public class InventoryRepository
 			final Quantity qtyInternalUse = from.getQtyInternalUse();
 
 			uomId = qtyInternalUse.getUomId();
-			qtyInternalUseBD = qtyInternalUse.getAsBigDecimal();
+			qtyInternalUseBD = qtyInternalUse.toBigDecimal();
 			qtyBookBD = BigDecimal.ZERO; // using ZERO instead of null because the column is mandatory in DB
 			qtyCountBD = BigDecimal.ZERO; // using ZERO instead of null because the column is mandatory in DB
 		}
@@ -417,8 +417,8 @@ public class InventoryRepository
 
 			uomId = Quantity.getCommonUomIdOfAll(qtyCount, qtyBook);
 			qtyInternalUseBD = null;
-			qtyBookBD = qtyBook.getAsBigDecimal();
-			qtyCountBD = qtyCount.getAsBigDecimal();
+			qtyBookBD = qtyBook.toBigDecimal();
+			qtyCountBD = qtyCount.toBigDecimal();
 		}
 
 		lineRecord.setQtyInternalUse(qtyInternalUseBD);
@@ -491,7 +491,7 @@ public class InventoryRepository
 			final Quantity qtyInternalUse = from.getQtyInternalUse();
 
 			uomId = qtyInternalUse.getUomId();
-			qtyInternalUseBD = qtyInternalUse.getAsBigDecimal();
+			qtyInternalUseBD = qtyInternalUse.toBigDecimal();
 			qtyBookBD = BigDecimal.ZERO; // using ZERO instead of null because the column is mandatory in DB
 			qtyCountBD = BigDecimal.ZERO; // using ZERO instead of null because the column is mandatory in DB
 		}
@@ -502,8 +502,8 @@ public class InventoryRepository
 
 			uomId = Quantity.getCommonUomIdOfAll(qtyCount, qtyBook);
 			qtyInternalUseBD = null;
-			qtyBookBD = qtyBook.getAsBigDecimal();
-			qtyCountBD = qtyCount.getAsBigDecimal();
+			qtyBookBD = qtyBook.toBigDecimal();
+			qtyCountBD = qtyCount.toBigDecimal();
 		}
 
 		lineRecord.setQtyInternalUse(qtyInternalUseBD);

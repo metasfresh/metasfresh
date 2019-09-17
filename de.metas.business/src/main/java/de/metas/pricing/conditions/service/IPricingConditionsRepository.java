@@ -8,6 +8,7 @@ import org.compiere.model.I_M_DiscountSchemaBreak;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsId;
+import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 
 public interface IPricingConditionsRepository extends ISingletonService
@@ -31,6 +32,12 @@ public interface IPricingConditionsRepository extends ISingletonService
 	 */
 	int resequence(int discountSchemaId);
 
-	void copyDiscountSchemaBreaks(PricingConditionsId pricingConditionsId, IQueryFilter<I_M_DiscountSchemaBreak> queryFilter);
+	void copyDiscountSchemaBreaks(IQueryFilter<I_M_DiscountSchemaBreak> sourceFilter, PricingConditionsId toPricingConditionsId);
+
+	void copyDiscountSchemaBreaksWithProductId(IQueryFilter<I_M_DiscountSchemaBreak> sourceFilter, PricingConditionsId toPricingConditionsId, ProductId toProductId, boolean allowCopyToSameSchema);
+
+	boolean isSingleProductId(IQueryFilter<I_M_DiscountSchemaBreak> queryFilter);
+
+	ProductId retrieveUniqueProductIdForSelectionOrNull(IQueryFilter<I_M_DiscountSchemaBreak> selectionFilter);
 
 }

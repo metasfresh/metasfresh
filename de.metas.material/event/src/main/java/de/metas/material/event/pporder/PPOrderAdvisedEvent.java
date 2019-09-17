@@ -83,7 +83,7 @@ public class PPOrderAdvisedEvent extends AbstractPPOrderEvent
 
 		final int productPlanningId = ppOrder.getProductPlanningId();
 		Check.errorIf(productPlanningId <= 0,
-				"The given ppOrderAdvisedEvent event has a ppOrder with productPlanningId={}", productPlanningId);
+				"The given ppOrderAdvisedEvent event needs to have a ppOrder with a product planning Id; productPlanningId={}", productPlanningId);
 
 		ppOrder.getLines().forEach(this::validateLine);
 	}
@@ -92,7 +92,7 @@ public class PPOrderAdvisedEvent extends AbstractPPOrderEvent
 	{
 		final int productBomLineId = ppOrderLine.getProductBomLineId();
 		Check.errorIf(productBomLineId <= 0,
-				"The given ppOrderAdvisedEvent event has a ppOrderLine with productBomLineId={}; ppOrderLine={}",
+				"The given ppOrderAdvisedEvent event has a ppOrderLine with a product bom line Id; productBomLineId={}; ppOrderLine={}",
 				productBomLineId, ppOrderLine);
 	}
 }

@@ -124,8 +124,8 @@ public class OrderFreightCostsService
 
 		final Money convertedFreightAmt = convertFreightRate(freightAmt, orderCurrencyId);
 
-		freightRateOrderLine.setPriceEntered(convertedFreightAmt.getAsBigDecimal());
-		freightRateOrderLine.setPriceActual(convertedFreightAmt.getAsBigDecimal());
+		freightRateOrderLine.setPriceEntered(convertedFreightAmt.toBigDecimal());
+		freightRateOrderLine.setPriceActual(convertedFreightAmt.toBigDecimal());
 
 		freightRateOrderLine.setIsManualDiscount(true);
 		freightRateOrderLine.setDiscount(BigDecimal.ZERO);
@@ -150,7 +150,7 @@ public class OrderFreightCostsService
 		}
 
 		final BigDecimal freightAmtConverted = currencyBL.convert(
-				freightAmt.getAsBigDecimal(),
+				freightAmt.toBigDecimal(),
 				freightAmt.getCurrencyId(),
 				orderCurrencyId,
 				Env.getClientId(),
@@ -228,7 +228,7 @@ public class OrderFreightCostsService
 	public void updateFreightAmt(@NonNull final I_C_Order order)
 	{
 		final Money freightRate = computeFreightRate(order).orElse(null);
-		order.setFreightAmt(freightRate != null ? freightRate.getAsBigDecimal() : BigDecimal.ZERO);
+		order.setFreightAmt(freightRate != null ? freightRate.toBigDecimal() : BigDecimal.ZERO);
 	}
 
 	private Optional<Money> computeFreightRate(final I_C_Order salesOrder)

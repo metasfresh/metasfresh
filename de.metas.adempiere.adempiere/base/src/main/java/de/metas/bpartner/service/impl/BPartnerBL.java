@@ -335,10 +335,10 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public boolean isAllowConsolidateInOutEffective(final org.compiere.model.I_C_BPartner partner, final boolean isSOTrx)
+	public boolean isAllowConsolidateInOutEffective(
+			@NonNull final org.compiere.model.I_C_BPartner partner,
+			@NonNull final SOTrx soTrx)
 	{
-		Check.assumeNotNull(partner, "partner not null");
-
 		final I_C_BPartner partnerToUse = InterfaceWrapperHelper.create(partner, de.metas.interfaces.I_C_BPartner.class);
 		final boolean partnerAllowConsolidateInOut = partnerToUse.isAllowConsolidateInOut();
 		if (partnerAllowConsolidateInOut)
@@ -348,7 +348,7 @@ public class BPartnerBL implements IBPartnerBL
 
 		//
 		// 07973: Attempt to override SO shipment consolidation if configured
-		if (isSOTrx)
+		if (soTrx.isSales())
 		{
 			final boolean allowConsolidateInOutOverrideDefault = false; // default=false (preserve existing logic)
 			final boolean allowConsolidateInOutOverride = Services.get(ISysConfigBL.class).getBooleanValue(
@@ -356,7 +356,10 @@ public class BPartnerBL implements IBPartnerBL
 					allowConsolidateInOutOverrideDefault);
 			return allowConsolidateInOutOverride;
 		}
-		return false;
+		else
+		{
+			return false;
+		}
 	}
 
 	@Override

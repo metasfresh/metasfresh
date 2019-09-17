@@ -7,20 +7,22 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.Mutable;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.compiere.Adempiere;
-import org.compiere.model.I_AD_Issue;
 import org.compiere.util.MimeType;
 import org.springframework.context.annotation.Profile;
 
+import de.metas.bpartner.GLN;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.i18n.ITranslatableString;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.invoice_gateway.spi.model.imp.ImportInvoiceResponseRequest;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse.Status;
+import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
 import de.metas.process.Param;
@@ -70,11 +72,8 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 	private static final String ATTACHMENT_TAGNAME_FILE_ABSOLUTE_PATH = "ImportFileAbsolutePath";
 
 	private final CrossVersionServiceRegistry crossVersionServiceRegistry = Adempiere.getBean(CrossVersionServiceRegistry.class);
-
 	private final InvoiceResponseRepo importedInvoiceResponseRepo = Adempiere.getBean(InvoiceResponseRepo.class);
-
 	private final InvoiceRejectionDetailRepo invoiceRejectionDetailRepo = Adempiere.getBean(InvoiceRejectionDetailRepo.class);
-
 	private final ImportInvoiceResponseService importInvoiceResponseService = Adempiere.getBean(ImportInvoiceResponseService.class);
 
 	@Param(mandatory = true, parameterName = "InputDirectory")
@@ -111,8 +110,7 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 
 		for (final File fileToImport : filesToImport)
 		{
-			trxManager.run(() -> {
-
+			trxManager.runInNewTrx(() -> {
 				final boolean currentFileImported = importSingleFile(fileToImport.toPath(), outputDirectory.toPath());
 				allFilesImported.setValue(allFilesImported.getValue() && currentFileImported);
 			});
@@ -150,14 +148,15 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 			final InvoiceImportClientImpl invoiceImportClientImpl = new InvoiceImportClientImpl(crossVersionServiceRegistry);
 			final ImportedInvoiceResponse response = invoiceImportClientImpl.importInvoiceResponse(request);
 
-			final int billerOrg = importInvoiceResponseService.retrieveOrgByGLN(response.getBillerEan());
+			final GLN gln = GLN.ofString(response.getBillerEan());
+			final OrgId billerOrg = importInvoiceResponseService.retrieveOrgByGLN(gln);
 
 			final ImportedInvoiceResponse responseWithTags = response.toBuilder()
 					.additionalTag(ATTACHMENT_TAGNAME_FILE_ABSOLUTE_PATH, fileToImport.toAbsolutePath().toString())
 					.additionalTag(ATTACHMENT_TAGNAME_TIME_MILLIS, Long.toString(SystemTime.millis()))
 					.additionalTag(ATTACHMENT_TAGNAME_AD_PINSTANCE_ID, Integer.toString(getPinstanceId().getRepoId()))
 					.invoiceId(importedInvoiceResponseRepo.retrieveInvoiceRecordByDocumentNoAndCreatedOrNull(response))
-					.billerOrg(billerOrg)
+					.billerOrg(billerOrg.getRepoId())
 					.build();
 
 			final InvoiceRejectionDetailId invoiceRejectionDetailId = invoiceRejectionDetailRepo.save(responseWithTags);
@@ -187,8 +186,8 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 		}
 		catch (final RuntimeException e)
 		{
-			final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(e);
-			addLog("{} while processing file {}; AD_Issue_ID={}; Message={};", e.getClass().getSimpleName(), fileToImport.getFileName().toString(), issue.getAD_Issue_ID(), e.getMessage());
+			final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(e);
+			addLog("{} while processing file {}; AD_Issue_ID={}; Message={};", e.getClass().getSimpleName(), fileToImport.getFileName().toString(), issueId, e.getMessage());
 		}
 		return false;
 	}

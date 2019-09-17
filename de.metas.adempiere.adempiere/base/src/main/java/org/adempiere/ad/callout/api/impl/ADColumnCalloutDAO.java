@@ -53,7 +53,7 @@ public class ADColumnCalloutDAO implements IADColumnCalloutDAO
 				// If EntityType is not displayed, skip this callout
 				.filter(cc -> {
 					final String entityType = cc.getEntityType();
-					return Check.isEmpty(entityType, true) || UIDisplayedEntityTypes.isEntityTypeDisplayedInUIOrTrueIfNull(entityType);
+					return Check.isEmpty(entityType, true)|| UIDisplayedEntityTypes.isEntityTypeDisplayedInUIOrTrueIfNull(ctx, entityType);
 				})
 				// collect to: AD_Column_ID -> List of AD_ColumnCallouts
 				.collect(GuavaCollectors.toImmutableListMultimap(cc -> extractColumnName(cc)));

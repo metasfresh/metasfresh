@@ -47,9 +47,9 @@ import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder;
 import de.metas.rest_api.ordercandidates.JsonOrganization;
+import de.metas.rest_api.ordercandidates.JsonProductInfo;
+import de.metas.rest_api.ordercandidates.JsonProductInfo.Type;
 import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
-import de.metas.rest_api.product.JsonProductInfo;
-import de.metas.rest_api.product.JsonProductInfo.Type;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
@@ -358,7 +358,7 @@ public class XmlToOLCandsService
 	{
 		final LocalDate dateInvoiced = TimeUtil.asLocalDate(invoice.getRequestDate());
 		requestBuilder.dateRequired(dateInvoiced); // this will be dateOrdered and dateDelivered
-		requestBuilder.dateInvoiced(dateInvoiced);
+		requestBuilder.presetDateInvoiced(dateInvoiced);
 	}
 
 	private ImmutableList<JsonOLCandCreateRequestBuilder> insertBodyIntoBuilders(
@@ -443,7 +443,7 @@ public class XmlToOLCandsService
 		final JsonOrganization org = JsonOrganization
 				.builder()
 				.syncAdvise(context.getBillerSyncAdvise())
-				.code(createBPartnerExternalId(biller).toString())
+				.code(createBPartnerExternalId(biller).getValue())
 				.name(name.getSingleStringName())
 				.bpartner(createJsonBPartnerInfo(biller, context))
 				.build();

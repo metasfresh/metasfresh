@@ -1170,7 +1170,7 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_IsAggregatePO = "IsAggregatePO";
 
 	/**
-	 * Set IsAllowActionPrice.
+	 * Set Aktionsbezug.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1179,7 +1179,7 @@ public interface I_C_BPartner
 	public void setIsAllowActionPrice (boolean IsAllowActionPrice);
 
 	/**
-	 * Get IsAllowActionPrice.
+	 * Get Aktionsbezug.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1191,6 +1191,29 @@ public interface I_C_BPartner
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_IsAllowActionPrice = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "IsAllowActionPrice", null);
     /** Column name IsAllowActionPrice */
     public static final String COLUMNNAME_IsAllowActionPrice = "IsAllowActionPrice";
+
+	/**
+	 * Set Preise mutieren.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsAllowPriceMutation (boolean IsAllowPriceMutation);
+
+	/**
+	 * Get Preise mutieren.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isAllowPriceMutation();
+
+    /** Column definition for IsAllowPriceMutation */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_IsAllowPriceMutation = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "IsAllowPriceMutation", null);
+    /** Column name IsAllowPriceMutation */
+    public static final String COLUMNNAME_IsAllowPriceMutation = "IsAllowPriceMutation";
 
 	/**
 	 * Set Firma.

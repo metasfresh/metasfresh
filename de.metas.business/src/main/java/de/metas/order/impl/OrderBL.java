@@ -24,6 +24,7 @@ package de.metas.order.impl;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -73,6 +74,8 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
@@ -127,7 +130,7 @@ public class OrderBL implements IOrderBL
 				Check.errorIf(true, "Unable to find pricing system for BPartner {}_{}; SOTrx={}", bpartnerName, soTrx);
 			}
 
-			order.setM_PricingSystem_ID(PricingSystemId.getRepoId(pricingSysId));
+			order.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSysId));
 		}
 
 		//
@@ -859,7 +862,7 @@ public class OrderBL implements IOrderBL
 
 		//
 		// Set QtyOrdered
-		orderLine.setQtyOrdered(qtyOrdered.getAsBigDecimal());
+		orderLine.setQtyOrdered(qtyOrdered.toBigDecimal());
 		InterfaceWrapperHelper.save(orderLine); // saving, just to be on the save side in case reserveStock() does a refresh or sth
 
 		//
@@ -1056,5 +1059,14 @@ public class OrderBL implements IOrderBL
 		final I_C_Order order = ordersRepo.getById(orderId);
 		final ProjectId orderProjectId = ProjectId.ofRepoIdOrNull(order.getC_Project_ID());
 		return orderProjectId;
+	}
+
+	@Override
+	public ZoneId getTimeZone(@NonNull final I_C_Order order)
+	{
+		final IOrgDAO ordersRepo = Services.get(IOrgDAO.class);
+		
+		final OrgId orgId = OrgId.ofRepoIdOrAny(order.getAD_Org_ID());
+		return ordersRepo.getOrgInfoById(orgId).getTimeZone();
 	}
 }

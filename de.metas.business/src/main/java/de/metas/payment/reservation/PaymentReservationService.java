@@ -159,7 +159,7 @@ public class PaymentReservationService
 		final I_C_Payment payment = Services.get(IPaymentBL.class).newInboundReceiptBuilder()
 				.invoiceId(request.getSalesInvoiceId())
 				.bpartnerId(request.getCustomerId())
-				.payAmt(request.getAmount().getAsBigDecimal())
+				.payAmt(request.getAmount().toBigDecimal())
 				.currencyId(request.getAmount().getCurrencyId())
 				.tenderType(TenderType.DirectDeposit)
 				.dateTrx(request.getDateTrx())

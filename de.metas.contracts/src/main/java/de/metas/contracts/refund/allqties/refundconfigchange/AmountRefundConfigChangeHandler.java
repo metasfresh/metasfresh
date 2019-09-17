@@ -54,7 +54,7 @@ public class AmountRefundConfigChangeHandler extends RefundConfigChangeHandler
 
 		final Quantity quantityAssigendToRefundCandidate = existingAssignment.getQuantityAssigendToRefundCandidate();
 
-		final Money moneyToAssign = amountToApply.multiply(quantityAssigendToRefundCandidate.getAsBigDecimal());
+		final Money moneyToAssign = amountToApply.multiply(quantityAssigendToRefundCandidate.toBigDecimal());
 
 		return AssignmentToRefundCandidate.builder()
 				.refundConfigId(getCurrentRefundConfig().getId())

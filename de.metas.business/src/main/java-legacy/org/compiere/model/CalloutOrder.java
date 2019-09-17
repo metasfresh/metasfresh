@@ -857,7 +857,7 @@ public class CalloutOrder extends CalloutEngine
 
 		//
 		// UOMs: reset them to avoid UOM conversion errors between previous UOM and current product's UOMs (see FRESH-936 #69)
-		orderLine.setC_UOM_ID(Services.get(IProductBL.class).getStockingUOMId(orderLine.getM_Product_ID()).getRepoId());
+		orderLine.setC_UOM_ID(Services.get(IProductBL.class).getStockUOMId(orderLine.getM_Product_ID()).getRepoId());
 		orderLine.setPrice_UOM_ID(-1); // reset; will be set when we update pricing
 
 		// Set Attribute
@@ -1250,7 +1250,7 @@ public class CalloutOrder extends CalloutEngine
 		if (M_Product_ID > 0 && orderLine.getC_Order().isSOTrx()
 				&& QtyOrdered.signum() > 0)  // no negative (returns)
 		{
-			if (Services.get(IProductBL.class).isStocked(M_Product_ID))
+			if (Services.get(IProductBL.class).isStocked(ProductId.ofRepoIdOrNull(M_Product_ID)))
 			{
 				final int M_Warehouse_ID = orderLine.getM_Warehouse_ID();
 				final int M_AttributeSetInstance_ID = orderLine.getM_AttributeSetInstance_ID();

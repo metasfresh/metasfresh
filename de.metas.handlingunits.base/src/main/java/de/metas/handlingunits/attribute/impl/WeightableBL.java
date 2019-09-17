@@ -1,11 +1,13 @@
 package de.metas.handlingunits.attribute.impl;
 
+import javax.annotation.Nullable;
+
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_UOM;
 
 import de.metas.handlingunits.attribute.IWeightableBL;
-import de.metas.product.IProductBL;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 
 public class WeightableBL implements IWeightableBL
@@ -22,24 +24,18 @@ public class WeightableBL implements IWeightableBL
 	}
 
 	@Override
-	public boolean isWeightable(final I_C_UOM uom)
+	public boolean isWeightable(@Nullable final UomId uomId)
 	{
 		// guard against null, be tolerant, just return "not weightable"
-		if (uom == null)
+		if (uomId == null)
 		{
 			return false;
 		}
 
-		final String uomType = uom.getUOMType();
+		final IUOMDAO uomdDao = Services.get(IUOMDAO.class);
+		final I_C_UOM uomRecord = uomdDao.getById(uomId);
+		final String uomType = uomRecord.getUOMType();
+
 		return isWeightableUOMType(uomType);
-	}
-
-	@Override
-	public boolean isWeightable(final I_M_Product product)
-	{
-		final IProductBL productBL = Services.get(IProductBL.class);
-
-		final I_C_UOM stockingUOM = productBL.getStockingUOM(product);
-		return isWeightable(stockingUOM);
 	}
 }

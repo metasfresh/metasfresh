@@ -32,6 +32,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.VetoableChangeListener;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -504,7 +505,7 @@ final class ReadPaymentForm
 	{
 		final Properties ctx = getCtx();
 
-		trxManager.run((TrxRunnable)localTrxName -> {
+		trxManager.runInNewTrx((TrxRunnable)localTrxName -> {
 			final List<I_C_Invoice_Candidate> candidates = getSelectedInvoiceCandidates();
 			if (candidates.isEmpty())
 			{
@@ -513,7 +514,7 @@ final class ReadPaymentForm
 
 			//
 			// Generate invoices
-			final Timestamp dateInvoiced = SystemTime.asDayTimestamp();
+			final LocalDate dateInvoiced = SystemTime.asLocalDate();
 			final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 			invoicingParams.setDateInvoiced(dateInvoiced);
 			invoicingParams.setDateAcct(dateInvoiced);

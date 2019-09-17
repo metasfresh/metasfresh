@@ -72,7 +72,7 @@ public class ResourceProductService implements IResourceProductService
 	public TemporalUnit getResourceTemporalUnit(final ResourceId resourceId)
 	{
 		final ProductId resourceProductId = getProductIdByResourceId(resourceId);
-		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(resourceProductId);
+		final I_C_UOM uom = Services.get(IProductBL.class).getStockUOM(resourceProductId);
 		return UOMUtil.toTemporalUnit(uom);
 	}
 
@@ -80,6 +80,6 @@ public class ResourceProductService implements IResourceProductService
 	public I_C_UOM getResoureUOM(final ResourceId resourceId)
 	{
 		final I_M_Product product = Services.get(IResourceProductService.class).getProductByResourceId(resourceId);
-		return Services.get(IProductBL.class).getStockingUOM(product);
+		return Services.get(IProductBL.class).getStockUOM(product);
 	}
 }

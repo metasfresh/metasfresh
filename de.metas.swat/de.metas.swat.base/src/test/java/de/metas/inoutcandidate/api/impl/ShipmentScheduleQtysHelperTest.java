@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 
 import org.adempiere.inout.util.DeliveryGroupCandidate;
+import org.adempiere.inout.util.DeliveryGroupCandidateGroupId;
 import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
@@ -20,6 +21,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.DeliveryRule;
+import de.metas.order.OrderId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 
@@ -119,7 +121,7 @@ public class ShipmentScheduleQtysHelperTest
 
 		final DeliveryGroupCandidate deliveryGroupCandidate = DeliveryGroupCandidate.builder()
 				.bPartnerAddress("bPartnerAddress")
-				.groupId(10)
+				.groupId(DeliveryGroupCandidateGroupId.of(OrderId.ofRepoId(10)))
 				.shipperId(ShipperId.optionalOfRepoId(20))
 				.warehouseId(WarehouseId.ofRepoId(30))
 				.build();

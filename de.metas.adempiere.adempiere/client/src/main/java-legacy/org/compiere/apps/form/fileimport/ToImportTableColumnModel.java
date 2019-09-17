@@ -1,7 +1,8 @@
 package org.compiere.apps.form.fileimport;
 
-import org.compiere.impexp.ImpDataLine;
 import org.compiere.util.DisplayType;
+
+import de.metas.impexp.ImpDataLine;
 
 class ToImportTableColumnModel extends TableColumnModel
 {

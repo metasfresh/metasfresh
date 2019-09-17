@@ -85,13 +85,13 @@ public class RefundInvoiceCandidateService
 	{
 		final List<RefundInvoiceCandidate> existingCandidates = retrieveMatchingRefundCandidates(assignableCandidate, refundContract);
 
-		final BigDecimal qtyToAssign = assignableCandidate.getQuantity().getAsBigDecimal();
+		final BigDecimal qtyToAssign = assignableCandidate.getQuantity().toBigDecimal();
 
 		final Quantity currentAssignedQuantity = existingCandidates.stream()
 				.map(RefundInvoiceCandidate::getAssignedQuantity)
 				.reduce(Quantity.zero(assignableCandidate.getQuantity().getUOM()), Quantity::add);
 
-		final BigDecimal assignedTargetQuantity = currentAssignedQuantity.getAsBigDecimal().add(qtyToAssign);
+		final BigDecimal assignedTargetQuantity = currentAssignedQuantity.toBigDecimal().add(qtyToAssign);
 
 		// relevantRefundConfigs contains at least one config with minQty=0
 		final List<RefundConfig> relevantRefundConfigs = refundContract.getRefundConfigsToApplyForQuantity(assignedTargetQuantity);
@@ -198,7 +198,7 @@ public class RefundInvoiceCandidateService
 		if (RefundBase.AMOUNT_PER_UNIT.equals(refundConfig.getRefundBase()))
 		{
 			final Money amount = refundConfig.getAmount();
-			moneyAugend = amount.multiply(assignedQtyAugent.getAsBigDecimal());
+			moneyAugend = amount.multiply(assignedQtyAugent.toBigDecimal());
 		}
 		else
 		{

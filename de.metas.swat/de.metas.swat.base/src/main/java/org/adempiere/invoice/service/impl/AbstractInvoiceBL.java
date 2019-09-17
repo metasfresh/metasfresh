@@ -1,5 +1,7 @@
 package org.adempiere.invoice.service.impl;
 
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -24,6 +26,7 @@ package org.adempiere.invoice.service.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -99,10 +102,15 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
@@ -410,7 +418,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			{
 				invoice.setIsPaid(test);
 			}
-			
+
 			log.debug("IsPaid={} (allocated={}, invoiceGrandTotal={})", test, alloc, total);
 		}
 
@@ -447,17 +455,18 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final I_C_Invoice createInvoiceFromOrder(final org.compiere.model.I_C_Order order,
-			final int C_DocTypeTarget_ID,
-			final Timestamp dateInvoiced,
-			final Timestamp dateAcct)
+	public final I_C_Invoice createInvoiceFromOrder(
+			final org.compiere.model.I_C_Order order,
+			final DocTypeId docTypeTargetId,
+			final LocalDate dateInvoiced,
+			final LocalDate dateAcct)
 	{
 		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class, order);
 		invoice.setAD_Org_ID(order.getAD_Org_ID());
 		setFromOrder(invoice, order);	// set base settings
 
 		//
-		DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(C_DocTypeTarget_ID);
+		DocTypeId docTypeId = docTypeTargetId;
 		if (docTypeId == null)
 		{
 			final I_C_DocType odt = Services.get(IOrderBL.class).getDocTypeOrNull(order);
@@ -474,12 +483,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		setDocTypeTargetIdAndUpdateDescription(invoice, docTypeId.getRepoId());
 		if (dateInvoiced != null)
 		{
-			invoice.setDateInvoiced(dateInvoiced);
+			invoice.setDateInvoiced(TimeUtil.asTimestamp(dateInvoiced));
 		}
 
 		if (dateAcct != null)
 		{
-			invoice.setDateAcct(dateAcct); // task 08437
+			invoice.setDateAcct(TimeUtil.asTimestamp(dateAcct)); // task 08437
 		}
 		else
 		{
@@ -948,44 +957,46 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final void setQtys(@NonNull final I_C_InvoiceLine invoiceLine, @NonNull final BigDecimal qtyInvoiced)
+	public final void setQtys(@NonNull final I_C_InvoiceLine invoiceLine, @NonNull final StockQtyAndUOMQty qtysInvoiced)
 	{
 		// for now we are lenient, because i'm not sure because strict doesn't break stuff
 		// Check.assume(invoiceLine.getM_Product_ID() > 0, "invoiceLine {} has M_Product_ID > 0", invoiceLine);
 		// Check.assume(invoiceLine.getC_UOM_ID() > 0, "invoiceLine {} has C_UOM_ID > 0", invoiceLine);
 		// Check.assume(invoiceLine.getPrice_UOM_ID() > 0, "invoiceLine {} has Price_UOM_ID > 0", invoiceLine);
 
-		invoiceLine.setQtyInvoiced(qtyInvoiced);
+		final Quantity stockQty = qtysInvoiced.getStockQty();
+		invoiceLine.setQtyInvoiced(stockQty.toBigDecimal());
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		final ProductId productId = ProductId.ofRepoIdOrNull(invoiceLine.getM_Product_ID());
 
-		boolean fallback = false;
-		if (invoiceLine.getM_Product_ID() <= 0)
-		{
-			fallback = true;
-		}
-
-		final ProductId productId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
-
+		final boolean fallback = productId == null;
 		if (fallback)
 		{
 			// without a product, we have no internal UOM, so we can't do any conversions
-			invoiceLine.setQtyEntered(qtyInvoiced);
-			invoiceLine.setQtyInvoicedInPriceUOM(qtyInvoiced);
+			invoiceLine.setQtyEntered(stockQty.toBigDecimal());
+			invoiceLine.setQtyInvoicedInPriceUOM(stockQty.toBigDecimal());
 			return;
 		}
 
-		if (invoiceLine.getC_UOM_ID() <= 0)
+		if (qtysInvoiced.getUOMQtyOpt().isPresent())
 		{
-			invoiceLine.setQtyEntered(qtyInvoiced);
+			final Quantity uomQty = qtysInvoiced.getUOMQtyOpt().get();
+
+			invoiceLine.setC_UOM_ID(uomQty.getUomId().getRepoId());
+			invoiceLine.setQtyEntered(uomQty.toBigDecimal());
 		}
 		else
 		{
-			final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(productId, invoiceLine.getC_UOM(), qtyInvoiced);
+			final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(productId, invoiceLine.getC_UOM(), stockQty.toBigDecimal());
 			invoiceLine.setQtyEntered(qtyEntered);
 		}
 
-		final BigDecimal qtyInvoicedInPriceUOM = uomConversionBL.convertFromProductUOM(productId, invoiceLine.getPrice_UOM(), qtyInvoiced);
+		final BigDecimal qtyInvoicedInPriceUOM = uomConversionBL.convertQty(
+				UOMConversionContext.of(productId),
+				invoiceLine.getQtyEntered(),
+				UomId.ofRepoId(invoiceLine.getC_UOM_ID()),
+				UomId.ofRepoId(firstGreaterThanZero(invoiceLine.getPrice_UOM_ID(), invoiceLine.getC_UOM_ID())));
 		invoiceLine.setQtyInvoicedInPriceUOM(qtyInvoicedInPriceUOM);
 	}
 
@@ -1446,12 +1457,16 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			{
 				final I_M_InOutLine inoutLine = matchInv.getM_InOutLine();
 
+				final StockQtyAndUOMQty qtyToMatchExact = StockQtyAndUOMQtys.create(
+						matchInv.getQty().negate(), ProductId.ofRepoId(inoutLine.getM_Product_ID()),
+						matchInv.getQtyInUOM().negate(), UomId.ofRepoId(matchInv.getC_UOM_ID()));
+
 				matchInvBL.createMatchInvBuilder()
 						.setContext(reversalLine)
 						.setC_InvoiceLine(reversalLine)
 						.setM_InOutLine(inoutLine)
 						.setDateTrx(reversalInvoice.getDateInvoiced())
-						.setQtyToMatchExact(matchInv.getQty().negate())
+						.setQtyToMatchExact(qtyToMatchExact)
 						.build();
 			}
 		}

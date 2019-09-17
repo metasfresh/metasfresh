@@ -22,7 +22,6 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,11 +33,17 @@ import org.compiere.model.I_C_Tax;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.invoicecandidate.api.IInvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
+import de.metas.invoicecandidate.api.InvoiceCandidateInOutLineToUpdate;
+import de.metas.money.Money;
+import de.metas.product.ProductPrice;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.util.lang.Percent;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.ToString;
 
 /**
@@ -63,11 +68,22 @@ import lombok.ToString;
 	private int M_Product_ID;
 	private int C_Charge_ID;
 	private int C_OrderLine_ID;
-	private BigDecimal qtyToInvoice;
-	private BigDecimal priceActual;
-	private BigDecimal priceEntered;
-	private BigDecimal discount;
-	private BigDecimal netLineAmt;
+
+	@Getter @Setter
+	private StockQtyAndUOMQty qtysToInvoice;
+
+	@Getter @Setter
+	private ProductPrice priceActual;
+
+	@Getter @Setter
+	private ProductPrice priceEntered;
+
+	@Getter @Setter
+	private Percent discount;
+
+	@Getter @Setter
+	private Money netLineAmt;
+
 	private String description;
 	private Collection<Integer> iciolIds = new TreeSet<>();
 	private int activityID;
@@ -75,7 +91,7 @@ import lombok.ToString;
 	private boolean printed = true;
 	private int lineNo = 0;
 	private Set<IInvoiceLineAttribute> invoiceLineAttributes = Collections.emptySet();
-	private List<IInvoiceCandidateInOutLineToUpdate> iciolsToUpdate = new ArrayList<>();
+	private List<InvoiceCandidateInOutLineToUpdate> iciolsToUpdate = new ArrayList<>();
 	private int C_PaymentTerm_ID;
 
 	@Override
@@ -96,23 +112,6 @@ import lombok.ToString;
 		return C_OrderLine_ID;
 	}
 
-	@Override
-	public BigDecimal getQtyToInvoice()
-	{
-		return qtyToInvoice;
-	}
-
-	@Override
-	public BigDecimal getPriceActual()
-	{
-		return priceActual;
-	}
-
-	@Override
-	public BigDecimal getNetLineAmt()
-	{
-		return netLineAmt;
-	}
 
 	@Override
 	public void setM_Product_ID(final int m_Product_ID)
@@ -133,44 +132,22 @@ import lombok.ToString;
 	}
 
 	@Override
-	public void setQtyToInvoice(final BigDecimal qtyToInvoice)
+	public final void addQtysToInvoice(@NonNull final StockQtyAndUOMQty qtysToInvoiceToAdd)
 	{
-		this.qtyToInvoice = qtyToInvoice;
-	}
-
-	@Override
-	public final void addQtyToInvoice(@NonNull final BigDecimal qtyToInvoiceToAdd)
-	{
-		if (qtyToInvoiceToAdd.signum() == 0)
+		final StockQtyAndUOMQty qtysToInvoiceOld = getQtysToInvoice();
+		final StockQtyAndUOMQty qtysToInvoiceNew;
+		if (qtysToInvoiceOld == null)
 		{
-			return; // nothing to add
-		}
-
-		final BigDecimal qtyToInvoiceOld = getQtyToInvoice();
-		final BigDecimal qtyToInvoiceNew;
-		if (qtyToInvoiceOld == null)
-		{
-			qtyToInvoiceNew = qtyToInvoiceToAdd;
+			qtysToInvoiceNew = qtysToInvoiceToAdd;
 		}
 		else
 		{
-			qtyToInvoiceNew = qtyToInvoiceOld.add(qtyToInvoiceToAdd);
+			qtysToInvoiceNew = qtysToInvoiceOld.add(qtysToInvoiceToAdd);
 		}
+		setQtysToInvoice(qtysToInvoiceNew);
 
-		setQtyToInvoice(qtyToInvoiceNew);
 	}
 
-	@Override
-	public void setPriceActual(@NonNull final BigDecimal priceActual)
-	{
-		this.priceActual = priceActual;
-	}
-
-	@Override
-	public void setNetLineAmt(@NonNull final BigDecimal netLineAmt)
-	{
-		this.netLineAmt = netLineAmt;
-	}
 
 	@Override
 	public String getDescription()
@@ -184,29 +161,7 @@ import lombok.ToString;
 		this.description = description;
 	}
 
-	@Override
-	public BigDecimal getPriceEntered()
-	{
-		return priceEntered;
-	}
 
-	@Override
-	public void setPriceEntered(final BigDecimal priceEntered)
-	{
-		this.priceEntered = priceEntered;
-	}
-
-	@Override
-	public BigDecimal getDiscount()
-	{
-		return discount;
-	}
-
-	@Override
-	public void setDiscount(final BigDecimal discount)
-	{
-		this.discount = discount;
-	}
 
 	@Override
 	public Collection<Integer> getC_InvoiceCandidate_InOutLine_IDs()
@@ -282,7 +237,7 @@ import lombok.ToString;
 	}
 
 	@Override
-	public List<IInvoiceCandidateInOutLineToUpdate> getInvoiceCandidateInOutLinesToUpdate()
+	public List<InvoiceCandidateInOutLineToUpdate> getInvoiceCandidateInOutLinesToUpdate()
 	{
 		return iciolsToUpdate;
 	}
@@ -298,4 +253,5 @@ import lombok.ToString;
 	{
 		C_PaymentTerm_ID = paymentTermId;
 	}
+
 }

@@ -36,7 +36,7 @@ public interface OrderCandidatesRestEndpoint
 
 	String PATH_BULK = "/bulk";
 
-	ResponseEntity<JsonOLCand> createOrderLineCandidate(JsonOLCandCreateRequest request);
+	ResponseEntity<JsonOLCandCreateBulkResponse> createOrderLineCandidate(JsonOLCandCreateRequest request);
 
 	ResponseEntity<JsonOLCandCreateBulkResponse> createOrderLineCandidates(JsonOLCandCreateBulkRequest bulkRequest);
 

@@ -2,14 +2,20 @@ package de.metas.rest_api.ordercandidates;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
-import lombok.Value;
-
+import de.metas.rest_api.utils.JsonError;
+import de.metas.util.Check;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -34,29 +40,67 @@ import lombok.Value;
  */
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@Value
-public class JsonOLCandCreateBulkResponse
+@ToString(doNotUseGetters = true)
+@EqualsAndHashCode(doNotUseGetters = true)
+public final class JsonOLCandCreateBulkResponse
 {
-	public static JsonOLCandCreateBulkResponse of(final List<JsonOLCand> olCands)
+	public static JsonOLCandCreateBulkResponse ok(@NonNull final List<JsonOLCand> olCands)
 	{
-		return new JsonOLCandCreateBulkResponse(olCands);
+		final JsonError error = null;
+		return new JsonOLCandCreateBulkResponse(olCands, error);
+	}
+
+	public static JsonOLCandCreateBulkResponse error(@NonNull final JsonError error)
+	{
+		final List<JsonOLCand> olCands = null;
+		return new JsonOLCandCreateBulkResponse(olCands, error);
 	}
 
 	@JsonProperty("result")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final List<JsonOLCand> result;
 
+	@JsonProperty("error")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final JsonError error;
+
 	@JsonCreator
-	private JsonOLCandCreateBulkResponse(@JsonProperty("result") final List<JsonOLCand> olCands)
+	private JsonOLCandCreateBulkResponse(
+			@JsonProperty("result") @Nullable final List<JsonOLCand> olCands,
+			@JsonProperty("error") @Nullable final JsonError error)
 	{
-		this.result = ImmutableList.copyOf(olCands);
+		this.error = error;
+		if (error == null)
+		{
+			result = olCands != null ? ImmutableList.copyOf(olCands) : ImmutableList.of();
+		}
+		else
+		{
+			Check.assume(olCands == null || olCands.isEmpty(), "No olCands shall be provided when error");
+			result = null;
+		}
 	}
 
-	public JsonOLCand getSingleResult()
+	public boolean isError()
 	{
-		if (result.size() != 1)
+		return error != null;
+	}
+
+	public JsonError getError()
+	{
+		if (error == null)
 		{
-			throw new OrderCandidateRestApiException("Expected single result but we got: " + result);
+			throw new IllegalStateException("Not an error result: " + this);
 		}
-		return result.get(0);
+		return error;
+	}
+
+	public List<JsonOLCand> getResult()
+	{
+		if (error != null)
+		{
+			throw new IllegalStateException("Not an successful result: " + this, error.getThrowable());
+		}
+		return result;
 	}
 }

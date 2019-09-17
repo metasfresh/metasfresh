@@ -377,7 +377,7 @@ public final class Language implements Serializable
 		return getBaseLanguage().getAD_Language(); // metas
 	}   // getBase
 
-	public static String asLanguageString(@Nullable final Language language)
+	public static String asLanguageStringOrNull(@Nullable final Language language)
 	{
 		if (language == null)
 		{

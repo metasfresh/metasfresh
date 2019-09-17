@@ -199,8 +199,6 @@ public final class POInfo implements Serializable
 	 */
 	private POInfo(final int AD_Table_ID, final String trxName)
 	{
-		super();
-
 		m_AD_Table_ID = AD_Table_ID;
 		loadInfo(trxName);
 	}   // PInfo
@@ -1035,13 +1033,6 @@ public final class POInfo implements Serializable
 		return poInfoColumn.getReferencedTableNameOrNull();
 	}
 
-	/**
-	 * Get Lookup
-	 *
-	 * @param ctx
-	 * @param columnIndex index
-	 * @return Lookup
-	 */
 	public Lookup getColumnLookup(final Properties ctx, final int columnIndex)
 	{
 		return m_columns[columnIndex].getLookup(ctx, Env.WINDOW_None);
@@ -1059,9 +1050,6 @@ public final class POInfo implements Serializable
 	}
 
 	/**
-	 * Is Column Key
-	 *
-	 * @param index index
 	 * @return true if column is the key
 	 */
 	public boolean isKey(final int index)

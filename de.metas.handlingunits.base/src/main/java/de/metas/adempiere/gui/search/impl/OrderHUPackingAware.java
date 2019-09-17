@@ -23,7 +23,6 @@ package de.metas.adempiere.gui.search.impl;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 
@@ -130,19 +129,6 @@ public class OrderHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public void setDateOrdered(final Timestamp dateOrdered)
-	{
-		order.setDateOrdered(dateOrdered);
-
-	}
-
-	@Override
-	public Timestamp getDateOrdered()
-	{
-		return order.getDateOrdered();
-	}
-
-	@Override
 	public boolean isInDispute()
 	{
 		return false;
@@ -158,8 +144,8 @@ public class OrderHUPackingAware implements IHUPackingAware
 	public String toString()
 	{
 		return String
-				.format("OrderHUPackingAware [order=%s, getM_Product_ID()=%s, getM_Product()=%s, getM_AttributeSetInstance_ID()=%s, getC_UOM()=%s, getQty()=%s, getM_HU_PI_Item_Product()=%s, getQtyPacks()=%s, getC_BPartner()=%s, getDateOrdered()=%s, getM_HU_PI_Item_Product_ID()=%s, isInDispute()=%s]",
-						order, getM_Product_ID(), getM_Product_ID(), getM_AttributeSetInstance_ID(), getC_UOM_ID(), getQty(), getM_HU_PI_Item_Product_ID(), getQtyTU(), getC_BPartner_ID(), getDateOrdered(),
+				.format("OrderHUPackingAware [order=%s, getM_Product_ID()=%s, getM_Product()=%s, getM_AttributeSetInstance_ID()=%s, getC_UOM()=%s, getQty()=%s, getM_HU_PI_Item_Product()=%s, getQtyPacks()=%s, getC_BPartner()=%s, getM_HU_PI_Item_Product_ID()=%s, isInDispute()=%s]",
+						order, getM_Product_ID(), getM_Product_ID(), getM_AttributeSetInstance_ID(), getC_UOM_ID(), getQty(), getM_HU_PI_Item_Product_ID(), getQtyTU(), getC_BPartner_ID(),
 						getM_HU_PI_Item_Product_ID(), isInDispute());
 	}
 }

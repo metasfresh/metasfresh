@@ -1,6 +1,7 @@
 package de.metas.user;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
@@ -70,6 +71,11 @@ public class UserId implements RepoIdAware
 		{
 			return repoId >= 0 ? new UserId(repoId) : null;
 		}
+	}
+
+	public static Optional<UserId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
 	public static int toRepoId(@Nullable final UserId userId)

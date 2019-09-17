@@ -31,6 +31,7 @@
   guaranteedaysmin        as ShelfLifeDays,
   warehouse_temperature   as Warehouse_temperature,
   p.description       as ProductDescription,
+p.customerlabelname,
 m_product_ID
 FROM m_product p
 left outer join ad_orginfo oi on p.ad_org_id = oi.ad_org_id
@@ -73,6 +74,9 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 	</field>
 	<field name="productdescription" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="productdescription"/>
+	</field>
+	<field name="customerlabelname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="customerlabelname"/>
 	</field>
 	<field name="m_product_id" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="m_product_id"/>
@@ -274,7 +278,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 					<font fontName="Arial" size="9" isBold="false"/>
 					<paragraph lineSpacing="1_1_2"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{productdescription}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{customerlabelname}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement isPrintRepeatedValues="false" x="0" y="63" width="136" height="12" uuid="acc4b218-b0fe-4c5e-9211-142ee6fb2525"/>
@@ -367,7 +371,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 		</band>
 		<band height="50" splitType="Prevent">
 			<subreport>
-				<reportElement x="0" y="20" width="549" height="28" uuid="28065a70-a08d-431d-b55f-16d218b9fc6c"/>
+				<reportElement x="0" y="20" width="549" height="28" isPrintWhenDetailOverflows="true" uuid="28065a70-a08d-431d-b55f-16d218b9fc6c"/>
 				<subreportParameter name="RECORD_ID">
 					<subreportParameterExpression><![CDATA[($F{m_product_id}).intValue()]]></subreportParameterExpression>
 				</subreportParameter>

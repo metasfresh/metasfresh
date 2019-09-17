@@ -1,7 +1,7 @@
 de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTest.createJsonOLCandCreateBulkRequest=[ {
   "requests" : [ {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -71,14 +71,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -148,14 +149,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -225,14 +227,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -302,14 +305,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -379,14 +383,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -456,14 +461,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -533,14 +539,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -610,14 +617,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -687,14 +695,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -764,14 +773,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -841,14 +851,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -918,14 +929,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -995,14 +1007,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1072,14 +1085,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1149,14 +1163,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1226,14 +1241,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1303,14 +1319,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1380,14 +1397,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1457,14 +1475,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1534,14 +1553,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1611,11 +1631,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   } ]
 } ]
 
@@ -1623,7 +1644,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
 de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTest.createJsonOLCandCreateBulkRequest2=[ {
   "requests" : [ {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1693,14 +1714,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1770,14 +1792,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1847,14 +1870,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1924,14 +1948,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2001,14 +2026,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2078,14 +2104,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2155,14 +2182,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2232,14 +2260,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2309,14 +2338,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2386,14 +2416,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2463,14 +2494,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2540,14 +2572,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2617,14 +2650,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2694,14 +2728,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2771,14 +2806,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2848,14 +2884,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2925,14 +2962,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -3002,14 +3040,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -3079,14 +3118,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -3156,14 +3196,15 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   }, {
     "org" : {
-      "code" : "JsonExternalId(value=EAN-2011234567890)",
+      "code" : "EAN-2011234567890",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -3233,10 +3274,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : "2013-03-20",
+    "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
-    }
+    },
+    "presetDateInvoiced" : "2013-03-20"
   } ]
 } ]

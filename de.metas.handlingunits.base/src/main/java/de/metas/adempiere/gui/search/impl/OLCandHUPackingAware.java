@@ -23,7 +23,6 @@ package de.metas.adempiere.gui.search.impl;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 
@@ -157,20 +156,6 @@ public class OLCandHUPackingAware implements IHUPackingAware
 	{
 		olCand.setC_BPartner_Override_ID(partnerId);
 		values.setC_BPartner_ID(partnerId);
-	}
-
-	@Override
-	public void setDateOrdered(final Timestamp dateOrdered)
-	{
-		olCand.setDatePromised_Override(dateOrdered);
-		values.setDateOrdered(dateOrdered);
-	}
-
-	@Override
-	public Timestamp getDateOrdered()
-	{
-		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
-		return olCandEffectiveValuesBL.getDatePromised_Effective(olCand);
 	}
 
 	@Override

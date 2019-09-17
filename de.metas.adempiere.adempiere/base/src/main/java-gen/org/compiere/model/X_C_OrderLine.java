@@ -15,7 +15,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1970723880L;
+	private static final long serialVersionUID = 910013526L;
 
     /** Standard Constructor */
     public X_C_OrderLine (Properties ctx, int C_OrderLine_ID, String trxName)
@@ -36,6 +36,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 			setEnforcePriceLimit (false); // N
 			setFreightAmt (BigDecimal.ZERO);
 			setFrequencyType (null); // M
+			setInvoicableQtyBasedOn (null); // Nominal
 			setIsDescription (false); // N
 			setIsDiscountEditable (true); // Y
 			setIsGroupCompensationLine (false); // N
@@ -519,18 +520,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Project getC_Project()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class);
-	}
-
-	@Override
-	public void setC_Project(org.compiere.model.I_C_Project C_Project)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class, C_Project);
-	}
-
 	/** Set Projekt.
 		@param C_Project_ID 
 		Financial Project
@@ -991,6 +980,35 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public java.lang.String getGroupCompensationType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GroupCompensationType);
+	}
+
+	/** 
+	 * InvoicableQtyBasedOn AD_Reference_ID=541023
+	 * Reference name: InvoicableQtyBasedOn
+	 */
+	public static final int INVOICABLEQTYBASEDON_AD_Reference_ID=541023;
+	/** Nominal = Nominal */
+	public static final String INVOICABLEQTYBASEDON_Nominal = "Nominal";
+	/** CatchWeight = CatchWeight */
+	public static final String INVOICABLEQTYBASEDON_CatchWeight = "CatchWeight";
+	/** Set Abr. Menge basiert auf.
+		@param InvoicableQtyBasedOn 
+		Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
+	  */
+	@Override
+	public void setInvoicableQtyBasedOn (java.lang.String InvoicableQtyBasedOn)
+	{
+
+		set_Value (COLUMNNAME_InvoicableQtyBasedOn, InvoicableQtyBasedOn);
+	}
+
+	/** Get Abr. Menge basiert auf.
+		@return Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
+	  */
+	@Override
+	public java.lang.String getInvoicableQtyBasedOn () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_InvoicableQtyBasedOn);
 	}
 
 	/** Set Description Only.
@@ -1773,6 +1791,38 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return ii.intValue();
 	}
 
+	/** Set Vorbelegtes Rechnungsdatum.
+		@param PresetDateInvoiced Vorbelegtes Rechnungsdatum	  */
+	@Override
+	public void setPresetDateInvoiced (java.sql.Timestamp PresetDateInvoiced)
+	{
+		set_Value (COLUMNNAME_PresetDateInvoiced, PresetDateInvoiced);
+	}
+
+	/** Get Vorbelegtes Rechnungsdatum.
+		@return Vorbelegtes Rechnungsdatum	  */
+	@Override
+	public java.sql.Timestamp getPresetDateInvoiced () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_PresetDateInvoiced);
+	}
+
+	/** Set Vorbelegtes Lieferdatum.
+		@param PresetDateShipped Vorbelegtes Lieferdatum	  */
+	@Override
+	public void setPresetDateShipped (java.sql.Timestamp PresetDateShipped)
+	{
+		set_Value (COLUMNNAME_PresetDateShipped, PresetDateShipped);
+	}
+
+	/** Get Vorbelegtes Lieferdatum.
+		@return Vorbelegtes Lieferdatum	  */
+	@Override
+	public java.sql.Timestamp getPresetDateShipped () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_PresetDateShipped);
+	}
+
 	/** Set Preiseinheit.
 		@param Price_UOM_ID Preiseinheit	  */
 	@Override
@@ -2097,7 +2147,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 
 	/** Set Berechn. Menge.
 		@param QtyInvoiced 
-		Menge, die bereits in Rechnung gestellt wurde
+		Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
 	  */
 	@Override
 	public void setQtyInvoiced (java.math.BigDecimal QtyInvoiced)
@@ -2106,7 +2156,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	/** Get Berechn. Menge.
-		@return Menge, die bereits in Rechnung gestellt wurde
+		@return Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
 	  */
 	@Override
 	public java.math.BigDecimal getQtyInvoiced () 

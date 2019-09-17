@@ -1,5 +1,6 @@
 package de.metas.pricing.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.copy;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -22,16 +24,21 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
+import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.product.ProductPriceCreateRequest;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -42,11 +49,13 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.currency.ICurrencyBL;
+import de.metas.impexp.processing.product.ProductPriceCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
@@ -61,6 +70,8 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.PriceListsCollection;
 import de.metas.pricing.service.UpdateProductPriceRequest;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -211,7 +222,7 @@ public class PriceListDAO implements IPriceListDAO
 
 		return new PriceListsCollection(pricingSystemId, priceLists);
 	}
-	
+
 	@Override
 	public I_M_PriceList_Version retrievePriceListVersionOrNull(
 			@NonNull final org.compiere.model.I_M_PriceList priceList,
@@ -302,41 +313,46 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public I_M_PriceList_Version retrieveNextVersionOrNull(final I_M_PriceList_Version plv)
+	public I_M_PriceList_Version retrieveNextVersionOrNull(final I_M_PriceList_Version plv, final boolean onlyProcessed)
 	{
 		// we want the PLV with the lowest ValidFrom that is just greater than plv's
 		final Operator validFromOperator = Operator.GREATER;
 		final boolean orderAscending = true;
 
-		return retrievePreviousOrNext(plv, validFromOperator, orderAscending);
+		return retrievePreviousOrNext(plv, validFromOperator, onlyProcessed, orderAscending);
 	}
 
 	@Override
-	public I_M_PriceList_Version retrievePreviousVersionOrNull(final I_M_PriceList_Version plv)
+	public I_M_PriceList_Version retrievePreviousVersionOrNull(final I_M_PriceList_Version plv, final boolean onlyProcessed)
 	{
 		// we want the PLV with the highest ValidFrom that is just less than plv's
 		final Operator validFromOperator = Operator.LESS;
 		final boolean orderAscending = false; // i.e. descending
-		return retrievePreviousOrNext(plv, validFromOperator, orderAscending);
+		return retrievePreviousOrNext(plv, validFromOperator, onlyProcessed, orderAscending);
 	}
 
 	private I_M_PriceList_Version retrievePreviousOrNext(final I_M_PriceList_Version plv,
 			final Operator validFromOperator,
+			final boolean onlyProcessed,
 			final boolean orderAscending)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList_Version.class, plv)
+		final IQueryBuilder<I_M_PriceList_Version> filter = Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList_Version.class, plv)
 				// active
 				.addOnlyActiveRecordsFilter()
 				// same price list
 				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, plv.getM_PriceList_ID())
-				// same processed value
-				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_Processed, true)
+
 				// valid from must be after the given PLV's validFrom date
-				.addCompareFilter(I_M_PriceList_Version.COLUMNNAME_ValidFrom, validFromOperator, plv.getValidFrom())
-				// by validFrom, ascending.
-				.orderBy()
-				.addColumn(I_M_PriceList_Version.COLUMNNAME_ValidFrom, orderAscending)
-				.endOrderBy()
+				.addCompareFilter(I_M_PriceList_Version.COLUMNNAME_ValidFrom, validFromOperator, plv.getValidFrom());
+
+		if (onlyProcessed)
+		{
+			filter// same processed value
+					.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_Processed, onlyProcessed);
+		}
+
+		// by validFrom, ascending.
+		return filter.orderBy(I_M_PriceList_Version.COLUMNNAME_ValidFrom)
 				.create()
 				.first();
 	}
@@ -374,7 +390,7 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public String getPricingSystemName(final PricingSystemId pricingSystemId)
+	public String getPricingSystemName(@Nullable final PricingSystemId pricingSystemId)
 	{
 		if (pricingSystemId == null)
 		{
@@ -510,7 +526,7 @@ public class PriceListDAO implements IPriceListDAO
 		save(plv);
 
 		// now set the previous one as base list
-		final I_M_PriceList_Version previousPlv = Services.get(IPriceListDAO.class).retrievePreviousVersionOrNull(plv);
+		final I_M_PriceList_Version previousPlv = Services.get(IPriceListDAO.class).retrievePreviousVersionOrNull(plv, true);
 		if (previousPlv != null)
 		{
 			plv.setM_Pricelist_Version_Base(previousPlv);
@@ -574,6 +590,8 @@ public class PriceListDAO implements IPriceListDAO
 
 		record.setC_TaxCategory_ID(request.getTaxCategoryId().getRepoId());
 
+		record.setIsAttributeDependant(false);
+
 		saveRecord(record);
 
 		return ProductPriceId.ofRepoId(record.getM_ProductPrice_ID());
@@ -627,5 +645,163 @@ public class PriceListDAO implements IPriceListDAO
 				.addInArrayFilter(I_M_ProductPrice.COLUMN_M_ProductPrice_ID, productPriceIds)
 				.create()
 				.delete();
+	}
+
+	@Override
+	public void mutateCustomerPrices(final PriceListVersionId newBasePLVId, final UserId userId)
+	{
+		final I_M_PriceList_Version newBasePLV = getPriceListVersionById(newBasePLVId);
+
+		final PriceListVersionId basePriceListVersionId = PriceListVersionId.ofRepoIdOrNull(newBasePLV.getM_Pricelist_Version_Base_ID());
+		if (basePriceListVersionId == null)
+		{
+			// nothing to do
+			return;
+		}
+
+		final I_M_PriceList_Version oldPLV = getPriceListVersionById(basePriceListVersionId);
+
+		final List<I_M_PriceList_Version> versionsForOldBase = retrieveCustomPLVsToMutate(oldPLV);
+
+		for (final I_M_PriceList_Version oldCustPLV : versionsForOldBase)
+		{
+			createNewPLV(oldCustPLV, newBasePLV, userId);
+		}
+
+	}
+
+	private void createNewPLV(final I_M_PriceList_Version oldCustomerPLV, final I_M_PriceList_Version newBasePLV, final UserId userId)
+	{
+
+		final I_M_PriceList_Version newCustomerPLV = copy()
+				.setSkipCalculatedColumns(true)
+				.setFrom(oldCustomerPLV)
+				.copyToNew(I_M_PriceList_Version.class);
+
+		newCustomerPLV.setValidFrom(newBasePLV.getValidFrom());
+		saveRecord(newCustomerPLV);
+
+		final PriceListVersionId newCustomerPLVId = PriceListVersionId.ofRepoId(newCustomerPLV.getM_PriceList_Version_ID());
+
+		createProductPricesForPLV(userId, newCustomerPLVId);
+
+		cloneASIs(newCustomerPLVId);
+
+		newCustomerPLV.setM_Pricelist_Version_Base_ID(newBasePLV.getM_Pricelist_Version_Base_ID());
+		save(newCustomerPLV);
+
+	}
+
+	@VisibleForTesting
+	protected void createProductPricesForPLV(final UserId userId, final PriceListVersionId newCustomerPLVId)
+	{
+		final ISessionBL sessionBL = Services.get(ISessionBL.class);
+
+		sessionBL.setDisableChangeLogsForThread(true);
+		try
+		{
+			DB.executeFunctionCallEx( //
+					ITrx.TRXNAME_ThreadInherited //
+					, "select M_PriceList_Version_CopyFromBase(p_M_PriceList_Version_ID:=?, p_AD_User_ID:=?)" //
+					, new Object[] { newCustomerPLVId, userId.getRepoId() } //
+			);
+
+		}
+		finally
+		{
+			sessionBL.setDisableChangeLogsForThread(false);
+		}
+	}
+
+	private void cloneASIs(final PriceListVersionId newPLVId)
+	{
+		Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_ProductPrice.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+				.addEqualsFilter(I_M_ProductPrice.COLUMN_M_PriceList_Version_ID, newPLVId)
+				.addEqualsFilter(I_M_ProductPrice.COLUMN_IsAttributeDependant, true)
+				.create()
+				.iterateAndStream()
+				.forEach(this::cloneASI);
+	}
+
+	private void cloneASI(final I_M_ProductPrice productPrice)
+	{
+		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
+		if (!productPrice.isAttributeDependant())
+		{
+			return;
+		}
+
+		final AttributeSetInstanceId asiSourceId = AttributeSetInstanceId.ofRepoId(productPrice.getM_AttributeSetInstance_ID());
+
+		final AttributeSetInstanceId asiTargetId = attributeDAO.copyASI(asiSourceId);
+
+		productPrice.setM_AttributeSetInstance_ID(asiTargetId.getRepoId());
+
+		save(productPrice);
+	}
+
+	@VisibleForTesting
+	protected List<I_M_PriceList_Version> retrieveCustomPLVsToMutate(@NonNull final I_M_PriceList_Version basePLV)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final StringBuilder maxValidFromTypedFilter = new StringBuilder()
+				.append(I_M_PriceList_Version.Table_Name)
+				.append(".")
+				.append(I_M_PriceList_Version.COLUMNNAME_ValidFrom)
+				.append(" = ( SELECT max (v.")
+				.append(I_M_PriceList_Version.COLUMNNAME_ValidFrom)
+				.append(") FROM ")
+				.append(I_M_PriceList_Version.Table_Name).append(" v ")
+				.append(" WHERE ")
+				.append(I_M_PriceList_Version.Table_Name)
+				.append(".")
+				.append(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID)
+				.append(" = v.")
+				.append(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID)
+				.append(") ");
+
+		final IQueryFilter<I_M_PriceList_Version> maxValidFromFilter = TypedSqlQueryFilter.of(maxValidFromTypedFilter.toString());
+
+		final IQuery<I_C_BPartner> customerQuery = queryBL.createQueryBuilder(I_C_BPartner.class)
+
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsCustomer, true)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsAllowPriceMutation, true)
+				.create();
+
+		final I_M_PriceList basePriceList = getById(basePLV.getM_PriceList_ID());
+
+		final List<I_M_PriceList_Version> newestVersions = queryBL.createQueryBuilder(I_M_PriceList.class)
+
+				.addEqualsFilter(I_M_PriceList.COLUMNNAME_C_Country_ID, basePriceList.getC_Country_ID())
+				.addEqualsFilter(I_M_PriceList.COLUMNNAME_C_Currency_ID, basePriceList.getC_Currency_ID())
+
+				.addInSubQueryFilter()
+				.matchingColumnNames(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, I_C_BPartner.COLUMNNAME_M_PricingSystem_ID)
+				.subQuery(customerQuery)
+				.end()
+				.andCollectChildren(I_M_PriceList_Version.COLUMN_M_PriceList_ID)
+				.addOnlyActiveRecordsFilter()
+
+				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_Pricelist_Version_Base_ID, basePLV.getM_PriceList_Version_ID())
+				.addNotEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, basePLV.getM_PriceList_ID())
+				.addNotNull(I_M_PriceList_Version.COLUMNNAME_M_DiscountSchema_ID)
+
+				.filter(maxValidFromFilter)
+				.create()
+
+				.list(I_M_PriceList_Version.class);
+
+		return newestVersions;
+	}
+
+	@Override
+	public Optional<TaxCategoryId> getDefaultTaxCategoryByPriceListVersionId(@NonNull final PriceListVersionId priceListVersionId)
+	{
+		final I_M_PriceList priceList = getPriceListByPriceListVersionId(priceListVersionId);
+		return TaxCategoryId.optionalOfRepoId(priceList.getDefault_TaxCategory_ID());
 	}
 }

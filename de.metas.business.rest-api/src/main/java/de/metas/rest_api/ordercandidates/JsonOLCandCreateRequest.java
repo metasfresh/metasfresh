@@ -12,7 +12,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.SyncAdvise;
-import de.metas.rest_api.product.JsonProductInfo;
 import de.metas.util.Check;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -106,6 +105,13 @@ public final class JsonOLCandCreateRequest
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
+			value = "This translates to <code>C_OLCand.DateOrdered</code>.")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	@JsonInclude(Include.NON_NULL)
+	private LocalDate dateOrdered;
+
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
 			value = "This translates to <code>C_OLCand.datePromised</code>.\n"
 					+ "It's the date that the external system's user would like the metasfresh user to promise for delivery.\n"
 					+ "Note: may be empty, if is <code>dataDestInternalName='DEST.de.metas.invoicecandidate'</code>")
@@ -163,13 +169,8 @@ public final class JsonOLCandCreateRequest
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
-			value = "Can be set if the invoice's document date is already known from the external system and shall be forwarded to the invoice candidate.\n"
-					+ "This works only if not an order line but an invoice candidate is directly created for the respective order line candidate.\n"
-					+ "Therefore, please make sure to have <code>dataDestInternalName='DEST.de.metas.invoicecandidate'</code>.\n"
-					+ "Otherwise, this property will be ignored.")
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	@JsonInclude(Include.NON_NULL)
-	private LocalDate dateInvoiced;
+			value = "Translates to C_OLCand.M_Warehouse_Dest_ID.")
+	private String warehouseDestCode;
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
@@ -183,6 +184,20 @@ public final class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	private JsonDocTypeInfo invoiceDocType;
 
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
+			value = "Can be set if the invoice's document date is already known from the external system. ")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	@JsonInclude(Include.NON_NULL)
+	private LocalDate presetDateInvoiced;
+
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
+			value = "Can be set if the shipment's document date is already known from the external system. ")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	@JsonInclude(Include.NON_NULL)
+	private LocalDate presetDateShipped;
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonOLCandCreateRequest(
@@ -195,6 +210,7 @@ public final class JsonOLCandCreateRequest
 			@JsonProperty("billBPartner") final JsonBPartnerInfo billBPartner,
 			@JsonProperty("dropShipBPartner") final JsonBPartnerInfo dropShipBPartner,
 			@JsonProperty("handOverBPartner") final JsonBPartnerInfo handOverBPartner,
+			@JsonProperty("dateOrdered") final @Nullable LocalDate dateOrdered,
 			@JsonProperty("dateRequired") final LocalDate dateRequired,
 			@JsonProperty("flatrateConditionsId") final int flatrateConditionsId,
 			@JsonProperty("product") final JsonProductInfo product,
@@ -207,8 +223,10 @@ public final class JsonOLCandCreateRequest
 			@JsonProperty("currencyCode") final @Nullable String currencyCode,
 			@JsonProperty("discount") final @Nullable BigDecimal discount,
 			@JsonProperty("poReference") final @NonNull String poReference,
-			@JsonProperty("dateInvoiced") final @Nullable LocalDate dateInvoiced,
-			@JsonProperty("invoiceDocType") final @Nullable JsonDocTypeInfo invoiceDocType)
+			@JsonProperty("warehouseDestCode") final @Nullable String warehouseDestCode,
+			@JsonProperty("invoiceDocType") final @Nullable JsonDocTypeInfo invoiceDocType,
+			@JsonProperty("presetDateInvoiced") final @Nullable LocalDate presetDateInvoiced,
+			@JsonProperty("presetDateShipped") final @Nullable LocalDate presetDateShipped)
 	{
 		this.org = org;
 		this.externalLineId = externalLineId;
@@ -219,6 +237,7 @@ public final class JsonOLCandCreateRequest
 		this.billBPartner = billBPartner;
 		this.dropShipBPartner = dropShipBPartner;
 		this.handOverBPartner = handOverBPartner;
+		this.dateOrdered = dateOrdered;
 		this.dateRequired = dateRequired;
 		this.flatrateConditionsId = flatrateConditionsId;
 		this.product = product;
@@ -231,8 +250,10 @@ public final class JsonOLCandCreateRequest
 		this.currencyCode = currencyCode;
 		this.discount = discount;
 		this.poReference = poReference;
-		this.dateInvoiced = dateInvoiced;
+		this.warehouseDestCode = warehouseDestCode;
 		this.invoiceDocType = invoiceDocType;
+		this.presetDateInvoiced = presetDateInvoiced;
+		this.presetDateShipped = presetDateShipped;
 	}
 
 	/**

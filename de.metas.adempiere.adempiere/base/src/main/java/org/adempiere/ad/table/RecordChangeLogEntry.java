@@ -2,6 +2,8 @@ package org.adempiere.ad.table;
 
 import java.time.Instant;
 
+import javax.annotation.Nullable;
+
 import de.metas.i18n.ITranslatableString;
 import de.metas.user.UserId;
 import lombok.Builder;
@@ -48,6 +50,6 @@ public class RecordChangeLogEntry
 	@NonNull
 	Instant changedTimestamp;
 
-	@NonNull
+	@Nullable
 	UserId changedByUserId;
 }

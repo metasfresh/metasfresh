@@ -133,7 +133,7 @@ public class OrderCreateRequestRabbitMQListener
 			for (final MSV3OrderSyncRequestPackageItem item : orderPackage.getItems())
 			{
 				final ProductId productId = productDAO.retrieveProductIdByValue(item.getPzn().getValueAsString());
-				final UomId uomId = productBL.getStockingUOMId(productId);
+				final UomId uomId = productBL.getStockUOMId(productId);
 				final int huPIItemProductId = -1; // TODO fetch it from item.getPackingMaterialId()
 				olCandRequests.add(OLCandCreateRequest.builder()
 						.externalLineId(item.getId().getValueAsString())

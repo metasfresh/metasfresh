@@ -255,7 +255,7 @@ class CommandlineParams
 		}
 
 		final ImmutableSet.Builder<IFileRef> result = ImmutableSet.builder();
-		for (String additionalSqlDir : additionalSqlDirs)
+		for (final String additionalSqlDir : additionalSqlDirs)
 		{
 			final URL url;
 			try

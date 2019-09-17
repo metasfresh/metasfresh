@@ -69,6 +69,7 @@ public class DataEntryRestController
 
 	@GetMapping("/byId/{windowId}/{recordId}")
 	public ResponseEntity<JsonDataEntryResponse> getByRecordId(
+			// with swagger 2.9.2, parameters are always ordered alphabetically, see https://github.com/springfox/springfox/issues/2418
 			@PathVariable("windowId") final int windowId,
 			@PathVariable("recordId") final int recordId)
 	{

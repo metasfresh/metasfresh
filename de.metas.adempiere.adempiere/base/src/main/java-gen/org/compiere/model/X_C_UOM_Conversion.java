@@ -15,7 +15,7 @@ public class X_C_UOM_Conversion extends org.compiere.model.PO implements I_C_UOM
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -397118694L;
+	private static final long serialVersionUID = 216798144L;
 
     /** Standard Constructor */
     public X_C_UOM_Conversion (Properties ctx, int C_UOM_Conversion_ID, String trxName)
@@ -27,6 +27,7 @@ public class X_C_UOM_Conversion extends org.compiere.model.PO implements I_C_UOM
 			setC_UOM_ID (0);
 			setC_UOM_To_ID (0);
 			setDivideRate (BigDecimal.ZERO);
+			setIsCatchUOMForProduct (false); // N
 			setMultiplyRate (BigDecimal.ZERO);
         } */
     }
@@ -71,18 +72,6 @@ public class X_C_UOM_Conversion extends org.compiere.model.PO implements I_C_UOM
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
-	}
-
 	/** Set Maßeinheit.
 		@param C_UOM_ID 
 		Unit of Measure
@@ -108,21 +97,9 @@ public class X_C_UOM_Conversion extends org.compiere.model.PO implements I_C_UOM
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM_To() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_To_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM_To(org.compiere.model.I_C_UOM C_UOM_To)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_To_ID, org.compiere.model.I_C_UOM.class, C_UOM_To);
-	}
-
-	/** Set Maßeinheit Nach.
+	/** Set Ziel-Maßeinheit.
 		@param C_UOM_To_ID 
-		Target or destination Unit of Measure
+		Maßeinheit, in die eine bestimmte Menge konvertiert werden soll
 	  */
 	@Override
 	public void setC_UOM_To_ID (int C_UOM_To_ID)
@@ -133,8 +110,8 @@ public class X_C_UOM_Conversion extends org.compiere.model.PO implements I_C_UOM
 			set_Value (COLUMNNAME_C_UOM_To_ID, Integer.valueOf(C_UOM_To_ID));
 	}
 
-	/** Get Maßeinheit Nach.
-		@return Target or destination Unit of Measure
+	/** Get Ziel-Maßeinheit.
+		@return Maßeinheit, in die eine bestimmte Menge konvertiert werden soll
 	  */
 	@Override
 	public int getC_UOM_To_ID () 
@@ -147,7 +124,7 @@ public class X_C_UOM_Conversion extends org.compiere.model.PO implements I_C_UOM
 
 	/** Set Divisor.
 		@param DivideRate 
-		To convert Source number to Target number, the Source is divided
+		Der Divisor ist der Kehrwert des Umrechnungsfaktors.
 	  */
 	@Override
 	public void setDivideRate (java.math.BigDecimal DivideRate)
@@ -156,7 +133,7 @@ public class X_C_UOM_Conversion extends org.compiere.model.PO implements I_C_UOM
 	}
 
 	/** Get Divisor.
-		@return To convert Source number to Target number, the Source is divided
+		@return Der Divisor ist der Kehrwert des Umrechnungsfaktors.
 	  */
 	@Override
 	public java.math.BigDecimal getDivideRate () 
@@ -167,16 +144,30 @@ public class X_C_UOM_Conversion extends org.compiere.model.PO implements I_C_UOM
 		return bd;
 	}
 
+	/** Set Ziel ist Catch-Maßeinheit.
+		@param IsCatchUOMForProduct 
+		Legt fest ob die Ziel-Maßeinheit die Parallel-Maßeinheit des Produktes ist, auf die bei einer Catch-Weight-Abrechnung zurückgegriffen wird
+	  */
 	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	public void setIsCatchUOMForProduct (boolean IsCatchUOMForProduct)
 	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+		set_Value (COLUMNNAME_IsCatchUOMForProduct, Boolean.valueOf(IsCatchUOMForProduct));
 	}
 
+	/** Get Ziel ist Catch-Maßeinheit.
+		@return Legt fest ob die Ziel-Maßeinheit die Parallel-Maßeinheit des Produktes ist, auf die bei einer Catch-Weight-Abrechnung zurückgegriffen wird
+	  */
 	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+	public boolean isCatchUOMForProduct () 
 	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
+		Object oo = get_Value(COLUMNNAME_IsCatchUOMForProduct);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Produkt.

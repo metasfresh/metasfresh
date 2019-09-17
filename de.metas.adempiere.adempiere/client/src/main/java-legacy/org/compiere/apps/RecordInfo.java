@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
 import javax.swing.table.DefaultTableModel;
 
 import org.adempiere.ad.table.ComposedRecordId;
@@ -286,7 +287,7 @@ public class RecordInfo extends CDialog
 		return info.toString();
 	}
 
-	private final String getUserName(final UserId userId)
+	private final String getUserName(@Nullable final UserId userId)
 	{
 		if (userId == null)
 		{

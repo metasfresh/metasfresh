@@ -1,5 +1,7 @@
 package de.metas.edi.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.edi
@@ -10,12 +12,12 @@ package de.metas.edi.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -43,7 +45,7 @@ import org.compiere.model.X_C_DocType;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.aggregation.api.IAggregation;
+import de.metas.aggregation.api.Aggregation;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.document.engine.DocStatus;
@@ -321,8 +323,8 @@ public class EDIDocumentBL implements IEDIDocumentBL
 				olMissingFields.add(I_C_OrderLine.COLUMNNAME_Line);
 			}
 
-			final I_M_Product product = inOutLine.getM_Product();
-			
+			final I_M_Product product = loadOutOfTrx(inOutLine.getM_Product_ID(), I_M_Product.class);
+
 			final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
 
 			final I_C_BPartner_Product bPartnerProduct = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(bPartner, product, orgId);
@@ -400,7 +402,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		// Get the BPartner's invoice header aggregation that will be actually used to aggregate sales invoices
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ediPartner);
 		final boolean isSOTrx = true; // we are checking only Sales side (per Tobias advice)
-		final IAggregation soAggregation = Services.get(IInvoiceAggregationFactory.class).getAggregation(ctx, ediPartner, isSOTrx, X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header);
+		final Aggregation soAggregation = Services.get(IInvoiceAggregationFactory.class).getAggregation(ctx, ediPartner, isSOTrx, X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header);
 
 		// Make sure that aggregation includes C_Order_ID or POReference
 		if (!soAggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID)

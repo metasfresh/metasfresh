@@ -477,10 +477,6 @@ public interface I_C_OrderLine
 	 */
 	public int getC_Project_ID();
 
-	public org.compiere.model.I_C_Project getC_Project();
-
-	public void setC_Project(org.compiere.model.I_C_Project C_Project);
-
     /** Column definition for C_Project_ID */
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Project> COLUMN_C_Project_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Project>(I_C_OrderLine.class, "C_Project_ID", org.compiere.model.I_C_Project.class);
     /** Column name C_Project_ID */
@@ -965,6 +961,31 @@ public interface I_C_OrderLine
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_GroupCompensationType = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "GroupCompensationType", null);
     /** Column name GroupCompensationType */
     public static final String COLUMNNAME_GroupCompensationType = "GroupCompensationType";
+
+	/**
+	 * Set Abr. Menge basiert auf.
+	 * Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setInvoicableQtyBasedOn (java.lang.String InvoicableQtyBasedOn);
+
+	/**
+	 * Get Abr. Menge basiert auf.
+	 * Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getInvoicableQtyBasedOn();
+
+    /** Column definition for InvoicableQtyBasedOn */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_InvoicableQtyBasedOn = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "InvoicableQtyBasedOn", null);
+    /** Column name InvoicableQtyBasedOn */
+    public static final String COLUMNNAME_InvoicableQtyBasedOn = "InvoicableQtyBasedOn";
 
 	/**
 	 * Set Aktiv.
@@ -1744,6 +1765,52 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_PP_Cost_Collector_ID = "PP_Cost_Collector_ID";
 
 	/**
+	 * Set Vorbelegtes Rechnungsdatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPresetDateInvoiced (java.sql.Timestamp PresetDateInvoiced);
+
+	/**
+	 * Get Vorbelegtes Rechnungsdatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getPresetDateInvoiced();
+
+    /** Column definition for PresetDateInvoiced */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_PresetDateInvoiced = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "PresetDateInvoiced", null);
+    /** Column name PresetDateInvoiced */
+    public static final String COLUMNNAME_PresetDateInvoiced = "PresetDateInvoiced";
+
+	/**
+	 * Set Vorbelegtes Lieferdatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPresetDateShipped (java.sql.Timestamp PresetDateShipped);
+
+	/**
+	 * Get Vorbelegtes Lieferdatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getPresetDateShipped();
+
+    /** Column definition for PresetDateShipped */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_PresetDateShipped = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "PresetDateShipped", null);
+    /** Column name PresetDateShipped */
+    public static final String COLUMNNAME_PresetDateShipped = "PresetDateShipped";
+
+	/**
 	 * Set Preiseinheit.
 	 *
 	 * <br>Type: Table
@@ -2114,7 +2181,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Set Berechn. Menge.
-	 * Menge, die bereits in Rechnung gestellt wurde
+	 * Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -2124,7 +2191,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Get Berechn. Menge.
-	 * Menge, die bereits in Rechnung gestellt wurde
+	 * Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true

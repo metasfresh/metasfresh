@@ -45,7 +45,7 @@ import lombok.Value;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class PPOrderChangedEvent implements MaterialEvent
 {
-	public static final String TYPE = "PPOrderQtyChangedEvent";
+	public static final String TYPE = "PPOrderChangedEvent";
 
 	private final EventDescriptor eventDescriptor;
 

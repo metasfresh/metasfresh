@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.Null;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -43,6 +45,7 @@ import lombok.Value;
 
 @Value
 @ToString(of = "keysByColumnName", includeFieldNames = false)
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class ComposedRecordId
 {
 	public static final ComposedRecordId singleKey(final String singleKeyColumnName, final int recordId)

@@ -77,11 +77,12 @@ public class RefundContract
 		this.refundConfigs = RefundConfigs.sortByMinQtyDesc(refundConfigs);
 	}
 
-	public RefundConfig getRefundConfig(@NonNull final BigDecimal qty)
+	public RefundConfig getRefundConfig(@NonNull final BigDecimal qtyInStockUom)
 	{
+
 		return refundConfigs
 				.stream()
-				.filter(config -> config.getMinQty().compareTo(qty) <= 0)
+				.filter(config -> config.getMinQty().compareTo(qtyInStockUom) <= 0)
 				.findFirst()
 				.orElse(null);
 	}

@@ -30,8 +30,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -95,7 +95,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -111,11 +111,11 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	@Override
 	public ShipmentScheduleWithHU addQtyPickedAndUpdateHU(
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
-			@NonNull Quantity qtyPicked,
+			@NonNull StockQtyAndUOMQty qtyPicked,
 			@NonNull HuId tuOrVHUId,
 			@NonNull final IHUContext huContext)
 	{
-		Check.assume(qtyPicked.signum() > 0, "qtyPicked is positive but it was {}", qtyPicked);
+		Check.assume(qtyPicked.signum() > 0, "qtyPicked needs to be positive; qtyPicked={}", qtyPicked);
 
 		final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
@@ -129,7 +129,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	@Override
 	public ShipmentScheduleWithHU addQtyPicked(
 			@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule sched,
-			@NonNull final Quantity qtyPicked,
+			@NonNull final StockQtyAndUOMQty stockQtyAndCatchQty,
 			@NonNull final I_M_HU tuOrVHU,
 			@NonNull final IHUContext huContext)
 	{
@@ -144,7 +144,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 		// Create ShipmentSchedule Qty Picked record
 		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked //
-		schedQtyPicked = shipmentScheduleAllocBL.addQtyPicked(sched, qtyPicked);
+		schedQtyPicked = shipmentScheduleAllocBL.createNewQtyPickedRecord(sched, stockQtyAndCatchQty);
 
 		// Set HU specific stuff
 		final I_M_ShipmentSchedule_QtyPicked schedQtyPickedHU = create(schedQtyPicked, I_M_ShipmentSchedule_QtyPicked.class);
@@ -310,7 +310,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	 *
 	 */
 	@Override
-	public I_M_InOut getOpenShipmentOrNull(final ShipmentScheduleWithHU candidate, final Date movementDate)
+	public I_M_InOut getOpenShipmentOrNull(final ShipmentScheduleWithHU candidate, final LocalDate movementDate)
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = create(candidate.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
 

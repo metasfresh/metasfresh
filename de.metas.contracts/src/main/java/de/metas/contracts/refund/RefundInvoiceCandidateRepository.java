@@ -1,5 +1,6 @@
 package de.metas.contracts.refund;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -255,9 +256,10 @@ public class RefundInvoiceCandidateRepository
 
 		record.setM_Product_ID(RefundConfigs.extractProductId(refundCandidate.getRefundConfigs()).getRepoId());
 
+		// note that Quantity = 1 is set elsewhere, in the invoice candidate handler
 		final Money money = refundCandidate.getMoney();
-		record.setPriceActual(money.getAsBigDecimal());
-		record.setPriceEntered(money.getAsBigDecimal());
+		record.setPriceActual(money.toBigDecimal());
+		record.setPriceEntered(money.toBigDecimal());
 		record.setC_Currency_ID(money.getCurrencyId().getRepoId());
 
 		final RefundContract refundContract = refundCandidate.getRefundContract();
