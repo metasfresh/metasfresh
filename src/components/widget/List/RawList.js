@@ -457,6 +457,40 @@ export class RawList extends PureComponent {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {object} filter
+ * @prop {bool} readonly,
+ * @prop {bool} clearable,
+ * @prop {object} list,
+ * @prop {string} listHash
+ * @prop {*} rank
+ * @prop {*} defaultValue
+ * @prop {*} selected
+ * @prop {*} align
+ * @prop {string} emptyText
+ * @prop {*} lastProperty
+ * @prop {bool} updated
+ * @prop {bool} loading
+ * @prop {*} rowId
+ * @prop {bool} isModal
+ * @prop {number} tabIndex
+ * @prop {bool} disabled
+ * @prop {bool} mandatory
+ * @prop {*} validStatus
+ * @prop {*} lookupList
+ * @prop {*} initialFocus
+ * @prop {bool} doNotOpenOnFocus
+ * @prop {bool} isFocused
+ * @prop {bool} isToggled
+ * @prop {bool} autoFocus
+ * @prop {func} disableAutofocus
+ * @prop {func} onFocus
+ * @prop {func} onBlur
+ * @prop {func} onSelect
+ * @prop {func} onOpenDropdown
+ * @prop {func} onCloseDropdown
+ */
 RawList.propTypes = {
   filter: PropTypes.object,
   readonly: PropTypes.bool,
