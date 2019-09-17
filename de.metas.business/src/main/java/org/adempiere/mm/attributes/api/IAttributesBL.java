@@ -87,4 +87,6 @@ public interface IAttributesBL extends ISingletonService
 	 * @return best-before date or <code>null</code> if it does not apply
 	 */
 	Date calculateBestBeforeDate(Properties ctx, ProductId productId, BPartnerId vendorBPartnerId, Date dateReceipt);
+
+	int getNumberDisplayType(I_M_Attribute attribute);
 }
