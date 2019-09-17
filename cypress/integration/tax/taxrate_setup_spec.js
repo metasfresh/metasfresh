@@ -1,35 +1,70 @@
-import { Taxrate } from '../../support/utils/taxrate';
-import { getLanguageSpecific, appendHumanReadableNow } from '../../support/utils/utils';
+import { TaxRate } from '../../support/utils/taxrate';
+import { appendHumanReadableNow } from '../../support/utils/utils';
+import { TaxCategory } from '../../support/utils/taxcategory';
+import { ProductPrice } from '../../support/utils/product_price';
+import { Builder } from '../../support/utils/builder';
 
-describe('Create Taxrate for Automatic End2End Tests with cypress https://github.com/metasfresh/metasfresh-e2e/issues/74', function() {
+describe('Create new TaxRate', function() {
+  // tax
   let taxRateName;
   let validFrom;
   let rate;
-  let defaultTaxCategory;
+
+  // price and product
+  let priceSystemName;
+  let priceListVersionName;
+  let priceListName;
+  let productName;
+  let standardPrice;
 
   it('Read the fixture', function() {
     cy.fixture('tax/taxrate_setup_spec.json').then(f => {
       taxRateName = appendHumanReadableNow(f['taxRateName']);
       validFrom = f['validFrom'];
       rate = f['rate'];
-      defaultTaxCategory = f['defaultTaxCategory'];
-    });
-  });
-  it('Create new Taxrate', function() {
-    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      const taxCategoryName = getLanguageSpecific(miscDictionary, defaultTaxCategory);
 
-      cy.fixture('tax/taxrate.json').then(taxrateJson => {
-        Object.assign(new Taxrate(), taxrateJson)
-          .setName(taxRateName)
-          .setRate(rate)
-          .setValidFrom(validFrom)
-          .setTaxCategory(taxCategoryName)
-          .apply();
-      });
+      priceSystemName = appendHumanReadableNow(f['priceSystemName']);
+      priceListName = appendHumanReadableNow(f['priceListName']);
+      priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
+
+      productName = appendHumanReadableNow(f['productName']);
+      standardPrice = f['standardPrice'];
     });
   });
-  it(`TEST TEST ${this.documentId} TEST TEST`, function() {
-    // Test
+
+  it('Create TaxCategory', function() {
+    cy.fixture('tax/taxcategory.json').then(taxCategoryJson => {
+      Object.assign(new TaxCategory(), taxCategoryJson)
+        .setName(taxRateName)
+        .apply();
+    });
+  });
+
+  it('Create new TaxRate', function() {
+    cy.fixture('tax/taxrate.json').then(taxrateJson => {
+      Object.assign(new TaxRate(), taxrateJson)
+        .setName(taxRateName)
+        .setRate(rate)
+        .setValidFrom(validFrom)
+        .setTaxCategory(taxRateName)
+        .apply();
+    });
+  });
+
+  it('Create Price and Product', function() {
+    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
+    Builder.createProductWithPriceUsingExistingCategory(priceListName, productName, productName, null, '24_Gebinde');
+  });
+
+  it('Expect TaxCategory can be selected in a Product Price', function() {
+    new ProductPrice()
+      .setProduct(productName)
+      .setIsAttributeDependant(true)
+      .setPriceListVersion(priceListName)
+      .setStandardPrice(standardPrice)
+      .setTaxCategory(taxRateName)
+      .apply();
+
+    cy.getStringFieldValue('C_TaxCategory_ID').should('equals', taxRateName);
   });
 });
