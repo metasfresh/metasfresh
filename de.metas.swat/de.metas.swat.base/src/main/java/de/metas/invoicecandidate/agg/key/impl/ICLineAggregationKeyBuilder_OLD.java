@@ -15,15 +15,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
@@ -41,10 +40,9 @@ import org.compiere.util.Evaluatee;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.aggregation.api.AbstractAggregationKeyBuilder;
-import de.metas.aggregation.api.IAggregationAttribute;
-import de.metas.aggregation.api.IAggregationKey;
-import de.metas.aggregation.api.impl.AggregationAttribute_Attribute;
-import de.metas.aggregation.api.impl.AggregationKey;
+import de.metas.aggregation.api.AggregationAttribute;
+import de.metas.aggregation.api.AggregationId;
+import de.metas.aggregation.api.AggregationKey;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyCode;
@@ -101,7 +99,7 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 	}
 
 	@Override
-	public IAggregationKey buildAggregationKey(final I_C_Invoice_Candidate ic)
+	public AggregationKey buildAggregationKey(final I_C_Invoice_Candidate ic)
 	{
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
 		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -128,12 +126,12 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 		{
 			if (ic.getM_Product_ID() > 0)
 			{
-				final I_M_Product product =productDAO.getById(ic.getM_Product_ID());
+				final I_M_Product product = productDAO.getById(ic.getM_Product_ID());
 				sb.append(product.getValue());
 			}
 			else if (ic.getC_Charge_ID() > 0)
 			{
-				sb.append(ic.getC_Charge().getName());
+				sb.append("C_Charge_ID=" + ic.getC_Charge_ID());
 			}
 			else
 			{
@@ -184,7 +182,7 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 		//
 		// Add InvoiceLineAttributes
 		{
-			final IAggregationAttribute attribute = new AggregationAttribute_Attribute(AggregationKeyEvaluationContext.ATTRIBUTE_CODE_AggregatePer_ProductAttributes);
+			final AggregationAttribute attribute = new AggregationAttribute(AggregationKeyEvaluationContext.ATTRIBUTE_CODE_AggregatePer_ProductAttributes);
 			final Evaluatee ctx = null; // does not matter because it is actually not used
 			final Object value = attribute.evaluate(ctx);
 			sb.append("#").append(value);
@@ -200,13 +198,13 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 		// Sales iols from different inOuts shall go into different invoice lines
 		if (ic.isSOTrx())
 		{
-			final IAggregationAttribute attribute = new AggregationAttribute_Attribute(AggregationKeyEvaluationContext.ATTRIBUTE_CODE_AggregatePer_M_InOut_ID);
+			final AggregationAttribute attribute = new AggregationAttribute(AggregationKeyEvaluationContext.ATTRIBUTE_CODE_AggregatePer_M_InOut_ID);
 			final Evaluatee ctx = null; // does not matter because it is actually not used
 			final Object value = attribute.evaluate(ctx);
 			sb.append("#").append(value);
 		}
 
-		final int aggregationId = -1;
+		final AggregationId aggregationId = null;
 		return new AggregationKey(sb.toString(), aggregationId);
 	}
 

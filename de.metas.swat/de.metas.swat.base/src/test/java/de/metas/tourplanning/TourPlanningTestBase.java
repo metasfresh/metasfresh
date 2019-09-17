@@ -33,6 +33,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -77,7 +78,6 @@ import de.metas.tourplanning.model.I_M_Tour_Instance;
 import de.metas.tourplanning.model.validator.DeliveryDayAllocableInterceptor;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
-import de.metas.util.time.TimeSource;
 
 /**
  * Base class (to be extended) for all Tour Planning tests.
@@ -121,7 +121,7 @@ public abstract class TourPlanningTestBase
 
 		this.contextProvider = PlainContextAware.newWithThreadInheritedTrx();
 
-		Services.registerService(IShipmentScheduleBL.class,ShipmentScheduleBL.newInstanceForUnitTesting());
+		Services.registerService(IShipmentScheduleBL.class, ShipmentScheduleBL.newInstanceForUnitTesting());
 
 		//
 		// Model Interceptors
@@ -207,6 +207,11 @@ public abstract class TourPlanningTestBase
 		}
 	}
 
+	protected ZonedDateTime toZonedDateTime(final String dateTimeStr)
+	{
+		return TimeUtil.asZonedDateTime(toDateTimeTimestamp(dateTimeStr));
+	}
+
 	protected Timestamp toDateTimeTimestamp(final String dateTimeStr)
 	{
 		try
@@ -266,14 +271,7 @@ public abstract class TourPlanningTestBase
 	 */
 	protected void setSystemTime(final String currentTime)
 	{
-		SystemTime.setTimeSource(new TimeSource()
-		{
-			@Override
-			public long millis()
-			{
-				return toDateTimeTimestamp(currentTime).getTime();
-			}
-		});
+		SystemTime.setTimeSource(() -> toDateTimeTimestamp(currentTime).getTime());
 	}
 
 	protected I_M_DeliveryDay createDeliveryDay(final String deliveryDateTimeStr, final int bufferHours)

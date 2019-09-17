@@ -135,9 +135,9 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 			//
 			return new ResponseEntity<>(response, HttpStatus.CREATED);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
-			logger.debug("Got exception while processing {}", bulkRequest, ex);
+			logger.warn("Got exception while processing {}", bulkRequest, ex);
 
 			final String adLanguage = Env.getADLanguageOrBaseLanguage();
 			return ResponseEntity.badRequest()

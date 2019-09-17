@@ -24,6 +24,7 @@ package org.adempiere.util.api;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -78,6 +79,12 @@ import java.util.Collections;
 	}
 
 	@Override
+	public LocalDate getParameterAsLocalDate(final String parameterName)
+	{
+		return null;
+	}
+
+	@Override
 	public BigDecimal getParameterAsBigDecimal(final String paraCheckNetamttoinvoice)
 	{
 		return null;
@@ -90,5 +97,11 @@ import java.util.Collections;
 	public Collection<String> getParameterNames()
 	{
 		return Collections.emptyList();
+	}
+
+	@Override
+	public <T extends Enum<T>> T getParameterAsEnum(final String parameterName, final Class<T> enumType, final T defaultValueWhenNull)
+	{
+		return defaultValueWhenNull;
 	}
 }

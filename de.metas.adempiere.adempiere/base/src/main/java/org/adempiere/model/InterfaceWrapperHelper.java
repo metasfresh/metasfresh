@@ -1260,8 +1260,10 @@ public class InterfaceWrapperHelper
 	 * @param columnName
 	 * @return value of [columnName]_Override or [columnName]; <b>might return null</b>, so don't blindly use as int.
 	 * @throws AdempiereException if neither the "normal" value nor the override value is available.
-	 *
+	 * 
+	 * @deprecated Favor using the actual getters. It's easier to trace/debug later.
 	 */
+	@Deprecated
 	public static <T> T getValueOverrideOrValue(final Object model, final String columnName)
 	{
 		final boolean throwExIfColumnNotFound = true;

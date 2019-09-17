@@ -1,31 +1,5 @@
 package de.metas.aggregation.api.impl;
 
-/*
- * #%L
- * de.metas.aggregation
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.Arrays;
-import java.util.List;
-
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -37,10 +11,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.aggregation.api.IAggregationAttribute;
-import de.metas.aggregation.api.IAggregationItem;
-import de.metas.aggregation.api.IAggregationItem.Type;
-import de.metas.aggregation.api.IAggregationKey;
+import de.metas.aggregation.api.Aggregation;
+import de.metas.aggregation.api.AggregationId;
+import de.metas.aggregation.api.AggregationItem;
+import de.metas.aggregation.api.AggregationItem.Type;
+import de.metas.aggregation.api.AggregationItemId;
+import de.metas.aggregation.api.AggregationKey;
 
 /**
  * Tests that {@link GenericAggregationKeyBuilder} is correclty handling boolean columns and overrides.
@@ -63,7 +39,6 @@ public class GenericAggregationKeyBuilder_BooleanWithOverrideColumn_Test
 	private static final String VALUE_OVERRIDE_Null = null;
 
 	private IContextAware contextProvider;
-	private int aggregationId;
 	private Aggregation aggregation;
 	private GenericAggregationKeyBuilder<I_ModelWithBooleanOverride> aggregationKeyBuilder;
 
@@ -75,20 +50,19 @@ public class GenericAggregationKeyBuilder_BooleanWithOverrideColumn_Test
 
 		//
 		// Create an aggregation to test
-		this.aggregationId = 1;
 		int aggregationItemId = 1;
-		final List<IAggregationItem> aggregationItems = Arrays.<IAggregationItem> asList(
-				new AggregationItem(aggregationItemId++,
-						Type.ModelColumn,
-						I_ModelWithBooleanOverride.COLUMNNAME_IsTaxIncluded,
-						DisplayType.YesNo,
-						IAggregationAttribute.NULL,
-						ConstantLogicExpression.TRUE)
-				);
-		this.aggregation = new Aggregation(
-				I_ModelWithBooleanOverride.Table_Name,
-				aggregationItems,
-				aggregationId);
+		this.aggregation = Aggregation.builder()
+				.id(AggregationId.ofRepoId(1))
+				.tableName(I_ModelWithBooleanOverride.Table_Name)
+				.item(AggregationItem.builder()
+						.id(AggregationItemId.ofRepoId(aggregationItemId++))
+						.type(Type.ModelColumn)
+						.columnName(I_ModelWithBooleanOverride.COLUMNNAME_IsTaxIncluded)
+						.displayType(DisplayType.YesNo)
+						.attribute(null)
+						.includeLogic(ConstantLogicExpression.TRUE)
+						.build())
+				.build();
 
 		//
 		// Create aggregation key builder
@@ -97,11 +71,11 @@ public class GenericAggregationKeyBuilder_BooleanWithOverrideColumn_Test
 
 	private AggregationKey createExpectedAggregationKey(final String columnName, final Object value)
 	{
-		final String keyString = aggregationId
+		final String keyString = AggregationId.toRepoId(aggregation.getId())
 				+ "#"
 				+ columnName + "=" + value;
 
-		return new AggregationKey(keyString, aggregationId);
+		return new AggregationKey(keyString, aggregation.getId());
 	}
 
 	@Test
@@ -187,24 +161,24 @@ public class GenericAggregationKeyBuilder_BooleanWithOverrideColumn_Test
 		}
 		model.setIsTaxIncluded_Override(valueOverride);
 
-		final IAggregationKey aggregationKeyActual = aggregationKeyBuilder.buildAggregationKey(model);
+		final AggregationKey aggregationKeyActual = aggregationKeyBuilder.buildAggregationKey(model);
 		Assert.assertEquals(aggregationKeyExpected, aggregationKeyActual);
 	}
 
-	public static interface I_ModelWithBooleanOverride
+	public interface I_ModelWithBooleanOverride
 	{
-		public static final String Table_Name = "ModelWithBooleanOverride";
+		String Table_Name = "ModelWithBooleanOverride";
 
 		//@formatter:off
-	    public static final String COLUMNNAME_IsTaxIncluded_Override = "IsTaxIncluded_Override";
-		public java.lang.String getIsTaxIncluded_Override();
-		public void setIsTaxIncluded_Override (java.lang.String IsTaxIncluded_Override);
+	    String COLUMNNAME_IsTaxIncluded_Override = "IsTaxIncluded_Override";
+		java.lang.String getIsTaxIncluded_Override();
+		void setIsTaxIncluded_Override (java.lang.String IsTaxIncluded_Override);
 		//@formatter:on
 
 		//@formatter:off
-		public static final String COLUMNNAME_IsTaxIncluded = "IsTaxIncluded";
-		public void setIsTaxIncluded (boolean IsTaxIncluded);
-		public boolean isTaxIncluded();
+		String COLUMNNAME_IsTaxIncluded = "IsTaxIncluded";
+		void setIsTaxIncluded (boolean IsTaxIncluded);
+		boolean isTaxIncluded();
 		//@formatter:on
 	}
 

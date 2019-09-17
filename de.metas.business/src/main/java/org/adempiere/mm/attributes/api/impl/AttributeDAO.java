@@ -3,6 +3,7 @@ package org.adempiere.mm.attributes.api.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -55,6 +56,18 @@ import lombok.NonNull;
 
 public class AttributeDAO implements IAttributeDAO
 {
+	@Override
+	public void save(@NonNull final I_M_AttributeSetInstance asi)
+	{
+		saveRecord(asi);
+	}
+
+	@Override
+	public void save(@NonNull final I_M_AttributeInstance ai)
+	{
+		saveRecord(ai);
+	}
+
 	@Override
 	public I_M_AttributeSet getAttributeSetById(@NonNull final AttributeSetId attributeSetId)
 	{

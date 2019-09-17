@@ -83,7 +83,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -172,7 +172,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -261,7 +261,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -350,7 +350,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -439,7 +439,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -528,7 +528,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -617,7 +617,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -706,7 +706,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -795,7 +795,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -884,7 +884,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -973,7 +973,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -1062,7 +1062,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -1151,7 +1151,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -1240,7 +1240,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -1329,7 +1329,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -1418,7 +1418,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -1507,7 +1507,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -1596,7 +1596,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -1685,7 +1685,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -1774,7 +1774,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -1863,7 +1863,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
