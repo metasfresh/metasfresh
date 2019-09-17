@@ -153,8 +153,10 @@ Cypress.Commands.add('selectRowByColumnAndValue', (columnAndValue, modal = false
       .get(path, timeout)
       .should(table => {
         // step: make sure the values exist and the page is loaded
+        const htmlTable = $(table).html();
         columnAndValue.forEach(c => {
           expect(table).to.contain(c.value);
+          expect(htmlTable.includes(`data-cy="cell-${c.column}"`), `Column ${c.column} exists`).is.true;
         });
       })
       // step: find all the columns' indexes
@@ -194,8 +196,10 @@ Cypress.Commands.add('selectRowByColumnAndValue', (columnAndValue, modal = false
           return cy.wrap(matchingRows);
         });
       })
-  );
-});
+  )
+    ;
+})
+;
 /**
  * Select all rows on the current page
  *
