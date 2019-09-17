@@ -30,8 +30,8 @@ import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.aggregation.api.AbstractAggregationKeyBuilder;
-import de.metas.aggregation.api.IAggregationKey;
-import de.metas.aggregation.api.impl.AggregationKey;
+import de.metas.aggregation.api.AggregationId;
+import de.metas.aggregation.api.AggregationKey;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.pricing.service.IPriceListDAO;
@@ -84,15 +84,15 @@ public final class ICHeaderAggregationKeyBuilder_OLD extends AbstractAggregation
 	}
 
 	@Override
-	public IAggregationKey buildAggregationKey(I_C_Invoice_Candidate model)
+	public AggregationKey buildAggregationKey(I_C_Invoice_Candidate model)
 	{
 		final List<Object> keyValues = getValues(model);
 		final ArrayKey key = Util.mkKey(keyValues.toArray());
-		final int aggregationId = -1;
+		final AggregationId aggregationId = null;
 		return new AggregationKey(key, aggregationId);
 	}
 
-	private final List<Object> getValues(final I_C_Invoice_Candidate ic)
+	private List<Object> getValues(final I_C_Invoice_Candidate ic)
 	{
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
@@ -130,7 +130,7 @@ public final class ICHeaderAggregationKeyBuilder_OLD extends AbstractAggregation
 		return values;
 	}
 
-	private static final int toHashcode(final String s)
+	private static int toHashcode(final String s)
 	{
 		if (Check.isEmpty(s, true))
 		{

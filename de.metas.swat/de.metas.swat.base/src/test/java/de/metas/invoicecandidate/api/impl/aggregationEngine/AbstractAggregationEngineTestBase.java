@@ -93,7 +93,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 		LogManager.setLevel(Level.DEBUG);
 	}
 
-	protected List<IInvoiceLineRW> getInvoiceLines(final IInvoiceHeader invoice)
+	protected final List<IInvoiceLineRW> getInvoiceLines(final IInvoiceHeader invoice)
 	{
 		final List<IInvoiceLineRW> result = new ArrayList<>();
 		for (final IInvoiceCandAggregate lineAgg : invoice.getLines())
@@ -104,7 +104,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 		return result;
 	}
 
-	protected IInvoiceLineRW getInvoiceLineByCandidate(final IInvoiceHeader invoice, final I_C_Invoice_Candidate ic)
+	protected final IInvoiceLineRW getInvoiceLineByCandidate(final IInvoiceHeader invoice, final I_C_Invoice_Candidate ic)
 	{
 		final List<IInvoiceLineRW> result = new ArrayList<>();
 		for (final IInvoiceCandAggregate lineAgg : invoice.getLines())
@@ -179,13 +179,13 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 		assertThat("Invalid QtyToDeliver on the IC level", ic.getQtyDelivered(), comparesEqualTo(summedQty.getStockQty().toBigDecimal()));
 		assertThat("Invalid QtyToInvoice on the IC level", ic.getQtyToInvoice(), comparesEqualTo(summedQty.getStockQty().toBigDecimal()));
 
-		final AggregationEngine engine = new AggregationEngine();
+		final AggregationEngine engine = AggregationEngine.newInstance();
 		engine.addInvoiceCandidate(ic);
 
 		return engine;
 	}
 
-	protected IInvoiceHeader removeInvoiceHeaderForInOutId(final List<IInvoiceHeader> invoices, final int inOutId)
+	protected final IInvoiceHeader removeInvoiceHeaderForInOutId(final List<IInvoiceHeader> invoices, final int inOutId)
 	{
 		final Iterator<IInvoiceHeader> it = invoices.iterator();
 		while (it.hasNext())
@@ -202,7 +202,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 		return null; // shall not reach this point
 	}
 
-	protected List<IInvoiceLineRW> getForInOutLine(final List<IInvoiceLineRW> invoiceLines, final I_M_InOutLine iol)
+	protected final List<IInvoiceLineRW> getForInOutLine(final List<IInvoiceLineRW> invoiceLines, final I_M_InOutLine iol)
 	{
 		final ArrayList<IInvoiceLineRW> result = new ArrayList<>();
 		for (final IInvoiceLineRW il : invoiceLines)
@@ -224,7 +224,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 		return result;
 	}
 
-	protected IInvoiceLineRW getSingleForInOutLine(final List<IInvoiceLineRW> invoiceLines, final I_M_InOutLine iol)
+	protected final IInvoiceLineRW getSingleForInOutLine(final List<IInvoiceLineRW> invoiceLines, final I_M_InOutLine iol)
 	{
 		final List<IInvoiceLineRW> result = getForInOutLine(invoiceLines, iol);
 		assertThat(result.size(), lessThan(2));
@@ -235,10 +235,9 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 		return result.get(0);
 	}
 
-	protected List<IInvoiceHeader> invokeAggregationEngine(@NonNull final AggregationEngine engine)
+	protected final List<IInvoiceHeader> invokeAggregationEngine(@NonNull final AggregationEngine engine)
 	{
 		final List<IInvoiceHeader> invoices = engine.aggregate();
-
 		return invoices;
 	}
 

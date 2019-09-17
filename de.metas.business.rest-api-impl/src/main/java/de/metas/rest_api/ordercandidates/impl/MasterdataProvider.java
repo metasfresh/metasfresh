@@ -207,9 +207,14 @@ final class MasterdataProvider
 	}
 
 	public DocTypeId getDocTypeId(
-			@NonNull final JsonDocTypeInfo invoiceDocType,
+			@Nullable final JsonDocTypeInfo invoiceDocType,
 			@NonNull final OrgId orgId)
 	{
+		if (invoiceDocType == null)
+		{
+			return null;
+		}
+
 		final String docSubType = firstNotEmptyTrimmed(
 				invoiceDocType.getDocSubType(),
 				DocTypeQuery.DOCSUBTYPE_NONE);

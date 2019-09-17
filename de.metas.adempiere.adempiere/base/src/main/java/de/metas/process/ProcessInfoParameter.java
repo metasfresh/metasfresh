@@ -19,6 +19,7 @@ package de.metas.process;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.function.Function;
 
 import org.compiere.util.DisplayType;
@@ -43,7 +44,7 @@ public final class ProcessInfoParameter implements Serializable
 	 */
 	private static final long serialVersionUID = 4536416337960754407L;
 
-	public static final ProcessInfoParameter of(final String parameterName, final int parameterValue)
+	public static ProcessInfoParameter of(final String parameterName, final int parameterValue)
 	{
 		final Integer parameterValueTo = null;
 		final String info = null;
@@ -51,7 +52,7 @@ public final class ProcessInfoParameter implements Serializable
 		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
 	}
 
-	public static final ProcessInfoParameter of(final String parameterName, final String parameterValue)
+	public static ProcessInfoParameter of(final String parameterName, final String parameterValue)
 	{
 		final String parameterValueTo = null;
 		final String info = null;
@@ -59,7 +60,7 @@ public final class ProcessInfoParameter implements Serializable
 		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
 	}
 
-	public static final ProcessInfoParameter of(final String parameterName, final BigDecimal parameterValue)
+	public static ProcessInfoParameter of(final String parameterName, final BigDecimal parameterValue)
 	{
 		final BigDecimal parameterValueTo = null;
 		final String info = null;
@@ -67,7 +68,7 @@ public final class ProcessInfoParameter implements Serializable
 		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
 	}
 
-	public static final ProcessInfoParameter of(final String parameterName, final java.util.Date parameterValue)
+	public static ProcessInfoParameter of(final String parameterName, final java.util.Date parameterValue)
 	{
 		final java.util.Date parameterValueTo = null;
 		final String info = null;
@@ -75,14 +76,14 @@ public final class ProcessInfoParameter implements Serializable
 		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
 	}
 
-	public static final ProcessInfoParameter of(final String parameterName, final java.util.Date parameterValue, final java.util.Date parameterValueTo)
+	public static ProcessInfoParameter of(final String parameterName, final java.util.Date parameterValue, final java.util.Date parameterValueTo)
 	{
 		final String info = null;
 		final String info_To = null;
 		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
 	}
 
-	public static final ProcessInfoParameter of(final String parameterName, final boolean parameterValue)
+	public static ProcessInfoParameter of(final String parameterName, final boolean parameterValue)
 	{
 		final Boolean parameterValueTo = null;
 		final String info = null;
@@ -90,7 +91,7 @@ public final class ProcessInfoParameter implements Serializable
 		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
 	}
 
-	public static final ProcessInfoParameter ofValueObject(final String parameterName, final Object parameterValue)
+	public static ProcessInfoParameter ofValueObject(final String parameterName, final Object parameterValue)
 	{
 		final Object parameterValueTo = null;
 		final String info = null;
@@ -175,7 +176,7 @@ public final class ProcessInfoParameter implements Serializable
 		return toString(m_Parameter_To);
 	}
 
-	private static final String toString(final Object value)
+	private static String toString(final Object value)
 	{
 		if (value == null)
 		{
@@ -209,7 +210,7 @@ public final class ProcessInfoParameter implements Serializable
 		return toInt(m_Parameter_To, defaultValueWhenNull);
 	}
 
-	private static final int toInt(final Object value, final int defaultValueWhenNull)
+	private static int toInt(final Object value, final int defaultValueWhenNull)
 	{
 		if (value == null)
 		{
@@ -248,21 +249,29 @@ public final class ProcessInfoParameter implements Serializable
 		return toBoolean(m_Parameter_To, defaultValue);
 	}
 
-	private static final Boolean toBoolean(final Object value, final Boolean defaultValue)
+	private static Boolean toBoolean(final Object value, final Boolean defaultValue)
 	{
 		return DisplayType.toBoolean(value, defaultValue);
 	}
 
-	// metas
 	public Timestamp getParameterAsTimestamp()
 	{
 		return TimeUtil.asTimestamp(m_Parameter);
 	}
 
-	// metas
 	public Timestamp getParameter_ToAsTimestamp()
 	{
 		return TimeUtil.asTimestamp(m_Parameter_To);
+	}
+
+	public LocalDate getParameterAsLocalDate()
+	{
+		return TimeUtil.asLocalDate(m_Parameter);
+	}
+
+	public LocalDate getParameter_ToAsLocalDate()
+	{
+		return TimeUtil.asLocalDate(m_Parameter_To);
 	}
 
 	public BigDecimal getParameterAsBigDecimal()
@@ -275,7 +284,7 @@ public final class ProcessInfoParameter implements Serializable
 		return toBigDecimal(m_Parameter_To);
 	}
 
-	private static final BigDecimal toBigDecimal(final Object value)
+	private static BigDecimal toBigDecimal(final Object value)
 	{
 		if (value == null)
 		{

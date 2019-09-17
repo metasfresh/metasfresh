@@ -2,6 +2,7 @@ package org.adempiere.util.api;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collection;
 
 import lombok.EqualsAndHashCode;
@@ -84,8 +85,20 @@ public class ForwardingParams implements IParams
 	}
 
 	@Override
+	public LocalDate getParameterAsLocalDate(final String parameterName)
+	{
+		return params.getParameterAsLocalDate(parameterName);
+	}
+
+	@Override
 	public boolean getParameterAsBool(final String parameterName)
 	{
 		return params.getParameterAsBool(parameterName);
+	}
+
+	@Override
+	public <T extends Enum<T>> T getParameterAsEnum(final String parameterName, final Class<T> enumType, final T defaultValueWhenNull)
+	{
+		return params.getParameterAsEnum(parameterName, enumType, defaultValueWhenNull);
 	}
 }

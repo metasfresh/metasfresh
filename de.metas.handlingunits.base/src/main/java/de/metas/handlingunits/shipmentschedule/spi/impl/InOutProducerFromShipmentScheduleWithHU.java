@@ -23,6 +23,8 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
  */
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -42,6 +44,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -231,7 +234,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = candidate.getM_ShipmentSchedule();
 
-		final Timestamp shipmentDate = calculateShipmentDate(shipmentSchedule, shipmentDateToday);
+		final LocalDate shipmentDate = calculateShipmentDate(shipmentSchedule, shipmentDateToday);
 
 		//
 		// Search for existing shipment to consolidate on
@@ -250,28 +253,26 @@ public class InOutProducerFromShipmentScheduleWithHU
 	}
 
 	@VisibleForTesting
-	static Timestamp calculateShipmentDate(final @NonNull I_M_ShipmentSchedule schedule, final boolean isShipmentDateToday)
+	static LocalDate calculateShipmentDate(final @NonNull I_M_ShipmentSchedule schedule, final boolean isShipmentDateToday)
 	{
-		final Timestamp today = SystemTime.asDayTimestamp();
-
+		final LocalDate today = SystemTime.asLocalDate();
 		if (isShipmentDateToday)
 		{
 			return today;
 		}
 
-		final Timestamp deliveryDateEffective = Services.get(IShipmentScheduleEffectiveBL.class).getDeliveryDate(schedule);
-
+		final ZonedDateTime deliveryDateEffective = Services.get(IShipmentScheduleEffectiveBL.class).getDeliveryDate(schedule);
 		if (deliveryDateEffective == null)
 		{
 			return today;
 		}
 
-		if (deliveryDateEffective.before(today))
+		if (deliveryDateEffective.toLocalDate().isBefore(today))
 		{
 			return today;
 		}
 
-		return deliveryDateEffective;
+		return deliveryDateEffective.toLocalDate();
 	}
 
 	/**
@@ -281,7 +282,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	 * @param movementDate
 	 * @return shipment
 	 */
-	private I_M_InOut createShipmentHeader(final ShipmentScheduleWithHU candidate, final Timestamp movementDate)
+	private I_M_InOut createShipmentHeader(final ShipmentScheduleWithHU candidate, final LocalDate dateDoc)
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = candidate.getM_ShipmentSchedule();
 
@@ -315,6 +316,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		//
 		// Document Dates
 		{
+			final Timestamp movementDate = TimeUtil.asTimestamp(dateDoc);
 			shipment.setMovementDate(movementDate);
 			shipment.setDateAcct(movementDate);
 		}
@@ -501,27 +503,30 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private void updateShipmentDate(@NonNull final I_M_InOut shipment, @NonNull final ShipmentScheduleWithHU candidate)
 	{
 		final I_M_ShipmentSchedule schedule = candidate.getM_ShipmentSchedule();
-		final Timestamp candidateShipmentDate = calculateShipmentDate(schedule, shipmentDateToday);
+		final LocalDate candidateShipmentDate = calculateShipmentDate(schedule, shipmentDateToday);
 
 		// the shipment was created before but wasn't yet completed;
 		if (isShipmentDeliveryDateBetterThanMovementDate(shipment, candidateShipmentDate))
 		{
-			shipment.setMovementDate(candidateShipmentDate);
-			shipment.setDateAcct(candidateShipmentDate);
+			final Timestamp candidateShipmentDateTS = TimeUtil.asTimestamp(candidateShipmentDate);
+			shipment.setMovementDate(candidateShipmentDateTS);
+			shipment.setDateAcct(candidateShipmentDateTS);
 
 			InterfaceWrapperHelper.save(shipment);
 		}
 	}
 
 	@VisibleForTesting
-	static boolean isShipmentDeliveryDateBetterThanMovementDate(final @NonNull I_M_InOut shipment, final @NonNull Timestamp shipmentDeliveryDate)
+	static boolean isShipmentDeliveryDateBetterThanMovementDate(
+			final @NonNull I_M_InOut shipment,
+			final @NonNull LocalDate shipmentDeliveryDate)
 	{
-		final Timestamp today = SystemTime.asDayTimestamp();
-		final Timestamp movementDate = shipment.getMovementDate();
+		final LocalDate today = SystemTime.asLocalDate();
+		final LocalDate movementDate = TimeUtil.asLocalDate(shipment.getMovementDate());
 
-		final boolean isCandidateInThePast = shipmentDeliveryDate.before(today);
-		final boolean isMovementDateInThePast = movementDate.before(today);
-		final boolean isCandidateSoonerThanMovementDate = movementDate.after(shipmentDeliveryDate);
+		final boolean isCandidateInThePast = shipmentDeliveryDate.isBefore(today);
+		final boolean isMovementDateInThePast = movementDate.isBefore(today);
+		final boolean isCandidateSoonerThanMovementDate = movementDate.isAfter(shipmentDeliveryDate);
 
 		if (isCandidateInThePast)
 		{
@@ -551,7 +556,6 @@ public class InOutProducerFromShipmentScheduleWithHU
 			createShipmentLineIfAny();
 			// => currentShipmentLineBuilder = null;
 		}
-
 
 		//
 		// If we don't have an active shipment line builder

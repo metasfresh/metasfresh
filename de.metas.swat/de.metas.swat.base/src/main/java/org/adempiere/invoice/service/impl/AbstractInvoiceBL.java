@@ -26,6 +26,7 @@ import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -417,7 +418,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			{
 				invoice.setIsPaid(test);
 			}
-			
+
 			log.debug("IsPaid={} (allocated={}, invoiceGrandTotal={})", test, alloc, total);
 		}
 
@@ -454,17 +455,18 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final I_C_Invoice createInvoiceFromOrder(final org.compiere.model.I_C_Order order,
-			final int C_DocTypeTarget_ID,
-			final Timestamp dateInvoiced,
-			final Timestamp dateAcct)
+	public final I_C_Invoice createInvoiceFromOrder(
+			final org.compiere.model.I_C_Order order,
+			final DocTypeId docTypeTargetId,
+			final LocalDate dateInvoiced,
+			final LocalDate dateAcct)
 	{
 		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class, order);
 		invoice.setAD_Org_ID(order.getAD_Org_ID());
 		setFromOrder(invoice, order);	// set base settings
 
 		//
-		DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(C_DocTypeTarget_ID);
+		DocTypeId docTypeId = docTypeTargetId;
 		if (docTypeId == null)
 		{
 			final I_C_DocType odt = Services.get(IOrderBL.class).getDocTypeOrNull(order);
@@ -481,12 +483,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		setDocTypeTargetIdAndUpdateDescription(invoice, docTypeId.getRepoId());
 		if (dateInvoiced != null)
 		{
-			invoice.setDateInvoiced(dateInvoiced);
+			invoice.setDateInvoiced(TimeUtil.asTimestamp(dateInvoiced));
 		}
 
 		if (dateAcct != null)
 		{
-			invoice.setDateAcct(dateAcct); // task 08437
+			invoice.setDateAcct(TimeUtil.asTimestamp(dateAcct)); // task 08437
 		}
 		else
 		{

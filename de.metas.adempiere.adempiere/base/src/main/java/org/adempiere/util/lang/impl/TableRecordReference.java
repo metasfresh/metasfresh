@@ -30,6 +30,7 @@ import java.util.Optional;
 
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.IntFunction;
 
 import javax.annotation.Nullable;
 
@@ -415,6 +416,20 @@ public final class TableRecordReference implements ITableRecordReference
 	public int getRecord_ID()
 	{
 		return recordId;
+	}
+
+	public int getRecordIdAssumingTableName(@NonNull final String expectedTableName)
+	{
+		Check.assumeEquals(this.tableName, expectedTableName, "tableName");
+		return getRecord_ID();
+	}
+
+	public <T extends RepoIdAware> T getIdAssumingTableName(
+			@NonNull final String expectedTableName,
+			@NonNull final IntFunction<T> mapper)
+	{
+		final int repoId = getRecordIdAssumingTableName(expectedTableName);
+		return mapper.apply(repoId);
 	}
 
 	@Override

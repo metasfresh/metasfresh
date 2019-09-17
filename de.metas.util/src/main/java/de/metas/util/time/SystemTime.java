@@ -34,6 +34,7 @@ import java.util.GregorianCalendar;
 
 import javax.annotation.Nullable;
 
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 /**
@@ -97,7 +98,12 @@ public final class SystemTime
 
 	public static ZonedDateTime asZonedDateTime()
 	{
-		return asInstant().atZone(ZoneId.systemDefault());
+		return asZonedDateTime(zoneId());
+	}
+
+	public static ZonedDateTime asZonedDateTime(@NonNull final ZoneId zoneId)
+	{
+		return asInstant().atZone(zoneId);
 	}
 
 	/**

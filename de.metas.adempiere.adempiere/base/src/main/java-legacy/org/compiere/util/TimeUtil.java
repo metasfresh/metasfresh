@@ -1700,7 +1700,7 @@ public class TimeUtil
 		}
 		else if (obj instanceof ZonedDateTime)
 		{
-			return (ZonedDateTime)obj;
+			return convertToTimeZone((ZonedDateTime)obj, zoneId);
 		}
 		else
 		{

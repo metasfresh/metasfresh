@@ -35,6 +35,7 @@ import java.util.List;
 
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inout.model.I_M_InOut;
@@ -76,7 +77,7 @@ public abstract class AbstractMaterialReturnTests extends AbstractNewAggregation
 
 		ic1.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_AfterDelivery);
 		ic1.setPOReference(IC_PO_REFERENCE);
-		ic1.setDateAcct(IC_DATE_ACCT);
+		ic1.setDateAcct(TimeUtil.asTimestamp(IC_DATE_ACCT));
 		InterfaceWrapperHelper.save(ic1);
 
 		return Collections.singletonList(ic1);

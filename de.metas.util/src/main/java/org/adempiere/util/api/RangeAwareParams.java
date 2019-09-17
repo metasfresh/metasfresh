@@ -2,6 +2,7 @@ package org.adempiere.util.api;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.Set;
 
@@ -154,5 +155,17 @@ public class RangeAwareParams implements IRangeAwareParams
 	public BigDecimal getParameter_ToAsBigDecimal(final String parameterName)
 	{
 		return valuesTo.getParameterAsBigDecimal(parameterName);
+	}
+
+	@Override
+	public LocalDate getParameterAsLocalDate(String parameterName)
+	{
+		return values.getParameterAsLocalDate(parameterName);
+	}
+
+	@Override
+	public LocalDate getParameter_ToAsLocalDate(String parameterName)
+	{
+		return valuesTo.getParameterAsLocalDate(parameterName);
 	}
 }

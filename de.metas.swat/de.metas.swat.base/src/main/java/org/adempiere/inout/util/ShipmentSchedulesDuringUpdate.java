@@ -1,7 +1,5 @@
 package org.adempiere.inout.util;
 
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -44,7 +42,9 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
+import de.metas.order.OrderId;
 import de.metas.shipping.ShipperId;
+import lombok.NonNull;
 
 /**
  * Helper class to manage the shipments that might actually be created in the end.
@@ -101,9 +101,12 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 		orderKey2Candidate.put(orderKey, deliveryGroupCandidate);
 	}
 
-	private static ArrayKey createOrderKey(final Integer groupId, final WarehouseId warehouseId, final String bpartnerAddress)
+	private static ArrayKey createOrderKey(
+			final DeliveryGroupCandidateGroupId groupId,
+			final WarehouseId warehouseId,
+			final String bpartnerAddress)
 	{
-		return Util.mkKey(bpartnerAddress, warehouseId, groupId);
+		return ArrayKey.of(bpartnerAddress, warehouseId, groupId);
 	}
 
 	@Override
@@ -204,11 +207,14 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 
 	@Override
 	public DeliveryGroupCandidate getInOutForOrderId(
-			final int groupId,
+			final OrderId orderId,
 			final WarehouseId warehouseId,
 			final String bpartnerAddress)
 	{
-		final ArrayKey key = createOrderKey(groupId, warehouseId, bpartnerAddress);
+		final ArrayKey key = createOrderKey(
+				DeliveryGroupCandidateGroupId.of(orderId),
+				warehouseId,
+				bpartnerAddress);
 		final DeliveryGroupCandidate inOut = orderKey2Candidate.get(key);
 		return inOut;
 	}
