@@ -86,16 +86,19 @@ final class BPartnerMasterDataProvider
 						() -> PermissionService.of(ctx)));
 	}
 
-	private final BiMap<JsonRequestBPartner, BPartnerId> bpartnerIdsByJson = HashBiMap.<JsonRequestBPartner, BPartnerId> create();
-	private final Map<JsonExternalId, BPartnerLocationId> bpartnerLocationIdsByExternalId = new HashMap<>();
-	private final Map<JsonExternalId, BPartnerContactId> bpartnerContactIdsByExternalId = new HashMap<>();
-
+	//
+	// Services
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final ILocationDAO locationsRepo = Services.get(ILocationDAO.class);
 	private final ICountryDAO countryRepo = Services.get(ICountryDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-
 	private final PermissionService permissionService;
+
+	//
+	// Caches
+	private final BiMap<JsonRequestBPartner, BPartnerId> bpartnerIdsByJson = HashBiMap.<JsonRequestBPartner, BPartnerId> create();
+	private final Map<JsonExternalId, BPartnerLocationId> bpartnerLocationIdsByExternalId = new HashMap<>();
+	private final Map<JsonExternalId, BPartnerContactId> bpartnerContactIdsByExternalId = new HashMap<>();
 
 	@VisibleForTesting
 	BPartnerMasterDataProvider(@NonNull final PermissionService permissionService)
@@ -137,7 +140,7 @@ final class BPartnerMasterDataProvider
 		JsonBPartnerInfo jsonBPartnerInfo;
 	}
 
-	private final CCache<CachingKey, BPartnerInfo> BPartnerInfoCache = CCache
+	private final CCache<CachingKey, BPartnerInfo> bpartnerInfoCache = CCache
 			.<CachingKey, BPartnerInfo> builder()
 			.cacheName(this.getClass().getSimpleName() + "-BPartnerInfoCache")
 			.build();
@@ -147,7 +150,7 @@ final class BPartnerMasterDataProvider
 			@NonNull final BPartnerMasterDataContext context)
 	{
 		final CachingKey key = new CachingKey(context.getOrgId(), jsonBPartnerInfo);
-		return BPartnerInfoCache.getOrLoad(key, () -> handleBPartnerInfoWithContext0(jsonBPartnerInfo, context));
+		return bpartnerInfoCache.getOrLoad(key, () -> handleBPartnerInfoWithContext0(jsonBPartnerInfo, context));
 	}
 
 	private BPartnerInfo handleBPartnerInfoWithContext0(
@@ -221,19 +224,42 @@ final class BPartnerMasterDataProvider
 			@NonNull final JsonBPartnerInfo jsonBPartnerInfo,
 			@NonNull final BPartnerMasterDataContext context)
 	{
-		final JsonRequestBPartner json = jsonBPartnerInfo.getBpartner();
+		final BPartnerQuery query = createBPartnerQuery(jsonBPartnerInfo, context.getOrgId());
 
-		// ..context
-		if (context.getBpartnerId() != null)
 		{
-			return context.getBpartnerId();
+			final BPartnerId bpartnerId = bpartnersRepo.retrieveBPartnerIdBy(query).orElse(null);
+			if (bpartnerId != null)
+			{
+				return bpartnerId;
+			}
 		}
+
+		if (!query.getGlns().isEmpty())
+		{
+			final BPartnerQuery queryWithoutGLN = query.withNoGLNs();
+			final BPartnerId bpartnerId = !queryWithoutGLN.isEmpty()
+					? bpartnersRepo.retrieveBPartnerIdBy(query).orElse(null)
+					: null;
+			if (bpartnerId != null)
+			{
+				return bpartnerId;
+			}
+		}
+
+		return null;
+	}
+
+	private static BPartnerQuery createBPartnerQuery(
+			@NonNull final JsonBPartnerInfo jsonBPartnerInfo,
+			@NonNull final OrgId orgId)
+	{
+		final JsonRequestBPartner json = jsonBPartnerInfo.getBpartner();
 
 		final SyncAdvise syncAdvise = jsonBPartnerInfo.getSyncAdvise();
 		final ExternalId externalId = JsonExternalIds.toExternalIdOrNull(json.getExternalId());
 
 		final BPartnerQuery.BPartnerQueryBuilder query = BPartnerQuery.builder()
-				.onlyOrgId(context.getOrgId())
+				.onlyOrgId(orgId)
 				.onlyOrgId(OrgId.ANY)
 				.outOfTrx(syncAdvise.isLoadReadOnly())
 				.failIfNotExists(syncAdvise.isFailIfNotExists())
@@ -246,9 +272,7 @@ final class BPartnerMasterDataProvider
 			query.gln(GLN.ofString(jsonLocation.getGln()));
 		}
 
-		return bpartnersRepo
-				.retrieveBPartnerIdBy(query.build())
-				.orElse(null);
+		return query.build();
 	}
 
 	private BPartnerLocationId lookupBPartnerLocationIdOrNull(
