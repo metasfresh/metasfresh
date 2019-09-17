@@ -7,7 +7,11 @@ CREATE FUNCTION report.intermediate_product_label(IN M_HU_ID numeric) RETURNS TA
 	adr Character Varying (60),
 	attributes text,
 	weight numeric,
-	name Character Varying (255)
+	serialno text,
+	name Character Varying (255),
+	prod_value Character Varying,
+	vendorName Character Varying (255),
+    PurchaseOrderNo Character Varying
 	)
 AS 
 $$
@@ -17,7 +21,11 @@ SELECT
 	av_adr.name AS AdR,
 	COALESCE ( tua_ori.origin, '') || COALESCE ( av_adr.name, '') AS Attributes,
 	(CASE WHEN val.qty IS NOT NULL THEN round(tua_gew.valuenumber / val.qty,3) ELSE tua_gew.valuenumber END) AS weight,
-	p.name
+	tua_ser.value as serialno,
+	p.name,
+	p.value as prod_value,
+	ri.vendorName,
+	ri.PurchaseOrderNo
 FROM
 	M_HU tu
 	/** Get Product */
@@ -32,6 +40,11 @@ FROM
 	/** Get weight Attibute */
 	LEFT OUTER JOIN M_HU_Attribute tua_gew ON tu.M_HU_ID = tua_gew.M_HU_ID
 		AND tua_gew.M_Attribute_ID = ((SELECT M_Attribute_ID FROM M_Attribute WHERE value = 'WeightNet' AND isActive = 'Y')) AND tua_gew.isActive = 'Y' -- Gewicht Netto
+		
+	/** Get serialno Attibute */
+	LEFT OUTER JOIN M_HU_Attribute tua_ser ON tu.M_HU_ID = tua_ser.M_HU_ID
+		AND tua_ser.M_Attribute_ID = ((SELECT M_Attribute_ID FROM M_Attribute WHERE value = 'SerialNo' AND isActive = 'Y')) AND tua_ser.isActive = 'Y' -- SerialNo
+		
 	/** Get Product Origin */
 	LEFT OUTER JOIN (
 		SELECT
@@ -73,6 +86,20 @@ FROM
 		GROUP BY
 			M_HU_ID
 	) tua_ori ON tu.M_HU_ID = tua_ori.M_HU_ID
+	
+	/** receipt infos */
+	LEFT OUTER JOIN (
+                    SELECT
+                      M_HU_ID,
+                      bp.name      as vendorName,
+                      o.DocumentNo as PurchaseOrderNo
+                    FROM M_HU_Assignment hf_a
+                      INNER JOIN M_ReceiptSchedule rs ON hf_a.Record_ID = rs.M_ReceiptSchedule_ID AND rs.isActive = 'Y'
+                      INNER JOIN C_BPartner bp on rs.C_BPartner_ID = bp.C_BPartner_ID
+                      INNER JOIN C_Order o on rs.C_Order_ID = o.C_Order_ID
+                    WHERE hf_a.AD_Table_ID = ((SELECT get_table_id('M_ReceiptSchedule'))) AND hf_a.isActive = 'Y'
+                  ) ri ON ri.M_HU_ID = tu.M_HU_ID
+	 
 	--get vallues for aggregated HUs if any
 	left outer join "de.metas.handlingunits".get_TU_Values_From_Aggregation(tu.M_HU_ID) val on true
 WHERE
