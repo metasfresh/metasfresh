@@ -322,10 +322,18 @@ export class RawList extends PureComponent {
     onBlur();
   };
 
+  /**
+   * @method focusDropdown
+   * @summary ToDo: Describe the method.
+   */
   focusDropdown() {
     this.props.onFocus();
   }
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const {
       rank,
