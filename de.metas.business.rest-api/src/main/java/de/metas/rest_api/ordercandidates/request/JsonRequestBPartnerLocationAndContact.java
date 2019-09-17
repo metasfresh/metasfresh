@@ -1,4 +1,4 @@
-package de.metas.rest_api.ordercandidates;
+package de.metas.rest_api.ordercandidates.request;
 
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
 import static de.metas.util.Check.isEmpty;
@@ -45,7 +45,7 @@ import lombok.Value;
 @ApiModel(description = "A BPartner with one contact (optional) and one location. Used in many scenarios multiple times in each order line candidate.<br>" //
 		+ "Note that given the respective use-case, either `bpartner.code`, `bpartner.externalId` or `location.gln` might be `null`, but not both at once.")
 @Value
-public final class JsonBPartnerInfo
+public final class JsonRequestBPartnerLocationAndContact
 {
 	JsonRequestBPartner bpartner;
 
@@ -59,7 +59,7 @@ public final class JsonBPartnerInfo
 
 	@Builder(toBuilder = true)
 	@JsonCreator
-	private JsonBPartnerInfo(
+	private JsonRequestBPartnerLocationAndContact(
 			@JsonProperty("bpartner") @NonNull final JsonRequestBPartner bpartner,
 			@JsonProperty("location") final JsonRequestLocation location,
 			@JsonProperty("contact") final JsonRequestContact contact,

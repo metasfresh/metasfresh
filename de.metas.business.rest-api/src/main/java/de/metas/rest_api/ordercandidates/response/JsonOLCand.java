@@ -1,4 +1,4 @@
-package de.metas.rest_api.ordercandidates;
+package de.metas.rest_api.ordercandidates.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import de.metas.rest_api.ordercandidates.request.JsonOrganization;
 import lombok.Builder;
 import lombok.Value;
 
@@ -47,16 +48,16 @@ public class JsonOLCand
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private JsonOrganization org;
 
-	private JsonBPartnerInfo bpartner;
+	private JsonResponseBPartnerLocationAndContact bpartner;
 
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private JsonBPartnerInfo billBPartner;
+	private JsonResponseBPartnerLocationAndContact billBPartner;
 
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private JsonBPartnerInfo dropShipBPartner;
+	private JsonResponseBPartnerLocationAndContact dropShipBPartner;
 
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private JsonBPartnerInfo handOverBPartner;
+	private JsonResponseBPartnerLocationAndContact handOverBPartner;
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	private LocalDate dateOrdered;
