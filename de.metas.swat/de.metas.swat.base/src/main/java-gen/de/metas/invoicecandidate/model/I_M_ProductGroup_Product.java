@@ -41,7 +41,7 @@ public interface I_M_ProductGroup_Product
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -51,7 +51,7 @@ public interface I_M_ProductGroup_Product
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -136,10 +136,6 @@ public interface I_M_ProductGroup_Product
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Product_Category_ID();
-
-	public org.compiere.model.I_M_Product_Category getM_Product_Category();
-
-	public void setM_Product_Category(org.compiere.model.I_M_Product_Category M_Product_Category);
 
     /** Column definition for M_Product_Category_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ProductGroup_Product, org.compiere.model.I_M_Product_Category> COLUMN_M_Product_Category_ID = new org.adempiere.model.ModelColumn<I_M_ProductGroup_Product, org.compiere.model.I_M_Product_Category>(I_M_ProductGroup_Product.class, "M_Product_Category_ID", org.compiere.model.I_M_Product_Category.class);

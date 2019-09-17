@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.time.LocalDate;
 
 import org.compiere.model.I_C_BPartner;
+import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
@@ -38,6 +39,7 @@ import lombok.Value;
  * #L%
  */
 
+@Service
 public class CommissionConfigFactory
 {
 	ImmutableList<CommissionConfig> createFor(@NonNull final ContractRequest contractRequest)

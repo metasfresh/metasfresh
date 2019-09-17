@@ -16,10 +16,11 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -36,7 +37,7 @@ public class PO_Record
 {
 	/**	Parent Tables		*/
 	private static int[]	s_parents =	new int[]{
-		X_C_Order.Table_ID,
+		getTableId(I_C_Order.class),
 		X_CM_Container.Table_ID
 	};
 	private static String[]	s_parentNames = new String[]{
@@ -44,7 +45,7 @@ public class PO_Record
 		X_CM_Container.Table_Name
 	};
 	private static int[] s_parentChilds = new int[] {
-		InterfaceWrapperHelper.getTableId(I_C_OrderLine.class),
+		getTableId(I_C_OrderLine.class),
 		X_CM_Container_Element.Table_ID
 	};
 	private static String[]	s_parentChildNames = new String[]{
@@ -56,9 +57,9 @@ public class PO_Record
 
 	/**	Cascade Table ID			*/
 	private static int[]	s_cascades =	new int[]{
-		InterfaceWrapperHelper.getTableId(I_AD_Attachment.class),
-		InterfaceWrapperHelper.getTableId(I_AD_Attachment_MultiRef.class),
-		InterfaceWrapperHelper.getTableId(I_AD_Archive.class),
+		getTableId(I_AD_Attachment.class),
+		getTableId(I_AD_Attachment_MultiRef.class),
+		getTableId(I_AD_Archive.class),
 	//	X_CM_ContainerTTable.Table_ID,
 	//	X_CM_CStageTTable.Table_ID,
 		X_K_Index.Table_ID,
@@ -77,7 +78,7 @@ public class PO_Record
 
 	/**	Restrict Table ID			*/
 	private static int[]	s_restricts =	new int[]{
-		InterfaceWrapperHelper.getTableId(I_R_Request.class),
+		getTableId(I_R_Request.class),
 		X_CM_Chat.Table_ID
 	//	X_Fact_Acct.Table_ID
 	};

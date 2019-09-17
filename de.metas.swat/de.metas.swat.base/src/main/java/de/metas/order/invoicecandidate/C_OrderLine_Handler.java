@@ -81,7 +81,6 @@ import lombok.NonNull;
 
 /**
  * Converts {@link I_C_OrderLine} to {@link I_C_Invoice_Candidate}.
- *
  */
 public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 {
@@ -453,7 +452,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setBill_BPartner_ID(order.getBill_BPartner_ID());
 		ic.setBill_Location_ID(order.getBill_Location_ID());
 		ic.setBill_User_ID(order.getBill_User_ID());
-
+		ic.setC_BPartner_SalesRep_ID(order.getC_BPartner_SalesRep_ID());
 	}
 
 	private void setGroupCompensationData(final I_C_Invoice_Candidate ic, final I_C_OrderLine fromOrderLine)

@@ -18,10 +18,9 @@ public class EMailParamsFactory implements IEmailParamsFactory
 	@Override
 	public IEmailParameters getInstanceForPI(final ProcessInfo pi)
 	{
-
 		final int tableId = pi.getTable_ID();
 
-		if (tableId == I_C_Order.Table_ID || tableId == getTableId(I_C_Invoice.class) || tableId == getTableId(I_M_InOut.class))
+		if (tableId == getTableId(I_C_Order.class) || tableId == getTableId(I_C_Invoice.class) || tableId == getTableId(I_M_InOut.class))
 		{
 			return new DocumentEmailParams(pi);
 		}

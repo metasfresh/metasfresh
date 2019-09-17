@@ -7,8 +7,8 @@ import org.springframework.stereotype.Repository;
 
 import de.metas.contracts.commission.businesslogic.CommissionPoints;
 import de.metas.contracts.commission.businesslogic.CommissionTriggerData;
-import de.metas.contracts.commission.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.Money;
 import lombok.NonNull;
 

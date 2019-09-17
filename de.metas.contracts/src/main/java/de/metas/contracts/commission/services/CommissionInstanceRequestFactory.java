@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.util.Optional;
 
 import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
@@ -13,9 +14,9 @@ import de.metas.contracts.commission.businesslogic.CommissionConfig;
 import de.metas.contracts.commission.businesslogic.CommissionTrigger;
 import de.metas.contracts.commission.businesslogic.CreateInstanceRequest;
 import de.metas.contracts.commission.businesslogic.hierarchy.Hierarchy;
-import de.metas.contracts.commission.model.I_C_Invoice_Candidate;
 import de.metas.contracts.commission.services.CommissionConfigFactory.ContractRequest;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 
@@ -41,6 +42,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@Service
 public class CommissionInstanceRequestFactory
 {
 	private final CommissionConfigFactory commissionContractFactory;

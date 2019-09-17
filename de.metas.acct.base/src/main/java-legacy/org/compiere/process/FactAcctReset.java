@@ -27,6 +27,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_MatchInv;
@@ -35,7 +36,6 @@ import org.compiere.model.I_M_Requisition;
 import org.compiere.model.MCash;
 import org.compiere.model.MJournal;
 import org.compiere.model.MMovement;
-import org.compiere.model.MOrder;
 import org.compiere.model.MPayment;
 import org.compiere.model.MProjectIssue;
 import org.compiere.model.X_C_DocType;
@@ -219,7 +219,7 @@ public class FactAcctReset extends JavaProcess
 		else if (AD_Table_ID == MPayment.Table_ID)
 			docBaseType = "IN ('" + X_C_DocType.DOCBASETYPE_APPayment
 				+ "','" + X_C_DocType.DOCBASETYPE_ARReceipt + "')";
-		else if (AD_Table_ID == MOrder.Table_ID)
+		else if (AD_Table_ID == getTableId(I_C_Order.class))
 			docBaseType = "IN ('" + X_C_DocType.DOCBASETYPE_SalesOrder
 				+ "','" + X_C_DocType.DOCBASETYPE_PurchaseOrder + "')";
 		else if (AD_Table_ID == MProjectIssue.Table_ID)

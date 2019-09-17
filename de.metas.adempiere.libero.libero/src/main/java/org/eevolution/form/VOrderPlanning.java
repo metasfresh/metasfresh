@@ -16,6 +16,8 @@
 
 package org.eevolution.form;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -26,12 +28,12 @@ package org.eevolution.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -74,7 +76,7 @@ import org.compiere.apps.search.Find;
 import org.compiere.apps.search.Info_Column;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.MiniTable;
-import org.compiere.model.MOrder;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTable;
 import org.compiere.swing.CPanel;
@@ -113,7 +115,7 @@ public class VOrderPlanning extends CPanel
 
 	/**
 	 * Initialize Panel
-	 * 
+	 *
 	 * @param WindowNo window
 	 * @param frame frame
 	 */
@@ -268,7 +270,7 @@ public class VOrderPlanning extends CPanel
 
 	/**
 	 * Static Init
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	protected void jbInit() throws Exception
@@ -328,7 +330,7 @@ public class VOrderPlanning extends CPanel
 	/**
 	 * Fill Picks
 	 * Column_ID from C_Order
-	 * 
+	 *
 	 * @throws Exception if Lookups cannot be initialized
 	 */
 	private void fillPicks() throws Exception
@@ -418,7 +420,7 @@ public class VOrderPlanning extends CPanel
 
 	private String find()
 	{
-		int AD_Window_ID = MTable.get(Env.getCtx(), MOrder.Table_ID).getAD_Window_ID();
+		int AD_Window_ID = MTable.get(Env.getCtx(), getTableId(I_C_Order.class)).getAD_Window_ID();
 		int AD_Tab_ID = getTab_ID(AD_Window_ID, "Order");
 		//
 		Find find = Find.builder()
@@ -455,13 +457,13 @@ public class VOrderPlanning extends CPanel
 	 * private MField[] getFields()
 	 * {
 	 * ArrayList list = new ArrayList();
-	 * 
+	 *
 	 * M_Column[] cols = table.getColumns(true);
-	 * 
+	 *
 	 * for (int c = 0 ; c < cols.length ; c++)
 	 * {
 	 * StringBuffer sql = new StringBuffer("SELECT * FROM AD_Column WHERE AD_Column_ID = " + cols[c].getAD_Column_ID());
-	 * 
+	 *
 	 * try
 	 * {
 	 * PreparedStatement pstmt = DB.prepareStatement(sql.toString());
@@ -473,7 +475,7 @@ public class VOrderPlanning extends CPanel
 	 * //System.out.println("Columna -------:" + field.getColumnName());
 	 * list.add(field);
 	 * }
-	 * 
+	 *
 	 * rs.close();
 	 * pstmt.close();
 	 * }
@@ -481,9 +483,9 @@ public class VOrderPlanning extends CPanel
 	 * {
 	 * log.error("InfoGeneral.initInfoTable 1", e);
 	 * }
-	 * 
+	 *
 	 * }
-	 * 
+	 *
 	 * //
 	 * MField[] lines = new MField[list.size ()];
 	 * list.toArray (lines);
@@ -502,7 +504,7 @@ public class VOrderPlanning extends CPanel
 	/**
 	 * Has Reset (false)
 	 * To be overwritten by concrete classes
-	 * 
+	 *
 	 * @return true if it has reset (default false)
 	 */
 	boolean hasReset()
@@ -521,7 +523,7 @@ public class VOrderPlanning extends CPanel
 	/**
 	 * Has History (false)
 	 * To be overwritten by concrete classes
-	 * 
+	 *
 	 * @return true if it has history (default false)
 	 */
 	boolean hasHistory()
@@ -540,7 +542,7 @@ public class VOrderPlanning extends CPanel
 	/**
 	 * Has Customize (false)
 	 * To be overwritten by concrete classes
-	 * 
+	 *
 	 * @return true if it has customize (default false)
 	 */
 	boolean hasCustomize()
@@ -559,7 +561,7 @@ public class VOrderPlanning extends CPanel
 	/**
 	 * Has Zoom (false)
 	 * To be overwritten by concrete classes
-	 * 
+	 *
 	 * @return true if it has zoom (default false)
 	 */
 	boolean hasZoom()
@@ -596,7 +598,7 @@ public class VOrderPlanning extends CPanel
 	/**************************************************************************
 	 * Prepare Table, Construct SQL (m_m_sqlMain, m_sqlAdd)
 	 * and size Window
-	 * 
+	 *
 	 * @param layout layout array
 	 * @param from from clause
 	 * @param staticWhere where clause
@@ -653,7 +655,7 @@ public class VOrderPlanning extends CPanel
 
 	/**
 	 * Get the key of currently selected row
-	 * 
+	 *
 	 * @return selected key
 	 */
 	protected Integer getSelectedRowKey()
@@ -672,7 +674,7 @@ public class VOrderPlanning extends CPanel
 
 	/**
 	 * Get Table name Synonym
-	 * 
+	 *
 	 * @return table name
 	 */
 	String getTableName()

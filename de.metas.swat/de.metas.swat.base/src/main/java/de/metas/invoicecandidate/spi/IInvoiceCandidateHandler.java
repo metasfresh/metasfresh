@@ -257,8 +257,6 @@ public interface IInvoiceCandidateHandler
 	 * <li>Bill_User_ID
 	 * </ul>
 	 * of the given invoice candidate.
-	 *
-	 * @param ic
 	 */
 	void setBPartnerData(I_C_Invoice_Candidate ic);
 

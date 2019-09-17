@@ -32,21 +32,23 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateListener;
-import de.metas.util.Check;
+import lombok.NonNull;
 
 public class InvoiceCandidateListeners implements IInvoiceCandidateListeners
 {
 	private final CopyOnWriteArrayList<IInvoiceCandidateListener> listeners = new CopyOnWriteArrayList<>();
 
 	@Override
-	public void addListener(IInvoiceCandidateListener listener)
+	public void addListener(@NonNull final IInvoiceCandidateListener listener)
 	{
-		Check.assumeNotNull(listener, "listener not null");
 		listeners.addIfAbsent(listener);
 	}
 
 	@Override
-	public void onBeforeInvoiceLineCreated(final I_C_InvoiceLine invoiceLine, final IInvoiceLineRW fromInvoiceLine, final List<I_C_Invoice_Candidate> fromCandidates)
+	public void onBeforeInvoiceLineCreated(
+			@NonNull final I_C_InvoiceLine invoiceLine,
+			@NonNull final IInvoiceLineRW fromInvoiceLine,
+			@NonNull final List<I_C_Invoice_Candidate> fromCandidates)
 	{
 		for (final IInvoiceCandidateListener listener : listeners)
 		{
@@ -55,7 +57,9 @@ public class InvoiceCandidateListeners implements IInvoiceCandidateListeners
 	}
 
 	@Override
-	public void onBeforeInvoiceComplete(final I_C_Invoice invoice, final List<I_C_Invoice_Candidate> fromCandidates)
+	public void onBeforeInvoiceComplete(
+			@NonNull final I_C_Invoice invoice,
+			@NonNull final List<I_C_Invoice_Candidate> fromCandidates)
 	{
 
 		for (final IInvoiceCandidateListener listener : listeners)
@@ -65,7 +69,7 @@ public class InvoiceCandidateListeners implements IInvoiceCandidateListeners
 	}
 
 	@Override
-	public void onBeforeClosed(I_C_Invoice_Candidate candidate)
+	public void onBeforeClosed(@NonNull final I_C_Invoice_Candidate candidate)
 	{
 		for (final IInvoiceCandidateListener listener : listeners)
 		{

@@ -11,9 +11,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.businesslogic.Beneficiary;
 import de.metas.contracts.commission.businesslogic.CommissionTrigger;
 import de.metas.contracts.commission.businesslogic.Customer;
-import de.metas.contracts.commission.model.I_C_Invoice_Candidate;
 import de.metas.contracts.commission.services.repos.CommissionTriggerDataRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import lombok.NonNull;
 
 /*
