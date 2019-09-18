@@ -18,7 +18,6 @@ export class PurchaseInvoice {
     return this;
   }
 
-  /** Creates a new invoice and stores its documentId as alias newInvoiceDocumentId. */
   apply() {
     cy.log(`PurchaseInvoice - apply START (${this._toString})`);
     PurchaseInvoice.applyPurchaseInvoice(this);

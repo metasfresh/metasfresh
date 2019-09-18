@@ -315,6 +315,8 @@ Cypress.Commands.add('openInboxNotificationWithText', text => {
    *  it would be helpful for cypress if each notification would also contain a data- attribute with the target,
    *  so that i know what to wait after when the notification is clicked, or that nothing should happens.
    *
+   *  This is helpful in case i need to move to a particular window, or whatever else i would need to do.
+   *
    * maybe that notification could contain `data-cy="/window/169/1000043"` or `data-cy=null`.
    *
    *

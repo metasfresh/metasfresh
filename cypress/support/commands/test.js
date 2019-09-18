@@ -122,25 +122,22 @@ Cypress.Commands.add('pressDoneButton', waitBeforePress => {
 });
 
 Cypress.Commands.add('pressAddNewButton', (includedDocumentIdAliasName = 'newIncludedDocumentId') => {
-  describe("Press table's add-new-record-button", function() {
-    cy.server();
-    // window/<windowId>/<rootDocumentId>/<tabId>/NEW
-    cy.route('PATCH', new RegExp('/rest/api/window/[^/]+/[^/]+/[^/]+/NEW$')).as('patchNewIncludedDocument');
+  cy.server();
+  // route format: /window/<windowId>/<rootDocumentId>/<tabId>/NEW
+  cy.route('PATCH', new RegExp('/rest/api/window/[^/]+/[^/]+/[^/]+/NEW$')).as('patchNewIncludedDocument');
 
-    const addNewText = Cypress.messages.window.addNew.caption;
-    cy.get('.btn')
-      .contains(addNewText)
-      .should('exist')
-      .click()
-      .wait('@patchNewIncludedDocument')
-      .then(xhr => {
-        return { documentId: xhr.response.body[0].rowId };
-      })
-      .as(includedDocumentIdAliasName);
+  const addNewText = Cypress.messages.window.addNew.caption;
+  cy.get('.btn')
+    .contains(addNewText)
+    .should('exist')
+    .click()
+    .wait('@patchNewIncludedDocument')
+    .then(xhr => {
+      return { documentId: xhr.response.body[0].rowId };
+    })
+    .as(includedDocumentIdAliasName);
 
-    cy.get('.panel-modal').should('exist');
-    //cy.get('.modal-content-wrapper').should('exist'); // this might be another good indicator that we are done loading the modal dialog
-  });
+  cy.get('.panel-modal').should('exist');
 });
 
 /**
