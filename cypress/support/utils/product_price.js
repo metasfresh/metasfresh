@@ -67,13 +67,13 @@ function applyProductPrice(productPrice) {
   cy.visitWindow('540325', 'NEW');
 
   cy.writeIntoLookupListField('M_Product_ID', productPrice.product, productPrice.product);
-  if (productPrice.isAttributeDependant !== undefined) {
-    cy.setCheckBoxValue('IsAttributeDependant', productPrice.isAttributeDependant);
-    if(productPrice.isAttributeDependant){
-      //cy.get('.M_AttributeSetInstance_ID').should('exist'); // idk what to look for here, but this class should exist if isAttributeDependant is true.
-    }
+
+  cy.setCheckBoxValue('IsAttributeDependant', productPrice.isAttributeDependant);
+  if (productPrice.isAttributeDependant) {
+    //cy.get('.M_AttributeSetInstance_ID').should('exist'); // idk what to look for here, but this class should exist if isAttributeDependant is true.
   }
-  cy.writeIntoLookupListField('M_PriceList_Version_ID', productPrice.priceListVersion, productPrice.priceListVersion);
+
+  cy.selectInListField('M_PriceList_Version_ID', productPrice.priceListVersion);
   if (productPrice.packingItem !== undefined) {
     cy.selectInListField('M_HU_PI_Item_Product_ID', productPrice.packingItem);
   }

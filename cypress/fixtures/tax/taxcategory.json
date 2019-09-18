@@ -1,10 +1,5 @@
 {
-    "name": "Test Steuer",
-    "ad_client_id": 1000000,
-    "ad_org_id": 1000000,
-    "commodityCode": "",
-    "description": "Cypress Test Steuer",
-    "id": "",
-    "isActive": true,
-    "vatType": "Regular VAT"
+  "name": "Test TaxCategory",
+  "description": "Test TaxCategory",
+  "vatType": "Regular VAT"
 }

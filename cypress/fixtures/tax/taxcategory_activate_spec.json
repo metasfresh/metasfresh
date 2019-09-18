@@ -8,6 +8,7 @@
   "priceListVersionName" : "PriceListVersion",
 
   "productName" : "Product",
-  "standardPrice": 3456
+  "standardPrice": 3456,
+  "initialTaxCategory" : "Regular Tax Rate 19% (Germany)"
 
 }
