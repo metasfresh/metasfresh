@@ -59,6 +59,7 @@ final class OrderLineQuickInputCallout
 		}
 
 		updateM_HU_PI_Item_Product(quickInput);
+		updateBestBeforePolicy(quickInput);
 	}
 
 	private void updateM_HU_PI_Item_Product(@NonNull final QuickInput quickInput)
@@ -81,4 +82,27 @@ final class OrderLineQuickInputCallout
 		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
 		huOrderBL.findM_HU_PI_Item_Product(order, quickInputProductId, quickInputModel::setM_HU_PI_Item_Product);
 	}
+
+	private void updateBestBeforePolicy(@NonNull final QuickInput quickInput)
+	{
+		if (!quickInput.hasField(IOrderLineQuickInput.COLUMNNAME_ShipmentAllocation_BestBefore_Policy))
+		{
+			return;
+		}
+
+		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+		if (bpartnerId == null)
+		{
+			return;
+		}
+
+		final ShipmentAllocationBestBeforePolicy bestBeforePolicy = Services.get(IBPartnerBL.class).getBestBeforePolicy(bpartnerId).orElse(null);
+		if (bestBeforePolicy != null)
+		{
+			final IOrderLineQuickInput quickInputModel = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
+			quickInputModel.setShipmentAllocation_BestBefore_Policy(bestBeforePolicy.getCode());
+		}
+	}
+
 }

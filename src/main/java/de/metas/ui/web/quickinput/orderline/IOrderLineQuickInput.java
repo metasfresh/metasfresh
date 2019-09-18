@@ -50,5 +50,6 @@ public interface IOrderLineQuickInput
 	//@formatter:off
 	String COLUMNNAME_ShipmentAllocation_BestBefore_Policy = "ShipmentAllocation_BestBefore_Policy";
 	String getShipmentAllocation_BestBefore_Policy();
+	void setShipmentAllocation_BestBefore_Policy(String bestBeforePolicy);
 	//@formatter:on
 }
