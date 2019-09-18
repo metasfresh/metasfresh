@@ -47,12 +47,21 @@ const ModalButton = props => {
   );
 };
 
+/**
+ * @file Class based component.
+ * @module RawModal
+ * @extends Component
+ */
 class RawModal extends Component {
   state = {
     scrolled: false,
     visibleTooltips: {},
   };
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method.
+   */
   componentDidMount() {
     // Dirty solution, but use only if you need to
     // there is no way to affect body
@@ -64,6 +73,10 @@ class RawModal extends Component {
     this.initEventListeners();
   }
 
+  /**
+   * @method componentWillUnmount
+   * @summary ToDo: Describe the method.
+   */
   componentWillUnmount() {
     const { masterDocumentList } = this.props;
 
@@ -74,6 +87,11 @@ class RawModal extends Component {
     this.removeEventListeners();
   }
 
+  /**
+   * @method UNSAFE_componentWillUpdate
+   * @summary ToDo: Describe the method.
+   * @param {object} props
+   */
   UNSAFE_componentWillUpdate(props) {
     if (this.resolve) {
       if (!props.success || props.requests.length === 0) {
@@ -82,6 +100,11 @@ class RawModal extends Component {
     }
   }
 
+  /**
+   * @method showTooltip
+   * @summary ToDo: Describe the method.
+   * @param {*} type
+   */
   showTooltip = type => {
     this.setState({
       visibleTooltips: {
@@ -91,6 +114,11 @@ class RawModal extends Component {
     });
   };
 
+  /**
+   * @method hideTooltip
+   * @summary ToDo: Describe the method.
+   * @param {*} type
+   */
   hideTooltip = type => {
     this.setState({
       visibleTooltips: {
@@ -100,6 +128,10 @@ class RawModal extends Component {
     });
   };
 
+  /**
+   * @method initEventListeners
+   * @summary ToDo: Describe the method.
+   */
   initEventListeners = () => {
     const modalContent = document.querySelector('.js-panel-modal-content');
 
@@ -108,6 +140,10 @@ class RawModal extends Component {
     }
   };
 
+  /**
+   * @method removeEventListeners
+   * @summary ToDo: Describe the method.
+   */
   removeEventListeners = () => {
     const modalContent = document.querySelector('.js-panel-modal-content');
 
@@ -116,6 +152,11 @@ class RawModal extends Component {
     }
   };
 
+  /**
+   * @method handleScroll
+   * @summary ToDo: Describe the method.
+   * @param {object} event
+   */
   handleScroll = event => {
     const scrollTop = event.srcElement.scrollTop;
 
@@ -124,6 +165,12 @@ class RawModal extends Component {
     });
   };
 
+  /**
+   * @async
+   * @method handleClose
+   * @summary ToDo: Describe the method.
+   * @param {*} type
+   */
   handleClose = async type => {
     const {
       dispatch,
@@ -171,6 +218,11 @@ class RawModal extends Component {
     }
   };
 
+  /**
+   * @async
+   * @method removeModal
+   * @summary ToDo: Describe the method.
+   */
   removeModal = async () => {
     const { dispatch, modalVisible, windowType, viewId } = this.props;
 
@@ -191,6 +243,10 @@ class RawModal extends Component {
     }
   };
 
+  /**
+   * @method renderButtons
+   * @summary ToDo: Describe the method.
+   */
   renderButtons = () => {
     const { modalVisible, rawModal } = this.props;
     let { allowedCloseActions } = this.props;
@@ -230,6 +286,10 @@ class RawModal extends Component {
     return buttonsArray;
   };
 
+  /**
+   * @method generateShortcuts
+   * @summary ToDo: Describe the method.
+   */
   generateShortcuts = () => {
     let { allowedCloseActions } = this.props;
     const shortcutActions = {};
@@ -249,6 +309,10 @@ class RawModal extends Component {
     return <ModalContextShortcuts {...shortcutActions} />;
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const { modalTitle, children, modalDescription, rawModal } = this.props;
     const { scrolled } = this.state;
