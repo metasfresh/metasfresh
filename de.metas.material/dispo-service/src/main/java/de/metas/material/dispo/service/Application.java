@@ -92,10 +92,6 @@ public class Application
 		enableCacheEventsForDispoTables();
 	}
 
-	public Application()
-	{
-	}
-
 	private static void enableCacheEventsForDispoTables()
 	{
 		final CacheMgt cacheMgt = CacheMgt.get();

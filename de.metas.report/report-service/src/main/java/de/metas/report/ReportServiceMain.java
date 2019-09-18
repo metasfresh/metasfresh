@@ -82,10 +82,6 @@ public class ReportServiceMain
 		ModelValidationEngine.get();
 	}
 
-	public ReportServiceMain()
-	{
-	}
-
 	@Bean
 	@Primary
 	public ObjectMapper jsonObjectMapper()
