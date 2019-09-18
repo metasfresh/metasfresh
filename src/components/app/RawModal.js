@@ -365,6 +365,11 @@ class RawModal extends Component {
   }
 }
 
+/**
+ * @method mapStateToProps
+ * @summary ToDo: Describe the method.
+ * @param {object} windowHandler
+ */
 const mapStateToProps = ({ windowHandler }) => ({
   modalVisible: windowHandler.modal.visible || false,
   rawModal: windowHandler.rawModal,
