@@ -77,6 +77,8 @@ public final class HUAttributeConstants
 	public static final String ATTR_Expired = "HU_Expired";
 	public static final String ATTR_Expired_Value_Expired = "expired";
 
+	public static final String ATTR_MonthsUntilExpiry = "MonthsUntilExpiry";
+
 	public static final String ATTR_Age = "Age";
 	public static final String ATTR_ProductionDate = "ProductionDate";
 
