@@ -346,5 +346,6 @@ TableCell.propTypes = {
 
 export default connect(state => ({
   modalVisible: state.windowHandler.modal.visible,
-  isGerman: state.appHandler.me.language.key.includes('de'),
+  isGerman: state.appHandler.me.language
+    ? state.appHandler.me.language.key.includes('de') : false,
 }))(TableCell);
