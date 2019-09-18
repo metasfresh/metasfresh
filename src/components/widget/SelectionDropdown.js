@@ -10,28 +10,6 @@ import classnames from 'classnames';
  * @extends Component
  */
 export default class SelectionDropdown extends Component {
-  static propTypes = {
-    options: PropTypes.oneOfType([
-      PropTypes.array,
-      PropTypes.shape({
-        map: PropTypes.func.isRequired,
-        includes: PropTypes.func.isRequired,
-        indexOf: PropTypes.func.isRequired,
-        get: PropTypes.func.isRequired,
-        size: PropTypes.number.isRequired,
-      }),
-    ]).isRequired,
-    selected: PropTypes.object,
-    empty: PropTypes.node,
-    forceEmpty: PropTypes.bool,
-    width: PropTypes.number.isRequired,
-    height: PropTypes.number,
-    loading: PropTypes.bool,
-    onChange: PropTypes.func.isRequired,
-    onSelect: PropTypes.func.isRequired,
-    onCancel: PropTypes.func,
-  };
-
   /* Those are instance variables since no rendering needs to be done depending on
    * those properties. Additionally, setState can't be used with the callback in
    * an event listener since it needs to return synchronously */
@@ -361,3 +339,39 @@ export default class SelectionDropdown extends Component {
     );
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {array|shape} options
+ * @prop {object} selected,
+ * @prop {node} empty,
+ * @prop {bool} forceEmpty,
+ * @prop {number} width
+ * @prop {number} height
+ * @prop {bool} loading
+ * @prop {func} onChange
+ * @prop {func} onSelect
+ * @prop {bool} allowShortcut
+ * @prop {func} onCancel
+ */
+SelectionDropdown.propTypes = {
+  options: PropTypes.oneOfType([
+    PropTypes.array,
+    PropTypes.shape({
+      map: PropTypes.func.isRequired,
+      includes: PropTypes.func.isRequired,
+      indexOf: PropTypes.func.isRequired,
+      get: PropTypes.func.isRequired,
+      size: PropTypes.number.isRequired,
+    }),
+  ]).isRequired,
+  selected: PropTypes.object,
+  empty: PropTypes.node,
+  forceEmpty: PropTypes.bool,
+  width: PropTypes.number.isRequired,
+  height: PropTypes.number,
+  loading: PropTypes.bool,
+  onChange: PropTypes.func.isRequired,
+  onSelect: PropTypes.func.isRequired,
+  onCancel: PropTypes.func,
+};
