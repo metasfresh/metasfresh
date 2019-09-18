@@ -1,6 +1,9 @@
 package de.metas.bpartner;
 
 import java.util.Arrays;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_C_BPartner;
@@ -50,9 +53,14 @@ public enum ShipmentAllocationBestBeforePolicy implements ReferenceListAwareEnum
 		this.code = code;
 	}
 
-	public static ShipmentAllocationBestBeforePolicy ofNullableCode(final String code)
+	public static ShipmentAllocationBestBeforePolicy ofNullableCode(@Nullable final String code)
 	{
 		return code != null ? ofCode(code) : null;
+	}
+
+	public static Optional<ShipmentAllocationBestBeforePolicy> optionalOfNullableCode(@Nullable final String code)
+	{
+		return Optional.ofNullable(ofNullableCode(code));
 	}
 
 	public static ShipmentAllocationBestBeforePolicy ofCode(@NonNull final String code)
