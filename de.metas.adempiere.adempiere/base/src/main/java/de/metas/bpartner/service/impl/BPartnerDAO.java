@@ -294,6 +294,15 @@ public class BPartnerDAO implements IBPartnerDAO
 				.orElse(null);
 	}
 
+	public I_C_BPartner_Location getBPartnerLocationByIdInTrx(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return retrieveBPartnerLocationsInTrx(bpartnerLocationId.getBpartnerId())
+				.stream()
+				.filter(bpLocation -> bpLocation.getC_BPartner_Location_ID() == bpartnerLocationId.getRepoId())
+				.findFirst()
+				.orElse(null);
+	}
+
 	@Override
 	public boolean exists(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
@@ -408,8 +417,17 @@ public class BPartnerDAO implements IBPartnerDAO
 		final LocationId locationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
 
 		final ILocationDAO locationRepos = Services.get(ILocationDAO.class);
-		final I_C_Location location = locationRepos.getById(locationId);
-		return CountryId.ofRepoId(location.getC_Country_ID());
+		return locationRepos.getCountryIdByLocationId(locationId);
+	}
+
+	@Override
+	public CountryId retrieveBPartnerLocationCountryIdInTrx(@NonNull final BPartnerLocationId bpLocationId)
+	{
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdInTrx(bpLocationId);
+		final LocationId locationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
+
+		final ILocationDAO locationRepos = Services.get(ILocationDAO.class);
+		return locationRepos.getCountryIdByLocationId(locationId);
 	}
 
 	@Override

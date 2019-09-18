@@ -108,6 +108,8 @@ public interface IBPartnerDAO extends ISingletonService
 
 	CountryId retrieveBPartnerLocationCountryId(BPartnerLocationId bpLocationId);
 
+	CountryId retrieveBPartnerLocationCountryIdInTrx(BPartnerLocationId bpLocationId);
+
 	/**
 	 * @return Contacts of the partner, ordered by ad_user_ID, ascending
 	 */

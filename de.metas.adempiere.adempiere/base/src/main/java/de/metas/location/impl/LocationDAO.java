@@ -9,6 +9,7 @@ import java.util.Set;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Location;
 
+import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import lombok.NonNull;
@@ -53,5 +54,12 @@ public class LocationDAO implements ILocationDAO
 	public void save(final I_C_Location location)
 	{
 		InterfaceWrapperHelper.save(location);
+	}
+
+	@Override
+	public CountryId getCountryIdByLocationId(@NonNull final LocationId id)
+	{
+		final I_C_Location location = getById(id);
+		return CountryId.ofRepoId(location.getC_Country_ID());
 	}
 }
