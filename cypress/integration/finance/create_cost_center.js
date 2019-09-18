@@ -5,7 +5,7 @@ describe('Create test: create cost center', function() {
   let qualityNoteName;
 
   it('Read the fixture', function() {
-    cy.fixture('purchase/purchase_order_from_sales_order.json').then(f => {
+    cy.fixture('finance/create_cost_center.json').then(f => {
       qualityNoteName = appendHumanReadableNow(f['qualityNoteName']);
     });
   });
