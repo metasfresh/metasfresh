@@ -48,7 +48,6 @@ describe('Create a Credit memo for Sales Invoice', function() {
   let productCategoryValue;
   let productName;
   let productValue;
-  let productType;
 
   // BPartner
   let discountSchemaName;
@@ -67,7 +66,6 @@ describe('Create a Credit memo for Sales Invoice', function() {
       productCategoryValue = productCategoryName;
       productName = appendHumanReadableNow(f['productName']);
       productValue = productName;
-      productType = f['productType'];
       discountSchemaName = appendHumanReadableNow(f['discountSchemaName']);
       bPartnerName = appendHumanReadableNow(f['bPartnerName']);
       salesInvoiceTargetDocumentType = f['salesInvoiceTargetDocumentType'];
@@ -78,14 +76,7 @@ describe('Create a Credit memo for Sales Invoice', function() {
   it('Prepare product and bartner', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
 
-    Builder.createBasicProductEntities(
-      productCategoryName,
-      productCategoryValue,
-      priceListName,
-      productName,
-      productValue,
-      productType
-    );
+    Builder.createBasicProductEntities(productCategoryName, productCategoryValue, priceListName, productName, productValue);
 
     cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
       Object.assign(new DiscountSchema(), discountSchemaJson)

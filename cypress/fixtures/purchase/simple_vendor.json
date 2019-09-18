@@ -1,8 +1,7 @@
 {
-  "name": "Simple Vendor",
   "isVendor": true,
-  "vendorPricingSystem": "Testpreisliste Lieferanten",
   "isCustomer": false,
+  "vendorPricingSystem": "Testpreisliste Lieferanten",
   "bPartnerLocations": [
     {
       "name": "Address1",

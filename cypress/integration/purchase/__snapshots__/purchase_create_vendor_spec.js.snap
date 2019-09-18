@@ -54,7 +54,7 @@ exports[`purchase - vendor spec > Create a vendor with two contacts #0`] =
           "key": "1000000"
         },
         "viewEditorRenderMode": "always",
-        "widgetType": "List"
+        "widgetType": "Lookup"
       },
       "BPartner_Parent_ID": {
         "displayed": true,

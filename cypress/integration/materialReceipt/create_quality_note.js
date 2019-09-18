@@ -1,14 +1,19 @@
 import { QualityNote } from '../../support/utils/qualityNote';
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 
-describe('Create test: create quality note, https://github.com/metasfresh/metasfresh-e2e/issues/127', function() {
-  const date = humanReadableNow();
-  const qualityNoteName = `QualityNoteTest ${date}`;
-  const qualityNoteValue = `QualityNoteValueTest ${date}`;
+describe('Create test: create quality note', function() {
+  let qualityNoteName;
+
+  it('Read the fixture', function() {
+    cy.fixture('materialReceipt/create_quality_note.json').then(f => {
+      qualityNoteName = appendHumanReadableNow(f['qualityNoteName']);
+    });
+  });
+
   it('Create quality note', function() {
     cy.fixture('material/quality_note.json').then(qualityNoteJson => {
       Object.assign(new QualityNote(), qualityNoteJson)
-        .setValue(qualityNoteValue)
+        .setValue(qualityNoteName)
         .setName(qualityNoteName)
         .apply();
     });

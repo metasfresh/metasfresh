@@ -28,8 +28,6 @@ import { PackingMaterial } from '../../support/utils/packing_material';
 import { EmptiesReturn } from '../../page_objects/empties_returns';
 import { DocumentStatusKey } from '../../support/utils/constants';
 
-// task: https://github.com/metasfresh/metasfresh-e2e/issues/213
-
 describe('Reverse Empties Return', function() {
   let businessPartnerName;
   let productQuantity;
@@ -45,7 +43,6 @@ describe('Reverse Empties Return', function() {
   let productName1;
   let productName2;
   let productName3;
-  let productType;
   let productList;
 
   // test
@@ -66,7 +63,6 @@ describe('Reverse Empties Return', function() {
       productName1 = appendHumanReadableNow(f['productName1']);
       productName2 = appendHumanReadableNow(f['productName2']);
       productName3 = appendHumanReadableNow(f['productName3']);
-      productType = f['productType'];
       productList = [productName1, productName2, productName3];
     });
   });
@@ -75,11 +71,11 @@ describe('Reverse Empties Return', function() {
     it('Create Price and Products', function() {
       Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
 
-      Builder.createBasicProductEntities(productCategory, productCategory, priceListName, productName1, productName1, productType);
+      Builder.createBasicProductEntities(productCategory, productCategory, priceListName, productName1, productName1);
 
-      Builder.createProductWithPriceUsingExistingCategory(priceListName, productName2, productName2, productType, productCategory);
+      Builder.createProductWithPriceUsingExistingCategory(priceListName, productName2, productName2, null, productCategory);
 
-      Builder.createProductWithPriceUsingExistingCategory(priceListName, productName3, productName3, productType, productCategory);
+      Builder.createProductWithPriceUsingExistingCategory(priceListName, productName3, productName3, null, productCategory);
     });
 
     it('Add Products to Packing Materials', function() {
@@ -147,6 +143,7 @@ describe('Reverse Empties Return', function() {
       });
     });
   });
+
   function createEmptiesReturn() {
     it('Open Material Receipt Candidates and execute action "Empties Return"', function() {
       cy.visitWindow('540196');

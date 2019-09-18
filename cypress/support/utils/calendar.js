@@ -1,21 +1,11 @@
 export class Calendar {
-  constructor(baseName) {
-    cy.log(`Calendar - set baseName = ${baseName};`);
-    this.baseName = baseName;
-    this.timestamp = new Date().getTime();
-
+  constructor() {
     this.years = [];
   }
 
-  setName(baseName) {
-    cy.log(`Calendar - set baseName = ${baseName}`);
-    this.baseName = baseName;
-    return this;
-  }
-
-  setTimestamp(timestamp) {
-    cy.log(`Calendar - set timestamp = ${timestamp}`);
-    this.timestamp = timestamp;
+  setName(name) {
+    cy.log(`Calendar - set name = ${name}`);
+    this.name = name;
     return this;
   }
 
@@ -34,52 +24,32 @@ export class Calendar {
 }
 
 export class Year {
-  constructor(baseName) {
-    cy.log(`Year - set baseName = ${baseName}`);
-    this.baseName = baseName;
-  }
-
-  setName(baseName) {
-    cy.log(`Year - set baseName = ${baseName}`);
-    this.baseName = baseName;
-    return this;
+  constructor(name) {
+    cy.log(`Year - set name = ${name}`);
+    this.name = name;
   }
 }
 
 function applyCalendar(calendar) {
-  describe(`Create new calendar ${calendar.baseName}`, function() {
-    cy.visitWindow('117', 'NEW');
-    cy.writeIntoStringField('Name', `${calendar.baseName} ${calendar.timestamp}`);
+  cy.visitWindow('117', 'NEW');
+  cy.writeIntoStringField('Name', calendar.name);
 
-    // Thx to https://stackoverflow.com/questions/16626735/how-to-loop-through-an-array-containing-objects-and-access-their-properties
-    if (calendar.years.length > 0) {
-      cy.selectTab('C_Year');
-      calendar.years.forEach(function(year) {
-        applyYear(year, calendar);
-      });
-
-      cy.get('table tbody tr').should('have.length', calendar.years.length);
-    }
-
-    //cy.log(JSON.stringify(calendar)); // uncomment if you want to get a fixture
+  // Thx to https://stackoverflow.com/questions/16626735/how-to-loop-through-an-array-containing-objects-and-access-their-properties
+  calendar.years.forEach(function(year) {
+    applyYear(year);
   });
+  cy.expectNumberOfRows(calendar.years.length);
 }
 
-function applyYear(year, calendar) {
-  const yearName = `${year.baseName} ${calendar.timestamp}`;
+function applyYear(year) {
+  const yearName = year.name;
 
+  cy.selectTab('C_Year');
   cy.pressAddNewButton();
   cy.writeIntoStringField('FiscalYear', yearName, true /*modal*/);
   cy.pressDoneButton();
 
-  cy.get('.table-flex-wrapper')
-    .find('tbody tr')
-    .first()
-    .find('td')
-    .first()
-    .should('exist')
-    .click({ force: true });
-
+  cy.selectRowByColumnAndValue({ column: 'FiscalYear', value: yearName });
   cy.executeHeaderActionWithDialog('C_Year_Create_Periods');
   cy.pressStartButton();
 }

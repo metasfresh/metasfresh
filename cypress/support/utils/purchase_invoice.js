@@ -13,16 +13,6 @@ export class PurchaseInvoice {
     return this;
   }
 
-  setDocumentAction(documentAction) {
-    this.documentAction = documentAction;
-    return this;
-  }
-
-  setDocumentStatus(documentStatus) {
-    this.documentStatus = documentStatus;
-    return this;
-  }
-
   setPriceList(priceList) {
     this.priceList = priceList;
     return this;
@@ -58,14 +48,6 @@ export class PurchaseInvoice {
       purchaseInvoice.lines.forEach(line => {
         PurchaseInvoice.applyLine(line);
       });
-
-      if (purchaseInvoice.documentAction) {
-        if (purchaseInvoice.documentStatus) {
-          cy.processDocument(purchaseInvoice.documentAction, purchaseInvoice.documentStatus);
-        } else {
-          cy.processDocument(purchaseInvoice.documentAction);
-        }
-      }
     });
   }
 
@@ -90,25 +72,13 @@ export class PurchaseInvoice {
     // instead of waiting for the patch in writeIntoStringField, we wait for the "pending" indicator to go away
     cy.get('.indicator-pending').should('not.exist');
 
-    cy.writeIntoLookupListField(
-      'M_Product_ID',
-      purchaseInvoiceLine.product,
-      purchaseInvoiceLine.product,
-      false /*typeList*/,
-      true /*modal*/
-    );
+    cy.writeIntoLookupListField('M_Product_ID', purchaseInvoiceLine.product, purchaseInvoiceLine.product, false /*typeList*/, true /*modal*/);
 
     if (purchaseInvoiceLine.tuQuantity) {
       cy.writeIntoStringField('QtyEnteredTU', purchaseInvoiceLine.tuQuantity, true /*modal*/);
     }
     if (purchaseInvoiceLine.packingItem) {
-      cy.writeIntoLookupListField(
-        'M_HU_PI_Item_Product_ID',
-        purchaseInvoiceLine.packingItem,
-        purchaseInvoiceLine.packingItem,
-        false /*typeList*/,
-        true /*modal*/
-      );
+      cy.writeIntoLookupListField('M_HU_PI_Item_Product_ID', purchaseInvoiceLine.packingItem, purchaseInvoiceLine.packingItem, false /*typeList*/, true /*modal*/);
     }
     cy.pressDoneButton();
   }

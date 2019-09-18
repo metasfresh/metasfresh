@@ -1,13 +1,19 @@
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { BPartner } from '../../support/utils/bpartner';
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 
-describe('Create test: discount schema set to customer, https://github.com/metasfresh/metasfresh-e2e/issues/113', function() {
-  const date = humanReadableNow();
-  const discountSchemaName = `DiscountSchemaTest ${date}`;
-  let bpartnerID = null;
+describe('Create test: discount schema set to customer', function() {
+  let discountSchemaName;
 
+  // test
+  let bpartnerID;
+
+  // it('WTF!??!!?', function() { // todo using an `it` block doesn't work on my machine, only with `before` the test is green. What The Actual Fuck?!?!?!
   before(function() {
+    cy.fixture('masterdata/discount_schema_to_customer_spec.json').then(f => {
+      discountSchemaName = appendHumanReadableNow(f['discountSchemaName']);
+    });
+
     cy.fixture('discount/discountschema.json').then(discountschemaJson => {
       Object.assign(new DiscountSchema(), discountschemaJson)
         .setName(discountSchemaName)
@@ -28,25 +34,14 @@ describe('Create test: discount schema set to customer, https://github.com/metas
     });
   });
 
-  it('Create discount schema and set it to customer', function() {
-    cy.visit(`/window/123/${bpartnerID}`);
+  it('Check bpartner', function() {
+    cy.visitWindow(123, bpartnerID);
 
     cy.selectTab('Customer');
     cy.log('Now going to verify that the discount schema was set correctly');
-    // Looking at the tab like this failed (sometimes?) in the docker image.
-    // I believe that's because selectTab didn'T make sure to actually wait for the tab to be loaded.
-    // Still even if that's fixed, a simple layout change would break this check.
-    // Actually I would like a snapshot of the tab data, but since i'm now focussing on fixing what's there, i rather check only this field value
-    // cy.get('table tr').eq(0).get('td').eq(7).should('contain', discountSchemaName);
-    // cy.selectSingleTabRow();
-    // cy.openAdvancedEdit();
-    // cy.getStringFieldValue('M_DiscountSchema_ID', true /*modal*/).then(fieldValue => {
-    //   cy.wrap(fieldValue).should('contain', discountSchemaName);
-    // });
-    // TODO@: I have no idea what's this ^ all about, but didn't work anyway - Kuba
     cy.get('.table tbody td').should('exist');
 
-    cy.get('.table tbody').then(el => {
+    cy.get('.table tbody').should(el => {
       expect(el[0].innerHTML).to.include(discountSchemaName);
     });
   });

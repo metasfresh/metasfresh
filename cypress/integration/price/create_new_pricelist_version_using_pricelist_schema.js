@@ -36,7 +36,6 @@ describe('Create  a new pricelist version using pricelist schema', function() {
 
   let categoryName;
   let productName;
-  let productType;
 
   let priceListSchemaName;
   let surchargeAmount;
@@ -59,7 +58,6 @@ describe('Create  a new pricelist version using pricelist schema', function() {
 
       categoryName = appendHumanReadableNow(f['categoryName']);
       productName = appendHumanReadableNow(f['productName']);
-      productType = f['productType'];
 
       priceListSchemaName = appendHumanReadableNow(f['priceListSchemaName']);
       surchargeAmount = f['surchargeAmount'];
@@ -74,7 +72,7 @@ describe('Create  a new pricelist version using pricelist schema', function() {
     });
 
     it('Create Product and Category', function() {
-      Builder.createBasicProductEntities(categoryName, categoryName, priceListName, productName, productName, productType);
+      Builder.createBasicProductEntities(categoryName, categoryName, priceListName, productName, productName);
     });
   });
 

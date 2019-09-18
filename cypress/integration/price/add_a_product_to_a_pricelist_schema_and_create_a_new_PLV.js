@@ -42,7 +42,6 @@ let priceListVersionNameSearch2; // magic from fixture (PLV doesnt have standard
 let categoryName;
 let productName1;
 let productName2;
-let productType;
 
 // Price List Schema
 let priceListSchemaName;
@@ -65,13 +64,14 @@ it('Read fixture and prepare the names', function() {
     priceListSchemaVersionName = appendHumanReadableNow(f['priceListSchemaVersionName']);
     priceListVersion2ValidFrom = f['priceListVersion2ValidFrom'];
 
-    priceListVersionNameSearch1 = new RegExp(f['priceListVersionNameSearch1']);
-    priceListVersionNameSearch2 = new RegExp(f['priceListVersionNameSearch2']);
+    // the magics
+    const appendedDate = appendHumanReadableNow('').substr(1);
+    priceListVersionNameSearch1 = new RegExp(f['priceListVersionNameSearch1_part1'] + '.*' + appendedDate + '.*' + f['priceListVersionNameSearch1_part2']);
+    priceListVersionNameSearch2 = new RegExp(f['priceListVersionNameSearch2_part1'] + '.*' + appendedDate + '.*' + f['priceListVersionNameSearch2_part2']);
 
     categoryName = appendHumanReadableNow(f['categoryName']);
     productName1 = appendHumanReadableNow(f['productName1']);
     productName2 = appendHumanReadableNow(f['productName2']);
-    productType = f['productType'];
 
     priceListSchemaName = appendHumanReadableNow(f['priceListSchemaName']);
     surchargeAmount = f['surchargeAmount'];
@@ -86,11 +86,11 @@ describe('Create Price and Products', function() {
   });
 
   it('Create Product1 and Category', function() {
-    Builder.createBasicProductEntities(categoryName, categoryName, priceListName, productName1, productName1, productType);
+    Builder.createBasicProductEntities(categoryName, categoryName, priceListName, productName1, productName1);
   });
 
   it('Create Product2', function() {
-    Builder.createProductWithPriceUsingExistingCategory(priceListName, productName2, productName2, productType, categoryName);
+    Builder.createProductWithPriceUsingExistingCategory(priceListName, productName2, productName2, null, categoryName);
   });
 });
 
@@ -108,7 +108,7 @@ describe('Create Price List Schema for Product', function() {
   });
 
   it('Expect PLV1 has 2 Product Prices', function() {
-    filterProductPricesByPLV(priceListName, priceListVersionNameSearch1);
+    filterProductPricesByPLV(priceListVersionNameSearch1);
     cy.expectNumberOfRows(2);
   });
 
@@ -158,12 +158,12 @@ describe('Create new Price List Version using the Price List Schema', function()
   });
 
   it('Expect PLV1 has 2 Product Prices', function() {
-    filterProductPricesByPLV(priceListName, priceListVersionNameSearch1);
+    filterProductPricesByPLV(priceListVersionNameSearch1);
     cy.expectNumberOfRows(2);
   });
 
   it('Expect PLV2 has 1 Product Price', function() {
-    filterProductPricesByPLV(priceListName, priceListVersionNameSearch2);
+    filterProductPricesByPLV(priceListVersionNameSearch2);
     cy.expectNumberOfRows(1);
   });
 
@@ -194,10 +194,10 @@ function filterProductPricesByProduct(product) {
   applyFilters();
 }
 
-function filterProductPricesByPLV(priceListName, priceListVersionMatch) {
+function filterProductPricesByPLV(priceListVersionMatch) {
   cy.visitWindow(ProductPrices.windowId);
   toggleNotFrequentFilters();
   selectNotFrequentFilterWidget('default');
-  cy.writeIntoLookupListField('M_PriceList_Version_ID', priceListName, priceListVersionMatch, false, false, null, true);
+  cy.selectInListField('M_PriceList_Version_ID', priceListVersionMatch, false, null, true);
   applyFilters();
 }

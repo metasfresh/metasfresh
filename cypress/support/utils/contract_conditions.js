@@ -1,11 +1,9 @@
-import { DocumentActionKey, DocumentStatusKey } from '../../support/utils/constants';
 import { getLanguageSpecific } from '../../support/utils/utils';
 
 export class ContractConditions {
-  constructor({ baseName, ...vals }) {
-    cy.log(`ContractConditions - set baseName = ${baseName};`);
-    this.baseName = baseName;
-    this.timestamp = new Date().getTime();
+  constructor({ name, ...vals }) {
+    cy.log(`ContractConditions - set name = ${name};`);
+    this.name = name;
     this.productAllocations = [];
 
     for (let [key, val] of Object.entries(vals)) {
@@ -13,15 +11,9 @@ export class ContractConditions {
     }
   }
 
-  setBaseName(baseName) {
-    cy.log(`ContractConditions - set baseName = ${baseName}`);
-    this.baseName = baseName;
-    return this;
-  }
-
-  setTimestamp(timestamp) {
-    cy.log(`ContractConditions - set timestamp = ${timestamp}`);
-    this.timestamp = timestamp;
+  setName(name) {
+    cy.log(`ContractConditions - set name = ${name}`);
+    this.name = name;
     return this;
   }
 
@@ -72,6 +64,7 @@ export class ProductAllocation {
     this.productcategory = productcategory;
     return this;
   }
+
   setProduct(product) {
     cy.log(`ProductAllocation - set product = ${product}`);
     this.product = product;
@@ -81,7 +74,7 @@ export class ProductAllocation {
 
 function applyConditions(conditions) {
   cy.visitWindow('540113', 'NEW', 'newConditions');
-  cy.writeIntoStringField('Name', `${conditions.baseName} ${conditions.timestamp}`);
+  cy.writeIntoStringField('Name', conditions.name);
 
   cy.fixture('contract/contract_dictionary.json').then(contractDictionary => {
     cy.getStringFieldValue('Type_Conditions').then(currentType => {
@@ -92,39 +85,25 @@ function applyConditions(conditions) {
     });
   });
 
-  if (conditions.conditionsType == ConditionsType.QualityBased) {
+  if (conditions.conditionsType === ConditionsType.QualityBased) {
     cy.selectInListField('M_QualityInsp_LagerKonf_ID', conditions.lagerKonferenz);
   }
 
   cy.selectInListField('OnFlatrateTermExtend', 'Co');
   cy.selectInListField('C_Flatrate_Transition_ID', conditions.transition);
 
-  // Thx to https://stackoverflow.com/questions/16626735/how-to-loop-through-an-array-containing-objects-and-access-their-properties
-  if (conditions.productAllocations.length > 0) {
-    cy.selectTab('C_Flatrate_Matching');
-
-    conditions.productAllocations.forEach(function(productAllocation) {
-      applyProductAllocation(productAllocation);
-    });
-
-    cy.get('table tbody tr').should('have.length', conditions.productAllocations.length);
-  }
-
-  cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-    cy.processDocument(
-      getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
-      getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
-    );
+  conditions.productAllocations.forEach(function(productAllocation) {
+    applyProductAllocation(productAllocation);
   });
+  cy.expectNumberOfRows(conditions.productAllocations.length);
 }
 
 function applyProductAllocation(productAllocation) {
+  cy.selectTab('C_Flatrate_Matching');
   cy.pressAddNewButton();
-
-  cy.selectInListField('M_Product_Category_Matching_ID', productAllocation.productcategory, true /*modal*/);
-
+  cy.selectInListField('M_Product_Category_Matching_ID', productAllocation.productcategory, true);
   if (productAllocation.product) {
-    cy.selectInListField('M_Product_ID', productAllocation.product, true /*modal*/);
+    cy.selectInListField('M_Product_ID', productAllocation.product, true);
   }
   cy.pressDoneButton();
 }

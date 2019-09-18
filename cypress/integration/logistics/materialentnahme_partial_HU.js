@@ -22,7 +22,6 @@ describe('Partial material withdrawal in handling unit editor with Materialentna
   let priceSystemName;
   let priceListName;
   let priceListVersionName;
-  let productType;
   let vendorName;
   let materialentnahme;
   let warehouseName;
@@ -43,7 +42,6 @@ describe('Partial material withdrawal in handling unit editor with Materialentna
       priceSystemName = appendHumanReadableNow(f['priceSystemName']);
       priceListName = appendHumanReadableNow(f['priceListName']);
       priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
-      productType = f['productType'];
       vendorName = appendHumanReadableNow(f['vendorName']);
       materialentnahme = f['materialentnahme'];
       warehouseName = f['warehouseName'];
@@ -61,10 +59,10 @@ describe('Partial material withdrawal in handling unit editor with Materialentna
     });
   });
   it('create product from 24_Gebinde category in order to use it for packing material for transport unit', function() {
-    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterialTU, productForPackingMaterialTU, productType, '24_Gebinde');
+    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterialTU, productForPackingMaterialTU, null, '24_Gebinde');
   });
   it('create product from 24_Gebinde category in order to use it for packing material for loading unit', function() {
-    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterialLU, productForPackingMaterialLU, productType, '24_Gebinde');
+    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterialLU, productForPackingMaterialLU, null, '24_Gebinde');
   });
   it('create packing material for handling unit - Transport unit', function() {
     cy.fixture('product/packing_material.json').then(packingMaterialJson => {
@@ -105,6 +103,7 @@ describe('Partial material withdrawal in handling unit editor with Materialentna
         .apply();
     });
   });
+
   it('create packing instruction version for handling unit - Loading unit; with packmittel and packingInstructionsNameForTU as unter-packvorschrift', function() {
     cy.fixture('product/packing_instructions_version.json').then(pivJson => {
       Object.assign(new PackingInstructionsVersion(), pivJson)
@@ -132,15 +131,7 @@ describe('Partial material withdrawal in handling unit editor with Materialentna
   });
 
   it('Create product for the purchase order', function() {
-    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(
-      productCategoryName,
-      productCategoryName,
-      priceListName,
-      productName1,
-      productName1,
-      productType,
-      packingInstructionsVersionForTU
-    );
+    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(productCategoryName, productCategoryName, priceListName, productName1, productName1, null, packingInstructionsVersionForTU);
   });
 
   it('Create vendor', function() {

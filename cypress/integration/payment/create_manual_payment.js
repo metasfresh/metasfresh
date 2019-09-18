@@ -5,13 +5,13 @@ import { SalesInvoice, SalesInvoiceLine } from '../../support/utils/sales_invoic
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { Bank } from '../../support/utils/bank';
 import { Builder } from '../../support/utils/builder';
-import { getLanguageSpecific, appendHumanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 
 describe('Create a manual Payment for a Sales Invoice', function() {
   let salesInvoiceTargetDocumentType;
   let salesInvoiceNumber;
   let salesInvoiceTotalAmount;
-  let salesInvoiceID;
+  let productQty;
 
   let paymentDocumentType;
   let paymentTotalAmount; // may be different from salesInvoiceTotalAmount because there could be some discounts
@@ -24,7 +24,7 @@ describe('Create a manual Payment for a Sales Invoice', function() {
 
   // product
   let productCategoryName;
-  let productCategoryValue = productCategoryName;
+  let productCategoryValue;
   let productName;
   let productValue;
   let productType;
@@ -33,11 +33,14 @@ describe('Create a manual Payment for a Sales Invoice', function() {
   let discountSchemaName;
   let bPartnerName;
 
+  // test
+  let salesInvoiceID;
+
   it('Read the fixture', function() {
     cy.fixture('payment/create_manual_payment.json').then(f => {
       salesInvoiceTargetDocumentType = f['salesInvoiceTargetDocumentType'];
       salesInvoiceTotalAmount = f['salesInvoiceTotalAmount'];
-      salesInvoiceID = f['salesInvoiceID'];
+      productQty = f['productQty'];
 
       paymentDocumentType = f['paymentDocumentType'];
       paymentTotalAmount = f['paymentTotalAmount'];
@@ -57,14 +60,7 @@ describe('Create a manual Payment for a Sales Invoice', function() {
   it('Prepare product and pricing', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
 
-    Builder.createBasicProductEntities(
-      productCategoryName,
-      productCategoryValue,
-      priceListName,
-      productName,
-      productValue,
-      productType
-    );
+    Builder.createBasicProductEntities(productCategoryName, productCategoryValue, priceListName, productName, productValue, productType);
 
     cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
       Object.assign(new DiscountSchema(), discountSchemaJson)
@@ -84,17 +80,13 @@ describe('Create a manual Payment for a Sales Invoice', function() {
   });
 
   it('Create a Sales Invoice', function() {
-    cy.fixture('sales/sales_invoice.json').then(salesInvoiceJson => {
-      new SalesInvoice(bPartnerName, salesInvoiceTargetDocumentType)
-        .addLine(new SalesInvoiceLine().setProduct(productName).setQuantity(20))
-        .setPriceList(priceListName)
-        .setDocumentAction(getLanguageSpecific(salesInvoiceJson, 'docActionComplete'))
-        .setDocumentStatus(getLanguageSpecific(salesInvoiceJson, 'docStatusCompleted'))
-        .apply();
-
-      cy.getCurrentWindowRecordId().then(id => {
-        salesInvoiceID = id;
-      });
+    new SalesInvoice(bPartnerName, salesInvoiceTargetDocumentType)
+      .addLine(new SalesInvoiceLine().setProduct(productName).setQuantity(productQty))
+      .setPriceList(priceListName)
+      .apply();
+    cy.completeDocument();
+    cy.getCurrentWindowRecordId().then(id => {
+      salesInvoiceID = id;
     });
   });
 
@@ -180,7 +172,7 @@ describe('Create a manual Payment for a Sales Invoice', function() {
 
   it('Sales Invoice is now marked as paid', function() {
     cy.getCheckboxValue('IsPaid').then(checkBoxValue => {
-      cy.log(`IsPaid = ${checkBoxValue}`);
+      // this will keep on failing until https://github.com/metasfresh/metasfresh/issues/5435 is fixed
       assert.equal(checkBoxValue, true);
     });
   });

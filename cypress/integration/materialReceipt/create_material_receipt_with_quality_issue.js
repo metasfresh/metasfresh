@@ -3,32 +3,51 @@ import { ProductCategory } from '../../support/utils/product';
 import { Builder } from '../../support/utils/builder';
 import { BPartner } from '../../support/utils/bpartner';
 import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
-import { humanReadableNow } from '../../support/utils/utils';
 import { Warehouse, WarehouseRoute } from '../../support/utils/warehouse';
 import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_order';
 import { purchaseOrders } from '../../page_objects/purchase_orders';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 
 describe('Create material receipt with quality issue', function() {
-  const date = humanReadableNow();
+  let qualityNoteName;
+  let qualityNoteValue;
+  let qualityDiscountPercent;
+  let expectedLineQty;
 
-  const qualityNoteName = `QualityNoteTest ${date}`;
-  const qualityNoteValue = `QualityNoteValueTest ${date}`;
-  const qualityDiscountPercent = '50';
-  const expectedLineQty = '5';
+  let warehouseName;
 
-  const warehouseName = `TestWarehouseName ${date}`;
+  let productName;
+  let productCategoryName;
+  let discountSchemaName;
+  let priceSystemName;
+  let priceListName;
+  let priceListVersionName;
+  let vendorName;
 
-  const productName1 = `ProductTest ${date}`;
-  const productCategoryName = `ProductCategoryName ${date}`;
-  const discountSchemaName = `DiscountSchemaTest ${date}`;
-  const priceSystemName = `PriceSystem ${date}`;
-  const priceListName = `PriceList ${date}`;
-  const priceListVersionName = `PriceListVersion ${date}`;
-  const productType = 'Item';
-  const vendorName = `Vendor ${date}`;
+  let purchaseOrderLineQuantity;
 
   // test
   let purchaseOrderRecordId;
+
+  it('Read the fixture', function() {
+    cy.fixture('materialReceipt/create_material_receipt_with_quality_issue.json').then(f => {
+      qualityNoteName = appendHumanReadableNow(f['qualityNoteName']);
+      qualityNoteValue = appendHumanReadableNow(f['qualityNoteValue']);
+      qualityDiscountPercent = f['qualityDiscountPercent'];
+      expectedLineQty = f['expectedLineQty'];
+
+      warehouseName = appendHumanReadableNow(f['warehouseName']);
+
+      productName = appendHumanReadableNow(f['productName']);
+      productCategoryName = appendHumanReadableNow(f['productCategoryName']);
+      discountSchemaName = appendHumanReadableNow(f['discountSchemaName']);
+      priceSystemName = appendHumanReadableNow(f['priceSystemName']);
+      priceListName = appendHumanReadableNow(f['priceListName']);
+      priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
+      vendorName = appendHumanReadableNow(f['vendorName']);
+      purchaseOrderLineQuantity = f['purchaseOrderLineQuantity'];
+    });
+  });
 
   it('Create a quality note', function() {
     cy.fixture('material/quality_note.json').then(qualityNoteJson => {
@@ -88,13 +107,7 @@ describe('Create material receipt with quality issue', function() {
   });
 
   it('Create product and vendor', function() {
-    Builder.createProductWithPriceUsingExistingCategory(
-      priceListName,
-      productName1,
-      productName1,
-      productType,
-      productCategoryName
-    );
+    Builder.createProductWithPriceUsingExistingCategory(priceListName, productName, productName, null, productCategoryName);
     cy.fixture('sales/simple_vendor.json').then(vendorJson => {
       new BPartner({ ...vendorJson, name: vendorName })
         .setVendorPricingSystem(priceSystemName)
@@ -108,7 +121,7 @@ describe('Create material receipt with quality issue', function() {
     new PurchaseOrder()
       .setBPartner(vendorName)
       .setPriceSystem(priceSystemName)
-      .addLine(new PurchaseOrderLine().setProduct(productName1).setQuantity(10))
+      .addLine(new PurchaseOrderLine().setProduct(productName).setQuantity(purchaseOrderLineQuantity))
       .apply();
 
     cy.completeDocument();
@@ -157,7 +170,7 @@ describe('Create material receipt with quality issue', function() {
   it('Check Material Receipt Line without quality issue', function() {
     cy.selectNthRow(0);
     cy.openAdvancedEdit();
-    cy.getStringFieldValue('QtyEntered', true).should('equal', expectedLineQty);
+    cy.getStringFieldValue('QtyEntered', true).should('equal', expectedLineQty.toString());
     cy.getStringFieldValue('QualityNote', true).should('be.empty');
     cy.getStringFieldValue('QualityDiscountPercent', true).should('be', '0');
     cy.expectCheckboxValue('IsInDispute', false, true);
@@ -167,7 +180,7 @@ describe('Create material receipt with quality issue', function() {
   it('Check Material Receipt Line with quality issue', function() {
     cy.selectNthRow(1);
     cy.openAdvancedEdit();
-    cy.getStringFieldValue('QtyEntered', true).should('equal', expectedLineQty);
+    cy.getStringFieldValue('QtyEntered', true).should('equal', expectedLineQty.toString());
     cy.getStringFieldValue('QualityNote', true).should('contain', qualityNoteName);
     cy.getStringFieldValue('QualityDiscountPercent', true).should('contain', qualityDiscountPercent);
     cy.expectCheckboxValue('IsInDispute', true, true);

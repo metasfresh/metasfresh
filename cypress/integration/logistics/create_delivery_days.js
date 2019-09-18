@@ -11,9 +11,11 @@ describe('Create a Tour, a Tour Version and Delivery Days', function() {
 
   // test
   let tourID;
-  it('Read fixture and prepare the names', function() {
+
+  it('Read the fixture', function() {
     cy.fixture('logistics/create_delivery_days.json').then(f => {
       customerName = appendHumanReadableNow(f['customerName']);
+
       tourName = appendHumanReadableNow(f['tourName']);
       tourVersionName = appendHumanReadableNow(f['tourVersionName']);
     });

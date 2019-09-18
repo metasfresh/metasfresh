@@ -2,32 +2,44 @@ import { BPartner } from '../../support/utils/bpartner';
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { ProductCategory } from '../../support/utils/product';
 import { Builder } from '../../support/utils/builder';
-import { humanReadableNow } from '../../support/utils/utils';
 import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_order';
 import { purchaseOrders } from '../../page_objects/purchase_orders';
 import { RewriteURL } from '../../support/utils/constants';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 
-// task: https://github.com/metasfresh/metasfresh-e2e/issues/161
-
-const date = humanReadableNow();
-const productForPackingMaterial = `ProductPackingMaterial_${date}`;
-const packingInstructionsName = `ProductPackingInstructions_${date}`;
-const productName1 = `Product1_${date}`;
-const productName2 = `Product2_${date}`;
-const productCategoryName = `ProductCategoryName_${date}`;
-const discountSchemaName = `DiscountSchema_${date}`;
-const priceSystemName = `PriceSystem_${date}`;
-const priceListName = `PriceList_${date}`;
-const priceListVersionName = `PriceListVersion_${date}`;
-const productType = 'Item';
-const vendorName = `Vendor_${date}`;
-const generateInvoicesNotificationModalText = 'Fakturlauf mit 1 Rechnungen eingeplant. Es sind bereits 0 zu erstellende Rechnungen in der Warteschlange, die vorher verarbeitet werden.';
+let productForPackingMaterial;
+let packingInstructionsName;
+let productName1;
+let productName2;
+let productCategoryName;
+let discountSchemaName;
+let priceSystemName;
+let priceListName;
+let priceListVersionName;
+let vendorName;
+let generateInvoicesNotificationModalText;
 
 // test
 let purchaseOrderRecordId;
 let grandTotal;
 
 describe('Create test data', function() {
+  it('Read the fixture', function() {
+    cy.fixture('purchase/purchase_order_material_receipt_invoice.json').then(f => {
+      productForPackingMaterial = appendHumanReadableNow(f['productForPackingMaterial']);
+      packingInstructionsName = appendHumanReadableNow(f['packingInstructionsName']);
+      productName1 = appendHumanReadableNow(f['productName1']);
+      productName2 = appendHumanReadableNow(f['productName2']);
+      productCategoryName = appendHumanReadableNow(f['productCategoryName']);
+      discountSchemaName = appendHumanReadableNow(f['discountSchemaName']);
+      priceSystemName = appendHumanReadableNow(f['priceSystemName']);
+      priceListName = appendHumanReadableNow(f['priceListName']);
+      priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
+      vendorName = appendHumanReadableNow(f['vendorName']);
+      generateInvoicesNotificationModalText = f['generateInvoicesNotificationModalText'];
+    });
+  });
+
   it('Create price entities', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, false);
     cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
@@ -37,7 +49,7 @@ describe('Create test data', function() {
     });
   });
   it('Create packing related entities', function() {
-    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productForPackingMaterial, productType, '24_Gebinde');
+    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productForPackingMaterial, null, '24_Gebinde');
     Builder.createPackingMaterial(productForPackingMaterial, packingInstructionsName);
   });
 
@@ -49,14 +61,11 @@ describe('Create test data', function() {
     });
   });
 
-  it('Create product1', function() {
-    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(productCategoryName, productCategoryName, priceListName, productName1, productName1, productType, packingInstructionsName);
+  it('Create products', function() {
+    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(productCategoryName, productCategoryName, priceListName, productName1, productName1, null, packingInstructionsName);
+    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(productCategoryName, productCategoryName, priceListName, productName2, productName2, null, packingInstructionsName);
   });
 
-  it('Create product2', function() {
-    // these are split into multiple "it" blocks as maybe this fixes some stupid ` Cannot read property 'body' of null` error
-    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(productCategoryName, productCategoryName, priceListName, productName2, productName2, productType, packingInstructionsName);
-  });
   it('Create vendor', function() {
     cy.fixture('sales/simple_vendor.json').then(vendorJson => {
       new BPartner({ ...vendorJson, name: vendorName })
@@ -125,7 +134,7 @@ describe('Create a purchase order and Material Receipts', function() {
     cy.visitWindow(purchaseOrders.windowId, purchaseOrderRecordId);
     cy.openReferencedDocuments('C_Invoice_Candidate');
 
-    cy.expectNumberOfRows(4); // i am not sure how many rows to expect. In video there are 6, but in manual testing i have found only 4!
+    cy.expectNumberOfRows(4); // todo @dh i am not sure how many rows to expect. In video there are 6, but in manual testing i have found only 4!
   });
 
   it('Select all candidates and run action "Generate Invoices"', function() {
@@ -152,7 +161,7 @@ describe('Create a purchase order and Material Receipts', function() {
 
     cy.openAdvancedEdit();
     cy.getStringFieldValue('GrandTotal').then(el => {
-      expect(parseFloat(el)).to.equals(grandTotal);
+      expect(parseFloat(el)).to.be.closeTo(grandTotal, 0.1);
     });
   });
 });

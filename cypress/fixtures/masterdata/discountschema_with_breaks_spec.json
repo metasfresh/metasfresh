@@ -1,0 +1,12 @@
+{
+  "discountSchemaName": "dscschema_with_breaks",
+  "productCategoryName": "dscschema_with_breaks",
+  "productName": "dscschema_with_breaks",
+  "discountTypeBreaks": "Breaks",
+  "discountSchemaValidFrom": "01/01/2019",
+  "serviceProductType": "Service",
+  "breakValue1": "1",
+  "breakValue2": "50",
+  "breakDiscount1": "10",
+  "breakDiscount2": "20"
+}

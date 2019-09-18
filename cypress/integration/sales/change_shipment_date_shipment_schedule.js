@@ -2,31 +2,35 @@ import { BPartner } from '../../support/utils/bpartner';
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { Bank } from '../../support/utils/bank';
 import { Builder } from '../../support/utils/builder';
-import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
-import { DocumentActionKey, DocumentStatusKey } from '../../support/utils/constants';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 import { SalesOrder, SalesOrderLine } from '../../support/utils/sales_order';
 
 describe('Create Sales order', function() {
-  const date = humanReadableNow();
-  const customer = `CustomerTest ${date}`;
-  const productName = `ProductTest ${date}`;
-  const productCategoryName = `ProductCategoryName ${date}`;
-  const discountSchemaName = `DiscountSchemaTest ${date}`;
-  const priceSystemName = `PriceSystem ${date}`;
-  const priceListName = `PriceList ${date}`;
-  const priceListVersionName = `PriceListVersion ${date}`;
-  const productType = 'Item';
+  let customer;
+  let productName;
+  let productCategoryName;
+  let discountSchemaName;
+  let priceSystemName;
+  let priceListName;
+  let priceListVersionName;
+  let productQty;
 
-  before(function() {
+  it('Read the fixture', function() {
+    cy.fixture('sales/change_shipment_date_shipment_schedule.json').then(f => {
+      customer = appendHumanReadableNow(f['customer']);
+      productQty = appendHumanReadableNow(f['productQty']);
+      productName = appendHumanReadableNow(f['productName']);
+      productCategoryName = appendHumanReadableNow(f['productCategoryName']);
+      discountSchemaName = appendHumanReadableNow(f['discountSchemaName']);
+      priceSystemName = appendHumanReadableNow(f['priceSystemName']);
+      priceListName = appendHumanReadableNow(f['priceListName']);
+      priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
+    });
+  });
+
+  it('Prepare test data', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
-    Builder.createBasicProductEntities(
-      productCategoryName,
-      productCategoryName,
-      priceListName,
-      productName,
-      productName,
-      productType
-    );
+    Builder.createBasicProductEntities(productCategoryName, productCategoryName, priceListName, productName, productName);
 
     cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
       Object.assign(new DiscountSchema(), discountSchemaJson)
@@ -44,21 +48,22 @@ describe('Create Sales order', function() {
 
     cy.readAllNotifications();
   });
+
   it('Create a sales order', function() {
-    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      new SalesOrder()
-        .setBPartner(customer)
-        .setPriceSystem(priceSystemName)
-        .addLine(new SalesOrderLine().setProduct(productName).setQuantity(1))
-        .setDocumentAction(getLanguageSpecific(miscDictionary, DocumentActionKey.Complete))
-        .setDocumentStatus(getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed))
-        .apply();
-    });
-    /** Go to Shipment disposition*/
+    new SalesOrder()
+      .setBPartner(customer)
+      .setPriceSystem(priceSystemName)
+      .addLine(new SalesOrderLine().setProduct(productName).setQuantity(productQty))
+      .apply();
+
+    cy.completeDocument();
+  });
+
+  it('go to Shipment disposition and change the shipment date', function() {
     cy.openReferencedDocuments('M_ShipmentSchedule');
     cy.selectNthRow(0).dblclick();
-    /**Change shipment date */
 
+    /**Change shipment date */
     cy.selectOffsetDateViaPicker('DeliveryDate_Override', 1);
     cy.selectOffsetDateViaPicker('PreparationDate_Override', 1);
 
@@ -66,11 +71,10 @@ describe('Create Sales order', function() {
     nextDay.setDate(nextDay.getDate() + 1);
     let nextDayAsString = nextDay.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
 
-    cy.get(
-      '.form-field-DeliveryDate_Effective, .form-field-DeliveryDate_Override, .form-field-PreparationDate_Effective, .form-field-PreparationDate_Override'
-    )
+    cy.get('.form-field-DeliveryDate_Effective, .form-field-DeliveryDate_Override, .form-field-PreparationDate_Effective, .form-field-PreparationDate_Override')
       .find('input')
       .should(input => {
+        // this will fail on localhost due to the timezone issues. only works on jenkins for now
         expect(input.val()).to.have.string(nextDayAsString);
       });
   });

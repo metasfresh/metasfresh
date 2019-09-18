@@ -1,11 +1,17 @@
 import { Product, ProductCategory } from '../../support/utils/product';
 import { ProductProcurementContracts } from '../../support/utils/productProcurementContracts';
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 
 describe('Create Product', function() {
-  const date = humanReadableNow();
-  const productName = `ProductName ${date}`;
-  const productCategoryName = `ProductCategoryName ${date}`;
+  let productName;
+  let productCategoryName;
+
+  it('Read the fixture', function() {
+    cy.fixture('product/product_for_procurement_contracts.json').then(f => {
+      productName = appendHumanReadableNow(f['productName']);
+      productCategoryName = appendHumanReadableNow(f['productCategoryName']);
+    });
+  });
 
   it('Create a new ProductCategory', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
@@ -19,17 +25,12 @@ describe('Create Product', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)
-        .setProductCategory(productCategoryName + '_' + productCategoryName)
-        .setStocked(true)
-        .setPurchased(true)
+        .setProductCategory(productCategoryName)
         .apply();
     });
   });
+
   it('Create a product for procurement contracts', function() {
-    cy.fixture('purchase/product_for_procurement_contracts.json').then(productJson => {
-      Object.assign(new ProductProcurementContracts(), productJson)
-        .setName(productName)
-        .apply();
-    });
+    new ProductProcurementContracts().setName(productName).apply();
   });
 });

@@ -1,0 +1,17 @@
+{
+  "qualityNoteName": "QualityNoteTest",
+  "qualityNoteValue": "QualityNoteValueTest",
+  "qualityDiscountPercent": 50,
+  "expectedLineQty": 5,
+
+  "warehouseName": "TestWarehouseName",
+
+  "productName": "ProductTest",
+  "productCategoryName": "ProductCategoryName",
+  "discountSchemaName": "DiscountSchemaTest",
+  "priceSystemName": "PriceSystem",
+  "priceListName": "PriceList",
+  "priceListVersionName": "PriceListVersion",
+  "vendorName": "Vendor",
+  "purchaseOrderLineQuantity": 10
+}

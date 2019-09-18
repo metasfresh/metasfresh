@@ -27,7 +27,7 @@ import { appendHumanReadableNow } from '../../support/utils/utils';
 describe('create dunning type', function() {
   let dunningTypeName;
   let bPartnerName;
-  let bpartnerID = null;
+  let bpartnerID;
 
   it('Read the fixture', function() {
     cy.fixture('dunning/create_dunning_type_spec.json').then(f => {

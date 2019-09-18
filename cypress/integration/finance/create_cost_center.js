@@ -1,9 +1,15 @@
 import { CostCenter } from '../../support/utils/cost_center';
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 
-describe('Create test: create cost center, https://github.com/metasfresh/metasfresh-e2e/issues/124', function() {
-  const date = humanReadableNow();
-  const qualityNoteName = `Cost Center Test ${date}`;
+describe('Create test: create cost center', function() {
+  let qualityNoteName;
+
+  it('Read the fixture', function() {
+    cy.fixture('finance/create_cost_center.json').then(f => {
+      qualityNoteName = appendHumanReadableNow(f['qualityNoteName']);
+    });
+  });
+
   it('Create cost center', function() {
     cy.fixture('finance/cost_center.json').then(costCenterJson => {
       Object.assign(new CostCenter(), costCenterJson)

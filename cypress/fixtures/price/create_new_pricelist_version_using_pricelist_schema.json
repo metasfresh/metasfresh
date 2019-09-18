@@ -7,7 +7,6 @@
 
     "categoryName" : "Category",
     "productName" : "Product",
-    "productType" : "Item",
 
     "priceListSchemaName" : "PriceListSchema",
     "surchargeAmount" : 222

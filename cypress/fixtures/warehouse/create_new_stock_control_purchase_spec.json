@@ -5,6 +5,5 @@
      "productCategoryName" : "ProductCategory",
      "priceListName" : "PriceList",
      "priceSystemName" : "PriceSystem",
-     "priceListVersionName" : "PriceListVersion",
-     "productType" : "Item"
+     "priceListVersionName" : "PriceListVersion"
 }

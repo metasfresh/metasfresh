@@ -29,16 +29,6 @@ export class SalesOrder {
     return this;
   }
 
-  setDocumentAction(documentAction) {
-    this.documentAction = documentAction;
-    return this;
-  }
-
-  setDocumentStatus(documentStatus) {
-    this.documentStatus = documentStatus;
-    return this;
-  }
-
   setPriceSystem(priceSystem) {
     cy.log(`SalesOrder - priceSystem = ${priceSystem}`);
     this.priceSystem = priceSystem;
@@ -65,12 +55,7 @@ export class SalesOrder {
 
       cy.writeIntoLookupListField('C_BPartner_ID', salesOrder.bPartner, salesOrder.bPartner);
       if (salesOrder.bPartnerLocation) {
-        cy.writeIntoLookupListField(
-          'C_BPartner_Location_ID',
-          salesOrder.bPartnerLocation,
-          salesOrder.bPartnerLocation,
-          true /*typeList*/
-        );
+        cy.writeIntoLookupListField('C_BPartner_Location_ID', salesOrder.bPartnerLocation, salesOrder.bPartnerLocation, true /*typeList*/);
       }
 
       if (salesOrder.warehouse) {
@@ -78,6 +63,7 @@ export class SalesOrder {
       }
 
       if (salesOrder.priceSystem) {
+        cy.resetListValue('M_PricingSystem_ID');
         cy.selectInListField('M_PricingSystem_ID', salesOrder.priceSystem);
       }
 
@@ -90,14 +76,6 @@ export class SalesOrder {
       salesOrder.lines.forEach(line => {
         SalesOrder.applyLine(line);
       });
-
-      if (salesOrder.documentAction) {
-        if (salesOrder.documentStatus) {
-          cy.processDocument(salesOrder.documentAction, salesOrder.documentStatus);
-        } else {
-          cy.processDocument(salesOrder.documentAction);
-        }
-      }
     });
   }
 
@@ -105,21 +83,9 @@ export class SalesOrder {
     cy.selectTab('C_OrderLine');
     cy.pressAddNewButton();
 
-    cy.writeIntoLookupListField(
-      'M_Product_ID',
-      salesOrderLine.product,
-      salesOrderLine.product,
-      false /*typeList*/,
-      true /*modal*/
-    );
+    cy.writeIntoLookupListField('M_Product_ID', salesOrderLine.product, salesOrderLine.product, false /*typeList*/, true /*modal*/);
 
-    cy.writeIntoStringField(
-      'QtyEntered',
-      salesOrderLine.quantity,
-      true /*modal*/,
-      null /*rewriteUrl*/,
-      true /*noRequest, bc the patch response is e.g. 20 and we would be waiting for e.g. '20' */
-    );
+    cy.writeIntoStringField('QtyEntered', salesOrderLine.quantity, true /*modal*/, null /*rewriteUrl*/, true /*noRequest, bc the patch response is e.g. 20 and we would be waiting for e.g. '20' */);
 
     cy.pressDoneButton();
   }

@@ -1,25 +1,37 @@
-import { humanReadableNow } from '../../support/utils/utils';
+import { appendHumanReadableNow } from '../../support/utils/utils';
 
-describe('Create Pricing Masterdata for Automatic End2End Tests with cypress https://github.com/metasfresh/metasfresh-e2e/issues/14', function() {
+describe('Create Pricing Masterdata', function() {
+  let priceSystemName;
+  let priceListName;
+  let currency;
+  let priceListValueName;
+
+  it('Read the fixture', function() {
+    cy.fixture('misc/pricesystem_pricelist_plv_setup_spec.json').then(f => {
+      priceSystemName = appendHumanReadableNow(f['priceSystemName']);
+      priceListName = appendHumanReadableNow(f['priceListName']);
+      currency = f['currency'];
+      priceListValueName = appendHumanReadableNow(f['priceListValueName']);
+    });
+  });
+
   it('Create a new Pricesystem and Pricelist with PLV', function() {
-    const date = humanReadableNow();
-
     //Pricesystem
     cy.visitWindow('540320', 'NEW');
-    cy.writeIntoStringField('Name', `TestPriceSystemName ${date}`);
+    cy.writeIntoStringField('Name', priceSystemName);
     cy.clearField('Value');
-    cy.writeIntoStringField('Value', `TestPriceSystemValue ${date}`);
+    cy.writeIntoStringField('Value', priceSystemName);
 
     //Pricelist
     cy.visitWindow('540321', 'NEW');
-    cy.writeIntoStringField('Name', `TestPriceListName ${date}`);
-    cy.selectInListField('M_PricingSystem_ID', `TestPriceSystemName ${date}`);
-    cy.selectInListField('C_Currency_ID', 'EUR');
+    cy.writeIntoStringField('Name', priceListName);
+    cy.selectInListField('M_PricingSystem_ID', priceSystemName);
+    cy.selectInListField('C_Currency_ID', currency);
 
     //PLV
     cy.pressAddNewButton();
     cy.clearField('Name', true);
-    cy.writeIntoStringField('Name', `TestPLV ${date}`, true);
+    cy.writeIntoStringField('Name', priceListValueName, true);
     cy.pressDoneButton();
   });
 });

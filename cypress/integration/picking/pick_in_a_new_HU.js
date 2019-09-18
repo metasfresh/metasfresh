@@ -41,7 +41,6 @@ let packingInstructionsName;
 // Products
 let productCategoryName;
 let productName;
-let productType;
 
 // BPartner
 let bPartnerName;
@@ -55,6 +54,7 @@ let locatorId;
 
 // test columns
 const orderColumn = 'order';
+const pickingHuCodeColumn = 'huCode';
 const huSelectionHuCodeColumn = 'Value';
 const productPartnerColumn = 'ProductOrBPartner';
 const pickingQtyCUColumn = 'huQtyCU';
@@ -78,7 +78,6 @@ describe('Create test data', function() {
 
       productCategoryName = appendHumanReadableNow(f['productCategoryName']);
       productName = appendHumanReadableNow(f['productName']);
-      productType = f['productType'];
 
       bPartnerName = appendHumanReadableNow(f['bPartnerName']);
 
@@ -107,12 +106,12 @@ describe('Create test data', function() {
   });
 
   it('Create packing related entities', function() {
-    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productForPackingMaterial, productType, '24_Gebinde');
+    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productForPackingMaterial, null, '24_Gebinde');
     Builder.createPackingMaterial(productForPackingMaterial, packingInstructionsName);
   });
 
   it('Create product', function() {
-    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(productCategoryName, productCategoryName, priceListName, productName, productName, productType, packingInstructionsName);
+    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(productCategoryName, productCategoryName, priceListName, productName, productName, null, packingInstructionsName);
   });
 
   it('Create bPartner', function() {
@@ -162,7 +161,7 @@ describe('Pick the SO', function() {
     cy.executeQuickAction('WEBUI_Picking_HUEditor_Create_M_Source_HUs', true, false);
     cy.selectRightTable().within(() => {
       // expecting the HU to be here
-      cy.selectRowByColumnAndValue({ column: huSelectionHuCodeColumn, value: huValue }, false, true);
+      cy.selectRowByColumnAndValue({ column: pickingHuCodeColumn, value: huValue }, false, true);
     });
   });
 
