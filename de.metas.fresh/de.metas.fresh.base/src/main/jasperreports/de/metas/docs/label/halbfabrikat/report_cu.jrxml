@@ -19,16 +19,10 @@
 		<defaultValueExpression><![CDATA["http://mf15adit:8080/adempiereJasper/BarcodeServlet"]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT
-	hui.M_HU_ID
-FROM
-	M_HU_Item hui
-WHERE
-	hui.M_HU_Item_ID IN (
-		SELECT	T_Selection_ID
-		FROM	T_Selection
-		WHERE	AD_PInstance_ID = $P{AD_PInstance_ID}
-	)
+		<![CDATA[SELECT	T_Selection_ID as M_HU_ID
+FROM	T_Selection
+WHERE	AD_PInstance_ID = $P{AD_PInstance_ID}
+ORDER BY	T_Selection_ID
 ;]]>
 	</queryString>
 	<field name="m_hu_id" class="java.math.BigDecimal">

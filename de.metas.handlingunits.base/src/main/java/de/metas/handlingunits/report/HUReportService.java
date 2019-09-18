@@ -192,7 +192,6 @@ public class HUReportService
 		{
 			final String huUnitType = hu.getHUUnitType();
 
-			// BL NOT IMPLEMENTED YET FOR VIRTUAL PI REPORTS, because we don't have any
 			if (X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI.equals(huUnitType))
 			{
 				cuHUs.add(hu);
