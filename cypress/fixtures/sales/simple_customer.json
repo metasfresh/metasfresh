@@ -2,7 +2,7 @@
   "name": "Simple Customer",
   "isVendor": false,
   "isCustomer": true,
-  "bank":"Raiffeisen",
+  "bank": "Raiffeisen",
   "customerPricingSystem": "Testpreisliste Kunden",
   "customerDiscountSchema": "DiscountSchema 1561534895332",
   "paymentTerm": "30 days net",

@@ -7,7 +7,7 @@ describe('Create Taxrate for Automatic End2End Tests with cypress https://github
   let rate;
   let defaultTaxCategory;
 
-  it('Read fixture and prepare the names', function() {
+  it('Read the fixture', function() {
     cy.fixture('tax/taxrate_setup_spec.json').then(f => {
       taxRateName = appendHumanReadableNow(f['taxRateName']);
       validFrom = f['validFrom'];
