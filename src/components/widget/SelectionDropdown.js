@@ -3,6 +3,11 @@ import PropTypes from 'prop-types';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import classnames from 'classnames';
 
+/**
+ * @file Class based component.
+ * @module SelectionDropdown
+ * @extends Component
+ */
 export default class SelectionDropdown extends Component {
   static propTypes = {
     options: PropTypes.oneOfType([
@@ -45,22 +50,39 @@ export default class SelectionDropdown extends Component {
     this.handleMouseDown = this.handleMouseDown.bind(this);
   }
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method.
+   */
   componentDidMount() {
     window.addEventListener('keydown', this.handleKeyDown);
     window.addEventListener('keyup', this.handleKeyUp);
   }
 
+  /**
+   * @method componentWillUnmount
+   * @summary ToDo: Describe the method.
+   */
   componentWillUnmount() {
     window.removeEventListener('keydown', this.handleKeyDown);
     window.removeEventListener('keyup', this.handleKeyUp);
   }
 
+  /**
+   * @method UNSAFE_componentWillReceiveProps
+   * @summary ToDo: Describe the method.
+   */
   UNSAFE_componentWillReceiveProps(propsNext) {
     if (propsNext.options !== this.props.options) {
       this.optionToRef.clear();
     }
   }
 
+  /**
+   * @method size
+   * @summary ToDo: Describe the method.
+   * @param {*} options
+   */
   size(options) {
     if (Array.isArray(options)) {
       return options.length;
@@ -69,6 +91,12 @@ export default class SelectionDropdown extends Component {
     return options.size;
   }
 
+  /**
+   * @method get
+   * @summary ToDo: Describe the method.
+   * @param {*} options
+   * @param {*} index
+   */
   get(options, index) {
     if (Array.isArray(options)) {
       return options[index];
@@ -77,6 +105,12 @@ export default class SelectionDropdown extends Component {
     return options.get(index);
   }
 
+  /**
+   * @method scrollIntoView
+   * @summary ToDo: Describe the method.
+   * @param {*} element
+   * @param {*} up
+   */
   scrollIntoView(element, up) {
     const {
       top: topMax,
@@ -89,6 +123,11 @@ export default class SelectionDropdown extends Component {
     }
   }
 
+  /**
+   * @method navigate
+   * @summary ToDo: Describe the method.
+   * @param {*} up
+   */
   navigate = up => {
     this.ignoreMouse = true;
     this.ignoreNextMouseEnter = true;
@@ -122,6 +161,11 @@ export default class SelectionDropdown extends Component {
     onChange(selectedNew);
   };
 
+  /**
+   * @method navigateToAlphanumeric
+   * @summary ToDo: Describe the method.
+   * @param {*} char
+   */
   navigateToAlphanumeric = char => {
     const { selected, options, onChange } = this.props;
     const items = options.filter(
@@ -152,6 +196,11 @@ export default class SelectionDropdown extends Component {
     onChange(selectedNew);
   };
 
+  /**
+   * @method handleKeyDown
+   * @summary ToDo: Describe the method.
+   * @param {object} event
+   */
   handleKeyDown(event) {
     const { navigate } = this;
     const { selected, onCancel, onSelect } = this.props;
@@ -182,10 +231,19 @@ export default class SelectionDropdown extends Component {
     }
   }
 
+  /**
+   * @method handleKeyUp
+   * @summary ToDo: Describe the method.
+   */
   handleKeyUp() {
     this.ignoreMouse = false;
   }
 
+  /**
+   * @method handleMouseEnter
+   * @summary ToDo: Describe the method.
+   * @param {*} option
+   */
   handleMouseEnter(option) {
     if (this.ignoreMouse) {
       return;
@@ -206,10 +264,20 @@ export default class SelectionDropdown extends Component {
     this.props.onChange(option);
   }
 
+  /**
+   * @method handleMouseDown
+   * @summary ToDo: Describe the method.
+   * @param {*} option
+   */
   handleMouseDown(option) {
     this.props.onSelect(option, true);
   }
 
+  /**
+   * @method renderHeader
+   * @summary ToDo: Describe the method.
+   * @param {*} children
+   */
   renderHeader = children => {
     return (
       <div className="input-dropdown-list-option input-dropdown-list-header">
@@ -218,6 +286,11 @@ export default class SelectionDropdown extends Component {
     );
   };
 
+  /**
+   * @method renderOption
+   * @summary ToDo: Describe the method.
+   * @param {*} option
+   */
   renderOption = option => {
     const { selected } = this.props;
     const { key, caption, description } = option;
@@ -242,6 +315,10 @@ export default class SelectionDropdown extends Component {
     );
   };
 
+  /**
+   * @method renderEmpty
+   * @summary ToDo: Describe the method.
+   */
   renderEmpty = () => this.renderHeader(this.props.empty);
 
   loading = this.renderHeader(
@@ -256,6 +333,10 @@ export default class SelectionDropdown extends Component {
     </ReactCSSTransitionGroup>
   );
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const { options, width, height, loading, forceEmpty } = this.props;
     const empty = this.size(options) === 0;
