@@ -173,19 +173,16 @@ declare namespace Cypress {
      *
      * @param windowId - the metasfresh AD_Window_ID of the window to visit
      * @param recordId - optional - the record ID of the record to open within the window, or NEW if a new record shall be created. If set the detail layout is shown and cypress waits for the layout into fo be send by the API; otherwise, the "table/grid" layout is shown.
-     * @param documentIdAliasName - optional, default: visitedDocumentId - the name of the alias in which the command will store the actual record; example " { documentId: 1000001 }"; usefull if recordId=NEW;
      *
      * @example
      * // create a new business partner document
-     * cy.visitWindow(123, 'NEW', 'myNewDocumentId')
+     * cy.visitWindow(123, 'NEW')
      *
-     * cy.get('@myNewDcumentId').then((newDocument) => {
-     *   cy.log(`going to do things with the document we added just before; newDocument=${JSON.stringify(newDocument)}`)
-     *   cy.log(`documentId=${newDocument.documentId}`)
-     * })
-     *
+     * cy.getCurrentWindowRecordId().then(id => {
+     *   cy.log('Creating Bpartner with id: ' + id);
+     * });
      */
-    visitWindow(windowId: string | number, recordId?: string | number, documentIdAliasName?: string): Chainable<any>
+    visitWindow(windowId: string | number, recordId?: string | number): Chainable<any>;
 
     /**
      * Wait for the response to a particular patch where a particular field value was set
