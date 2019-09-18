@@ -3,7 +3,6 @@ package de.metas.ui.web.quickinput.orderline;
 import java.util.Optional;
 import java.util.Set;
 
-import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.DisplayType;
@@ -13,20 +12,16 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
-import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
-import de.metas.product.ProductId;
 import de.metas.ui.web.material.adapter.AvailableToPromiseAdapter;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
-import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.quickinput.QuickInputConstants;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
 import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
-import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -35,9 +30,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
-import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndAttributes;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
-import de.metas.ui.web.window.model.Document;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -67,8 +60,9 @@ import lombok.NonNull;
 /* package */ final class OrderLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final IHUOrderBL huOrderBL = Services.get(IHUOrderBL.class);
 	private final AvailableToPromiseAdapter availableToPromiseAdapter;
+
+	private final OrderLineQuickInputCallout callout = OrderLineQuickInputCallout.newInstance();
 
 	public OrderLineQuickInputDescriptorFactory(
 			@NonNull final AvailableToPromiseAdapter availableToPromiseAdapter)
@@ -137,7 +131,7 @@ import lombok.NonNull;
 				.setAlwaysUpdateable(true)
 				.setMandatoryLogic(ConstantLogicExpression.TRUE)
 				.setDisplayLogic(ConstantLogicExpression.TRUE)
-				.addCallout(this::onProductChangedCallout)
+				.addCallout(callout::onProductChanged)
 				.addCharacteristic(Characteristic.PublicField);
 	}
 
@@ -163,34 +157,6 @@ import lombok.NonNull;
 					.availableToPromiseAdapter(availableToPromiseAdapter)
 					.build();
 		}
-	}
-
-	private void onProductChangedCallout(final ICalloutField calloutField)
-	{
-		final QuickInput quickInput = QuickInput.getQuickInputOrNull(calloutField);
-		if (quickInput == null)
-		{
-			return;
-		}
-
-		final Document quickInputDocument = quickInput.getQuickInputDocument();
-		if (quickInputDocument == null || !quickInputDocument.hasField(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID))
-		{
-			return; // there are users whose systems don't have M_HU_PI_Item_Product_ID in their quick-input
-		}
-
-		final IOrderLineQuickInput quickInputModel = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
-		final LookupValue productLookupValue = quickInputModel.getM_Product_ID();
-		if (productLookupValue == null)
-		{
-			return;
-		}
-
-		final ProductAndAttributes productAndAttributes = ProductLookupDescriptor.toProductAndAttributes(productLookupValue);
-		final ProductId quickInputProductId = productAndAttributes.getProductId();
-
-		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
-		huOrderBL.findM_HU_PI_Item_Product(order, quickInputProductId, quickInputModel::setM_HU_PI_Item_Product);
 	}
 
 	private DocumentFieldDescriptor.Builder createPackingInstructionFieldBuilder()
@@ -242,10 +208,11 @@ import lombok.NonNull;
 
 	private static QuickInputLayoutDescriptor createLayout(final DocumentEntityDescriptor entityDescriptor)
 	{
+		// IMPORTANT: if Qty is not the last field then frontend will not react on pressing "ENTER" to complete the entry
 		return QuickInputLayoutDescriptor.build(entityDescriptor, new String[][] {
 				{ "M_Product_ID", "M_HU_PI_Item_Product_ID" },
+				{ "ShipmentAllocation_BestBefore_Policy" },
 				{ "Qty" },
-				{ "ShipmentAllocation_BestBefore_Policy" }
 		});
 	}
 }
