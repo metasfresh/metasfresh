@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
-import { merge } from 'lodash';
+import { merge, isEqual } from 'lodash';
 
 import {
   VIEW_EDITOR_RENDER_MODES_ALWAYS,
@@ -55,10 +55,15 @@ class TableItem extends PureComponent {
   }
 
   componentDidUpdate(prevProps) {
+    const { fieldsByName } = this.props;
     const { multilineText } = this.state;
 
     if (multilineText && this.props.isSelected !== prevProps.isSelected) {
       this.handleCellExtend();
+    }
+
+    if (!isEqual(prevProps.fieldsByName, fieldsByName)) {
+      this.setState({ editedCells: {} });
     }
   }
 
