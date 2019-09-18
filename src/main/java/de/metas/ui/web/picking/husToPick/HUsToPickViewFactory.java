@@ -4,9 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.inoutcandidate.api.IPackagingDAO;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.process.IADProcessDAO;
@@ -25,7 +29,6 @@ import de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterSer
 import de.metas.ui.web.picking.pickingslot.PickingSlotRowId;
 import de.metas.ui.web.picking.pickingslot.PickingSlotView;
 import de.metas.ui.web.view.CreateViewRequest;
-import de.metas.ui.web.view.CreateViewRequest.Builder;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewFactory;
@@ -38,6 +41,7 @@ import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /*
@@ -68,7 +72,9 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 	static final String WINDOW_ID_STRING = "husToPick";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
-	private final transient IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
 	private HUReservationDocumentFilterService huReservationDocumentFilterService;
 
@@ -84,20 +90,21 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 			@NonNull final PickingSlotRowId pickingSlotRowId,
 			@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
-
-		final Builder builder = CreateViewRequest.builder(WINDOW_ID, JSONViewDataType.includedView)
-				.setParentViewId(pickingSlotViewId)
-				.setParentRowId(pickingSlotRowId.toDocumentId())
-				.setParameter(HUsToPickViewFilters.PARAM_CurrentShipmentScheduleId, shipmentScheduleId);
+		final ShipmentAllocationBestBeforePolicy bestBeforePolicy = shipmentScheduleBL.getBestBeforePolicy(shipmentScheduleId).orElse(ShipmentAllocationBestBeforePolicy.Expiring_First);
 
 		final Packageable packageable = packagingDAO.getByShipmentScheduleId(shipmentScheduleId);
-
 		final DocumentFilter stickyFilter = huReservationDocumentFilterService.createDocumentFilterIgnoreAttributes(packageable);
-		builder.addStickyFilters(stickyFilter);
-		builder.setFilters(ImmutableList.of(HUsToPickViewFilters.createHUIdsFilter(true))); // https://github.com/metasfresh/metasfresh-webui-api/issues/1067
 
-		return builder.build();
+		return CreateViewRequest.builder(WINDOW_ID, JSONViewDataType.includedView)
+				.setParentViewId(pickingSlotViewId)
+				.setParentRowId(pickingSlotRowId.toDocumentId())
+				.setParameter(HUsToPickViewFilters.PARAM_CurrentShipmentScheduleId, shipmentScheduleId)
+				.setParameter(HUsToPickViewFilters.PARAM_BestBeforePolicy, bestBeforePolicy)
+				//
+				.addStickyFilters(stickyFilter)
+				.setFilters(ImmutableList.of(HUsToPickViewFilters.createHUIdsFilter(true))) // https://github.com/metasfresh/metasfresh-webui-api/issues/1067
+				//
+				.build();
 	}
 
 	@Override
@@ -153,8 +160,25 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 				//
 				.clearOrderBys()
 				.orderBy(DocumentQueryOrderBy.builder().fieldName(HUEditorRow.FIELDNAME_IsReserved).ascending(false).nullsLast(true).build())
-				.orderBy(DocumentQueryOrderBy.builder().fieldName(HUEditorRow.FIELDNAME_BestBeforeDate).ascending(true).nullsLast(true).build())
+				.orderBy(createBestBeforeDateOrderBy(huViewBuilder.getParameter(HUsToPickViewFilters.PARAM_BestBeforePolicy)))
 				.orderBy(DocumentQueryOrderBy.byFieldName(HUEditorRow.FIELDNAME_M_HU_ID));
+	}
+
+	private static DocumentQueryOrderBy createBestBeforeDateOrderBy(final ShipmentAllocationBestBeforePolicy bestBeforePolicy)
+	{
+		final ShipmentAllocationBestBeforePolicy bestBeforePolicyEffective = CoalesceUtil.coalesce(bestBeforePolicy, ShipmentAllocationBestBeforePolicy.Expiring_First);
+		if (bestBeforePolicyEffective == ShipmentAllocationBestBeforePolicy.Expiring_First)
+		{
+			return DocumentQueryOrderBy.builder().fieldName(HUEditorRow.FIELDNAME_BestBeforeDate).ascending(true).nullsLast(true).build();
+		}
+		else if (bestBeforePolicyEffective == ShipmentAllocationBestBeforePolicy.Newest_First)
+		{
+			return DocumentQueryOrderBy.builder().fieldName(HUEditorRow.FIELDNAME_BestBeforeDate).ascending(false).nullsLast(true).build();
+		}
+		else
+		{
+			throw new AdempiereException("Unknown best before policy: " + bestBeforePolicyEffective);
+		}
 	}
 
 	private RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
@@ -168,24 +192,24 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 	@Override
 	public IView filterView(final IView view, final JSONFilterViewRequest filterViewRequest, Supplier<IViewsRepository> viewsRepo)
 	{
-		final Builder filterViewBuilder = CreateViewRequest.filterViewBuilder(view, filterViewRequest);
+		final CreateViewRequest.Builder filterViewBuilder = CreateViewRequest.filterViewBuilder(view, filterViewRequest);
 
-		if ((view instanceof HUEditorView))
+		if (view instanceof HUEditorView)
 		{
-			final HUEditorView huEditorView = (HUEditorView)view;
+			final HUEditorView huEditorView = HUEditorView.cast(view);
+			filterViewBuilder.setParameters(huEditorView.getParameters());
+			huEditorView.getParameters();
 
 			final ViewId parentViewId = huEditorView.getParentViewId();
-
 			final IView parentView = viewsRepo.get().getView(parentViewId);
-
 			if (parentView instanceof PickingSlotView)
 			{
-
-				final PickingSlotView pickingSlotView = (PickingSlotView)parentView;
+				final PickingSlotView pickingSlotView = PickingSlotView.cast(parentView);
 
 				filterViewBuilder.setParameter(HUsToPickViewFilters.PARAM_CurrentShipmentScheduleId, pickingSlotView.getCurrentShipmentScheduleId());
 			}
 		}
+
 		final CreateViewRequest createViewRequest = filterViewBuilder.build();
 
 		return createView(createViewRequest);
