@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
+import javax.annotation.PostConstruct;
+
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.springframework.stereotype.Component;
 
@@ -42,7 +44,8 @@ import lombok.NonNull;
 @Component
 public class MonthsUntilExpiryAttributeStorageListener implements IAttributeStorageListener
 {
-	public MonthsUntilExpiryAttributeStorageListener()
+	@PostConstruct
+	public void postConstruct()
 	{
 		Services.get(IAttributeStorageFactoryService.class).addAttributeStorageListener(this);
 	}

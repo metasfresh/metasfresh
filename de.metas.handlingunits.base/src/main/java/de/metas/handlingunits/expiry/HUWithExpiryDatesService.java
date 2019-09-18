@@ -1,13 +1,12 @@
 package de.metas.handlingunits.expiry;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
@@ -19,6 +18,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -107,7 +107,9 @@ public class HUWithExpiryDatesService
 			@NonNull final HuId huId,
 			@NonNull final IHUContext huContext)
 	{
-		final I_M_HU hu = load(huId, I_M_HU.class);
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		final I_M_HU hu = handlingUnitsDAO.getById(huId);
 
 		final IAttributeStorage huAttributes = huContext
 				.getHUAttributeStorageFactory()
@@ -147,7 +149,10 @@ public class HUWithExpiryDatesService
 			@NonNull LocalDate bestBeforeDate,
 			@NonNull final IHUContext huContext)
 	{
-		final I_M_HU hu = load(huId, I_M_HU.class);
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
+		final I_M_HU hu = handlingUnitsDAO.getById(huId);
 
 		final IAttributeStorage huAttributes = huContext
 				.getHUAttributeStorageFactory()
@@ -155,17 +160,18 @@ public class HUWithExpiryDatesService
 
 		huAttributes.setSaveOnChange(true);
 
-		final I_M_Attribute monthsUntilExpirationAttribute = retrieveHU_MonthsUntilExpiration_Attribute();
+		final AttributeId monthsUntilExpiryAttributeId = retrieveHU_MonthsUntilExpiry_AttributeId();
 
 		final LocalDate today = SystemTime.asLocalDate();
 		final long months = ChronoUnit.MONTHS.between(today, bestBeforeDate);
 
-		huAttributes.setValue(monthsUntilExpirationAttribute, new BigDecimal(months));
+		final I_M_Attribute monthsUntilExpiryAttribute = attributeDAO.getAttributeById(monthsUntilExpiryAttributeId);
+		huAttributes.setValue(monthsUntilExpiryAttribute, new BigDecimal(months));
 	}
 
-	private I_M_Attribute retrieveHU_MonthsUntilExpiration_Attribute()
+	private AttributeId retrieveHU_MonthsUntilExpiry_AttributeId()
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		return attributeDAO.retrieveAttributeByValue(HUAttributeConstants.ATTR_MonthsUntilExpiry); // this is cached
+		return attributeDAO.retrieveAttributeIdByValue(HUAttributeConstants.ATTR_MonthsUntilExpiry); // this is cached
 	}
 }
