@@ -271,6 +271,11 @@ public final class QuickInput
 				.transform(lookupValuesList -> JSONLookupValuesList.ofLookupValuesList(lookupValuesList, adLanguage));
 	}
 
+	public boolean hasField(final String fieldName)
+	{
+		return getQuickInputDocument().hasField(fieldName);
+	}
+
 	public static final class Builder
 	{
 		private static final AtomicInteger nextQuickInputDocumentId = new AtomicInteger(1);
@@ -325,6 +330,5 @@ public final class QuickInput
 					.initializeAsNewDocument(nextQuickInputDocumentId::getAndIncrement, VERSION_DEFAULT);
 
 		}
-
 	}
 }
