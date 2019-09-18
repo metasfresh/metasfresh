@@ -1047,14 +1047,14 @@ public class OrderBL implements IOrderBL
 	public ProjectId getProjectIdOrNull(@NonNull final OrderLineId orderLineId)
 	{
 		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
-		
+
 		final I_C_OrderLine orderLine = ordersRepo.getOrderLineById(orderLineId);
 		final ProjectId lineProjectId = ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID());
-		if(lineProjectId != null)
+		if (lineProjectId != null)
 		{
 			return lineProjectId;
 		}
-		
+
 		final OrderId orderId = OrderId.ofRepoId(orderLine.getC_Order_ID());
 		final I_C_Order order = ordersRepo.getById(orderId);
 		final ProjectId orderProjectId = ProjectId.ofRepoIdOrNull(order.getC_Project_ID());
@@ -1064,9 +1064,9 @@ public class OrderBL implements IOrderBL
 	@Override
 	public ZoneId getTimeZone(@NonNull final I_C_Order order)
 	{
-		final IOrgDAO ordersRepo = Services.get(IOrgDAO.class);
-		
+		final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
+
 		final OrgId orgId = OrgId.ofRepoIdOrAny(order.getAD_Org_ID());
-		return ordersRepo.getOrgInfoById(orgId).getTimeZone();
+		return orgsRepo.getTimeZone(orgId);
 	}
 }

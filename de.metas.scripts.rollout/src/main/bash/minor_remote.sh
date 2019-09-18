@@ -294,7 +294,10 @@ prepare
 install_metasfresh 
 
 install_service metasfresh-admin
-install_service metasfresh-material-dispo
+
+# we now have the option to run material-dispo as a part of metasfresh(-app), so in order to ease the local admin's life we do just that
+# install_service metasfresh-material-dispo 
+
 install_service metasfresh-webui-api
 
 install_metasfresh-webui-frontend
