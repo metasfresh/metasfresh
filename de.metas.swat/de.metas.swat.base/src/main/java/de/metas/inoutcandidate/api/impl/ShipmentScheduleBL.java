@@ -80,6 +80,7 @@ import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.document.engine.DocStatus;
@@ -1128,10 +1129,15 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
+	public I_M_ShipmentSchedule getById(@NonNull final ShipmentScheduleId id)
+	{
+		return Services.get(IShipmentSchedulePA.class).getById(id);
+	}
+
+	@Override
 	public Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIdsOutOfTrx(final Set<ShipmentScheduleId> ids)
 	{
 		return Services.get(IShipmentSchedulePA.class).getByIdsOutOfTrx(ids);
-
 	}
 
 	@Override
@@ -1153,6 +1159,13 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		return TimeUtil.asZonedDateTime(shipmentScheduleEffectiveBL.getPreparationDate(schedule));
+	}
+
+	@Override
+	public Optional<ShipmentAllocationBestBeforePolicy> getBestBeforePolicy(@NonNull final ShipmentScheduleId id)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = getById(id);
+		return ShipmentAllocationBestBeforePolicy.optionalOfNullableCode(shipmentSchedule.getShipmentAllocation_BestBefore_Policy());
 	}
 
 	@Override
