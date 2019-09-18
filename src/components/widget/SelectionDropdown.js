@@ -4,7 +4,8 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import classnames from 'classnames';
 
 /**
- * @file Class based component.
+ * @file Is the component that handles the main functionality of List (RawList) and Lookup (RawLookup)
+ * widgets. It's used in Labels (e.g. Master Data Attribute Feature) too.
  * @module SelectionDropdown
  * @extends Component
  */
