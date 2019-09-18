@@ -10,10 +10,10 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 
-import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.product.ProductId;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -28,27 +28,48 @@ import de.metas.util.Services;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class MonthsUntilExpiryAttributeUpdater
+final class UpdateASIAttributeFromModelCommand
 {
 	private final transient IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
-	private Object sourceModel;
-	private final transient IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final transient IAttributesBL attributesBL = Services.get(IAttributesBL.class);
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final transient IAttributeSetInstanceBL attributeSetInstanceBL;
 
-	public void updateASI()
+	private final String attributeCode;
+	private final Object sourceModel;
+
+	@Builder
+	private UpdateASIAttributeFromModelCommand(
+			@NonNull final IAttributeSetInstanceBL attributeSetInstanceBL,
+			//
+			@NonNull final String attributeCode,
+			@NonNull final Object sourceModel)
 	{
-		final Object sourceModel = getSourceModel();
+		this.attributeSetInstanceBL = attributeSetInstanceBL;
 
+		this.attributeCode = attributeCode;
+		this.sourceModel = sourceModel;
+	}
+
+	public static class UpdateASIAttributeFromModelCommandBuilder
+	{
+		public void execute()
+		{
+			build().execute();
+		}
+	}
+
+	public void execute()
+	{
 		final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactoryService.createOrNull(sourceModel);
 		if (asiAware == null)
 		{
@@ -60,16 +81,15 @@ public class MonthsUntilExpiryAttributeUpdater
 			return;
 		}
 
-		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-		final AttributeId monthsUntilExpiryAttribute = attributesRepo.retrieveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_MonthsUntilExpiry);
+		final AttributeId attributeId = attributeDAO.retrieveAttributeIdByValueOrNull(attributeCode);
 
-		if (monthsUntilExpiryAttribute == null)
+		if (attributeId == null)
 		{
 			return;
 		}
 
 		final ProductId productId = ProductId.ofRepoId(asiAware.getM_Product_ID());
-		final I_M_Attribute attribute = attributesBL.getAttributeOrNull(productId, monthsUntilExpiryAttribute);
+		final I_M_Attribute attribute = attributesBL.getAttributeOrNull(productId, attributeId);
 		if (attribute == null)
 		{
 			return;
@@ -77,7 +97,7 @@ public class MonthsUntilExpiryAttributeUpdater
 
 		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.getCreateASI(asiAware);
 
-		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, monthsUntilExpiryAttribute);
+		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, attributeId);
 
 		if (ai != null)
 		{
@@ -85,18 +105,6 @@ public class MonthsUntilExpiryAttributeUpdater
 			return;
 		}
 
-		attributeSetInstanceBL.getCreateAttributeInstance(asi, monthsUntilExpiryAttribute);
-	}
-
-	public MonthsUntilExpiryAttributeUpdater setSourceModel(final Object sourceModel)
-	{
-		this.sourceModel = sourceModel;
-		return this;
-	}
-
-	private final Object getSourceModel()
-	{
-		Check.assumeNotNull(sourceModel, "sourceModel not null");
-		return sourceModel;
+		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeId);
 	}
 }

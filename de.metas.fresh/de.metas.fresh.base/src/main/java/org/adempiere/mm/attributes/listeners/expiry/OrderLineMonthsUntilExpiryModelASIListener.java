@@ -2,12 +2,14 @@ package org.adempiere.mm.attributes.listeners.expiry;
 
 import java.util.List;
 
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
-import org.adempiere.mm.attributes.api.impl.MonthsUntilExpiryAttributeUpdater;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.order.grossprofit.model.I_C_OrderLine;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -22,17 +24,19 @@ import de.metas.order.grossprofit.model.I_C_OrderLine;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public class OrderLineMonthsUntilExpiryModelASIListener implements IModelAttributeSetInstanceListener
 {
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+
 	private static final ImmutableList<String> SOURCE_COLUMN_NAMES = ImmutableList.of(I_C_OrderLine.COLUMNNAME_M_Product_ID);
 
 	@Override
@@ -50,8 +54,6 @@ public class OrderLineMonthsUntilExpiryModelASIListener implements IModelAttribu
 	@Override
 	public void modelChanged(Object model)
 	{
-		new MonthsUntilExpiryAttributeUpdater()
-				.setSourceModel(model)
-				.updateASI();
+		attributeSetInstanceBL.updateASIAttributeFromModel(HUAttributeConstants.ATTR_MonthsUntilExpiry, model);
 	}
 }
