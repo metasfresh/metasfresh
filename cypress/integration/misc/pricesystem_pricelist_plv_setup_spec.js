@@ -25,7 +25,7 @@ describe('Create Pricing Masterdata', function() {
     //Pricelist
     cy.visitWindow('540321', 'NEW');
     cy.writeIntoStringField('Name', priceListName);
-    cy.selectInListField('M_PricingSystem_ID', priceSystemName);
+    cy.writeIntoLookupListField('M_PricingSystem_ID', priceSystemName, priceSystemName);
     cy.selectInListField('C_Currency_ID', currency);
 
     //PLV
