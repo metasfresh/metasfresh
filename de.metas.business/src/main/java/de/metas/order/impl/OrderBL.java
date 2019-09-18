@@ -91,6 +91,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.CoalesceUtil;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class OrderBL implements IOrderBL
@@ -1067,6 +1068,7 @@ public class OrderBL implements IOrderBL
 		final IOrgDAO ordersRepo = Services.get(IOrgDAO.class);
 		
 		final OrgId orgId = OrgId.ofRepoIdOrAny(order.getAD_Org_ID());
-		return ordersRepo.getOrgInfoById(orgId).getTimeZone();
+		final ZoneId timeZone = ordersRepo.getOrgInfoById(orgId).getTimeZone();
+		return timeZone != null ? timeZone : SystemTime.zoneId();
 	}
 }

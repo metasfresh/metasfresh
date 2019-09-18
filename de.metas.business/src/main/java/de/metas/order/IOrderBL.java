@@ -228,5 +228,6 @@ public interface IOrderBL extends ISingletonService
 
 	ProjectId getProjectIdOrNull(OrderLineId orderLineId);
 
+	/** @return organization's timezone or system timezone; never returns null */
 	ZoneId getTimeZone(I_C_Order order);
 }
