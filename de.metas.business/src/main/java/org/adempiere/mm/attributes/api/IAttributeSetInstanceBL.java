@@ -113,4 +113,6 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	void setAttributeInstanceValue(I_M_AttributeSetInstance asi, AttributeId attributeId, Object value);
 
 	String getASIDescriptionById(AttributeSetInstanceId asiId);
+
+	void updateASIAttributeFromModel(String attributeCode, Object fromModel);
 }
