@@ -114,7 +114,7 @@ declare namespace Cypress {
      * @param expectedPatchValue - the expected value of the checkbox
      * @param modal - optional, default = false - use true if the field is in a modal overlay
      * @param rewriteUrl optional, default = null; - specify to which URL the command expects the frontend to patch
-     * @param skipRequest optional - set true if the command shall not very that a patch with the "right" response takes place. This is currently required if you use this command to non-string fields.
+     * @param skipRequest optional - set true if the command shall not verify that a patch with the "right" response takes place. This is currently required if you use this command to non-string fields.
      *
      * @example
      * // click on a checkbox in a modal started from action
@@ -218,7 +218,7 @@ declare namespace Cypress {
      * @param value - the value to write. This command prepends "{enter}" to that string. Also works for number or date fields, e.g. '01/01/2018' when invoked with skipRequest=true.
      * @param modal - optional, default = false - use true if the field is in a modal overlay
      * @param rewriteUrl optional - specify to which URL the command expects the frontend to patch.
-     * @param skipRequest optional - set true if the command shall not very that a patch with the "right" response takes place. This is currently required if you use this command to non-string fields.
+     * @param skipRequest optional - set true if the command shall not verify that a patch with the "right" response takes place. This is currently required if you use this command to non-string fields.
      *
      * @example
      * // This will work also with modal dialogs, *unless* there is also a description field in the underlying document
