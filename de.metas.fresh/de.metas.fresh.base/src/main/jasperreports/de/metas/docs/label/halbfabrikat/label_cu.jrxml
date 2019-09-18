@@ -140,6 +140,14 @@ ORDER BY value
 				</textElement>
 				<textFieldExpression><![CDATA[$F{purchaseorderno}]]></textFieldExpression>
 			</textField>
+			<image scaleImage="FillFrame" hAlign="Center">
+				<reportElement x="57" y="18" width="150" height="30" uuid="d3ce6e08-1b60-46f8-a9e4-350b72b00687">
+					<printWhenExpression><![CDATA[new Boolean($F{value} != null)]]></printWhenExpression>
+				</reportElement>
+				<imageExpression><![CDATA[new java.net.URL( $P{barcodeURL} + "?Content=" +
+$F{value} +
+"&Format=CODE_128&Width=300&Height=60" )]]></imageExpression>
+			</image>
 		</band>
 	</detail>
 </jasperReport>
