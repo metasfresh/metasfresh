@@ -91,7 +91,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.CoalesceUtil;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class OrderBL implements IOrderBL
@@ -1048,14 +1047,14 @@ public class OrderBL implements IOrderBL
 	public ProjectId getProjectIdOrNull(@NonNull final OrderLineId orderLineId)
 	{
 		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
-		
+
 		final I_C_OrderLine orderLine = ordersRepo.getOrderLineById(orderLineId);
 		final ProjectId lineProjectId = ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID());
-		if(lineProjectId != null)
+		if (lineProjectId != null)
 		{
 			return lineProjectId;
 		}
-		
+
 		final OrderId orderId = OrderId.ofRepoId(orderLine.getC_Order_ID());
 		final I_C_Order order = ordersRepo.getById(orderId);
 		final ProjectId orderProjectId = ProjectId.ofRepoIdOrNull(order.getC_Project_ID());
@@ -1065,10 +1064,9 @@ public class OrderBL implements IOrderBL
 	@Override
 	public ZoneId getTimeZone(@NonNull final I_C_Order order)
 	{
-		final IOrgDAO ordersRepo = Services.get(IOrgDAO.class);
-		
+		final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
+
 		final OrgId orgId = OrgId.ofRepoIdOrAny(order.getAD_Org_ID());
-		final ZoneId timeZone = ordersRepo.getOrgInfoById(orgId).getTimeZone();
-		return timeZone != null ? timeZone : SystemTime.zoneId();
+		return orgsRepo.getTimeZone(orgId);
 	}
 }
