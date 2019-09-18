@@ -18,6 +18,11 @@ import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
 import Indicator from './Indicator';
 
+/**
+ * @file Function based component.
+ * @module ModalButton
+ * @param {object} props
+ */
 const ModalButton = props => {
   const {
     name,
@@ -28,8 +33,22 @@ const ModalButton = props => {
     tabIndex,
   } = props;
 
+  /**
+   * @func handleClick
+   * @summary ToDo: Describe the method.
+   */
   const handleClick = () => onClick(name);
+
+  /**
+   * @func handleShowTooltip
+   * @summary ToDo: Describe the method.
+   */
   const handleShowTooltip = () => onShowTooltip(name);
+
+  /**
+   * @method handleHideTooltip
+   * @summary ToDo: Describe the method.
+   */
   const handleHideTooltip = () => onHideTooltip(name);
 
   return (
