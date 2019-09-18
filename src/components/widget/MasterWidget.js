@@ -308,6 +308,12 @@ class MasterWidget extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {bool} dataEntry
+ * @prop {bool} isOpenDataPicker
+ * @prop {func} openModal
+ */
 MasterWidget.propTypes = {
   dataEntry: PropTypes.bool,
   isOpenDatePicker: PropTypes.bool,
