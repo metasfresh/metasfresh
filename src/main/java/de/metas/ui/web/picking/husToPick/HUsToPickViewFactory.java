@@ -72,17 +72,19 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 	static final String WINDOW_ID_STRING = "husToPick";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
+	private HUReservationDocumentFilterService huReservationDocumentFilterService;
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IShipmentScheduleBL shipmentScheduleBL;
 
-	private HUReservationDocumentFilterService huReservationDocumentFilterService;
-
-	public HUsToPickViewFactory(@NonNull final HUReservationDocumentFilterService huReservationDocumentFilterService)
+	public HUsToPickViewFactory(
+			@NonNull final HUReservationDocumentFilterService huReservationDocumentFilterService,
+			@NonNull final IShipmentScheduleBL shipmentScheduleBL)
 	{
 		super(ImmutableList.of());
 
 		this.huReservationDocumentFilterService = huReservationDocumentFilterService;
+		this.shipmentScheduleBL = shipmentScheduleBL;
 	}
 
 	public CreateViewRequest createViewRequest(
