@@ -65,7 +65,7 @@ import lombok.NonNull;
 @ViewFactory(windowId = HUsToPickViewFactory.WINDOW_ID_STRING, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
 public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 {
-	public static final String WINDOW_ID_STRING = "husToPick";
+	static final String WINDOW_ID_STRING = "husToPick";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
 	private final transient IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
