@@ -64,7 +64,7 @@ export class SalesOrder {
 
       if (salesOrder.priceSystem) {
         cy.resetListValue('M_PricingSystem_ID');
-        cy.selectInListField('M_PricingSystem_ID', salesOrder.priceSystem);
+        cy.writeIntoLookupListField('M_PricingSystem_ID', salesOrder.priceSystem, salesOrder.priceSystem);
       }
 
       cy.get('.header-breadcrumb-sitename').should('not.contain', '<'); // make sure the order was successfully saved as bpartner, warehouse price system were dealt with

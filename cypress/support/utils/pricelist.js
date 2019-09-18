@@ -65,7 +65,7 @@ export class PriceList {
       cy.selectInListField('C_Country_ID', priceList.country);
       cy.selectInListField('C_Currency_ID', priceList.currency);
       cy.writeIntoStringField('PricePrecision', priceList.pricePrecision);
-      cy.selectInListField('M_PricingSystem_ID', priceList.priceSystem);
+      cy.writeIntoLookupListField('M_PricingSystem_ID', priceList.priceSystem, priceList.priceSystem);
       cy.writeIntoStringField('Description', priceList.description);
       cy.setCheckBoxValue('IsSOPriceList', priceList.isSalesPriceList);
 

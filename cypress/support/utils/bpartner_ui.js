@@ -195,7 +195,7 @@ function applyBPartner(bPartner) {
         cy.selectInListField('M_DiscountSchema_ID', bPartner.customerDiscountSchema, true /*modal*/);
       }
       if (bPartner.customerPricingSystem) {
-        cy.selectInListField('M_PricingSystem_ID', bPartner.customerPricingSystem, true /*modal*/);
+        cy.writeIntoLookupListField('M_PricingSystem_ID', bPartner.customerPricingSystem, bPartner.customerPricingSystem, false, true);
       }
       if (bPartner.customerDunning) {
         cy.selectInListField('C_Dunning_ID', bPartner.customerDunning, true /*modal*/);

@@ -81,7 +81,7 @@ function applyPurchaseOrder(purchaseOrder) {
 
     if (purchaseOrder.priceSystem) {
       cy.resetListValue('M_PricingSystem_ID');
-      cy.selectInListField('M_PricingSystem_ID', purchaseOrder.priceSystem);
+      cy.writeIntoLookupListField('M_PricingSystem_ID', purchaseOrder.priceSystem, purchaseOrder.priceSystem);
     }
 
     if (purchaseOrder.isDropShip) {
