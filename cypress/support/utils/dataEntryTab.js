@@ -89,9 +89,7 @@ export class DataEntrySubTab {
 }
 
 function applyDataEntryTab(dataEntryTab) {
-  describe(`Create new dataEntryTab ${dataEntryTab.name}`, function() {
-    cy.visitWindow('540571', 'NEW', dataEntryTab.name /*documentIdAliasName*/);
-    cy.log(`applyDataEntryTab - visitWindow yielded ${JSON.stringify(this.dataEntryTabId)}`);
+  cy.visitWindow('540571', 'NEW');
 
     if (dataEntryTab.seqNo) {
       cy.getStringFieldValue('SeqNo').then(currentValue => {
