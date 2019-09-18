@@ -11,7 +11,7 @@ describe('Create a manual Payment for a Sales Invoice', function() {
   let salesInvoiceTargetDocumentType;
   let salesInvoiceNumber;
   let salesInvoiceTotalAmount;
-  let salesInvoiceID;
+  let productQty;
 
   let paymentDocumentType;
   let paymentTotalAmount; // may be different from salesInvoiceTotalAmount because there could be some discounts
@@ -33,11 +33,14 @@ describe('Create a manual Payment for a Sales Invoice', function() {
   let discountSchemaName;
   let bPartnerName;
 
+  // test
+  let salesInvoiceID;
+
   it('Read the fixture', function() {
     cy.fixture('payment/create_manual_payment.json').then(f => {
       salesInvoiceTargetDocumentType = f['salesInvoiceTargetDocumentType'];
       salesInvoiceTotalAmount = f['salesInvoiceTotalAmount'];
-      salesInvoiceID = f['salesInvoiceID'];
+      productQty = f['productQty'];
 
       paymentDocumentType = f['paymentDocumentType'];
       paymentTotalAmount = f['paymentTotalAmount'];
@@ -78,7 +81,7 @@ describe('Create a manual Payment for a Sales Invoice', function() {
 
   it('Create a Sales Invoice', function() {
     new SalesInvoice(bPartnerName, salesInvoiceTargetDocumentType)
-      .addLine(new SalesInvoiceLine().setProduct(productName).setQuantity(20))
+      .addLine(new SalesInvoiceLine().setProduct(productName).setQuantity(productQty))
       .setPriceList(priceListName)
       .apply();
     cy.completeDocument();
@@ -169,7 +172,7 @@ describe('Create a manual Payment for a Sales Invoice', function() {
 
   it('Sales Invoice is now marked as paid', function() {
     cy.getCheckboxValue('IsPaid').then(checkBoxValue => {
-      cy.log(`IsPaid = ${checkBoxValue}`);
+      // this will keep on failing until https://github.com/metasfresh/metasfresh/issues/5435 is fixed
       assert.equal(checkBoxValue, true);
     });
   });

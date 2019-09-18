@@ -13,10 +13,12 @@ describe('Create Sales order', function() {
   let priceSystemName;
   let priceListName;
   let priceListVersionName;
+  let productQty;
 
   it('Read the fixture', function() {
     cy.fixture('sales/change_shipment_date_shipment_schedule.json').then(f => {
       customer = appendHumanReadableNow(f['customer']);
+      productQty = appendHumanReadableNow(f['productQty']);
       productName = appendHumanReadableNow(f['productName']);
       productCategoryName = appendHumanReadableNow(f['productCategoryName']);
       discountSchemaName = appendHumanReadableNow(f['discountSchemaName']);
@@ -51,7 +53,7 @@ describe('Create Sales order', function() {
     new SalesOrder()
       .setBPartner(customer)
       .setPriceSystem(priceSystemName)
-      .addLine(new SalesOrderLine().setProduct(productName).setQuantity(1))
+      .addLine(new SalesOrderLine().setProduct(productName).setQuantity(productQty))
       .apply();
 
     cy.completeDocument();

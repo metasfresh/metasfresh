@@ -1,6 +1,7 @@
 {
   "customer": "CustomerTest",
   "productName": "ProductTest",
+  "productQty": 1,
   "productCategoryName": "ProductCategoryName",
   "discountSchemaName": "DiscountSchemaTest",
   "priceSystemName": "PriceSystem",
