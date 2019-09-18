@@ -11,12 +11,14 @@ import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_M_Attribute;
+import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Component;
@@ -38,6 +40,8 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -177,10 +181,21 @@ public class ASIDescriptorFactory
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
 		{
-			valueClass = BigDecimal.class;
-			widgetType = DocumentFieldWidgetType.Number;
-			readMethod = I_M_AttributeInstance::getValueNumber;
-			writeMethod = (aiRecord, field) -> aiRecord.setValueNumber(field.getValueAs(BigDecimal.class));
+			final int displayType = Services.get(IAttributesBL.class).getNumberDisplayType(attribute);
+			if (displayType == DisplayType.Integer)
+			{
+				valueClass = Integer.class;
+				widgetType = DocumentFieldWidgetType.Integer;
+				readMethod = ai -> NumberUtils.asInteger(ai.getValueNumber(), null);
+				writeMethod = (aiRecord, field) -> aiRecord.setValueNumber(field.getValueAs(BigDecimal.class));
+			}
+			else
+			{
+				valueClass = BigDecimal.class;
+				widgetType = DocumentFieldWidgetType.Number;
+				readMethod = I_M_AttributeInstance::getValueNumber;
+				writeMethod = (aiRecord, field) -> aiRecord.setValueNumber(field.getValueAs(BigDecimal.class));
+			}
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
 		{
