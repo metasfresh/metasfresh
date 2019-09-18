@@ -61,6 +61,7 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class OrgDAO implements IOrgDAO
@@ -281,4 +282,12 @@ public class OrgDAO implements IOrgDAO
 		}
 		return queryBuilder.addOnlyActiveRecordsFilter();
 	}
+
+	@Override
+	public ZoneId getTimeZone(@NonNull final OrgId orgId)
+	{
+		final ZoneId timeZone = getOrgInfoById(orgId).getTimeZone();
+		return timeZone != null ? timeZone : SystemTime.zoneId();
+	}
+
 }

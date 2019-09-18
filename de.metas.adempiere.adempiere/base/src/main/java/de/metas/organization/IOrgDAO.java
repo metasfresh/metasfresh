@@ -1,5 +1,7 @@
 package de.metas.organization;
 
+import java.time.ZoneId;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -128,4 +130,7 @@ public interface IOrgDAO extends ISingletonService
 	{
 		return retrieveClientOrgs(Env.getCtx(), adClientId);
 	}
+
+	/** @return organization's time zone or system time zone; never returns null */
+	ZoneId getTimeZone(OrgId orgId);
 }
