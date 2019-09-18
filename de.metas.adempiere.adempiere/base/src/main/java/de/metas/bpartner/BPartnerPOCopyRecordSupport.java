@@ -4,7 +4,8 @@ import java.util.List;
 
 import org.adempiere.model.CopyRecordSupportTableInfo;
 import org.adempiere.model.GeneralCopyRecordSupport;
-import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_BP_PrintFormat;
+import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.PO;
 
 import com.google.common.collect.ImmutableList;
@@ -38,7 +39,8 @@ public class BPartnerPOCopyRecordSupport extends GeneralCopyRecordSupport
 	{
 		return super.getSuggestedChildren(po, suggestedChildren)
 				.stream()
-				.filter(childTableInfo -> !I_C_BPartner_Location.Table_Name.equals(childTableInfo.getTableName()))
+				.filter(childTableInfo -> I_C_BP_PrintFormat.Table_Name.equals(childTableInfo.getTableName())
+						|| I_C_BPartner_CreditLimit.Table_Name.equals(childTableInfo.getTableName()))
 				.collect(ImmutableList.toImmutableList());
 	}
 }
