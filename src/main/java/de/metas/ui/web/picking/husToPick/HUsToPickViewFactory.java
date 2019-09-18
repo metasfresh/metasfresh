@@ -200,7 +200,6 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 		{
 			final HUEditorView huEditorView = HUEditorView.cast(view);
 			filterViewBuilder.setParameters(huEditorView.getParameters());
-			huEditorView.getParameters();
 
 			final ViewId parentViewId = huEditorView.getParentViewId();
 			final IView parentView = viewsRepo.get().getView(parentViewId);
