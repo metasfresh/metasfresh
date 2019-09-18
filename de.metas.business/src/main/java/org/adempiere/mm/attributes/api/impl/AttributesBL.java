@@ -1,7 +1,5 @@
 package org.adempiere.mm.attributes.api.impl;
 
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -49,6 +47,7 @@ import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.model.X_M_AttributeValue;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -61,8 +60,10 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class AttributesBL implements IAttributesBL
 {
@@ -256,4 +257,11 @@ public class AttributesBL implements IAttributesBL
 		return bestBeforeDate;
 	}
 
+	@Override
+	public int getNumberDisplayType(@NonNull final I_M_Attribute attribute)
+	{
+		return attribute.getC_UOM_ID() == IUOMDAO.C_UOM_ID_Each
+				? DisplayType.Integer
+				: DisplayType.Number;
+	}
 }

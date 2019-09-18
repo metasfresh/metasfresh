@@ -13,6 +13,7 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
@@ -21,7 +22,6 @@ import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
-import org.compiere.util.DisplayType;
 import org.compiere.util.Evaluatee2;
 
 import com.google.common.collect.ImmutableSet;
@@ -59,6 +59,7 @@ import lombok.NonNull;
 
 final class ASIDescriptionBuilderCommand
 {
+	private final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 
@@ -145,6 +146,7 @@ final class ASIDescriptionBuilderCommand
 		{
 			final AttributeInstanceEvaluatee ctx = AttributeInstanceEvaluatee.builder()
 					.attributesRepo(attributesRepo)
+					.attributesBL(attributesBL)
 					.uomsRepo(uomsRepo)
 					.attribute(attribute)
 					.attributeInstance(ai)
@@ -188,7 +190,8 @@ final class ASIDescriptionBuilderCommand
 			}
 			else
 			{
-				return formatNumber(valueBD);
+				final int displayType = attributesBL.getNumberDisplayType(attribute);
+				return formatNumber(valueBD, displayType);
 			}
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
@@ -235,7 +238,7 @@ final class ASIDescriptionBuilderCommand
 		}
 	}
 
-	private static ITranslatableString formatNumber(@Nullable final BigDecimal valueBD)
+	private static ITranslatableString formatNumber(@Nullable final BigDecimal valueBD, final int displayType)
 	{
 		if (valueBD == null)
 		{
@@ -243,7 +246,7 @@ final class ASIDescriptionBuilderCommand
 		}
 		else
 		{
-			return TranslatableStrings.number(valueBD, DisplayType.Number);
+			return TranslatableStrings.number(valueBD, displayType);
 		}
 	}
 
@@ -360,6 +363,7 @@ final class ASIDescriptionBuilderCommand
 				VAR_Value,
 				VAR_UOM);
 
+		private final IAttributesBL attributesBL;
 		private final IAttributeDAO attributesRepo;
 		private final IUOMDAO uomsRepo;
 
@@ -371,6 +375,7 @@ final class ASIDescriptionBuilderCommand
 		@lombok.Builder
 		private AttributeInstanceEvaluatee(
 				@NonNull final IAttributeDAO attributesRepo,
+				@NonNull final IAttributesBL attributesBL,
 				@NonNull final IUOMDAO uomsRepo,
 				//
 				@NonNull final I_M_Attribute attribute,
@@ -379,6 +384,7 @@ final class ASIDescriptionBuilderCommand
 				final boolean verboseDescription)
 		{
 			this.attributesRepo = attributesRepo;
+			this.attributesBL = attributesBL;
 			this.uomsRepo = uomsRepo;
 			//
 			this.attribute = attribute;
@@ -460,7 +466,8 @@ final class ASIDescriptionBuilderCommand
 				}
 				else
 				{
-					return formatNumber(valueBD);
+					final int displayType = attributesBL.getNumberDisplayType(attribute);
+					return formatNumber(valueBD, displayType);
 				}
 			}
 			else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
