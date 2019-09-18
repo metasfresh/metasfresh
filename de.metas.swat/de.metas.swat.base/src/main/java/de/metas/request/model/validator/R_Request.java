@@ -20,6 +20,7 @@ import de.metas.inout.QualityNoteId;
 import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_QualityNote;
+import de.metas.request.RequestPOCopyRecordSupport;
 import de.metas.security.IRoleDAO;
 import de.metas.security.Role;
 import de.metas.security.RoleId;
@@ -56,6 +57,7 @@ public class R_Request
 	public void init(final IModelValidationEngine engine)
 	{
 		CopyRecordFactory.enableForTableName(I_R_Request.Table_Name);
+		CopyRecordFactory.registerCopyRecordSupport(I_R_Request.Table_Name, RequestPOCopyRecordSupport.class);
 	}
 
 	@Init
