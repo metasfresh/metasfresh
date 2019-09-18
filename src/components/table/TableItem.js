@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
-import { merge, isEqual } from 'lodash';
+import { merge } from 'lodash';
 
 import {
   VIEW_EDITOR_RENDER_MODES_ALWAYS,
@@ -13,6 +13,19 @@ import { shouldRenderColumn } from '../../utils/tableHelpers';
 import { WithMobileDoubleTap } from '../WithMobileDoubleTap';
 
 class TableItem extends PureComponent {
+  static getDerivedStateFromProps(props, state) {
+    // Any time the dataKey changes,
+    // Reset edited cells as we have a completely
+    // new dataset
+    if (props.dataKey !== state.dataKey) {
+      return {
+        ...state,
+        editedCells: {},
+      };
+    }
+    return state;
+  }
+
   constructor(props) {
     super(props);
 
@@ -31,6 +44,7 @@ class TableItem extends PureComponent {
 
     this.state = {
       edited: '',
+      dataKey: props.dataKey,
       activeCell: '',
       updatedRow: false,
       listenOnKeys: true,
@@ -41,15 +55,10 @@ class TableItem extends PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-    const { fieldsByName } = this.props;
     const { multilineText } = this.state;
 
     if (multilineText && this.props.isSelected !== prevProps.isSelected) {
       this.handleCellExtend();
-    }
-
-    if (!isEqual(prevProps.fieldsByName, fieldsByName)) {
-      this.setState({ editedCells: {} });
     }
   }
 
