@@ -7,6 +7,8 @@ import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Component;
 
+import de.metas.product.ProductPOCopyRecordSupport;
+
 /*
  * #%L
  * de.metas.business
@@ -36,5 +38,6 @@ public class M_Product
 	public void init(final IModelValidationEngine engine)
 	{
 		CopyRecordFactory.enableForTableName(I_M_Product.Table_Name);
+		CopyRecordFactory.registerCopyRecordSupport(I_M_Product.Table_Name, ProductPOCopyRecordSupport.class);
 	}
 }
