@@ -173,7 +173,7 @@ function applyBPartner(bPartner) {
         }
       });
       if (bPartner.vendorPricingSystem) {
-        cy.selectInListField('PO_PricingSystem_ID', bPartner.vendorPricingSystem, true /*modal*/);
+        cy.writeIntoLookupListField('PO_PricingSystem_ID', bPartner.vendorPricingSystem, bPartner.vendorPricingSystem, false, true);
       }
       if (bPartner.vendorDiscountSchema) {
         cy.selectInListField('PO_DiscountSchema_ID', bPartner.vendorDiscountSchema, true /*modal*/);
