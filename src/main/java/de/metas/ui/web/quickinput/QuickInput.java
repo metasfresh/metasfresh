@@ -276,6 +276,13 @@ public final class QuickInput
 		return getQuickInputDocument().hasField(fieldName);
 	}
 
+	//
+	//
+	// ------
+	//
+	//
+	//
+
 	public static final class Builder
 	{
 		private static final AtomicInteger nextQuickInputDocumentId = new AtomicInteger(1);
