@@ -377,6 +377,21 @@ const mapStateToProps = ({ windowHandler }) => ({
   success: windowHandler.patches.success,
 });
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {func} dispatch
+ * @prop {func} closeCallback
+ * @prop {node} children
+ * @prop {array} allowedCloseActions
+ * @prop {string} windowType
+ * @prop {string} viewId
+ * @prop {string|node} modalTitle
+ * @prop {string|node} modalDescription
+ * @prop {bool} modalVisible
+ * @prop {object} rawModal
+ * @prop {object} requests
+ * @prop {bool} success
+ */
 RawModal.propTypes = {
   dispatch: PropTypes.func.isRequired,
   closeCallback: PropTypes.func,
