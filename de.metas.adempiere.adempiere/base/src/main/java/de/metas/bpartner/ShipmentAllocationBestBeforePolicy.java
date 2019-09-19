@@ -1,7 +1,10 @@
 package de.metas.bpartner;
 
+import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Optional;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
@@ -11,6 +14,7 @@ import org.compiere.model.X_C_BPartner;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.Getter;
 import lombok.NonNull;
@@ -74,4 +78,30 @@ public enum ShipmentAllocationBestBeforePolicy implements ReferenceListAwareEnum
 	}
 
 	private static final ImmutableMap<String, ShipmentAllocationBestBeforePolicy> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), ShipmentAllocationBestBeforePolicy::getCode);
+
+	public <T> Comparator<T> comparator(@NonNull final Function<T, LocalDate> bestBeforeDateExtractor)
+	{
+		return (value1, value2) -> {
+			final LocalDate bestBefore1 = CoalesceUtil.coalesce(bestBeforeDateExtractor.apply(value1), LocalDate.MAX);
+			final LocalDate bestBefore2 = CoalesceUtil.coalesce(bestBeforeDateExtractor.apply(value2), LocalDate.MAX);
+			return compareBestBeforeDates(bestBefore1, bestBefore2);
+		};
+	}
+
+	private int compareBestBeforeDates(final LocalDate bestBefore1, final LocalDate bestBefore2)
+	{
+		if (this == Expiring_First)
+		{
+			return bestBefore1.compareTo(bestBefore2);
+		}
+		else if (this == Newest_First)
+		{
+			return -1 * bestBefore1.compareTo(bestBefore2);
+		}
+		else
+		{
+			throw new AdempiereException("Unknown policy: " + this);
+		}
+	}
+
 }
