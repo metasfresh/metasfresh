@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
@@ -311,12 +312,12 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 
 	public Optional<LocalDate> getBestBeforeDate()
 	{
-		if (!attributesStorage.hasAttribute(HUAttributeConstants.ATTR_BestBeforeDate))
+		if (!attributesStorage.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
 		{
 			return Optional.empty();
 		}
 
-		final LocalDate bestBeforeDate = attributesStorage.getValueAsLocalDate(HUAttributeConstants.ATTR_BestBeforeDate);
+		final LocalDate bestBeforeDate = attributesStorage.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate);
 		return Optional.ofNullable(bestBeforeDate);
 	}
 
