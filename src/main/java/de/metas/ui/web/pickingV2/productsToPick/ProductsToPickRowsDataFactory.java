@@ -100,8 +100,6 @@ class ProductsToPickRowsDataFactory
 	private final Map<HuId, ImmutableAttributeSet> huAttributesCache = new HashMap<>();
 	private final Map<HuId, I_M_HU> husCache = new HashMap<>();
 
-	private static final PickingCandidate NULL_PickingCandidate = null;
-
 	static final String ATTR_LotNumber = LotNumberDateAttributeDAO.ATTR_LotNumber;
 	static final String ATTR_BestBeforeDate = AttributeConstants.ATTR_BestBeforeDate;
 	static final String ATTR_RepackNumber = "RepackNumber"; // TODO use it as constant, see RepackNumberUtils
@@ -274,8 +272,9 @@ class ProductsToPickRowsDataFactory
 
 	private ProductsToPickRow createZeroQtyRowFromHU(@NonNull final AllocablePackageable packageable, @NonNull final HuId huId)
 	{
+		final PickingCandidate existingPickingCandidate = null;
 		final Quantity qtyZero = packageable.getQtyToAllocate().toZero();
-		return createRow(packageable, qtyZero, huId, NULL_PickingCandidate);
+		return createRow(packageable, qtyZero, huId, existingPickingCandidate);
 	}
 
 	private ProductsToPickRow createQtyNotAvailableRowForRemainingQtyToAllocate(final AllocablePackageable packageable)
