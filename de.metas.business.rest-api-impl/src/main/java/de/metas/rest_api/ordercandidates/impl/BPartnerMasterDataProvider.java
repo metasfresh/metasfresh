@@ -2,7 +2,6 @@ package de.metas.rest_api.ordercandidates.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,6 +9,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -26,6 +26,8 @@ import de.metas.cache.CCache;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationDAO;
+import de.metas.location.LocationCreateRequest;
+import de.metas.location.LocationId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfoUpdateRequest;
@@ -349,7 +351,11 @@ final class BPartnerMasterDataProvider
 		final I_C_BPartner bpartnerRecord;
 		if (existingBPartnerId != null)
 		{
-			bpartnerRecord = bpartnersRepo.getById(existingBPartnerId);
+			bpartnerRecord = bpartnersRepo.getByIdInTrx(existingBPartnerId);
+			if (bpartnerRecord == null)
+			{
+				throw new AdempiereException("@NotFound@ @C_BPartner_ID@: " + existingBPartnerId);
+			}
 		}
 		else
 		{
@@ -474,40 +480,36 @@ final class BPartnerMasterDataProvider
 	private void updateBPartnerLocationRecord(
 			@NonNull final I_C_BPartner_Location bpLocationRecord,
 			@NonNull final BPartnerId bpartnerId,
-			@NonNull final JsonRequestLocation json)
+			@NonNull final JsonRequestLocation from)
 	{
 		bpLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 		bpLocationRecord.setIsShipTo(true);
 		bpLocationRecord.setIsBillTo(true);
 
-		bpLocationRecord.setGLN(json.getGln());
-		if (json.getExternalId() != null)
+		bpLocationRecord.setGLN(from.getGln());
+		if (from.getExternalId() != null)
 		{
-			bpLocationRecord.setExternalId(json.getExternalId().getValue());
+			bpLocationRecord.setExternalId(from.getExternalId().getValue());
 		}
 
-		final boolean newOrLocationHasChanged = isNew(bpLocationRecord) || !json.equals(toJsonBPartnerLocation(bpLocationRecord));
-		if (newOrLocationHasChanged)
+		final String countryCode = from.getCountryCode();
+		if (Check.isEmpty(countryCode))
 		{
-			final String countryCode = json.getCountryCode();
-			if (Check.isEmpty(countryCode))
-			{
-				throw new MissingPropertyException("JsonBPartnerLocation.countryCode", json);
-			}
-			final CountryId countryId = countryRepo.getCountryIdByCountryCode(countryCode);
-
-			// NOTE: C_Location table might be heavily used, so it's better to create the address OOT to not lock it.
-			final I_C_Location locationRecord = newInstanceOutOfTrx(I_C_Location.class);
-			locationRecord.setAddress1(json.getAddress1());
-			locationRecord.setAddress2(json.getAddress2());
-			locationRecord.setPostal(locationRecord.getPostal());
-			locationRecord.setCity(locationRecord.getCity());
-			locationRecord.setC_Country_ID(countryId.getRepoId());
-
-			locationsRepo.save(locationRecord);
-
-			bpLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
+			throw new MissingPropertyException("JsonBPartnerLocation.countryCode", from);
 		}
+		final CountryId countryId = countryRepo.getCountryIdByCountryCode(countryCode);
+
+		final LocationId locationId = locationsRepo.createLocation(LocationCreateRequest.builder()
+				.address1(from.getAddress1())
+				.address2(from.getAddress2())
+				.address3(from.getAddress3())
+				.address4(from.getAddress4())
+				.postal(from.getPostal())
+				.city(from.getCity())
+				.countryId(countryId)
+				.build());
+
+		bpLocationRecord.setC_Location_ID(locationId.getRepoId());
 	}
 
 	public JsonResponseLocation getJsonBPartnerLocationById(final BPartnerLocationId bpartnerLocationId)
