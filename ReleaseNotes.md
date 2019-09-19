@@ -25,6 +25,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#2359](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2359) Date filter problem in Material Cockpit
+  * [2835}(https://github.com/metasfresh/me03/issues/2835) "Created" date looking weird
   * [#2844](https://github.com/metasfresh/me03/issues/2844) Record stays on same position after going next page after grid edit
 
 
