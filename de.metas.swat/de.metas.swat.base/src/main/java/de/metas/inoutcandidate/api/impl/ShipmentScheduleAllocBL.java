@@ -37,7 +37,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.product.IProductBL;
-import de.metas.product.ProductIds;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Services;
@@ -93,7 +93,7 @@ public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 		final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 
 		final BigDecimal qtyPicked = shipmentScheduleAllocDAO.retrieveQtyPickedAndUnconfirmed(shipmentSchedule);
-		final I_C_UOM stockUOMRecord = productBL.getStockUOM(ProductIds.ofRecord(shipmentSchedule));
+		final I_C_UOM stockUOMRecord = productBL.getStockUOM(ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()));
 
 		return Quantity.of(qtyPicked, stockUOMRecord);
 	}

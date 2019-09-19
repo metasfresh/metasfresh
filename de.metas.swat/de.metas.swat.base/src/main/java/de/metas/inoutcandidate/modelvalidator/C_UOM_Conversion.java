@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.product.ProductId;
-import de.metas.product.ProductIds;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -51,7 +50,7 @@ public class C_UOM_Conversion
 		{
 			return; // nothing to do
 		}
-		final ProductId productId = ProductIds.ofRecord(uomConversionRecord);
+		final ProductId productId = ProductId.ofRepoId(uomConversionRecord.getM_Product_ID());
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);

@@ -114,7 +114,6 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.product.ProductIds;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.storage.IStorageEngine;
@@ -803,7 +802,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
 
-		final Optional<UomId> catchUOMId = productBL.getCatchUOMId(ProductIds.ofRecord(sched));
+		final Optional<UomId> catchUOMId = productBL.getCatchUOMId(ProductId.ofRepoId(sched.getM_Product_ID()));
 		final Integer catchUomRepoId = catchUOMId.map(UomId::getRepoId).orElse(0);
 
 		sched.setCatch_UOM_ID(catchUomRepoId);
