@@ -1,4 +1,6 @@
-﻿DROP FUNCTION IF EXISTS report.picking_tu_label( IN p_M_HU_ID numeric, IN p_C_BPartner_Location_ID numeric );
+﻿DROP FUNCTION IF EXISTS report.picking_tu_label( IN p_M_HU_ID numeric);
+
+DROP FUNCTION IF EXISTS report.picking_tu_label( IN p_M_HU_ID numeric, IN p_C_BPartner_Location_ID numeric );
 
 CREATE FUNCTION report.picking_tu_label(IN p_M_HU_ID numeric, p_C_BPartner_Location_ID numeric)
   RETURNS TABLE
