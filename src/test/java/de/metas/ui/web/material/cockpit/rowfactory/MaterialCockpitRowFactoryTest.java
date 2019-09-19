@@ -15,6 +15,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
@@ -194,13 +195,14 @@ public class MaterialCockpitRowFactoryTest
 	{
 		final I_M_AttributeSetInstance asi1 = newInstance(I_M_AttributeSetInstance.class);
 		save(asi1);
+		final AttributeSetInstanceId asiId1 = AttributeSetInstanceId.ofRepoId(asi1.getM_AttributeSetInstance_ID());
 
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attr1_value1);
 		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attr2_value1);
 
 		final AttributesKey attributesKeyWithAttr1_and_attr2 = AttributesKeys
-				.createAttributesKeyFromASIAllAttributeValues(asi1.getM_AttributeSetInstance_ID())
+				.createAttributesKeyFromASIAllAttributeValues(asiId1)
 				.get();
 
 		final I_MD_Cockpit cockpitRecordWithAttributes = newInstance(I_MD_Cockpit.class);
