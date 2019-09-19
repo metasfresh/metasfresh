@@ -1,10 +1,12 @@
 package de.metas.ui.web.pickingV2.productsToPick;
 
+import org.compiere.model.I_M_Locator;
 import org.springframework.stereotype.Repository;
 
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import lombok.NonNull;
 
 /*
@@ -54,6 +56,7 @@ public class ProductsToPickRowsRepository
 		return ProductsToPickRowsDataFactory.builder()
 				.huReservationService(huReservationService)
 				.pickingCandidateService(pickingCandidateService)
+				.locatorLookup(LookupDataSourceFactory.instance.searchInTableLookup(I_M_Locator.Table_Name))
 				.build();
 	}
 }

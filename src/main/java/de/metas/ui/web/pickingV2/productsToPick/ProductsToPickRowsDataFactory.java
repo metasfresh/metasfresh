@@ -51,8 +51,7 @@ import de.metas.quantity.Quantity;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
-import de.metas.ui.web.window.model.lookup.LookupDataSource;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -92,7 +91,7 @@ class ProductsToPickRowsDataFactory
 	private final HUReservationService huReservationService;
 	private final PickingCandidateService pickingCandidateService;
 
-	private final LookupDataSource locatorLookup;
+	private final LookupValueByIdSupplier locatorLookup;
 	private final IAttributeStorageFactory attributesFactory;
 
 	private final Map<ReservableStorageKey, ReservableStorage> storages = new HashMap<>();
@@ -110,12 +109,14 @@ class ProductsToPickRowsDataFactory
 	@Builder
 	private ProductsToPickRowsDataFactory(
 			@NonNull final HUReservationService huReservationService,
-			@NonNull final PickingCandidateService pickingCandidateService)
+			@NonNull final PickingCandidateService pickingCandidateService,
+			//
+			@NonNull final LookupValueByIdSupplier locatorLookup)
 	{
 		this.huReservationService = huReservationService;
 		this.pickingCandidateService = pickingCandidateService;
 
-		locatorLookup = LookupDataSourceFactory.instance.searchInTableLookup(org.compiere.model.I_M_Locator.Table_Name);
+		this.locatorLookup = locatorLookup;
 
 		final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 		attributesFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
