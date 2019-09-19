@@ -82,21 +82,25 @@ public enum ShipmentAllocationBestBeforePolicy implements ReferenceListAwareEnum
 	public <T> Comparator<T> comparator(@NonNull final Function<T, LocalDate> bestBeforeDateExtractor)
 	{
 		return (value1, value2) -> {
-			final LocalDate bestBefore1 = CoalesceUtil.coalesce(bestBeforeDateExtractor.apply(value1), LocalDate.MAX);
-			final LocalDate bestBefore2 = CoalesceUtil.coalesce(bestBeforeDateExtractor.apply(value2), LocalDate.MAX);
+			final LocalDate bestBefore1 = bestBeforeDateExtractor.apply(value1);
+			final LocalDate bestBefore2 = bestBeforeDateExtractor.apply(value2);
 			return compareBestBeforeDates(bestBefore1, bestBefore2);
 		};
 	}
 
-	private int compareBestBeforeDates(final LocalDate bestBefore1, final LocalDate bestBefore2)
+	private int compareBestBeforeDates(@Nullable final LocalDate bestBefore1, @Nullable final LocalDate bestBefore2)
 	{
 		if (this == Expiring_First)
 		{
-			return bestBefore1.compareTo(bestBefore2);
+			final LocalDate bestBefore1Effective = CoalesceUtil.coalesce(bestBefore1, LocalDate.MAX);
+			final LocalDate bestBefore2Effective = CoalesceUtil.coalesce(bestBefore2, LocalDate.MAX);
+			return bestBefore1Effective.compareTo(bestBefore2Effective);
 		}
 		else if (this == Newest_First)
 		{
-			return -1 * bestBefore1.compareTo(bestBefore2);
+			final LocalDate bestBefore1Effective = CoalesceUtil.coalesce(bestBefore1, LocalDate.MIN);
+			final LocalDate bestBefore2Effective = CoalesceUtil.coalesce(bestBefore2, LocalDate.MIN);
+			return -1 * bestBefore1Effective.compareTo(bestBefore2Effective);
 		}
 		else
 		{

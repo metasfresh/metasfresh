@@ -4,11 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
-
-import com.google.common.collect.ImmutableList;
 
 import lombok.Value;
 
@@ -36,26 +36,44 @@ import lombok.Value;
 
 public class ShipmentAllocationBestBeforePolicyTest
 {
+	private final BestBeforeDateHolder bb_2019_09_01 = BestBeforeDateHolder.of(LocalDate.of(2019, Month.SEPTEMBER, 1));
+	private final BestBeforeDateHolder bb_2019_09_02 = BestBeforeDateHolder.of(LocalDate.of(2019, Month.SEPTEMBER, 2));
+	private final BestBeforeDateHolder bb_null = BestBeforeDateHolder.of(null);
+
 	@Test
-	public void test_comparator()
+	public void comparator_ExpiringFirst()
 	{
-		final BestBeforeDateHolder bb_2019_09_01 = BestBeforeDateHolder.of(LocalDate.of(2019, Month.SEPTEMBER, 1));
-		final BestBeforeDateHolder bb_2019_09_02 = BestBeforeDateHolder.of(LocalDate.of(2019, Month.SEPTEMBER, 2));
+		final List<BestBeforeDateHolder> result = Stream.of(bb_2019_09_01, bb_2019_09_02)
+				.sorted(ShipmentAllocationBestBeforePolicy.Expiring_First.comparator(BestBeforeDateHolder::getBestBeforeDate))
+				.collect(Collectors.toList());
+		assertThat(result).containsExactly(bb_2019_09_01, bb_2019_09_02);
+	}
 
-		{
-			final ImmutableList<BestBeforeDateHolder> result = Stream.of(bb_2019_09_01, bb_2019_09_02)
-					.sorted(ShipmentAllocationBestBeforePolicy.Expiring_First.comparator(BestBeforeDateHolder::getBestBeforeDate))
-					.collect(ImmutableList.toImmutableList());
-			assertThat(result).containsExactly(bb_2019_09_01, bb_2019_09_02);
-		}
+	@Test
+	public void comparator_ExpiringFirst_NullsLast()
+	{
+		final List<BestBeforeDateHolder> result = Stream.of(bb_2019_09_01, bb_null)
+				.sorted(ShipmentAllocationBestBeforePolicy.Expiring_First.comparator(BestBeforeDateHolder::getBestBeforeDate))
+				.collect(Collectors.toList());
+		assertThat(result).containsExactly(bb_2019_09_01, bb_null);
+	}
 
-		{
-			final ImmutableList<BestBeforeDateHolder> result = Stream.of(bb_2019_09_01, bb_2019_09_02)
-					.sorted(ShipmentAllocationBestBeforePolicy.Newest_First.comparator(BestBeforeDateHolder::getBestBeforeDate))
-					.collect(ImmutableList.toImmutableList());
-			assertThat(result).containsExactly(bb_2019_09_02, bb_2019_09_01);
-		}
+	@Test
+	public void comparator_ExpiringLast()
+	{
+		final List<BestBeforeDateHolder> result = Stream.of(bb_2019_09_01, bb_2019_09_02)
+				.sorted(ShipmentAllocationBestBeforePolicy.Newest_First.comparator(BestBeforeDateHolder::getBestBeforeDate))
+				.collect(Collectors.toList());
+		assertThat(result).containsExactly(bb_2019_09_02, bb_2019_09_01);
+	}
 
+	@Test
+	public void comparator_ExpiringLast_NullsLast()
+	{
+		final List<BestBeforeDateHolder> result = Stream.of(bb_2019_09_01, bb_null)
+				.sorted(ShipmentAllocationBestBeforePolicy.Newest_First.comparator(BestBeforeDateHolder::getBestBeforeDate))
+				.collect(Collectors.toList());
+		assertThat(result).containsExactly(bb_2019_09_01, bb_null);
 	}
 
 	@Value(staticConstructor = "of")
