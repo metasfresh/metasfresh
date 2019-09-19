@@ -29,6 +29,7 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.ToString;
 
 /*
@@ -110,7 +111,7 @@ public final class PackageableRow implements IViewRow
 			final LookupValue lockedByUser,
 			final LookupValue shipper,
 			final ITranslatableString lineNetAmt,
-			final Collection<Packageable> packageables)
+			@NonNull @Singular final Collection<Packageable> packageables)
 	{
 		Check.assumeNotEmpty(packageables, "packageables is not empty");
 
