@@ -30,7 +30,6 @@ import com.google.common.collect.Maps;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
@@ -88,11 +87,10 @@ import lombok.Value;
 
 class ProductsToPickRowsDataFactory
 {
+	// services
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final HUReservationService huReservationService;
-	private final PickingCandidateRepository pickingCandidateRepo;
 	private final PickingCandidateService pickingCandidateService;
 
 	private final LookupDataSource locatorLookup;
@@ -119,7 +117,6 @@ class ProductsToPickRowsDataFactory
 			@NonNull final PickingCandidateService pickingCandidateService)
 	{
 		this.huReservationService = huReservationService;
-		this.pickingCandidateRepo = pickingCandidateRepo;
 		this.pickingCandidateService = pickingCandidateService;
 
 		locatorLookup = LookupDataSourceFactory.instance.searchInTableLookup(org.compiere.model.I_M_Locator.Table_Name);
@@ -159,7 +156,7 @@ class ProductsToPickRowsDataFactory
 
 	private List<ProductsToPickRow> createRowsFromExistingPickingCandidates(final AllocablePackageable packageable)
 	{
-		final List<PickingCandidate> pickingCandidates = pickingCandidateRepo.getByShipmentScheduleIdAndStatus(packageable.getShipmentScheduleId(), PickingCandidateStatus.Draft);
+		final List<PickingCandidate> pickingCandidates = pickingCandidateService.getByShipmentScheduleIdAndStatus(packageable.getShipmentScheduleId(), PickingCandidateStatus.Draft);
 
 		return pickingCandidates
 				.stream()
@@ -205,7 +202,7 @@ class ProductsToPickRowsDataFactory
 		final List<ProductsToPickRow> rows = allHuIds.stream()
 				.map(huId -> createZeroQtyRowFromHU(packageable, huId))
 				.collect(ImmutableList.toImmutableList());
-		
+
 		final ShipmentAllocationBestBeforePolicy bestBeforePolicy = packageable.getBestBeforePolicy().orElse(ShipmentAllocationBestBeforePolicy.Expiring_First);
 
 		return rows.stream()
@@ -406,7 +403,7 @@ class ProductsToPickRowsDataFactory
 
 	private I_M_HU getHU(final HuId huId)
 	{
-		return husCache.computeIfAbsent(huId, handlingUnitsDAO::getById);
+		return husCache.computeIfAbsent(huId, handlingUnitsBL::getById);
 	}
 
 	private Collection<I_M_HU> getHUs(final Collection<HuId> huIds)
@@ -416,7 +413,7 @@ class ProductsToPickRowsDataFactory
 
 	private Map<HuId, I_M_HU> retrieveHUs(final Collection<HuId> huIds)
 	{
-		return Maps.uniqueIndex(handlingUnitsDAO.getByIds(huIds), hu -> HuId.ofRepoId(hu.getM_HU_ID()));
+		return Maps.uniqueIndex(handlingUnitsBL.getByIds(huIds), hu -> HuId.ofRepoId(hu.getM_HU_ID()));
 	}
 
 	private ReservableStorage getStorage(final HuId huId, final ProductId productId)
