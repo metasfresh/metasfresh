@@ -324,4 +324,16 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		I_M_AttributeSetInstance asi = Services.get(IAttributeDAO.class).getAttributeSetInstanceById(asiId);
 		return asi != null ? asi.getDescription() : "";
 	}
+
+	@Override
+	public void updateASIAttributeFromModel(@NonNull final String attributeCode, @NonNull final Object fromModel)
+	{
+		UpdateASIAttributeFromModelCommand.builder()
+				.attributeSetInstanceBL(this)
+				//
+				.attributeCode(attributeCode)
+				.sourceModel(fromModel)
+				//
+				.execute();
+	}
 }

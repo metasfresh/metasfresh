@@ -1,17 +1,16 @@
-package de.metas.location;
+package de.metas.handlingunits.expiry.process;
 
-import java.util.List;
-import java.util.Set;
+import org.compiere.SpringContextHolder;
 
-import org.compiere.model.I_C_Location;
-
-import de.metas.util.ISingletonService;
+import de.metas.handlingunits.expiry.HUWithExpiryDatesService;
+import de.metas.process.JavaProcess;
+import de.metas.process.RunOutOfTrx;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,15 +28,15 @@ import de.metas.util.ISingletonService;
  * #L%
  */
 
-public interface ILocationDAO extends ISingletonService
+public class M_HU_Update_MonthsUntilExpiry_Attribute extends JavaProcess
 {
-	I_C_Location getById(LocationId id);
+	private final HUWithExpiryDatesService huWithExpiryDatesService = SpringContextHolder.instance.getBean(HUWithExpiryDatesService.class);
 
-	List<I_C_Location> getByIds(Set<LocationId> ids);
-
-	void save(I_C_Location location);
-
-	CountryId getCountryIdByLocationId(LocationId id);
-
-	LocationId createLocation(LocationCreateRequest request);
+	@Override
+	@RunOutOfTrx
+	protected String doIt()
+	{
+		huWithExpiryDatesService.updateMonthsUntilExpiry();
+		return MSG_OK;
+	}
 }
