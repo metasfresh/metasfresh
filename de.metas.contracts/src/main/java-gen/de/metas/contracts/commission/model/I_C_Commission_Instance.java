@@ -41,7 +41,7 @@ public interface I_C_Commission_Instance
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -51,7 +51,7 @@ public interface I_C_Commission_Instance
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -61,6 +61,31 @@ public interface I_C_Commission_Instance
     public static final org.adempiere.model.ModelColumn<I_C_Commission_Instance, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_Commission_Instance, org.compiere.model.I_AD_Org>(I_C_Commission_Instance.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Rechnungspartner.
+	 * Geschäftspartner für die Rechnungsstellung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBill_BPartner_ID (int Bill_BPartner_ID);
+
+	/**
+	 * Get Rechnungspartner.
+	 * Geschäftspartner für die Rechnungsstellung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getBill_BPartner_ID();
+
+    /** Column definition for Bill_BPartner_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Commission_Instance, org.compiere.model.I_C_BPartner> COLUMN_Bill_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_Commission_Instance, org.compiere.model.I_C_BPartner>(I_C_Commission_Instance.class, "Bill_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name Bill_BPartner_ID */
+    public static final String COLUMNNAME_Bill_BPartner_ID = "Bill_BPartner_ID";
 
 	/**
 	 * Set C_Commission_Instance.
@@ -107,6 +132,35 @@ public interface I_C_Commission_Instance
     public static final org.adempiere.model.ModelColumn<I_C_Commission_Instance, Object> COLUMN_C_Invoice_Candidate_ID = new org.adempiere.model.ModelColumn<I_C_Commission_Instance, Object>(I_C_Commission_Instance.class, "C_Invoice_Candidate_ID", null);
     /** Column name C_Invoice_Candidate_ID */
     public static final String COLUMNNAME_C_Invoice_Candidate_ID = "C_Invoice_Candidate_ID";
+
+	/**
+	 * Set Auftrag.
+	 * Auftrag
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Order_ID (int C_Order_ID);
+
+	/**
+	 * Get Auftrag.
+	 * Auftrag
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Order_ID();
+
+	public org.compiere.model.I_C_Order getC_Order();
+
+	public void setC_Order(org.compiere.model.I_C_Order C_Order);
+
+    /** Column definition for C_Order_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Commission_Instance, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new org.adempiere.model.ModelColumn<I_C_Commission_Instance, org.compiere.model.I_C_Order>(I_C_Commission_Instance.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
+    /** Column name C_Order_ID */
+    public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
 	 * Get Erstellt.

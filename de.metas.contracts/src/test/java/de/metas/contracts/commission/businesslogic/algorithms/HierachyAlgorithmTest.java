@@ -168,7 +168,7 @@ class HierachyAlgorithmTest
 				.build();
 
 		// invoke the method under test
-		new HierachyAlgorithm().applyTriggerChange(change);
+		new HierachyAlgorithm().applyTriggerChangeToShares(change);
 
 		assertThat(instance).isNotNull();
 		final ImmutableList<CommissionShare> shares = instance.getShares();

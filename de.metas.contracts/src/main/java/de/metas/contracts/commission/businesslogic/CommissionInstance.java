@@ -9,9 +9,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
 import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
 import lombok.Singular;
-import lombok.Value;
 
 /*
  * #%L
@@ -35,19 +35,18 @@ import lombok.Value;
  * #L%
  */
 
-@Value
+@Data
 public class CommissionInstance
 {
 	/** null if this instance was not (yet) persisted */
-	CommissionInstanceId id;
+	private final CommissionInstanceId id;
 
-	CommissionTriggerData currentTriggerData;
+	private CommissionTriggerData currentTriggerData;
 
-	CommissionConfig config;
+	private final CommissionConfig config;
 
-	/** Each instance means that commission will be paid to some {@link Beneficiary} in accordance to some commission contract and hierarchy. */
-
-	ImmutableList<CommissionShare> shares;
+	/** Each share means that commission will be paid to some {@link Beneficiary} in accordance to some commission contract and hierarchy. */
+	private final ImmutableList<CommissionShare> shares;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
@@ -62,5 +61,4 @@ public class CommissionInstance
 		this.config = config;
 		this.shares = ImmutableList.copyOf(shares);
 	}
-
 }

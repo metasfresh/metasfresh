@@ -52,7 +52,7 @@ public class CommissionAlgorithmInvoker
 		return algorithm.createInstance(request);
 	}
 
-	public void appyChange(@NonNull final CommissionTriggerChange change)
+	public void applyTriggerChangeToShares(@NonNull final CommissionTriggerChange change)
 	{
 		final CommissionAlgorithm algorithm;
 		try
@@ -65,8 +65,8 @@ public class CommissionAlgorithmInvoker
 			throw AdempiereException.wrapIfNeeded(e).setParameter("change", change);
 		}
 
-		// invoke it
-		algorithm.applyTriggerChange(change);
+		// invoke the algorithm
+		algorithm.applyTriggerChangeToShares(change);
 	}
 
 	private CommissionAlgorithm createAlgorithmInstance(@NonNull final CommissionType commissionType)

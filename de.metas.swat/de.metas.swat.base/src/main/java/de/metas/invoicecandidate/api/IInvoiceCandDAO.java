@@ -240,8 +240,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Creates a new {@link IInvoiceCandidateQuery} instance
-	 *
-	 * @return
 	 */
 	IInvoiceCandidateQuery newInvoiceCandidateQuery();
 
@@ -250,11 +248,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	/**
 	 * Retrieve all invoices which have an invoice candidate for given tableName/recordId. We can select unpaid invoices only or all invoices.
 	 *
-	 * @param ctx
-	 * @param tableName
-	 * @param recordId
-	 * @param onlyUnpaid
-	 * @param trxName
 	 * @return map of C_Invoice_ID to {@link I_C_Invoice} objects
 	 */
 	<T extends org.compiere.model.I_C_Invoice> Map<Integer, T> retrieveInvoices(Properties ctx, String tableName, int recordId, Class<T> clazz, boolean onlyUnpaid, String trxName);

@@ -15,7 +15,7 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1142977897L;
+	private static final long serialVersionUID = -1406819115L;
 
     /** Standard Constructor */
     public X_C_Commission_Instance (Properties ctx, int C_Commission_Instance_ID, String trxName)
@@ -46,6 +46,31 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Rechnungspartner.
+		@param Bill_BPartner_ID 
+		Geschäftspartner für die Rechnungsstellung
+	  */
+	@Override
+	public void setBill_BPartner_ID (int Bill_BPartner_ID)
+	{
+		if (Bill_BPartner_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_Bill_BPartner_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_Bill_BPartner_ID, Integer.valueOf(Bill_BPartner_ID));
+	}
+
+	/** Get Rechnungspartner.
+		@return Geschäftspartner für die Rechnungsstellung
+	  */
+	@Override
+	public int getBill_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	/** Set C_Commission_Instance.
 		@param C_Commission_Instance_ID C_Commission_Instance	  */
@@ -86,6 +111,43 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 	public int getC_Invoice_Candidate_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Candidate_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Order getC_Order()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_Order(org.compiere.model.I_C_Order C_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
+	}
+
+	/** Set Auftrag.
+		@param C_Order_ID 
+		Auftrag
+	  */
+	@Override
+	public void setC_Order_ID (int C_Order_ID)
+	{
+		if (C_Order_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Order_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Order_ID, Integer.valueOf(C_Order_ID));
+	}
+
+	/** Get Auftrag.
+		@return Auftrag
+	  */
+	@Override
+	public int getC_Order_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

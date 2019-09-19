@@ -33,5 +33,5 @@ public interface CommissionAlgorithm
 	/**
 	 * Apply the given {@code change}'s {@code newCommissionTriggerData} to its {@link CommissionInstance}.
 	 */
-	void applyTriggerChange(CommissionTriggerChange change);
+	void applyTriggerChangeToShares(CommissionTriggerChange change);
 }

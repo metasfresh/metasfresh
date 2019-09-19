@@ -1,6 +1,7 @@
 package de.metas.contracts.commission.services.repos;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOrNew;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -37,6 +38,7 @@ import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.contracts.commission.services.repos.CommissionRecordStagingService.CommissionRecords;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import lombok.NonNull;
 
 /*
@@ -173,14 +175,19 @@ public class CommissionInstanceRepository
 			records = commissionRecordStagingService.retrieveRecordsForInstanceId(ImmutableList.of(instanceIdOrNull), true/* onlyActive */);
 
 		}
+		final CommissionTriggerData triggerData = instance.getCurrentTriggerData();
+		final InvoiceCandidateId invoiceCandidateId = triggerData.getInvoiceCandidateId();
+
 		final I_C_Commission_Instance commissionInstanceRecord = loadOrNewInstanceRecord(instance);
 
-		final CommissionTriggerData triggerData = instance.getCurrentTriggerData();
-		commissionInstanceRecord.setC_Invoice_Candidate_ID(triggerData.getInvoiceCandidateId().getRepoId());
+		commissionInstanceRecord.setC_Invoice_Candidate_ID(invoiceCandidateId.getRepoId());
 		commissionInstanceRecord.setMostRecentTriggerTimestamp(TimeUtil.asTimestamp(triggerData.getTimestamp()));
 		commissionInstanceRecord.setPointsBase_Forecasted(triggerData.getForecastedPoints().toBigDecimal());
 		commissionInstanceRecord.setPointsBase_Invoiceable(triggerData.getInvoiceablePoints().toBigDecimal());
 		commissionInstanceRecord.setPointsBase_Invoiced(triggerData.getInvoicedPoints().toBigDecimal());
+
+		propagateAdditionalColumns(invoiceCandidateId, commissionInstanceRecord);
+
 		saveRecord(commissionInstanceRecord);
 
 		final CommissionInstanceId commissionInstanceId = CommissionInstanceId.ofRepoId(commissionInstanceRecord.getC_Commission_Instance_ID());
@@ -192,6 +199,16 @@ public class CommissionInstanceRepository
 			createNewFactRecords(share.getFacts(), shareToShareRecord.get(share).getC_Commission_Share_ID(), records);
 		}
 		return commissionInstanceId;
+	}
+
+	/** Set columns that are not needed by/relevant to the domain model but are needed for the the UI. */
+	private void propagateAdditionalColumns(
+			@NonNull final InvoiceCandidateId invoiceCandidateId,
+			@NonNull final I_C_Commission_Instance commissionInstanceRecord)
+	{
+		final I_C_Invoice_Candidate invoiceCandidateRecord = loadOutOfTrx(invoiceCandidateId, I_C_Invoice_Candidate.class);
+		commissionInstanceRecord.setBill_BPartner_ID(invoiceCandidateRecord.getBill_BPartner_ID());
+		commissionInstanceRecord.setC_Order_ID(invoiceCandidateRecord.getC_Order_ID());
 	}
 
 	private ImmutableMap<CommissionShare, I_C_Commission_Share> syncShareRecords(

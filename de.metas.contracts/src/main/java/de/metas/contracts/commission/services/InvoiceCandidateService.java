@@ -79,9 +79,10 @@ public class InvoiceCandidateService
 					.instanceToUpdate(instance)
 					.newCommissionTriggerData(newTriggerData)
 					.build();
+			commissionAlgorithmInvoker.applyTriggerChangeToShares(change);
 
-			commissionAlgorithmInvoker.appyChange(change);
-			commissionInstanceRepository.save(change.getInstanceToUpdate());
+			instance.setCurrentTriggerData(newTriggerData); 
+			commissionInstanceRepository.save(instance);
 		}
 	}
 }

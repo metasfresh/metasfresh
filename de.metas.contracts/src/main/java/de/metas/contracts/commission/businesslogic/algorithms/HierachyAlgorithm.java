@@ -102,7 +102,7 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 	}
 
 	@Override
-	public void applyTriggerChange(@NonNull final CommissionTriggerChange change)
+	public void applyTriggerChangeToShares(@NonNull final CommissionTriggerChange change)
 	{
 		final CommissionInstance instanceToChange = change.getInstanceToUpdate();
 		final CommissionTriggerData newTriggerData = change.getNewCommissionTriggerData();
