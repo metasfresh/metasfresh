@@ -130,6 +130,7 @@
     "moment": "2.24.0",
     "moment-timezone": "0.5.26",
     "numeral": "2.0.6",
+    "object-hash": "^1.3.1",
     "prop-types": "15.7.2",
     "quagga": "0.12.1",
     "query-string": "5.0.1",
