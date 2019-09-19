@@ -695,7 +695,7 @@ public class HUTestHelper
 		//
 		// Weight Gross
 		{
-			final I_M_HU_PI_Attribute piAttr_WeightGross = createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_WeightGross)
+			final I_M_HU_PI_Attribute piAttr_WeightGross = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_WeightGross)
 					.setM_HU_PI(huDefNone)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation));
 			piAttr_WeightGross.setIsReadOnly(false);
@@ -708,7 +708,7 @@ public class HUTestHelper
 		//
 		// Weight Net
 		{
-			final I_M_HU_PI_Attribute piAttr_WeightNet = createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_WeightNet)
+			final I_M_HU_PI_Attribute piAttr_WeightNet = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_WeightNet)
 					.setM_HU_PI(huDefNone)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown)
 					.setSplitterStrategyClass(LinearDistributionAttributeSplitterStrategy.class)
@@ -724,7 +724,7 @@ public class HUTestHelper
 		//
 		// Weight Tare
 		{
-			final I_M_HU_PI_Attribute piAttr_WeightTare = createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_WeightTare)
+			final I_M_HU_PI_Attribute piAttr_WeightTare = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_WeightTare)
 					.setM_HU_PI(huDefNone)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp)
 					.setAggregationStrategyClass(SumAggregationStrategy.class));
@@ -738,7 +738,7 @@ public class HUTestHelper
 		//
 		// Weight Tare Adjust
 		{
-			final I_M_HU_PI_Attribute piAttr_WeightTareAdjust = createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_WeightTareAdjust)
+			final I_M_HU_PI_Attribute piAttr_WeightTareAdjust = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_WeightTareAdjust)
 					.setM_HU_PI(huDefNone)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation));
 			piAttr_WeightTareAdjust.setIsReadOnly(true);
@@ -751,7 +751,7 @@ public class HUTestHelper
 		//
 		// Attributes used in ASI
 		{
-			final I_M_HU_PI_Attribute piAttr_CountryMadeIn = createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
+			final I_M_HU_PI_Attribute piAttr_CountryMadeIn = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_CountryMadeIn)
 					.setM_HU_PI(huDefNone)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown));
 			piAttr_CountryMadeIn.setIsReadOnly(true);
@@ -762,7 +762,7 @@ public class HUTestHelper
 		}
 
 		{
-			final I_M_HU_PI_Attribute piAttr_FragileSticker = createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_FragileSticker)
+			final I_M_HU_PI_Attribute piAttr_FragileSticker = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_FragileSticker)
 					.setM_HU_PI(huDefNone)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp));
 			piAttr_FragileSticker.setIsReadOnly(true);
@@ -773,7 +773,7 @@ public class HUTestHelper
 		}
 
 		{
-			final I_M_HU_PI_Attribute piAttr_QualityDiscountPercent = createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_QualityDiscountPercent)
+			final I_M_HU_PI_Attribute piAttr_QualityDiscountPercent = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_QualityDiscountPercent)
 					.setM_HU_PI(huDefNone)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown));
 			piAttr_QualityDiscountPercent.setIsReadOnly(true);
@@ -784,7 +784,7 @@ public class HUTestHelper
 		}
 
 		{
-			final I_M_HU_PI_Attribute piAttr_QualityNotice = createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_QualityNotice)
+			final I_M_HU_PI_Attribute piAttr_QualityNotice = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_QualityNotice)
 					.setM_HU_PI(huDefNone)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown));
 			piAttr_QualityNotice.setIsReadOnly(true);
@@ -795,7 +795,7 @@ public class HUTestHelper
 		}
 
 		{
-			final I_M_HU_PI_Attribute piAttr_LotNumberDate = createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_LotNumberDate)
+			final I_M_HU_PI_Attribute piAttr_LotNumberDate = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_LotNumberDate)
 					.setM_HU_PI(huDefNone)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown)
 					.setSplitterStrategyClass(CopyAttributeSplitterStrategy.class)
@@ -810,7 +810,7 @@ public class HUTestHelper
 
 		// #653
 		{
-			final I_M_HU_PI_Attribute piAttr_LotNumber = createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_LotNumber)
+			final I_M_HU_PI_Attribute piAttr_LotNumber = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_LotNumber)
 					.setM_HU_PI(huDefNone)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown)
 					.setSplitterStrategyClass(CopyAttributeSplitterStrategy.class)
@@ -825,7 +825,7 @@ public class HUTestHelper
 
 		{
 			final I_M_HU_PI_Attribute piAttr_PurchaseOrderLine = createM_HU_PI_Attribute(
-					new HUPIAttributeBuilder(attr_PurchaseOrderLine)
+					HUPIAttributeBuilder.newInstance(attr_PurchaseOrderLine)
 							.setM_HU_PI(huDefNone)
 							.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown)
 							.setSplitterStrategyClass(CopyAttributeSplitterStrategy.class)
@@ -841,7 +841,7 @@ public class HUTestHelper
 
 		{
 			final I_M_HU_PI_Attribute piAttr_ReceiptInOutLine = createM_HU_PI_Attribute(
-					new HUPIAttributeBuilder(attr_ReceiptInOutLine)
+					HUPIAttributeBuilder.newInstance(attr_ReceiptInOutLine)
 							.setM_HU_PI(huDefNone)
 							.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown)
 							.setSplitterStrategyClass(CopyAttributeSplitterStrategy.class)
@@ -864,7 +864,7 @@ public class HUTestHelper
 		//
 		// CostPrice
 		{
-			huDefVirtual_Attr_CostPrice = createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CostPrice)
+			huDefVirtual_Attr_CostPrice = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_CostPrice)
 					.setM_HU_PI(huDefVirtual)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation)
 					.setSplitterStrategyClass(NullSplitterStrategy.class)
