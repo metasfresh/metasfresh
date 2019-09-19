@@ -1,7 +1,8 @@
 {
-    "taxRateName": "Text-Tax 10%",
-    "validFrom": "01/01/2019",
-    "rate": 10,
+  "taxCategoryName": "Tax Category 10%",
+  "taxRateName": "Text-Tax 10%",
+  "validFrom": "01/01/2019",
+  "rate": 10,
 
   "priceSystemName" : "PriceSystem",
   "priceListName" : "PriceList",
@@ -10,5 +11,4 @@
   "productName" : "Product",
   "standardPrice": 3456,
   "initialTaxCategory" : "Regular Tax Rate 19% (Germany)"
-
 }
