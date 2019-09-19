@@ -95,6 +95,8 @@ export class Product {
     cy.log(`Create new Product ${product.name}`);
     cy.visitWindow('140', 'NEW');
 
+    cy.writeIntoStringField('Name', product.name);
+
     cy.setCheckBoxValue('IsStocked', product.isStocked);
     cy.setCheckBoxValue('IsPurchased', product.isPurchased);
     cy.setCheckBoxValue('IsSold', product.isSold);
@@ -108,8 +110,6 @@ export class Product {
         cy.selectInListField('ProductType', productType);
       }
     });
-
-    cy.writeIntoStringField('Name', product.name);
 
     cy.selectInListField('M_Product_Category_ID', product.productCategory);
 
