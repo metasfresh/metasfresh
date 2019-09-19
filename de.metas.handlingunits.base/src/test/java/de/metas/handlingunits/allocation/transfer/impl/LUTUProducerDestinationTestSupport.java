@@ -69,6 +69,8 @@ import de.metas.util.collections.CollectionUtils;
  */
 public class LUTUProducerDestinationTestSupport
 {
+	private static final String ATTR_Truck_Product = "Truck";
+	
 	public HUTestHelper helper;
 
 	public LocatorId defaultLocatorId;
@@ -166,7 +168,7 @@ public class LUTUProducerDestinationTestSupport
 		}
 
 		{
-			piTruckUnlimitedCapacity = helper.createHUDefinition(HUTestHelper.NAME_Truck_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+			piTruckUnlimitedCapacity = helper.createHUDefinition(ATTR_Truck_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
 			piTruck_UnlimitedCapacity_Item = helper.createHU_PI_Item_Material(piTruckUnlimitedCapacity);
 			final I_M_HU_PI_Item_Product piItemProduct = helper.assignProduct(piTruck_UnlimitedCapacity_Item, helper.pTomatoProductId, new BigDecimal("6"), helper.uomEach);

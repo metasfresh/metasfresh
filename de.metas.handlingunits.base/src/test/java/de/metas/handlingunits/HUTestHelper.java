@@ -51,6 +51,7 @@ import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.adempiere.mm.attributes.spi.impl.WeightGrossAttributeValueCallout;
@@ -170,31 +171,19 @@ public class HUTestHelper
 	public I_AD_Client adClient;
 	public I_AD_Role adRole;
 
-	public static final String NAME_CountryMadeIn_Attribute = "Made In";
-	public static final String NAME_Volume_Attribute = "Volume";
-	public static final String NAME_FragileSticker_Attribute = "Fragile";
+	private static final String NAME_CountryMadeIn_Attribute = "Made In";
+	private static final String NAME_Volume_Attribute = "Volume";
+	private static final String NAME_FragileSticker_Attribute = "Fragile";
 
-	// we reuse the "production" M_Attribute.Values from WeightableFactory
-	public static final String NAME_WeightGross_Attribute = WeightableFactory.ATTR_WeightGross_Value;
-	public static final String NAME_WeightNet_Attribute = WeightableFactory.ATTR_WeightNet_Value;
-	public static final String NAME_WeightTare_Attribute = WeightableFactory.ATTR_WeightTare_Value;
-	public static final String NAME_WeightTareAdjust_Attribute = WeightableFactory.ATTR_WeightTareAdjust_Value;
-
-	public static final String NAME_QualityDiscountPercent_Attribute = "QualityDiscountPercent";
-	public static final String NAME_QualityNotice_Attribute = "QualityNotice";
-	public static final String NAME_SubProducerBPartner_Attribute = "SubProducerBPartner";
-
-	public static final String NAME_M_Material_Tracking_ID_Attribute = "M_Material_Tracking_ID";
+	private static final String NAME_M_Material_Tracking_ID_Attribute = "M_Material_Tracking_ID";
 
 	public static final String NAME_Palet_Product = "Palet";
 	public static final String NAME_IFCO_Product = "IFCO";
 	public static final String NAME_Bag_Product = "Bag";
 	public static final String NAME_Paloxe_Product = "Paloxe";
-	public static final String NAME_Blister_Product = "Blister";
-	public static final String NAME_Truck_Product = "Truck";
 
-	public static final String NAME_Default_Warehouse = "DefaultWarehouse";
-	public static final String NAME_Issue_Warehouse = "IssueWarehouse";
+	private static final String NAME_Default_Warehouse = "DefaultWarehouse";
+	private static final String NAME_Issue_Warehouse = "IssueWarehouse";
 
 	public IHUTrxBL trxBL;
 
@@ -573,15 +562,15 @@ public class HUTestHelper
 		attr_Volume = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_Volume_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 		attr_FragileSticker = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_FragileSticker_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, false);
 
-		attr_WeightGross = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_WeightGross_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightGrossAttributeValueCallout.class, uomKg, true);
-		attr_WeightNet = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_WeightNet_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightNetAttributeValueCallout.class, uomKg, true);
-		attr_WeightTare = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_WeightTare_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAttributeValueCallout.class, uomKg, true);
-		attr_WeightTareAdjust = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_WeightTareAdjust_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAdjustAttributeValueCallout.class, uomKg, true);
+		attr_WeightGross = attributesTestHelper.createM_Attribute(WeightableFactory.ATTR_WeightGross_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightGrossAttributeValueCallout.class, uomKg, true);
+		attr_WeightNet = attributesTestHelper.createM_Attribute(WeightableFactory.ATTR_WeightNet_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightNetAttributeValueCallout.class, uomKg, true);
+		attr_WeightTare = attributesTestHelper.createM_Attribute(WeightableFactory.ATTR_WeightTare_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAttributeValueCallout.class, uomKg, true);
+		attr_WeightTareAdjust = attributesTestHelper.createM_Attribute(WeightableFactory.ATTR_WeightTareAdjust_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAdjustAttributeValueCallout.class, uomKg, true);
 
 		attr_CostPrice = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_CostPrice, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, null, null, true);
 
-		attr_QualityDiscountPercent = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_QualityDiscountPercent_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
-		attr_QualityNotice = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_QualityNotice_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
+		attr_QualityDiscountPercent = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_QualityDiscountPercent_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+		attr_QualityNotice = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_QualityNotice_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 		{
 			//
 			// Create values
@@ -589,9 +578,9 @@ public class HUTestHelper
 			createAttributeListValue(attr_QualityNotice, QUALITYNOTICE_Test2, QUALITYNOTICE_Test2);
 			createAttributeListValue(attr_QualityNotice, QUALITYNOTICE_Test3, QUALITYNOTICE_Test3);
 		}
-		attr_SubProducerBPartner = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_SubProducerBPartner_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		attr_SubProducerBPartner = attributesTestHelper.createM_Attribute(AttributeConstants.ATTR_SubProducerBPartner_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
-		attr_M_Material_Tracking_ID = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_M_Material_Tracking_ID_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+		attr_M_Material_Tracking_ID = attributesTestHelper.createM_Attribute(NAME_M_Material_Tracking_ID_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 
 		attr_LotNumberDate = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_LotNumberDate, X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
 
