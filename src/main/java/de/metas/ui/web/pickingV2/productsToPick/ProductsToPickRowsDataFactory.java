@@ -35,7 +35,6 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickingCandidate;
-import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.reservation.HUReservation;
@@ -111,7 +110,6 @@ class ProductsToPickRowsDataFactory
 	@Builder
 	private ProductsToPickRowsDataFactory(
 			@NonNull final HUReservationService huReservationService,
-			@NonNull final PickingCandidateRepository pickingCandidateRepo,
 			@NonNull final PickingCandidateService pickingCandidateService)
 	{
 		this.huReservationService = huReservationService;
