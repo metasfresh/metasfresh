@@ -1,12 +1,12 @@
 package de.metas.ui.web.pickingV2.productsToPick;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
+import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -57,7 +58,6 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -205,11 +205,13 @@ class ProductsToPickRowsDataFactory
 		final List<ProductsToPickRow> rows = allHuIds.stream()
 				.map(huId -> createZeroQtyRowFromHU(packageable, huId))
 				.collect(ImmutableList.toImmutableList());
+		
+		final ShipmentAllocationBestBeforePolicy bestBeforePolicy = packageable.getBestBeforePolicy().orElse(ShipmentAllocationBestBeforePolicy.Expiring_First);
 
 		return rows.stream()
 				.sorted(Comparator
 						.<ProductsToPickRow> comparingInt((row -> row.isHuReservedForThisRow() ? 0 : 1)) // consider reserved HU first
-						.thenComparing(row -> CoalesceUtil.coalesce(row.getExpiringDate(), LocalDate.MAX))) // then first expiring HU
+						.thenComparing(bestBeforePolicy.comparator(ProductsToPickRow::getExpiringDate))) // then first/last expiring HU
 				.map(row -> allocateRowFromHU(row, packageable))
 				.filter(Predicates.notNull())
 				.collect(ImmutableList.toImmutableList());
@@ -470,6 +472,8 @@ class ProductsToPickRowsDataFactory
 		@Getter
 		private final ShipmentScheduleId shipmentScheduleId;
 		@Getter
+		private final Optional<ShipmentAllocationBestBeforePolicy> bestBeforePolicy;
+		@Getter
 		private final WarehouseId warehouseId;
 		@Getter
 		private final OrderLineId salesOrderLineIdOrNull;
@@ -482,6 +486,7 @@ class ProductsToPickRowsDataFactory
 		{
 			this.productId = packageable.getProductId();
 			this.shipmentScheduleId = packageable.getShipmentScheduleId();
+			this.bestBeforePolicy = packageable.getBestBeforePolicy();
 			this.warehouseId = packageable.getWarehouseId();
 			this.salesOrderLineIdOrNull = packageable.getSalesOrderLineIdOrNull();
 
