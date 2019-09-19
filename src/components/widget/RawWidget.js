@@ -506,7 +506,7 @@ export class RawWidget extends Component {
             <DatePicker
               field={widgetField}
               timeFormat={false}
-              dateFormat={`x`}
+              dateFormat={`L HH:mm:SSS`}
               inputProps={{
                 placeholder: fields[0].emptyText,
                 disabled: readonly,
