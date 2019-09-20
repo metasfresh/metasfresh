@@ -80,7 +80,8 @@ export const DATE_FIELDS = ['Date', 'DateTime'];
 
 /**
  * @constant
- * @type {array} ToDo: Description for the constant.
+ * @type {array} Used as argument for Moment.format() function when handling date formats.
+ *  Format strings available for 'Date', 'DateTime', 'ZonedDateTime', 'Timestamp'.
  */
 export const DATE_FIELD_TYPES = [
   'Date',
