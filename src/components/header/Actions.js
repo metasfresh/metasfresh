@@ -357,6 +357,12 @@ class Actions extends Component {
   }
 }
 
+/**
+ * @method mapStateToProps
+ * @summary ToDo: Describe the method.
+ * @param {object} state
+ * @param {object} props
+ */
 const mapStateToProps = (state, props) => {
   const includedView = state.listHandler.includedView;
 
