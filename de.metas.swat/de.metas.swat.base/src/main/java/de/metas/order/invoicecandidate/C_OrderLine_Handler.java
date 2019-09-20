@@ -35,6 +35,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
@@ -116,7 +117,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public Iterator<I_C_OrderLine> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(final int limit)
 	{
 		return Services.get(IC_OrderLine_HandlerDAO.class).retrieveMissingOrderLinesQuery(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.create()
@@ -243,37 +244,10 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		return ic;
 	}
 
-	/**
-	 * Invalidates the candidate(s) referencing the given order line. If {@link IInvoiceCandBL#isChangedByUpdateProcess(I_C_Invoice_Candidate)} returns <code>false</code> for any given candidate, this
-	 * method additionally invalidates all candidates with the same header aggregation key and (depending on invoice schedule) even more dependent candidates.
-	 */
-	@Override
-	public void invalidateCandidatesFor(final Object model)
-	{
-		final I_C_OrderLine ol = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
-		invalidateForOrderLine(ol);
-	}
-
-	private void invalidateForOrderLine(
-			final I_C_OrderLine orderLine)
-	{
-		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
-		final String trxName = InterfaceWrapperHelper.getTrxName(orderLine);
-
-		final List<I_C_Invoice_Candidate> ics = invoiceCandDB
-				.fetchInvoiceCandidates(ctx, org.compiere.model.I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID(), trxName);
-		for (final I_C_Invoice_Candidate ic : ics)
-		{
-			invoiceCandDB.invalidateCand(ic);
-		}
-	}
-
 	@Override
 	public String getSourceTable()
 	{
-		return org.compiere.model.I_C_OrderLine.Table_Name;
+		return I_C_OrderLine.Table_Name;
 	}
 
 	/**
@@ -467,6 +441,17 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setGroupCompensationType(fromOrderLine.getGroupCompensationType());
 		ic.setGroupCompensationAmtType(fromOrderLine.getGroupCompensationAmtType());
 		ic.setGroupCompensationPercentage(fromOrderLine.getGroupCompensationPercentage());
+	}
+
+	/**
+	 * Invalidates the candidate(s) referencing the given order line. If {@link IInvoiceCandBL#isChangedByUpdateProcess(I_C_Invoice_Candidate)} returns <code>false</code> for any given candidate, this
+	 * method additionally invalidates all candidates with the same header aggregation key and (depending on invoice schedule) even more dependent candidates.
+	 */
+	@Override
+	public final void invalidateCandidatesFor(final Object model)
+	{
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+		invoiceCandDAO.invalidateCandsThatReference(TableRecordReference.of(model));
 	}
 
 }

@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,14 +36,14 @@ import de.metas.util.ISingletonService;
 public interface IInvoiceCandidateHandlerDAO extends ISingletonService
 {
 	List<I_C_ILCandHandler> retrieveAll(Properties ctx);
-	
+
 	List<I_C_ILCandHandler> retrieveForTable(Properties ctx, String tableName);
-	
+
 	/**
 	 * Loads the {@link I_C_ILCandHandler} records that have given class.
-	 * 
+	 *
 	 * Note: The method returns both active and inactive records.
-	 * 
+	 *
 	 * @param ctx
 	 * @param clazz
 	 * @return
@@ -52,9 +52,9 @@ public interface IInvoiceCandidateHandlerDAO extends ISingletonService
 
 	/**
 	 * Retrieve {@link I_C_ILCandHandler} by given <code>handlerClass</code>
-	 * 
+	 *
 	 * NOTE: this method returns only the active one
-	 * 
+	 *
 	 * @param ctx
 	 * @param handlerClass
 	 * @return {@link I_C_ILCandHandler}

@@ -8,13 +8,13 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
@@ -335,18 +335,8 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public void invalidateCandidatesFor(final Object model)
 	{
-		final I_M_InventoryLine inventoryLine = InterfaceWrapperHelper.create(model, I_M_InventoryLine.class);
-		invalidateCandidateForInventoryLine(inventoryLine);
-
-	}
-
-	private void invalidateCandidateForInventoryLine(final I_M_InventoryLine inventoryLine)
-	{
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-
-		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = invoiceCandDAO.retrieveInvoiceCandidatesForInventoryLineQuery(inventoryLine);
-
-		invoiceCandDAO.invalidateCandsFor(icQueryBuilder);
+		invoiceCandDAO.invalidateCandsThatReference(TableRecordReference.of(model));
 	}
 
 	@Override

@@ -58,7 +58,7 @@ import lombok.NonNull;
  * Registered implementations will instantiated and their {@link #createMissingCandidates(Properties, String)} method will be called by API.
  *
  * NOTE: because the API will create a new instance each time a handler is needed, it's safe to have status/field variables.
- *
+ * NOTE to future devs: It might be tempting to try and add a generic type parameter; i just failed miserably when it came to {@link #expandRequest(InvoiceCandidateGenerateRequest)} and to extending adjacent classes and services.
  *
  * @see IInvoiceCandidateHandlerBL
  */
@@ -106,7 +106,7 @@ public interface IInvoiceCandidateHandler
 	 * @param model
 	 * @return {@code true} if the invoice candidates shall be automatically generated for the given particular model.
 	 */
-	default boolean isCreateMissingCandidatesAutomatically(final Object model)
+	default boolean isCreateMissingCandidatesAutomatically(Object model)
 	{
 		return true;
 	}
@@ -149,10 +149,13 @@ public interface IInvoiceCandidateHandler
 	/**
 	 * Gets the model to be used when invoice candidate generation is scheduled.
 	 *
+	 * E.g. for an a {@code M_InOutLine} model, this will probably be the model's {@code M_InOut} record.
+	 *
 	 * @param model (of {@link #getSourceTable()} type)
 	 * @return model to be used for IC generation scheduling.
+	 *
 	 */
-	default Object getModelForInvoiceCandidateGenerateScheduling(@NonNull final Object model)
+	default Object getModelForInvoiceCandidateGenerateScheduling(final Object model)
 	{
 		return model;
 	}
@@ -180,8 +183,6 @@ public interface IInvoiceCandidateHandler
 	 * <ul>
 	 * <li>can be handled by {@link InterfaceWrapperHelper} and
 	 * <li>belong to the table that is returned by {@link #getSourceTable()}
-	 *
-	 * @param model
 	 */
 	void invalidateCandidatesFor(Object model);
 

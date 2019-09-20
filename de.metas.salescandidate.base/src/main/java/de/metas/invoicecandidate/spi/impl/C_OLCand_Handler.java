@@ -30,12 +30,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -92,8 +92,8 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public boolean isCreateMissingCandidatesAutomatically(final Object model)
 	{
-		final I_C_OLCand olCand = create(model, I_C_OLCand.class);
-		if (!isEligibleForInvoiceCandidateCreate(olCand))
+		final I_C_OLCand olCandRecord = create(model, I_C_OLCand.class);
+		if (!isEligibleForInvoiceCandidateCreate(olCandRecord))
 		{
 			return false;
 		}
@@ -241,19 +241,8 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public void invalidateCandidatesFor(@NonNull final Object model)
 	{
-		final I_C_OLCand olc = create(model, I_C_OLCand.class);
-		invalidateCandidatesForOLCand(olc);
-	}
-
-	private void invalidateCandidatesForOLCand(@NonNull final I_C_OLCand olc)
-	{
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-
-		final Properties ctx = getCtx(olc);
-		final String trxName = getTrxName(olc);
-
-		final List<I_C_Invoice_Candidate> ics = invoiceCandDAO.fetchInvoiceCandidates(ctx, I_C_OLCand.Table_Name, olc.getC_OLCand_ID(), trxName);
-		invoiceCandDAO.invalidateCands(ics);
+		invoiceCandDAO.invalidateCandsThatReference(TableRecordReference.of(model));
 	}
 
 	@Override

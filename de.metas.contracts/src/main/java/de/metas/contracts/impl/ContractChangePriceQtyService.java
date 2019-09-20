@@ -1,6 +1,3 @@
-/**
- *
- */
 package de.metas.contracts.impl;
 
 import java.math.BigDecimal;

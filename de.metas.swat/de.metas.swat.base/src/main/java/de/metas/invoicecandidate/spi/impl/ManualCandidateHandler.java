@@ -51,10 +51,6 @@ import de.metas.quantity.Quantitys;
 import de.metas.util.Services;
 import lombok.NonNull;
 
-/**
- * @author cg
- *
- */
 public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 {
 	/**

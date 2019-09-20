@@ -40,7 +40,6 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -80,10 +79,9 @@ public class InvoiceCandidateHandlerDAO implements IInvoiceCandidateHandlerDAO
 	}
 
 	@Override
-	public I_C_ILCandHandler retrieveForClassOneOnly(final Properties ctx, final Class<? extends IInvoiceCandidateHandler> handlerClass)
+	public I_C_ILCandHandler retrieveForClassOneOnly(final Properties ctx,
+			@NonNull final Class<? extends IInvoiceCandidateHandler> handlerClass)
 	{
-		Check.assumeNotNull(handlerClass, "handlerClass not null");
-
 		final List<I_C_ILCandHandler> result = retrieveForClass(ctx, handlerClass);
 
 		//

@@ -45,6 +45,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
@@ -880,11 +881,7 @@ public class FlatrateDAO implements IFlatrateDAO
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 		final List<I_C_Invoice_Candidate> icsForCurrentTerm = invoiceCandDAO
-				.fetchInvoiceCandidates(
-						getCtx(contract),
-						I_C_Flatrate_Term.Table_Name,
-						contract.getC_Flatrate_Term_ID(),
-						getTrxName(contract));
+				.retrieveReferencing(TableRecordReference.of(contract));
 
 		final List<I_C_Invoice> currentFlatRateTermInvoices = icsForCurrentTerm
 				.stream()
