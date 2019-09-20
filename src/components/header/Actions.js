@@ -16,19 +16,6 @@ import { getSelectionInstant } from '../../reducers/windowHandler';
  * @extends Component
  */
 class Actions extends Component {
-  static propTypes = {
-    // from <SubHeader>
-    windowType: PropTypes.string,
-    viewId: PropTypes.string,
-
-    // from @connect
-    childViewId: PropTypes.string,
-    childViewSelectedIds: PropTypes.array,
-    dispatch: PropTypes.func.isRequired,
-    selected: PropTypes.array.isRequired,
-    plugins: PropTypes.any,
-  };
-
   state = {
     actions: null,
     rowActions: null,
@@ -356,6 +343,29 @@ class Actions extends Component {
     );
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {string} [windowType]
+ * @prop {string} [viewId]
+ * @prop {string} [childViewId]
+ * @prop {array} [childViewSelectedIds]
+ * @prop {func} dispatch
+ * @prop {array} selected
+ * @prop {*} [plugins]
+ */
+Actions.propTypes = {
+  // from <SubHeader>
+  windowType: PropTypes.string,
+  viewId: PropTypes.string,
+
+  // from @connect
+  childViewId: PropTypes.string,
+  childViewSelectedIds: PropTypes.array,
+  dispatch: PropTypes.func.isRequired,
+  selected: PropTypes.array.isRequired,
+  plugins: PropTypes.any,
+};
 
 /**
  * @method mapStateToProps
