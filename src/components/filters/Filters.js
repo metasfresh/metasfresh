@@ -4,6 +4,12 @@ import React, { Component } from 'react';
 import { Map } from 'immutable';
 import _ from 'lodash';
 
+import { DATE_FIELDS } from '../../constants/Constants';
+import {
+  generateMomentObj,
+  getFormatForDateField,
+} from '../widget/RawWidgetHelpers';
+
 import TableCell from '../table/TableCell';
 import FiltersFrequent from './FiltersFrequent';
 import FiltersNotFrequent from './FiltersNotFrequent';
@@ -12,6 +18,7 @@ class Filters extends Component {
   state = {
     activeFilter: null,
     activeFiltersCaptions: null,
+    flatFiltersMap: null,
     notValidFields: null,
     widgetShown: false,
   };
@@ -27,7 +34,9 @@ class Filters extends Component {
   // PARSING FILTERS ---------------------------------------------------------
 
   /*
-   * parseActiveFilters - this function does two things:
+   * parseActiveFilters - this function does three things:
+   *  - creates a flat map of existing filter fields to store the widgetType for
+        further processing
    *  - creates a local copy of active filters object including filters that
    *    only have defaultValues set. `defaultVal` flag tells us, that this
    *    filter has only defaultValues, and no values set by the user. We need
@@ -50,6 +59,7 @@ class Filters extends Component {
     let { filtersActive, filterData, initialValuesNulled } = this.props;
     let activeFilters = _.cloneDeep(filtersActive);
     let filtersData = Map(filterData);
+    const flatFiltersMap = {};
     const activeFiltersCaptions = {};
 
     // find any filters with default values first and extend
@@ -59,8 +69,12 @@ class Filters extends Component {
         let paramsArray = [];
 
         outerParameters: for (let parameter of filter.parameters) {
-          const { defaultValue, parameterName } = parameter;
+          const { defaultValue, parameterName, widgetType } = parameter;
           const nulledFilter = initialValuesNulled.get(filterId);
+
+          flatFiltersMap[`${filterId}-${parameterName}`] = {
+            widgetType,
+          };
 
           if (defaultValue && (!activeFilters || !activeFilters.size)) {
             activeFilters = Map({
@@ -205,11 +219,13 @@ class Filters extends Component {
       this.setState({
         activeFilter: activeFilters.toIndexedSeq().toArray(),
         activeFiltersCaptions,
+        flatFiltersMap,
       });
     } else {
       this.setState({
         activeFilter: null,
         activeFiltersCaptions: null,
+        flatFiltersMap,
       });
     }
   };
@@ -305,16 +321,49 @@ class Filters extends Component {
     );
   };
 
+  /*
+   * This function merges new filters that are to be activated with the existing
+   * active filters. Additionally we format date fields accordingly so that the backend
+   * accepts them.
+   *
+   * @param {object} filterToAdd
+   */
   setFilterActive = filterToAdd => {
     const { updateDocList } = this.props;
-
     let { filtersActive } = this.props;
+    const { flatFiltersMap } = this.state;
     let activeFilters = Map(filtersActive);
 
     activeFilters = activeFilters.filter(
       (item, id) => id !== filterToAdd.filterId
     );
     activeFilters = activeFilters.set(filterToAdd.filterId, filterToAdd);
+
+    if (flatFiltersMap) {
+      activeFilters = activeFilters.map((filter, filterId) => {
+        filter.parameters &&
+          filter.parameters.forEach(parameter => {
+            const { value, valueTo, parameterName } = parameter;
+            const singleFilter = flatFiltersMap[`${filterId}-${parameterName}`];
+
+            if (
+              singleFilter &&
+              DATE_FIELDS.indexOf(singleFilter.widgetType) > -1
+            ) {
+              const format = getFormatForDateField(singleFilter.widgetType);
+
+              if (value) {
+                parameter.value = generateMomentObj(value, format);
+              }
+              if (valueTo) {
+                parameter.valueTo = generateMomentObj(valueTo, format);
+              }
+            }
+          });
+
+        return filter;
+      });
+    }
 
     updateDocList(activeFilters);
   };

@@ -11,6 +11,7 @@ import {
   DATE_FORMAT,
   TIME_FORMAT,
   DATE_TIMEZONE_FORMAT,
+  DATE_FIELD_FORMATS,
 } from '../../constants/Constants';
 import ActionButton from './ActionButton';
 import Attributes from './Attributes/Attributes';
@@ -506,7 +507,7 @@ export class RawWidget extends Component {
             <DatePicker
               field={widgetField}
               timeFormat={false}
-              dateFormat={`x`}
+              dateFormat={DATE_FIELD_FORMATS[widgetType]}
               inputProps={{
                 placeholder: fields[0].emptyText,
                 disabled: readonly,

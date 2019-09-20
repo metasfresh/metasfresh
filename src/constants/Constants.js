@@ -99,7 +99,7 @@ export const DATE_FIELD_FORMATS = {
   ZonedDateTime: 'L LTS',
   DateTime: 'L LTS',
   Time: 'LT',
-  Timestamp: 'x',
+  Timestamp: 'L HH:mm:SSS',
 };
 
 /**
