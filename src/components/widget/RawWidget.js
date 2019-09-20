@@ -508,7 +508,6 @@ export class RawWidget extends Component {
               field={widgetField}
               timeFormat={false}
               dateFormat={DATE_FIELD_FORMATS[widgetType]}
-              //dateFormat={`L HH:mm:SSS`}
               inputProps={{
                 placeholder: fields[0].emptyText,
                 disabled: readonly,
