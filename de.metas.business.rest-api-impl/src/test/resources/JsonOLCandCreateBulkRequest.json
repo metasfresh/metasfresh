@@ -6,7 +6,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -39,7 +39,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -83,7 +83,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -95,7 +95,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -128,7 +128,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -172,7 +172,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -184,7 +184,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -217,7 +217,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -261,7 +261,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -273,7 +273,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -306,7 +306,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -350,7 +350,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -362,7 +362,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -395,7 +395,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -439,7 +439,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -451,7 +451,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -484,7 +484,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -528,7 +528,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -540,7 +540,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -573,7 +573,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -617,7 +617,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -629,7 +629,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -662,7 +662,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -706,7 +706,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -718,7 +718,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -751,7 +751,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -795,7 +795,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -807,7 +807,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -840,7 +840,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -884,7 +884,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -896,7 +896,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -929,7 +929,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -973,7 +973,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -985,7 +985,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -1018,7 +1018,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -1062,7 +1062,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -1074,7 +1074,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -1107,7 +1107,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -1151,7 +1151,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -1163,7 +1163,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -1196,7 +1196,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -1240,7 +1240,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -1252,7 +1252,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -1285,7 +1285,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -1329,7 +1329,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -1341,7 +1341,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -1374,7 +1374,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -1418,7 +1418,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -1430,7 +1430,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -1463,7 +1463,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -1507,7 +1507,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -1519,7 +1519,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -1552,7 +1552,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -1596,7 +1596,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -1608,7 +1608,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -1641,7 +1641,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -1685,7 +1685,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -1697,7 +1697,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -1730,7 +1730,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -1774,7 +1774,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"
@@ -1786,7 +1786,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -1819,7 +1819,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -1863,7 +1863,7 @@
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
-    "dateInvoiced" : [ 2013, 3, 20 ],
+    "presetDateInvoiced" : [ 2013, 3, 20 ],
     "invoiceDocType" : {
       "docBaseType" : "ARI",
       "docSubType" : "KV"

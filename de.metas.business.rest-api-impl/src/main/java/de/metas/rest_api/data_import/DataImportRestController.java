@@ -4,11 +4,13 @@ import java.io.IOException;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,7 +21,9 @@ import de.metas.impexp.DataImportConfig;
 import de.metas.impexp.DataImportRequest;
 import de.metas.impexp.DataImportResult;
 import de.metas.impexp.DataImportService;
+import de.metas.logging.LogManager;
 import de.metas.util.rest.MetasfreshRestAPIConstants;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 
@@ -50,6 +54,7 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App)
 public class DataImportRestController
 {
+	private static final Logger logger = LogManager.getLogger(DataImportRestController.class);
 	private final DataImportService dataImportService;
 
 	public DataImportRestController(@NonNull final DataImportService dataImportService)
@@ -57,8 +62,24 @@ public class DataImportRestController
 		this.dataImportService = dataImportService;
 	}
 
+	@ApiOperation("Uploads a text file. This endpoint is oftentimes simpler for clients of this API than to upload a multipart file via the other endpoint.")
+	@PostMapping("/text")
+	public ResponseEntity<JsonDataImportResponseWrapper> importFile(
+			@ApiParam("Data Import internal name (i.e. `C_DataImport.InternalName`)") //
+			@RequestParam("dataImportConfig") @NonNull final String dataImportConfigInternalName,
+
+			@ApiParam("Try complete documents in case it applies") //
+			@RequestParam(name = "completeDocuments", required = false, defaultValue = "false") final boolean completeDocuments,
+
+			@ApiParam("The text file you are importing") //
+			@RequestBody @NonNull final String content)
+	{
+		final Resource data = new ByteArrayResource(content.getBytes());
+		return importFile(dataImportConfigInternalName, completeDocuments, data);
+	}
+
 	@PostMapping
-	public ResponseEntity<JsonDataImportResponse> importFile(
+	public ResponseEntity<JsonDataImportResponseWrapper> importFile(
 			@ApiParam("Data Import internal name (i.e. `C_DataImport.InternalName`)") //
 			@RequestParam("dataImportConfig") @NonNull final String dataImportConfigInternalName,
 
@@ -68,20 +89,40 @@ public class DataImportRestController
 			@ApiParam("The text file you are importing") //
 			@RequestParam("file") @NonNull final MultipartFile file)
 	{
-		final DataImportConfig dataImportConfig = dataImportService.getDataImportConfigByInternalName(dataImportConfigInternalName)
-				.orElseThrow(() -> new AdempiereException("No data import configuration found for: " + dataImportConfigInternalName));
+		final Resource data = toResource(file);
+		return importFile(dataImportConfigInternalName, completeDocuments, data);
+	}
 
-		final DataImportResult result = dataImportService.importData(DataImportRequest.builder()
-				.data(toResource(file))
-				.dataImportConfigId(dataImportConfig.getId())
-				.clientId(Env.getClientId())
-				.orgId(Env.getOrgId())
-				.userId(Env.getLoggedUserId())
-				.completeDocuments(completeDocuments)
-				.build());
+	private ResponseEntity<JsonDataImportResponseWrapper> importFile(
+			@NonNull final String dataImportConfigInternalName,
+			final boolean completeDocuments,
+			@NonNull final Resource data)
+	{
+		try
+		{
+			final DataImportConfig dataImportConfig = dataImportService.getDataImportConfigByInternalName(dataImportConfigInternalName)
+					.orElseThrow(() -> new AdempiereException("No data import configuration found for: " + dataImportConfigInternalName));
 
-		return ResponseEntity.accepted()
-				.body(toJsonDataImportResponse(result));
+			final DataImportResult result = dataImportService.importData(DataImportRequest.builder()
+					.data(data)
+					.dataImportConfigId(dataImportConfig.getId())
+					.clientId(Env.getClientId())
+					.orgId(Env.getOrgId())
+					.userId(Env.getLoggedUserId())
+					.completeDocuments(completeDocuments)
+					.build());
+
+			return ResponseEntity.accepted()
+					.body(toJsonDataImportResponse(result));
+		}
+		catch (final Exception ex)
+		{
+			logger.debug("Got error", ex);
+
+			final String adLanguage = Env.getADLanguageOrBaseLanguage();
+			return ResponseEntity.badRequest()
+					.body(JsonDataImportResponseWrapper.error(ex, adLanguage));
+		}
 	}
 
 	private static Resource toResource(final MultipartFile file)
@@ -101,9 +142,9 @@ public class DataImportRestController
 		return new ByteArrayResource(data, filename);
 	}
 
-	private static JsonDataImportResponse toJsonDataImportResponse(final DataImportResult result)
+	private static JsonDataImportResponseWrapper toJsonDataImportResponse(final DataImportResult result)
 	{
-		return JsonDataImportResponse.builder()
+		return JsonDataImportResponseWrapper.ok(JsonDataImportResponse.builder()
 				.dataImportConfigId(result.getDataImportConfigId().getRepoId())
 				.importFormatName(result.getImportFormatName())
 				//
@@ -115,6 +156,6 @@ public class DataImportRestController
 				//
 				.targetTableName(result.getTargetTableName())
 				//
-				.build();
+				.build());
 	}
 }

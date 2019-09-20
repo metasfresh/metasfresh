@@ -26,7 +26,9 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.i18n.IMsgBL;
 import de.metas.impexp.processing.product.ProductPriceCreateRequest;
 import de.metas.logging.LogManager;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
@@ -99,6 +101,11 @@ public class ProductPrices
 			return;
 		}
 
+		if(productPrice.isInvalidPrice())
+		{
+			return;
+		}
+
 		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(productPrice.getM_PriceList_Version_ID());
 		final I_M_PriceList_Version priceListVersion = priceListsRepo.getPriceListVersionByIdInTrx(priceListVersionId);
@@ -135,6 +142,7 @@ public class ProductPrices
 		return newQuery(plv)
 				.setProductId(productId)
 				.noAttributePricing()
+				.onlyValidPrices(true)
 				//
 				.addMatchersIfAbsent(MATCHERS_MainProductPrice); // IMORTANT: keep it last
 	}
@@ -157,15 +165,22 @@ public class ProductPrices
 
 	private static AdempiereException newDuplicateMainProductPriceException(@NonNull final I_M_ProductPrice someMainProductPrice)
 	{
+		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 		final IProductBL productBL = Services.get(IProductBL.class);
+
 		final String productName = productBL.getProductValueAndName(ProductId.ofRepoId(someMainProductPrice.getM_Product_ID()));
 
-		final I_M_PriceList_Version plv = load(someMainProductPrice.getM_PriceList_Version_ID(), I_M_PriceList_Version.class);
-		final I_M_PriceList pl = plv.getM_PriceList();
-		final I_M_PricingSystem ps = pl.getM_PricingSystem();
+		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(someMainProductPrice.getM_PriceList_Version_ID());
+		final I_M_PriceList_Version plv = priceListsRepo.getPriceListVersionById(priceListVersionId);
+
+		final PriceListId priceListId = PriceListId.ofRepoId(plv.getM_PriceList_ID());
+		final I_M_PriceList pl = priceListsRepo.getById(priceListId);
+
+		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(pl.getM_PricingSystem_ID());
+		final String pricingSystemName = priceListsRepo.getPricingSystemName(pricingSystemId);
 
 		final AdempiereException exception = new DuplicateMainProductPriceException(someMainProductPrice)
-				.setParameter(I_M_PricingSystem.Table_Name, ps.getName())
+				.setParameter(I_M_PricingSystem.Table_Name, pricingSystemName)
 				.setParameter(I_M_PriceList.Table_Name, pl.getName())
 				.setParameter(I_M_PriceList_Version.Table_Name, plv.getName())
 				.setParameter(I_M_Product.Table_Name, productName);

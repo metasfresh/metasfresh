@@ -122,6 +122,7 @@ public class ModelInterfaceGenerator
 			//
 			.add("org.compiere.model.I_C_UOM")
 			.add("org.compiere.model.I_M_Product")
+			.add("org.compiere.model.I_M_Product_Category")
 			//
 			.add("org.compiere.model.I_M_PricingSystem")
 			.add("org.compiere.model.I_M_PriceList")
@@ -133,6 +134,8 @@ public class ModelInterfaceGenerator
 			.add("org.compiere.model.I_C_TaxCategory")
 			.add("org.compiere.model.I_C_Tax")
 			//
+			.add("org.compiere.model.I_C_PaymentTerm")
+			//
 			.add("org.compiere.model.I_C_Currency")
 			.add("org.compiere.model.I_C_ConversionType")
 			//
@@ -143,6 +146,11 @@ public class ModelInterfaceGenerator
 			.add("de.metas.handlingunits.model.I_M_HU_PI_Item_Product")
 			//
 			.add("org.compiere.model.I_C_Project")
+			//
+			.add("org.compiere.model.I_AD_Note")
+			.add("org.compiere.model.I_AD_Table")
+			.add("org.compiere.model.I_C_Activity")
+			.add("org.compiere.model.I_C_Charge")
 			//
 			.build();
 

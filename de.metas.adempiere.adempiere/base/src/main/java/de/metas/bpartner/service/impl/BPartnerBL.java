@@ -23,6 +23,7 @@ package de.metas.bpartner.service.impl;
  */
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -47,6 +48,7 @@ import com.google.common.base.Strings;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerAware;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -77,7 +79,7 @@ public class BPartnerBL implements IBPartnerBL
 	{
 		this.userRepository = userRepository;
 	}
-	
+
 	public I_C_BPartner getById(@NonNull final BPartnerId bpartnerId)
 	{
 		return Services.get(IBPartnerDAO.class).getById(bpartnerId);
@@ -335,10 +337,10 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public boolean isAllowConsolidateInOutEffective(final org.compiere.model.I_C_BPartner partner, final boolean isSOTrx)
+	public boolean isAllowConsolidateInOutEffective(
+			@NonNull final org.compiere.model.I_C_BPartner partner,
+			@NonNull final SOTrx soTrx)
 	{
-		Check.assumeNotNull(partner, "partner not null");
-
 		final I_C_BPartner partnerToUse = InterfaceWrapperHelper.create(partner, de.metas.interfaces.I_C_BPartner.class);
 		final boolean partnerAllowConsolidateInOut = partnerToUse.isAllowConsolidateInOut();
 		if (partnerAllowConsolidateInOut)
@@ -348,7 +350,7 @@ public class BPartnerBL implements IBPartnerBL
 
 		//
 		// 07973: Attempt to override SO shipment consolidation if configured
-		if (isSOTrx)
+		if (soTrx.isSales())
 		{
 			final boolean allowConsolidateInOutOverrideDefault = false; // default=false (preserve existing logic)
 			final boolean allowConsolidateInOutOverride = Services.get(ISysConfigBL.class).getBooleanValue(
@@ -356,7 +358,10 @@ public class BPartnerBL implements IBPartnerBL
 					allowConsolidateInOutOverrideDefault);
 			return allowConsolidateInOutOverride;
 		}
-		return false;
+		else
+		{
+			return false;
+		}
 	}
 
 	@Override
@@ -623,12 +628,12 @@ public class BPartnerBL implements IBPartnerBL
 	public DeliveryViaRule getDeliveryViaRuleOrNull(@NonNull final BPartnerId bpartnerId, SOTrx soTrx)
 	{
 		final I_C_BPartner bp = getById(bpartnerId);
-		
+
 		if (soTrx.isSales())
 		{
 			return DeliveryViaRule.ofNullableCode(bp.getDeliveryViaRule());
 		}
-		else if(soTrx.isPurchase())
+		else if (soTrx.isPurchase())
 		{
 			return DeliveryViaRule.ofNullableCode(bp.getPO_DeliveryViaRule());
 		}
@@ -637,5 +642,12 @@ public class BPartnerBL implements IBPartnerBL
 			// shall not happen
 			return null;
 		}
+	}
+
+	@Override
+	public Optional<ShipmentAllocationBestBeforePolicy> getBestBeforePolicy(@NonNull final BPartnerId bpartnerId)
+	{
+		final I_C_BPartner bpartner = getById(bpartnerId);
+		return ShipmentAllocationBestBeforePolicy.optionalOfNullableCode(bpartner.getShipmentAllocation_BestBefore_Policy());
 	}
 }

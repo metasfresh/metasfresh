@@ -1,21 +1,23 @@
 package de.metas.rest_api.ordercandidates.impl;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
-import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
 import static de.metas.util.lang.CoalesceUtil.firstNotEmptyTrimmed;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
-import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocTypeId;
@@ -29,14 +31,19 @@ import de.metas.organization.OrgQuery;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.rest_api.SyncAdvise;
-import de.metas.rest_api.ordercandidates.JsonDocTypeInfo;
-import de.metas.rest_api.ordercandidates.JsonOrganization;
+import de.metas.rest_api.bpartner.response.JsonResponseBPartner;
+import de.metas.rest_api.bpartner.response.JsonResponseContact;
+import de.metas.rest_api.bpartner.response.JsonResponseLocation;
+import de.metas.rest_api.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
+import de.metas.rest_api.ordercandidates.request.JsonDocTypeInfo;
+import de.metas.rest_api.ordercandidates.request.JsonOrganization;
+import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
+import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.rest_api.utils.MissingPropertyException;
 import de.metas.rest_api.utils.PermissionService;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -64,37 +71,25 @@ import lombok.NonNull;
 final class MasterdataProvider
 {
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
-
 	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
-
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 
-	private final OrgId defaultOrgId;
+	private final PermissionService permissionService;
+	private final BPartnerMasterDataProvider bpartnerMasterDataProvider;
+	private final ProductMasterDataProvider productMasterDataProvider;
+	private final ProductPriceMasterDataProvider productPricesMasterDataProvider;
 
 	private final Map<String, OrgId> orgIdsByCode = new HashMap<>();
 
-	private final PermissionService permissionService;
-
-	@Getter
-	private final BPartnerMasterDataProvider bPartnerMasterDataProvider;
-
-	@Getter
-	private final ProductMasterDataProvider productMasterDataProvider;
-
 	@Builder
 	private MasterdataProvider(
-			@Nullable final Properties ctx,
-			@Nullable final PermissionService permissionService,
-			@Nullable final BPartnerMasterDataProvider bpartnerMasterDataProvider,
-			@Nullable final ProductMasterDataProvider productMasterDataProvider)
+			@NonNull final PermissionService permissionService)
 	{
-		final Properties ctxToUse = coalesceSuppliers(() -> ctx, () -> Env.getCtx());
-
-		this.defaultOrgId = OrgId.optionalOfRepoId(Env.getAD_Org_ID(ctxToUse)).orElse(OrgId.ANY);
-
-		this.permissionService = coalesce(permissionService, PermissionService.of(ctxToUse));
-		this.bPartnerMasterDataProvider = coalesce(bpartnerMasterDataProvider, BPartnerMasterDataProvider.of(ctxToUse, permissionService));
-		this.productMasterDataProvider = coalesce(productMasterDataProvider, ProductMasterDataProvider.of(ctxToUse, permissionService));
+		this.permissionService = permissionService;
+		this.bpartnerMasterDataProvider = new BPartnerMasterDataProvider(permissionService);
+		this.productMasterDataProvider = new ProductMasterDataProvider(permissionService);
+		this.productPricesMasterDataProvider = new ProductPriceMasterDataProvider();
 	}
 
 	public void assertCanCreateNewOLCand(final OrgId orgId)
@@ -112,11 +107,16 @@ final class MasterdataProvider
 		return priceListsRepo.getPricingSystemIdByValue(pricingSystemCode);
 	}
 
+	public WarehouseId getWarehouseIdByValue(@NonNull final String warehouseCode)
+	{
+		return warehousesRepo.getWarehouseIdByValue(warehouseCode);
+	}
+
 	public OrgId getCreateOrgId(@Nullable final JsonOrganization json)
 	{
 		if (json == null)
 		{
-			return defaultOrgId;
+			return permissionService.getDefaultOrgId();
 		}
 
 		return orgIdsByCode.compute(json.getCode(), (code, existingOrgId) -> createOrUpdateOrgId(json, existingOrgId));
@@ -168,11 +168,9 @@ final class MasterdataProvider
 		final OrgId orgId = OrgId.ofRepoId(orgRecord.getAD_Org_ID());
 		if (json.getBpartner() != null)
 		{
-			bPartnerMasterDataProvider
-					.getCreateOrgBPartnerInfo(
-							json.getBpartner(),
-							orgId);
+			bpartnerMasterDataProvider.getCreateOrgBPartnerInfo(json.getBpartner(), orgId);
 		}
+
 		return orgId;
 	}
 
@@ -197,9 +195,14 @@ final class MasterdataProvider
 	}
 
 	public DocTypeId getDocTypeId(
-			@NonNull final JsonDocTypeInfo invoiceDocType,
+			@Nullable final JsonDocTypeInfo invoiceDocType,
 			@NonNull final OrgId orgId)
 	{
+		if (invoiceDocType == null)
+		{
+			return null;
+		}
+
 		final String docSubType = firstNotEmptyTrimmed(
 				invoiceDocType.getDocSubType(),
 				DocTypeQuery.DOCSUBTYPE_NONE);
@@ -225,9 +228,42 @@ final class MasterdataProvider
 		}
 
 		final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(currencyCodeStr);
-		
+
 		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
 		return currenciesRepo.getByCurrencyCode(currencyCode).getId();
 	}
 
+	public BPartnerInfo getCreateBPartnerInfo(
+			@Nullable final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
+			final OrgId orgId)
+	{
+		return bpartnerMasterDataProvider.getCreateBPartnerInfo(jsonBPartnerInfo, orgId);
+	}
+
+	public JsonResponseBPartner getJsonBPartnerById(@NonNull final BPartnerId bpartnerId)
+	{
+		return bpartnerMasterDataProvider.getJsonBPartnerById(bpartnerId);
+	}
+
+	public JsonResponseLocation getJsonBPartnerLocationById(final BPartnerLocationId bpartnerLocationId)
+	{
+		return bpartnerMasterDataProvider.getJsonBPartnerLocationById(bpartnerLocationId);
+	}
+
+	public JsonResponseContact getJsonBPartnerContactById(final BPartnerContactId bpartnerContactId)
+	{
+		return bpartnerMasterDataProvider.getJsonBPartnerContactById(bpartnerContactId);
+	}
+
+	public ProductInfo getCreateProductInfo(
+			@NonNull final JsonProductInfo jsonProductInfo,
+			@NonNull final OrgId orgId)
+	{
+		return productMasterDataProvider.getCreateProductInfo(jsonProductInfo, orgId);
+	}
+
+	public void createProductPrice(@NonNull final ProductPriceCreateRequest request)
+	{
+		productPricesMasterDataProvider.createProductPrice(request);
+	}
 }

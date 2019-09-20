@@ -3,6 +3,7 @@ package de.metas.rest_api.ordercandidates.impl;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -18,11 +19,11 @@ import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.rest_api.ordercandidates.JsonBPartnerInfo;
-import de.metas.rest_api.ordercandidates.JsonOLCand;
-import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkResponse;
-import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
+import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
+import de.metas.rest_api.ordercandidates.response.JsonOLCand;
+import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
+import de.metas.rest_api.ordercandidates.response.JsonResponseBPartnerLocationAndContact;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -65,15 +66,15 @@ class JsonConverters
 
 		final OrgId orgId = masterdataProvider.getCreateOrgId(request.getOrg());
 
-		final ProductMasterDataProvider productMasterDataProvider = masterdataProvider.getProductMasterDataProvider();
-		final ProductInfo productInfo = productMasterDataProvider.getCreateProductInfo(request.getProduct(), orgId);
+		final ProductInfo productInfo = masterdataProvider.getCreateProductInfo(request.getProduct(), orgId);
 
 		final PricingSystemId pricingSystemId = masterdataProvider.getPricingSystemIdByValue(request.getPricingSystemCode());
 
 		final CurrencyId currencyId = masterdataProvider.getCurrencyId(request.getCurrencyCode());
 
-		final BPartnerMasterDataProvider //
-		bpartnerMasterdataProvider = masterdataProvider.getBPartnerMasterDataProvider();
+		final WarehouseId warehouseDestId = !Check.isEmpty(request.getWarehouseDestCode())
+				? masterdataProvider.getWarehouseIdByValue(request.getWarehouseDestCode())
+				: null;
 
 		return OLCandCreateRequest.builder()
 				//
@@ -86,18 +87,21 @@ class JsonConverters
 				//
 				.dataDestInternalName(request.getDataDestInternalName())
 				//
-				.bpartner(bpartnerMasterdataProvider.getCreateBPartnerInfo(request.getBpartner(), orgId))
-				.billBPartner(bpartnerMasterdataProvider.getCreateBPartnerInfo(request.getBillBPartner(), orgId))
-				.dropShipBPartner(bpartnerMasterdataProvider.getCreateBPartnerInfo(request.getDropShipBPartner(), orgId))
-				.handOverBPartner(bpartnerMasterdataProvider.getCreateBPartnerInfo(request.getHandOverBPartner(), orgId))
+				.bpartner(masterdataProvider.getCreateBPartnerInfo(request.getBpartner(), orgId))
+				.billBPartner(masterdataProvider.getCreateBPartnerInfo(request.getBillBPartner(), orgId))
+				.dropShipBPartner(masterdataProvider.getCreateBPartnerInfo(request.getDropShipBPartner(), orgId))
+				.handOverBPartner(masterdataProvider.getCreateBPartnerInfo(request.getHandOverBPartner(), orgId))
 				//
 				.poReference(request.getPoReference())
 				//
+				.dateOrdered(request.getDateOrdered())
 				.dateRequired(request.getDateRequired())
 				//
-				.dateInvoiced(request.getDateInvoiced())
 				.docTypeInvoiceId(masterdataProvider.getDocTypeId(request.getInvoiceDocType(), orgId))
-
+				.presetDateInvoiced(request.getPresetDateInvoiced())
+				//
+				.presetDateShipped(request.getPresetDateShipped())
+				//
 				.flatrateConditionsId(request.getFlatrateConditionsId())
 				//
 				.productId(productInfo.getProductId())
@@ -109,11 +113,14 @@ class JsonConverters
 				.pricingSystemId(pricingSystemId)
 				.price(request.getPrice())
 				.currencyId(currencyId)
-
-				.discount(Percent.ofNullable(request.getDiscount()));
+				.discount(Percent.ofNullable(request.getDiscount()))
+				//
+				.warehouseDestId(warehouseDestId)
+		//
+		;
 	}
 
-	private final JsonBPartnerInfo toJson(
+	private final JsonResponseBPartnerLocationAndContact toJson(
 			final BPartnerInfo bpartnerInfo,
 			final MasterdataProvider masterdataProvider)
 	{
@@ -126,13 +133,10 @@ class JsonConverters
 		final BPartnerLocationId bpartnerLocationId = bpartnerInfo.getBpartnerLocationId();
 		final BPartnerContactId contactId = bpartnerInfo.getContactId();
 
-		final BPartnerMasterDataProvider //
-		bpartnerMasterdataProvider = masterdataProvider.getBPartnerMasterDataProvider();
-
-		return JsonBPartnerInfo.builder()
-				.bpartner(bpartnerMasterdataProvider.getJsonBPartnerById(bpartnerId))
-				.location(bpartnerMasterdataProvider.getJsonBPartnerLocationById(bpartnerLocationId))
-				.contact(bpartnerMasterdataProvider.getJsonBPartnerContactById(contactId))
+		return JsonResponseBPartnerLocationAndContact.builder()
+				.bpartner(masterdataProvider.getJsonBPartnerById(bpartnerId))
+				.location(masterdataProvider.getJsonBPartnerLocationById(bpartnerLocationId))
+				.contact(masterdataProvider.getJsonBPartnerContactById(contactId))
 				.build();
 	}
 
@@ -140,7 +144,7 @@ class JsonConverters
 			@NonNull final List<OLCand> olCands,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
-		return JsonOLCandCreateBulkResponse.of(olCands.stream()
+		return JsonOLCandCreateBulkResponse.ok(olCands.stream()
 				.map(olCand -> toJson(olCand, masterdataProvider))
 				.collect(ImmutableList.toImmutableList()));
 	}
@@ -160,6 +164,7 @@ class JsonConverters
 				.dropShipBPartner(toJson(olCand.getDropShipBPartnerInfo(), masterdataProvider))
 				.handOverBPartner(toJson(olCand.getHandOverBPartnerInfo(), masterdataProvider))
 				//
+				.dateOrdered(olCand.getDateDoc())
 				.datePromised(TimeUtil.asLocalDate(olCand.getDatePromised()))
 				.flatrateConditionsId(olCand.getFlatrateConditionsId())
 				//
@@ -172,6 +177,8 @@ class JsonConverters
 				.pricingSystemId(PricingSystemId.toRepoId(olCand.getPricingSystemId()))
 				.price(olCand.getPriceActual())
 				.discount(olCand.getDiscount())
+				//
+				.warehouseDestId(WarehouseId.toRepoId(olCand.getWarehouseDestId()))
 				//
 				.build();
 	}

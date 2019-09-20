@@ -1,10 +1,16 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
-import javax.annotation.Nullable;
+import java.util.Arrays;
 
 import org.adempiere.exceptions.AdempiereException;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -28,47 +34,42 @@ import lombok.Getter;
  * #L%
  */
 
-public enum InvoiceRule
+public enum InvoiceRule implements ReferenceListAwareEnum
 {
-	/** Please keep in sync with {@link X_C_Invoice_Candidate#INVOICERULE_AfterDelivery}. */
-	AfterDelivery(X_C_Invoice_Candidate.INVOICERULE_AfterDelivery),
-
-	/** Please keep in sync with {@link X_C_Invoice_Candidate#INVOICERULE_AfterOrderDelivered}. */
-	AfterOrderDelivered(X_C_Invoice_Candidate.INVOICERULE_AfterOrderDelivered),
-
-	/** Please keep in sync with {@link X_C_Invoice_Candidate#INVOICERULE_CustomerScheduleAfterDelivery}. */
-	CustomerScheduleAfterDelivery(X_C_Invoice_Candidate.INVOICERULE_CustomerScheduleAfterDelivery),
-
-	/** Please keep in sync with {@link X_C_Invoice_Candidate#INVOICERULE_Immediate}. */
-	Immediate(X_C_Invoice_Candidate.INVOICERULE_Immediate);
-
-	public static InvoiceRule fromRecordString(@Nullable final String invoiceRule)
-	{
-		if (X_C_Invoice_Candidate.INVOICERULE_AfterDelivery.equals(invoiceRule))
-		{
-			return AfterDelivery;
-		}
-		else if (X_C_Invoice_Candidate.INVOICERULE_AfterOrderDelivered.equals(invoiceRule))
-		{
-			return AfterOrderDelivered;
-		}
-		else if (X_C_Invoice_Candidate.INVOICERULE_CustomerScheduleAfterDelivery.equals(invoiceRule))
-		{
-			return CustomerScheduleAfterDelivery;
-		}
-		else if (X_C_Invoice_Candidate.INVOICERULE_Immediate.equals(invoiceRule))
-		{
-			return Immediate;
-		}
-		throw new AdempiereException("Unsupported invoiceRule value: " + invoiceRule);
-	}
+	AfterDelivery(X_C_Invoice_Candidate.INVOICERULE_AfterDelivery), //
+	AfterOrderDelivered(X_C_Invoice_Candidate.INVOICERULE_AfterOrderDelivered), //
+	CustomerScheduleAfterDelivery(X_C_Invoice_Candidate.INVOICERULE_CustomerScheduleAfterDelivery), //
+	Immediate(X_C_Invoice_Candidate.INVOICERULE_Immediate) //
+	;
 
 	@Getter
-	private final String recordString;
+	private final String code;
 
-	private InvoiceRule(String recordString)
+	private InvoiceRule(@NonNull final String code)
 	{
-		this.recordString = recordString;
+		this.code = code;
 	}
+
+	public static InvoiceRule ofNullableCode(final String code)
+	{
+		return code != null ? ofCode(code) : null;
+	}
+
+	public static InvoiceRule ofCode(@NonNull final String code)
+	{
+		InvoiceRule type = typesByCode.get(code);
+		if (type == null)
+		{
+			throw new AdempiereException("No " + InvoiceRule.class + " found for code: " + code);
+		}
+		return type;
+	}
+
+	public static String toCodeOrNull(final InvoiceRule type)
+	{
+		return type != null ? type.getCode() : null;
+	}
+
+	private static final ImmutableMap<String, InvoiceRule> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), InvoiceRule::getCode);
 
 }

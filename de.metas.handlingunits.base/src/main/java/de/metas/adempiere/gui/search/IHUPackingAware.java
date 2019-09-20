@@ -24,7 +24,6 @@ package de.metas.adempiere.gui.search;
 
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 
 /**
  * Implementations or adapters of this interface model a record (e.g. C_OrderLine) which supports handling unit packing instructions (e.g. packing item, qty etc).
@@ -80,10 +79,6 @@ public interface IHUPackingAware
 	void setC_BPartner_ID(int bpartnerId);
 
 	int getC_BPartner_ID();
-
-	void setDateOrdered(Timestamp dateOrdered);
-
-	Timestamp getDateOrdered();
 
 	/**
 	 * Checks if this record is in dispute.

@@ -1,12 +1,12 @@
 package de.metas.handlingunits.expiry;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -67,24 +67,23 @@ public class ExpiredAttributeStorageListener implements IAttributeStorageListene
 		}
 
 		final boolean relevantAttributesArePresent = storage.hasAttribute(HUAttributeConstants.ATTR_Expired)
-				&& storage.hasAttribute(HUAttributeConstants.ATTR_BestBeforeDate);
+				&& storage.hasAttribute(AttributeConstants.ATTR_BestBeforeDate);
 		if (!relevantAttributesArePresent)
 		{
 			return;
 		}
 
 		final String attributeIdentifier = attributeValue.getM_Attribute().getValue();
-		final boolean relevantAttributeHasChanged = HUAttributeConstants.ATTR_BestBeforeDate.equals(attributeIdentifier);
+		final boolean relevantAttributeHasChanged = AttributeConstants.ATTR_BestBeforeDate.equals(attributeIdentifier);
 		if (!relevantAttributeHasChanged)
 		{
 			return;
 		}
 
-		final Date bestBefore = storage.getValueAsDate(HUAttributeConstants.ATTR_BestBeforeDate);
+		final LocalDate bestBefore = storage.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate);
 		final int warnInterval = getMinimalWarnIntervalInDays(huAttributeStorage);
 
-		final LocalDateTime warnDate = TimeUtil
-				.asLocalDate(bestBefore)
+		final LocalDateTime warnDate = bestBefore
 				.minusDays(warnInterval)
 				.atStartOfDay();
 		if (warnDate.isBefore(LocalDateTime.now()))

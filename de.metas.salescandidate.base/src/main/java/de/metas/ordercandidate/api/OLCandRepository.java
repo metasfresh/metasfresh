@@ -1,10 +1,11 @@
 package de.metas.ordercandidate.api;
 
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
@@ -20,6 +21,8 @@ import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -62,13 +65,16 @@ public class OLCandRepository
 	{
 		Check.assumeNotEmpty(requests, "requests is not empty");
 
+		final OLCandFactory olCandFactory = new OLCandFactory();
+
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		return trxManager.call(ITrx.TRXNAME_ThreadInherited, () -> requests.stream()
-				.map(this::create)
+		return trxManager.callInThreadInheritedTrx(() -> requests.stream()
+				.map(this::createAndSaveOLCandRecord)
+				.map(olCandFactory::toOLCand)
 				.collect(ImmutableList.toImmutableList()));
 	}
 
-	public OLCand create(@NonNull final OLCandCreateRequest request)
+	private I_C_OLCand createAndSaveOLCandRecord(@NonNull final OLCandCreateRequest request)
 	{
 		final I_C_OLCand olCandPO = InterfaceWrapperHelper.newInstance(I_C_OLCand.class);
 
@@ -76,6 +82,8 @@ public class OLCandRepository
 		{
 			olCandPO.setAD_Org_ID(request.getOrgId().getRepoId());
 		}
+		final OrgId orgId = OrgId.ofRepoIdOrAny(olCandPO.getAD_Org_ID());
+		final ZoneId timeZone = Services.get(IOrgDAO.class).getTimeZone(orgId);
 
 		{
 			final BPartnerInfo bpartner = request.getBpartner();
@@ -114,10 +122,15 @@ public class OLCandRepository
 		}
 
 		olCandPO.setDateCandidate(SystemTime.asDayTimestamp());
-		olCandPO.setDatePromised(TimeUtil.asTimestamp(request.getDateRequired()));
+		olCandPO.setDateOrdered(TimeUtil.asTimestamp(request.getDateOrdered()));
+		olCandPO.setDatePromised(TimeUtil.asTimestamp(request.getDateRequired()
+				.atTime(LocalTime.MAX)
+				.atZone(timeZone)));
 
-		olCandPO.setDateInvoiced(TimeUtil.asTimestamp(request.getDateInvoiced()));
+		olCandPO.setPresetDateInvoiced(TimeUtil.asTimestamp(request.getPresetDateInvoiced()));
 		olCandPO.setC_DocTypeInvoice_ID(DocTypeId.toRepoId(request.getDocTypeInvoiceId()));
+
+		olCandPO.setPresetDateShipped(TimeUtil.asTimestamp(request.getPresetDateShipped()));
 
 		olCandPO.setC_Flatrate_Conditions_ID(request.getFlatrateConditionsId());
 
@@ -145,6 +158,11 @@ public class OLCandRepository
 			olCandPO.setDiscount(request.getDiscount().toBigDecimal());
 		}
 
+		if (request.getWarehouseDestId() != null)
+		{
+			olCandPO.setM_Warehouse_Dest_ID(request.getWarehouseDestId().getRepoId());
+		}
+
 		olCandPO.setAD_User_EnteredBy_ID(Env.getAD_User_ID());
 
 		final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
@@ -162,14 +180,23 @@ public class OLCandRepository
 		olCandPO.setExternalLineId(request.getExternalLineId());
 		olCandPO.setExternalHeaderId(request.getExternalHeaderId());
 
-		InterfaceWrapperHelper.save(olCandPO);
+		InterfaceWrapperHelper.saveRecord(olCandPO);
 
-		return OLCand.builder()
-				.candidate(olCandPO)
-				.build();
+		return olCandPO;
 	}
 
 	public List<OLCand> getByQuery(@NonNull final OLCandQuery olCandQuery)
+	{
+		final OLCandFactory olCandFactory = new OLCandFactory();
+
+		return toSqlQueryBuilder(olCandQuery)
+				.create()
+				.stream()
+				.map(olCandFactory::toOLCand)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private IQueryBuilder<I_C_OLCand> toSqlQueryBuilder(@NonNull final OLCandQuery olCandQuery)
 	{
 		final IQueryBuilder<I_C_OLCand> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_OLCand.class)
@@ -185,10 +212,6 @@ public class OLCandRepository
 			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMN_AD_InputDataSource_ID, inputDataSourceId);
 		}
 
-		return queryBuilder
-				.create()
-				.stream()
-				.map(OLCand::of)
-				.collect(ImmutableList.toImmutableList());
+		return queryBuilder;
 	}
 }

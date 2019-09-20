@@ -25,7 +25,7 @@ package de.metas.invoicecandidate.api;
 
 import java.util.Properties;
 
-import de.metas.aggregation.api.IAggregation;
+import de.metas.aggregation.api.Aggregation;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.aggregation.model.X_C_Aggregation;
@@ -65,7 +65,7 @@ public interface IInvoiceAggregationFactory extends ISingletonService
 	 * @param aggregationUsageLevel {@link X_C_Aggregation#AGGREGATIONUSAGELEVEL_Header} or {@link X_C_Aggregation#AGGREGATIONUSAGELEVEL_Line}
 	 * @return header/line aggregation; never returns <code>null</code>.
 	 */
-	IAggregation getAggregation(Properties ctx, I_C_BPartner bpartner, boolean isSOTrx, final String aggregationUsageLevel);
+	Aggregation getAggregation(Properties ctx, I_C_BPartner bpartner, boolean isSOTrx, final String aggregationUsageLevel);
 
 	/**
 	 * Gets the header aggregation to be used when aggregating invoice candidates which have as source a prepay order

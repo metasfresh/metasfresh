@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
@@ -50,6 +49,12 @@ public class SyncAdvise
 			.builder()
 			.ifNotExists(IfNotExists.CREATE)
 			.ifExists(IfExists.UPDATE_MERGE)
+			.build();
+
+	public static final SyncAdvise JUST_CREATE_IF_NOT_EXISTS = SyncAdvise
+			.builder()
+			.ifNotExists(IfNotExists.CREATE)
+			.ifExists(IfExists.DONT_UPDATE)
 			.build();
 
 	public enum IfNotExists

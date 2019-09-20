@@ -64,17 +64,17 @@ public class HUShipmentProcess_AttributesAggregation_WithDifferentTemplateAttrib
 	{
 		super.initialize();
 
-		template_huPIAttribute = helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attribute)
+		template_huPIAttribute = helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attribute)
 				.setM_HU_PI(helper.huDefNone)
 				.setUseInASI(true)
 		// .setTransferStrategyClass() // does not matter
 		); // assign it to template
-		tu_huPIAttribute = helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attribute)
+		tu_huPIAttribute = helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attribute)
 				.setM_HU_PI(piTU)
 				.setUseInASI(true)
 		// .setTransferStrategyClass() // does not matter
 		);
-		lu_huPIAttribute = helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attribute)
+		lu_huPIAttribute = helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attribute)
 				.setM_HU_PI(piLU)
 				.setUseInASI(true)
 				.setTransferStrategyClass(CopyHUAttributeTransferStrategy.class) // make sure it will copied to ASI

@@ -7,6 +7,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
       "name": "bpartnerRecord.name_updated",
       "companyName": "bpartnerRecord.companyName",
       "group": "bpGroupRecord.name",
+      "vendor": false,
+      "customer": false,
       "changeInfo": {
         "createdMillis": 1563553074,
         "createdBy": 0,
@@ -65,6 +67,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
         "entries": [ ]
       },
       "companyName": "bPartner.companyName",
+      "customer": false,
       "externalId": {
         "value": "fghij_2"
       },
@@ -83,15 +86,16 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
             "value": 4
           }
         },
-        "baseLanguage": true,
         "leftToRight": true,
-        "decimalPoint": false
+        "decimalPoint": false,
+        "baseLanguage": true
       },
       "name": "bPartner.name",
       "parentId": 1,
       "phone": "bPartner.phone",
       "url": "bPartner.url",
-      "value": "code"
+      "value": "code",
+      "vendor": false
     },
     "contacts": [
       {
@@ -384,13 +388,15 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
         },
         "entries": [ ]
       },
+      "customer": true,
       "externalId": {
         "value": "fghij"
       },
       "groupId": 15,
       "id": 20,
       "name": "bpartnerRecord.name",
-      "value": "bpartnerRecord.value"
+      "value": "bpartnerRecord.value",
+      "vendor": true
     },
     "contacts": [
       {
@@ -628,13 +634,15 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
         },
         "entries": [ ]
       },
+      "customer": true,
       "externalId": {
         "value": "fghij"
       },
       "groupId": 15,
       "id": 20,
       "name": "bpartnerRecord.name",
-      "value": "bpartnerRecord.value"
+      "value": "bpartnerRecord.value",
+      "vendor": true
     },
     "contacts": [
       {
@@ -901,6 +909,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_ext=
       "active": true,
       "name": "bpartnerRecord.name",
       "group": "bpGroupRecord.name",
+      "vendor": true,
+      "customer": true,
       "changeInfo": {
         "createdMillis": 1561133544,
         "createdBy": 30,
@@ -975,6 +985,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_gln=
       "active": true,
       "name": "bpartnerRecord.name",
       "group": "bpGroupRecord.name",
+      "vendor": true,
+      "customer": true,
       "changeInfo": {
         "createdMillis": 1561133544,
         "createdBy": 30,
@@ -1049,6 +1061,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_id=[
       "active": true,
       "name": "bpartnerRecord.name",
       "group": "bpGroupRecord.name",
+      "vendor": true,
+      "customer": true,
       "changeInfo": {
         "createdMillis": 1561133544,
         "createdBy": 30,
@@ -1129,6 +1143,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           "active": true,
           "name": "bpartnerRecord.name",
           "group": "bpGroupRecord.name",
+          "vendor": true,
+          "customer": true,
           "changeInfo": {
             "createdMillis": 1561133544,
             "createdBy": 30,
@@ -1199,6 +1215,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           "active": true,
           "name": "bpartnerRecord.name_1",
           "group": "bpGroupRecord.name",
+          "vendor": true,
+          "customer": true,
           "changeInfo": {
             "createdMillis": 1561133544,
             "createdBy": 31,
@@ -1277,6 +1295,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           "active": true,
           "name": "bpartnerRecord.name_2",
           "group": "bpGroupRecord.name",
+          "vendor": true,
+          "customer": true,
           "changeInfo": {
             "createdMillis": 1561133544,
             "createdBy": 32,
@@ -1347,6 +1367,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           "active": true,
           "name": "bpartnerRecord.name_3",
           "group": "bpGroupRecord.name",
+          "vendor": true,
+          "customer": true,
           "changeInfo": {
             "createdMillis": 1561133544,
             "createdBy": 33,
@@ -1424,6 +1446,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           "active": true,
           "name": "bpartnerRecord.name_4",
           "group": "bpGroupRecord.name",
+          "vendor": true,
+          "customer": true,
           "changeInfo": {
             "createdMillis": 1561133544,
             "createdBy": 34,

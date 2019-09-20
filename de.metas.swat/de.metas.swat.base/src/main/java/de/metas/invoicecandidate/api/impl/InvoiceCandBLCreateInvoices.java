@@ -2,9 +2,7 @@ package de.metas.invoicecandidate.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.copyValues;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
@@ -32,7 +30,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -45,7 +42,9 @@ import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
+import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
@@ -56,6 +55,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
@@ -65,16 +65,17 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.invoice.InvoiceUtil;
-import de.metas.invoicecandidate.api.IAggregationEngine;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.invoicecandidate.api.IInvoiceGenerator;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
@@ -105,8 +106,11 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	// Services
 	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandBLCreateInvoices.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final transient IInvoiceDAO invoicesRepo = Services.get(IInvoiceDAO.class);
 	private final transient IInvoiceCandidateListeners invoiceCandListeners = Services.get(IInvoiceCandidateListeners.class);
+	private final transient IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IWFExecutionFactory wfExecutionFactory = Services.get(IWFExecutionFactory.class);
@@ -161,11 +165,10 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		private I_C_Invoice createdInvoice = null;
 		private final List<I_AD_Note> notifications = new ArrayList<>();
 
-		private Throwable t;
+		private Throwable throwable;
 
 		public DefaultInvoiceGeneratorRunnable()
 		{
-			super();
 		}
 
 		@Override
@@ -202,7 +205,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			// If there were no lines generated, delete the invoice because it's pointless to have it.
 			if (lines.isEmpty())
 			{
-				delete(invoice);
+				invoicesRepo.delete(invoice);
 				return;
 			}
 
@@ -234,10 +237,10 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		}
 
 		@Override
-		public boolean doCatch(final Throwable t) throws Exception
+		public boolean doCatch(final Throwable throwable)
 		{
 			createdInvoice = null; // discard current invoice because it will be rolled back
-			this.t = t; // store the throwable for our 'doFinally()' invocation
+			this.throwable = throwable; // store the throwable for our 'doFinally()' invocation
 
 			return true; // rollback transaction
 		}
@@ -245,20 +248,27 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		@Override
 		public void doFinally()
 		{
-			if (t == null)
+			final List<I_C_Invoice_Candidate> allCandidates = header.getAllInvoiceCandidates();
+
+			//
+			// Update invoice candidates
+			for (final I_C_Invoice_Candidate ic : allCandidates)
 			{
-				return; // everything went fine, nothing to do
+				ic.setDateInvoiced(TimeUtil.asTimestamp(header.getDateInvoiced()));
+				ic.setDateAcct(TimeUtil.asTimestamp(header.getDateAcct()));
 			}
 
-			// collect all affected invoice candidates
-			final List<I_C_Invoice_Candidate> allCandidates = new ArrayList<>();
-			for (final IInvoiceCandAggregate aggregate : header.getLines())
+			//
+			// Mark and attach note to those with errors
+			if (throwable != null)
 			{
-				allCandidates.addAll(aggregate.getAllCands());
+				final List<I_AD_Note> notice = createNoticesAndMarkICs(allCandidates, throwable);
+				notifications.addAll(notice);
 			}
 
-			final List<I_AD_Note> notice = createNoticesAndMarkICs(allCandidates, t);
-			notifications.addAll(notice);
+			//
+			// Make sure all candidates were saved
+			invoiceCandDAO.saveAll(allCandidates);
 		}
 
 		@Override
@@ -287,11 +297,13 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			{
 				final I_C_Order order = create(ctx, invoiceHeader.getC_Order_ID(), I_C_Order.class, trxName);
 
+				final DocTypeId invoiceDocTypeId = invoiceHeader.getC_DocTypeInvoice() != null
+						? DocTypeId.ofRepoId(invoiceHeader.getC_DocTypeInvoice().getC_DocType_ID())
+						: null;
 				invoice = create(
 						invoiceBL.createInvoiceFromOrder(
 								order,
-								// C_DocTypeTarget_ID => get it from Order Doc Type
-								invoiceHeader.getC_DocTypeInvoice() != null ? invoiceHeader.getC_DocTypeInvoice().getC_DocType_ID() : 0,
+								invoiceDocTypeId,
 								invoiceHeader.getDateInvoiced(),
 								invoiceHeader.getDateAcct() // task 08437
 						),
@@ -315,8 +327,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoice.setAD_Org_ID(invoiceHeader.getAD_Org_ID());
 				setC_DocType(invoice, invoiceHeader);
 
-				invoice.setDateInvoiced(invoiceHeader.getDateInvoiced());
-				invoice.setDateAcct(invoiceHeader.getDateAcct()); // 03905: also updating DateAcct
+				invoice.setDateInvoiced(TimeUtil.asTimestamp(invoiceHeader.getDateInvoiced()));
+				invoice.setDateAcct(TimeUtil.asTimestamp(invoiceHeader.getDateAcct())); // 03905: also updating DateAcct
 
 				invoice.setM_PriceList_ID(invoiceHeader.getM_PriceList_ID()); // #367: get M_PriceList_ID directly from invoiceHeader.
 			}
@@ -344,7 +356,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			//
 			// Save and return the invoice
-			save(invoice);
+			invoicesRepo.save(invoice);
 			return invoice;
 		}
 
@@ -488,7 +500,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				if (cand.getSplitAmt().signum() != 0)
 				{
 					final I_C_Invoice_Candidate splitCand = invoiceCandBL.splitCandidate(cand);
-					saveRecord(splitCand);
+					invoiceCandDAO.save(splitCand);
 				}
 
 				wfExecutionFactory.notifyActivityPerformed(cand, invoice); // 03745
@@ -621,14 +633,14 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				{
 					//
 					// Actually save the invoice line
-					save(invoiceLine);
+					invoicesRepo.save(invoiceLine);
 
 					//
 					// Create/Update "invoice line" to "invoice candidate" allocations
 					for (final I_C_Invoice_Candidate candForIlVO : candsForIlVO)
 					{
 						final StockQtyAndUOMQty qtysInvoiced = aggregate.getAllocatedQty(candForIlVO, ilVO);
-						invoiceCandBL.createUpdateIla(candForIlVO, invoiceLine, qtysInvoiced, null/*note*/); // TODO
+						invoiceCandBL.createUpdateIla(candForIlVO, invoiceLine, qtysInvoiced, null/* note */); // TODO
 
 						// #870
 						// Make sure the Qty and Price override are set to null when an invoiceline is created
@@ -692,7 +704,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			ic.setQtyToInvoice_Override(null);
 			ic.setPriceEntered_Override(null);
 
-			save(ic);
+			invoiceCandDAO.save(ic);
 
 		}
 
@@ -707,7 +719,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			// Create ASI
 			final I_M_AttributeSetInstance asi = create(getCtx(), I_M_AttributeSetInstance.class, getTrxName());
 			asi.setM_AttributeSet_ID(AttributeConstants.M_AttributeSet_ID_None);
-			save(asi);
+			attributesRepo.save(asi);
 
 			// Create one Attribute Instance for each invoice line attribute
 			for (final IInvoiceLineAttribute invoiceLineAttribute : invoiceLineAttributes)
@@ -725,7 +737,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			ai.setAD_Org_ID(asi.getAD_Org_ID());
 			ai.setM_AttributeSetInstance(asi);
 			ai.setIsActive(true);
-			save(ai);
+			attributesRepo.save(ai);
 		}
 
 		@Override
@@ -776,7 +788,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		final ICNetAmtToInvoiceChecker netAmtToInvoiceChecker = new ICNetAmtToInvoiceChecker();
 
 		// get our service instance to aggregate the invoice candidates
-		final IAggregationEngine aggregationEngine = newAggregationEngine();
+		final AggregationEngine aggregationEngine = newAggregationEngine();
 
 		final List<I_C_Invoice_Candidate> icToUnlock = new ArrayList<>();
 
@@ -802,7 +814,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			}
 			catch (final AdempiereException e)
 			{
-				createNoticesAndMarkICs(Collections.singletonList(ic), e);
+				createNoticesAndMarkICs(ImmutableList.of(ic), e);
 			}
 		}
 
@@ -822,23 +834,22 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		return getCollector();
 	}
 
-	private final IAggregationEngine newAggregationEngine()
+	private final AggregationEngine newAggregationEngine()
 	{
-		final IAggregationEngine aggregationEngine = Services.newMultiton(IAggregationEngine.class);
-
 		final IInvoicingParams invoicingParams = getInvoicingParams();
-		if (invoicingParams != null && invoicingParams.isConsolidateApprovedICs())
-		{
-			aggregationEngine.setAlwaysUseDefaultHeaderAggregationKeyBuilder(true);
-		}
-		return aggregationEngine;
+
+		return AggregationEngine.builder()
+				.alwaysUseDefaultHeaderAggregationKeyBuilder(invoicingParams != null && invoicingParams.isConsolidateApprovedICs())
+				.defaultDateInvoiced(invoicingParams != null ? invoicingParams.getDateInvoiced() : null)
+				.defaultDateAcct(invoicingParams != null ? invoicingParams.getDateAcct() : null)
+				.build();
 	}
 
 	/**
 	 *
 	 * @param aggregationEngine note that this is a {@link de.metas.util.IMultitonService}, i.e. a service with internal state.
 	 */
-	private void aggregateAndInvoice(final IAggregationEngine aggregationEngine)
+	private void aggregateAndInvoice(final AggregationEngine aggregationEngine)
 	{
 		final List<IInvoiceHeader> aggregationResult = aggregationEngine.aggregate();
 
@@ -910,7 +921,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		final int USERINCHARGE_NA = -100; // placeholder for user in charge not available
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(affectedCands.get(0));
-		final String trxName = null;
 
 		DB.saveConstraints();
 		try
@@ -952,12 +962,12 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				final I_AD_Note note;
 				if (userId != USERINCHARGE_NA)
 				{
-					note = create(ctx, I_AD_Note.class, trxName);
+					note = create(ctx, I_AD_Note.class, ITrx.TRXNAME_None);
 					note.setAD_Message_ID(msgDAO.retrieveIdByValue(ctx, MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P));
 
 					note.setAD_User_ID(userId);
 
-					final I_AD_User user = create(ctx, userId, I_AD_User.class, trxName);
+					final I_AD_User user = create(ctx, userId, I_AD_User.class, ITrx.TRXNAME_None);
 					note.setAD_Org_ID(user.getAD_Org_ID());
 					note.setAD_User_ID(user.getAD_Client_ID());
 
@@ -978,7 +988,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 							MSG_INVOICE_CAND_BL_PROCESSING_ERROR_DESC_1P,
 							new Object[] { candidates.toString() });
 					note.setTextMsg(noteMsg);
-					save(note);
+					saveRecord(note);
 					// @formatter:off
 					// for the time being, always output the warning, because we don't currently use the AD_Note feature and therefore the note wont be read.
 //					if (developerModeBL.isEnabled())
@@ -1003,7 +1013,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					final String candErrorMsg = error.getLocalizedMessage();
 
 					invoiceCandBL.setError(currentAffectedCand, candErrorMsg, note);
-					save(currentAffectedCand);
+					invoiceCandDAO.save(currentAffectedCand);
 				}
 
 				if (note != null)

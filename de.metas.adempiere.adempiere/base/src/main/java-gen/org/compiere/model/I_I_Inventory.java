@@ -195,7 +195,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set External Header ID.
+	 * Set Externe Datensatz-Kopf-ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -204,7 +204,7 @@ public interface I_I_Inventory
 	public void setExternalHeaderId (java.lang.String ExternalHeaderId);
 
 	/**
-	 * Get External Header ID.
+	 * Get Externe Datensatz-Kopf-ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -218,7 +218,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_ExternalHeaderId = "ExternalHeaderId";
 
 	/**
-	 * Set External Line ID.
+	 * Set Externe Datensatz-Zeilen-ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -227,7 +227,7 @@ public interface I_I_Inventory
 	public void setExternalLineId (java.lang.String ExternalLineId);
 
 	/**
-	 * Get External Line ID.
+	 * Get Externe Datensatz-Zeilen-ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -337,6 +337,31 @@ public interface I_I_Inventory
     public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_I_IsImported = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "I_IsImported", null);
     /** Column name I_IsImported */
     public static final String COLUMNNAME_I_IsImported = "I_IsImported";
+
+	/**
+	 * Set Inventurdatum.
+	 * Datum zu dem die Inventur gilt, d.h. Belegedatum des Inventurbelegs
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setInventoryDate (java.sql.Timestamp InventoryDate);
+
+	/**
+	 * Get Inventurdatum.
+	 * Datum zu dem die Inventur gilt, d.h. Belegedatum des Inventurbelegs
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getInventoryDate();
+
+    /** Column definition for InventoryDate */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_InventoryDate = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "InventoryDate", null);
+    /** Column name InventoryDate */
+    public static final String COLUMNNAME_InventoryDate = "InventoryDate";
 
 	/**
 	 * Set Aktiv.
@@ -570,31 +595,6 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Bewegungsdatum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setMovementDate (java.sql.Timestamp MovementDate);
-
-	/**
-	 * Get Bewegungsdatum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getMovementDate();
-
-    /** Column definition for MovementDate */
-    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_MovementDate = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "MovementDate", null);
-    /** Column name MovementDate */
-    public static final String COLUMNNAME_MovementDate = "MovementDate";
-
-	/**
 	 * Set Verarbeitet.
 	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *
@@ -641,6 +641,37 @@ public interface I_I_Inventory
     public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "Processing", null);
     /** Column name Processing */
     public static final String COLUMNNAME_Processing = "Processing";
+
+	/**
+	 * Set Produktschlüssel.
+	 * Can be:
+	* The exact product value
+	* The product id
+	* Part of the product value, using this pattern val-%
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setProductValue (java.lang.String ProductValue);
+
+	/**
+	 * Get Produktschlüssel.
+	 * Can be:
+	* The exact product value
+	* The product id
+	* Part of the product value, using this pattern val-%
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getProductValue();
+
+    /** Column definition for ProductValue */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_ProductValue = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "ProductValue", null);
+    /** Column name ProductValue */
+    public static final String COLUMNNAME_ProductValue = "ProductValue";
 
 	/**
 	 * Set Zählmenge.
@@ -817,29 +848,29 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Suchschlüssel.
-	 * Search key for the record in the format required - must be unique
+	 * Set Warehouse Locator Identifier.
+	 * Text that contains identifier of warehouse. locator and dimensions
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValue (java.lang.String Value);
+	public void setWarehouseLocatorIdentifier (java.lang.String WarehouseLocatorIdentifier);
 
 	/**
-	 * Get Suchschlüssel.
-	 * Search key for the record in the format required - must be unique
+	 * Get Warehouse Locator Identifier.
+	 * Text that contains identifier of warehouse. locator and dimensions
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getValue();
+	public java.lang.String getWarehouseLocatorIdentifier();
 
-    /** Column definition for Value */
-    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "Value", null);
-    /** Column name Value */
-    public static final String COLUMNNAME_Value = "Value";
+    /** Column definition for WarehouseLocatorIdentifier */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_WarehouseLocatorIdentifier = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "WarehouseLocatorIdentifier", null);
+    /** Column name WarehouseLocatorIdentifier */
+    public static final String COLUMNNAME_WarehouseLocatorIdentifier = "WarehouseLocatorIdentifier";
 
 	/**
 	 * Set Lager-Schlüssel.

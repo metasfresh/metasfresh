@@ -1,6 +1,7 @@
 package de.metas.bpartner.service;
 
 import java.util.Comparator;
+import java.util.Optional;
 
 /*
  * #%L
@@ -38,6 +39,7 @@ import com.google.common.base.Predicates;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -122,7 +124,7 @@ public interface IBPartnerBL extends ISingletonService
 	 * @param isSOTrx
 	 * @return true if InOut consolidation is allowed for given partner
 	 */
-	boolean isAllowConsolidateInOutEffective(I_C_BPartner partner, boolean isSOTrx);
+	boolean isAllowConsolidateInOutEffective(I_C_BPartner partner, SOTrx soTrx);
 
 	/**
 	 * Use {@link IBPartnerAware} to get BPartner from given model.
@@ -213,4 +215,6 @@ public interface IBPartnerBL extends ISingletonService
 	CountryId getBPartnerLocationCountryId(BPartnerLocationId bpLocationId);
 
 	DeliveryViaRule getDeliveryViaRuleOrNull(BPartnerId bpartnerId, SOTrx soTrx);
+
+	Optional<ShipmentAllocationBestBeforePolicy> getBestBeforePolicy(BPartnerId bpartnerId);
 }

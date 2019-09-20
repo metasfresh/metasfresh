@@ -30,8 +30,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -310,7 +310,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	 *
 	 */
 	@Override
-	public I_M_InOut getOpenShipmentOrNull(final ShipmentScheduleWithHU candidate, final Date movementDate)
+	public I_M_InOut getOpenShipmentOrNull(final ShipmentScheduleWithHU candidate, final LocalDate movementDate)
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = create(candidate.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
 

@@ -65,6 +65,7 @@ import org.compiere.util.TrxRunnableAdapter;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.aggregation.model.C_Aggregation_Attribute_Builder;
@@ -438,7 +439,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		InterfaceWrapperHelper.save(pricingSystem_SO);
 
 		final I_M_PriceList pl_so = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
-		pl_so.setM_PricingSystem(pricingSystem_SO);
+		pl_so.setM_PricingSystem_ID(pricingSystem_SO.getM_PricingSystem_ID());
 		pl_so.setIsSOPriceList(true);
 		pl_so.setPricePrecision(currencyPrecision.toInt());
 		pl_so.setC_Currency_ID(currency.getId().getRepoId());
@@ -455,7 +456,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		InterfaceWrapperHelper.save(pricingSystem_PO);
 
 		final I_M_PriceList pl_po = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
-		pl_po.setM_PricingSystem(pricingSystem_PO);
+		pl_po.setM_PricingSystem_ID(pricingSystem_PO.getM_PricingSystem_ID());
 		pl_po.setIsSOPriceList(false);
 		pl_po.setPricePrecision(currencyPrecision.toInt());
 		pl_po.setC_Currency_ID(currency.getId().getRepoId());

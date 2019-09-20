@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -34,7 +35,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Util;
 
-import de.metas.aggregation.api.impl.AggregationKey;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 
@@ -93,7 +93,7 @@ public class CompositeAggregationKeyBuilder<ModelType> implements IAggregationKe
 	}
 
 	@Override
-	public IAggregationKey buildAggregationKey(final ModelType model)
+	public AggregationKey buildAggregationKey(final ModelType model)
 	{
 		if (aggregationKeyBuilders.isEmpty())
 		{
@@ -101,15 +101,15 @@ public class CompositeAggregationKeyBuilder<ModelType> implements IAggregationKe
 		}
 
 		final List<String> keyParts = new ArrayList<>();
-		final Set<Integer> aggregationIds = new HashSet<>();
+		final Set<AggregationId> aggregationIds = new HashSet<>();
 		for (final IAggregationKeyBuilder<ModelType> aggregationKeyBuilder : aggregationKeyBuilders)
 		{
-			final IAggregationKey keyPart = aggregationKeyBuilder.buildAggregationKey(model);
+			final AggregationKey keyPart = aggregationKeyBuilder.buildAggregationKey(model);
 			keyParts.add(keyPart.getAggregationKeyString());
-			aggregationIds.add(keyPart.getC_Aggregation_ID());
+			aggregationIds.add(keyPart.getAggregationId());
 		}
 
-		final int aggregationId = CollectionUtils.singleElementOrDefault(aggregationIds, -1);
+		final AggregationId aggregationId = CollectionUtils.singleElementOrDefault(aggregationIds, null);
 		return new AggregationKey(Util.mkKey(keyParts.toArray()), aggregationId);
 	}
 
@@ -123,6 +123,6 @@ public class CompositeAggregationKeyBuilder<ModelType> implements IAggregationKe
 		final String key1 = buildKey(model1);
 		final String key2 = buildKey(model2);
 
-		return Check.equals(key1, key2);
+		return Objects.equals(key1, key2);
 	}
 }

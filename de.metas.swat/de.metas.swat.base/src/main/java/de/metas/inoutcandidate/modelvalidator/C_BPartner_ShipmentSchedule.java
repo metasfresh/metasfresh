@@ -33,7 +33,7 @@ public class C_BPartner_ShipmentSchedule
 		final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
-		final boolean isBPAllowConsolidateInOut = bpartnerBL.isAllowConsolidateInOutEffective(bpartner, SOTrx.SALES.toBoolean());
+		final boolean isBPAllowConsolidateInOut = bpartnerBL.isAllowConsolidateInOutEffective(bpartner, SOTrx.SALES);
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
 		shipmentSchedulesRepo

@@ -71,6 +71,7 @@ import de.metas.i18n.Language;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.impl.PlainLockManager;
 import de.metas.lock.spi.impl.PlainLockDatabase;
+import de.metas.lock.spi.impl.PlainLockDatabase.LockKey;
 import de.metas.printing.api.IPrintJobBL;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.api.IPrintingQueueBL;
@@ -824,7 +825,7 @@ public class Helper
 	{
 		final PlainLockManager lockManager = (PlainLockManager)Services.get(ILockManager.class);
 		final PlainLockDatabase lockDatabase = lockManager.getLockDatabase();
-		final List<ArrayKey> locks = lockDatabase.getLocks();
+		final List<LockKey> locks = lockDatabase.getLocks();
 		Assert.assertEquals("No locks expecteded", new ArrayList<ArrayKey>(), locks);
 	}
 }

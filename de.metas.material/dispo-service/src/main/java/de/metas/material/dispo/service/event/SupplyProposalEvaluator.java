@@ -1,8 +1,10 @@
 package de.metas.material.dispo.service.event;
 
 import org.adempiere.warehouse.WarehouseId;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
@@ -44,6 +46,7 @@ import lombok.Value;
  *
  */
 @Service
+@Profile(Profiles.PROFILE_MaterialDispo)
 public class SupplyProposalEvaluator
 {
 	/**

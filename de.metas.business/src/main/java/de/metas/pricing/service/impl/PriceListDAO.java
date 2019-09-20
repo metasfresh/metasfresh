@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -69,6 +70,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.PriceListsCollection;
 import de.metas.pricing.service.UpdateProductPriceRequest;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
@@ -388,7 +390,7 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public String getPricingSystemName(final PricingSystemId pricingSystemId)
+	public String getPricingSystemName(@Nullable final PricingSystemId pricingSystemId)
 	{
 		if (pricingSystemId == null)
 		{
@@ -588,6 +590,8 @@ public class PriceListDAO implements IPriceListDAO
 
 		record.setC_TaxCategory_ID(request.getTaxCategoryId().getRepoId());
 
+		record.setIsAttributeDependant(false);
+
 		saveRecord(record);
 
 		return ProductPriceId.ofRepoId(record.getM_ProductPrice_ID());
@@ -648,7 +652,7 @@ public class PriceListDAO implements IPriceListDAO
 	{
 		final I_M_PriceList_Version newBasePLV = getPriceListVersionById(newBasePLVId);
 
-		final PriceListVersionId basePriceListVersionId = PriceListVersionId.ofRepoId(newBasePLV.getM_Pricelist_Version_Base_ID());
+		final PriceListVersionId basePriceListVersionId = PriceListVersionId.ofRepoIdOrNull(newBasePLV.getM_Pricelist_Version_Base_ID());
 		if (basePriceListVersionId == null)
 		{
 			// nothing to do
@@ -768,7 +772,12 @@ public class PriceListDAO implements IPriceListDAO
 				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsAllowPriceMutation, true)
 				.create();
 
+		final I_M_PriceList basePriceList = getById(basePLV.getM_PriceList_ID());
+
 		final List<I_M_PriceList_Version> newestVersions = queryBL.createQueryBuilder(I_M_PriceList.class)
+
+				.addEqualsFilter(I_M_PriceList.COLUMNNAME_C_Country_ID, basePriceList.getC_Country_ID())
+				.addEqualsFilter(I_M_PriceList.COLUMNNAME_C_Currency_ID, basePriceList.getC_Currency_ID())
 
 				.addInSubQueryFilter()
 				.matchingColumnNames(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, I_C_BPartner.COLUMNNAME_M_PricingSystem_ID)
@@ -789,4 +798,10 @@ public class PriceListDAO implements IPriceListDAO
 		return newestVersions;
 	}
 
+	@Override
+	public Optional<TaxCategoryId> getDefaultTaxCategoryByPriceListVersionId(@NonNull final PriceListVersionId priceListVersionId)
+	{
+		final I_M_PriceList priceList = getPriceListByPriceListVersionId(priceListVersionId);
+		return TaxCategoryId.optionalOfRepoId(priceList.getDefault_TaxCategory_ID());
+	}
 }

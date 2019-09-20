@@ -6,14 +6,19 @@ import java.time.LocalDate;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
-import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
-import de.metas.rest_api.ordercandidates.JsonBPartnerInfo;
-import de.metas.rest_api.ordercandidates.JsonDocTypeInfo;
-import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkRequest;
-import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest;
-import de.metas.rest_api.ordercandidates.JsonProductInfo;
+import de.metas.rest_api.bpartner.request.JsonRequestLocation;
+import de.metas.rest_api.ordercandidates.request.JsonDocTypeInfo;
+import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
+import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
+import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
+import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
+import de.metas.rest_api.ordercandidates.response.JsonOLCand;
+import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
+import de.metas.rest_api.utils.JsonError;
 import de.metas.util.JSONObjectMapper;
 import lombok.NonNull;
 
@@ -88,7 +93,7 @@ public class JsonOLCandModelTest
 	@Test
 	public void test_JsonBPartnerInfo() throws Exception
 	{
-		final JsonBPartnerInfo bPartnerInfo = JsonBPartnerInfo.builder()
+		final JsonRequestBPartnerLocationAndContact bPartnerInfo = JsonRequestBPartnerLocationAndContact.builder()
 				.bpartner(JsonRequestBPartner.builder()
 						.code("bp1")
 						.name("bp1 name")
@@ -107,7 +112,7 @@ public class JsonOLCandModelTest
 						.build())
 				.build();
 
-		testSerializeDeserialize(bPartnerInfo, JSONObjectMapper.forClass(JsonBPartnerInfo.class));
+		testSerializeDeserialize(bPartnerInfo, JSONObjectMapper.forClass(JsonRequestBPartnerLocationAndContact.class));
 	}
 
 	@Test
@@ -135,7 +140,7 @@ public class JsonOLCandModelTest
 		final JsonOLCandCreateRequest requestForInvoiceCandidate = requestForOrderLine
 				.toBuilder()
 				.dataDestInternalName("DEST.de.metas.invoicecandidate")
-				.dateInvoiced(LocalDate.of(2019, 03, 13))
+				.presetDateInvoiced(LocalDate.of(2019, 03, 13))
 				.build();
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.builder()
@@ -145,10 +150,34 @@ public class JsonOLCandModelTest
 		testSerializeDeserialize(request, JSONObjectMapper.forClass(JsonOLCandCreateBulkRequest.class));
 	}
 
+	@Test
+	public void test_JsonOLCandCreateBulkResponse_OK() throws Exception
+	{
+		final JSONObjectMapper<JsonOLCandCreateBulkResponse> jsonObjectMapper = JSONObjectMapper.forClass(JsonOLCandCreateBulkResponse.class);
+
+		final JsonOLCandCreateBulkResponse response = JsonOLCandCreateBulkResponse.ok(
+				ImmutableList.of(JsonOLCand.builder()
+						.build()));
+		testSerializeDeserialize(response, jsonObjectMapper);
+	}
+
+	@Test
+	public void test_JsonOLCandCreateBulkResponse_Error() throws Exception
+	{
+		final JSONObjectMapper<JsonOLCandCreateBulkResponse> jsonObjectMapper = JSONObjectMapper.forClass(JsonOLCandCreateBulkResponse.class);
+
+		final JsonOLCandCreateBulkResponse response = JsonOLCandCreateBulkResponse.error(JsonError.builder()
+				.message("error message")
+				.stackTrace("error stacktrace")
+				.throwable(null) // REMEMBER: throwable is not serialized
+				.build());
+		testSerializeDeserialize(response, jsonObjectMapper);
+	}
+
 	private JsonOLCandCreateRequest createDummyJsonOLCandCreateRequest()
 	{
 		return JsonOLCandCreateRequest.builder()
-				.bpartner(JsonBPartnerInfo.builder()
+				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
 						.bpartner(JsonRequestBPartner.builder()
 								.code("bp1")
 								.name("bp1 name")
@@ -176,12 +205,12 @@ public class JsonOLCandModelTest
 			@NonNull final T obj,
 			@NonNull JSONObjectMapper<T> jsonObjectMapper) throws IOException
 	{
-		// System.out.println("object: " + obj);
+		System.out.println("object: " + obj);
 		final String json = jsonObjectMapper.writeValueAsString(obj);
-		// System.out.println("json: " + json);
+		System.out.println("json: " + json);
 
 		final Object objDeserialized = jsonObjectMapper.readValue(json);
-		// System.out.println("object deserialized: " + objDeserialized);
+		System.out.println("object deserialized: " + objDeserialized);
 
 		Assert.assertEquals(obj, objDeserialized);
 	}

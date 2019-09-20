@@ -36,4 +36,8 @@ public interface ILocationDAO extends ISingletonService
 	List<I_C_Location> getByIds(Set<LocationId> ids);
 
 	void save(I_C_Location location);
+
+	CountryId getCountryIdByLocationId(LocationId id);
+
+	LocationId createLocation(LocationCreateRequest request);
 }

@@ -13,15 +13,14 @@ package de.metas.aggregation.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,11 +37,12 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.aggregation.api.AbstractAggregationKeyBuilder;
-import de.metas.aggregation.api.IAggregation;
-import de.metas.aggregation.api.IAggregationAttribute;
-import de.metas.aggregation.api.IAggregationItem;
-import de.metas.aggregation.api.IAggregationItem.Type;
-import de.metas.aggregation.api.IAggregationKey;
+import de.metas.aggregation.api.Aggregation;
+import de.metas.aggregation.api.AggregationAttribute;
+import de.metas.aggregation.api.AggregationId;
+import de.metas.aggregation.api.AggregationItem;
+import de.metas.aggregation.api.AggregationItem.Type;
+import de.metas.aggregation.api.AggregationKey;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.time.SimpleDateFormatThreadLocal;
@@ -66,13 +66,13 @@ final class GenericAggregationKeyBuilder<ModelType> extends AbstractAggregationK
 
 	//
 	// Parameters
-	private final IAggregation aggregation;
+	private final Aggregation aggregation;
 	@ToStringBuilder(skip = true)
 	private final List<String> columnNames;
 
 	public GenericAggregationKeyBuilder(
 			@NonNull final Class<ModelType> modelClass,
-			@NonNull final IAggregation aggregation)
+			@NonNull final Aggregation aggregation)
 	{
 		final String modelTableName = InterfaceWrapperHelper.getTableName(modelClass);
 		Check.assume(modelTableName.equals(aggregation.getTableName()), "Aggregation's model {} shall match {}", aggregation, modelClass);
@@ -82,7 +82,7 @@ final class GenericAggregationKeyBuilder<ModelType> extends AbstractAggregationK
 		//
 		// Collect column names
 		final ImmutableList.Builder<String> columnNames = ImmutableList.builder();
-		for (final IAggregationItem aggregationItem : aggregation.getItems())
+		for (final AggregationItem aggregationItem : aggregation.getItems())
 		{
 			final Type type = aggregationItem.getType();
 			if (type == Type.ModelColumn)
@@ -106,13 +106,13 @@ final class GenericAggregationKeyBuilder<ModelType> extends AbstractAggregationK
 	}
 
 	@Override
-	public IAggregationKey buildAggregationKey(final ModelType model)
+	public AggregationKey buildAggregationKey(final ModelType model)
 	{
 		final List<Object> keyValues = extractKeyValues(model);
-		return new AggregationKey(Util.mkKey(keyValues.toArray()), aggregation.getC_Aggregation_ID());
+		return new AggregationKey(Util.mkKey(keyValues.toArray()), aggregation.getId());
 	}
 
-	private final List<Object> extractKeyValues(@NonNull final ModelType model)
+	private List<Object> extractKeyValues(@NonNull final ModelType model)
 	{
 		// Assert model's table name is matching
 		final String modelTableName = InterfaceWrapperHelper.getModelTableName(model);
@@ -126,12 +126,12 @@ final class GenericAggregationKeyBuilder<ModelType> extends AbstractAggregationK
 		//
 		// Collect C_Aggregation_ID to make sure we are not comparing things from different aggregation keys
 		// because they could have a total different meaning (even if they are identical)
-		keyValues.add(aggregation.getC_Aggregation_ID());
+		keyValues.add(AggregationId.toRepoId(aggregation.getId()));
 
 		//
 		// Collect values for all items
 		final Evaluatee evaluatee = InterfaceWrapperHelper.getEvaluatee(model);
-		for (final IAggregationItem aggregationItem : aggregation.getItems())
+		for (final AggregationItem aggregationItem : aggregation.getItems())
 		{
 			// Check if we shall include this item in our aggregation
 			if (!aggregationItem.isInclude(evaluatee))
@@ -161,7 +161,7 @@ final class GenericAggregationKeyBuilder<ModelType> extends AbstractAggregationK
 		return keyValues;
 	}
 
-	private void addKeyValue_ColumnValue(final List<Object> values, final ModelType model, final IAggregationItem aggregationItem)
+	private void addKeyValue_ColumnValue(final List<Object> values, final ModelType model, final AggregationItem aggregationItem)
 	{
 		final String columnName = aggregationItem.getColumnName();
 		final Object value = InterfaceWrapperHelper.getValueOverrideOrValue(model, columnName);
@@ -175,9 +175,9 @@ final class GenericAggregationKeyBuilder<ModelType> extends AbstractAggregationK
 		values.add(valueNormalized);
 	}
 
-	private void addKeyValue_Attribute(List<Object> values, ModelType model, IAggregationItem aggregationItem)
+	private void addKeyValue_Attribute(List<Object> values, ModelType model, AggregationItem aggregationItem)
 	{
-		final IAggregationAttribute attribute = aggregationItem.getAttribute();
+		final AggregationAttribute attribute = aggregationItem.getAttribute();
 		final Evaluatee ctx = InterfaceWrapperHelper.getEvaluatee(model);
 
 		Object value = attribute.evaluate(ctx);
@@ -185,7 +185,7 @@ final class GenericAggregationKeyBuilder<ModelType> extends AbstractAggregationK
 		values.add(value);
 	}
 
-	private Object normalizeValue(final Object value, final ModelType model, final IAggregationItem aggregationItem)
+	private Object normalizeValue(final Object value, final ModelType model, final AggregationItem aggregationItem)
 	{
 		final int displayType = aggregationItem.getDisplayType();
 
@@ -231,7 +231,7 @@ final class GenericAggregationKeyBuilder<ModelType> extends AbstractAggregationK
 		}
 	}
 
-	private static final int toHashcode(final String s)
+	private static int toHashcode(final String s)
 	{
 		if (Check.isEmpty(s, true))
 		{

@@ -24,13 +24,15 @@ de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retri
         },
         "entries": [ ]
       },
+      "customer": true,
       "externalId": {
         "value": "fghij"
       },
       "groupId": 15,
       "id": 20,
       "name": "bpartnerRecord.name",
-      "value": "bpartnerRecord.value"
+      "value": "bpartnerRecord.value",
+      "vendor": true
     },
     "contacts": [
       {

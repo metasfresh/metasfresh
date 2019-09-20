@@ -42,6 +42,7 @@ FROM (
 		s.M_ShipmentSchedule_ID,
 		s.IsDisplayed,
 		COALESCE(s.PreparationDate_Override, s.PreparationDate) AS PreparationDate,
+		s.ShipmentAllocation_BestBefore_Policy
 
 		--
 		-- Product & ASI

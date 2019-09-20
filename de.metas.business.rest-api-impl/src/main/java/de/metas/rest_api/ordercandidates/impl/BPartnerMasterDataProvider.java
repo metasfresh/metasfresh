@@ -1,25 +1,19 @@
 package de.metas.rest_api.ordercandidates.impl;
 
-import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -32,17 +26,23 @@ import de.metas.cache.CCache;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationDAO;
+import de.metas.location.LocationCreateRequest;
+import de.metas.location.LocationId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.rest_api.JsonExternalId;
+import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
 import de.metas.rest_api.bpartner.impl.BPartnerMasterDataContext;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
-import de.metas.rest_api.ordercandidates.JsonBPartnerInfo;
+import de.metas.rest_api.bpartner.response.JsonResponseBPartner;
+import de.metas.rest_api.bpartner.response.JsonResponseContact;
+import de.metas.rest_api.bpartner.response.JsonResponseLocation;
+import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.rest_api.utils.MissingPropertyException;
 import de.metas.rest_api.utils.PermissionService;
@@ -76,35 +76,26 @@ import lombok.Value;
 
 final class BPartnerMasterDataProvider
 {
-	public static BPartnerMasterDataProvider of(
-			@Nullable final Properties ctx,
-			@Nullable final PermissionService permissionService)
-	{
-		return new BPartnerMasterDataProvider(
-				coalesceSuppliers(
-						() -> permissionService,
-						() -> PermissionService.of(ctx)));
-	}
-
-	private final BiMap<JsonRequestBPartner, BPartnerId> bpartnerIdsByJson = HashBiMap.<JsonRequestBPartner, BPartnerId> create();
-	private final Map<JsonExternalId, BPartnerLocationId> bpartnerLocationIdsByExternalId = new HashMap<>();
-	private final Map<JsonExternalId, BPartnerContactId> bpartnerContactIdsByExternalId = new HashMap<>();
-
+	//
+	// Services
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final ILocationDAO locationsRepo = Services.get(ILocationDAO.class);
 	private final ICountryDAO countryRepo = Services.get(ICountryDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-
 	private final PermissionService permissionService;
 
-	@VisibleForTesting
+	//
+	// Caches
+	private final Map<JsonExternalId, BPartnerLocationId> bpartnerLocationIdsByExternalId = new HashMap<>();
+	private final Map<JsonExternalId, BPartnerContactId> bpartnerContactIdsByExternalId = new HashMap<>();
+
 	BPartnerMasterDataProvider(@NonNull final PermissionService permissionService)
 	{
 		this.permissionService = permissionService;
 	}
 
 	public BPartnerInfo getCreateOrgBPartnerInfo(
-			@NonNull final JsonBPartnerInfo jsonBPartnerInfo,
+			@NonNull final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
 			@NonNull final OrgId orgId)
 	{
 		final BPartnerMasterDataContext context = BPartnerMasterDataContext
@@ -117,7 +108,7 @@ final class BPartnerMasterDataProvider
 	}
 
 	public BPartnerInfo getCreateBPartnerInfo(
-			@Nullable final JsonBPartnerInfo jsonBPartnerInfo,
+			@Nullable final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
 			final OrgId orgId)
 	{
 		if (jsonBPartnerInfo == null)
@@ -134,24 +125,24 @@ final class BPartnerMasterDataProvider
 	private static class CachingKey
 	{
 		OrgId orgId;
-		JsonBPartnerInfo jsonBPartnerInfo;
+		JsonRequestBPartnerLocationAndContact jsonBPartnerInfo;
 	}
 
-	private final CCache<CachingKey, BPartnerInfo> BPartnerInfoCache = CCache
+	private final CCache<CachingKey, BPartnerInfo> bpartnerInfoCache = CCache
 			.<CachingKey, BPartnerInfo> builder()
 			.cacheName(this.getClass().getSimpleName() + "-BPartnerInfoCache")
 			.build();
 
 	private BPartnerInfo handleBPartnerInfoWithContext(
-			@NonNull final JsonBPartnerInfo jsonBPartnerInfo,
+			@NonNull final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
 			@NonNull final BPartnerMasterDataContext context)
 	{
 		final CachingKey key = new CachingKey(context.getOrgId(), jsonBPartnerInfo);
-		return BPartnerInfoCache.getOrLoad(key, () -> handleBPartnerInfoWithContext0(jsonBPartnerInfo, context));
+		return bpartnerInfoCache.getOrLoad(key, () -> handleBPartnerInfoWithContext0(jsonBPartnerInfo, context));
 	}
 
 	private BPartnerInfo handleBPartnerInfoWithContext0(
-			@NonNull final JsonBPartnerInfo jsonBPartnerInfo,
+			@NonNull final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
 			@NonNull final BPartnerMasterDataContext context)
 	{
 		final SyncAdvise.IfNotExists ifNotExists = jsonBPartnerInfo.getSyncAdvise().getIfNotExists();
@@ -191,7 +182,7 @@ final class BPartnerMasterDataProvider
 	}
 
 	private BPartnerInfo lookupBPartnerInfoOrNull(
-			@NonNull final JsonBPartnerInfo jsonBPartnerInfo,
+			@NonNull final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
 			@NonNull final BPartnerMasterDataContext context)
 	{
 		final BPartnerId bpartnerId = lookupBPartnerIdOrNull(
@@ -218,22 +209,45 @@ final class BPartnerMasterDataProvider
 	}
 
 	private BPartnerId lookupBPartnerIdOrNull(
-			@NonNull final JsonBPartnerInfo jsonBPartnerInfo,
+			@NonNull final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
 			@NonNull final BPartnerMasterDataContext context)
 	{
-		final JsonRequestBPartner json = jsonBPartnerInfo.getBpartner();
+		final BPartnerQuery query = createBPartnerQuery(jsonBPartnerInfo, context.getOrgId());
 
-		// ..context
-		if (context.getBpartnerId() != null)
 		{
-			return context.getBpartnerId();
+			final BPartnerId bpartnerId = bpartnersRepo.retrieveBPartnerIdBy(query).orElse(null);
+			if (bpartnerId != null)
+			{
+				return bpartnerId;
+			}
 		}
+
+		if (!query.getGlns().isEmpty())
+		{
+			final BPartnerQuery queryWithoutGLN = query.withNoGLNs();
+			final BPartnerId bpartnerId = !queryWithoutGLN.isEmpty()
+					? bpartnersRepo.retrieveBPartnerIdBy(query).orElse(null)
+					: null;
+			if (bpartnerId != null)
+			{
+				return bpartnerId;
+			}
+		}
+
+		return null;
+	}
+
+	private static BPartnerQuery createBPartnerQuery(
+			@NonNull final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
+			@NonNull final OrgId orgId)
+	{
+		final JsonRequestBPartner json = jsonBPartnerInfo.getBpartner();
 
 		final SyncAdvise syncAdvise = jsonBPartnerInfo.getSyncAdvise();
 		final ExternalId externalId = JsonExternalIds.toExternalIdOrNull(json.getExternalId());
 
 		final BPartnerQuery.BPartnerQueryBuilder query = BPartnerQuery.builder()
-				.onlyOrgId(context.getOrgId())
+				.onlyOrgId(orgId)
 				.onlyOrgId(OrgId.ANY)
 				.outOfTrx(syncAdvise.isLoadReadOnly())
 				.failIfNotExists(syncAdvise.isFailIfNotExists())
@@ -246,13 +260,11 @@ final class BPartnerMasterDataProvider
 			query.gln(GLN.ofString(jsonLocation.getGln()));
 		}
 
-		return bpartnersRepo
-				.retrieveBPartnerIdBy(query.build())
-				.orElse(null);
+		return query.build();
 	}
 
 	private BPartnerLocationId lookupBPartnerLocationIdOrNull(
-			@NonNull final JsonRequestLocation jsonBPartnerLocation,
+			@Nullable final JsonRequestLocation jsonBPartnerLocation,
 			@NonNull final BPartnerMasterDataContext context)
 	{
 		final BPartnerId bpartnerId = context.getBpartnerId();
@@ -263,7 +275,9 @@ final class BPartnerMasterDataProvider
 			existingBPLocationId = context.getLocationId();
 		}
 
-		if (existingBPLocationId == null && jsonBPartnerLocation.getExternalId() != null)
+		if (existingBPLocationId == null
+				&& jsonBPartnerLocation != null
+				&& jsonBPartnerLocation.getExternalId() != null)
 		{
 			existingBPLocationId = bpartnersRepo
 					.getBPartnerLocationIdByExternalId(
@@ -271,7 +285,9 @@ final class BPartnerMasterDataProvider
 							JsonExternalIds.toExternalIdOrNull(jsonBPartnerLocation.getExternalId()))
 					.orElse(null);
 		}
-		if (existingBPLocationId == null && jsonBPartnerLocation.getGln() != null)
+		if (existingBPLocationId == null
+				&& jsonBPartnerLocation != null
+				&& jsonBPartnerLocation.getGln() != null)
 		{
 			existingBPLocationId = bpartnersRepo
 					.getBPartnerLocationIdByGln(
@@ -310,7 +326,7 @@ final class BPartnerMasterDataProvider
 	}
 
 	private BPartnerInfo getCreateBPartnerInfo(
-			@NonNull final JsonBPartnerInfo json,
+			@NonNull final JsonRequestBPartnerLocationAndContact json,
 			@NonNull final BPartnerMasterDataContext context)
 	{
 		final BPartnerId bpartnerId = getCreateBPartnerId(json.getBpartner(), context);
@@ -326,16 +342,7 @@ final class BPartnerMasterDataProvider
 				.build();
 	}
 
-	private BPartnerId getCreateBPartnerId(@NonNull final JsonRequestBPartner json, final BPartnerMasterDataContext context)
-	{
-		final BPartnerId result = bpartnerIdsByJson
-				.compute(
-						json,
-						(existingJson, existingBPartnerId) -> createOrUpdateBPartnerId(json, context.setIfNotNull(existingBPartnerId)));
-		return result;
-	}
-
-	private BPartnerId createOrUpdateBPartnerId(
+	private BPartnerId getCreateBPartnerId(
 			@NonNull final JsonRequestBPartner json,
 			@NonNull final BPartnerMasterDataContext context)
 	{
@@ -344,7 +351,11 @@ final class BPartnerMasterDataProvider
 		final I_C_BPartner bpartnerRecord;
 		if (existingBPartnerId != null)
 		{
-			bpartnerRecord = bpartnersRepo.getById(existingBPartnerId);
+			bpartnerRecord = bpartnersRepo.getByIdInTrx(existingBPartnerId);
+			if (bpartnerRecord == null)
+			{
+				throw new AdempiereException("@NotFound@ @C_BPartner_ID@: " + existingBPartnerId);
+			}
 		}
 		else
 		{
@@ -398,29 +409,21 @@ final class BPartnerMasterDataProvider
 		bpartnerRecord.setIsCustomer(true);
 	}
 
-	public JsonRequestBPartner getJsonBPartnerById(@NonNull final BPartnerId bpartnerId)
+	public JsonResponseBPartner getJsonBPartnerById(@NonNull final BPartnerId bpartnerId)
 	{
-		return bpartnerIdsByJson
-				.inverse()
-				.compute(
-						bpartnerId,
-						(id, existingJsonBPartner) -> {
+		final I_C_BPartner record = bpartnersRepo.getById(bpartnerId);
+		Check.assumeNotNull(record, "bpartner shall exist for {}", bpartnerId);
 
-							if (existingJsonBPartner != null)
-							{
-								return existingJsonBPartner;
-							}
-							final I_C_BPartner bpartnerRecord = bpartnersRepo.getById(id);
-							Check.assumeNotNull(bpartnerRecord, "bpartner shall exist for {}", bpartnerId);
-
-							return JsonRequestBPartner
-									.builder()
-									.code(bpartnerRecord.getValue())
-									.externalId(JsonExternalId.ofOrNull(bpartnerRecord.getExternalId()))
-									.name(bpartnerRecord.getName())
-									.companyName(bpartnerRecord.getCompanyName())
-									.build();
-						});
+		return JsonResponseBPartner.builder()
+				.metasfreshId(MetasfreshId.of(record.getC_BPartner_ID()))
+				.code(record.getValue())
+				.externalId(JsonExternalId.ofOrNull(record.getExternalId()))
+				.name(record.getName())
+				.companyName(record.getCompanyName())
+				.active(record.isActive())
+				.vendor(record.isVendor())
+				.customer(record.isCustomer())
+				.build();
 	}
 
 	private BPartnerLocationId getCreateBPartnerLocationId(@Nullable final JsonRequestLocation json, @NonNull final BPartnerMasterDataContext context)
@@ -477,40 +480,39 @@ final class BPartnerMasterDataProvider
 	private void updateBPartnerLocationRecord(
 			@NonNull final I_C_BPartner_Location bpLocationRecord,
 			@NonNull final BPartnerId bpartnerId,
-			@NonNull final JsonRequestLocation json)
+			@NonNull final JsonRequestLocation from)
 	{
 		bpLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 		bpLocationRecord.setIsShipTo(true);
 		bpLocationRecord.setIsBillTo(true);
 
-		bpLocationRecord.setGLN(json.getGln());
-		bpLocationRecord.setExternalId(json.getExternalId().getValue());
-
-		final boolean newOrLocationHasChanged = isNew(bpLocationRecord) || !json.equals(toJsonBPartnerLocation(bpLocationRecord));
-		if (newOrLocationHasChanged)
+		bpLocationRecord.setGLN(from.getGln());
+		if (from.getExternalId() != null)
 		{
-			final String countryCode = json.getCountryCode();
-			if (Check.isEmpty(countryCode))
-			{
-				throw new MissingPropertyException("JsonBPartnerLocation.countryCode", json);
-			}
-			final CountryId countryId = countryRepo.getCountryIdByCountryCode(countryCode);
-
-			// NOTE: C_Location table might be heavily used, so it's better to create the address OOT to not lock it.
-			final I_C_Location locationRecord = newInstanceOutOfTrx(I_C_Location.class);
-			locationRecord.setAddress1(json.getAddress1());
-			locationRecord.setAddress2(json.getAddress2());
-			locationRecord.setPostal(locationRecord.getPostal());
-			locationRecord.setCity(locationRecord.getCity());
-			locationRecord.setC_Country_ID(countryId.getRepoId());
-
-			locationsRepo.save(locationRecord);
-
-			bpLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
+			bpLocationRecord.setExternalId(from.getExternalId().getValue());
 		}
+
+		final String countryCode = from.getCountryCode();
+		if (Check.isEmpty(countryCode))
+		{
+			throw new MissingPropertyException("JsonBPartnerLocation.countryCode", from);
+		}
+		final CountryId countryId = countryRepo.getCountryIdByCountryCode(countryCode);
+
+		final LocationId locationId = locationsRepo.createLocation(LocationCreateRequest.builder()
+				.address1(from.getAddress1())
+				.address2(from.getAddress2())
+				.address3(from.getAddress3())
+				.address4(from.getAddress4())
+				.postal(from.getPostal())
+				.city(from.getCity())
+				.countryId(countryId)
+				.build());
+
+		bpLocationRecord.setC_Location_ID(locationId.getRepoId());
 	}
 
-	public JsonRequestLocation getJsonBPartnerLocationById(final BPartnerLocationId bpartnerLocationId)
+	public JsonResponseLocation getJsonBPartnerLocationById(final BPartnerLocationId bpartnerLocationId)
 	{
 		if (bpartnerLocationId == null)
 		{
@@ -526,22 +528,28 @@ final class BPartnerMasterDataProvider
 		return toJsonBPartnerLocation(bpLocationRecord);
 	}
 
-	private JsonRequestLocation toJsonBPartnerLocation(@NonNull final I_C_BPartner_Location bpLocationRecord)
+	private JsonResponseLocation toJsonBPartnerLocation(@NonNull final I_C_BPartner_Location record)
 	{
-		final I_C_Location location = Check.assumeNotNull(bpLocationRecord.getC_Location(), "The given bpLocationRecord needs to have a C_Location; bpLocationRecord={}", bpLocationRecord);
+		final I_C_Location location = record.getC_Location();
+		Check.assumeNotNull(location, "The given bpLocationRecord needs to have a C_Location; bpLocationRecord={}", record);
 
-		final String countryCode = countryRepo.retrieveCountryCode2ByCountryId(CountryId.ofRepoId(location.getC_Country_ID()));
+		final CountryId countryId = CountryId.ofRepoId(location.getC_Country_ID());
+		final String countryCode = countryRepo.retrieveCountryCode2ByCountryId(countryId);
 
-		return JsonRequestLocation
+		return JsonResponseLocation
 				.builder()
-				.externalId(JsonExternalId.of(bpLocationRecord.getExternalId()))
-				.gln(bpLocationRecord.getGLN())
+				.metasfreshId(MetasfreshId.of(record.getC_BPartner_Location_ID()))
+				.externalId(JsonExternalId.ofOrNull(record.getExternalId()))
+				.gln(record.getGLN())
 				.address1(location.getAddress1())
 				.address2(location.getAddress2())
 				.postal(location.getPostal())
 				.city(location.getCity())
 				.region(location.getRegionName())
 				.countryCode(countryCode)
+				//
+				.active(record.isActive())
+				//
 				.build();
 	}
 
@@ -595,7 +603,7 @@ final class BPartnerMasterDataProvider
 		bpContactRecord.setExternalId(json.getExternalId().getValue());
 	}
 
-	public JsonRequestContact getJsonBPartnerContactById(final BPartnerContactId bpartnerContactId)
+	public JsonResponseContact getJsonBPartnerContactById(final BPartnerContactId bpartnerContactId)
 	{
 		if (bpartnerContactId == null)
 		{
@@ -608,9 +616,9 @@ final class BPartnerMasterDataProvider
 			return null;
 		}
 
-		return JsonRequestContact
+		return JsonResponseContact
 				.builder()
-				.externalId(JsonExternalId.of(bpContactRecord.getExternalId()))
+				.externalId(JsonExternalId.ofOrNull(bpContactRecord.getExternalId()))
 				.name(bpContactRecord.getName())
 				.email(bpContactRecord.getEMail())
 				.phone(bpContactRecord.getPhone())

@@ -3,11 +3,17 @@ package de.metas.rest_api.ordercandidates.impl;
 import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,21 +34,31 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentTags;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.i18n.ExplainedOptional;
+import de.metas.logging.LogManager;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandQuery;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.organization.OrgId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.rest_api.attachment.JsonAttachmentType;
-import de.metas.rest_api.ordercandidates.JsonAttachment;
-import de.metas.rest_api.ordercandidates.JsonOLCand;
-import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkRequest;
-import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkResponse;
-import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
+import de.metas.rest_api.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
+import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
+import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
+import de.metas.rest_api.ordercandidates.response.JsonAttachment;
+import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
+import de.metas.rest_api.utils.JsonErrors;
+import de.metas.rest_api.utils.PermissionServiceFactories;
+import de.metas.rest_api.utils.PermissionServiceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
+import de.metas.util.time.SystemTime;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 
@@ -75,53 +91,68 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 {
 	public static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE." + OrderCandidatesRestControllerImpl.class.getName();
 
-	private JsonConverters jsonConverters;
-	private OLCandRepository olCandRepo;
-	private MasterdataProviderFactory masterdataProviderFactory;
+	private static final Logger logger = LogManager.getLogger(OrderCandidatesRestControllerImpl.class);
+	private final JsonConverters jsonConverters;
+	private final OLCandRepository olCandRepo;
+	private PermissionServiceFactory permissionServiceFactory;
 
 	public OrderCandidatesRestControllerImpl(
-			@NonNull final MasterdataProviderFactory masterdataProviderFactory,
 			@NonNull final JsonConverters jsonConverters,
 			@NonNull final OLCandRepository olCandRepo)
 	{
-		this.masterdataProviderFactory = masterdataProviderFactory;
 		this.jsonConverters = jsonConverters;
 		this.olCandRepo = olCandRepo;
+		this.permissionServiceFactory = PermissionServiceFactories.currentContext();
+	}
+
+	@VisibleForTesting
+	void setPermissionServiceFactory(@NonNull final PermissionServiceFactory permissionServiceFactory)
+	{
+		this.permissionServiceFactory = permissionServiceFactory;
 	}
 
 	@PostMapping
 	@Override
-	public ResponseEntity<JsonOLCand> createOrderLineCandidate(@RequestBody final JsonOLCandCreateRequest request)
+	public ResponseEntity<JsonOLCandCreateBulkResponse> createOrderLineCandidate(@RequestBody @NonNull final JsonOLCandCreateRequest request)
 	{
-		final ResponseEntity<JsonOLCandCreateBulkResponse> //
-		bulkResponse = createOrderLineCandidates(JsonOLCandCreateBulkRequest.of(request));
-
-		final JsonOLCand result = bulkResponse.getBody().getSingleResult();
-		return new ResponseEntity<>(result, HttpStatus.CREATED);
+		return createOrderLineCandidates(JsonOLCandCreateBulkRequest.of(request));
 	}
 
 	@PostMapping(PATH_BULK)
 	@Override
 	public ResponseEntity<JsonOLCandCreateBulkResponse> createOrderLineCandidates(@RequestBody @NonNull final JsonOLCandCreateBulkRequest bulkRequest)
 	{
-		bulkRequest.validate();
+		try
+		{
+			bulkRequest.validate();
 
-		final MasterdataProvider masterdataProvider = masterdataProviderFactory.createMasterDataProvider();
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
+			final MasterdataProvider masterdataProvider = MasterdataProvider.builder()
+					.permissionService(permissionServiceFactory.createPermissionService())
+					.build();
 
-		// load/create/update the master data (according to SyncAdvice) in a dedicated trx.
-		// because when creating the actual order line candidates, there is e.g. code invoked by model interceptors that gets AD_OrgInfo out of transaction.
-		trxManager.runInNewTrx(() -> createOrUpdateMasterdata(bulkRequest, masterdataProvider));
-		// the required masterdata should be there now, and cached within masterdataProvider for quick retrieval as the olcands are created.
+			final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-		final JsonOLCandCreateBulkResponse //
-		jsonOLCandCreateBulkResponse = trxManager.call(() ->
+			// load/create/update the master data (according to SyncAdvice) in a dedicated trx.
+			// because when creating the actual order line candidates, there is e.g. code invoked by model interceptors that gets AD_OrgInfo out of transaction.
+			trxManager.runInNewTrx(() -> createOrUpdateMasterdata(bulkRequest, masterdataProvider));
+			// the required masterdata should be there now, and cached within masterdataProvider for quick retrieval as the olcands are created.
 
-		// invoke creatOrderLineCandidates with the unchanged bulkRequest, because the request's bpartner and product instances are
-		// (at least currently) part of the respective caching keys.
-		creatOrderLineCandidates(bulkRequest, masterdataProvider));
+			// invoke creatOrderLineCandidates with the unchanged bulkRequest, because the request's bpartner and product instances are
+			// (at least currently) part of the respective caching keys.
+			final JsonOLCandCreateBulkResponse //
+			response = trxManager.callInNewTrx(() -> creatOrderLineCandidates(bulkRequest, masterdataProvider));
 
-		return new ResponseEntity<>(jsonOLCandCreateBulkResponse, HttpStatus.CREATED);
+			//
+			return new ResponseEntity<>(response, HttpStatus.CREATED);
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Got exception while processing {}", bulkRequest, ex);
+
+			final String adLanguage = Env.getADLanguageOrBaseLanguage();
+			return ResponseEntity.badRequest()
+					.body(JsonOLCandCreateBulkResponse.error(JsonErrors.ofThrowable(ex, adLanguage)));
+		}
 	}
 
 	private void assertCanCreate(
@@ -147,14 +178,75 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 	{
 		final OrgId orgId = masterdataProvider.getCreateOrgId(json.getOrg());
 
-		final BPartnerMasterDataProvider bpartnerMasterdataProvider = masterdataProvider.getBPartnerMasterDataProvider();
-		bpartnerMasterdataProvider.getCreateBPartnerInfo(json.getBpartner(), orgId);
-		bpartnerMasterdataProvider.getCreateBPartnerInfo(json.getBillBPartner(), orgId);
-		bpartnerMasterdataProvider.getCreateBPartnerInfo(json.getDropShipBPartner(), orgId);
-		bpartnerMasterdataProvider.getCreateBPartnerInfo(json.getHandOverBPartner(), orgId);
+		final BPartnerInfo bpartnerInfo = masterdataProvider.getCreateBPartnerInfo(json.getBpartner(), orgId);
+		final BPartnerInfo billBPartnerInfo = masterdataProvider.getCreateBPartnerInfo(json.getBillBPartner(), orgId);
+		masterdataProvider.getCreateBPartnerInfo(json.getDropShipBPartner(), orgId);
+		masterdataProvider.getCreateBPartnerInfo(json.getHandOverBPartner(), orgId);
 
-		final ProductMasterDataProvider productMasterDataProvider = masterdataProvider.getProductMasterDataProvider();
-		productMasterDataProvider.getCreateProductInfo(json.getProduct(), orgId);
+		final ProductInfo productInfo = masterdataProvider.getCreateProductInfo(json.getProduct(), orgId);
+
+		//
+		// Create product prices if needed
+		{
+			final BPartnerInfo billBPartnerInfoEffective = CoalesceUtil.coalesce(billBPartnerInfo, bpartnerInfo);
+
+			final ExplainedOptional<ProductPriceCreateRequest> optionalRequest = createProductPriceCreateRequest(
+					masterdataProvider,
+					json,
+					billBPartnerInfoEffective,
+					productInfo);
+			if (optionalRequest.isPresent())
+			{
+				masterdataProvider.createProductPrice(optionalRequest.get());
+			}
+			else
+			{
+				logger.debug("Skip creating product price for {} because {}", productInfo, optionalRequest.getExplanation());
+			}
+		}
+
+	}
+
+	private ExplainedOptional<ProductPriceCreateRequest> createProductPriceCreateRequest(
+			@NonNull final MasterdataProvider masterdataProvider,
+			@NonNull final JsonOLCandCreateRequest json,
+			@NonNull final BPartnerInfo bpartnerInfo,
+			@NonNull final ProductInfo productInfo)
+	{
+		if (!productInfo.isJustCreated())
+		{
+			return ExplainedOptional.emptyBecause("product was already created");
+		}
+
+		final BigDecimal priceStd = json.getProduct().getPriceStd();
+		if (priceStd == null)
+		{
+			return ExplainedOptional.emptyBecause("priceStd was not specified");
+		}
+
+		final BPartnerLocationId bpartnerAndLocationId = bpartnerInfo.getBpartnerLocationId();
+		if (bpartnerAndLocationId == null)
+		{
+			throw new AdempiereException("@NotFound@ @C_BPartner_Location_ID@");
+		}
+
+		final ZonedDateTime dateEffective = CoalesceUtil.coalesceSuppliers(
+				() -> TimeUtil.asZonedDateTime(json.getDateRequired()),
+				() -> TimeUtil.asZonedDateTime(json.getDateOrdered()),
+				() -> SystemTime.asZonedDateTime());
+
+		final PricingSystemId pricingSystemId = masterdataProvider.getPricingSystemIdByValue(json.getPricingSystemCode());
+
+		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
+				.bpartnerAndLocationId(bpartnerAndLocationId)
+				.pricingSystemId(pricingSystemId)
+				.date(dateEffective)
+				.productId(productInfo.getProductId())
+				.uomId(productInfo.getUomId())
+				.priceStd(priceStd)
+				.build();
+
+		return ExplainedOptional.of(request);
 	}
 
 	private JsonOLCandCreateBulkResponse creatOrderLineCandidates(
@@ -249,7 +341,7 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 	}
 
 	@VisibleForTesting
-	JsonAttachment toJsonAttachment(
+	static JsonAttachment toJsonAttachment(
 			@NonNull final String externalReference,
 			@NonNull final String dataSourceName,
 			@NonNull final AttachmentEntry entry)

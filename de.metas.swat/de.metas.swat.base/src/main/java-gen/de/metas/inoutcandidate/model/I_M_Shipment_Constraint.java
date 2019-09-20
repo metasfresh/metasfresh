@@ -41,7 +41,7 @@ public interface I_M_Shipment_Constraint
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -51,7 +51,7 @@ public interface I_M_Shipment_Constraint
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -287,10 +287,6 @@ public interface I_M_Shipment_Constraint
 	 * <br>Virtual Column: false
 	 */
 	public int getSourceDoc_Table_ID();
-
-	public org.compiere.model.I_AD_Table getSourceDoc_Table();
-
-	public void setSourceDoc_Table(org.compiere.model.I_AD_Table SourceDoc_Table);
 
     /** Column definition for SourceDoc_Table_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Shipment_Constraint, org.compiere.model.I_AD_Table> COLUMN_SourceDoc_Table_ID = new org.adempiere.model.ModelColumn<I_M_Shipment_Constraint, org.compiere.model.I_AD_Table>(I_M_Shipment_Constraint.class, "SourceDoc_Table_ID", org.compiere.model.I_AD_Table.class);

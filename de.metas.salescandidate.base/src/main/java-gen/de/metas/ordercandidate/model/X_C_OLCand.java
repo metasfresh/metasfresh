@@ -15,7 +15,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1939838971L;
+	private static final long serialVersionUID = 999490621L;
 
     /** Standard Constructor */
     public X_C_OLCand (Properties ctx, int C_OLCand_ID, String trxName)
@@ -299,6 +299,52 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return ii.intValue();
 	}
 
+	/** Set Standort eff..
+		@param C_BP_Location_Effective_ID 
+		Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
+	@Override
+	public void setC_BP_Location_Effective_ID (int C_BP_Location_Effective_ID)
+	{
+		throw new IllegalArgumentException ("C_BP_Location_Effective_ID is virtual column");	}
+
+	/** Get Standort eff..
+		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
+	@Override
+	public int getC_BP_Location_Effective_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Location_Effective_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Standort abw..
+		@param C_BP_Location_Override_ID 
+		Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
+	@Override
+	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID)
+	{
+		if (C_BP_Location_Override_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_Location_Override_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_Location_Override_ID, Integer.valueOf(C_BP_Location_Override_ID));
+	}
+
+	/** Get Standort abw..
+		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
+	@Override
+	public int getC_BP_Location_Override_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Location_Override_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Geschäftspartner eff..
 		@param C_BPartner_Effective_ID Geschäftspartner eff.	  */
 	@Override
@@ -387,52 +433,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getC_BPartner_Override_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Override_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Standort eff..
-		@param C_BP_Location_Effective_ID 
-		Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public void setC_BP_Location_Effective_ID (int C_BP_Location_Effective_ID)
-	{
-		throw new IllegalArgumentException ("C_BP_Location_Effective_ID is virtual column");	}
-
-	/** Get Standort eff..
-		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public int getC_BP_Location_Effective_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Location_Effective_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Standort abw..
-		@param C_BP_Location_Override_ID 
-		Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID)
-	{
-		if (C_BP_Location_Override_ID < 1) 
-			set_Value (COLUMNNAME_C_BP_Location_Override_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BP_Location_Override_ID, Integer.valueOf(C_BP_Location_Override_ID));
-	}
-
-	/** Get Standort abw..
-		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public int getC_BP_Location_Override_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Location_Override_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -657,23 +657,23 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateCandidate);
 	}
 
-	/** Set Rechnungsdatum.
-		@param DateInvoiced 
-		Datum auf der Rechnung
+	/** Set Auftragsdatum.
+		@param DateOrdered 
+		Datum des Auftrags
 	  */
 	@Override
-	public void setDateInvoiced (java.sql.Timestamp DateInvoiced)
+	public void setDateOrdered (java.sql.Timestamp DateOrdered)
 	{
-		set_Value (COLUMNNAME_DateInvoiced, DateInvoiced);
+		set_Value (COLUMNNAME_DateOrdered, DateOrdered);
 	}
 
-	/** Get Rechnungsdatum.
-		@return Datum auf der Rechnung
+	/** Get Auftragsdatum.
+		@return Datum des Auftrags
 	  */
 	@Override
-	public java.sql.Timestamp getDateInvoiced () 
+	public java.sql.Timestamp getDateOrdered () 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateInvoiced);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateOrdered);
 	}
 
 	/** Set Zugesagter Termin.
@@ -1018,32 +1018,32 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return (java.lang.String)get_Value(COLUMNNAME_ErrorMsg);
 	}
 
-	/** Set External Header ID.
-		@param ExternalHeaderId External Header ID	  */
+	/** Set Externe Datensatz-Kopf-ID.
+		@param ExternalHeaderId Externe Datensatz-Kopf-ID	  */
 	@Override
 	public void setExternalHeaderId (java.lang.String ExternalHeaderId)
 	{
 		set_Value (COLUMNNAME_ExternalHeaderId, ExternalHeaderId);
 	}
 
-	/** Get External Header ID.
-		@return External Header ID	  */
+	/** Get Externe Datensatz-Kopf-ID.
+		@return Externe Datensatz-Kopf-ID	  */
 	@Override
 	public java.lang.String getExternalHeaderId () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ExternalHeaderId);
 	}
 
-	/** Set External Line ID.
-		@param ExternalLineId External Line ID	  */
+	/** Set Externe Datensatz-Zeilen-ID.
+		@param ExternalLineId Externe Datensatz-Zeilen-ID	  */
 	@Override
 	public void setExternalLineId (java.lang.String ExternalLineId)
 	{
 		set_Value (COLUMNNAME_ExternalLineId, ExternalLineId);
 	}
 
-	/** Get External Line ID.
-		@return External Line ID	  */
+	/** Get Externe Datensatz-Zeilen-ID.
+		@return Externe Datensatz-Zeilen-ID	  */
 	@Override
 	public java.lang.String getExternalLineId () 
 	{
@@ -1646,6 +1646,63 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return (java.lang.String)get_Value(COLUMNNAME_POReference);
 	}
 
+	/** Set Vorbelegtes Rechnungsdatum.
+		@param PresetDateInvoiced Vorbelegtes Rechnungsdatum	  */
+	@Override
+	public void setPresetDateInvoiced (java.sql.Timestamp PresetDateInvoiced)
+	{
+		set_Value (COLUMNNAME_PresetDateInvoiced, PresetDateInvoiced);
+	}
+
+	/** Get Vorbelegtes Rechnungsdatum.
+		@return Vorbelegtes Rechnungsdatum	  */
+	@Override
+	public java.sql.Timestamp getPresetDateInvoiced () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_PresetDateInvoiced);
+	}
+
+	/** Set Vorbelegtes Lieferdatum.
+		@param PresetDateShipped Vorbelegtes Lieferdatum	  */
+	@Override
+	public void setPresetDateShipped (java.sql.Timestamp PresetDateShipped)
+	{
+		set_Value (COLUMNNAME_PresetDateShipped, PresetDateShipped);
+	}
+
+	/** Get Vorbelegtes Lieferdatum.
+		@return Vorbelegtes Lieferdatum	  */
+	@Override
+	public java.sql.Timestamp getPresetDateShipped () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_PresetDateShipped);
+	}
+
+	/** Set Preiseinheit int..
+		@param Price_UOM_Internal_ID 
+		Interne Preiseinheit laut Stammdaten
+	  */
+	@Override
+	public void setPrice_UOM_Internal_ID (int Price_UOM_Internal_ID)
+	{
+		if (Price_UOM_Internal_ID < 1) 
+			set_Value (COLUMNNAME_Price_UOM_Internal_ID, null);
+		else 
+			set_Value (COLUMNNAME_Price_UOM_Internal_ID, Integer.valueOf(Price_UOM_Internal_ID));
+	}
+
+	/** Get Preiseinheit int..
+		@return Interne Preiseinheit laut Stammdaten
+	  */
+	@Override
+	public int getPrice_UOM_Internal_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Price_UOM_Internal_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Einzelpreis.
 		@param PriceActual 
 		Effektiver Preis
@@ -1728,31 +1785,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
-	}
-
-	/** Set Preiseinheit int..
-		@param Price_UOM_Internal_ID 
-		Interne Preiseinheit laut Stammdaten
-	  */
-	@Override
-	public void setPrice_UOM_Internal_ID (int Price_UOM_Internal_ID)
-	{
-		if (Price_UOM_Internal_ID < 1) 
-			set_Value (COLUMNNAME_Price_UOM_Internal_ID, null);
-		else 
-			set_Value (COLUMNNAME_Price_UOM_Internal_ID, Integer.valueOf(Price_UOM_Internal_ID));
-	}
-
-	/** Get Preiseinheit int..
-		@return Interne Preiseinheit laut Stammdaten
-	  */
-	@Override
-	public int getPrice_UOM_Internal_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Price_UOM_Internal_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
 	}
 
 	/** Set Verarbeitet.
