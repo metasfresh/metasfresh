@@ -16,6 +16,9 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -23,6 +26,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -34,15 +38,15 @@ import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 
 /**
- *	Invoice Payment Schedule Model 
- *	
+ *	Invoice Payment Schedule Model
+ *
  *  @author Jorg Janke
  *  @version $Id: MInvoicePaySchedule.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
  */
 public class MInvoicePaySchedule extends X_C_InvoicePaySchedule
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -1529278048406862670L;
 
@@ -55,7 +59,7 @@ public class MInvoicePaySchedule extends X_C_InvoicePaySchedule
 	 *	@param trxName transaction
 	 *	@return array of schedule
 	 */
-	public static MInvoicePaySchedule[] getInvoicePaySchedule(Properties ctx, 
+	public static MInvoicePaySchedule[] getInvoicePaySchedule(Properties ctx,
 		int C_Invoice_ID, int C_InvoicePaySchedule_ID, String trxName)
 	{
 		String sql = "SELECT * FROM C_InvoicePaySchedule ips ";
@@ -94,7 +98,7 @@ public class MInvoicePaySchedule extends X_C_InvoicePaySchedule
 		}
 		catch (Exception e)
 		{
-			s_log.error("getInvoicePaySchedule", e); 
+			s_log.error("getInvoicePaySchedule", e);
 		}
 		try
 		{
@@ -108,7 +112,7 @@ public class MInvoicePaySchedule extends X_C_InvoicePaySchedule
 		{
 			pstmt = null;
 		}
-		
+
 		MInvoicePaySchedule[] retValue = new MInvoicePaySchedule[list.size()];
 		list.toArray(retValue);
 		return retValue;
@@ -120,7 +124,7 @@ public class MInvoicePaySchedule extends X_C_InvoicePaySchedule
 	/** 100								*/
 	private final static BigDecimal		HUNDRED = new BigDecimal(100);
 
-	
+
 	/**************************************************************************
 	 * 	Standard Constructor
 	 *	@param ctx context
@@ -157,14 +161,14 @@ public class MInvoicePaySchedule extends X_C_InvoicePaySchedule
 	 *	@param invoice invoice
 	 *	@param paySchedule payment schedule
 	 */
-	public MInvoicePaySchedule (MInvoice invoice, MPaySchedule paySchedule)
+	public MInvoicePaySchedule (I_C_Invoice invoice, MPaySchedule paySchedule)
 	{
-		super (invoice.getCtx(), 0, invoice.get_TrxName());
+		super (InterfaceWrapperHelper.getCtx(invoice), 0, getTrxName(invoice));
 		m_parent = invoice;
-		setClientOrg(invoice);
+		setAD_Org_ID(invoice.getAD_Org_ID());
 		setC_Invoice_ID(invoice.getC_Invoice_ID());
 		setC_PaySchedule_ID(paySchedule.getC_PaySchedule_ID());
-		
+
 		//	Amounts
 		final CurrencyId currencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
 		final CurrencyPrecision precision = Services.get(ICurrencyDAO.class).getStdPrecision(currencyId);
@@ -185,38 +189,35 @@ public class MInvoicePaySchedule extends X_C_InvoicePaySchedule
 			setDiscountAmt (discount);
 			setIsValid(true);
 		}
-		
-		//	Dates		
+
+		//	Dates
 		Timestamp dueDate = TimeUtil.addDays(invoice.getDateInvoiced(), paySchedule.getNetDays());
 		setDueDate (dueDate);
 		Timestamp discountDate = TimeUtil.addDays(invoice.getDateInvoiced(), paySchedule.getDiscountDays());
 		setDiscountDate (discountDate);
 	}	//	MInvoicePaySchedule
-	
-	/**	Parent						*/
-	private MInvoice	m_parent = null;
 
-	
-	/**
-	 * @return Returns the parent.
-	 */
-	public MInvoice getParent ()
+	/**	Parent						*/
+	private I_C_Invoice	m_parent = null;
+
+
+	public I_C_Invoice getParent ()
 	{
 		if (m_parent == null)
 		{
 			m_parent = new MInvoice (getCtx(), getC_Invoice_ID(), get_TrxName());
-		} 
+		}
 		return m_parent;
 	}	//	getParent
-	
+
 	/**
 	 * @param parent The parent to set.
 	 */
-	public void setParent (MInvoice parent)
+	public void setParent (I_C_Invoice parent)
 	{
 		m_parent = parent;
 	}	//	setParent
-	
+
 	/**
 	 * 	String Representation
 	 *	@return info
@@ -230,9 +231,9 @@ public class MInvoicePaySchedule extends X_C_InvoicePaySchedule
 			.append("]");
 		return sb.toString();
 	}	//	toString
-	
-	
-	
+
+
+
 	/**
 	 * 	Before Save
 	 *	@param newRecord new
@@ -262,11 +263,11 @@ public class MInvoicePaySchedule extends X_C_InvoicePaySchedule
 		{
 			log.debug("afterSave");
 			getParent();
-			m_parent.validatePaySchedule();
-			m_parent.save();
+			MInvoice.validatePaySchedule(m_parent);
+			saveRecord(m_parent);
 		}
 		return success;
 	}	//	afterSave
 
-	
+
 }	//	MInvoicePaySchedule

@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.util.CustomColNames.C_Invoice_BPARTNERADDRESS;
 import static org.adempiere.util.CustomColNames.C_Invoice_DESCRIPTION_BOTTOM;
 import static org.adempiere.util.CustomColNames.C_Invoice_INCOTERM;
@@ -85,6 +86,7 @@ import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /**
  * Invoice Model.
@@ -792,28 +794,32 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	 *
 	 * @return pay schedule is valid
 	 */
-	public boolean validatePaySchedule()
+	public static boolean validatePaySchedule(@NonNull final I_C_Invoice invoiceRecord)
 	{
-		final MInvoicePaySchedule[] schedule = MInvoicePaySchedule.getInvoicePaySchedule(getCtx(), getC_Invoice_ID(), 0, get_TrxName());
-		log.debug("#" + schedule.length);
+		final MInvoicePaySchedule[] schedule = MInvoicePaySchedule.getInvoicePaySchedule(
+				InterfaceWrapperHelper.getCtx(invoiceRecord),
+				invoiceRecord.getC_Invoice_ID(), 0,
+				getTrxName(invoiceRecord));
+
+		s_log.debug("#" + schedule.length);
 		if (schedule.length == 0)
 		{
-			setIsPayScheduleValid(false);
+			invoiceRecord.setIsPayScheduleValid(false);
 			return false;
 		}
 		// Add up due amounts
 		BigDecimal total = BigDecimal.ZERO;
 		for (final MInvoicePaySchedule element : schedule)
 		{
-			element.setParent(this);
+			element.setParent(invoiceRecord);
 			final BigDecimal due = element.getDueAmt();
 			if (due != null)
 			{
 				total = total.add(due);
 			}
 		}
-		final boolean valid = getGrandTotal().compareTo(total) == 0;
-		setIsPayScheduleValid(valid);
+		final boolean valid = invoiceRecord.getGrandTotal().compareTo(total) == 0;
+		invoiceRecord.setIsPayScheduleValid(valid);
 
 		// Update Schedule Lines
 		for (final MInvoicePaySchedule element : schedule)
@@ -821,7 +827,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			if (element.isValid() != valid)
 			{
 				element.setIsValid(valid);
-				element.saveEx(get_TrxName());
+				element.saveEx(getTrxName(invoiceRecord));
 			}
 		}
 		return valid;
@@ -1786,12 +1792,12 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			if (C_CurrencyTo_ID != getC_Currency_ID())
 			{
 				amt = Services.get(ICurrencyBL.class).convert(
-						amt, 
-						CurrencyId.ofRepoId(getC_Currency_ID()), 
+						amt,
+						CurrencyId.ofRepoId(getC_Currency_ID()),
 						CurrencyId.ofRepoId(C_CurrencyTo_ID),
-						TimeUtil.asLocalDate(getDateAcct()), 
-						(CurrencyConversionTypeId)null, 
-						ClientId.ofRepoId(getAD_Client_ID()), 
+						TimeUtil.asLocalDate(getDateAcct()),
+						(CurrencyConversionTypeId)null,
+						ClientId.ofRepoId(getAD_Client_ID()),
 						OrgId.ofRepoId(getAD_Org_ID()));
 			}
 			if (amt == null)
