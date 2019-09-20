@@ -27,6 +27,8 @@ import de.metas.banking.payment.IPaymentString;
 import de.metas.banking.payment.IPaymentStringDataProvider;
 import de.metas.banking.payment.spi.exception.PaymentStringParseException;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.invoice.InvoiceId;
 import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
@@ -81,7 +83,7 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 	// trl
-	private static final String MSG_CouldNotFindOrCreateBPBankAccount = "de.metas.payment.CouldNotFindOrCreateBPBankAccount"; // todo i18n
+	private static final String MSG_CouldNotFindOrCreateBPBankAccount = "de.metas.payment.CouldNotFindOrCreateBPBankAccount";
 
 	//
 	//
@@ -113,16 +115,16 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 
 	@Override public void onParameterChanged(final String parameterName)
 	{
-
-		if (!PARAM_fullPaymentString.equals(parameterName))
+		if (!PARAM_fullPaymentString.equals(parameterName) && !PARAM_C_BPartner_ID.equals(parameterName))
 		{
-			// nothing to do if the wrong param is filled
+			// only update on magic payment string or bpartner
 			return;
 		}
 
 		if (Check.isEmpty(fullPaymentStringParam, true))
 		{
-			return; // do nothing if it's empty
+			// do nothing if it's empty
+			return;
 		}
 
 		final IPaymentStringDataProvider dataProvider;
@@ -155,7 +157,8 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 			 * */
 			if (bPartnerParam == null)
 			{
-				throw new AdempiereException(MSG_CouldNotFindOrCreateBPBankAccount, new Object[] {});
+				final ITranslatableString msg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_CouldNotFindOrCreateBPBankAccount, paymentString.getPostAccountNo());
+				throw new AdempiereException(msg);
 			}
 			else
 			{

@@ -29,6 +29,7 @@ import de.metas.banking.payment.IPaymentRequestDAO;
 import de.metas.banking.payment.IPaymentString;
 import de.metas.banking.payment.IPaymentStringBL;
 import de.metas.banking.payment.IPaymentStringDataProvider;
+import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_BP_Relation;
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessPreconditionsContext;
@@ -58,6 +59,10 @@ import java.util.Properties;
 public class AlmightyKeeperOfEverything
 {
 	private static final transient Logger log = LogManager.getLogger(AlmightyKeeperOfEverything.class);
+	private static final String MSG_INVOICE_IS_NOT_COMPLETED = "de.metas.banking.process.paymentdocumentform.AlmightyKeeperOfEverything.InvoiceIsNotCompleted";
+	private static final String MSG_NO_INVOICE_SELECTED = "de.metas.banking.process.paymentdocumentform.AlmightyKeeperOfEverything.NoInvoiceSelected";
+	private static final String MSG_PAYMENT_REQUEST_FOR_INVOICE_ALREADY_EXISTS_EXCEPTION = "@PaymentRequestForInvoiceAlreadyExistsException@";
+	private static final String MSG_COULD_NOT_CREATE_PAYMENT_REQUEST = "de.metas.banking.process.paymentdocumentform.AlmightyKeeperOfEverything.CouldNotCreatePaymentRequest";
 
 	private final IPaymentStringBL paymentStringBL = Services.get(IPaymentStringBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
@@ -108,7 +113,7 @@ public class AlmightyKeeperOfEverything
 
 		if (contextBPartner_ID == bpBankAccount.getC_BPartner_ID())
 		{
-			// the BPartner from the account we looked up is thae one from context
+			// the BPartner from the account we looked up is the one from context
 			return 1;
 		}
 
@@ -132,30 +137,30 @@ public class AlmightyKeeperOfEverything
 		final I_C_Invoice invoice = context.getSelectedModel(I_C_Invoice.class);
 		if (invoice == null)
 		{
-			return ProcessPreconditionsResolution.reject("no invoice selected"); // todo i18n
+			return ProcessPreconditionsResolution.reject(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_NO_INVOICE_SELECTED));
 		}
 
 		// only completed invoiced
 		if (!invoiceBL.isComplete(invoice))
 		{
-			return ProcessPreconditionsResolution.reject("invoice is not completed"); // todo i18n
+			return ProcessPreconditionsResolution.reject(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_INVOICE_IS_NOT_COMPLETED));
 		}
 
-		return ProcessPreconditionsResolution.acceptIf(!invoice.isSOTrx()); // only PO Invoices (Eingangsrechnung)
+		return ProcessPreconditionsResolution.acceptIf(!invoice.isSOTrx());
 	}
 
 	public void createPaymentRequestFromTemplate(@NonNull final org.compiere.model.I_C_Invoice invoice, @Nullable final I_C_Payment_Request template)
 	{
 		if (template == null)
 		{
-			throw new AdempiereException("@SelectPaymentRequestFirstException@"); // todo i18n
+			throw new AdempiereException(MSG_COULD_NOT_CREATE_PAYMENT_REQUEST);
 		}
 
 		//
 		// Get the selected invoice
 		if (paymentRequestDAO.hasPaymentRequests(invoice))
 		{
-			throw new AdempiereException("@PaymentRequestForInvoiceAlreadyExistsException@"); // todo i18n
+			throw new AdempiereException(MSG_PAYMENT_REQUEST_FOR_INVOICE_ALREADY_EXISTS_EXCEPTION);
 		}
 
 		paymentRequestBL.createPaymentRequest(invoice, template);
