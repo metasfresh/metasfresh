@@ -22,6 +22,7 @@
 
 package de.metas.banking.process.paymentdocumentform;
 
+import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaymentString;
 import de.metas.banking.payment.IPaymentStringDataProvider;
 import de.metas.banking.payment.spi.exception.PaymentStringParseException;
@@ -41,7 +42,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.util.Env;
 
 import java.math.BigDecimal;
 
@@ -53,24 +53,27 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 
 	private static final String PARAM_fullPaymentString = "FullPaymentString";
 	@Param(parameterName = PARAM_fullPaymentString)
-	private String fullPaymentString;
+	private String fullPaymentStringParam;
 
 	private static final String PARAM_C_BPartner_ID = "C_BPartner_ID";
 	@Param(parameterName = PARAM_C_BPartner_ID)
-	private I_C_BPartner bPartner;
+	private I_C_BPartner bPartnerParam;
 
 	private static final String PARAM_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
 	@Param(parameterName = PARAM_C_BP_BankAccount_ID)
-	private I_C_BP_BankAccount bankAccount;
+	private I_C_BP_BankAccount bankAccountParam;
 
 	private static final String PARAM_Amount = "Amount";
 	@Param(parameterName = PARAM_Amount)
-	private BigDecimal amount;
+	private BigDecimal amountParam;
 
 	// services
 	private final transient AlmightyKeeperOfEverything almightyKeeperOfEverything = SpringContextHolder.instance.getBean(AlmightyKeeperOfEverything.class);
-	final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+
+	// trl
+	private static final String MSG_CouldNotFindOrCreateBPBankAccount = "de.metas.payment.CouldNotFindOrCreateBPBankAccount"; // todo i18n
 
 	//
 	//
@@ -83,10 +86,14 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 	//
 	//
 	//
+
 	@Override protected String doIt() throws Exception
 	{
-		log.info("{}\n{}\n{}\n{}\n{}\n", "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz", fullPaymentString, bPartner.getName(), bankAccount.getCreditCardNumber(), amount.toString());
-		return null;
+		final IPaymentString paymentString = almightyKeeperOfEverything.parsePaymentString(getCtx(), fullPaymentStringParam).getPaymentString();
+		final I_C_Payment_Request paymentRequestTemplate = almightyKeeperOfEverything.createPaymentRequestTemplate(bankAccountParam, amountParam, paymentString);
+
+		almightyKeeperOfEverything.createPaymentRequestFromTemplate(getActualInvoice(), paymentRequestTemplate);
+		return MSG_OK;
 	}
 
 	@Override public void onParameterChanged(final String parameterName)
@@ -94,11 +101,11 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 
 		if (!PARAM_fullPaymentString.equals(parameterName))
 		{
-			// nothing to do here
+			// nothing to do if the wrong param is filled
 			return;
 		}
 
-		if (Check.isEmpty(fullPaymentString, true))
+		if (Check.isEmpty(fullPaymentStringParam, true))
 		{
 			return; // do nothing if it's empty
 		}
@@ -106,31 +113,45 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 		final IPaymentStringDataProvider dataProvider;
 		try
 		{
-			dataProvider = almightyKeeperOfEverything.parsePaymentString(Env.getCtx(), fullPaymentString);
+			dataProvider = almightyKeeperOfEverything.parsePaymentString(getCtx(), fullPaymentStringParam);
 		}
 		catch (final PaymentStringParseException pspe)
 		{
-			final String adMessage = pspe.getLocalizedMessage() + " (\"" + fullPaymentString + "\")";
+			final String adMessage = pspe.getLocalizedMessage() + " (\"" + fullPaymentStringParam + "\")";
 			throw new AdempiereException(adMessage);
 		}
 
 		final IPaymentString paymentString = dataProvider.getPaymentString();
 
-		final I_C_Invoice actualInvoice = invoiceDAO.getByIdInTrx(InvoiceId.ofRepoId(getRecord_ID()));
+		final I_C_Invoice actualInvoice = getActualInvoice();
 		final I_C_BP_BankAccount bpBankAccountExisting = almightyKeeperOfEverything.getAndVerifyBPartnerAccountOrNull(dataProvider, actualInvoice.getC_BPartner_ID());
 		if (bpBankAccountExisting != null)
 		{
-			bPartner = bPartnerDAO.getById(bpBankAccountExisting.getC_BPartner_ID());
-			bankAccount = bpBankAccountExisting;
+			bPartnerParam = bPartnerDAO.getById(bpBankAccountExisting.getC_BPartner_ID());
+			bankAccountParam = bpBankAccountExisting;
+		}
+		else
+		{
+			// if the C_BPartner is set from the field, create the C_BP_BankAccount on the fly
+			// otherwise, show error and ask the user to set the partner before doing this.
+			if (bPartnerParam == null)
+			{
+				throw new AdempiereException(MSG_CouldNotFindOrCreateBPBankAccount, new Object[] {});
+			}
 		}
 
-		amount = paymentString.getAmount();
+		amountParam = paymentString.getAmount();
 
 		//		currentParsedPaymentString = paymentString;
 	}
 
+	private I_C_Invoice getActualInvoice()
+	{
+		return invoiceDAO.getByIdInTrx(InvoiceId.ofRepoId(getRecord_ID()));
+	}
+
 	@Override public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		return ProcessPreconditionsResolution.accept();
+		return almightyKeeperOfEverything.checkPreconditionsApplicable(context);
 	}
 }

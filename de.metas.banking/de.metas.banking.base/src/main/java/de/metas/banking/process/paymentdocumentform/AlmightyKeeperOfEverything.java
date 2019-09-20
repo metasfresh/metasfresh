@@ -26,6 +26,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.banking.payment.IPaymentRequestDAO;
+import de.metas.banking.payment.IPaymentString;
 import de.metas.banking.payment.IPaymentStringBL;
 import de.metas.banking.payment.IPaymentStringDataProvider;
 import de.metas.interfaces.I_C_BP_Relation;
@@ -37,13 +38,18 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.Properties;
@@ -59,10 +65,6 @@ public class AlmightyKeeperOfEverything
 	private final IPaymentRequestBL paymentRequestBL = Services.get(IPaymentRequestBL.class);
 
 	private static final String SYSCONFIG_PaymentStringParserType = "de.metas.paymentallocation.form.ReadPaymentDocumentDialog.PaymentStringParserType";
-
-	public AlmightyKeeperOfEverything()
-	{
-	}
 
 	public IPaymentStringDataProvider parsePaymentString(final Properties ctx, final String currentPaymentString)
 	{
@@ -124,46 +126,60 @@ public class AlmightyKeeperOfEverything
 		return 3;
 	}
 
-	// todo migration to webui process
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
 		final I_C_Invoice invoice = context.getSelectedModel(I_C_Invoice.class);
 		if (invoice == null)
 		{
-			return ProcessPreconditionsResolution.reject("no invoice selected");
+			return ProcessPreconditionsResolution.reject("no invoice selected"); // todo i18n
 		}
 
 		// only completed invoiced
 		if (!invoiceBL.isComplete(invoice))
 		{
-			return ProcessPreconditionsResolution.reject("invoice is not completed");
+			return ProcessPreconditionsResolution.reject("invoice is not completed"); // todo i18n
 		}
 
 		return ProcessPreconditionsResolution.acceptIf(!invoice.isSOTrx()); // only PO Invoices (Eingangsrechnung)
 	}
 
-	// todo migration to webui process
-	public void createPaymentRequest(final org.compiere.model.I_C_Invoice invoice, final I_C_Payment_Request template)
+	public void createPaymentRequestFromTemplate(@NonNull final org.compiere.model.I_C_Invoice invoice, @Nullable final I_C_Payment_Request template)
 	{
-
 		if (template == null)
 		{
-			// todo @teo: what to do with MSG_PREFIX?? is it needed?
-			//			throw new AdempiereException("@" + MSG_PREFIX + "SelectPaymentRequestFirstException" + "@");
-			throw new AdempiereException("@" + "SelectPaymentRequestFirstException" + "@");
+			throw new AdempiereException("@SelectPaymentRequestFirstException@"); // todo i18n
 		}
 
 		//
 		// Get the selected invoice
 		if (paymentRequestDAO.hasPaymentRequests(invoice))
 		{
-			//			throw new AdempiereException("@" + MSG_PREFIX + "PaymentRequestForInvoiceAlreadyExistsException" + "@");
-			throw new AdempiereException("@" + "PaymentRequestForInvoiceAlreadyExistsException" + "@");
+			throw new AdempiereException("@PaymentRequestForInvoiceAlreadyExistsException@"); // todo i18n
 		}
 
-		//
-		// Create the payment request
 		paymentRequestBL.createPaymentRequest(invoice, template);
 	}
 
+	public I_C_Payment_Request createPaymentRequestTemplate(final I_C_BP_BankAccount bankAccount, final BigDecimal amount, final IPaymentString paymentString)
+	{
+		final IContextAware contextProvider = PlainContextAware.newOutOfTrx(Env.getCtx());
+
+		//
+		// Create it, but do not save it!
+		final I_C_Payment_Request paymentRequest = InterfaceWrapperHelper.newInstance(I_C_Payment_Request.class, contextProvider);
+		InterfaceWrapperHelper.setSaveDeleteDisabled(paymentRequest, true);
+
+		// TODO: don't enable OK, or throw an error here, if no C_BP_BankAccount was found
+		paymentRequest.setC_BP_BankAccount(bankAccount);
+
+		paymentRequest.setAmount(amount);
+
+		if (paymentString != null)
+		{
+			paymentRequest.setReference(paymentString.getReferenceNoComplete());
+			paymentRequest.setFullPaymentString(paymentString.getRawPaymentString());
+		}
+
+		return paymentRequest;
+	}
 }

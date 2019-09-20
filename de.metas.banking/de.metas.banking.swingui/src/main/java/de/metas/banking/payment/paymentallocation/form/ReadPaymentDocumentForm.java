@@ -108,7 +108,6 @@ public class ReadPaymentDocumentForm implements FormPanel, IProcessPrecondition
 		return readPaymentPanel;
 	}
 
-	// todo migration to webui process
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
@@ -118,6 +117,6 @@ public class ReadPaymentDocumentForm implements FormPanel, IProcessPrecondition
 	// todo migration to webui process
 	private void createPaymentRequest(final ReadPaymentPanelResult result)
 	{
-		almightyKeeperOfEverything.createPaymentRequest(invoice, result.getPaymentRequestTemplate());
+		almightyKeeperOfEverything.createPaymentRequestFromTemplate(invoice, result.getPaymentRequestTemplate());
 	}
 }

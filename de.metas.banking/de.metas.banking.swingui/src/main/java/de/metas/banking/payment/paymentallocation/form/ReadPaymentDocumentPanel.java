@@ -491,25 +491,7 @@ class ReadPaymentDocumentPanel
 	 */
 	private void onDialogOk()
 	{
-		final IContextAware contextProvider = PlainContextAware.newOutOfTrx(Env.getCtx());
-
-		//
-		// Create it, but do not save it!
-		paymentRequest = InterfaceWrapperHelper.newInstance(I_C_Payment_Request.class, contextProvider);
-		InterfaceWrapperHelper.setSaveDeleteDisabled(paymentRequest, true);
-
-		// TODO: don't enable OK, or throw an error here, if no C_BP_BankAccount was found
-		paymentRequest.setC_BP_BankAccount(getC_BP_BankAccountOrNull());
-
-		final BigDecimal amount = getAmount();
-		paymentRequest.setAmount(amount);
-
-		final IPaymentString paymentString = getParsedPaymentStringOrNull();
-		if (paymentString != null)
-		{
-			paymentRequest.setReference(paymentString.getReferenceNoComplete());
-			paymentRequest.setFullPaymentString(paymentString.getRawPaymentString());
-		}
+		paymentRequest = almightyKeeperOfEverything.createPaymentRequestTemplate(getC_BP_BankAccountOrNull(), getAmount(), getParsedPaymentStringOrNull());
 
 		//
 		// See JavaDoc
