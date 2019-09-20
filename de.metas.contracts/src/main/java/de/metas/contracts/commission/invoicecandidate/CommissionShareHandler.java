@@ -1,8 +1,13 @@
 package de.metas.contracts.commission.invoicecandidate;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
 import java.math.BigDecimal;
 import java.util.Iterator;
+
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.IQuery;
 
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
@@ -45,14 +50,35 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	public static final ProductId COMMISSION_PRODUCT_ID = ProductId.ofRepoId(540420);
 
 	@Override
-	public Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(int limit)
+	public Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(int limit_IGNORED)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return createShareWithMissingICsQuery()
+				.iterate(I_C_Commission_Share.class);
+	}
+
+	public IQuery<I_C_Commission_Share> createShareWithMissingICsQuery()
+	{
+		final IQuery<I_C_Commission_Share> termWithMissingCandidateQueryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Commission_Share.class)
+				.addOnlyActiveRecordsFilter()
+				.addNotInSubQueryFilter(I_C_Commission_Share.COLUMN_C_Commission_Share_ID, I_C_Invoice_Candidate.COLUMN_Record_ID, createICsThatReferenceSharesQuery())
+				.create();
+
+		return termWithMissingCandidateQueryBuilder;
+	}
+
+	private IQuery<I_C_Invoice_Candidate> createICsThatReferenceSharesQuery()
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, getTableId(I_C_Commission_Share.class))
+				.create();
 	}
 
 	@Override
-	public InvoiceCandidateGenerateResult createCandidatesFor(InvoiceCandidateGenerateRequest request)
+	public InvoiceCandidateGenerateResult createCandidatesFor(@NonNull final InvoiceCandidateGenerateRequest request)
 	{
 		// TODO Auto-generated method stub
 		return null;
@@ -89,7 +115,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	 * </ul>
 	 */
 	@Override
-	public void setOrderedData(I_C_Invoice_Candidate ic)
+	public void setOrderedData(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final I_C_Commission_Share commissionShareRecord = getCommissionShareRecord(ic);
 		final UomId uomId = Services.get(IProductBL.class).getStockUOMId(COMMISSION_PRODUCT_ID);
@@ -115,7 +141,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	 * @see IInvoiceCandidateHandler#setDeliveredData(I_C_Invoice_Candidate)
 	 */
 	@Override
-	public void setDeliveredData(I_C_Invoice_Candidate ic)
+	public void setDeliveredData(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final I_C_Commission_Share commissionShareRecord = getCommissionShareRecord(ic);
 

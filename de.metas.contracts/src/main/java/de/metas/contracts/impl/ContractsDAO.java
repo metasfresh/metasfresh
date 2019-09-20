@@ -79,7 +79,7 @@ public class ContractsDAO implements IContractsDAO
 
 				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Conditions.COLUMN_C_Flatrate_Conditions_ID, flatrateConditionsThatRequireInvoicing())
 
-				.addNotInSubQueryFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID, I_C_Invoice_Candidate.COLUMN_Record_ID, invoiceCandidatesThatReferenceTerms());
+				.addNotInSubQueryFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID, I_C_Invoice_Candidate.COLUMN_Record_ID, createQueryForICsThatReferenceTerms());
 
 		if (!ignoreDateFilter)
 		{
@@ -123,7 +123,7 @@ public class ContractsDAO implements IContractsDAO
 		return flatrateConditionsThatRequireInvoicing;
 	}
 
-	private IQuery<I_C_Invoice_Candidate> invoiceCandidatesThatReferenceTerms()
+	private IQuery<I_C_Invoice_Candidate> createQueryForICsThatReferenceTerms()
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
