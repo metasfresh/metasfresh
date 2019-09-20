@@ -57,7 +57,7 @@ import java.util.Properties;
 @Service
 public class AlmightyKeeperOfEverything
 {
-	private static final transient Logger logger = LogManager.getLogger(AlmightyKeeperOfEverything.class);
+	private static final transient Logger log = LogManager.getLogger(AlmightyKeeperOfEverything.class);
 
 	private final IPaymentStringBL paymentStringBL = Services.get(IPaymentStringBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
@@ -68,6 +68,7 @@ public class AlmightyKeeperOfEverything
 
 	public IPaymentStringDataProvider parsePaymentString(final Properties ctx, final String currentPaymentString)
 	{
+		log.debug("parsePaymentString: {}", currentPaymentString);
 		final IPaymentStringDataProvider dataProvider;
 		dataProvider = paymentStringBL.getDataProvider(ctx, paymentStringBL.getParserForSysConfig(SYSCONFIG_PaymentStringParserType), currentPaymentString);
 		return dataProvider;
@@ -166,20 +167,19 @@ public class AlmightyKeeperOfEverything
 
 		//
 		// Create it, but do not save it!
-		final I_C_Payment_Request paymentRequest = InterfaceWrapperHelper.newInstance(I_C_Payment_Request.class, contextProvider);
-		InterfaceWrapperHelper.setSaveDeleteDisabled(paymentRequest, true);
+		final I_C_Payment_Request paymentRequestTemplate = InterfaceWrapperHelper.newInstance(I_C_Payment_Request.class, contextProvider);
+		InterfaceWrapperHelper.setSaveDeleteDisabled(paymentRequestTemplate, true);
 
-		// TODO: don't enable OK, or throw an error here, if no C_BP_BankAccount was found
-		paymentRequest.setC_BP_BankAccount(bankAccount);
+		paymentRequestTemplate.setC_BP_BankAccount(bankAccount);
 
-		paymentRequest.setAmount(amount);
+		paymentRequestTemplate.setAmount(amount);
 
 		if (paymentString != null)
 		{
-			paymentRequest.setReference(paymentString.getReferenceNoComplete());
-			paymentRequest.setFullPaymentString(paymentString.getRawPaymentString());
+			paymentRequestTemplate.setReference(paymentString.getReferenceNoComplete());
+			paymentRequestTemplate.setFullPaymentString(paymentString.getRawPaymentString());
 		}
 
-		return paymentRequest;
+		return paymentRequestTemplate;
 	}
 }

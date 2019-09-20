@@ -67,6 +67,14 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 	@Param(parameterName = PARAM_Amount)
 	private BigDecimal amountParam;
 
+	private static final String PARAM_Will_Create_a_new_Bank_Account = "Will_Create_a_new_Bank_Account";
+	@Param(parameterName = PARAM_Will_Create_a_new_Bank_Account)
+	private boolean willCreateANewBandAccountParam;
+
+	private static final String PARAM_BankAccountNo = "BankAccountNo";
+	@Param(parameterName = PARAM_BankAccountNo)
+	private String bankAccountNumberParam;
+
 	// services
 	private final transient AlmightyKeeperOfEverything almightyKeeperOfEverything = SpringContextHolder.instance.getBean(AlmightyKeeperOfEverything.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
@@ -89,7 +97,14 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 
 	@Override protected String doIt() throws Exception
 	{
-		final IPaymentString paymentString = almightyKeeperOfEverything.parsePaymentString(getCtx(), fullPaymentStringParam).getPaymentString();
+		final IPaymentStringDataProvider dataProvider = getDataProvider();
+
+		if (willCreateANewBandAccountParam)
+		{
+			dataProvider.createNewC_BP_BankAccount(this, bPartnerParam.getC_BPartner_ID());
+		}
+
+		final IPaymentString paymentString = dataProvider.getPaymentString();
 		final I_C_Payment_Request paymentRequestTemplate = almightyKeeperOfEverything.createPaymentRequestTemplate(bankAccountParam, amountParam, paymentString);
 
 		almightyKeeperOfEverything.createPaymentRequestFromTemplate(getActualInvoice(), paymentRequestTemplate);
@@ -113,7 +128,7 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 		final IPaymentStringDataProvider dataProvider;
 		try
 		{
-			dataProvider = almightyKeeperOfEverything.parsePaymentString(getCtx(), fullPaymentStringParam);
+			dataProvider = getDataProvider();
 		}
 		catch (final PaymentStringParseException pspe)
 		{
@@ -132,17 +147,29 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 		}
 		else
 		{
-			// if the C_BPartner is set from the field, create the C_BP_BankAccount on the fly
-			// otherwise, show error and ask the user to set the partner before doing this.
+			/*
+			 * If the C_BPartner is set from the field (manually by the user),
+			 * C_BP_BankAccount will be created by this process when the user presses "Start".
+			 *
+			 * If the C_BPartner is NOT set, show error and ask the user to set the partner before adding the magic payment string.
+			 * */
 			if (bPartnerParam == null)
 			{
 				throw new AdempiereException(MSG_CouldNotFindOrCreateBPBankAccount, new Object[] {});
 			}
+			else
+			{
+				bankAccountNumberParam = paymentString.getPostAccountNo();
+				willCreateANewBandAccountParam = true;
+			}
 		}
 
 		amountParam = paymentString.getAmount();
+	}
 
-		//		currentParsedPaymentString = paymentString;
+	private IPaymentStringDataProvider getDataProvider()
+	{
+		return almightyKeeperOfEverything.parsePaymentString(getCtx(), fullPaymentStringParam);
 	}
 
 	private I_C_Invoice getActualInvoice()

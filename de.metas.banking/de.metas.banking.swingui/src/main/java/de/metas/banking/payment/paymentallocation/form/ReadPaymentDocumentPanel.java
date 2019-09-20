@@ -431,8 +431,7 @@ class ReadPaymentDocumentPanel
 	 */
 	private final void updateCurrentPaymentString()
 	{
-		final String paymentString = (String)paymentStringField.getValue();
-		currentPaymentString = paymentString;
+		currentPaymentString = (String)paymentStringField.getValue();
 
 		//
 		// Set focus to the bank account field so that the user knows he's scanned the ESR button successfully
