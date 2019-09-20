@@ -3,6 +3,7 @@ package de.metas.ui.web.window.descriptor;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -78,7 +79,7 @@ public final class DocumentLayoutElementDescriptor
 		return elementBuilder;
 	}
 
-	public static Builder builder(
+	public static Optional<Builder> builderOrEmpty(
 			@NonNull final DocumentEntityDescriptor entityDescriptor,
 			@NonNull final String... fieldNames)
 	{
@@ -89,7 +90,11 @@ public final class DocumentLayoutElementDescriptor
 				.filter(Predicates.notNull())
 				.toArray(size -> new DocumentFieldDescriptor[size]);
 
-		return builder(elementFields);
+		if (elementFields.length == 0)
+		{
+			return Optional.empty();
+		}
+		return Optional.of(builder(elementFields));
 	}
 
 	private final String internalName;
