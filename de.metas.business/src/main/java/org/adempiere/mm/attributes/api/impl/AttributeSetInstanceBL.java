@@ -20,6 +20,7 @@ import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
@@ -335,5 +336,14 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 				.sourceModel(fromModel)
 				//
 				.execute();
+	}
+
+	@Override
+	public boolean isStorageRelevant(@NonNull final I_M_AttributeInstance ai)
+	{
+		final IAttributesBL attributesService = Services.get(IAttributesBL.class);
+
+		final AttributeId attributeId = AttributeId.ofRepoId(ai.getM_Attribute_ID());
+		return attributesService.isStorageRelevant(attributeId);
 	}
 }

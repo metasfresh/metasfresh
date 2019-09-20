@@ -264,4 +264,12 @@ public class AttributesBL implements IAttributesBL
 				? DisplayType.Integer
 				: DisplayType.Number;
 	}
+
+	@Override
+	public boolean isStorageRelevant(@NonNull final AttributeId attributeId)
+	{
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		final I_M_Attribute attribute = attributesRepo.getAttributeById(attributeId);
+		return attribute.isStorageRelevant();
+	}
 }

@@ -38,6 +38,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_Charge;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
@@ -241,7 +242,8 @@ public class OrderLineBL implements IOrderLineBL
 		// In case we have a charge, use the tax category from charge
 		if (orderLine.getC_Charge_ID() > 0)
 		{
-			return TaxCategoryId.ofRepoId(orderLine.getC_Charge().getC_TaxCategory_ID());
+			final I_C_Charge charge = InterfaceWrapperHelper.loadOutOfTrx(orderLine.getC_Charge_ID(), I_C_Charge.class);
+			return TaxCategoryId.ofRepoId(charge.getC_TaxCategory_ID());
 		}
 
 		final OrderLinePriceUpdateRequest request = OrderLinePriceUpdateRequest.ofOrderLine(orderLine);

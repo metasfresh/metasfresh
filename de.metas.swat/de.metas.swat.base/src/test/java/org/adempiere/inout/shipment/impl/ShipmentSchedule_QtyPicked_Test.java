@@ -48,7 +48,7 @@ import de.metas.inoutcandidate.api.impl.ShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.product.ProductIds;
+import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
@@ -166,7 +166,7 @@ public class ShipmentSchedule_QtyPicked_Test
 	{
 		final StockQtyAndUOMQty stockQtyToAdd = StockQtyAndUOMQtys.createConvert(
 				qtyPickedToAdd,
-				ProductIds.ofRecord(shipmentSchedule),
+				ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()),
 				uomId);
 
 		final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord = shipmentScheduleAllocBL

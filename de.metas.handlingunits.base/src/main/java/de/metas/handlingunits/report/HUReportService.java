@@ -7,7 +7,6 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -188,27 +187,22 @@ public class HUReportService
 
 		final List<HUToReport> tuHUs = new ArrayList<>();
 		final List<HUToReport> luHUs = new ArrayList<>();
+		final List<HUToReport> cuHUs = new ArrayList<>();
 		for (final HUToReport hu : husToCheck)
 		{
 			final String huUnitType = hu.getHUUnitType();
 
-			// BL NOT IMPLEMENTED YET FOR VIRTUAL PI REPORTS, because we don't have any
 			if (X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI.equals(huUnitType))
 			{
-				continue;
+				cuHUs.add(hu);
 			}
-
-			if (X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(huUnitType))
+			else if (X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(huUnitType))
 			{
 				luHUs.add(hu);
 			}
 			else if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitType))
 			{
 				tuHUs.add(hu);
-			}
-			else
-			{
-				throw new AdempiereException("Invalid unit type: " + huUnitType);
 			}
 		}
 
@@ -226,9 +220,9 @@ public class HUReportService
 			huUnitTypeToReport = X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI;
 		}
 
-		if (!luHUs.isEmpty() || !tuHUs.isEmpty())
+		if (!luHUs.isEmpty() || !tuHUs.isEmpty() || !cuHUs.isEmpty())
 		{
-			return extractHUsToProcess(huUnitTypeToReport, luHUs, tuHUs);
+			return extractHUsToProcess(huUnitTypeToReport, luHUs, tuHUs, cuHUs);
 		}
 		else
 		{
@@ -247,12 +241,12 @@ public class HUReportService
 	 * @param luHUs
 	 * @param tuHUs
 	 */
-	private static List<HUToReport> extractHUsToProcess(final String huUnitType, final List<HUToReport> luHUs, final List<HUToReport> tuHUs)
+	private static List<HUToReport> extractHUsToProcess(final String huUnitType, final List<HUToReport> luHUs, final List<HUToReport> tuHUs, final List<HUToReport> cuHUs)
 	{
 		// In case the unit type is Virtual PI we don't have to return anything, since we don't have processes for virtual PIs
 		if (X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI.equals(huUnitType))
 		{
-			return ImmutableList.of();
+			return cuHUs;
 		}
 
 		// In case we the unit type is LU we just have to process the LUs
@@ -333,8 +327,8 @@ public class HUReportService
 
 		final Properties ctx = Env.getCtx();
 		HUReportExecutor.newInstance(ctx)
-				.numberOfCopies(copies)
-				.executeHUReportAfterCommit(adProcessId, husToProcess);
+		.numberOfCopies(copies)
+		.executeHUReportAfterCommit(adProcessId, husToProcess);
 	}
 
 }

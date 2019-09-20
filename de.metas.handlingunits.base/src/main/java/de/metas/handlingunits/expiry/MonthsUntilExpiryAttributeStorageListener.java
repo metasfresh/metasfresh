@@ -6,10 +6,10 @@ import java.time.temporal.ChronoUnit;
 
 import javax.annotation.PostConstruct;
 
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.springframework.stereotype.Component;
 
-import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
@@ -65,25 +65,25 @@ public class MonthsUntilExpiryAttributeStorageListener implements IAttributeStor
 			return;
 		}
 
-		final boolean relevantAttributesArePresent = storage.hasAttribute(HUAttributeConstants.ATTR_MonthsUntilExpiry)
-				&& storage.hasAttribute(HUAttributeConstants.ATTR_BestBeforeDate);
+		final boolean relevantAttributesArePresent = storage.hasAttribute(AttributeConstants.ATTR_MonthsUntilExpiry)
+				&& storage.hasAttribute(AttributeConstants.ATTR_BestBeforeDate);
 		if (!relevantAttributesArePresent)
 		{
 			return;
 		}
 
 		final String attributeIdentifier = attributeValue.getM_Attribute().getValue();
-		final boolean relevantAttributeHasChanged = HUAttributeConstants.ATTR_BestBeforeDate.equals(attributeIdentifier);
+		final boolean relevantAttributeHasChanged = AttributeConstants.ATTR_BestBeforeDate.equals(attributeIdentifier);
 		if (!relevantAttributeHasChanged)
 		{
 			return;
 		}
 
-		final LocalDate bestBeforeDate = storage.getValueAsLocalDate(HUAttributeConstants.ATTR_BestBeforeDate);
+		final LocalDate bestBeforeDate = storage.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate);
 
 		final LocalDate today = SystemTime.asLocalDate();
 		final long months = ChronoUnit.MONTHS.between(today, bestBeforeDate);
 
-		storage.setValue(HUAttributeConstants.ATTR_MonthsUntilExpiry, new BigDecimal(months));
+		storage.setValue(AttributeConstants.ATTR_MonthsUntilExpiry, new BigDecimal(months));
 	}
 }
