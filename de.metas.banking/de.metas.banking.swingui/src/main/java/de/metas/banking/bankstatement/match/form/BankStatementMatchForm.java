@@ -88,8 +88,6 @@ public class BankStatementMatchForm
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		// TODO Auto-generated method stub
-
 		return ProcessPreconditionsResolution.accept();
 	}
 

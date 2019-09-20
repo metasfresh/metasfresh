@@ -114,7 +114,6 @@ public class ReadPaymentDocumentForm implements FormPanel, IProcessPrecondition
 		return almightyKeeperOfEverything.checkPreconditionsApplicable(context);
 	}
 
-	// todo migration to webui process
 	private void createPaymentRequest(final ReadPaymentPanelResult result)
 	{
 		almightyKeeperOfEverything.createPaymentRequestFromTemplate(invoice, result.getPaymentRequestTemplate());

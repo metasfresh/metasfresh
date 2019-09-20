@@ -25,7 +25,6 @@ package de.metas.banking.payment.paymentallocation.form;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaymentString;
-import de.metas.banking.payment.IPaymentStringBL;
 import de.metas.banking.payment.IPaymentStringDataProvider;
 import de.metas.banking.payment.spi.exception.PaymentStringParseException;
 import de.metas.banking.process.paymentdocumentform.AlmightyKeeperOfEverything;
@@ -76,11 +75,10 @@ class ReadPaymentDocumentPanel
 	// Services
 	private static final Logger logger = LogManager.getLogger(ReadPaymentDocumentDialog.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final IPaymentStringBL paymentStringBL = Services.get(IPaymentStringBL.class);
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final IClientUI clientUI = Services.get(IClientUI.class);
 
-	public static final String HEADER_READ_PAYMENT_STRING = "ReadPaymentString";
+	static final String HEADER_READ_PAYMENT_STRING = "ReadPaymentString";
 
 	private static final String MSG_CouldNotFindOrCreateBPBankAccount = "de.metas.payment.CouldNotFindOrCreateBPBankAccount";
 
@@ -135,10 +133,6 @@ class ReadPaymentDocumentPanel
 
 	private final AlmightyKeeperOfEverything almightyKeeperOfEverything;
 
-	/**
-	 * @param window
-	 * @param AD_Org_ID
-	 */
 	public ReadPaymentDocumentPanel(final Window window, final int AD_Org_ID)
 	{
 		this(Env.createWindowNo(window), window, AD_Org_ID);
@@ -208,7 +202,7 @@ class ReadPaymentDocumentPanel
 	 * If set, and the system finds an existing {@link I_C_BP_BankAccount}, then that bank account is only used
 	 * if it belongs to the given {@code contextBPartner} or to a second bPartner who has a {@code RemitTo} {@link I_C_BP_Relation} with the given {@code contextPartner}.
 	 */
-	public void setContextBPartner_ID(final int contextBPartner_ID)
+	void setContextBPartner_ID(final int contextBPartner_ID)
 	{
 		this.contextBPartner_ID = contextBPartner_ID;
 	}
@@ -218,12 +212,12 @@ class ReadPaymentDocumentPanel
 		return mainPanel;
 	}
 
-	public I_C_Payment_Request getCreatedPaymentRequest()
+	I_C_Payment_Request getCreatedPaymentRequest()
 	{
 		return paymentRequest;
 	}
 
-	private final void init()
+	private void init()
 	{
 
 		try
@@ -236,7 +230,7 @@ class ReadPaymentDocumentPanel
 		}
 	}
 
-	private final void jbInit()
+	private void jbInit()
 	{
 		AdempierePLAF.setDefaultBackground(mainPanel);
 		mainPanel.setLayout(new BorderLayout());
@@ -357,7 +351,7 @@ class ReadPaymentDocumentPanel
 	/**
 	 * Parse payment string if it was changed and update bank account and amount if it's valid
 	 */
-	private final void parsePaymentString(final Properties ctx)
+	private void parsePaymentString(final Properties ctx)
 	{
 		updateCurrentPaymentString();
 
@@ -411,7 +405,7 @@ class ReadPaymentDocumentPanel
 				// bpartnerField.setReadWrite(false); // set read-only to true (user shall not be able to edit)
 				final I_C_BP_BankAccount bpBankAccountNew = dataProvider.createNewC_BP_BankAccount(contextProvider, bpartnerId);
 				setC_BP_BankAccount(bpBankAccountNew);
-				newBankAccount = true; // todo @teo what's with the new bank account and with its deletion?
+				newBankAccount = true;
 			}
 		}
 
@@ -421,7 +415,7 @@ class ReadPaymentDocumentPanel
 		currentParsedPaymentString = paymentString;
 	}
 
-	public IPaymentString getParsedPaymentStringOrNull()
+	IPaymentString getParsedPaymentStringOrNull()
 	{
 		return currentParsedPaymentString;
 	}
@@ -429,7 +423,7 @@ class ReadPaymentDocumentPanel
 	/**
 	 * Sets model payment string from it's corresponding field
 	 */
-	private final void updateCurrentPaymentString()
+	private void updateCurrentPaymentString()
 	{
 		currentPaymentString = (String)paymentStringField.getValue();
 
@@ -595,12 +589,12 @@ class ReadPaymentDocumentPanel
 	 *
 	 * @param e focus event
 	 */
-	public void focusGained(final FocusEvent e)
+	void focusGained(final FocusEvent e)
 	{
 		updateCurrentPaymentString();
 	}
 
-	public void onContainerDispose()
+	void onContainerDispose()
 	{
 		if (!userPressedOK && isNewlyCreatedC_BP_BankAccount())
 		{
@@ -609,7 +603,7 @@ class ReadPaymentDocumentPanel
 		Env.clearWinContext(windowNo);
 	}
 
-	public Optional<ReadPaymentPanelResult> getResultIfValid()
+	Optional<ReadPaymentPanelResult> getResultIfValid()
 	{
 		final I_C_Payment_Request paymentRequestTemplate = getCreatedPaymentRequest();
 		if (paymentRequestTemplate == null)
