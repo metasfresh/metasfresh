@@ -31,6 +31,6 @@ export const DATE_FIELD_FORMATS = {
   ZonedDateTime: 'L LTS',
   DateTime: 'L LTS',
   Time: 'LT',
-  Timestamp: 'L HH:mm:SSS',
+  Timestamp: 'L HH:mm:ss',
 };
 export const TIME_FIELD_TYPES = ['Time'];
