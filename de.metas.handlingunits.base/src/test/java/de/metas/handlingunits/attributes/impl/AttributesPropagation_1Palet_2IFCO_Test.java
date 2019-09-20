@@ -94,13 +94,13 @@ public class AttributesPropagation_1Palet_2IFCO_Test extends AbstractHUTest
 			final Class<? extends IAttributeSplitterStrategy> splitStrategyClass,
 			final Class<? extends IAttributeAggregationStrategy> aggregationStrategyClass)
 	{
-		helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attribute)
+		helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attribute)
 				.setM_HU_PI(huDefIFCO)
 				.setPropagationType(propagationType)
 				.setSplitterStrategyClass(splitStrategyClass)
 				.setAggregationStrategyClass(aggregationStrategyClass));
 
-		helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attribute)
+		helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attribute)
 				.setM_HU_PI(huDefPalet)
 				.setPropagationType(propagationType)
 				.setSplitterStrategyClass(splitStrategyClass)

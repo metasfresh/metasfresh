@@ -15,7 +15,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1084455260L;
+	private static final long serialVersionUID = 40671130L;
 
     /** Standard Constructor */
     public X_C_OrderLine (Properties ctx, int C_OrderLine_ID, String trxName)
@@ -2339,6 +2339,32 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * ShipmentAllocation_BestBefore_Policy AD_Reference_ID=541043
+	 * Reference name: ShipmentAllocation_BestBefore_Policy
+	 */
+	public static final int SHIPMENTALLOCATION_BESTBEFORE_POLICY_AD_Reference_ID=541043;
+	/** Newest_First = N */
+	public static final String SHIPMENTALLOCATION_BESTBEFORE_POLICY_Newest_First = "N";
+	/** Expiring_First = E */
+	public static final String SHIPMENTALLOCATION_BESTBEFORE_POLICY_Expiring_First = "E";
+	/** Set Zuordnung Mindesthaltbarkeit.
+		@param ShipmentAllocation_BestBefore_Policy Zuordnung Mindesthaltbarkeit	  */
+	@Override
+	public void setShipmentAllocation_BestBefore_Policy (java.lang.String ShipmentAllocation_BestBefore_Policy)
+	{
+
+		set_Value (COLUMNNAME_ShipmentAllocation_BestBefore_Policy, ShipmentAllocation_BestBefore_Policy);
+	}
+
+	/** Get Zuordnung Mindesthaltbarkeit.
+		@return Zuordnung Mindesthaltbarkeit	  */
+	@Override
+	public java.lang.String getShipmentAllocation_BestBefore_Policy () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ShipmentAllocation_BestBefore_Policy);
 	}
 
 	/** Set Positions-Steuer.

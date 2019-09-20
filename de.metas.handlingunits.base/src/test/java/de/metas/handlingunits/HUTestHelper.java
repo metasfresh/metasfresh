@@ -51,6 +51,7 @@ import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.adempiere.mm.attributes.spi.impl.WeightGrossAttributeValueCallout;
@@ -170,31 +171,19 @@ public class HUTestHelper
 	public I_AD_Client adClient;
 	public I_AD_Role adRole;
 
-	public static final String NAME_CountryMadeIn_Attribute = "Made In";
-	public static final String NAME_Volume_Attribute = "Volume";
-	public static final String NAME_FragileSticker_Attribute = "Fragile";
+	private static final String NAME_CountryMadeIn_Attribute = "Made In";
+	private static final String NAME_Volume_Attribute = "Volume";
+	private static final String NAME_FragileSticker_Attribute = "Fragile";
 
-	// we reuse the "production" M_Attribute.Values from WeightableFactory
-	public static final String NAME_WeightGross_Attribute = WeightableFactory.ATTR_WeightGross_Value;
-	public static final String NAME_WeightNet_Attribute = WeightableFactory.ATTR_WeightNet_Value;
-	public static final String NAME_WeightTare_Attribute = WeightableFactory.ATTR_WeightTare_Value;
-	public static final String NAME_WeightTareAdjust_Attribute = WeightableFactory.ATTR_WeightTareAdjust_Value;
-
-	public static final String NAME_QualityDiscountPercent_Attribute = "QualityDiscountPercent";
-	public static final String NAME_QualityNotice_Attribute = "QualityNotice";
-	public static final String NAME_SubProducerBPartner_Attribute = "SubProducerBPartner";
-
-	public static final String NAME_M_Material_Tracking_ID_Attribute = "M_Material_Tracking_ID";
+	private static final String NAME_M_Material_Tracking_ID_Attribute = "M_Material_Tracking_ID";
 
 	public static final String NAME_Palet_Product = "Palet";
 	public static final String NAME_IFCO_Product = "IFCO";
 	public static final String NAME_Bag_Product = "Bag";
 	public static final String NAME_Paloxe_Product = "Paloxe";
-	public static final String NAME_Blister_Product = "Blister";
-	public static final String NAME_Truck_Product = "Truck";
 
-	public static final String NAME_Default_Warehouse = "DefaultWarehouse";
-	public static final String NAME_Issue_Warehouse = "IssueWarehouse";
+	private static final String NAME_Default_Warehouse = "DefaultWarehouse";
+	private static final String NAME_Issue_Warehouse = "IssueWarehouse";
 
 	public IHUTrxBL trxBL;
 
@@ -573,15 +562,15 @@ public class HUTestHelper
 		attr_Volume = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_Volume_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 		attr_FragileSticker = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_FragileSticker_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, false);
 
-		attr_WeightGross = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_WeightGross_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightGrossAttributeValueCallout.class, uomKg, true);
-		attr_WeightNet = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_WeightNet_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightNetAttributeValueCallout.class, uomKg, true);
-		attr_WeightTare = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_WeightTare_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAttributeValueCallout.class, uomKg, true);
-		attr_WeightTareAdjust = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_WeightTareAdjust_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAdjustAttributeValueCallout.class, uomKg, true);
+		attr_WeightGross = attributesTestHelper.createM_Attribute(WeightableFactory.ATTR_WeightGross_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightGrossAttributeValueCallout.class, uomKg, true);
+		attr_WeightNet = attributesTestHelper.createM_Attribute(WeightableFactory.ATTR_WeightNet_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightNetAttributeValueCallout.class, uomKg, true);
+		attr_WeightTare = attributesTestHelper.createM_Attribute(WeightableFactory.ATTR_WeightTare_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAttributeValueCallout.class, uomKg, true);
+		attr_WeightTareAdjust = attributesTestHelper.createM_Attribute(WeightableFactory.ATTR_WeightTareAdjust_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAdjustAttributeValueCallout.class, uomKg, true);
 
 		attr_CostPrice = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_CostPrice, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, null, null, true);
 
-		attr_QualityDiscountPercent = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_QualityDiscountPercent_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
-		attr_QualityNotice = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_QualityNotice_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
+		attr_QualityDiscountPercent = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_QualityDiscountPercent_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+		attr_QualityNotice = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_QualityNotice_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 		{
 			//
 			// Create values
@@ -589,9 +578,9 @@ public class HUTestHelper
 			createAttributeListValue(attr_QualityNotice, QUALITYNOTICE_Test2, QUALITYNOTICE_Test2);
 			createAttributeListValue(attr_QualityNotice, QUALITYNOTICE_Test3, QUALITYNOTICE_Test3);
 		}
-		attr_SubProducerBPartner = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_SubProducerBPartner_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		attr_SubProducerBPartner = attributesTestHelper.createM_Attribute(AttributeConstants.ATTR_SubProducerBPartner_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
-		attr_M_Material_Tracking_ID = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_M_Material_Tracking_ID_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+		attr_M_Material_Tracking_ID = attributesTestHelper.createM_Attribute(NAME_M_Material_Tracking_ID_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 
 		attr_LotNumberDate = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_LotNumberDate, X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
 
@@ -706,7 +695,7 @@ public class HUTestHelper
 		//
 		// Weight Gross
 		{
-			final I_M_HU_PI_Attribute piAttr_WeightGross = createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_WeightGross)
+			final I_M_HU_PI_Attribute piAttr_WeightGross = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_WeightGross)
 					.setM_HU_PI(huDefNone)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation));
 			piAttr_WeightGross.setIsReadOnly(false);
@@ -719,7 +708,7 @@ public class HUTestHelper
 		//
 		// Weight Net
 		{
-			final I_M_HU_PI_Attribute piAttr_WeightNet = createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_WeightNet)
+			final I_M_HU_PI_Attribute piAttr_WeightNet = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_WeightNet)
 					.setM_HU_PI(huDefNone)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown)
 					.setSplitterStrategyClass(LinearDistributionAttributeSplitterStrategy.class)
@@ -735,7 +724,7 @@ public class HUTestHelper
 		//
 		// Weight Tare
 		{
-			final I_M_HU_PI_Attribute piAttr_WeightTare = createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_WeightTare)
+			final I_M_HU_PI_Attribute piAttr_WeightTare = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_WeightTare)
 					.setM_HU_PI(huDefNone)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp)
 					.setAggregationStrategyClass(SumAggregationStrategy.class));
@@ -749,7 +738,7 @@ public class HUTestHelper
 		//
 		// Weight Tare Adjust
 		{
-			final I_M_HU_PI_Attribute piAttr_WeightTareAdjust = createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_WeightTareAdjust)
+			final I_M_HU_PI_Attribute piAttr_WeightTareAdjust = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_WeightTareAdjust)
 					.setM_HU_PI(huDefNone)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation));
 			piAttr_WeightTareAdjust.setIsReadOnly(true);
@@ -762,7 +751,7 @@ public class HUTestHelper
 		//
 		// Attributes used in ASI
 		{
-			final I_M_HU_PI_Attribute piAttr_CountryMadeIn = createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
+			final I_M_HU_PI_Attribute piAttr_CountryMadeIn = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_CountryMadeIn)
 					.setM_HU_PI(huDefNone)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown));
 			piAttr_CountryMadeIn.setIsReadOnly(true);
@@ -773,7 +762,7 @@ public class HUTestHelper
 		}
 
 		{
-			final I_M_HU_PI_Attribute piAttr_FragileSticker = createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_FragileSticker)
+			final I_M_HU_PI_Attribute piAttr_FragileSticker = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_FragileSticker)
 					.setM_HU_PI(huDefNone)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp));
 			piAttr_FragileSticker.setIsReadOnly(true);
@@ -784,7 +773,7 @@ public class HUTestHelper
 		}
 
 		{
-			final I_M_HU_PI_Attribute piAttr_QualityDiscountPercent = createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_QualityDiscountPercent)
+			final I_M_HU_PI_Attribute piAttr_QualityDiscountPercent = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_QualityDiscountPercent)
 					.setM_HU_PI(huDefNone)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown));
 			piAttr_QualityDiscountPercent.setIsReadOnly(true);
@@ -795,7 +784,7 @@ public class HUTestHelper
 		}
 
 		{
-			final I_M_HU_PI_Attribute piAttr_QualityNotice = createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_QualityNotice)
+			final I_M_HU_PI_Attribute piAttr_QualityNotice = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_QualityNotice)
 					.setM_HU_PI(huDefNone)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown));
 			piAttr_QualityNotice.setIsReadOnly(true);
@@ -806,7 +795,7 @@ public class HUTestHelper
 		}
 
 		{
-			final I_M_HU_PI_Attribute piAttr_LotNumberDate = createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_LotNumberDate)
+			final I_M_HU_PI_Attribute piAttr_LotNumberDate = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_LotNumberDate)
 					.setM_HU_PI(huDefNone)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown)
 					.setSplitterStrategyClass(CopyAttributeSplitterStrategy.class)
@@ -821,7 +810,7 @@ public class HUTestHelper
 
 		// #653
 		{
-			final I_M_HU_PI_Attribute piAttr_LotNumber = createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_LotNumber)
+			final I_M_HU_PI_Attribute piAttr_LotNumber = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_LotNumber)
 					.setM_HU_PI(huDefNone)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown)
 					.setSplitterStrategyClass(CopyAttributeSplitterStrategy.class)
@@ -836,7 +825,7 @@ public class HUTestHelper
 
 		{
 			final I_M_HU_PI_Attribute piAttr_PurchaseOrderLine = createM_HU_PI_Attribute(
-					new HUPIAttributeBuilder(attr_PurchaseOrderLine)
+					HUPIAttributeBuilder.newInstance(attr_PurchaseOrderLine)
 							.setM_HU_PI(huDefNone)
 							.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown)
 							.setSplitterStrategyClass(CopyAttributeSplitterStrategy.class)
@@ -852,7 +841,7 @@ public class HUTestHelper
 
 		{
 			final I_M_HU_PI_Attribute piAttr_ReceiptInOutLine = createM_HU_PI_Attribute(
-					new HUPIAttributeBuilder(attr_ReceiptInOutLine)
+					HUPIAttributeBuilder.newInstance(attr_ReceiptInOutLine)
 							.setM_HU_PI(huDefNone)
 							.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown)
 							.setSplitterStrategyClass(CopyAttributeSplitterStrategy.class)
@@ -875,7 +864,7 @@ public class HUTestHelper
 		//
 		// CostPrice
 		{
-			huDefVirtual_Attr_CostPrice = createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CostPrice)
+			huDefVirtual_Attr_CostPrice = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_CostPrice)
 					.setM_HU_PI(huDefVirtual)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation)
 					.setSplitterStrategyClass(NullSplitterStrategy.class)

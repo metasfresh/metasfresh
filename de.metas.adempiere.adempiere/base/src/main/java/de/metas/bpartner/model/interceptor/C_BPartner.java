@@ -9,11 +9,13 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.ModelValidator;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerPOCopyRecordSupport;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
@@ -52,11 +54,15 @@ public class C_BPartner
 	@Init
 	public void init()
 	{
+		CopyRecordFactory.enableForTableName(I_C_BPartner.Table_Name);
+		CopyRecordFactory.registerCopyRecordSupport(I_C_BPartner.Table_Name, BPartnerPOCopyRecordSupport.class);
+
 		Services.get(ITabCalloutFactory.class)
 				.registerTabCalloutForTable(I_C_BPartner.Table_Name, de.metas.bpartner.callout.C_BPartner_TabCallout.class);
 
 		Services.get(IProgramaticCalloutProvider.class)
 				.registerAnnotatedCallout(new de.metas.bpartner.callout.C_BPartner());
+
 	}
 
 	/**

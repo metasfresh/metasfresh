@@ -122,14 +122,10 @@ public class AvailableToPromiseRepository
 	private IQuery<I_MD_Candidate_ATP_QueryResult> createDBQueryForMaterialQueryOrNull(
 			@NonNull final AvailableToPromiseMultiQuery multiQuery)
 	{
-		final Function<AvailableToPromiseQuery, IQuery<I_MD_Candidate_ATP_QueryResult>> createDbQueryForSingleStockQuery = //
-				stockQuery -> AvailableToPromiseSqlHelper
-						.createDBQueryForStockQuery(stockQuery);
-
 		return multiQuery.getQueries()
 				.stream()
 				.filter(Predicates.notNull())
-				.map(createDbQueryForSingleStockQuery)
+				.map(AvailableToPromiseSqlHelper::createDBQueryForStockQuery)
 				.reduce(IQuery.unionDistict())
 				.orElse(null);
 	}

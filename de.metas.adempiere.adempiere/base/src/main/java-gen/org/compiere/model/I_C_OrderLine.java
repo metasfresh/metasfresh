@@ -2420,6 +2420,29 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_S_ResourceAssignment_ID = "S_ResourceAssignment_ID";
 
 	/**
+	 * Set Zuordnung Mindesthaltbarkeit.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setShipmentAllocation_BestBefore_Policy (java.lang.String ShipmentAllocation_BestBefore_Policy);
+
+	/**
+	 * Get Zuordnung Mindesthaltbarkeit.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getShipmentAllocation_BestBefore_Policy();
+
+    /** Column definition for ShipmentAllocation_BestBefore_Policy */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_ShipmentAllocation_BestBefore_Policy = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "ShipmentAllocation_BestBefore_Policy", null);
+    /** Column name ShipmentAllocation_BestBefore_Policy */
+    public static final String COLUMNNAME_ShipmentAllocation_BestBefore_Policy = "ShipmentAllocation_BestBefore_Policy";
+
+	/**
 	 * Set Positions-Steuer.
 	 * Betrag der enthaltenen oder zuzgl. Steuer in einer Rechungs- oder Auftragsposition
 	 *

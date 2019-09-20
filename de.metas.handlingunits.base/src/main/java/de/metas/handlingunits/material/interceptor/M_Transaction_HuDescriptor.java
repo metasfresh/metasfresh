@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -134,17 +135,19 @@ public class M_Transaction_HuDescriptor
 		final IHUStorage storage = huContext.getHUStorageFactory().getStorage(hu);
 
 		// Important note: we could have the AttributesKey without making an ASI, but we need the ASI-ID for display reasons in the material dispo window.
-		final IPair<AttributesKey, Integer> attributesKeyAndAsiId = createAttributesKeyAndAsiId(hu);
+		final IPair<AttributesKey, AttributeSetInstanceId> attributesKeyAndAsiId = createAttributesKeyAndAsiId(hu);
 
 		final List<IHUProductStorage> productStorages = storage.getProductStorages();
 		final ImmutableList.Builder<HUDescriptor> descriptors = ImmutableList.builder();
 		for (final IHUProductStorage productStorage : productStorages)
 		{
+			final AttributesKey attributesKey = attributesKeyAndAsiId.getLeft();
+			final AttributeSetInstanceId asiId = attributesKeyAndAsiId.getRight();
 			final ProductDescriptor productDescriptor = ProductDescriptor
 					.forProductAndAttributes(
 							productStorage.getProductId().getRepoId(),
-							attributesKeyAndAsiId.getLeft(),
-							attributesKeyAndAsiId.getRight());
+							attributesKey,
+							asiId.getRepoId());
 
 			final BigDecimal quantity = productStorage.getQtyInStockingUOM();
 
@@ -158,7 +161,7 @@ public class M_Transaction_HuDescriptor
 		return descriptors.build();
 	}
 
-	private static IPair<AttributesKey, Integer> createAttributesKeyAndAsiId(@NonNull final I_M_HU hu)
+	private static IPair<AttributesKey, AttributeSetInstanceId> createAttributesKeyAndAsiId(@NonNull final I_M_HU hu)
 	{
 		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
 		final IAttributeStorage attributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
@@ -168,12 +171,13 @@ public class M_Transaction_HuDescriptor
 
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASIFromAttributeSet(storageRelevantSubSet);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asi.getM_AttributeSetInstance_ID());
 
 		final AttributesKey attributesKey = AttributesKeys
-				.createAttributesKeyFromASIStorageAttributes(asi.getM_AttributeSetInstance_ID())
+				.createAttributesKeyFromASIStorageAttributes(asiId)
 				.orElse(AttributesKey.NONE);
 
-		return ImmutablePair.of(attributesKey, asi.getM_AttributeSetInstance_ID());
+		return ImmutablePair.of(attributesKey, asiId);
 	}
 
 	@Builder(builderMethodName = "newMaterialDescriptors", builderClassName = "_MaterialDescriptorsBuilder")

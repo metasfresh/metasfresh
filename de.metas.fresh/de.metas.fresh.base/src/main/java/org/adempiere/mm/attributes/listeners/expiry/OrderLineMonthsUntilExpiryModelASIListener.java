@@ -2,12 +2,12 @@ package org.adempiere.mm.attributes.listeners.expiry;
 
 import java.util.List;
 
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.order.grossprofit.model.I_C_OrderLine;
 import de.metas.util.Services;
 
@@ -54,6 +54,6 @@ public class OrderLineMonthsUntilExpiryModelASIListener implements IModelAttribu
 	@Override
 	public void modelChanged(Object model)
 	{
-		attributeSetInstanceBL.updateASIAttributeFromModel(HUAttributeConstants.ATTR_MonthsUntilExpiry, model);
+		attributeSetInstanceBL.updateASIAttributeFromModel(AttributeConstants.ATTR_MonthsUntilExpiry, model);
 	}
 }

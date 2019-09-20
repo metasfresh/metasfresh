@@ -64,13 +64,14 @@ public class AttributesKeysTest
 
 		final I_M_AttributeSetInstance asi = newInstance(I_M_AttributeSetInstance.class);
 		save(asi);
+		final AttributeSetInstanceId asiId1 = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeValue1);
 		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeValue2);
 
 		// invoke the method under test
-		final Optional<AttributesKey> result = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asi.getM_AttributeSetInstance_ID());
+		final Optional<AttributesKey> result = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asiId1);
 		assertThat(result).isPresent();
 
 		final AttributesKey expectedResult = AttributesKey.ofAttributeValueIds(attributeValue1.getM_AttributeValue_ID(), attributeValue2.getM_AttributeValue_ID());

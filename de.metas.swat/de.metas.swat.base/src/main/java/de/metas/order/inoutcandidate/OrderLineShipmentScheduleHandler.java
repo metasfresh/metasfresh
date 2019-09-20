@@ -146,6 +146,8 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		shipmentSchedule.setAD_User_ID(orderLine.getAD_User_ID());
 
 		shipmentSchedule.setAD_Org_ID(orderLine.getAD_Org_ID());
+		
+		shipmentSchedule.setShipmentAllocation_BestBefore_Policy(orderLine.getShipmentAllocation_BestBefore_Policy());
 	}
 
 	private static void updateShipmentScheduleFromOrder(

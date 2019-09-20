@@ -128,7 +128,6 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
-import de.metas.money.CurrencyIds;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.order.IOrderDAO;
@@ -146,7 +145,6 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductId;
-import de.metas.product.ProductIds;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -157,7 +155,6 @@ import de.metas.tax.api.ITaxDAO;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
-import de.metas.uom.UomIds;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.OptionalBoolean;
@@ -599,9 +596,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final BigDecimal priceActual = InterfaceWrapperHelper.getValueOverrideOrValue(ic, I_C_Invoice_Candidate.COLUMNNAME_PriceActual);
 
 		return ProductPrice.builder()
-				.money(Money.of(priceActual, CurrencyIds.ofRecord(ic)))
-				.uomId(UomIds.ofRecord(ic))
-				.productId(ProductIds.ofRecord(ic))
+				.money(Money.of(priceActual, CurrencyId.ofRepoId(ic.getC_Currency_ID())))
+				.uomId(UomId.ofRepoId(ic.getC_UOM_ID()))
+				.productId(ProductId.ofRepoId(ic.getM_Product_ID()))
 				.build();
 	}
 
@@ -1115,9 +1112,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final BigDecimal priceAmount = InterfaceWrapperHelper.getValueOverrideOrValue(ic, I_C_Invoice_Candidate.COLUMNNAME_PriceEntered);
 
 		return ProductPrice.builder()
-				.money(Money.of(priceAmount, CurrencyIds.ofRecord(ic)))
-				.uomId(UomIds.ofRecord(ic))
-				.productId(ProductIds.ofRecord(ic))
+				.money(Money.of(priceAmount, CurrencyId.ofRepoId(ic.getC_Currency_ID())))
+				.uomId(UomId.ofRepoId(ic.getC_UOM_ID()))
+				.productId(ProductId.ofRepoId(ic.getM_Product_ID()))
 				.build();
 	}
 
@@ -1952,7 +1949,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 			final BigDecimal nominalQty = uomConversionBL.convertQty(
-					UOMConversionContext.of(ProductIds.ofRecord(inOutLine)),
+					UOMConversionContext.of(ProductId.ofRepoId(inOutLine.getM_Product_ID())),
 					inOutLine.getQtyEntered(),
 					UomId.ofRepoId(inOutLine.getC_UOM_ID()) /* uomFrom */,
 					UomId.ofRepoId(inOutLine.getCatch_UOM_ID()) /* uomTo */

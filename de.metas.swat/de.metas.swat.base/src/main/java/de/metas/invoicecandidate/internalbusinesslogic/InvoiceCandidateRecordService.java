@@ -22,7 +22,6 @@ import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
-import de.metas.uom.UomIds;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
@@ -64,7 +63,7 @@ public class InvoiceCandidateRecordService
 		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
 		final ProductId productId = ProductId.ofRepoId(icRecord.getM_Product_ID());
 		final UomId stockUomId = productBL.getStockUOMId(productId);
-		final UomId icUomId = UomIds.ofRecord(icRecord);
+		final UomId icUomId = UomId.ofRepoId(icRecord.getC_UOM_ID());
 
 		// might be null if the IC was just created from an inout line
 		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(icRecord.getC_Currency_ID());
