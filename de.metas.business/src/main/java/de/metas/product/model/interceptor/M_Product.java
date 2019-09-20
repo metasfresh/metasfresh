@@ -31,7 +31,7 @@ import de.metas.product.ProductPOCopyRecordSupport;
  * #L%
  */
 @Interceptor(I_M_Product.class)
-@Component("de.metas.product.model.interceptor.M_Product")
+@Component()
 public class M_Product
 {
 	@Init

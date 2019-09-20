@@ -5,7 +5,6 @@ import java.util.Properties;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -54,15 +53,10 @@ import de.metas.util.Services;
 public class R_Request
 {
 	@Init
-	public void init(final IModelValidationEngine engine)
+	public void init()
 	{
 		CopyRecordFactory.enableForTableName(I_R_Request.Table_Name);
 		CopyRecordFactory.registerCopyRecordSupport(I_R_Request.Table_Name, RequestPOCopyRecordSupport.class);
-	}
-
-	@Init
-	public void registerCallout()
-	{
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
