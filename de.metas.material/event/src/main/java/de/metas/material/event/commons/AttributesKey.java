@@ -65,7 +65,7 @@ public final class AttributesKey
 	public static final AttributesKey NONE = AttributesKey.ofAttributeValueIds(-1002);
 
 	@JsonCreator
-	public static final AttributesKey ofString(final String attributesKeyString)
+	public static AttributesKey ofString(final String attributesKeyString)
 	{
 		if (attributesKeyString == null || attributesKeyString.trim().isEmpty())
 		{
@@ -82,7 +82,7 @@ public final class AttributesKey
 		return new AttributesKey(attributesKeyStringNorm, attributeValueIds);
 	}
 
-	public static final AttributesKey ofAttributeValueIds(final int... attributeValueIds)
+	public static AttributesKey ofAttributeValueIds(final int... attributeValueIds)
 	{
 		if (attributeValueIds == null || attributeValueIds.length == 0)
 		{
@@ -119,7 +119,7 @@ public final class AttributesKey
 	private final String attributesKeyString;
 
 	@JsonIgnore
-	private transient ImmutableSet<Integer> attributeValueIds; // lazy
+	private final ImmutableSet<Integer> attributeValueIds;
 	private transient String sqlLikeString; // lazy
 
 	private AttributesKey(
@@ -171,10 +171,6 @@ public final class AttributesKey
 
 	public Set<Integer> getAttributeValueIds()
 	{
-		if (attributeValueIds == null)
-		{
-			attributeValueIds = extractAttributeValueIds(attributesKeyString);
-		}
 		return attributeValueIds;
 	}
 
@@ -193,9 +189,10 @@ public final class AttributesKey
 
 	public String getSqlLikeString()
 	{
+		String sqlLikeString = this.sqlLikeString;
 		if (sqlLikeString == null)
 		{
-			sqlLikeString = getAttributeValueIds()
+			this.sqlLikeString = sqlLikeString = getAttributeValueIds()
 					.stream()
 					.map(String::valueOf)
 					.collect(Collectors.joining("%"));

@@ -7,6 +7,7 @@ import java.time.temporal.ChronoUnit;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
@@ -172,6 +173,6 @@ public class HUWithExpiryDatesService
 	private AttributeId retrieveHU_MonthsUntilExpiry_AttributeId()
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		return attributeDAO.retrieveAttributeIdByValue(HUAttributeConstants.ATTR_MonthsUntilExpiry); // this is cached
+		return attributeDAO.retrieveAttributeIdByValue(AttributeConstants.ATTR_MonthsUntilExpiry); // this is cached
 	}
 }

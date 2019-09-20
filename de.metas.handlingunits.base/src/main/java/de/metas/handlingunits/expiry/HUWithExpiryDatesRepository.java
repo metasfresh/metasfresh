@@ -10,6 +10,7 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.TimeUtil;
@@ -110,7 +111,7 @@ public class HUWithExpiryDatesRepository
 
 		return Services.get(IHandlingUnitsDAO.class)
 				.createHUQueryBuilder()
-				.addOnlyWithAttributeNotNull(HUAttributeConstants.ATTR_BestBeforeDate)
+				.addOnlyWithAttributeNotNull(AttributeConstants.ATTR_BestBeforeDate)
 				.addHUStatusesToInclude(validHuStatuses)
 				.createQueryBuilder()
 				.create()
@@ -127,7 +128,7 @@ public class HUWithExpiryDatesRepository
 
 		final IAttributeStorage attributeStorage = getAttributeStorage(huContext, hu);
 
-		final LocalDate bestBeforeDate = attributeStorage.getValueAsLocalDate(HUAttributeConstants.ATTR_BestBeforeDate);
+		final LocalDate bestBeforeDate = attributeStorage.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate);
 
 		return bestBeforeDate;
 

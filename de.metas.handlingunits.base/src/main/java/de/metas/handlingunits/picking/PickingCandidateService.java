@@ -84,6 +84,13 @@ public class PickingCandidateService
 		return pickingCandidateRepository.getByIds(pickingCandidateIds);
 	}
 
+	public List<PickingCandidate> getByShipmentScheduleIdAndStatus(
+			@NonNull ShipmentScheduleId shipmentScheduleId,
+			@NonNull final PickingCandidateStatus status)
+	{
+		return pickingCandidateRepository.getByShipmentScheduleIdAndStatus(shipmentScheduleId, status);
+	}
+
 	public PickHUResult pickHU(final PickHURequest request)
 	{
 		return PickHUCommand.builder()

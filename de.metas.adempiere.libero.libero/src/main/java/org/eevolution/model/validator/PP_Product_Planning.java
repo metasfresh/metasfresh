@@ -2,6 +2,7 @@ package org.eevolution.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.compiere.model.ModelValidator;
 import org.eevolution.model.I_PP_Product_Planning;
@@ -42,7 +43,8 @@ public class PP_Product_Planning
 	)
 	public void updateStorageAttributesKey(@NonNull final I_PP_Product_Planning productPlanning)
 	{
-		final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(productPlanning.getM_AttributeSetInstance_ID())
+		AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(productPlanning.getM_AttributeSetInstance_ID());
+		final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asiId)
 				.orElse(AttributesKey.NONE);
 
 		productPlanning.setStorageAttributesKey(attributesKey.getAsString());

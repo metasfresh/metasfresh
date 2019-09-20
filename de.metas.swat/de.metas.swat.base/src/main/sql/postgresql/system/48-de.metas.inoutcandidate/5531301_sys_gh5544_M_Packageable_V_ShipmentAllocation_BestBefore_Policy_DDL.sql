@@ -13,13 +13,13 @@ FROM (
 		p.C_BPartner_ID AS C_BPartner_Customer_ID,
 		p.Value AS BPartnerValue,
 		(coalesce(p.Name,'') || coalesce(p.Name2,'')) AS BPartnerName,
-		
+
 		--
 		-- BPartner location
 		l.C_BPartner_Location_ID,
 		l.Name AS BPartnerLocationName,
 		s.BPartnerAddress_Override,
-		
+
 		--
 		-- Order Info
 		s.C_Order_ID AS C_OrderSO_ID,
@@ -30,19 +30,19 @@ FROM (
 		s.C_OrderLine_ID as C_OrderLineSO_ID,
 		ol.LineNetAmt,
 		ol.C_Currency_ID,
-		
+
 		--
 		-- Warehouse
 		w.M_Warehouse_ID,
 		w.Name AS WarehouseName,
 		w.M_Warehouse_Type_ID,
-		
+
 		--
 		-- Shipment schedule
 		s.M_ShipmentSchedule_ID,
 		s.IsDisplayed,
 		COALESCE(s.PreparationDate_Override, s.PreparationDate) AS PreparationDate,
-		s.ShipmentAllocation_BestBefore_Policy
+		s.ShipmentAllocation_BestBefore_Policy,
 
 		--
 		-- Product & ASI
@@ -84,13 +84,13 @@ FROM (
 				and pc.Status='IP'
 				and pc.IsActive = 'Y'
 		) as QtyPickedPlanned,
-		
+
 		--
 		-- Rules&Quantities
 		COALESCE (s.DeliveryViaRule_Override, s.DeliveryViaRule) AS DeliveryViaRule,
 		COALESCE(s.DeliveryDate_Override, s.DeliveryDate) AS DeliveryDate,
 		COALESCE(s.PriorityRule_Override, s.PriorityRule) as PriorityRule,
-		
+
 		--
 		-- Shipper
 		sh.M_Shipper_ID,
@@ -100,7 +100,7 @@ FROM (
 		-- Locking
 		-- NOTE: assume there is only one M_ShipmentSchedule_Lock record per each M_ShipmentSchedule_ID
 		(select l.LockedBy_User_ID from M_ShipmentSchedule_Lock l where l.M_ShipmentSchedule_ID=s.M_ShipmentSchedule_ID) as LockedBy_User_ID,
-		
+
 		--
 		-- Standard columns
 		s.AD_Client_ID, s.AD_Org_ID, s.Created, s.CreatedBy, s.Updated, s.UpdatedBy, s.IsActive

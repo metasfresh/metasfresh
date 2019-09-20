@@ -1,6 +1,11 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
-import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.*;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.CURRENCY_ID;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.IC_UOM_ID;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.PRODUCT_ID;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.STOCK_UOM_ID;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.createRequiredMasterdata;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.loadJsonFixture;
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
@@ -29,9 +34,9 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
-import de.metas.product.ProductIds;
+import de.metas.product.ProductId;
 import de.metas.uom.CreateUOMConversionRequest;
-import de.metas.uom.UomIds;
+import de.metas.uom.UomId;
 import de.metas.uom.impl.UOMTestHelper;
 
 /*
@@ -135,9 +140,9 @@ class InvoiceCandidateRecordServiceTest
 		saveRecord(iol);
 
 		uomConversionHelper.createUOMConversion(CreateUOMConversionRequest.builder()
-				.fromUomId(UomIds.ofRecord(icUomRecord))
-				.toUomId(UomIds.ofRecord(shipmentUomRecord))
-				.productId(ProductIds.ofRecord(productRecord))
+				.fromUomId(UomId.ofRepoId(icUomRecord.getC_UOM_ID()))
+				.toUomId(UomId.ofRepoId(shipmentUomRecord.getC_UOM_ID()))
+				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.fromToMultiplier(TEN)
 				.toFromMultiplier(new BigDecimal("0.1"))
 				.build());
@@ -179,10 +184,10 @@ class InvoiceCandidateRecordServiceTest
 		assertThat(result.getId()).isEqualTo(invoiceCandidateId);
 
 		final OrderedData orderedData = result.getOrderedData();
-		assertThat(orderedData.getQtyInStockUom().getUomId()).isEqualTo(UomIds.ofRecord(stockUomRecord));
+		assertThat(orderedData.getQtyInStockUom().getUomId()).isEqualTo(UomId.ofRepoId(stockUomRecord.getC_UOM_ID()));
 		assertThat(orderedData.getQtyInStockUom().toBigDecimal()).isEqualByComparingTo(TWENTY);
 
-		assertThat(orderedData.getQty().getUomId()).isEqualTo(UomIds.ofRecord(icUomRecord));
+		assertThat(orderedData.getQty().getUomId()).isEqualTo(UomId.ofRepoId(icUomRecord.getC_UOM_ID()));
 		assertThat(orderedData.getQty().toBigDecimal()).isEqualByComparingTo(EIGHTY);
 
 		final ShipmentData shippedData = result.getDeliveredData().getShipmentData();
@@ -194,15 +199,15 @@ class InvoiceCandidateRecordServiceTest
 						tuple(FIVE, TWO_HUNDRET, ONE_HUNDRET_NINETY, null));
 
 		assertThat(shippedData.getQtyInStockUom()).isNotNull();
-		assertThat(shippedData.getQtyInStockUom().getUomId()).isEqualTo(UomIds.ofRecord(stockUomRecord));
+		assertThat(shippedData.getQtyInStockUom().getUomId()).isEqualTo(UomId.ofRepoId(stockUomRecord.getC_UOM_ID()));
 		assertThat(shippedData.getQtyInStockUom().toBigDecimal()).isEqualByComparingTo("15");
 
 		assertThat(shippedData.getQtyNominal()).isNotNull();
-		assertThat(shippedData.getQtyNominal().getUomId()).isEqualTo(UomIds.ofRecord(icUomRecord));
+		assertThat(shippedData.getQtyNominal().getUomId()).isEqualTo(UomId.ofRepoId(icUomRecord.getC_UOM_ID()));
 		assertThat(shippedData.getQtyNominal().toBigDecimal()).isEqualByComparingTo("60");
 
 		assertThat(shippedData.getQtyCatch()).isNotNull();
-		assertThat(shippedData.getQtyCatch().getUomId()).isEqualTo(UomIds.ofRecord(icUomRecord));
+		assertThat(shippedData.getQtyCatch().getUomId()).isEqualTo(UomId.ofRepoId(icUomRecord.getC_UOM_ID()));
 		assertThat(shippedData.getQtyCatch().toBigDecimal()).isEqualByComparingTo("61"); // 42 + 19
 
 		expect(result).toMatchSnapshot();
@@ -255,9 +260,9 @@ class InvoiceCandidateRecordServiceTest
 		saveRecord(iol);
 
 		uomConversionHelper.createUOMConversion(CreateUOMConversionRequest.builder()
-				.fromUomId(UomIds.ofRecord(icUomRecord))
-				.toUomId(UomIds.ofRecord(shipmentUomRecord))
-				.productId(ProductIds.ofRecord(productRecord))
+				.fromUomId(UomId.ofRepoId(icUomRecord.getC_UOM_ID()))
+				.toUomId(UomId.ofRepoId(shipmentUomRecord.getC_UOM_ID()))
+				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.fromToMultiplier(TEN)
 				.toFromMultiplier(new BigDecimal("0.1"))
 				.build());
@@ -299,10 +304,10 @@ class InvoiceCandidateRecordServiceTest
 		assertThat(result.getId()).isEqualTo(invoiceCandidateId);
 
 		final OrderedData orderedData = result.getOrderedData();
-		assertThat(orderedData.getQtyInStockUom().getUomId()).isEqualTo(UomIds.ofRecord(stockUomRecord));
+		assertThat(orderedData.getQtyInStockUom().getUomId()).isEqualTo(UomId.ofRepoId(stockUomRecord.getC_UOM_ID()));
 		assertThat(orderedData.getQtyInStockUom().toBigDecimal()).isEqualByComparingTo(TWENTY);
 
-		assertThat(orderedData.getQty().getUomId()).isEqualTo(UomIds.ofRecord(icUomRecord));
+		assertThat(orderedData.getQty().getUomId()).isEqualTo(UomId.ofRepoId(icUomRecord.getC_UOM_ID()));
 		assertThat(orderedData.getQty().toBigDecimal()).isEqualByComparingTo(EIGHTY);
 
 		final ShipmentData shippedData = result.getDeliveredData().getShipmentData();
@@ -314,11 +319,11 @@ class InvoiceCandidateRecordServiceTest
 						tuple(FIVE, TWO_HUNDRET, null, null));
 
 		assertThat(shippedData.getQtyInStockUom()).isNotNull();
-		assertThat(shippedData.getQtyInStockUom().getUomId()).isEqualTo(UomIds.ofRecord(stockUomRecord));
+		assertThat(shippedData.getQtyInStockUom().getUomId()).isEqualTo(UomId.ofRepoId(stockUomRecord.getC_UOM_ID()));
 		assertThat(shippedData.getQtyInStockUom().toBigDecimal()).isEqualByComparingTo("15");
 
 		assertThat(shippedData.getQtyNominal()).isNotNull();
-		assertThat(shippedData.getQtyNominal().getUomId()).isEqualTo(UomIds.ofRecord(icUomRecord));
+		assertThat(shippedData.getQtyNominal().getUomId()).isEqualTo(UomId.ofRepoId(icUomRecord.getC_UOM_ID()));
 		assertThat(shippedData.getQtyNominal().toBigDecimal()).isEqualByComparingTo("60");
 
 		assertThat(shippedData.getQtyCatch()).isNull();

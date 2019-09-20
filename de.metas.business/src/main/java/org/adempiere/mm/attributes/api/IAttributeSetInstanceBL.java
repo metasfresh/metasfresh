@@ -115,4 +115,6 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	String getASIDescriptionById(AttributeSetInstanceId asiId);
 
 	void updateASIAttributeFromModel(String attributeCode, Object fromModel);
+
+	boolean isStorageRelevant(I_M_AttributeInstance ai);
 }
