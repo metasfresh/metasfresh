@@ -65,7 +65,7 @@ public class InfoMessageView extends MFProcurementNavigationView
 
 		label = new Label();
 		label.addStyleName("text");
-		label.setContentMode(ContentMode.PREFORMATTED);
+		label.setContentMode(ContentMode.HTML);
 		setContent(new CssLayout(label));
 	}
 
