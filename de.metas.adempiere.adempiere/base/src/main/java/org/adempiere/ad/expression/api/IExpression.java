@@ -66,6 +66,7 @@ public interface IExpression<V>
 	 * @param ignoreUnparsable
 	 * @return
 	 */
+	@Deprecated
 	default V evaluate(final Evaluatee ctx, final boolean ignoreUnparsable)
 	{
 		// backward compatibility
