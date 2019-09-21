@@ -9,11 +9,12 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.product.ProductId;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 
 /*
@@ -40,6 +41,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 
 public class LookupValuesListTest
 {
+	@Test
 	public void testEmpty()
 	{
 		Assert.assertTrue(LookupValuesList.EMPTY.isEmpty());
@@ -127,6 +129,24 @@ public class LookupValuesListTest
 			final LookupValue item = list.getById(id);
 			Assert.assertNull("Item shall be null for id=" + id, item);
 		}
+	}
+
+	@Test
+	public void test_containsId_and_getById_using_RepoIds()
+	{
+		final IntegerLookupValue productLookupValue1 = IntegerLookupValue.of(1, "product 1");
+		final LookupValuesList list = LookupValuesList.fromNullable(productLookupValue1);
+
+		assertThat(list.containsId(1)).isTrue();
+		assertThat(list.getById(1)).isSameAs(productLookupValue1);
+		assertThat(list.containsId(ProductId.ofRepoId(1))).isTrue();
+		assertThat(list.getById(ProductId.ofRepoId(1))).isSameAs(productLookupValue1);
+
+		// negative testing
+		assertThat(list.containsId(2)).isFalse();
+		assertThat(list.getById(2)).isNull();
+		assertThat(list.containsId(ProductId.ofRepoId(2))).isFalse();
+		assertThat(list.getById(ProductId.ofRepoId(2))).isNull();
 	}
 
 	@Test
@@ -273,5 +293,4 @@ public class LookupValuesListTest
 				.mapToObj(id -> IntegerLookupValue.of(id, "Item " + id))
 				.collect(LookupValuesList.collect());
 	}
-
 }
