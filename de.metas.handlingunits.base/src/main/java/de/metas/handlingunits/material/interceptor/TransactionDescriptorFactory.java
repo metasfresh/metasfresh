@@ -43,15 +43,15 @@ import lombok.NonNull;
  * #L%
  */
 
-public class TransactionDescriptorFactory
+final class TransactionDescriptorFactory
 {
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-	
+
 	@VisibleForTesting
 	public TransactionDescriptor ofRecord(@NonNull final I_M_Transaction record)
 	{
 		final WarehouseId warehouseId = warehousesRepo.getWarehouseIdByLocatorRepoId(record.getM_Locator_ID());
-		
+
 		return TransactionDescriptor.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
 				.transactionId(record.getM_Transaction_ID())
@@ -67,13 +67,13 @@ public class TransactionDescriptorFactory
 				.build();
 	}
 
-	private Instant extractTransactionDate(@NonNull final I_M_Transaction record)
+	private static Instant extractTransactionDate(@NonNull final I_M_Transaction record)
 	{
 		final Timestamp movementDate = record.getMovementDate();
 		final Timestamp movementDateDay = getDay(movementDate);
 
 		final boolean movementDateContainsTime = !movementDate.equals(movementDateDay);
-		if(movementDateContainsTime)
+		if (movementDateContainsTime)
 		{
 			return asInstant(movementDate);
 		}

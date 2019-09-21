@@ -45,12 +45,12 @@ import lombok.Value;
  * We need it because we need to construct the events *after* commit, in order to also catch assigned HUs.
  */
 @Value
-public class TransactionDescriptor
+final class TransactionDescriptor
 {
 	EventDescriptor eventDescriptor;
 
 	int transactionId;
-	
+
 	ProductId productId;
 	WarehouseId warehouseId;
 

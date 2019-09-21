@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.annotation.Nullable;
 
@@ -23,10 +22,10 @@ import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_MovementLine;
 import org.eevolution.model.I_PP_Cost_Collector;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
 import de.metas.bpartner.BPartnerId;
@@ -70,7 +69,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class M_Transaction_HuDescriptor
+final class M_Transaction_HuDescriptor
 {
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
@@ -136,18 +135,17 @@ public class M_Transaction_HuDescriptor
 
 		// Important note: we could have the AttributesKey without making an ASI, but we need the ASI-ID for display reasons in the material dispo window.
 		final IPair<AttributesKey, AttributeSetInstanceId> attributesKeyAndAsiId = createAttributesKeyAndAsiId(hu);
+		final AttributesKey attributesKey = attributesKeyAndAsiId.getLeft();
+		final AttributeSetInstanceId asiId = attributesKeyAndAsiId.getRight();
 
 		final List<IHUProductStorage> productStorages = storage.getProductStorages();
 		final ImmutableList.Builder<HUDescriptor> descriptors = ImmutableList.builder();
 		for (final IHUProductStorage productStorage : productStorages)
 		{
-			final AttributesKey attributesKey = attributesKeyAndAsiId.getLeft();
-			final AttributeSetInstanceId asiId = attributesKeyAndAsiId.getRight();
-			final ProductDescriptor productDescriptor = ProductDescriptor
-					.forProductAndAttributes(
-							productStorage.getProductId().getRepoId(),
-							attributesKey,
-							asiId.getRepoId());
+			final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(
+					productStorage.getProductId().getRepoId(),
+					attributesKey,
+					asiId.getRepoId());
 
 			final BigDecimal quantity = productStorage.getQtyInStockingUOM();
 
@@ -179,6 +177,7 @@ public class M_Transaction_HuDescriptor
 		return ImmutablePair.of(attributesKey, asiId);
 	}
 
+	@VisibleForTesting
 	@Builder(builderMethodName = "newMaterialDescriptors", builderClassName = "_MaterialDescriptorsBuilder")
 	private Map<MaterialDescriptor, Collection<HUDescriptor>> createMaterialDescriptors(
 			@NonNull final TransactionDescriptor transaction,
@@ -187,16 +186,17 @@ public class M_Transaction_HuDescriptor
 			@NonNull final Collection<HUDescriptor> huDescriptors)
 	{
 		// aggregate HUDescriptors based on their product & attributes
-		final ImmutableListMultimap<ProductDescriptor, HUDescriptor> productDescriptor2huDescriptor = //
-				Multimaps.index(huDescriptors, HUDescriptor::getProductDescriptor);
-
-		final ImmutableSet<Entry<ProductDescriptor, Collection<HUDescriptor>>> entrySet = productDescriptor2huDescriptor.asMap().entrySet();
+		final ImmutableListMultimap<ProductDescriptor, HUDescriptor> //
+		huDescriptorsByProduct = Multimaps.index(huDescriptors, HUDescriptor::getProductDescriptor);
 
 		final ImmutableMap.Builder<MaterialDescriptor, Collection<HUDescriptor>> result = ImmutableMap.builder();
 
-		for (final Entry<ProductDescriptor, Collection<HUDescriptor>> entry : entrySet)
+		for (final Map.Entry<ProductDescriptor, Collection<HUDescriptor>> entry : huDescriptorsByProduct.asMap().entrySet())
 		{
-			final BigDecimal quantity = entry.getValue()
+			final ProductDescriptor productDescriptor = entry.getKey();
+			final Collection<HUDescriptor> huDescriptorsForCurrentProduct = entry.getValue();
+
+			final BigDecimal quantity = huDescriptorsForCurrentProduct
 					.stream()
 					.map(HUDescriptor::getQuantity)
 					.map(qty -> transaction.getMovementQty().signum() >= 0 ? qty : qty.negate()) // set signum according to transaction.movementQty
@@ -205,13 +205,13 @@ public class M_Transaction_HuDescriptor
 			final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 					.warehouseId(transaction.getWarehouseId())
 					.date(transaction.getTransactionDate())
-					.productDescriptor(entry.getKey())
+					.productDescriptor(productDescriptor)
 					.customerId(customerId)
 					.vendorId(vendorId)
 					.quantity(quantity)
 					.build();
 
-			result.put(materialDescriptor, entry.getValue());
+			result.put(materialDescriptor, huDescriptorsForCurrentProduct);
 		}
 
 		return result.build();

@@ -48,7 +48,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class M_Transaction_TransactionEventCreator
+final class M_Transaction_TransactionEventCreator
 {
 	private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -63,7 +63,7 @@ public class M_Transaction_TransactionEventCreator
 		inOutLineEventCreator = new M_Transaction_InOutLineEventCreator(huDescriptionFactory);
 	}
 
-	public final List<MaterialEvent> createEventsForTransaction(
+	public List<MaterialEvent> createEventsForTransaction(
 			@NonNull final TransactionDescriptor transaction,
 			final boolean deleted)
 	{

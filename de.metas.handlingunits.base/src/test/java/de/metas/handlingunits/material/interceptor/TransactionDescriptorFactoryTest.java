@@ -46,10 +46,14 @@ import de.metas.util.time.SystemTime;
 
 public class TransactionDescriptorFactoryTest
 {
+	private TransactionDescriptorFactory transactionDescriptorFactory;
+
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		transactionDescriptorFactory = new TransactionDescriptorFactory();
 	}
 
 	private LocatorId createLocator(WarehouseId warehouseId)
@@ -89,7 +93,7 @@ public class TransactionDescriptorFactoryTest
 		save(transactionRecord);
 
 		// invoke the method under test
-		final TransactionDescriptor result = new TransactionDescriptorFactory().ofRecord(transactionRecord);
+		final TransactionDescriptor result = transactionDescriptorFactory.ofRecord(transactionRecord);
 
 		assertThat(result.getProductId()).isEqualTo(productId);
 		assertThat(result.getInoutLineId()).isEqualTo(inoutLineId);
