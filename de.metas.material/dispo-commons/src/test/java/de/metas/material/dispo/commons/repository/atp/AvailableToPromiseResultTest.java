@@ -49,8 +49,9 @@ import de.metas.util.collections.CollectionUtils;
 
 public class AvailableToPromiseResultTest
 {
-	private static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1, 2);
-	private static final AttributesKey STORAGE_ATTRIBUTES_KEY_OTHER = AttributesKey.ofAttributeValueIds(1, 2, 3);
+	private static final String delim = AttributesKey.ATTRIBUTES_KEY_DELIMITER;
+	private static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofString("1" + delim + "2");
+	private static final AttributesKey STORAGE_ATTRIBUTES_KEY_OTHER = AttributesKey.ofString("1" + delim + "2" + delim + "3");
 
 	private static final Instant NOW = Instant.now();
 
@@ -135,13 +136,13 @@ public class AvailableToPromiseResultTest
 	{
 		final AvailableToPromiseResultGroup emptyResult1 = AvailableToPromiseResultGroup.builder()
 				.productId(PRODUCT_ID)
-				.storageAttributesKey(AttributesKey.ofAttributeValueIds(1))
+				.storageAttributesKey(AttributesKey.ofString("1"))
 				.warehouseId(WarehouseId.ofRepoId(100))
 				.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
 				.build();
 		final AvailableToPromiseResultGroup emptyResult2 = AvailableToPromiseResultGroup.builder()
 				.productId(PRODUCT_ID)
-				.storageAttributesKey(AttributesKey.ofAttributeValueIds(2))
+				.storageAttributesKey(AttributesKey.ofString("2"))
 				.warehouseId(WarehouseId.ofRepoId(100))
 				.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
 				.build();
@@ -155,19 +156,19 @@ public class AvailableToPromiseResultTest
 				.seqNo(1)
 				.date(NOW);
 
-		stockResult.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1, 2)).build());
-		stockResult.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1, 2)).build());
-		stockResult.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(2)).build());
+		stockResult.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofString("1" + delim + "2")).build());
+		stockResult.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofString("1" + delim + "2")).build());
+		stockResult.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofString("2")).build());
 
 		final List<AvailableToPromiseResultGroup> resultGroups = stockResult.getResultGroups();
 		assertThat(resultGroups).hasSize(2);
 
 		assertThat(resultGroups.get(0).getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(resultGroups.get(0).getStorageAttributesKey()).isEqualTo(AttributesKey.ofAttributeValueIds(1));
+		assertThat(resultGroups.get(0).getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("1"));
 		assertThat(resultGroups.get(0).getQty()).isEqualByComparingTo("2");
 
 		assertThat(resultGroups.get(1).getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(resultGroups.get(1).getStorageAttributesKey()).isEqualTo(AttributesKey.ofAttributeValueIds(2));
+		assertThat(resultGroups.get(1).getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("2"));
 		assertThat(resultGroups.get(1).getQty()).isEqualByComparingTo("3");
 	}
 
@@ -178,7 +179,7 @@ public class AvailableToPromiseResultTest
 				.productId(PRODUCT_ID)
 				.warehouseId(WarehouseId.ofRepoId(100))
 				.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
-				.storageAttributesKey(AttributesKey.ofAttributeValueIds(1))
+				.storageAttributesKey(AttributesKey.ofString("1"))
 				.build();
 
 		final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
@@ -189,8 +190,8 @@ public class AvailableToPromiseResultTest
 				.seqNo(1)
 				.date(NOW);
 
-		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1)).build())).isTrue();
-		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(11)).build())).isFalse();
+		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(AttributesKey.ofString("1")).build())).isTrue();
+		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(AttributesKey.ofString("11")).build())).isFalse();
 
 		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(STORAGE_ATTRIBUTES_KEY).build()))
 				.as("Should match because the AvailableToPromiseResultGroup's storageAttributesKey <%s> is included in the given storageAttributesKeyToMatch <%s>",
@@ -206,7 +207,7 @@ public class AvailableToPromiseResultTest
 				.productId(PRODUCT_ID)
 				.warehouseId(WarehouseId.ofRepoId(100))
 				.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
-				.storageAttributesKey(AttributesKey.ofAttributeValueIds(1, 3))
+				.storageAttributesKey(AttributesKey.ofString("1" + delim + "3"))
 				.build();
 
 		final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
@@ -217,12 +218,12 @@ public class AvailableToPromiseResultTest
 				.seqNo(1)
 				.date(NOW);
 
-		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1, 3)).build())).isTrue();
-		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1)).build())).isFalse();
+		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(AttributesKey.ofString("1" + delim + "3")).build())).isTrue();
+		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(AttributesKey.ofString("1")).build())).isFalse();
 
-		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(10, 1, 3)).build())).isTrue();
+		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(AttributesKey.ofString("10" + delim + "1" + delim + "3")).build())).isTrue();
 
-		final AttributesKey keyWithOtherElementInTheMiddle = AttributesKey.ofAttributeValueIds(1, 2, 3);
+		final AttributesKey keyWithOtherElementInTheMiddle = AttributesKey.ofString("1" + delim + "2" + delim + "3");
 		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(keyWithOtherElementInTheMiddle).build()))
 				.as("Shall match because the elements of the AvailableToPromiseResultGroup's storageAttributesKey <%s> contain every element of the given storageAttributesKeyToMatch <%s>",
 						group.getStorageAttributesKey(), keyWithOtherElementInTheMiddle)

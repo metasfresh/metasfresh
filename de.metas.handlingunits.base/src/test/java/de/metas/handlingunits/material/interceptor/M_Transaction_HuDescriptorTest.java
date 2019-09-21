@@ -28,6 +28,7 @@ import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.inout.InOutAndLineId;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.AttributesKeyPart;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.util.Services;
@@ -133,7 +134,7 @@ public class M_Transaction_HuDescriptorTest
 
 		assertThat(productDescriptor.getProductId()).isEqualTo(helper.pTomato.getM_Product_ID());
 		assertThat(productDescriptor.getStorageAttributesKey()).isNotEqualTo(AttributesKey.NONE);
-		assertThat(productDescriptor.getStorageAttributesKey().getAttributeValueIds()).containsOnly(attributeValue.getM_AttributeValue_ID());
+		assertThat(productDescriptor.getStorageAttributesKey().getParts()).containsOnly(AttributesKeyPart.ofInteger(attributeValue.getM_AttributeValue_ID()));
 	}
 
 	private I_M_InOutLine createInOutLine()

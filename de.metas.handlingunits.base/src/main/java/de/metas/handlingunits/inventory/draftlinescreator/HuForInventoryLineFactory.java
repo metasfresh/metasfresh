@@ -3,7 +3,6 @@ package de.metas.handlingunits.inventory.draftlinescreator;
 import java.util.stream.Stream;
 
 import org.adempiere.mm.attributes.api.AttributesKeys;
-import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_M_Attribute;
 import org.springframework.stereotype.Service;
@@ -82,7 +81,7 @@ public class HuForInventoryLineFactory
 		final IAttributeStorageFactory attributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
 		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(huRecord);
 
-		final IAttributeSet storageRelevantSubSet = ImmutableAttributeSet.createSubSet(attributeStorage, I_M_Attribute::isStorageRelevant);
+		final ImmutableAttributeSet storageRelevantSubSet = ImmutableAttributeSet.createSubSet(attributeStorage, I_M_Attribute::isStorageRelevant);
 
 		return AttributesKeys
 				.createAttributesKeyFromAttributeSet(storageRelevantSubSet)

@@ -242,6 +242,22 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
+	public List<I_M_AttributeValue> retrieveAttributeValuesByIds(@NonNull final Collection<AttributeValueId> attributeValueIds)
+	{
+		if (attributeValueIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_AttributeValue.class)
+				.addInArrayFilter(I_M_AttributeValue.COLUMN_M_AttributeValue_ID, attributeValueIds)
+				.orderBy(I_M_AttributeValue.COLUMN_M_AttributeValue_ID)
+				.create()
+				.list(I_M_AttributeValue.class);
+	}
+
+	@Override
 	public I_M_AttributeValue retrieveAttributeValueOrNull(@NonNull final I_M_Attribute attribute, final String value)
 	{
 		return retrieveAttributeValueOrNull(attribute, value, false);

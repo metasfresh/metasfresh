@@ -5,12 +5,14 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.AttributesKeyPart;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -46,7 +48,7 @@ public class EventTestHelper
 	public static final Instant NOW = SystemTime.asInstant();
 	public static final Instant BEFORE_BEFORE_NOW = NOW.minus(20, ChronoUnit.MINUTES);
 	public static final Instant BEFORE_NOW = NOW.minus(10, ChronoUnit.MINUTES);
-	public static final Instant AFTER_NOW =  NOW.plus(10, ChronoUnit.MINUTES);
+	public static final Instant AFTER_NOW = NOW.plus(10, ChronoUnit.MINUTES);
 
 	/**
 	 * This constant is zero because we don't control the client-id used by {@link POJOWrapper} when it creates a new instance.
@@ -68,7 +70,7 @@ public class EventTestHelper
 
 	public static final int ATTRIBUTE_SET_INSTANCE_ID = 28;
 
-	public static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1);
+	public static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofString("1");
 
 	public static SupplyRequiredDescriptor createSupplyRequiredDescriptor()
 	{
@@ -116,9 +118,12 @@ public class EventTestHelper
 
 	public static ProductDescriptor createProductDescriptorWithOffSet(final int offset)
 	{
+		final AttributeValueId firstAttributeValueId = STORAGE_ATTRIBUTES_KEY.getParts().iterator().next().getAttributeValueId();
+		final AttributeValueId newAttributeValueId = AttributeValueId.ofRepoId(firstAttributeValueId.getRepoId() + 1 + offset);
+
 		return ProductDescriptor.forProductAndAttributes(
 				PRODUCT_ID + offset,
-				AttributesKey.ofAttributeValueIds(STORAGE_ATTRIBUTES_KEY.getAttributeValueIds().iterator().next() + 1 + offset),
+				AttributesKey.ofParts(AttributesKeyPart.ofAttributeValueId(newAttributeValueId)),
 				ATTRIBUTE_SET_INSTANCE_ID + offset);
 	}
 }

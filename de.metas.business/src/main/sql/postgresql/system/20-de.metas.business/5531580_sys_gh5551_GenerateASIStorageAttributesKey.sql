@@ -58,3 +58,4 @@ COMMENT ON FUNCTION public.generateASIStorageAttributesKey(numeric) IS
 'Creates a string to represent the given M_AttributeSetInstance_ID''s storage relevant attributes.
 
 Needs to be kept in sync with the java method org.adempiere.mm.attributes.api.AttributesKeys.createAttributesKeyFromASIStorageAttributes(int)';
+
