@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
 import { patchRequest } from '../../actions/GenericActions';
 
@@ -96,3 +97,21 @@ export default class BookmarkButton extends Component {
     );
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} [children]
+ * @prop {*} [alwaysShowed]
+ * @prop {*} [transparentBookmarks]
+ * @prop {*} [nodeId]
+ * @prop {*} [updateData]
+ * @prop {*} [isBookmark]
+ */
+BookmarkButton.propTypes = {
+  children: PropTypes.any,
+  alwaysShowed: PropTypes.any,
+  transparentBookmarks: PropTypes.any,
+  nodeId: PropTypes.any,
+  updateData: PropTypes.any,
+  isBookmark: PropTypes.any,
+};
