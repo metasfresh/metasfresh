@@ -8,6 +8,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderCostBL;
+import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderCosts;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
@@ -94,7 +95,8 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	@Override
 	public Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
 	{
-		final I_PP_Cost_Collector cc = costCollectorsService.getById(request.getDocumentRef().getRecordId());
+		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId(PPCostCollectorId::ofRepoId);
+		final I_PP_Cost_Collector cc = costCollectorsService.getById(costCollectorId);
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
 		final PPOrderId orderId = PPOrderId.ofRepoId(cc.getPP_Order_ID());
 		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(cc.getPP_Order_BOMLine_ID());

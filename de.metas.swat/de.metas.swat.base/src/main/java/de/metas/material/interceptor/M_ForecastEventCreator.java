@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.Adempiere;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.util.TimeUtil;
@@ -22,7 +21,6 @@ import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -46,9 +44,15 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 
-@UtilityClass
 public class M_ForecastEventCreator
 {
+	private final ModelProductDescriptorExtractor productDescriptorFactory;
+
+	public M_ForecastEventCreator(@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
+	{
+		this.productDescriptorFactory = productDescriptorFactory;
+	}
+
 	public ForecastCreatedEvent createEventWithLinesAndTiming(
 			@NonNull final List<I_M_ForecastLine> forecastLineRecords,
 			@NonNull final DocTimingType timing)
@@ -79,7 +83,6 @@ public class M_ForecastEventCreator
 			@NonNull final I_M_ForecastLine forecastLine,
 			@NonNull final I_M_Forecast forecast)
 	{
-		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(forecastLine);
 
 		final BPartnerId customerId = BPartnerId.ofRepoIdOrNull(CoalesceUtil.firstGreaterThanZero(forecastLine.getC_BPartner_ID(), forecast.getC_BPartner_ID()));

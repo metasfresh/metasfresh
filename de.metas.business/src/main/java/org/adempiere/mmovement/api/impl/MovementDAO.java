@@ -1,5 +1,6 @@
 package org.adempiere.mmovement.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
@@ -12,12 +13,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,16 +31,23 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.mmovement.MovementLineId;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 
-import de.metas.util.Check;
+import de.metas.inventory.InventoryId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 public class MovementDAO implements IMovementDAO
 {
+	@Override
+	public I_M_MovementLine getLineById(@NonNull final MovementLineId movementLineId)
+	{
+		return load(movementLineId, I_M_MovementLine.class);
+	}
+
 	@Override
 	public List<I_M_MovementLine> retrieveLines(final I_M_Movement movement)
 	{
@@ -47,13 +55,10 @@ public class MovementDAO implements IMovementDAO
 	}
 
 	@Override
-	public <MovementLineType extends I_M_MovementLine> List<MovementLineType> retrieveLines(final I_M_Movement movement, final Class<MovementLineType> movementLineClass)
+	public <MovementLineType extends I_M_MovementLine> List<MovementLineType> retrieveLines(@NonNull final I_M_Movement movement, @NonNull final Class<MovementLineType> movementLineClass)
 	{
-		Check.assumeNotNull(movement, "movement not null");
-		Check.assumeNotNull(movementLineClass, "movementLineClass not null");
-
-		final IQueryBuilder<MovementLineType> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(movementLineClass, movement);
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQueryBuilder<MovementLineType> queryBuilder = queryBL.createQueryBuilder(movementLineClass, movement);
 
 		queryBuilder.getCompositeFilter()
 				.addEqualsFilter(I_M_MovementLine.COLUMNNAME_M_Movement_ID, movement.getM_Movement_ID());
@@ -67,9 +72,10 @@ public class MovementDAO implements IMovementDAO
 	}
 
 	@Override
-	public IQueryBuilder<I_M_Movement> retrieveMovementsForInventoryQuery(final int inventoryId)
+	public IQueryBuilder<I_M_Movement> retrieveMovementsForInventoryQuery(@NonNull final InventoryId inventoryId)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Movement.class)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_M_Movement.class)
 				.addEqualsFilter(I_M_Movement.COLUMN_M_Inventory_ID, inventoryId);
 	}
 

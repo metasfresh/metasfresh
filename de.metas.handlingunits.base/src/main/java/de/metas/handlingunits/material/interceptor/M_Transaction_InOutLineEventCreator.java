@@ -8,14 +8,12 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.X_M_Transaction;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
@@ -24,6 +22,7 @@ import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.HUDescriptor;
@@ -59,13 +58,19 @@ import lombok.NonNull;
 
 public class M_Transaction_InOutLineEventCreator
 {
-	public static final M_Transaction_InOutLineEventCreator INSTANCE = new M_Transaction_InOutLineEventCreator();
+	private final IInOutDAO inoutsRepo = Services.get(IInOutDAO.class);
+	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+	private final IReceiptScheduleDAO receiptSchedulesRepo = Services.get(IReceiptScheduleDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	private M_Transaction_InOutLineEventCreator()
+	private final M_Transaction_HuDescriptor huDescriptionFactory;
+
+	public M_Transaction_InOutLineEventCreator(@NonNull final M_Transaction_HuDescriptor huDescriptionFactory)
 	{
+		this.huDescriptionFactory = huDescriptionFactory;
 	}
 
-	public static List<MaterialEvent> createEventsForInOutLine(
+	public List<MaterialEvent> createEventsForInOutLine(
 			@NonNull final TransactionDescriptor transaction,
 			final boolean deleted)
 	{
@@ -82,12 +87,10 @@ public class M_Transaction_InOutLineEventCreator
 		}
 	}
 
-	private static List<MaterialEvent> createEventsForShipment(
+	private List<MaterialEvent> createEventsForShipment(
 			@NonNull final TransactionDescriptor transaction,
 			final boolean deleted)
 	{
-		final IInOutDAO inoutsRepo = Services.get(IInOutDAO.class);
-
 		final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys = retrieveShipmentScheduleId2Qty(transaction);
 
 		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
@@ -96,11 +99,10 @@ public class M_Transaction_InOutLineEventCreator
 		final BPartnerId customerId = BPartnerId.ofRepoId(shipmentLine.getM_InOut().getC_BPartner_ID());
 		final InOutAndLineId shipmentLineId = InOutAndLineId.ofRepoId(shipmentLine.getM_InOut_ID(), shipmentLine.getM_InOutLine_ID());
 
-		final List<HUDescriptor> //
-		huDescriptors = M_Transaction_HuDescriptor.INSTANCE.createHuDescriptorsForInOutLine(shipmentLineId, deleted);
+		final List<HUDescriptor> huDescriptors = huDescriptionFactory.createHuDescriptorsForInOutLine(shipmentLineId, deleted);
 
 		final Map<MaterialDescriptor, Collection<HUDescriptor>> //
-		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.newMaterialDescriptors()
+		materialDescriptors = huDescriptionFactory.newMaterialDescriptors()
 				.transaction(transaction)
 				.huDescriptors(huDescriptors)
 				.customerId(customerId)
@@ -142,20 +144,16 @@ public class M_Transaction_InOutLineEventCreator
 		return events.build();
 	}
 
-	@VisibleForTesting
-	static Map<Integer, BigDecimal> retrieveShipmentScheduleId2Qty(
+	private Map<Integer, BigDecimal> retrieveShipmentScheduleId2Qty(
 			@NonNull final TransactionDescriptor transaction)
 	{
 		final Map<Integer, BigDecimal> shipmentScheduleId2quantity = new TreeMap<>();
 
 		BigDecimal qtyLeftToDistribute = transaction.getMovementQty();
 
-		final List<I_M_ShipmentSchedule_QtyPicked> shipmentScheduleQtysPicked = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID, transaction.getInoutLineId())
-				.create()
-				.list();
+		final List<I_M_ShipmentSchedule_QtyPicked> shipmentScheduleQtysPicked = shipmentScheduleAllocDAO.retrieveByInOutLineId(
+				transaction.getInoutLineId(),
+				I_M_ShipmentSchedule_QtyPicked.class);
 
 		for (final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked : shipmentScheduleQtysPicked)
 		{
@@ -201,13 +199,10 @@ public class M_Transaction_InOutLineEventCreator
 						.setParameter("transaction", transaction);
 	}
 
-	private static List<MaterialEvent> createEventsForReceipt(
+	private List<MaterialEvent> createEventsForReceipt(
 			@NonNull final TransactionDescriptor transaction,
 			final boolean deleted)
 	{
-		final IInOutDAO inoutsRepo = Services.get(IInOutDAO.class);
-		final IReceiptScheduleDAO receiptSchedulesRepo = Services.get(IReceiptScheduleDAO.class);
-
 		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
 
 		final I_M_InOutLine receiptLine = inoutsRepo.getLineById(transaction.getInoutLineId());
@@ -224,11 +219,10 @@ public class M_Transaction_InOutLineEventCreator
 								I_M_ReceiptSchedule_Alloc::getQtyAllocated,
 								BigDecimal::add)));
 
-		final List<HUDescriptor> //
-		huDescriptors = M_Transaction_HuDescriptor.INSTANCE.createHuDescriptorsForInOutLine(receiptLineId, deleted);
+		final List<HUDescriptor> huDescriptors = huDescriptionFactory.createHuDescriptorsForInOutLine(receiptLineId, deleted);
 
 		final Map<MaterialDescriptor, Collection<HUDescriptor>> //
-		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.newMaterialDescriptors()
+		materialDescriptors = huDescriptionFactory.newMaterialDescriptors()
 				.transaction(transaction)
 				.huDescriptors(huDescriptors)
 				.vendorId(bpartnerId)
@@ -270,14 +264,14 @@ public class M_Transaction_InOutLineEventCreator
 		return events.build();
 	}
 
-	private static boolean isDirectMovementWarehouse(final WarehouseId warehouseId)
+	private boolean isDirectMovementWarehouse(final WarehouseId warehouseId)
 	{
-		if(warehouseId == null)
+		if (warehouseId == null)
 		{
 			return false;
 		}
-		
-		final int intValue = Services.get(ISysConfigBL.class).getIntValue(IHUMovementBL.SYSCONFIG_DirectMove_Warehouse_ID, -1);
+
+		final int intValue = sysConfigBL.getIntValue(IHUMovementBL.SYSCONFIG_DirectMove_Warehouse_ID, -1);
 		return intValue == warehouseId.getRepoId();
 	}
 }

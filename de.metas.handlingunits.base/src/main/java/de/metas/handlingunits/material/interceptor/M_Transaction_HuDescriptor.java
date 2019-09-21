@@ -72,9 +72,11 @@ import lombok.NonNull;
 
 public class M_Transaction_HuDescriptor
 {
-	public static final M_Transaction_HuDescriptor INSTANCE = new M_Transaction_HuDescriptor();
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
-	private M_Transaction_HuDescriptor()
+	public M_Transaction_HuDescriptor()
 	{
 	}
 
@@ -107,13 +109,11 @@ public class M_Transaction_HuDescriptor
 		return createHUDescriptorsForModel(inventoryLine, deleted);
 	}
 
-	private static ImmutableList<HUDescriptor> createHUDescriptorsForModel(
+	private ImmutableList<HUDescriptor> createHUDescriptorsForModel(
 			@NonNull final Object huReferencedModel,
 			final boolean deleted)
 	{
-		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-		final List<HuAssignment> huAssignments = huAssignmentDAO
-				.retrieveLowLevelHUAssignmentsForModel(huReferencedModel);
+		final List<HuAssignment> huAssignments = huAssignmentDAO.retrieveLowLevelHUAssignmentsForModel(huReferencedModel);
 
 		final ImmutableList.Builder<HUDescriptor> result = ImmutableList.builder();
 		for (final HuAssignment huAssignment : huAssignments)
@@ -124,14 +124,14 @@ public class M_Transaction_HuDescriptor
 		return result.build();
 	}
 
-	private static ImmutableList<HUDescriptor> createHuDescriptors(
+	private ImmutableList<HUDescriptor> createHuDescriptors(
 			@NonNull final I_M_HU hu,
 			final boolean deleted)
 	{
 		final HUDescriptorBuilder builder = HUDescriptor.builder()
 				.huId(hu.getM_HU_ID());
 
-		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
+		final IMutableHUContext huContext = huContextFactory.createMutableHUContext();
 		final IHUStorage storage = huContext.getHUStorageFactory().getStorage(hu);
 
 		// Important note: we could have the AttributesKey without making an ASI, but we need the ASI-ID for display reasons in the material dispo window.
@@ -161,15 +161,14 @@ public class M_Transaction_HuDescriptor
 		return descriptors.build();
 	}
 
-	private static IPair<AttributesKey, AttributeSetInstanceId> createAttributesKeyAndAsiId(@NonNull final I_M_HU hu)
+	private IPair<AttributesKey, AttributeSetInstanceId> createAttributesKeyAndAsiId(@NonNull final I_M_HU hu)
 	{
-		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
+		final IMutableHUContext huContext = huContextFactory.createMutableHUContext();
 		final IAttributeStorage attributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
 
 		// we don't want all the non-storage-relevant attributes to pollute the ASI we will display in the material disposition window
 		final IAttributeSet storageRelevantSubSet = ImmutableAttributeSet.createSubSet(attributeStorage, I_M_Attribute::isStorageRelevant);
 
-		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASIFromAttributeSet(storageRelevantSubSet);
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asi.getM_AttributeSetInstance_ID());
 

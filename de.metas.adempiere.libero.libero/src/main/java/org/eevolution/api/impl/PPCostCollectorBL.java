@@ -45,6 +45,7 @@ import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPOrderRoutingRepository;
+import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.api.ReceiptCostCollectorCandidate;
@@ -81,7 +82,7 @@ import lombok.Value;
 public class PPCostCollectorBL implements IPPCostCollectorBL
 {
 	@Override
-	public I_PP_Cost_Collector getById(final int costCollectorId)
+	public I_PP_Cost_Collector getById(final PPCostCollectorId costCollectorId)
 	{
 		return Services.get(IPPCostCollectorDAO.class).getById(costCollectorId);
 	}

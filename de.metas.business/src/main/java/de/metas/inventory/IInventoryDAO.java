@@ -33,6 +33,8 @@ public interface IInventoryDAO extends ISingletonService
 {
 	I_M_Inventory getById(InventoryId inventoryId);
 
+	I_M_InventoryLine getLineById(InventoryLineId inventoryLineId);
+
 	/**
 	 * Retrieve all the active lines of the given inventory
 	 */

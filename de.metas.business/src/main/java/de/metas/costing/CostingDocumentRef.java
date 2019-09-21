@@ -1,6 +1,7 @@
 package de.metas.costing;
 
 import java.util.Objects;
+import java.util.function.IntFunction;
 
 import javax.annotation.Nullable;
 
@@ -14,7 +15,10 @@ import org.compiere.model.I_M_MovementLine;
 import org.eevolution.model.I_PP_Cost_Collector;
 
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 
 /*
@@ -40,6 +44,8 @@ import lombok.Value;
  */
 
 @Value
+@ToString(doNotUseGetters = true)
+@EqualsAndHashCode(doNotUseGetters = true)
 public class CostingDocumentRef
 {
 	public static final String TABLE_NAME_M_MatchPO = I_M_MatchPO.Table_Name;
@@ -128,6 +134,22 @@ public class CostingDocumentRef
 		return Objects.equals(tableName, expectedTableName);
 	}
 
+	public void assertTableName(final String expectedTableName)
+	{
+		Check.assume(isTableName(expectedTableName), "TableName expected to be {} for {}", expectedTableName, this);
+	}
+
+	public <T extends RepoIdAware> T getCostCollectorId(@NonNull final IntFunction<T> mapper)
+	{
+		return assertTableNameAndGetId(TABLE_NAME_PP_Cost_Collector, mapper);
+	}
+
+	public <T extends RepoIdAware> T assertTableNameAndGetId(@NonNull final String expectedTableName, @NonNull final IntFunction<T> mapper)
+	{
+		assertTableName(expectedTableName);
+		return mapper.apply(getRecordId());
+	}
+
 	public boolean isInboundTrx()
 	{
 		return outboundTrx != null && !outboundTrx;
@@ -137,5 +159,4 @@ public class CostingDocumentRef
 	{
 		return outboundTrx != null && outboundTrx;
 	}
-
 }

@@ -61,13 +61,16 @@ public class M_Transaction_HuDescriptorTest
 	private static final BigDecimal FOURTY_TOMATOES_PER_IFCO = new BigDecimal("40");
 	private static final BigDecimal TOTAL_CU_QTY = FOURTY_TOMATOES_PER_IFCO.multiply(THIRTY_IFCOS_PER_PALET);
 
-	private I_M_HU_PI huDefPalet;
 	private HUTestHelper helper;
+	private M_Transaction_HuDescriptor huDescriptorCreator;
+
+	private I_M_HU_PI huDefPalet;
 
 	@Before
 	public void init()
 	{
 		helper = new HUTestHelper();
+		huDescriptorCreator = new M_Transaction_HuDescriptor();
 
 		// HU PI: IFCO
 		final I_M_HU_PI huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
@@ -121,7 +124,7 @@ public class M_Transaction_HuDescriptorTest
 		//
 		// invoke the method under test
 		final InOutAndLineId inOutLineId = InOutAndLineId.ofRepoId(inOutLine.getM_InOut_ID(), inOutLine.getM_InOutLine_ID());
-		final List<HUDescriptor> huDescriptorsForInOutLine = M_Transaction_HuDescriptor.INSTANCE.createHuDescriptorsForInOutLine(inOutLineId, false);
+		final List<HUDescriptor> huDescriptorsForInOutLine = huDescriptorCreator.createHuDescriptorsForInOutLine(inOutLineId, false);
 
 		assertThat(huDescriptorsForInOutLine).hasSize(1);
 		final HUDescriptor huDescriptor = huDescriptorsForInOutLine.get(0);

@@ -43,11 +43,13 @@ import lombok.NonNull;
 public class M_Transaction
 {
 	private final PostMaterialEventService materialEventService;
+	private final M_Transaction_TransactionEventCreator mtransactionEventCreator;
 
 	public M_Transaction(
 			@NonNull final PostMaterialEventService materialEventService)
 	{
 		this.materialEventService = materialEventService;
+		this.mtransactionEventCreator = new M_Transaction_TransactionEventCreator();
 	}
 
 	/**
@@ -77,7 +79,7 @@ public class M_Transaction
 
 	private void createAndPostEventsNow(final TransactionDescriptor transaction, final boolean deleted)
 	{
-		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE.createEventsForTransaction(transaction, deleted);
+		final List<MaterialEvent> events = mtransactionEventCreator.createEventsForTransaction(transaction, deleted);
 		for (final MaterialEvent event : events)
 		{
 			materialEventService.postEventNow(event);

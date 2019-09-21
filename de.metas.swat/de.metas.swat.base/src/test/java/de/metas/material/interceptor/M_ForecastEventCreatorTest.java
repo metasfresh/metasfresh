@@ -19,14 +19,9 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
@@ -57,11 +52,6 @@ import de.metas.material.event.forecast.ForecastLine;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class,
-		ShutdownListener.class,
-		ModelProductDescriptorExtractor.class,
-		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
 public class M_ForecastEventCreatorTest
 {
 	private static final BPartnerId BPARTNER_ID_OF_FORECAST = BPartnerId.ofRepoId(50);
@@ -70,10 +60,15 @@ public class M_ForecastEventCreatorTest
 	@Rule
 	public final AdempiereTestWatcher watcher = new AdempiereTestWatcher();
 
+	private M_ForecastEventCreator forecastEventCreator;
+
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		final ModelProductDescriptorExtractor productDescriptorFactory = new ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory();
+		forecastEventCreator = new M_ForecastEventCreator(productDescriptorFactory);
 	}
 
 	@Test
@@ -116,7 +111,7 @@ public class M_ForecastEventCreatorTest
 			save(forecastLineRecord2);
 		}
 
-		final ForecastCreatedEvent result = M_ForecastEventCreator.createEventWithLinesAndTiming(
+		final ForecastCreatedEvent result = forecastEventCreator.createEventWithLinesAndTiming(
 				ImmutableList.of(forecastLineRecord1, forecastLineRecord2),
 				DocTimingType.AFTER_COMPLETE);
 		assertThat(result).isNotNull();

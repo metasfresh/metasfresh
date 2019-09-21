@@ -39,13 +39,13 @@ import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_M_InOutLine;
 import org.slf4j.Logger;
 
+import de.metas.inout.InOutLineId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
@@ -230,6 +230,19 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 
 		return queryBuilder.create()
 				.list(modelClass);
+	}
+
+	@Override
+	public <T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveByInOutLineId(
+			@NonNull final InOutLineId inoutLineId,
+			@NonNull final Class<T> modelClass)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, modelClass)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID, inoutLineId)
+				.create()
+				.listImmutable(modelClass);
 	}
 
 	@Override
