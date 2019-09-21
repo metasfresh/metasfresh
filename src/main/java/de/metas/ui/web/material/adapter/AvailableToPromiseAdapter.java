@@ -1,23 +1,21 @@
 package de.metas.ui.web.material.adapter;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_AttributeValue;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResultGroup;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.AvailableToPromiseResultForWebuiBuilder;
 import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group;
@@ -91,7 +89,7 @@ public class AvailableToPromiseAdapter
 	private Group createClientResultGroup0(final AvailableToPromiseResultGroup commonsResultGroup)
 	{
 		final GroupBuilder groupBuilder = Group.builder()
-				.productId(commonsResultGroup.getProductId());
+				.productId(ProductId.ofRepoId(commonsResultGroup.getProductId()));
 
 		final Quantity quantity = Quantity.of(
 				commonsResultGroup.getQty(),
@@ -99,13 +97,12 @@ public class AvailableToPromiseAdapter
 		groupBuilder.qty(quantity);
 
 		final AttributesKey attributesKey = commonsResultGroup.getStorageAttributesKey();
-		final Type type = extractType(attributesKey);
+		final Type type = extractGroupType(attributesKey);
 		groupBuilder.type(type);
 
 		if (type == Type.ATTRIBUTE_SET)
 		{
-			final List<I_M_AttributeValue> attributevalues = extractAttributeSetFromStorageAttributesKey(attributesKey);
-			groupBuilder.attributeValues(attributevalues);
+			groupBuilder.attributes(AttributesKeys.toImmutableAttributeSet(attributesKey));
 		}
 
 		return groupBuilder.build();
@@ -117,42 +114,19 @@ public class AvailableToPromiseAdapter
 	}
 
 	@VisibleForTesting
-	Type extractType(@NonNull final AttributesKey attributesKey)
+	static Group.Type extractGroupType(@NonNull final AttributesKey attributesKey)
 	{
 		if (AttributesKey.ALL.equals(attributesKey))
 		{
-			return Type.ALL_STORAGE_KEYS;
+			return Group.Type.ALL_STORAGE_KEYS;
 		}
 		else if (AttributesKey.OTHER.equals(attributesKey))
 		{
-			return Type.OTHER_STORAGE_KEYS;
+			return Group.Type.OTHER_STORAGE_KEYS;
 		}
 		else
 		{
 			return Type.ATTRIBUTE_SET;
-		}
-	}
-
-	@VisibleForTesting
-	List<I_M_AttributeValue> extractAttributeSetFromStorageAttributesKey(@NonNull final AttributesKey attributesKey)
-	{
-		try
-		{
-			final Collection<Integer> attributeValueIds = attributesKey.getAttributeValueIds();
-			if (attributeValueIds.isEmpty())
-			{
-				return ImmutableList.of();
-			}
-
-			return Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeValue.class)
-					.addInArrayFilter(I_M_AttributeValue.COLUMN_M_AttributeValue_ID, attributeValueIds)
-					.create()
-					.list(I_M_AttributeValue.class);
-		}
-		catch (final RuntimeException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
-					.setParameter("storageAttributesKey", attributesKey);
 		}
 	}
 
