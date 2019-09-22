@@ -1,5 +1,11 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
+
+/**
+ * @file Class based component.
+ * @module BlankPage
+ * @extends Component
+ */
 class Tooltips extends Component {
   constructor(props) {
     super(props);
@@ -9,6 +15,10 @@ class Tooltips extends Component {
     };
   }
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method.
+   */
   componentDidMount() {
     const { delay } = this.props;
     this.timeout = setTimeout(
@@ -21,10 +31,18 @@ class Tooltips extends Component {
     );
   }
 
+  /**
+   * @method componentWillUnmount
+   * @summary ToDo: Describe the method.
+   */
   componentWillUnmount() {
     clearTimeout(this.timeout);
   }
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const {
       name,
