@@ -327,6 +327,17 @@ class Board extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {object} modal
+ * @prop {array} breadcrumb
+ * @prop {func} dispatch
+ * @prop {object} rawModal
+ * @prop {string} indicator
+ * @prop {object} [pluginModal]
+ * @prop {*} [updateDocList]
+ * @prop {*} [boardId]
+ */
 Board.propTypes = {
   modal: PropTypes.object.isRequired,
   breadcrumb: PropTypes.array.isRequired,
@@ -334,6 +345,7 @@ Board.propTypes = {
   rawModal: PropTypes.object.isRequired,
   indicator: PropTypes.string.isRequired,
   pluginModal: PropTypes.object,
+  boardId: PropTypes.any,
 };
 
 /**
