@@ -14,6 +14,11 @@ import TableCell from '../table/TableCell';
 import FiltersFrequent from './FiltersFrequent';
 import FiltersNotFrequent from './FiltersNotFrequent';
 
+/**
+ * @file Class based component.
+ * @module Filters
+ * @extends Component
+ */
 class Filters extends Component {
   state = {
     activeFilter: null,
@@ -23,10 +28,18 @@ class Filters extends Component {
     widgetShown: false,
   };
 
+  /**
+   * @method UNSAFE_componentWillReceiveProps
+   * @summary ToDo: Describe the method
+   */
   UNSAFE_componentWillReceiveProps() {
     this.parseActiveFilters();
   }
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method
+   */
   componentDidMount() {
     this.parseActiveFilters();
   }
@@ -54,6 +67,10 @@ class Filters extends Component {
    *    defaultValue
    *  - otherwise add parameter and filter to local active filters and set
    *    the `defaultVal` to true as apparently there are no values set
+   */
+  /**
+   * @method parseActiveFilters
+   * @summary ToDo: Describe the method
    */
   parseActiveFilters = () => {
     let { filtersActive, filterData, initialValuesNulled } = this.props;
@@ -230,6 +247,11 @@ class Filters extends Component {
     }
   };
 
+  /**
+   * @method sortFilters
+   * @summary ToDo: Describe the method
+   * @param {array} data
+   */
   sortFilters = data => {
     return {
       frequentFilters: this.annotateFilters(
@@ -250,6 +272,11 @@ class Filters extends Component {
     };
   };
 
+  /**
+   * @method isFilterValid
+   * @summary ToDo: Describe the method
+   * @param {*} filters
+   */
   isFilterValid = filters => {
     if (filters.parameters) {
       return !filters.parameters.filter(item => item.mandatory && !item.value)
@@ -259,6 +286,11 @@ class Filters extends Component {
     return true;
   };
 
+  /**
+   * @method isFilterActive
+   * @summary ToDo: Describe the method
+   * @param {*} filterId
+   */
   isFilterActive = filterId => {
     const { activeFilter } = this.state;
 
@@ -274,6 +306,11 @@ class Filters extends Component {
     return false;
   };
 
+  /**
+   * @method parseToPatch
+   * @summary ToDo: Describe the method
+   * @param {*} params
+   */
   parseToPatch = params => {
     return params.reduce((acc, param) => {
       if (
@@ -292,9 +329,13 @@ class Filters extends Component {
   };
 
   // SETTING FILTERS  --------------------------------------------------------
-
-  /*
-   * This method should update docList
+  /**
+   * @method applyFilters
+   * @summary This method should update docList
+   * @param {*} isActive
+   * @param {*} captionValue
+   * @param {object} filter
+   * @param {*} cb
    */
   // eslint-disable-next-line no-unused-vars
   applyFilters = ({ isActive, captionValue, ...filter }, cb) => {
@@ -321,11 +362,11 @@ class Filters extends Component {
     );
   };
 
-  /*
-   * This function merges new filters that are to be activated with the existing
-   * active filters. Additionally we format date fields accordingly so that the backend
-   * accepts them.
-   *
+  /**
+   * @method setFilterActive
+   * @summary This function merges new filters that are to be activated with the existing
+   *  active filters. Additionally we format date fields accordingly so that the backend
+   *  accepts them.
    * @param {object} filterToAdd
    */
   setFilterActive = filterToAdd => {
@@ -368,9 +409,11 @@ class Filters extends Component {
     updateDocList(activeFilters);
   };
 
-  /*
-   *  Method to lock backdrop, to do not close on click onClickOutside
+  /**
+   * @method handleShow
+   * @summary Method to lock backdrop, to do not close on click onClickOutside
    *  widgets that are bigger than filter wrapper
+   * @param {*} value
    */
   handleShow = value => {
     this.setState({
@@ -378,6 +421,11 @@ class Filters extends Component {
     });
   };
 
+  /**
+   * @method clearFilters
+   * @summary ToDo: Describe the method
+   * @param {*} filterToClear
+   */
   clearFilters = filterToClear => {
     const { updateDocList } = this.props;
 
@@ -392,12 +440,21 @@ class Filters extends Component {
     }
   };
 
+  /**
+   * @method dropdownToggled
+   * @summary ToDo: Describe the method
+   */
   dropdownToggled = () => {
     this.setState({
       notValidFields: false,
     });
   };
 
+  /**
+   * @method annotateFilters
+   * @summary ToDo: Describe the method
+   * @param {*} unannotatedFilters
+   */
   annotateFilters = unannotatedFilters => {
     const { activeFilter } = this.state;
 
@@ -429,7 +486,10 @@ class Filters extends Component {
   };
 
   // RENDERING FILTERS -------------------------------------------------------
-
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   */
   render() {
     const { filterData, windowType, viewId, resetInitialValues } = this.props;
     const { frequentFilters, notFrequentFilters } = this.sortFilters(
