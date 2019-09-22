@@ -6,7 +6,7 @@ import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 
 /**
  * @file Class based component.
- * @module Propmt
+ * @module Prompt
  * @extends Component
  */
 class Prompt extends Component {
@@ -84,11 +84,23 @@ class Prompt extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {func} dispatch
+ * @prop {string} text
+ * @prop {func} [onCancelClick]
+ * @prop {func} [onSubmitClick]
+ * @prop {*} [title]
+ * @prop {*} [buttons]
+ * @todo Check title, buttons. Which proptype? Required or optional?
+ */
 Prompt.propTypes = {
   dispatch: PropTypes.func.isRequired,
   text: PropTypes.string.isRequired,
   onCancelClick: PropTypes.func,
   onSubmitClick: PropTypes.func,
+  title: PropTypes.any,
+  buttons: PropTypes.any,
 };
 
 export default connect()(Prompt);
