@@ -554,10 +554,21 @@ class Filters extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {string} windowType
+ * @prop {func} resetInitialValues
+ * @prop {string} [viewId]
+ * @prop {*} [filtersActive]
+ * @prop {*} [filterData]
+ * @prop {*} [initialValuesNulled]
+ * @prop {*} [updateDocList]
+ */
 Filters.propTypes = {
   windowType: PropTypes.string.isRequired,
   resetInitialValues: PropTypes.func.isRequired,
   viewId: PropTypes.string,
+  updateDocList: PropTypes.any,
 
   // this should be an immutable Map
   filtersActive: PropTypes.any,
