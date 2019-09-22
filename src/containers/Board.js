@@ -20,6 +20,11 @@ import Container from '../components/Container';
 import Lanes from '../components/board/Lanes';
 import Sidenav from '../components/board/Sidenav';
 
+/**
+ * @file Class based component.
+ * @module Filters
+ * @extends Component
+ */
 class Board extends Component {
   constructor(props) {
     super(props);
@@ -35,14 +40,27 @@ class Board extends Component {
     };
   }
 
+  /**
+   * @method UNSAFE_componentWillMount
+   * @summary ToDo: Describe the method
+   */
   UNSAFE_componentWillMount = () => {
     this.init();
   };
 
+  /**
+   * @method componentWillUnmount
+   * @summary ToDo: Describe the method
+   */
   componentWillUnmount = () => {
     disconnectWS.call(this);
   };
 
+  /**
+   * @method laneCardsChanged
+   * @summary ToDo: Describe the method
+   * @param {object} event
+   */
   laneCardsChanged = event => {
     const { board } = this.state;
     const { laneId, cardIds } = event;
@@ -58,6 +76,10 @@ class Board extends Component {
     });
   };
 
+  /**
+   * @method init
+   * @summary ToDo: Describe the method
+   */
   init = () => {
     const { boardId } = this.props;
 
@@ -87,6 +109,12 @@ class Board extends Component {
       });
   };
 
+  /**
+   * @method handleDrop
+   * @summary ToDo: Describe the method
+   * @param {*} card
+   * @param {*} targetLaneId
+   */
   handleDrop = (card, targetLaneId) => {
     const { board } = this.state;
     this.clearTargetIndicator();
@@ -124,6 +152,13 @@ class Board extends Component {
     }
   };
 
+  /**
+   * @method handleHover
+   * @summary ToDo: Describe the method
+   * @param {*} card
+   * @param {*} targetLaneId
+   * @param {*} targetIndex
+   */
   handleHover = (card, targetLaneId, targetIndex) => {
     this.setState({
       targetIndicator: {
@@ -133,6 +168,10 @@ class Board extends Component {
     });
   };
 
+  /**
+   * @method clearTargetIndicator
+   * @summary ToDo: Describe the method
+   */
   clearTargetIndicator = () => {
     this.setState({
       targetIndicator: {
@@ -142,6 +181,12 @@ class Board extends Component {
     });
   };
 
+  /**
+   * @method removeCard
+   * @summary ToDo: Describe the method
+   * @param {*} laneIndex
+   * @param {*} cardIndex
+   */
   removeCard = (laneIndex, cardIndex) => {
     this.setState(prev =>
       update(prev, {
@@ -156,6 +201,12 @@ class Board extends Component {
     );
   };
 
+  /**
+   * @method addCards
+   * @summary ToDo: Describe the method
+   * @param {*} laneIndex
+   * @param {*} cards
+   */
   addCards = (laneIndex, cards) => {
     this.setState(prev =>
       update(prev, {
@@ -170,6 +221,11 @@ class Board extends Component {
     );
   };
 
+  /**
+   * @method handleCaptionClick
+   * @summary ToDo: Describe the method
+   * @param {*} docPath
+   */
   handleCaptionClick = docPath => {
     if (!docPath) return;
 
@@ -181,6 +237,12 @@ class Board extends Component {
     window.open(url, '_blank');
   };
 
+  /**
+   * @method handleDelete
+   * @summary ToDo: Describe the method
+   * @param {*} laneId
+   * @param {*} cardId
+   */
   handleDelete = (laneId, cardId) => {
     const { board } = this.state;
 
@@ -202,10 +264,19 @@ class Board extends Component {
     });
   };
 
+  /**
+   * @method setSidenavViewId
+   * @summary ToDo: Describe the method
+   * @param {*} id
+   */
   setSidenavViewId = id => {
     this.setState({ sidenavViewId: id });
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   */
   render() {
     const { modal, rawModal, pluginModal, breadcrumb, indicator } = this.props;
 
@@ -265,6 +336,11 @@ Board.propTypes = {
   pluginModal: PropTypes.object,
 };
 
+/**
+ * @method mapStateToProps
+ * @summary ToDo: Describe the method
+ * @param {object} state
+ */
 function mapStateToProps(state) {
   const { windowHandler, menuHandler } = state;
 
