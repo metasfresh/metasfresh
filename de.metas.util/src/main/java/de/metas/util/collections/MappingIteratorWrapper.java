@@ -13,19 +13,19 @@ package de.metas.util.collections;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Iterator;
+import java.util.function.Function;
 
-import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * Adapter class which converts online between one parameterized iterator to other parameterized iterator
@@ -35,20 +35,15 @@ import de.metas.util.Check;
  * @param <OT> Output data type
  * @param <IT> Input data type
  */
-public class ConvertIteratorWrapper<OT, IT> implements Iterator<OT>, IteratorWrapper<IT>
+final class MappingIteratorWrapper<OT, IT> implements Iterator<OT>, IteratorWrapper<IT>
 {
 	private final Iterator<IT> iterator;
-	private final Converter<OT, IT> converter;
+	private final Function<IT, OT> mapper;
 
-	public ConvertIteratorWrapper(final Iterator<IT> iterator, final Converter<OT, IT> converter)
+	public MappingIteratorWrapper(@NonNull final Iterator<IT> iterator, @NonNull final Function<IT, OT> mapper)
 	{
-		super();
-
-		Check.assumeNotNull(iterator, "iterator not null");
-		Check.assumeNotNull(converter, "converter not null");
-
 		this.iterator = iterator;
-		this.converter = converter;
+		this.mapper = mapper;
 	}
 
 	@Override
@@ -67,7 +62,7 @@ public class ConvertIteratorWrapper<OT, IT> implements Iterator<OT>, IteratorWra
 	public OT next()
 	{
 		final IT valueIn = iterator.next();
-		final OT valueOut = converter.convert(valueIn);
+		final OT valueOut = mapper.apply(valueIn);
 		return valueOut;
 	}
 

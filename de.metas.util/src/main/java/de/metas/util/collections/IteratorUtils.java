@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -37,6 +38,7 @@ import com.google.common.base.Throwables;
 
 import de.metas.util.EmptyIterator;
 import de.metas.util.collections.PagedIterator.PagedIteratorBuilder;
+import lombok.NonNull;
 
 public final class IteratorUtils
 {
@@ -46,15 +48,7 @@ public final class IteratorUtils
 	@Deprecated
 	public static <E> Iterable<E> asIterable(final Iterator<E> it)
 	{
-		return new Iterable<E>()
-		{
-
-			@Override
-			public Iterator<E> iterator()
-			{
-				return it;
-			}
-		};
+		return () -> it;
 	}
 
 	/**
@@ -210,19 +204,9 @@ public final class IteratorUtils
 		}
 	}
 
-	/**
-	 * Converts given iterator from one type to another.
-	 *
-	 * Please note, conversion will happen just in time (i.e. when {@link Iterator#next()} method will be invoked)
-	 *
-	 * @param iterator
-	 * @param converter
-	 * @return converted iterator
-	 * @see ConvertIteratorWrapper
-	 */
-	public static <IT, OT> Iterator<OT> convertIterator(final Iterator<IT> iterator, final Converter<OT, IT> converter)
+	public static <IT, OT> Iterator<OT> map(@NonNull final Iterator<IT> iterator, @NonNull final Function<IT, OT> mapper)
 	{
-		return new ConvertIteratorWrapper<>(iterator, converter);
+		return new MappingIteratorWrapper<>(iterator, mapper);
 	}
 
 	public static <T> Iterator<T> unmodifiableIterator(final Iterator<T> iterator)
