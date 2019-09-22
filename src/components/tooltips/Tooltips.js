@@ -4,7 +4,7 @@ import classNames from 'classnames';
 
 /**
  * @file Class based component.
- * @module BlankPage
+ * @module Filters
  * @extends Component
  */
 class Tooltips extends Component {
