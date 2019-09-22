@@ -1,5 +1,12 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import classNames from 'classnames';
+
+/**
+ * @file Class based component.
+ * @module Filters
+ * @extends Component
+ */
 class Tooltips extends Component {
   constructor(props) {
     super(props);
@@ -9,6 +16,10 @@ class Tooltips extends Component {
     };
   }
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method.
+   */
   componentDidMount() {
     const { delay } = this.props;
     this.timeout = setTimeout(
@@ -21,10 +32,18 @@ class Tooltips extends Component {
     );
   }
 
+  /**
+   * @method componentWillUnmount
+   * @summary ToDo: Describe the method.
+   */
   componentWillUnmount() {
     clearTimeout(this.timeout);
   }
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const {
       name,
@@ -56,5 +75,25 @@ class Tooltips extends Component {
     );
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} action
+ * @prop {*} className
+ * @prop {*} delay
+ * @prop {*} extraClass
+ * @prop {*} name
+ * @prop {*} tooltipOnFirstlevelPositionLeft
+ * @prop {*} type
+ */
+Tooltips.propTypes = {
+  action: PropTypes.any,
+  className: PropTypes.any,
+  delay: PropTypes.any,
+  extraClass: PropTypes.any,
+  name: PropTypes.any,
+  tooltipOnFirstlevelPositionLeft: PropTypes.any,
+  type: PropTypes.any,
+};
 
 export default Tooltips;
