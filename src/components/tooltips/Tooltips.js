@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
 /**
@@ -74,5 +75,25 @@ class Tooltips extends Component {
     );
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} action
+ * @prop {*} className
+ * @prop {*} delay
+ * @prop {*} extraClass
+ * @prop {*} name
+ * @prop {*} tooltipOnFirstlevelPositionLeft
+ * @prop {*} type
+ */
+Tooltips.propTypes = {
+  action: PropTypes.any,
+  className: PropTypes.any,
+  delay: PropTypes.any,
+  extraClass: PropTypes.any,
+  name: PropTypes.any,
+  tooltipOnFirstlevelPositionLeft: PropTypes.any,
+  type: PropTypes.any,
+};
 
 export default Tooltips;
