@@ -31,6 +31,8 @@ import java.util.Properties;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -45,9 +47,9 @@ import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.ad.model.util.Model2IdFunction;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
@@ -55,6 +57,7 @@ import com.google.common.collect.ListMultimap;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.process.PInstanceId;
 import de.metas.security.permissions.Access;
+import de.metas.util.collections.IteratorUtils;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Getter;
 import lombok.NonNull;
@@ -247,6 +250,14 @@ public interface IQuery<T>
 	 */
 	<ET extends T> Iterator<ET> iterate(Class<ET> clazz) throws DBException;
 
+	default <ID extends RepoIdAware> Iterator<ID> iterateIds(@NonNull final IntFunction<ID> idMapper) throws DBException
+	{
+		// TODO: implement an efficient solution and not this workaround
+		final Iterator<T> modelIterator = iterate(getModelClass());
+		final Function<T, ID> mapper = model -> idMapper.apply(InterfaceWrapperHelper.getId(model));
+		return IteratorUtils.map(modelIterator, mapper);
+	}
+
 	<ET extends T> QueryResultPage<ET> paginate(Class<ET> clazz, int pageSize) throws DBException;
 
 	/**
@@ -283,10 +294,10 @@ public interface IQuery<T>
 		FIRST(null, true);
 
 		@Getter
-		private final String sqlFunction;
+		private String sqlFunction;
 
 		@Getter
-		private final boolean useOrderByClause;
+		private boolean useOrderByClause;
 
 		private Aggregate(final String sqlFunction, final boolean useOrderByClause)
 		{
@@ -299,7 +310,7 @@ public interface IQuery<T>
 		{
 			return sqlFunction;
 		}
-	};
+	}
 
 	/**
 	 * Aggregate given expression on this criteria
@@ -555,6 +566,13 @@ public interface IQuery<T>
 	default Stream<T> iterateAndStream() throws DBException
 	{
 		final Iterator<T> iterator = iterate(getModelClass());
+		final boolean parallel = false;
+		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), parallel);
+	}
+
+	default <ID extends RepoIdAware> Stream<ID> iterateAndStreamIds(@NonNull final IntFunction<ID> idMapper) throws DBException
+	{
+		final Iterator<ID> iterator = iterateIds(idMapper);
 		final boolean parallel = false;
 		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), parallel);
 	}
