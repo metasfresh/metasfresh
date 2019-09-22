@@ -4,11 +4,21 @@ import { connect } from 'react-redux';
 
 import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 
+/**
+ * @file Class based component.
+ * @module Propmt
+ * @extends Component
+ */
 class Prompt extends Component {
   constructor(props) {
     super(props);
   }
 
+  /**
+   * @method renderCancelButton
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   renderCancelButton = () => {
     const { buttons } = this.props;
     return (
@@ -21,6 +31,11 @@ class Prompt extends Component {
     );
   };
 
+  /**
+   * @method renderSubmitButton
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   renderSubmitButton = () => {
     const { buttons } = this.props;
     return (
@@ -33,6 +48,11 @@ class Prompt extends Component {
     );
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     const { onCancelClick, title, buttons } = this.props;
     const { cancel, submit } = buttons;
