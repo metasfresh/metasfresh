@@ -47,6 +47,12 @@ import de.metas.util.ISingletonService;
 
 public interface IInvoiceDAO extends ISingletonService
 {
+	void save(org.compiere.model.I_C_Invoice invoice);
+
+	void delete(org.compiere.model.I_C_Invoice invoice);
+
+	void save(org.compiere.model.I_C_InvoiceLine invoiceLine);
+
 	/**
 	 *
 	 * @param invoice

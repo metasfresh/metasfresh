@@ -1,8 +1,8 @@
 package de.metas.handlingunits.inventory.draftlinescreator;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Set;
 
 import org.adempiere.warehouse.LocatorId;
@@ -54,7 +54,7 @@ public class DraftInventoryLinesCreator
 
 	private final Set<LocatorId> seenLocatorIds = new HashSet<>();
 
-	private final HashMap<InventoryLineAggregationKey, InventoryLine> createdOrUpdatedLines = new HashMap<>();
+	private final LinkedHashMap<InventoryLineAggregationKey, InventoryLine> createdOrUpdatedLines = new LinkedHashMap<>();
 
 	@NonFinal
 	@Getter

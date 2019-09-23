@@ -23,6 +23,7 @@ package de.metas.invoicecandidate.api;
  */
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -31,7 +32,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
@@ -203,15 +203,18 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 *
 	 * @param dateInvoiced new value to be set.
 	 * @param selectionId id of the <code>T_Selection</code> containing the candidates that shall be updated.
+	 * @param updateOnlyIfNull if true then the DateInvoiced column will be updated only if is null
 	 */
-	void updateDateInvoiced(Timestamp dateInvoiced, PInstanceId selectionId);
+	void updateDateInvoiced(LocalDate dateInvoiced, PInstanceId selectionId, boolean updateOnlyIfNull);
 
 	/**
-	 * Similar to {@link #updateDateInvoiced(Timestamp, int, String)}, but updates the <code>DateAcct</code> column.
+	 * Similar to {@link #updateDateInvoiced(Timestamp, PInstanceId, boolean)}, but updates the <code>DateAcct</code> column.
 	 *
 	 * @task 08437
 	 */
-	void updateDateAcct(Timestamp dateAcct, PInstanceId selectionId);
+	void updateDateAcct(LocalDate dateAcct, PInstanceId selectionId);
+
+	void updateNullDateAcctFromDateInvoiced(PInstanceId selectionId);
 
 	/**
 	 * Similar to {@link #updateDateInvoiced(Timestamp, int, String)}, but updates the <code>POReference</code> column.
@@ -225,18 +228,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * @task https://github.com/metasfresh/metasfresh/issues/3809
 	 */
 	void updateMissingPaymentTermIds(PInstanceId selectionId);
-
-	/**
-	 * Mass-update a given invoice candidate column.
-	 *
-	 * If there were any changes, those invoice candidates will be invalidated.
-	 *
-	 * @param invoiceCandidateColumnName {@link I_C_Invoice_Candidate}'s column to update
-	 * @param value value to set (you can also use {@link ModelColumnNameValue})
-	 * @param updateOnlyIfNull if true then it will update only if column value is null (not set)
-	 * @param selectionId invoice candidates selection (AD_PInstance_ID)
-	 */
-	<ValueType> void updateColumnForSelection(String invoiceCandidateColumnName, ValueType value, boolean updateOnlyIfNull, PInstanceId selectionId);
 
 	/**
 	 * Gets the sum of all {@link I_C_Invoice_Candidate#COLUMNNAME_NetAmtToInvoice} values of the invoice candidates that have the given bPartner and are invoiceable before or at the given date. The
@@ -357,6 +348,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * @param invoiceCandidate
 	 */
 	void save(I_C_Invoice_Candidate invoiceCandidate);
+
+	void saveAll(Collection<I_C_Invoice_Candidate> invoiceCandidates);
 
 	/**
 	 * Return all invoice candidates that have Processed='N'

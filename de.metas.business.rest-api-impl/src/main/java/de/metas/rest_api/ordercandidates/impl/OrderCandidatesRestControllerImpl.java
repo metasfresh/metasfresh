@@ -46,13 +46,15 @@ import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.rest_api.attachment.JsonAttachmentType;
-import de.metas.rest_api.ordercandidates.JsonAttachment;
-import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkRequest;
-import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkResponse;
-import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
 import de.metas.rest_api.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
+import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
+import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
+import de.metas.rest_api.ordercandidates.response.JsonAttachment;
+import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.utils.JsonErrors;
+import de.metas.rest_api.utils.PermissionServiceFactories;
+import de.metas.rest_api.utils.PermissionServiceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
@@ -90,18 +92,23 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 	public static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE." + OrderCandidatesRestControllerImpl.class.getName();
 
 	private static final Logger logger = LogManager.getLogger(OrderCandidatesRestControllerImpl.class);
-	private JsonConverters jsonConverters;
-	private OLCandRepository olCandRepo;
-	private MasterdataProviderFactory masterdataProviderFactory;
+	private final JsonConverters jsonConverters;
+	private final OLCandRepository olCandRepo;
+	private PermissionServiceFactory permissionServiceFactory;
 
 	public OrderCandidatesRestControllerImpl(
-			@NonNull final MasterdataProviderFactory masterdataProviderFactory,
 			@NonNull final JsonConverters jsonConverters,
 			@NonNull final OLCandRepository olCandRepo)
 	{
-		this.masterdataProviderFactory = masterdataProviderFactory;
 		this.jsonConverters = jsonConverters;
 		this.olCandRepo = olCandRepo;
+		this.permissionServiceFactory = PermissionServiceFactories.currentContext();
+	}
+
+	@VisibleForTesting
+	void setPermissionServiceFactory(@NonNull final PermissionServiceFactory permissionServiceFactory)
+	{
+		this.permissionServiceFactory = permissionServiceFactory;
 	}
 
 	@PostMapping
@@ -119,7 +126,10 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 		{
 			bulkRequest.validate();
 
-			final MasterdataProvider masterdataProvider = masterdataProviderFactory.createMasterDataProvider();
+			final MasterdataProvider masterdataProvider = MasterdataProvider.builder()
+					.permissionService(permissionServiceFactory.createPermissionService())
+					.build();
+
 			final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 			// load/create/update the master data (according to SyncAdvice) in a dedicated trx.
@@ -135,9 +145,9 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 			//
 			return new ResponseEntity<>(response, HttpStatus.CREATED);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
-			logger.debug("Got exception while processing {}", bulkRequest, ex);
+			logger.warn("Got exception while processing {}", bulkRequest, ex);
 
 			final String adLanguage = Env.getADLanguageOrBaseLanguage();
 			return ResponseEntity.badRequest()

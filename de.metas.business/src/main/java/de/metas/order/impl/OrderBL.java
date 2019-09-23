@@ -24,6 +24,7 @@ package de.metas.order.impl;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -73,6 +74,8 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
@@ -1044,17 +1047,26 @@ public class OrderBL implements IOrderBL
 	public ProjectId getProjectIdOrNull(@NonNull final OrderLineId orderLineId)
 	{
 		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
-		
+
 		final I_C_OrderLine orderLine = ordersRepo.getOrderLineById(orderLineId);
 		final ProjectId lineProjectId = ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID());
-		if(lineProjectId != null)
+		if (lineProjectId != null)
 		{
 			return lineProjectId;
 		}
-		
+
 		final OrderId orderId = OrderId.ofRepoId(orderLine.getC_Order_ID());
 		final I_C_Order order = ordersRepo.getById(orderId);
 		final ProjectId orderProjectId = ProjectId.ofRepoIdOrNull(order.getC_Project_ID());
 		return orderProjectId;
+	}
+
+	@Override
+	public ZoneId getTimeZone(@NonNull final I_C_Order order)
+	{
+		final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
+
+		final OrgId orgId = OrgId.ofRepoIdOrAny(order.getAD_Org_ID());
+		return orgsRepo.getTimeZone(orgId);
 	}
 }

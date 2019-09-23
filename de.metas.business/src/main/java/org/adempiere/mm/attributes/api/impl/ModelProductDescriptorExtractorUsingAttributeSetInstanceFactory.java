@@ -1,5 +1,6 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
@@ -49,14 +50,15 @@ public class ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory
 		Preconditions.checkNotNull(asiAware,
 				"The given parameter can't be represented as an IAttributeSetInstanceAware; model=%s", model);
 
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asiAware.getM_AttributeSetInstance_ID());
 		final AttributesKey storageAttributesKey = AttributesKeys
-				.createAttributesKeyFromASIStorageAttributes(asiAware.getM_AttributeSetInstance_ID())
+				.createAttributesKeyFromASIStorageAttributes(asiId)
 				.orElse(defaultAttributesKey);
 
 		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(
 				asiAware.getM_Product_ID(),
 				storageAttributesKey,
-				asiAware.getM_AttributeSetInstance_ID());
+				asiId.getRepoId());
 
 		return productDescriptor;
 	}

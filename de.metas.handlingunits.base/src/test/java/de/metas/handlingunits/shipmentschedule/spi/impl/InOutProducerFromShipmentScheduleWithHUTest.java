@@ -2,7 +2,7 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.sql.Timestamp;
+import java.time.LocalDate;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -51,7 +51,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 18, 0, 0));
 
-		final Timestamp today = TimeUtil.getDay(2017, 11, 10);
+		final LocalDate today = LocalDate.of(2017, 11, 10);
 
 		final I_M_InOut shipment = createShipment(today);
 
@@ -66,8 +66,8 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 18, 15, 16));
 
-		final Timestamp yesterday = TimeUtil.getDay(2017, 11, 9);
-		final Timestamp today = TimeUtil.getDay(2017, 11, 10);
+		final LocalDate yesterday = LocalDate.of(2017, 11, 9);
+		final LocalDate today = LocalDate.of(2017, 11, 10);
 
 		final I_M_InOut shipment = createShipment(today);
 
@@ -82,9 +82,9 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 2, 30, 20));
 
-		final Timestamp yesterday = TimeUtil.getDay(2017, 11, 9);
+		final LocalDate yesterday = LocalDate.of(2017, 11, 9);
 
-		final Timestamp today = SystemTime.asDayTimestamp();
+		final LocalDate today = SystemTime.asLocalDate();
 
 		final I_M_InOut shipment = createShipment(yesterday);
 
@@ -99,9 +99,9 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 0, 51, 14));
 
-		final Timestamp tomorrow = TimeUtil.getDay(2017, 11, 12);
+		final LocalDate tomorrow = LocalDate.of(2017, 11, 12);
 
-		final Timestamp today = SystemTime.asDayTimestamp();
+		final LocalDate today = SystemTime.asLocalDate();
 
 		final I_M_InOut shipment = createShipment(today);
 
@@ -116,8 +116,8 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 12, 30, 15));
 
-		final Timestamp tomorrow = TimeUtil.getDay(2017, 11, 12);
-		final Timestamp nextWeek = TimeUtil.getDay(2017, 11, 17);
+		final LocalDate tomorrow = LocalDate.of(2017, 11, 12);
+		final LocalDate nextWeek = LocalDate.of(2017, 11, 17);
 
 		final I_M_InOut shipment = createShipment(nextWeek);
 
@@ -132,8 +132,8 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 1, 1, 1));
 
-		final Timestamp yesterday = TimeUtil.getDay(2017, 11, 9);
-		final Timestamp lastWeek = TimeUtil.getDay(2017, 11, 3);
+		final LocalDate yesterday = LocalDate.of(2017, 11, 9);
+		final LocalDate lastWeek = LocalDate.of(2017, 11, 3);
 
 		final I_M_InOut shipment = createShipment(yesterday);
 
@@ -143,10 +143,10 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		assertThat(isTodayBestForShipmentDate).isFalse();
 	}
 
-	private I_M_InOut createShipment(final Timestamp date)
+	private I_M_InOut createShipment(final LocalDate date)
 	{
 		final I_M_InOut shipment = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
-		shipment.setMovementDate(date);
+		shipment.setMovementDate(TimeUtil.asTimestamp(date));
 		InterfaceWrapperHelper.save(shipment);
 
 		return shipment;
@@ -157,11 +157,11 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 10, 15, 0));
 
-		final Timestamp today = SystemTime.asDayTimestamp();
+		final LocalDate today = SystemTime.asLocalDate();
 
 		final I_M_ShipmentSchedule schedule = createSchedule(today);
 
-		final Timestamp shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, true);
+		final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, true);
 
 		assertThat(shipmentDate).isEqualTo(today);
 	}
@@ -171,11 +171,11 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 19, 17, 16));
 
-		final Timestamp today = SystemTime.asDayTimestamp();
+		final LocalDate today = SystemTime.asLocalDate();
 
 		final I_M_ShipmentSchedule schedule = createSchedule(today);
 
-		final Timestamp shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, false);
+		final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, false);
 
 		assertThat(shipmentDate).isEqualTo(today);
 	}
@@ -185,13 +185,13 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 13, 13, 13));
 
-		final Timestamp today = SystemTime.asDayTimestamp();
+		final LocalDate today = SystemTime.asLocalDate();
 
-		final Timestamp anotherDate = TimeUtil.getDay(2017, 11, 17);
+		final LocalDate anotherDate = LocalDate.of(2017, 11, 17);
 
 		final I_M_ShipmentSchedule schedule = createSchedule(anotherDate);
 
-		final Timestamp shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, true);
+		final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, true);
 
 		assertThat(shipmentDate).isEqualTo(today);
 	}
@@ -201,11 +201,11 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 19, 4, 4));
 
-		final Timestamp dateInFuture = TimeUtil.getDay(2017, 11, 17);
+		final LocalDate dateInFuture = LocalDate.of(2017, 11, 17);
 
 		final I_M_ShipmentSchedule schedule = createSchedule(dateInFuture);
 
-		final Timestamp shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, false);
+		final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, false);
 
 		assertThat(shipmentDate).isEqualTo(dateInFuture);
 	}
@@ -215,20 +215,20 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 1, 2, 30));
 
-		final Timestamp today = SystemTime.asDayTimestamp();
-		final Timestamp dateInPast = TimeUtil.getDay(2017, 11, 3);
+		final LocalDate today = SystemTime.asLocalDate();
+		final LocalDate dateInPast = LocalDate.of(2017, 11, 3);
 
 		final I_M_ShipmentSchedule schedule = createSchedule(dateInPast);
 
-		final Timestamp shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, false);
+		final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, false);
 
 		assertThat(shipmentDate).isEqualTo(today);
 	}
 
-	private I_M_ShipmentSchedule createSchedule(final Timestamp date)
+	private I_M_ShipmentSchedule createSchedule(final LocalDate date)
 	{
 		final I_M_ShipmentSchedule schedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class);
-		schedule.setDeliveryDate(date);
+		schedule.setDeliveryDate(TimeUtil.asTimestamp(date));
 		InterfaceWrapperHelper.save(schedule);
 		return schedule;
 	}

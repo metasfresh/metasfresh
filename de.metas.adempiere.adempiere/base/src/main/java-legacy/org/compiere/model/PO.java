@@ -4446,7 +4446,8 @@ public abstract class PO
 					+ "\n SQL: " + sb
 					+ "\n PO: " + this
 					+ "\n TrxName: " + get_TrxName()
-					+ "\n Ctx: " + getCtx());
+					+ "\n Ctx: " + getCtx()
+					+ "\n return count: " + no);
 			log.warn(ex.getLocalizedMessage(), ex);
 		}
 		return no > 0;

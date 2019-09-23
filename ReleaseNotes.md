@@ -10,6 +10,25 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.120
+
+## Features
+* metasfresh
+  * [#5487](https://github.com/metasfresh/metasfresh/issues/5487) Allow Copy for M_ProductPrice
+  * [#5519](https://github.com/metasfresh/metasfresh/pull/5519) Sektion als Suchfeld
+
+# Fixes
+* metasfresh
+  * [#5506](https://github.com/metasfresh/metasfresh/issues/5506) Dunning Disposition Action to set Dunning Grace does not update existing Dates
+  * [#5514](https://github.com/metasfresh/metasfresh/issues/5514) forum-datenaustausch.ch only update biller masterdata
+  * [#5495](https://github.com/metasfresh/metasfresh/issues/5495) allow material dispo to run within app
+
+* metasfresh-webui-frontend
+  * [#2359](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2359) Date filter problem in Material Cockpit
+  * [#2835](https://github.com/metasfresh/me03/issues/2835) "Created" date looking weird
+  * [#2844](https://github.com/metasfresh/me03/issues/2844) Record stays on same position after going next page after grid edit
+
+
 # metasfresh 5.119
 
 ## Features

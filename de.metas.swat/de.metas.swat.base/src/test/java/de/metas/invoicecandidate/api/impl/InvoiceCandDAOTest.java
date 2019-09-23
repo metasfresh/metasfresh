@@ -1,9 +1,9 @@
 package de.metas.invoicecandidate.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refreshAll;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -15,8 +15,10 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /*
@@ -61,16 +63,14 @@ public class InvoiceCandDAOTest
 
 		// Create two ICs with different payment terms.
 		// By virtue of it's lower C_Invoice_Candidate_ID, the first IC's payment term ID shall be set in the first two ICs we creates
-		final I_C_PaymentTerm paymentTerm1 = newInstance(I_C_PaymentTerm.class);
-		save(paymentTerm1);
+		final PaymentTermId paymentTermId1 = createPaymentTerm();
 		final I_C_Invoice_Candidate invoiceCandidateWithPaymentTerm1 = newInstance(I_C_Invoice_Candidate.class);
-		invoiceCandidateWithPaymentTerm1.setC_PaymentTerm(paymentTerm1);
+		invoiceCandidateWithPaymentTerm1.setC_PaymentTerm_ID(paymentTermId1.getRepoId());
 		save(invoiceCandidateWithPaymentTerm1);
 
-		final I_C_PaymentTerm paymentTerm2 = newInstance(I_C_PaymentTerm.class);
-		save(paymentTerm2);
+		final PaymentTermId paymentTermId2 = createPaymentTerm();
 		final I_C_Invoice_Candidate invoiceCandidateWithPaymentTerm2 = newInstance(I_C_Invoice_Candidate.class);
-		invoiceCandidateWithPaymentTerm2.setC_PaymentTerm(paymentTerm2);
+		invoiceCandidateWithPaymentTerm2.setC_PaymentTerm_ID(paymentTermId2.getRepoId());
 		save(invoiceCandidateWithPaymentTerm2);
 
 		final PInstanceId selectionId = Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class)
@@ -92,22 +92,30 @@ public class InvoiceCandDAOTest
 				unrelatedInvoiceCandidateWithoutPaymentTerm));
 
 		// verify
-		assertThat(getPaymentTermId(invoiceCandidateWithoutPaymentTerm1)).isEqualTo(paymentTerm1.getC_PaymentTerm_ID());
-		assertThat(getPaymentTermId(invoiceCandidateWithoutPaymentTerm2)).isEqualTo(paymentTerm1.getC_PaymentTerm_ID());
-		assertThat(getPaymentTermId(invoiceCandidateWithPaymentTerm1)).isEqualTo(paymentTerm1.getC_PaymentTerm_ID());
+		assertThat(getPaymentTermId(invoiceCandidateWithoutPaymentTerm1)).isEqualTo(paymentTermId1);
+		assertThat(getPaymentTermId(invoiceCandidateWithoutPaymentTerm2)).isEqualTo(paymentTermId1);
+		assertThat(getPaymentTermId(invoiceCandidateWithPaymentTerm1)).isEqualTo(paymentTermId1);
 
 		assertThat(getPaymentTermId(invoiceCandidateWithPaymentTerm2))
 				.as("invoiceCandidateWithPaymentTerm2 shall be left unchanged because it already has a C_PaymentTerm_ID")
-				.isEqualTo(paymentTerm2.getC_PaymentTerm_ID());
+				.isEqualTo(paymentTermId2);
 
 		assertThat(getPaymentTermId(unrelatedInvoiceCandidateWithoutPaymentTerm))
 				.as("unrelatedInvoiceCandidateWithoutPaymentTerm shall be left unchanged because it's not part of the selection")
-				.isLessThanOrEqualTo(0);
+				.isNull();
 	}
 
-	private int getPaymentTermId(@NonNull final I_C_Invoice_Candidate ic)
+	private PaymentTermId createPaymentTerm()
 	{
-		final Integer paymentTermIdOrNull = getValueOverrideOrValue(ic, I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_ID);
-		return paymentTermIdOrNull == null ? 0 : paymentTermIdOrNull;
+		final I_C_PaymentTerm record = newInstance(I_C_PaymentTerm.class);
+		saveRecord(record);
+		return PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
+	}
+
+	private PaymentTermId getPaymentTermId(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return CoalesceUtil.coalesceSuppliers(
+				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_Override_ID()),
+				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_ID()));
 	}
 }

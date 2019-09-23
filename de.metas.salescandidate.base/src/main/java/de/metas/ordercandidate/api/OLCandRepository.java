@@ -1,5 +1,7 @@
 package de.metas.ordercandidate.api;
 
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -19,6 +21,8 @@ import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -78,6 +82,8 @@ public class OLCandRepository
 		{
 			olCandPO.setAD_Org_ID(request.getOrgId().getRepoId());
 		}
+		final OrgId orgId = OrgId.ofRepoIdOrAny(olCandPO.getAD_Org_ID());
+		final ZoneId timeZone = Services.get(IOrgDAO.class).getTimeZone(orgId);
 
 		{
 			final BPartnerInfo bpartner = request.getBpartner();
@@ -117,10 +123,14 @@ public class OLCandRepository
 
 		olCandPO.setDateCandidate(SystemTime.asDayTimestamp());
 		olCandPO.setDateOrdered(TimeUtil.asTimestamp(request.getDateOrdered()));
-		olCandPO.setDatePromised(TimeUtil.asTimestamp(request.getDateRequired()));
+		olCandPO.setDatePromised(TimeUtil.asTimestamp(request.getDateRequired()
+				.atTime(LocalTime.MAX)
+				.atZone(timeZone)));
 
-		olCandPO.setDateInvoiced(TimeUtil.asTimestamp(request.getDateInvoiced()));
+		olCandPO.setPresetDateInvoiced(TimeUtil.asTimestamp(request.getPresetDateInvoiced()));
 		olCandPO.setC_DocTypeInvoice_ID(DocTypeId.toRepoId(request.getDocTypeInvoiceId()));
+
+		olCandPO.setPresetDateShipped(TimeUtil.asTimestamp(request.getPresetDateShipped()));
 
 		olCandPO.setC_Flatrate_Conditions_ID(request.getFlatrateConditionsId());
 

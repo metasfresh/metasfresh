@@ -1,6 +1,5 @@
 package de.metas.rest_api.utils;
 
-import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.getId;
 import static org.adempiere.model.InterfaceWrapperHelper.getModelTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.getOrgId;
@@ -8,18 +7,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 
 import java.util.HashSet;
-import java.util.Properties;
 import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.compiere.util.Env;
 
 import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.UserRolePermissionsKey;
 import de.metas.util.Services;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -46,20 +42,24 @@ import lombok.NonNull;
 
 public class PermissionService
 {
-	public static PermissionService of(final Properties ctx)
-	{
-		return new PermissionService(ctx);
-	}
-
 	private final IUserRolePermissionsDAO userRolePermissionsRepo = Services.get(IUserRolePermissionsDAO.class);
 
 	private final UserRolePermissionsKey userRolePermissionsKey;
+	@Getter
+	private final OrgId defaultOrgId;
+
 	private final Set<PermissionRequest> permissionsGranted = new HashSet<>();
 
-	private PermissionService(@Nullable final Properties ctx)
+	@Builder
+	private PermissionService(
+			@NonNull final UserRolePermissionsKey userRolePermissionsKey,
+			@NonNull final OrgId defaultOrgId)
 	{
-		final Properties ctxToUse = coalesceSuppliers(() -> ctx, () -> Env.getCtx());
-		this.userRolePermissionsKey = UserRolePermissionsKey.fromContext(ctxToUse);
+		this.userRolePermissionsKey = userRolePermissionsKey;
+		this.defaultOrgId = defaultOrgId;
+		// final Properties ctxToUse = coalesceSuppliers(() -> ctx, () -> Env.getCtx());
+		// this.userRolePermissionsKey = UserRolePermissionsKey.fromContext(ctxToUse);
+		// this.defaultOrgId = OrgId.optionalOfRepoId(Env.getAD_Org_ID(ctxToUse)).orElse(OrgId.ANY);
 	}
 
 	public void assertCanCreateOrUpdate(final Object record)

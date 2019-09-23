@@ -46,7 +46,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 {
 	I_M_HU getById(HuId huId);
 
-	List<I_M_HU> getByIds(Set<HuId> huIds);
+	List<I_M_HU> getByIds(Collection<HuId> huIds);
 
 	List<I_M_HU> getVHUs(HuId huId);
 

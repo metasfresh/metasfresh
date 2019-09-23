@@ -32,6 +32,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.VetoableChangeListener;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -513,7 +514,7 @@ final class ReadPaymentForm
 
 			//
 			// Generate invoices
-			final Timestamp dateInvoiced = SystemTime.asDayTimestamp();
+			final LocalDate dateInvoiced = SystemTime.asLocalDate();
 			final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 			invoicingParams.setDateInvoiced(dateInvoiced);
 			invoicingParams.setDateAcct(dateInvoiced);

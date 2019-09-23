@@ -30,10 +30,9 @@ import java.util.Properties;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.aggregation.api.AbstractAggregationKeyBuilder;
+import de.metas.aggregation.api.AggregationKey;
 import de.metas.aggregation.api.IAggregationFactory;
-import de.metas.aggregation.api.IAggregationKey;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
-import de.metas.aggregation.api.impl.AggregationKey;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.invoicecandidate.api.IInvoiceAggregationFactory;
@@ -78,7 +77,7 @@ public class ForwardingICAggregationKeyBuilder extends AbstractAggregationKeyBui
 	}
 
 	@Override
-	public final IAggregationKey buildAggregationKey(final I_C_Invoice_Candidate ic)
+	public final AggregationKey buildAggregationKey(final I_C_Invoice_Candidate ic)
 	{
 		final IAggregationKeyBuilder<I_C_Invoice_Candidate> icAggregationKeyBuilder = getDelegate(ic);
 		if (icAggregationKeyBuilder == null)
@@ -123,13 +122,13 @@ public class ForwardingICAggregationKeyBuilder extends AbstractAggregationKeyBui
 	@Override
 	public final boolean isSame(final I_C_Invoice_Candidate ic1, final I_C_Invoice_Candidate ic2)
 	{
-		final IAggregationKey aggregationKey1 = buildAggregationKey(ic1);
+		final AggregationKey aggregationKey1 = buildAggregationKey(ic1);
 		if (aggregationKey1 == null)
 		{
 			return false;
 		}
 
-		final IAggregationKey aggregationKey2 = buildAggregationKey(ic2);
+		final AggregationKey aggregationKey2 = buildAggregationKey(ic2);
 		if (aggregationKey2 == null)
 		{
 			return false;
