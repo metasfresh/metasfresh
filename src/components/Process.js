@@ -59,8 +59,19 @@ class Process extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {bool} [disabled]
+ * @prop {*} data
+ * @prop {*} layout
+ * @prop {*} type
+ * @todo Check title, buttons. Which proptype? Required or optional?
+ */
 Process.propTypes = {
   disabled: PropTypes.bool,
+  data: PropTypes.any,
+  layout: PropTypes.any,
+  type: PropTypes.any,
 };
 
 export default Process;
