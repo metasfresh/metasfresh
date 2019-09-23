@@ -326,6 +326,11 @@ public class SqlViewFactory implements IViewFactory
 		{
 			return null;
 		}
+		else if (referencedDocumentPath.isComposedKey())
+		{
+			// document with composed keys does not support references
+			return null;
+		}
 		else
 		{
 			final DocumentReference reference = documentReferencesService.getDocumentReference(referencedDocumentPath, targetWindowId);
@@ -496,9 +501,9 @@ public class SqlViewFactory implements IViewFactory
 		public Object retrieveValue(@NonNull final ResultSet rs, final String adLanguage) throws SQLException
 		{
 			return fieldValueLoader.retrieveFieldValue(
-					rs, 
-					isDisplayColumnAvailable, 
-					adLanguage, 
+					rs,
+					isDisplayColumnAvailable,
+					adLanguage,
 					(LookupDescriptor)null);
 		}
 
