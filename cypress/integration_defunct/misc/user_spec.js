@@ -24,9 +24,9 @@ describe('New user tests', function() {
   it('Create a user', function() {
     user = new User({ ...userJSON, lastName: customLastName, email: customEmail });
     user.apply();
-    cy.get(`@${customEmail}`).then(user => {
-      userId = user.documentId;
-    });
+    // cy.get(`@${customEmail}`).then(user => {
+    //   userId = user.documentId;
+    // })
 
     cy.get('form-field-Login').should('not.exist');
   });

@@ -7,6 +7,7 @@ import { Builder } from '../../support/utils/builder';
 describe('Create new TaxRate', function() {
   // tax
   let taxRateName;
+  let taxCategoryName;
   let validFrom;
   let rate;
 
@@ -20,6 +21,7 @@ describe('Create new TaxRate', function() {
   it('Read the fixture', function() {
     cy.fixture('tax/taxrate_setup_spec.json').then(f => {
       taxRateName = appendHumanReadableNow(f['taxRateName']);
+      taxCategoryName = appendHumanReadableNow(f['taxCategoryName']);
       validFrom = f['validFrom'];
       rate = f['rate'];
 
@@ -35,7 +37,7 @@ describe('Create new TaxRate', function() {
   it('Create TaxCategory', function() {
     cy.fixture('tax/taxcategory.json').then(taxCategoryJson => {
       Object.assign(new TaxCategory(), taxCategoryJson)
-        .setName(taxRateName)
+        .setName(taxCategoryName)
         .apply();
     });
   });
@@ -46,7 +48,7 @@ describe('Create new TaxRate', function() {
         .setName(taxRateName)
         .setRate(rate)
         .setValidFrom(validFrom)
-        .setTaxCategory(taxRateName)
+        .setTaxCategory(taxCategoryName)
         .apply();
     });
   });
@@ -62,9 +64,9 @@ describe('Create new TaxRate', function() {
       .setIsAttributeDependant(true)
       .setPriceListVersion(priceListName)
       .setStandardPrice(standardPrice)
-      .setTaxCategory(taxRateName)
+      .setTaxCategory(taxCategoryName)
       .apply();
 
-    cy.getStringFieldValue('C_TaxCategory_ID').should('equals', taxRateName);
+    cy.getStringFieldValue('C_TaxCategory_ID').should('equals', taxCategoryName);
   });
 });

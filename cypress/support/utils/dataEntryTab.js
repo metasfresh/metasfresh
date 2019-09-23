@@ -16,11 +16,13 @@ export class DataEntryTab {
     this.tabName = tabName;
     return this;
   }
+
   setSeqNo(seqNo) {
     cy.log(`DataEntryTab - set seqNo = ${seqNo}`);
     this.seqNo = seqNo;
     return this;
   }
+
   setDescription(description) {
     cy.log(`DataEntryTab - set description = ${description}`);
     this.description = description;
@@ -89,44 +91,35 @@ export class DataEntrySubTab {
 }
 
 function applyDataEntryTab(dataEntryTab) {
-  describe(`Create new dataEntryTab ${dataEntryTab.name}`, function() {
-    cy.visitWindow('540571', 'NEW', dataEntryTab.name /*documentIdAliasName*/);
-    cy.log(`applyDataEntryTab - visitWindow yielded ${JSON.stringify(this.dataEntryTabId)}`);
+  cy.visitWindow('540571', 'NEW');
 
-    if (dataEntryTab.seqNo) {
-      cy.getStringFieldValue('SeqNo').then(currentValue => {
-        if (currentValue !== dataEntryTab.seqNo) {
-          cy.log(`applyDataEntryTab - dataEntryTab.seqNo=${dataEntryTab.seqNo}; currentValue=${currentValue}`);
-          cy.clearField('SeqNo');
-          cy.writeIntoStringField('SeqNo', `${dataEntryTab.seqNo}`);
-        }
-      });
-    }
+  if (dataEntryTab.seqNo) {
+    cy.getStringFieldValue('SeqNo').then(currentValue => {
+      if (currentValue !== dataEntryTab.seqNo) {
+        cy.clearField('SeqNo');
+        cy.writeIntoStringField('SeqNo', `${dataEntryTab.seqNo}`);
+      }
+    });
+  }
 
-    cy.writeIntoStringField('Name', dataEntryTab.name);
-    cy.writeIntoStringField('TabName', dataEntryTab.tabName);
-    cy.writeIntoLookupListField(
-      'DataEntry_TargetWindow_ID',
-      dataEntryTab.targetWindowName,
-      dataEntryTab.targetWindowName
-    );
+  cy.writeIntoStringField('Name', dataEntryTab.name);
+  cy.writeIntoStringField('TabName', dataEntryTab.tabName);
+  cy.writeIntoLookupListField('DataEntry_TargetWindow_ID', dataEntryTab.targetWindowName, dataEntryTab.targetWindowName);
 
-    if (dataEntryTab.description) {
-      cy.writeIntoTextField('Description', dataEntryTab.description);
-    }
-    if (!dataEntryTab.isActive) {
-      cy.clickOnIsActive(true /*modal*/);
-    }
+  if (dataEntryTab.description) {
+    cy.writeIntoTextField('Description', dataEntryTab.description);
+  }
+  if (!dataEntryTab.isActive) {
+    cy.clickOnIsActive(true /*modal*/);
+  }
 
-    // Thx to https://stackoverflow.com/questions/16626735/how-to-loop-through-an-array-containing-objects-and-access-their-properties
-    if (dataEntryTab.dataEntrySubTabs.length > 0) {
-      dataEntryTab.dataEntrySubTabs.forEach(function(dataEntrySubTab) {
-        applyDataEntrySubTab(dataEntrySubTab);
-      });
-
-      cy.get('table tbody tr').should('have.length', dataEntryTab.dataEntrySubTabs.length);
-    }
-  });
+  // Thx to https://stackoverflow.com/questions/16626735/how-to-loop-through-an-array-containing-objects-and-access-their-properties
+  if (dataEntryTab.dataEntrySubTabs.length > 0) {
+    dataEntryTab.dataEntrySubTabs.forEach(function(dataEntrySubTab) {
+      applyDataEntrySubTab(dataEntrySubTab);
+    });
+    cy.expectNumberOfRows(dataEntryTab.dataEntrySubTabs.length);
+  }
 }
 
 function applyDataEntrySubTab(dataEntrySubTab) {

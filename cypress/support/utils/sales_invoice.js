@@ -18,7 +18,6 @@ export class SalesInvoice {
     return this;
   }
 
-  /** Creates a new invoice and stores its documentId as alias newInvoiceDocumentId. */
   apply() {
     cy.log(`SalesInvoice - apply START (${this._toString})`);
     SalesInvoice.applySalesInvoice(this);
@@ -26,28 +25,26 @@ export class SalesInvoice {
   }
 
   static applySalesInvoice(salesInvoice) {
-    describe(`Create new SalesInvoice: ${salesInvoice._toString}`, () => {
-      cy.visitWindow('167', 'NEW', 'newInvoiceDocumentId' /*documentIdAliasName*/);
+    cy.visitWindow('167', 'NEW');
 
-      cy.get('.header-breadcrumb-sitename')
-        .should('contain', new Date().getDate())
-        .should('contain', new Date().getFullYear());
+    cy.get('.header-breadcrumb-sitename')
+      .should('contain', new Date().getDate())
+      .should('contain', new Date().getFullYear());
 
-      cy.writeIntoLookupListField('C_BPartner_ID', salesInvoice.businessPartner, salesInvoice.businessPartner);
+    cy.writeIntoLookupListField('C_BPartner_ID', salesInvoice.businessPartner, salesInvoice.businessPartner);
 
-      cy.getStringFieldValue('M_PriceList_ID').should('not.be.empty');
-      cy.getStringFieldValue('C_Currency_ID').should('not.be.empty');
-      if (salesInvoice.priceList) {
-        cy.selectInListField('M_PriceList_ID', salesInvoice.priceList);
-      }
+    cy.getStringFieldValue('M_PriceList_ID').should('not.be.empty');
+    cy.getStringFieldValue('C_Currency_ID').should('not.be.empty');
+    if (salesInvoice.priceList) {
+      cy.selectInListField('M_PriceList_ID', salesInvoice.priceList);
+    }
 
-      cy.getStringFieldValue('DocumentNo').should('be.empty');
-      cy.selectInListField('C_DocTypeTarget_ID', salesInvoice.targetDocumentType);
-      cy.getStringFieldValue('DocumentNo').should('not.be.empty');
+    cy.getStringFieldValue('DocumentNo').should('be.empty');
+    cy.selectInListField('C_DocTypeTarget_ID', salesInvoice.targetDocumentType);
+    cy.getStringFieldValue('DocumentNo').should('not.be.empty');
 
-      salesInvoice.lines.forEach(line => {
-        SalesInvoice.applyLine(line);
-      });
+    salesInvoice.lines.forEach(line => {
+      SalesInvoice.applyLine(line);
     });
   }
 

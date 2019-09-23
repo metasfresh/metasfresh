@@ -209,63 +209,43 @@ function visitTableWindow(windowId) {
   cy.visit(`/window/${windowId}`);
 }
 
-function visitDetailWindow(windowId, recordId, documentIdAliasName) {
+function visitDetailWindow(windowId, recordId) {
   describe('Open metasfresh single-record window and wait for layout and data', function() {
     performDocumentViewAction(
       windowId,
       function() {
         cy.visit(`/window/${windowId}/${recordId}`);
-      },
-      documentIdAliasName
-    );
+      });
   });
 }
 
-Cypress.Commands.add(
-  'performDocumentViewAction',
-  (windowId, documentViewAction, documentIdAliasName = 'visitedDocumentId') => {
-    performDocumentViewAction(windowId, documentViewAction, documentIdAliasName);
-  }
-);
+Cypress.Commands.add('performDocumentViewAction', (windowId, documentViewAction) => {
+  performDocumentViewAction(windowId, documentViewAction);
+});
 
-function performDocumentViewAction(windowId, documentViewAction, documentIdAliasName) {
+function performDocumentViewAction(windowId, documentViewAction) {
   cy.server();
   const layoutAliasName = `visitWindow-layout-${new Date().getTime()}`;
   cy.route('GET', new RegExp(`/rest/api/window/${windowId}/layout`)).as(layoutAliasName);
   const dataAliasName = `visitWindow-data-${new Date().getTime()}`;
   cy.route('GET', new RegExp(`/rest/api/window/${windowId}/[0-9]+$`)).as(dataAliasName);
 
-  cy.log('Inside performDocumentViewAction, just before the 2 waits');
-
   documentViewAction();
   cy.wait(`@${layoutAliasName}`, {
     requestTimeout: 20000,
     responseTimeout: 20000,
-  })
-    .wait(`@${dataAliasName}`, {
-      requestTimeout: 20000,
-      responseTimeout: 20000,
-    })
-    .then(xhr => {
-      cy.log('FULL XHR: ' + JSON.stringify(xhr));
-
-      expect(xhr).to.not.be.empty;
-      expect(xhr.status).to.eq(200);
-      expect(xhr.response).to.not.be.empty;
-      expect(xhr.response.body[0]).to.not.be.empty;
-
-      cy.log('xhr response body: ' + JSON.stringify(xhr.response.body[0]));
-      return cy.wrap({ documentId: xhr.response.body[0].id });
-    })
-    .as(documentIdAliasName);
+  }).wait(`@${dataAliasName}`, {
+    requestTimeout: 20000,
+    responseTimeout: 20000,
+  });
 }
 
-Cypress.Commands.add('visitWindow', (windowId, recordId, documentIdAliasName = 'visitedDocumentId') => {
+Cypress.Commands.add('visitWindow', (windowId, recordId) => {
   if (recordId == null) {
     // null == undefined, thx to https://stackoverflow.com/a/2647888/1012103
     visitTableWindow(windowId);
   } else {
-    visitDetailWindow(windowId, recordId, documentIdAliasName);
+    visitDetailWindow(windowId, recordId);
   }
 });
 
@@ -334,6 +314,8 @@ Cypress.Commands.add('openInboxNotificationWithText', text => {
    *  Since Frontend already knows what a notification should do when clicked via the /all request and the "target" element in the response (see json below)
    *  it would be helpful for cypress if each notification would also contain a data- attribute with the target,
    *  so that i know what to wait after when the notification is clicked, or that nothing should happens.
+   *
+   *  This is helpful in case i need to move to a particular window, or whatever else i would need to do.
    *
    * maybe that notification could contain `data-cy="/window/169/1000043"` or `data-cy=null`.
    *

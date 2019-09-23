@@ -1,7 +1,6 @@
 {
   "name": "Test TaxRate",
   "isDefault": false,
-  "taxCategory": "Normaler Steuersatz 19% (Deutschland)",
   "validFrom": "01/01/2019",
   "requiresTaxCertificate": false,
   "rate": 10,

@@ -18,7 +18,6 @@ export class PurchaseInvoice {
     return this;
   }
 
-  /** Creates a new invoice and stores its documentId as alias newInvoiceDocumentId. */
   apply() {
     cy.log(`PurchaseInvoice - apply START (${this._toString})`);
     PurchaseInvoice.applyPurchaseInvoice(this);
@@ -26,28 +25,26 @@ export class PurchaseInvoice {
   }
 
   static applyPurchaseInvoice(purchaseInvoice) {
-    describe(`Create new PurchaseInvoice: ${purchaseInvoice._toString}`, () => {
-      cy.visitWindow('183', 'NEW', 'newInvoiceDocumentId' /*documentIdAliasName*/);
+    cy.visitWindow('183', 'NEW');
 
-      cy.get('.header-breadcrumb-sitename')
-        .should('contain', new Date().getDate())
-        .should('contain', new Date().getFullYear());
+    cy.get('.header-breadcrumb-sitename')
+      .should('contain', new Date().getDate())
+      .should('contain', new Date().getFullYear());
 
-      cy.writeIntoLookupListField('C_BPartner_ID', purchaseInvoice.businessPartner, purchaseInvoice.businessPartner);
+    cy.writeIntoLookupListField('C_BPartner_ID', purchaseInvoice.businessPartner, purchaseInvoice.businessPartner);
 
-      cy.getStringFieldValue('M_PriceList_ID').should('not.be.empty');
-      cy.getStringFieldValue('C_Currency_ID').should('not.be.empty');
-      if (purchaseInvoice.priceList) {
-        cy.selectInListField('M_PriceList_ID', purchaseInvoice.priceList);
-      }
+    cy.getStringFieldValue('M_PriceList_ID').should('not.be.empty');
+    cy.getStringFieldValue('C_Currency_ID').should('not.be.empty');
+    if (purchaseInvoice.priceList) {
+      cy.selectInListField('M_PriceList_ID', purchaseInvoice.priceList);
+    }
 
-      cy.getStringFieldValue('DocumentNo').should('be.empty');
-      cy.selectInListField('C_DocTypeTarget_ID', purchaseInvoice.targetDocumentType);
-      cy.getStringFieldValue('DocumentNo').should('not.be.empty');
+    cy.getStringFieldValue('DocumentNo').should('be.empty');
+    cy.selectInListField('C_DocTypeTarget_ID', purchaseInvoice.targetDocumentType);
+    cy.getStringFieldValue('DocumentNo').should('not.be.empty');
 
-      purchaseInvoice.lines.forEach(line => {
-        PurchaseInvoice.applyLine(line);
-      });
+    purchaseInvoice.lines.forEach(line => {
+      PurchaseInvoice.applyLine(line);
     });
   }
 

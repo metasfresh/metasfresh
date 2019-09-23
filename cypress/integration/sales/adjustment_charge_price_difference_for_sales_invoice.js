@@ -55,19 +55,13 @@ describe('Create Adjustment Charge price difference (Nachbelastung Preisdifferen
   });
 
   it('Prepare sales invoice', function() {
+    // eslint-disable-next-line
     new SalesInvoice(businessPartnerName, salesInvoiceTargetDocumentType)
       .addLine(new SalesInvoiceLine().setProduct(productName).setQuantity(originalQuantity))
       .apply();
     cy.completeDocument();
 
-    // this is stupid. it seems that with cypress you can ONLY read the alias in the same "it" block. so i cannot retrieve my aliases
-    // in an organised (to be read "sane") fashion inside 'Save values needed for the next step', but must do it here, even though
-    // this step should only create the SI.
-    // WAT??!!
-    cy.get('@newInvoiceDocumentId').then(function({ documentId /* this is destructuring */ }) {
-      originalSalesInvoiceID = documentId;
-      cy.log(`originalSalesInvoiceID is ${originalSalesInvoiceID}`);
-    });
+    cy.getCurrentWindowRecordId().then(id => (originalSalesInvoiceID = id));
   });
 
   it('Sales Invoice is not paid', function() {

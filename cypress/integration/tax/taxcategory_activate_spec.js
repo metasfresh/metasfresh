@@ -6,6 +6,7 @@ import { ProductPrice } from '../../support/utils/product_price';
 
 // tax
 let taxRateName;
+let taxCategoryName;
 let validFrom;
 let rate;
 
@@ -25,6 +26,7 @@ describe('Test TaxCategory activation and deactivation', function() {
   it('Read the fixture', function() {
     cy.fixture('tax/taxcategory_activate_spec.json').then(f => {
       taxRateName = appendHumanReadableNow(f['taxRateName']);
+      taxCategoryName = appendHumanReadableNow(f['taxCategoryName']);
       validFrom = f['validFrom'];
       rate = f['rate'];
 
@@ -41,7 +43,7 @@ describe('Test TaxCategory activation and deactivation', function() {
   it('Create TaxCategory', function() {
     cy.fixture('tax/taxcategory.json').then(taxCategoryJson => {
       Object.assign(new TaxCategory(), taxCategoryJson)
-        .setName(taxRateName)
+        .setName(taxCategoryName)
         .apply();
     });
     cy.getCurrentWindowRecordId().then(id => (taxCategoryId = id));
@@ -53,7 +55,7 @@ describe('Test TaxCategory activation and deactivation', function() {
         .setName(taxRateName)
         .setRate(rate)
         .setValidFrom(validFrom)
-        .setTaxCategory(taxRateName)
+        .setTaxCategory(taxCategoryName)
         .apply();
     });
   });
@@ -86,7 +88,7 @@ describe('Test TaxCategory activation and deactivation', function() {
       .click()
       .get('.input-dropdown-list')
       .should($list => {
-        expect($list.text()).to.not.contain(taxRateName);
+        expect($list.text()).to.not.contain(taxCategoryName);
       });
   });
 
@@ -103,7 +105,7 @@ describe('Test TaxCategory activation and deactivation', function() {
       .click()
       .get('.input-dropdown-list')
       .should($list => {
-        expect($list.text()).to.contain(taxRateName);
+        expect($list.text()).to.contain(taxCategoryName);
       });
   });
 });

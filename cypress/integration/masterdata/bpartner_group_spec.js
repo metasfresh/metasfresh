@@ -28,9 +28,8 @@ describe('Create new bpartner group', function() {
     cy.writeIntoStringField('Name', groupName, false);
     cy.clearField('Value');
     cy.writeIntoStringField('Value', groupName, false);
-    cy.get('@newGroupId').then(groupId => {
-      groupDocumentId = groupId.documentId;
-    });
+
+    cy.getCurrentWindowRecordId().then(id => (groupDocumentId = id));
   });
 
   //create bpartner

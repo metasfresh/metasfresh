@@ -55,7 +55,6 @@ let packingInstructionsName1;
 let packingInstructionsName2;
 
 // Product
-let productType;
 let productName1;
 let productName2;
 let productName3;
@@ -92,7 +91,6 @@ it('Read fixture and prepare the names', function() {
     packingInstructionsName1 = appendHumanReadableNow(f['packingInstructionsName1']);
     packingInstructionsName2 = appendHumanReadableNow(f['packingInstructionsName2']);
 
-    productType = f['productType'];
     productName1 = appendHumanReadableNow(f['productName1']);
     productName2 = appendHumanReadableNow(f['productName2']);
     productName3 = appendHumanReadableNow(f['productName3']);
@@ -153,7 +151,6 @@ describe('Create the 3 products ', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName1)
-        .setProductType(productType)
         .setProductCategory(productCategoryName1)
         .addCUTUAllocation(packingInstructionsName1)
         .apply();
@@ -164,7 +161,6 @@ describe('Create the 3 products ', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName2)
-        .setProductType(productType)
         .setProductCategory(productCategoryName1)
         .addCUTUAllocation(packingInstructionsName1)
         .addCUTUAllocation(packingInstructionsName2)
@@ -176,7 +172,6 @@ describe('Create the 3 products ', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName3)
-        .setProductType(productType)
         .setProductCategory(productCategoryName2)
         .addCUTUAllocation(packingInstructionsName1)
         .apply();
@@ -243,7 +238,7 @@ function createProductCategory(productCategoryName, attributeSet) {
 }
 
 function createPackingEntities(productForPacking, packingInstructionsName) {
-  Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPacking, productForPacking, productType, '24_Gebinde');
+  Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPacking, productForPacking, null, '24_Gebinde');
   Builder.createPackingMaterial(productForPacking, packingInstructionsName);
 }
 
@@ -255,6 +250,7 @@ function createProductPriceWithAttributes(productName) {
   cy.get('.form-field-M_AttributeSetInstance_ID').click({ force: true }); // save the attributes
   cy.waitForSaveIndicator(true);
 }
+
 function createProductPrice(productName, priceListName, standardPrice, taxCategory) {
   new ProductPrice()
     .setProduct(productName)
@@ -279,15 +275,18 @@ function editProductAttributes(productName, productID) {
   cy.get('.form-field-M_AttributeSetInstance_ID').click({ force: true }); // save the attributes
   cy.waitForSaveIndicator(true);
 }
+
 function expectNumberOfProductPrices(expectedNumberOfRows, priceListVersionName) {
   ProductPrices.visit();
   toggleNotFrequentFilters();
   selectNotFrequentFilterWidget('default');
-  cy.writeIntoLookupListField('M_PriceList_Version_ID', priceListVersionName, priceListVersionName, false, false, null, true);
+  cy.selectInListField('M_PriceList_Version_ID', priceListVersionName, false, null, true);
+
   cy.setCheckBoxValue('IsAttributeDependant', true, false, null, true);
   applyFilters();
   cy.expectNumberOfRows(expectedNumberOfRows);
 }
+
 function createAttribute(attributeName, attributeValue1, attributeValue2) {
   new Attribute(attributeName)
     .setValue(attributeName)

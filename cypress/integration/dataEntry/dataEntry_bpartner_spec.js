@@ -1,7 +1,7 @@
-import { DataEntryTab, DataEntrySubTab } from '../../support/utils/dataEntryTab';
-import { DataEntrySection, DataEntryLine } from '../../support/utils/dataEntrySection';
+import { DataEntrySubTab, DataEntryTab } from '../../support/utils/dataEntryTab';
+import { DataEntryLine, DataEntrySection } from '../../support/utils/dataEntrySection';
 import { DataEntryField, DataEntryListValue } from '../../support/utils/dataEntryField';
-import { humanReadableNow } from "../../support/utils/utils";
+import { humanReadableNow } from '../../support/utils/utils';
 
 describe('Create bpartner with custom dataentry based tabs', function() {
   const date = humanReadableNow();
@@ -28,19 +28,16 @@ describe('Create bpartner with custom dataentry based tabs', function() {
       )
       .apply();
 
-    cy.get(`@${dataEntryTabName}`).then(newDataEntryTab => {
-      dataEntryTabId = newDataEntryTab.documentId;
-    });
+    cy.getCurrentWindowRecordId().then(id => (dataEntryTabId = id));
     cy.get(`@${dataEntrySubTab1Name}`).then(dataEntrySubTab => {
+      // noinspection JSUnresolvedVariable
       dataEntrySubTab1Id = dataEntrySubTab.documentId;
     });
   });
 
   it('Create dataentry section and lines', function() {
     new DataEntrySection(dataEntrySection1Name, dataEntrySubTab1Name)
-      .setDescription(
-        'Section with 3 lines; in the 1st, just one col is used; in the 2nd, one field is long-text, yet the two fields of the 3rd line shall still be alligned!'
-      )
+      .setDescription('Section with 3 lines; in the 1st, just one col is used; in the 2nd, one field is long-text, yet the two fields of the 3rd line shall still be alligned!')
       .setSeqNo('15')
       .addDataEntryLine(new DataEntryLine().setSeqNo(11))
       .addDataEntryLine(new DataEntryLine().setSeqNo(22))
@@ -49,10 +46,7 @@ describe('Create bpartner with custom dataentry based tabs', function() {
   });
 
   it('Create dataentry fields', function() {
-    const section1FieldBuilder = new DataEntryField(
-      'Tab1-Section1-Line1-Field1',
-      `${dataEntrySection1Name}_${dataEntryTabName}_${dataEntrySubTab1Name}_11`
-    )
+    const section1FieldBuilder = new DataEntryField('Tab1-Section1-Line1-Field1', `${dataEntrySection1Name}_${dataEntryTabName}_${dataEntrySubTab1Name}_11`)
       .setDescription('Yes-No, single field in its line')
       .setMandatory(true)
       .setDataEntryRecordType('Yes-No')
@@ -95,30 +89,20 @@ describe('Create bpartner with custom dataentry based tabs', function() {
       .addDataEntryLine(new DataEntryLine().setSeqNo('10'))
       .apply();
 
-    new DataEntryField(
-      'Tab1-Section2-Line1-Field1',
-      `${dataEntrySection2Name}_${dataEntryTabName}_${dataEntrySubTab1Name}_10`
-    )
+    new DataEntryField('Tab1-Section2-Line1-Field1', `${dataEntrySection2Name}_${dataEntryTabName}_${dataEntrySubTab1Name}_10`)
       .setDescription('Tab1-Section2-Field1 Description')
       .setMandatory(true)
       .setDataEntryRecordType('Date')
       .setSeqNo('10')
       .apply();
 
-    new DataEntryField(
-      'Tab1-Section2-Line1-Field2',
-      `${dataEntrySection2Name}_${dataEntryTabName}_${dataEntrySubTab1Name}_10`
-    )
+    new DataEntryField('Tab1-Section2-Line1-Field2', `${dataEntrySection2Name}_${dataEntryTabName}_${dataEntrySubTab1Name}_10`)
       .setDescription('Tab1-Section2-Field2 Description')
       .setMandatory(false) // setting only the section's 1st field to be mandatory because right now, only the first field is actually displayed
       .setDataEntryRecordType('List')
       .setSeqNo('22')
-      .addDataEntryListValue(
-        new DataEntryListValue('ListItem 2').setDescription('ListItem 2 with SeqNo10').setSeqNo('21')
-      )
-      .addDataEntryListValue(
-        new DataEntryListValue('ListItem 1').setDescription('ListItem 1 with SeqNo20').setSeqNo('11')
-      )
+      .addDataEntryListValue(new DataEntryListValue('ListItem 2').setDescription('ListItem 2 with SeqNo10').setSeqNo('21'))
+      .addDataEntryListValue(new DataEntryListValue('ListItem 1').setDescription('ListItem 1 with SeqNo20').setSeqNo('11'))
       .apply();
   });
 
