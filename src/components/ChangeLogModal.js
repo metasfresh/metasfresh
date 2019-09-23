@@ -111,6 +111,10 @@ class ChangeLogModal extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {object} data
+ */
 ChangeLogModal.propTypes = {
   data: PropTypes.object.isRequired,
 };
