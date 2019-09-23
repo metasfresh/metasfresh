@@ -18,9 +18,9 @@ FROM generate_series(1, copies) i
              (
              SELECT
                org.Name                                                                                as org_name,
-               COALESCE(NULLIF(TRIM(bp_loc.gln), ''),
+                COALESCE(NULLIF(TRIM(bp_loc.gln), ''),
                         '0000000000000')                                                               as bp_gln,
-               substring(COALESCE(NULLIF(bp_loc.gln, ''), '0000000000000') from 9 for
+               substring(COALESCE(NULLIF(TRIM(bp_loc.gln), ''), '0000000000000') from 9 for
                          4)                                                                            as bp_gln_9_12,
                bp_loc.name                                                                             as addr_name,
                COALESCE(bp.CompanyName, bp.Name) || ', ' || loc.address1 || ', ' || loc.Postal || ' ' || loc.City,
