@@ -4,6 +4,11 @@ import classnames from 'classnames';
 import WidgetTooltip from '../widget/WidgetTooltip';
 import MasterWidget from '../widget/MasterWidget';
 
+/**
+ * @file Class based component.
+ * @module EntryTable
+ * @extends Component
+ */
 export default class EntryTable extends Component {
   constructor(props) {
     super(props);
@@ -13,6 +18,13 @@ export default class EntryTable extends Component {
     };
   }
 
+  /**
+   * @method widgetTooltipToggle
+   * @summary ToDo: Describe the method
+   * @param {*} field
+   * @param {*} value
+   * @todo Write the documentation
+   */
   widgetTooltipToggle = (field, value) => {
     const curVal = this.state.tooltipToggled;
     let newVal = field;
@@ -26,6 +38,13 @@ export default class EntryTable extends Component {
     });
   };
 
+  /**
+   * @method renderElements
+   * @summary ToDo: Describe the method
+   * @param {*} elements
+   * @param {*} columnsCount
+   * @todo Write the documentation
+   */
   renderElements = (elements, columnsCount) => {
     const {
       data,
@@ -116,6 +135,11 @@ export default class EntryTable extends Component {
     return null;
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     const { rows } = this.props;
 
