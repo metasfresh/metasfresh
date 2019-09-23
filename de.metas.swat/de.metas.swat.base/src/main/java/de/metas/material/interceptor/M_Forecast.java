@@ -15,7 +15,6 @@ import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
-import org.springframework.stereotype.Component;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.material.event.ModelProductDescriptorExtractor;
@@ -26,7 +25,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 
 @Interceptor(I_M_Forecast.class)
-@Component
 public class M_Forecast
 {
 	private static final String MSG_DOC_ACTION_NOT_ALLOWED_AFTER_COMPLETION = "M_Forecast_DocAction_Not_Allowed_After_Completion";

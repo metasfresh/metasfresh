@@ -10,7 +10,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Component;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -38,7 +37,6 @@ import lombok.NonNull;
  *
  */
 @Interceptor(I_M_ShipmentSchedule.class)
-@Component
 public class M_ShipmentSchedule
 {
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
