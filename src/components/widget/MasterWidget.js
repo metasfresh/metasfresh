@@ -19,6 +19,11 @@ function isNumberField(widgetType) {
 
 const dateParse = ['Date', 'DateTime', 'ZonedDateTime', 'Timestamp', 'Time'];
 
+/**
+ * @file Class based component.
+ * @module MasterWidget
+ * @extends Component
+ */
 class MasterWidget extends Component {
   state = {
     updated: false,
@@ -26,6 +31,10 @@ class MasterWidget extends Component {
     data: '',
   };
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method.
+   */
   componentDidMount() {
     const { data, widgetData } = this.props;
 
@@ -34,6 +43,11 @@ class MasterWidget extends Component {
     });
   }
 
+  /**
+   * @method UNSAFE_componentWillReceiveProps
+   * @summary ToDo: Describe the method.
+   * @param {*} nextProps
+   */
   UNSAFE_componentWillReceiveProps(nextProps) {
     const { widgetData, widgetType } = this.props;
     const { edited, data } = this.state;
@@ -73,10 +87,20 @@ class MasterWidget extends Component {
     }
   }
 
+  /**
+   * @method componentWillUnmount
+   * @summary ToDo: Describe the method.
+   */
   componentWillUnmount() {
     clearTimeout(this.timeout);
   }
 
+  /**
+   * @method handlePatch
+   * @summary ToDo: Describe the method.
+   * @param {*} property
+   * @param {*} value
+   */
   handlePatch = (property, value) => {
     const {
       isModal,
@@ -143,6 +167,12 @@ class MasterWidget extends Component {
   // but is need to handle controlled components if
   // they patch on other event than onchange
   //
+  /**
+   * @method handleKeyDown
+   * @summary ToDo: Describe the method.
+   * @param {*} property
+   * @param {*} val
+   */
   handleChange = (property, val) => {
     const {
       updatePropertyValue,
@@ -172,12 +202,22 @@ class MasterWidget extends Component {
     );
   };
 
+  /**
+   * @method setEditedFlag
+   * @summary ToDo: Describe the method.
+   * @param {*} edited
+   */
   setEditedFlag = edited => {
     this.setState({
       edited: edited,
     });
   };
 
+  /**
+   * @method validatePrecision
+   * @summary ToDo: Describe the method.
+   * @param {*} value
+   */
   validatePrecision = value => {
     const { widgetType, precision } = this.props;
     let precisionProcessed = precision;
@@ -193,12 +233,25 @@ class MasterWidget extends Component {
     }
   };
 
+  /**
+   * @method handleProcess
+   * @summary ToDo: Describe the method.
+   * @param {*} caption
+   * @param {*} buttonProcessId
+   * @param {*} tabId
+   * @param {*} rowId
+   */
   handleProcess = (caption, buttonProcessId, tabId, rowId) => {
     const { openModal } = this.props;
 
     openModal(caption, buttonProcessId, 'process', tabId, rowId, false, false);
   };
 
+  /**
+   * @method handleKeyDown
+   * @summary ToDo: Describe the method.
+   * @param {*} field
+   */
   handleZoomInto = field => {
     const { dataId, windowType, tabId, rowId } = this.props;
 
@@ -213,16 +266,24 @@ class MasterWidget extends Component {
           res.data &&
           /*eslint-disable */
           window.open(url, '_blank');
-          /*eslint-enable */
+        /*eslint-enable */
       });
   };
 
+  /**
+   * @method handleBlurWidget
+   * @summary ToDo: Describe the method.
+   */
   handleBlurWidget = () => {
     const { onBlurWidget, fieldName } = this.props;
 
     onBlurWidget && onBlurWidget(fieldName);
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const { handleBackdropLock } = this.props;
     const { updated, data } = this.state;
@@ -247,6 +308,12 @@ class MasterWidget extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {bool} [dataEntry]
+ * @prop {bool} [isOpenDataPicker]
+ * @prop {func} openModal
+ */
 MasterWidget.propTypes = {
   dataEntry: PropTypes.bool,
   isOpenDatePicker: PropTypes.bool,

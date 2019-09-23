@@ -18,6 +18,11 @@ import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 import RawList from '../widget/List/RawList';
 import PasswordRecovery from './PasswordRecovery';
 
+/**
+ * @file Class based component.
+ * @module LoginForm
+ * @extends Component
+ */
 class LoginForm extends Component {
   constructor(props) {
     super(props);
@@ -32,6 +37,10 @@ class LoginForm extends Component {
     };
   }
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method.
+   */
   componentDidMount() {
     const { path } = this.props;
 
@@ -40,18 +49,32 @@ class LoginForm extends Component {
     }
   }
 
+  /**
+   * @method UNSAFE_componentWillUpdate
+   * @summary ToDo: Describe the method.
+   */
   UNSAFE_componentWillUpdate(nextProps, nextState) {
     if (this.roleSelector && nextState.roleSelect) {
       this.roleSelector.instanceRef.dropdown.focus();
     }
   }
 
+  /**
+   * @method handleKeyPress
+   * @summary ToDo: Describe the method.
+   * @param {object} event
+   */
   handleKeyPress = e => {
     if (e.key === 'Enter') {
       this.handleLogin();
     }
   };
 
+  /**
+   * @method handleOnChange
+   * @summary ToDo: Describe the method.
+   * @param {object} event
+   */
   handleOnChange = e => {
     e.preventDefault();
 
@@ -60,6 +83,10 @@ class LoginForm extends Component {
     });
   };
 
+  /**
+   * @method handleSuccess
+   * @summary ToDo: Describe the method.
+   */
   handleSuccess = () => {
     const { redirect, dispatch } = this.props;
 
@@ -75,6 +102,11 @@ class LoginForm extends Component {
     });
   };
 
+  /**
+   * @method checkIfAlreadyLogged
+   * @summary ToDo: Describe the method.
+   * @param {*} err
+   */
   checkIfAlreadyLogged(err) {
     const { router } = this.context;
 
@@ -87,6 +119,11 @@ class LoginForm extends Component {
     });
   }
 
+  /**
+   * @method handleResetOk
+   * @summary ToDo: Describe the method.
+   * @param {*} response
+   */
   handleResetOk = response => {
     this.setState(
       {
@@ -102,6 +139,11 @@ class LoginForm extends Component {
     );
   };
 
+  /**
+   * @method mapStateToProps
+   * @summary ToDo: Describe the method.
+   * @param {*} resp
+   */
   handleLoginRequest = resp => {
     let request = null;
 
@@ -142,6 +184,10 @@ class LoginForm extends Component {
       });
   };
 
+  /**
+   * @method handleLogin
+   * @summary ToDo: Describe the method.
+   */
   handleLogin = () => {
     const { dispatch, auth } = this.props;
     const { roleSelect, role } = this.state;
@@ -172,39 +218,68 @@ class LoginForm extends Component {
     );
   };
 
+  /**
+   * @method handleRoleSelect
+   * @summary ToDo: Describe the method.
+   * @param {*} option
+   */
   handleRoleSelect = option => {
     this.setState({
       role: option,
     });
   };
 
+  /**
+   * @method handleForgotPassword
+   * @summary ToDo: Describe the method.
+   */
   handleForgotPassword = () => {
     const { dispatch } = this.props;
     dispatch(push('/forgottenPassword'));
   };
 
+  /**
+   * @method openDropdown
+   * @summary ToDo: Describe the method.
+   */
   openDropdown = () => {
     this.setState({
       dropdownToggled: true,
     });
   };
 
+  /**
+   * @method closeDropdown
+   * @summary ToDo: Describe the method.
+   */
   closeDropdown = () => {
     this.setState({
       dropdownToggled: false,
     });
   };
 
+  /**
+   * @method onFocus
+   * @summary ToDo: Describe the method.
+   */
   onFocus = () => {
     this.setState({
       dropdownFocused: true,
     });
   };
 
+  /**
+   * @method onBlur
+   * @summary ToDo: Describe the method.
+   */
   onBlur = () => {
     this.setState({ dropdownFocused: false });
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const {
       roleSelect,
@@ -317,6 +392,12 @@ class LoginForm extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {func} dispatch
+ * @prop {string} path
+ * @prop {string} token
+ */
 LoginForm.propTypes = {
   dispatch: PropTypes.func.isRequired,
   path: PropTypes.string,

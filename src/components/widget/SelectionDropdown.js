@@ -3,29 +3,13 @@ import PropTypes from 'prop-types';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import classnames from 'classnames';
 
+/**
+ * @file Is the component that handles the main functionality of List (RawList) and Lookup (RawLookup)
+ * widgets. It's used in Labels (e.g. Master Data Attribute Feature) too.
+ * @module SelectionDropdown
+ * @extends Component
+ */
 export default class SelectionDropdown extends Component {
-  static propTypes = {
-    options: PropTypes.oneOfType([
-      PropTypes.array,
-      PropTypes.shape({
-        map: PropTypes.func.isRequired,
-        includes: PropTypes.func.isRequired,
-        indexOf: PropTypes.func.isRequired,
-        get: PropTypes.func.isRequired,
-        size: PropTypes.number.isRequired,
-      }),
-    ]).isRequired,
-    selected: PropTypes.object,
-    empty: PropTypes.node,
-    forceEmpty: PropTypes.bool,
-    width: PropTypes.number.isRequired,
-    height: PropTypes.number,
-    loading: PropTypes.bool,
-    onChange: PropTypes.func.isRequired,
-    onSelect: PropTypes.func.isRequired,
-    onCancel: PropTypes.func,
-  };
-
   /* Those are instance variables since no rendering needs to be done depending on
    * those properties. Additionally, setState can't be used with the callback in
    * an event listener since it needs to return synchronously */
@@ -45,22 +29,39 @@ export default class SelectionDropdown extends Component {
     this.handleMouseDown = this.handleMouseDown.bind(this);
   }
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method.
+   */
   componentDidMount() {
     window.addEventListener('keydown', this.handleKeyDown);
     window.addEventListener('keyup', this.handleKeyUp);
   }
 
+  /**
+   * @method componentWillUnmount
+   * @summary ToDo: Describe the method.
+   */
   componentWillUnmount() {
     window.removeEventListener('keydown', this.handleKeyDown);
     window.removeEventListener('keyup', this.handleKeyUp);
   }
 
+  /**
+   * @method UNSAFE_componentWillReceiveProps
+   * @summary ToDo: Describe the method.
+   */
   UNSAFE_componentWillReceiveProps(propsNext) {
     if (propsNext.options !== this.props.options) {
       this.optionToRef.clear();
     }
   }
 
+  /**
+   * @method size
+   * @summary ToDo: Describe the method.
+   * @param {*} options
+   */
   size(options) {
     if (Array.isArray(options)) {
       return options.length;
@@ -69,6 +70,12 @@ export default class SelectionDropdown extends Component {
     return options.size;
   }
 
+  /**
+   * @method get
+   * @summary ToDo: Describe the method.
+   * @param {*} options
+   * @param {*} index
+   */
   get(options, index) {
     if (Array.isArray(options)) {
       return options[index];
@@ -77,6 +84,12 @@ export default class SelectionDropdown extends Component {
     return options.get(index);
   }
 
+  /**
+   * @method scrollIntoView
+   * @summary ToDo: Describe the method.
+   * @param {*} element
+   * @param {*} up
+   */
   scrollIntoView(element, up) {
     const {
       top: topMax,
@@ -89,6 +102,11 @@ export default class SelectionDropdown extends Component {
     }
   }
 
+  /**
+   * @method navigate
+   * @summary ToDo: Describe the method.
+   * @param {*} up
+   */
   navigate = up => {
     this.ignoreMouse = true;
     this.ignoreNextMouseEnter = true;
@@ -122,6 +140,11 @@ export default class SelectionDropdown extends Component {
     onChange(selectedNew);
   };
 
+  /**
+   * @method navigateToAlphanumeric
+   * @summary ToDo: Describe the method.
+   * @param {*} char
+   */
   navigateToAlphanumeric = char => {
     const { selected, options, onChange } = this.props;
     const items = options.filter(
@@ -152,6 +175,11 @@ export default class SelectionDropdown extends Component {
     onChange(selectedNew);
   };
 
+  /**
+   * @method handleKeyDown
+   * @summary ToDo: Describe the method.
+   * @param {object} event
+   */
   handleKeyDown(event) {
     const { navigate } = this;
     const { selected, onCancel, onSelect } = this.props;
@@ -182,10 +210,19 @@ export default class SelectionDropdown extends Component {
     }
   }
 
+  /**
+   * @method handleKeyUp
+   * @summary ToDo: Describe the method.
+   */
   handleKeyUp() {
     this.ignoreMouse = false;
   }
 
+  /**
+   * @method handleMouseEnter
+   * @summary ToDo: Describe the method.
+   * @param {*} option
+   */
   handleMouseEnter(option) {
     if (this.ignoreMouse) {
       return;
@@ -206,10 +243,20 @@ export default class SelectionDropdown extends Component {
     this.props.onChange(option);
   }
 
+  /**
+   * @method handleMouseDown
+   * @summary ToDo: Describe the method.
+   * @param {*} option
+   */
   handleMouseDown(option) {
     this.props.onSelect(option, true);
   }
 
+  /**
+   * @method renderHeader
+   * @summary ToDo: Describe the method.
+   * @param {*} children
+   */
   renderHeader = children => {
     return (
       <div className="input-dropdown-list-option input-dropdown-list-header">
@@ -218,6 +265,11 @@ export default class SelectionDropdown extends Component {
     );
   };
 
+  /**
+   * @method renderOption
+   * @summary ToDo: Describe the method.
+   * @param {*} option
+   */
   renderOption = option => {
     const { selected } = this.props;
     const { key, caption, description } = option;
@@ -242,6 +294,10 @@ export default class SelectionDropdown extends Component {
     );
   };
 
+  /**
+   * @method renderEmpty
+   * @summary ToDo: Describe the method.
+   */
   renderEmpty = () => this.renderHeader(this.props.empty);
 
   loading = this.renderHeader(
@@ -256,6 +312,10 @@ export default class SelectionDropdown extends Component {
     </ReactCSSTransitionGroup>
   );
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const { options, width, height, loading, forceEmpty } = this.props;
     const empty = this.size(options) === 0;
@@ -279,3 +339,39 @@ export default class SelectionDropdown extends Component {
     );
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {array|shape} options
+ * @prop {object} selected,
+ * @prop {node} empty,
+ * @prop {bool} forceEmpty,
+ * @prop {number} width
+ * @prop {number} height
+ * @prop {bool} loading
+ * @prop {func} onChange
+ * @prop {func} onSelect
+ * @prop {bool} allowShortcut
+ * @prop {func} onCancel
+ */
+SelectionDropdown.propTypes = {
+  options: PropTypes.oneOfType([
+    PropTypes.array,
+    PropTypes.shape({
+      map: PropTypes.func.isRequired,
+      includes: PropTypes.func.isRequired,
+      indexOf: PropTypes.func.isRequired,
+      get: PropTypes.func.isRequired,
+      size: PropTypes.number.isRequired,
+    }),
+  ]).isRequired,
+  selected: PropTypes.object,
+  empty: PropTypes.node,
+  forceEmpty: PropTypes.bool,
+  width: PropTypes.number.isRequired,
+  height: PropTypes.number,
+  loading: PropTypes.bool,
+  onChange: PropTypes.func.isRequired,
+  onSelect: PropTypes.func.isRequired,
+  onCancel: PropTypes.func,
+};

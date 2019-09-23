@@ -682,35 +682,35 @@ class Modal extends Component {
 
 /**
  * @typedef {object} Props Component props
- * @prop {*} activeTabId
- * @prop {*} childViewId
- * @prop {*} closeCallback
- * @prop {*} childViewSelectedIds
- * @prop {shape} data
- * @prop {string} dataId
+ * @prop {*} [activeTabId]
+ * @prop {*} [childViewId]
+ * @prop {*} [closeCallback]
+ * @prop {*} [childViewSelectedIds]
+ * @prop {shape} [data]
+ * @prop {string} [dataId]
  * @prop {func} dispatch Dispatch function
- * @prop {string} indicator
- * @prop {shape} layout
- * @prop {bool} isAdvanced
- * @prop {bool} isDocumentNotSaved
- * @prop {bool} isNewDoc
- * @prop {string} staticModalType
- * @prop {*} modalTitle
- * @prop {*} modalType
- * @prop {*} modalSaveStatus
- * @prop {*} modalViewId
- * @prop {*} modalViewDocumentIds
- * @prop {string} staticModalType
- * @prop {string} tabId
- * @prop {*} parentSelection
- * @prop {*} parentType
- * @prop {*} parentViewId
- * @prop {*} parentViewSelectedIds
- * @prop {*} rawModalVisible
- * @prop {string} rowId
- * @prop {*} triggerField
- * @prop {*} viewId
- * @prop {*} windowType
+ * @prop {string} [indicator]
+ * @prop {shape} [layout]
+ * @prop {bool} [isAdvanced]
+ * @prop {bool} [isDocumentNotSaved]
+ * @prop {bool} [isNewDoc]
+ * @prop {string} [staticModalType]
+ * @prop {*} [modalTitle]
+ * @prop {*} [modalType]
+ * @prop {*} [modalSaveStatus]
+ * @prop {*} [modalViewId]
+ * @prop {*} [modalViewDocumentIds]
+ * @prop {string} [staticModalType]
+ * @prop {string} [tabId]
+ * @prop {*} [parentSelection]
+ * @prop {*} [parentType]
+ * @prop {*} [parentViewId]
+ * @prop {*} [parentViewSelectedIds]
+ * @prop {*} [rawModalVisible]
+ * @prop {string} [rowId]
+ * @prop {*} [triggerField]
+ * @prop {*} [viewId]
+ * @prop {*} [windowType]
  */
 Modal.propTypes = {
   dispatch: PropTypes.func.isRequired,
