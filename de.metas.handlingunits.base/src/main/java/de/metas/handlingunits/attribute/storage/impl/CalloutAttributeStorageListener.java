@@ -69,16 +69,8 @@ public class CalloutAttributeStorageListener implements IAttributeStorageListene
 	}
 
 	@Override
-	public void onAttributeStorageDisposed(IAttributeStorage storage)
-	{
-		// nothing
-	}
-
-	@Override
 	public String toString()
 	{
 		return "CalloutAttributeStorageListener [calloutExecutor=" + calloutExecutor + "]";
 	}
-
-
 }

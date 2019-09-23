@@ -31,7 +31,7 @@ import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
-import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  *
@@ -44,7 +44,7 @@ public class CompositeAttributeStorageListener implements IAttributeStorageListe
 
 	public CompositeAttributeStorageListener()
 	{
-		listeners = new ArrayList<IAttributeStorageListener>();
+		listeners = new ArrayList<>();
 	}
 
 	/**
@@ -58,9 +58,8 @@ public class CompositeAttributeStorageListener implements IAttributeStorageListe
 	 *
 	 * @param listener
 	 */
-	public void addAttributeStorageListener(final IAttributeStorageListener listener)
+	public void addAttributeStorageListener(@NonNull final IAttributeStorageListener listener)
 	{
-		Check.assumeNotNull(listener, "listener not null");
 		if (listeners.contains(listener))
 		{
 			return;
@@ -110,11 +109,11 @@ public class CompositeAttributeStorageListener implements IAttributeStorageListe
 	}
 
 	@Override
-	public void onAttributeStorageDisposed(IAttributeStorage storage)
+	public void onAttributeStorageDisposed(final IAttributeStorage storage)
 	{
 		// if a listener gets notified about this event, it might well remove itself from this composite.
 		// In order to prevent a ConcurrentModificationException, we iterate a copy
-		final ArrayList<IAttributeStorageListener> listenersToIterate = new ArrayList<IAttributeStorageListener>(listeners);
+		final ArrayList<IAttributeStorageListener> listenersToIterate = new ArrayList<>(listeners);
 
 		for (final IAttributeStorageListener listener : listenersToIterate)
 		{
