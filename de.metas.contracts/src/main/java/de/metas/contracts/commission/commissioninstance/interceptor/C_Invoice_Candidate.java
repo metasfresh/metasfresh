@@ -69,7 +69,7 @@ public class C_Invoice_Candidate
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void deleteCommissionInstance(I_C_Invoice_Candidate icRecord)
+	public void deleteCommissionInstance(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
 		commissionInstanceRepository.deleteCommissionRecordsFor(invoiceCandidateId);
