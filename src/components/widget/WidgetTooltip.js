@@ -91,6 +91,15 @@ class WidgetTooltip extends PureComponent {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} widget
+ * @prop {*} data
+ * @prop {string} [fieldName]
+ * @prop {bool} isToggled
+ * @prop {func} [onToggle]
+ * @todo Check props. Which proptype? Required or optional?
+ */
 WidgetTooltip.propTypes = {
   widget: PropTypes.any.isRequired,
   data: PropTypes.any.isRequired,
