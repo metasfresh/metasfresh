@@ -384,11 +384,5 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		{
 			throw new UnsupportedOperationException();
 		}
-
-		@Override
-		public void onAttributeStorageDisposed(final IAttributeStorage storage)
-		{
-			// nothing
-		}
 	}
 }
