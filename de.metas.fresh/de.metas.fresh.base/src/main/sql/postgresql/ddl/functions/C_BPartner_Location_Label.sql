@@ -18,7 +18,7 @@ FROM generate_series(1, copies) i
              (
              SELECT
                org.Name                                                                                as org_name,
-               COALESCE(NULLIF(bp_loc.gln, ''),
+               COALESCE(NULLIF(TRIM(bp_loc.gln), ''),
                         '0000000000000')                                                               as bp_gln,
                substring(COALESCE(NULLIF(bp_loc.gln, ''), '0000000000000') from 9 for
                          4)                                                                            as bp_gln_9_12,
