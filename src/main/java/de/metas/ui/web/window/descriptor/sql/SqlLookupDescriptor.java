@@ -53,6 +53,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import de.metas.ui.web.window.model.sql.DocActionValidationRule;
 import de.metas.util.Check;
+import lombok.ToString;
 
 /*
  * #%L
@@ -334,6 +335,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		return lookupSourceType;
 	}
 
+	@ToString(of = { "sqlTableName", "ctxTableName", "ctxColumnName", "widgetType" })
 	public static final class Builder
 	{
 		// Parameters

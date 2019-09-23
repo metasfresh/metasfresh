@@ -136,6 +136,8 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 				.overridePartner(false)
 				.asiCopyMode(ASICopyMode.CopyID) // because we just created the ASI
 				.copyTo(orderLinePackingAware);
+		
+		newOrderLine.setShipmentAllocation_BestBefore_Policy(fromOrderLineQuickInput.getShipmentAllocation_BestBefore_Policy());
 	}
 
 	private IHUPackingAware createQuickInputPackingAware(

@@ -34,6 +34,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
+import lombok.ToString;
 
 /*
  * #%L
@@ -57,6 +58,7 @@ import lombok.Singular;
  * #L%
  */
 
+@ToString(of = { "_rowsById", "orderBys" })
 class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickRow>
 {
 	private final PickingCandidateService pickingCandidateService;

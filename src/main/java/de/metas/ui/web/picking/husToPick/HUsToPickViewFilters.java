@@ -64,6 +64,7 @@ class HUsToPickViewFilters
 	private static final String PARAM_ConsiderAttributes = "de.metas.ui.web.picking.HUsToPickViewFilters.ConsiderAttributes";
 
 	static final String PARAM_CurrentShipmentScheduleId = "CurrentShipmentScheduleId";
+	static final String PARAM_BestBeforePolicy = "BestBeforePolicy";
 
 	public static ImmutableList<DocumentFilterDescriptor> createFilterDescriptors()
 	{
