@@ -2,7 +2,7 @@
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="label" pageWidth="294" pageHeight="198" columnWidth="294" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="7f6f4715-2c9f-4a69-8fdd-c5a5d8b66d53">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="erptest.xml"/>
 	<property name="com.jaspersoft.studio.unit." value="mm"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="mm"/>
 	<property name="com.jaspersoft.studio.unit.pageWidth" value="mm"/>
@@ -13,11 +13,12 @@
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="mm"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="mm"/>
 	<style name="BarcodeStyle" fill="Solid" hTextAlign="Center" hImageAlign="Center" fontSize="6"/>
-	<parameter name="m_hu_id" class="java.math.BigDecimal">
-		<parameterDescription><![CDATA[]]></parameterDescription>
+	<parameter name="C_BPartner_Location_ID" class="java.math.BigDecimal"/>
+	<parameter name="Copies" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[new BigDecimal(1)]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT * FROM report.picking_tu_label($P{m_hu_id});]]>
+		<![CDATA[SELECT * FROM report.C_BPartner_Location_Label($P{C_BPartner_Location_ID},$P{Copies});]]>
 	</queryString>
 	<field name="org_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="org_name"/>
