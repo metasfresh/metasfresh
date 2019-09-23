@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import TetherComponent from 'react-tether';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
+import Moment from 'moment-timezone';
 
 import keymap from '../../shortcuts/keymap';
 import OverlayField from '../app/OverlayField';
@@ -386,16 +387,18 @@ class FiltersItem extends Component {
                             item.defaultValue
                           )
                         }
-                        handleChange={(property, value, id, valueTo) =>
-                          this.setValue(
-                            property,
-                            value,
-                            id,
-                            valueTo,
-                            filter.filterId,
-                            item.defaultValue
-                          )
-                        }
+                        handleChange={(property, value, id, valueTo) => {
+                          if (Moment.isMoment(value)) {
+                            this.setValue(
+                              property,
+                              value,
+                              id,
+                              valueTo,
+                              filter.filterId,
+                              item.defaultValue
+                            );
+                          }
+                        }}
                         widgetType={item.widgetType}
                         fields={[item]}
                         type={item.type}
