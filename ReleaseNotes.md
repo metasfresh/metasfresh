@@ -10,6 +10,31 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.121
+
+## Features
+* metasfresh
+  * [#5443](https://github.com/metasfresh/metasfresh/issues/5443) Have dedicated Window for UI Elements
+  * [#5444](https://github.com/metasfresh/metasfresh/issues/5444) Have dedicated window for organisational master data business partner
+  * [#5523](https://github.com/metasfresh/metasfresh/pull/5523) Add role update and process documents to webui menu tree
+  * [#5527](https://github.com/metasfresh/metasfresh/pull/5527) Lookup widget instead of dropdown
+  * [#5538](https://github.com/metasfresh/metasfresh/pull/5538) Pricesystem shall be search widget not dropdown
+  * [#5540](https://github.com/metasfresh/metasfresh/issues/5540) Implement receipt CU Label
+  * [#5544](https://github.com/metasfresh/metasfresh/issues/5544) Picking with bestBefore shortest/ longest option
+  * [#5549](https://github.com/metasfresh/metasfresh/pull/5549) New Window: Unposted Documents
+  * [#5554](https://github.com/metasfresh/metasfresh/pull/5554) New Window in WebUI for Matched Invoices
+  * [#5555](https://github.com/metasfresh/metasfresh/issues/5555) procurement webapp: Info Page: show HTML text instead of PREformated text
+
+## Fixes
+* metasfresh
+  * [#5529](https://github.com/metasfresh/metasfresh/issues/5529) Bestellkontrolle (Barcode): Packing Instruction cut off
+  * [#5550](https://github.com/metasfresh/metasfresh/pull/5550) Avoid starting main spring boot classes if they are not started standalone
+  * [#5558](https://github.com/metasfresh/metasfresh/issues/5558) webapi log is flooded with various warnings/errors
+
+* metasfresh-webui-api
+  * [#1252](https://github.com/metasfresh/metasfresh-webui-api/issues/1252) Org Timezone Berlin: Promised Date still dependent on local timezone
+  * [#1257](https://github.com/metasfresh/metasfresh-webui-api/pull/1257) Organisation as Search Widget
+
 # metasfresh 5.120
 
 ## Features
