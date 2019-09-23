@@ -58,8 +58,13 @@ import de.metas.util.Services;
  * @author tsa
  *
  */
-/* package */class HUTrxAttributesCollector implements IAttributeStorageListener
+final class HUTrxAttributesCollector implements IAttributeStorageListener
 {
+	public static HUTrxAttributesCollector newInstance()
+	{
+		return new HUTrxAttributesCollector();
+	}
+
 	// services
 	private static final transient Logger logger = LogManager.getLogger(HUTrxAttributesCollector.class);
 
@@ -71,9 +76,8 @@ import de.metas.util.Services;
 	 */
 	private List<IHUTransactionAttribute> transactions = null;
 
-	/* package */ HUTrxAttributesCollector()
+	private HUTrxAttributesCollector()
 	{
-		super();
 	}
 
 	@Override
@@ -97,7 +101,7 @@ import de.metas.util.Services;
 							+ "\n Disposed flag: " + _disposed)
 									.throwIfDeveloperModeOrLogWarningElse(logger);
 		}
-	};
+	}
 
 	/**
 	 * Flags this collector as disposed.
@@ -124,7 +128,7 @@ import de.metas.util.Services;
 	 * Makes sure this collector was not already disposed, because if it was disposed, there is no point to add more transactions to it
 	 * because they will be lost.
 	 */
-	private final void assertNotDisposed()
+	private void assertNotDisposed()
 	{
 		Check.assume(!_disposed, "Collector shall not be disposed: {}", this);
 	}
@@ -248,7 +252,7 @@ import de.metas.util.Services;
 	/**
 	 * @return true if there are no attribute transactions collected
 	 */
-	public final boolean isEmpty()
+	public boolean isEmpty()
 	{
 		return transactions == null ? true : transactions.isEmpty();
 	}
@@ -256,7 +260,7 @@ import de.metas.util.Services;
 	/**
 	 * Removes all collected transactions (if any).
 	 */
-	public final void clearTransactions()
+	public void clearTransactions()
 	{
 		transactions = null;
 	}
@@ -268,7 +272,7 @@ import de.metas.util.Services;
 	 *
 	 * @param transactions
 	 */
-	private final void removeDuplicateTransactions(final List<IHUTransactionAttribute> transactions)
+	private void removeDuplicateTransactions(final List<IHUTransactionAttribute> transactions)
 	{
 		if (transactions.isEmpty())
 		{
@@ -311,7 +315,7 @@ import de.metas.util.Services;
 	 * @param trx
 	 * @return
 	 */
-	private final ArrayKey mkKey(final IHUTransactionAttribute trx)
+	private ArrayKey mkKey(final IHUTransactionAttribute trx)
 	{
 		final int attributeId = trx.getM_Attribute().getM_Attribute_ID();
 		final String operation = trx.getOperation();
