@@ -26,13 +26,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.StringTokenizer;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.modelvalidator.AnnotatedModelInterceptorFactory;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.IModelInterceptor;
@@ -40,11 +36,13 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.ModelInterceptor2ModelValidatorWrapper;
 import org.adempiere.ad.modelvalidator.ModelInterceptorInitException;
+import org.adempiere.ad.modelvalidator.ModuleActivatorDescriptor;
+import org.adempiere.ad.modelvalidator.ModuleActivatorDescriptorsCollection;
+import org.adempiere.ad.modelvalidator.ModuleActivatorDescriptorsRepository;
 import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.ad.service.IADTableScriptValidatorDAO;
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.session.MFSession;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
@@ -54,7 +52,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.processing.model.MADProcessablePO;
 import org.adempiere.processing.service.IProcessingService;
-import org.adempiere.service.IClientDAO;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere.RunMode;
@@ -67,6 +64,8 @@ import org.springframework.context.ApplicationContext;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimaps;
 
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.impexp.processing.IImportProcess;
@@ -187,82 +186,97 @@ public class ModelValidationEngine implements IModelValidationEngine
 	private void init()
 	{
 		// metas: tsa: end
-		// Load global validators
-
-		// Create a dummy context to be used when retrieving data
-		// NOTE: we do this because we don't want to affect nor to relly on current context (which might not exist)
-		final Properties ctx = Env.newTemporaryCtx();
 
 		final List<String> initEntityTypes = getInitEntityTypes(); // metas: 03023
 
-		final I_AD_Client adClient = null; // all clients
-		String className = null; // className of current model interceptor which is about to be initialized
+		String currentClassName = null; // className of current model interceptor which is about to be initialized
 		try
 		{
 			final Stopwatch stopwatch = Stopwatch.createStarted();
 
-			// Load from AD_ModelValidator(s)
-			final List<I_AD_ModelValidator> modelValidators = retrieveModelValidators(ctx);
-			for (final I_AD_ModelValidator modelValidator : modelValidators)
+			final ModuleActivatorDescriptorsRepository moduleActivatorDescriptorsRepo = SpringContextHolder.instance.getBean(ModuleActivatorDescriptorsRepository.class);
+			final ModuleActivatorDescriptorsCollection moduleActivatorDescriptors = moduleActivatorDescriptorsRepo.getDescriptors();
+
+			final Collection<Object> springInterceptors = getSpringInterceptors();
+			final ImmutableListMultimap<Object, Object> springInterceptorsByClassname = Multimaps.index(springInterceptors, springInterceptor -> springInterceptor.getClass().getName());
+
+			// Register model interceptors defined in database
+			for (final ModuleActivatorDescriptor moduleActivatorDescriptor : moduleActivatorDescriptors)
 			{
-				className = modelValidator.getModelValidationClass();
-				if (className == null || className.length() == 0)
+				if (!moduleActivatorDescriptor.isActive())
 				{
+					log.info("Skip {} (not active)", moduleActivatorDescriptor);
 					continue;
 				}
 
 				//
 				// Skip loading the model interceptor if entity type is not active
-				final String entityType = modelValidator.getEntityType();
+				final String entityType = moduleActivatorDescriptor.getEntityType();
 				if (!EntityTypesCache.instance.isActive(entityType))
 				{
-					log.info("Skip " + className + " (EntityType '" + entityType + "' is not active)");
+					log.info("Skip {} (entityType is not active)", moduleActivatorDescriptor);
+					continue;
 				}
 
 				//
 				// Skip model validator if entity type is not in list of allowed entity types (task 03023)
 				if (initEntityTypes != null && !initEntityTypes.contains(entityType))
 				{
-					log.info("Skip " + className + " (EntityType '" + entityType + "' not in " + initEntityTypes + ")");
+					log.info("Skip {} (entityType not in initEntityTypes=" + initEntityTypes + ")", moduleActivatorDescriptor);
 					continue;
 				}
 
-				loadModuleActivatorClass(adClient, className);
+				final String moduleActivatorClassname = moduleActivatorDescriptor.getClassname();
+				currentClassName = moduleActivatorClassname;
+				
+				final ImmutableList<Object> existingSpringInstances = springInterceptorsByClassname.get(moduleActivatorClassname);
+				final Object existingSpringInstance;
+				if (existingSpringInstances.isEmpty())
+				{
+					existingSpringInstance = null;
+				}
+				else if (existingSpringInstances.size() == 1)
+				{
+					existingSpringInstance = existingSpringInstances.get(0);
+				}
+				else
+				{
+					log.warn("More than one spring interceptors found for module activator class '{}'. Ignoring then and will try to create a new instance. -- {}", moduleActivatorClassname, existingSpringInstances);
+					existingSpringInstance = null;
+				}
+
+				loadModuleActivatorClass(moduleActivatorClassname, existingSpringInstance);
 			}
+			currentClassName = null;
+			
 
 			stopwatch.stop();
-			log.debug("Done initializing AD_ModelValidator based interceptors; it took {}", stopwatch);
-			stopwatch.reset().start();
-
+			log.debug("Done initializing database registered interceptors; it took {}", stopwatch);
+			
 			//
-			// Load from Spring context
-			for (final Object modelInterceptor : getSpringInterceptors())
+			// Register from Spring context
+			stopwatch.reset().start();
+			currentClassName = null;
+			for (final Object springInterceptor : springInterceptors)
 			{
-				addModelValidator(modelInterceptor, /* client */null);
+				currentClassName = springInterceptor.getClass().getName();
+				if (moduleActivatorDescriptors.containsClassname(currentClassName))
+				{
+					log.debug("Skip {} because was already considered", springInterceptor);
+					continue;
+				}
+
+				addModelValidator(springInterceptor, /* client */null);
 			}
+			currentClassName = null;
 
 			log.debug("Done initializing spring based interceptors; it took {}", stopwatch);
 		}
-		catch (Exception e)
+		catch (final Exception ex)
 		{
-			addModelInterceptorInitError(className, adClient, e);
+			addModelInterceptorInitError(currentClassName, ex);
 		}
 
-		// Go through all Clients and start Validators
-		for (final I_AD_Client client : Services.get(IClientDAO.class).retrieveAllClients(ctx))
-		{
-			final String classNames = client.getModelValidationClasses();
-			if (classNames == null || classNames.trim().length() == 0)
-			{
-				continue;
-			}
-			loadModuleActivatorClasses(client, classNames.trim());
-		}
-		// logging to db will try to init ModelValidationEngine again!
-		// log.info(toString());
-		// System.out.println(toString());
-
-		// metas: 02504: begin
 		if (!Ini.isSwingClient() && hasInitErrors())
 		{
 			logModelInterceptorInitErrors();
@@ -271,7 +285,6 @@ public class ModelValidationEngine implements IModelValidationEngine
 				System.exit(1);
 			}
 		}
-		// metas: 02504: end
 	}	// ModelValidatorEngine
 
 	private static Collection<Object> getSpringInterceptors()
@@ -291,13 +304,9 @@ public class ModelValidationEngine implements IModelValidationEngine
 		return interceptorsByName.values();
 	}
 
-	private final void addModelInterceptorInitError(final String modelInterceptorClassName, final I_AD_Client client, final Throwable error)
+	private final void addModelInterceptorInitError(final String modelInterceptorClassName, final Throwable error)
 	{
-		// logging to db will try to init ModelValidationEngine again!
-		// log.warn(e.getLocalizedMessage());
-		// System.err.println(e.getLocalizedMessage());
-
-		final ModelInterceptorInitException initException = new ModelInterceptorInitException(modelInterceptorClassName, client, error);
+		final ModelInterceptorInitException initException = new ModelInterceptorInitException(modelInterceptorClassName, error);
 		_modelInterceptorInitErrors.add(initException);
 	}
 
@@ -357,61 +366,23 @@ public class ModelValidationEngine implements IModelValidationEngine
 		_failOnMissingModelInteceptors = failOnMissingModelInteceptors;
 	}
 
-	private List<I_AD_ModelValidator> retrieveModelValidators(final Properties ctx)
-	{
-		final IQueryBuilder<I_AD_ModelValidator> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_ModelValidator.class, ctx, ITrx.TRXNAME_None);
-
-		final ICompositeQueryFilter<I_AD_ModelValidator> filters = queryBuilder.getCompositeFilter();
-		filters.addOnlyActiveRecordsFilter();
-
-		queryBuilder.orderBy()
-				.addColumn(I_AD_ModelValidator.COLUMNNAME_SeqNo)
-				.addColumn(I_AD_ModelValidator.COLUMNNAME_AD_ModelValidator_ID);
-
-		return queryBuilder.create()
-				.list();
-	}
-
-	private void loadModuleActivatorClasses(final I_AD_Client client, final String classNames)
-	{
-		StringTokenizer st = new StringTokenizer(classNames, ";");
-		while (st.hasMoreTokens())
-		{
-			String className = null;
-			try
-			{
-				className = st.nextToken();
-				if (className == null)
-				{
-					continue;
-				}
-				className = className.trim();
-				if (className.length() == 0)
-				{
-					continue;
-				}
-				//
-				loadModuleActivatorClass(client, className);
-			}
-			catch (Exception e)
-			{
-				addModelInterceptorInitError(className, client, e);
-			}
-		}
-	}
-
-	private void loadModuleActivatorClass(final I_AD_Client client, final String className)
+	private void loadModuleActivatorClass(@NonNull final String className, @Nullable final Object existingInstance)
 	{
 		final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		try
 		{
 			// Load main activator
+			final Object moduleActivator;
+			if (existingInstance != null)
+			{
+				moduleActivator = existingInstance;
+			}
+			else
 			{
 				final Class<?> clazz = classLoader.loadClass(className);
-				final Object validatorObj = clazz.newInstance();
-				addModelValidator(validatorObj, client);
+				moduleActivator = clazz.newInstance();
 			}
+			addModelValidator(moduleActivator, (I_AD_Client)null);
 
 			//
 			// Load swing module activation (if any)
@@ -421,25 +392,14 @@ public class ModelValidationEngine implements IModelValidationEngine
 				final Class<?> swingModuleActivatorClass = getModuleActivatorClassOrNull(className + "_SwingUI");
 				if (swingModuleActivatorClass != null)
 				{
-					final Object validatorObj = swingModuleActivatorClass.newInstance();
-					addModelValidator(validatorObj, client);
-				}
-			}
-			//
-			// Load zkwebui module activation (if any)
-			else if (runMode == RunMode.WEBUI)
-			{
-				final Class<?> zkwebuiModuleActivatorClass = getModuleActivatorClassOrNull(className + "_ZkwebUI");
-				if (zkwebuiModuleActivatorClass != null)
-				{
-					final Object validatorObj = zkwebuiModuleActivatorClass.newInstance();
-					addModelValidator(validatorObj, client);
+					final Object moduleActivatorSwing = swingModuleActivatorClass.newInstance();
+					addModelValidator(moduleActivatorSwing, (I_AD_Client)null);
 				}
 			}
 		}
 		catch (final Throwable ex)
 		{
-			addModelInterceptorInitError(className, client, ex);
+			addModelInterceptorInitError(className, ex);
 		}
 
 	}
@@ -571,7 +531,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 		if (AD_User_ID == 0 && AD_Role_ID == 0)
 		{
-			 // don't validate for user system on role system
+			// don't validate for user system on role system
 		}
 		else if (hasInitErrors)
 		{
@@ -1345,8 +1305,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 				java.lang.reflect.Method m = null;
 				try
 				{
-					m = validator.getClass().getMethod("afterLoadPreferences", new Class[]
-						{ Properties.class });
+					m = validator.getClass().getMethod("afterLoadPreferences", new Class[] { Properties.class });
 				}
 				catch (NoSuchMethodException e)
 				{
@@ -1440,13 +1399,9 @@ public class ModelValidationEngine implements IModelValidationEngine
 	}
 
 	@Override
-	public void addModelValidator(final Object validator, final I_AD_Client client)
+	public void addModelValidator(@NonNull final Object validator, @Nullable final I_AD_Client client)
 	{
-		if (validator == null)
-		{
-			throw new IllegalArgumentException("validator can not be null");
-		}
-		else if (validator instanceof ModelValidator)
+		if (validator instanceof ModelValidator)
 		{
 			initialize((ModelValidator)validator, client);
 		}
@@ -1529,5 +1484,4 @@ public class ModelValidationEngine implements IModelValidationEngine
 			state = State.TO_BE_INITALIZED;
 		}
 	}
-
 }	// ModelValidatorEngine
