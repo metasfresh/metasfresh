@@ -27,7 +27,7 @@ import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaymentString;
 import de.metas.banking.payment.IPaymentStringDataProvider;
 import de.metas.banking.payment.spi.exception.PaymentStringParseException;
-import de.metas.banking.process.paymentdocumentform.AlmightyKeeperOfEverything;
+import de.metas.banking.process.paymentdocumentform.PaymentStringProcessService;
 import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_BP_Relation;
 import de.metas.logging.LogManager;
@@ -82,8 +82,6 @@ class ReadPaymentDocumentPanel
 
 	private static final String MSG_CouldNotFindOrCreateBPBankAccount = "de.metas.payment.CouldNotFindOrCreateBPBankAccount";
 
-	//	private static final String SYSCONFIG_PaymentStringParserType = "de.metas.paymentallocation.form.ReadPaymentDocumentDialog.PaymentStringParserType";
-
 	private static final String CONSTRAINT_GROWX_PUSHX = "growx, pushx";
 	private static final String CONSTRAINT_GROWX_PUSHX_WIDTH_170_WRAP = "growx, pushx, width 170, wrap";
 
@@ -131,7 +129,7 @@ class ReadPaymentDocumentPanel
 
 	private int contextBPartner_ID;
 
-	private final AlmightyKeeperOfEverything almightyKeeperOfEverything;
+	private final PaymentStringProcessService paymentStringProcessService;
 
 	public ReadPaymentDocumentPanel(final Window window, final int AD_Org_ID)
 	{
@@ -193,7 +191,7 @@ class ReadPaymentDocumentPanel
 				DisplayType.Number, // displayType
 				msgBL.translate(ctx, I_C_Payment_Request.COLUMNNAME_Amount));
 
-		almightyKeeperOfEverything = SpringContextHolder.instance.getBean(AlmightyKeeperOfEverything.class);
+		paymentStringProcessService = SpringContextHolder.instance.getBean(PaymentStringProcessService.class);
 		init();
 	}
 
@@ -363,7 +361,7 @@ class ReadPaymentDocumentPanel
 		final IPaymentStringDataProvider dataProvider;
 		try
 		{
-			dataProvider = almightyKeeperOfEverything.parsePaymentString(ctx, currentPaymentString);
+			dataProvider = paymentStringProcessService.parsePaymentString(ctx, currentPaymentString);
 		}
 		catch (final PaymentStringParseException pspe)
 		{
@@ -375,7 +373,7 @@ class ReadPaymentDocumentPanel
 
 		final IPaymentString paymentString = dataProvider.getPaymentString();
 
-		final I_C_BP_BankAccount bpBankAccountExisting = almightyKeeperOfEverything.getAndVerifyBPartnerAccountOrNull(dataProvider, contextBPartner_ID);
+		final I_C_BP_BankAccount bpBankAccountExisting = paymentStringProcessService.getAndVerifyBPartnerAccountOrNull(dataProvider, contextBPartner_ID);
 		if (bpBankAccountExisting != null)
 		{
 			setC_BPartner_ID(bpBankAccountExisting.getC_BPartner_ID());
@@ -484,7 +482,7 @@ class ReadPaymentDocumentPanel
 	 */
 	private void onDialogOk()
 	{
-		paymentRequest = almightyKeeperOfEverything.createPaymentRequestTemplate(getC_BP_BankAccountOrNull(), getAmount(), getParsedPaymentStringOrNull());
+		paymentRequest = paymentStringProcessService.createPaymentRequestTemplate(getC_BP_BankAccountOrNull(), getAmount(), getParsedPaymentStringOrNull());
 
 		//
 		// See JavaDoc

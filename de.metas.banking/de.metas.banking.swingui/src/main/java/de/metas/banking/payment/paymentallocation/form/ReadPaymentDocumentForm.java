@@ -24,7 +24,7 @@ package de.metas.banking.payment.paymentallocation.form;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.model.I_C_Payment_Request;
-import de.metas.banking.process.paymentdocumentform.AlmightyKeeperOfEverything;
+import de.metas.banking.process.paymentdocumentform.PaymentStringProcessService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessInfo;
@@ -45,7 +45,7 @@ import java.awt.*;
  */
 public class ReadPaymentDocumentForm implements FormPanel, IProcessPrecondition
 {
-	private final transient AlmightyKeeperOfEverything almightyKeeperOfEverything = SpringContextHolder.instance.getBean(AlmightyKeeperOfEverything.class);
+	private final transient PaymentStringProcessService paymentStringProcessService = SpringContextHolder.instance.getBean(PaymentStringProcessService.class);
 
 	// Parameters
 	private I_C_Invoice invoice = null;
@@ -111,11 +111,11 @@ public class ReadPaymentDocumentForm implements FormPanel, IProcessPrecondition
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		return almightyKeeperOfEverything.checkPreconditionsApplicable(context);
+		return paymentStringProcessService.checkPreconditionsApplicable(context);
 	}
 
 	private void createPaymentRequest(final ReadPaymentPanelResult result)
 	{
-		almightyKeeperOfEverything.createPaymentRequestFromTemplate(invoice, result.getPaymentRequestTemplate());
+		paymentStringProcessService.createPaymentRequestFromTemplate(invoice, result.getPaymentRequestTemplate());
 	}
 }

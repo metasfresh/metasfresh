@@ -78,7 +78,7 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 	private String bankAccountNumberParam;
 
 	// services
-	private final transient AlmightyKeeperOfEverything almightyKeeperOfEverything = SpringContextHolder.instance.getBean(AlmightyKeeperOfEverything.class);
+	private final transient PaymentStringProcessService paymentStringProcessService = SpringContextHolder.instance.getBean(PaymentStringProcessService.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
@@ -107,9 +107,9 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 		}
 
 		final IPaymentString paymentString = dataProvider.getPaymentString();
-		final I_C_Payment_Request paymentRequestTemplate = almightyKeeperOfEverything.createPaymentRequestTemplate(bankAccountParam, amountParam, paymentString);
+		final I_C_Payment_Request paymentRequestTemplate = paymentStringProcessService.createPaymentRequestTemplate(bankAccountParam, amountParam, paymentString);
 
-		almightyKeeperOfEverything.createPaymentRequestFromTemplate(getActualInvoice(), paymentRequestTemplate);
+		paymentStringProcessService.createPaymentRequestFromTemplate(getActualInvoice(), paymentRequestTemplate);
 		return MSG_OK;
 	}
 
@@ -141,7 +141,7 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 		final IPaymentString paymentString = dataProvider.getPaymentString();
 
 		final I_C_Invoice actualInvoice = getActualInvoice();
-		final I_C_BP_BankAccount bpBankAccountExisting = almightyKeeperOfEverything.getAndVerifyBPartnerAccountOrNull(dataProvider, actualInvoice.getC_BPartner_ID());
+		final I_C_BP_BankAccount bpBankAccountExisting = paymentStringProcessService.getAndVerifyBPartnerAccountOrNull(dataProvider, actualInvoice.getC_BPartner_ID());
 		if (bpBankAccountExisting != null)
 		{
 			bPartnerParam = bPartnerDAO.getById(bpBankAccountExisting.getC_BPartner_ID());
@@ -172,7 +172,7 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 
 	private IPaymentStringDataProvider getDataProvider()
 	{
-		return almightyKeeperOfEverything.parsePaymentString(getCtx(), fullPaymentStringParam);
+		return paymentStringProcessService.parsePaymentString(getCtx(), fullPaymentStringParam);
 	}
 
 	private I_C_Invoice getActualInvoice()
@@ -182,6 +182,6 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 
 	@Override public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		return almightyKeeperOfEverything.checkPreconditionsApplicable(context);
+		return paymentStringProcessService.checkPreconditionsApplicable(context);
 	}
 }
