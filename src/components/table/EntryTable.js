@@ -1,9 +1,15 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
 import WidgetTooltip from '../widget/WidgetTooltip';
 import MasterWidget from '../widget/MasterWidget';
 
+/**
+ * @file Class based component.
+ * @module EntryTable
+ * @extends Component
+ */
 export default class EntryTable extends Component {
   constructor(props) {
     super(props);
@@ -13,6 +19,13 @@ export default class EntryTable extends Component {
     };
   }
 
+  /**
+   * @method widgetTooltipToggle
+   * @summary ToDo: Describe the method
+   * @param {*} field
+   * @param {*} value
+   * @todo Write the documentation
+   */
   widgetTooltipToggle = (field, value) => {
     const curVal = this.state.tooltipToggled;
     let newVal = field;
@@ -26,6 +39,13 @@ export default class EntryTable extends Component {
     });
   };
 
+  /**
+   * @method renderElements
+   * @summary ToDo: Describe the method
+   * @param {*} elements
+   * @param {*} columnsCount
+   * @todo Write the documentation
+   */
   renderElements = (elements, columnsCount) => {
     const {
       data,
@@ -116,6 +136,11 @@ export default class EntryTable extends Component {
     return null;
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     const { rows } = this.props;
 
@@ -134,3 +159,30 @@ export default class EntryTable extends Component {
     );
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} data
+ * @prop {*} rowData
+ * @prop {*} extendedData
+ * @prop {*} addRefToWidget
+ * @prop {*} handleBlurWidget
+ * @prop {*} layout
+ * @prop {*} dataId
+ * @prop {*} tabIndex
+ * @prop {*} fullScreen
+ * @prop {*} rows
+ * @todo Check props. Which proptype? Required or optional?
+ */
+EntryTable.propTypes = {
+  data: PropTypes.any,
+  rowData: PropTypes.any,
+  extendedData: PropTypes.any,
+  addRefToWidgets: PropTypes.any,
+  handleBlurWidget: PropTypes.any,
+  layout: PropTypes.any,
+  dataId: PropTypes.any,
+  tabIndex: PropTypes.any,
+  fullScreen: PropTypes.any,
+  rows: PropTypes.any,
+};

@@ -17,9 +17,9 @@ class Indicator extends Component {
   /**
    * @method render
    * @summary ToDo: Describe the method
+   * @todo We should be using indicator from the state instead of another variable
    */
   render() {
-    // TODO: We should be using indicator from the state instead of another variable
     const { indicator, isDocumentNotSaved } = this.props;
     return (
       <div>
@@ -37,6 +37,7 @@ class Indicator extends Component {
 /**
  * @method mapStateToProps
  * @summary ToDo: Describe the method
+ * @todo Write the documentation
  * @param {object} state
  */
 function mapStateToProps(state) {
@@ -54,7 +55,7 @@ function mapStateToProps(state) {
 /**
  * @typedef {object} Props Component props
  * @prop {string} indicator
- * @prop {bool} isDocumentNotSaved
+ * @prop {bool} [isDocumentNotSaved]
  */
 Indicator.propTypes = {
   indicator: PropTypes.string.isRequired,

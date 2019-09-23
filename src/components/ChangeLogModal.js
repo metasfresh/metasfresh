@@ -2,7 +2,12 @@ import counterpart from 'counterpart';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-export default class ChangeLogModal extends Component {
+/**
+ * @file Class based component.
+ * @module ChangeLogModal
+ * @extends Component
+ */
+class ChangeLogModal extends Component {
   renderField(caption, value) {
     return (
       <div className="elements-line">
@@ -27,6 +32,11 @@ export default class ChangeLogModal extends Component {
     );
   }
 
+  /**
+   * @method renderRowsData
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   renderRowsData = () => {
     const { data } = this.props;
 
@@ -61,6 +71,11 @@ export default class ChangeLogModal extends Component {
     return null;
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     const { data } = this.props;
 
@@ -96,6 +111,12 @@ export default class ChangeLogModal extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {object} data
+ */
 ChangeLogModal.propTypes = {
   data: PropTypes.object.isRequired,
 };
+
+export default ChangeLogModal;
