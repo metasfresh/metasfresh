@@ -133,7 +133,7 @@ public class PurchaseRowFactory
 				.productId(productId.getRepoId())
 				.date(demand.getSalesPreparationDate())
 				.storageAttributesKey(AttributesKeys
-						.createAttributesKeyFromASIStorageAttributes(demand.getAttributeSetInstanceId().getRepoId())
+						.createAttributesKeyFromASIStorageAttributes(demand.getAttributeSetInstanceId())
 						.orElse(AttributesKey.ALL))
 				.build();
 

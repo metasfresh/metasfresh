@@ -55,9 +55,10 @@ public class QuickInputLayoutDescriptor
 				continue;
 			}
 
-			layoutBuilder.element(DocumentLayoutElementDescriptor.builder(entityDescriptor, elementFieldNames));
+			DocumentLayoutElementDescriptor
+					.builderOrEmpty(entityDescriptor, elementFieldNames)
+					.ifPresent(layoutBuilder::element);
 		}
-
 		return layoutBuilder.build();
 	}
 

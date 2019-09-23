@@ -15,6 +15,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.reflect.FieldReference;
+import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
@@ -52,6 +53,7 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -438,6 +440,18 @@ public final class ViewColumnHelper
 		if (code == null)
 		{
 			return null;
+		}
+
+		if (Adempiere.isUnitTestMode())
+		{
+			if (code instanceof ReferenceListAwareEnum)
+			{
+				return StringLookupValue.of(((ReferenceListAwareEnum)code).getCode(), code.toString());
+			}
+			else
+			{
+				return StringLookupValue.unknown(code.toString());
+			}
 		}
 
 		final LookupValue lookupValue = LookupDataSourceFactory.instance.listByAD_Reference_Value_ID(listReferenceId).findById(code);
