@@ -3,11 +3,24 @@ import React, { Component } from 'react';
 
 import MasterWidget from './widget/MasterWidget';
 
-export default class Process extends Component {
+/**
+ * @file Class based component.
+ * @module Process
+ * @extends Component
+ */
+class Process extends Component {
   constructor(props) {
     super(props);
   }
 
+  /**
+   * @method renderElements
+   * @summary ToDo: Describe the method
+   * @param {*} layout
+   * @param {*} data
+   * @param {*} type
+   * @todo Write the documentation
+   */
   renderElements = (layout, data, type) => {
     const { disabled } = this.props;
     const elements = layout.elements;
@@ -31,6 +44,11 @@ export default class Process extends Component {
     });
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     const { data, layout, type } = this.props;
     return (
@@ -44,3 +62,5 @@ export default class Process extends Component {
 Process.propTypes = {
   disabled: PropTypes.bool,
 };
+
+export default Process;
