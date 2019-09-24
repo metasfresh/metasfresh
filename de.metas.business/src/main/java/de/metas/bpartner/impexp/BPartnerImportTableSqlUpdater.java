@@ -65,6 +65,7 @@ public class BPartnerImportTableSqlUpdater
 		dbUpdateJobs(whereClause);
 
 		dbUpdateCbPartnerIdsFromC_BPartner_ExternalId(whereClause);
+		dbUpdateCbPartnerIdsFromC_BPartner_GlobalId(whereClause);
 		dbUpdateCbPartnerIdsFromValue(whereClause);
 
 		dbUpdateAdUserIdsFromAD_User_ExternalIds(whereClause);
@@ -81,7 +82,7 @@ public class BPartnerImportTableSqlUpdater
 		dbUpdateInvoiceSchedules(whereClause);
 
 		dbUpdatePaymentTerms(whereClause);
-		
+
 		dbUpdatePO_PaymentTerms(whereClause);
 
 		dbUpdateC_Aggregtions(whereClause);
@@ -298,6 +299,38 @@ public class BPartnerImportTableSqlUpdater
 				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID
 				+ " IS NULL AND "
 				+ I_I_BPartner.COLUMNNAME_C_BPartner_ExternalId
+				+ " IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Found BPartner={}", no);
+	}
+
+	private void dbUpdateCbPartnerIdsFromC_BPartner_GlobalId(final String whereClause)
+	{
+		StringBuilder sql;
+		int no;
+		sql = new StringBuilder("UPDATE "
+				+ I_I_BPartner.Table_Name
+				+ " i "
+				+ "SET "
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID
+				+ "=(SELECT "
+				+ I_C_BPartner.COLUMNNAME_C_BPartner_ID
+				+ " FROM "
+				+ I_C_BPartner.Table_Name
+				+ " p WHERE i."
+				+ I_I_BPartner.COLUMNNAME_GlobalID
+				+ "=p."
+				+ I_C_BPartner.COLUMNNAME_globalid
+				+ " AND p."
+				+ I_C_BPartner.COLUMNNAME_AD_Client_ID
+				+ "=i."
+				+ I_I_BPartner.COLUMNNAME_AD_Client_ID
+				+ ") "
+				+ "WHERE "
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID
+				+ " IS NULL AND "
+				+ I_I_BPartner.COLUMNNAME_GlobalID
 				+ " IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
@@ -551,7 +584,7 @@ public class BPartnerImportTableSqlUpdater
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Invalid InvoiceSchedule={}", no);
 	}
-	
+
 	private void dbUpdatePaymentTerms(final String whereClause)
 	{
 		StringBuilder sql;
@@ -572,7 +605,7 @@ public class BPartnerImportTableSqlUpdater
 		logger.info("Invalid PO_PaymentTerm={}", no);
 	}
 
-	
+
 
 	private void dbUpdatePO_PaymentTerms(final String whereClause)
 	{

@@ -34,7 +34,7 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IMutable;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.I_M_InOut;
@@ -51,7 +51,6 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
-import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -113,6 +112,11 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 			return previousImportRecord == null ? null : previousImportRecord.getBPValue();
 		}
 
+		public String getPreviousGlobalId()
+		{
+			return previousImportRecord == null ? null : previousImportRecord.getGlobalID();
+		}
+
 		public List<I_I_BPartner> getPreviousImportRecordsForSameBP()
 		{
 			return previousImportRecordsForSameBP;
@@ -143,13 +147,17 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 		final I_I_BPartner previousImportRecord = context.getPreviousImportRecord();
 		final int previousBPartnerId = context.getPreviousC_BPartner_ID();
 		final String previousBPValue = context.getPreviousBPValue();
+		final String previousGlobalId = context.getPreviousGlobalId();
 		context.setPreviousImportRecord(importRecord); // set it early in case this method fails
 
 		final ImportRecordResult bpartnerImportResult;
 
 		// First line to import or this line does NOT have the same BP value
 		// => create a new BPartner or update the existing one
-		final boolean firstImportRecordOrNewBPartner = previousImportRecord == null || !Objects.equals(importRecord.getBPValue(), previousBPValue);
+		final boolean firstImportRecordOrNewBPartner =
+				previousImportRecord == null ||
+				!Objects.equals(importRecord.getBPValue(), previousBPValue) ||
+				!Objects.equals(importRecord.getGlobalID(), previousGlobalId);
 		if (firstImportRecordOrNewBPartner)
 		{
 			// create a new list because we are passing to a new partner
@@ -279,7 +287,7 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 			adTableId = getTableId(I_M_InOut.class);
 		}
 
-		final BPartnerPrintFormatRepository repo = Adempiere.getBean(BPartnerPrintFormatRepository.class);
+		final BPartnerPrintFormatRepository repo = SpringContextHolder.instance.getBean(BPartnerPrintFormatRepository.class);
 		final BPPrintFormatQuery bpPrintFormatQuery = BPPrintFormatQuery.builder()
 				.printFormatId(printFormatId)
 				.docTypeId(docTypeId.getRepoId())
