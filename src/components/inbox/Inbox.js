@@ -14,11 +14,22 @@ import {
 } from '../../actions/AppActions';
 import InboxItem from './InboxItem';
 
+/**
+ * @file Class based component.
+ * @module Inbox
+ * @extends Component
+ */
 class Inbox extends Component {
   constructor(props) {
     super(props);
   }
 
+  /**
+   * @method handleClick
+   * @summary ToDo: Describe the method
+   * @param {*} item
+   * @todo Write the documentation
+   */
   handleClick = item => {
     const { dispatch, close, location } = this.props;
     if (item.target) {
@@ -63,6 +74,11 @@ class Inbox extends Component {
     close && close();
   };
 
+  /**
+   * @method handleMarkAllAsRead
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleMarkAllAsRead = () => {
     const { close } = this.props;
 
@@ -71,12 +87,24 @@ class Inbox extends Component {
     close && close();
   };
 
+  /**
+   * @method handleShowAll
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleShowAll = () => {
     const { close, dispatch } = this.props;
     dispatch(push('/inbox'));
     close && close();
   };
 
+  /**
+   * @method handleDelete
+   * @summary ToDo: Describe the method
+   * @param {object} event
+   * @param {*} item
+   * @todo Write the documentation
+   */
   handleDelete = (e, item) => {
     e.preventDefault();
     e.stopPropagation();
@@ -84,6 +112,12 @@ class Inbox extends Component {
     deleteUserNotification(item.id).then(() => {});
   };
 
+  /**
+   * @method handleKeyDown
+   * @summary ToDo: Describe the method
+   * @param {object} event
+   * @todo Write the documentation
+   */
   handleKeyDown = e => {
     const { close } = this.props;
     const inboxItem = document.getElementsByClassName('js-inbox-item')[0];
@@ -108,6 +142,11 @@ class Inbox extends Component {
     }
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     const { open, inbox, all, close } = this.props;
 
