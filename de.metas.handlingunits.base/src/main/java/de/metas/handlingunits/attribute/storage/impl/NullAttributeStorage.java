@@ -37,7 +37,6 @@ import org.compiere.util.NamePair;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.handlingunits.IMutableHUTransactionAttribute;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.exceptions.AttributeNotFoundException;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -47,6 +46,7 @@ import de.metas.handlingunits.attribute.strategy.IAttributeAggregationStrategy;
 import de.metas.handlingunits.attribute.strategy.IAttributeSplitterStrategy;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.hutransaction.MutableHUTransactionAttribute;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 
@@ -60,7 +60,7 @@ public final class NullAttributeStorage implements IAttributeStorage
 {
 	public static final IAttributeStorage instance = new NullAttributeStorage();
 
-	public static final boolean isNull(final IAttributeStorage attributeStorage)
+	public static boolean isNull(final IAttributeStorage attributeStorage)
 	{
 		return attributeStorage == null || attributeStorage == instance;
 	}
@@ -120,7 +120,7 @@ public final class NullAttributeStorage implements IAttributeStorage
 	 * @throws UnsupportedOperationException
 	 */
 	@Override
-	public void updateHUTrxAttribute(final IMutableHUTransactionAttribute huTrxAttribute, final IAttributeValue fromAttributeValue)
+	public void updateHUTrxAttribute(final MutableHUTransactionAttribute huTrxAttribute, final IAttributeValue fromAttributeValue)
 	{
 		// we shall not reach this point because this storage is not firing any event so there is no point to come back and ask it to update your transaction
 		throw new UnsupportedOperationException();

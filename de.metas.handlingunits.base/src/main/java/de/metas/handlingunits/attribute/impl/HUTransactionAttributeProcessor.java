@@ -13,18 +13,16 @@ package de.metas.handlingunits.attribute.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,19 +35,21 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.handlingunits.HuPackingInstructionsAttributeId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.IHUTransactionAttributeProcessor;
 import de.metas.handlingunits.attribute.exceptions.InvalidAttributeValueException;
 import de.metas.handlingunits.attribute.spi.IHUTrxAttributeProcessor;
 import de.metas.handlingunits.attribute.spi.impl.HUTrxAttributeProcessor_ASI;
 import de.metas.handlingunits.attribute.spi.impl.HUTrxAttributeProcessor_HU;
+import de.metas.handlingunits.hutransaction.HUTransactionAttributeOperation;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.I_M_HU_Trx_Attribute;
 import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
-import de.metas.handlingunits.model.X_M_HU_Trx_Attribute;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -132,13 +132,13 @@ public class HUTransactionAttributeProcessor implements IHUTransactionAttributeP
 	{
 		if (attributeTrxs.isEmpty())
 		{
-			return Collections.emptyList();
+			return ImmutableList.of();
 		}
 
 		final List<I_M_HU_Trx_Attribute> huTrxAttributes = new ArrayList<>(attributeTrxs.size());
 		for (final IHUTransactionAttribute attributeTrx : attributeTrxs)
 		{
-			final I_M_HU_Trx_Attribute huTrxAttribute = createTrxAttribute(attributeTrx);
+			final I_M_HU_Trx_Attribute huTrxAttribute = createTrxAttributeNoSave(attributeTrx);
 
 			process(huTrxAttribute);
 
@@ -156,7 +156,7 @@ public class HUTransactionAttributeProcessor implements IHUTransactionAttributeP
 	 * @param attributeTrx
 	 * @return attribute transaction candidate
 	 */
-	private I_M_HU_Trx_Attribute createTrxAttribute(final IHUTransactionAttribute attributeTrx)
+	private I_M_HU_Trx_Attribute createTrxAttributeNoSave(final IHUTransactionAttribute attributeTrx)
 	{
 		final I_M_HU_Trx_Hdr trxHdr = getM_HU_Trx_Hdr();
 		final I_M_HU_Trx_Attribute huTrxAttribute = InterfaceWrapperHelper.newInstance(I_M_HU_Trx_Attribute.class, trxHdr);
@@ -167,13 +167,13 @@ public class HUTransactionAttributeProcessor implements IHUTransactionAttributeP
 		huTrxAttribute.setM_HU_Trx_Line(null); // we don't have a linked line
 
 		// Operation
-		huTrxAttribute.setOperation(attributeTrx.getOperation());
+		huTrxAttribute.setOperation(attributeTrx.getOperation().getCode());
 
 		// Attribute & PI Attribute
-		final I_M_HU_PI_Attribute huPIAttribute = attributeTrx.getM_HU_PI_Attribute();
-		huTrxAttribute.setM_Attribute_ID(attributeTrx.getM_Attribute().getM_Attribute_ID());
-		huTrxAttribute.setM_HU_PI_Attribute_ID(huPIAttribute != null ? huPIAttribute.getM_HU_PI_Attribute_ID() : -1);
-		huTrxAttribute.setM_HU_Attribute(attributeTrx.getM_HU_Attribute());
+		final HuPackingInstructionsAttributeId huPIAttributeId = attributeTrx.getPiAttributeId();
+		huTrxAttribute.setM_Attribute_ID(attributeTrx.getAttributeId().getRepoId());
+		huTrxAttribute.setM_HU_PI_Attribute_ID(HuPackingInstructionsAttributeId.toRepoId(huPIAttributeId));
+		huTrxAttribute.setM_HU_Attribute(attributeTrx.getHuAttribute());
 
 		// Value
 		huTrxAttribute.setValue(attributeTrx.getValueString());
@@ -279,12 +279,12 @@ public class HUTransactionAttributeProcessor implements IHUTransactionAttributeP
 		final Object referencedModel = getReferencedObject(huTrxAttribute);
 		final IHUTrxAttributeProcessor trxAttributeProcessor = getHUTrxAttributeProcessor(referencedModel);
 
-		final String operation = huTrxAttribute.getOperation();
-		if (X_M_HU_Trx_Attribute.OPERATION_Save.equals(operation))
+		final HUTransactionAttributeOperation operation = HUTransactionAttributeOperation.ofCode(huTrxAttribute.getOperation());
+		if (HUTransactionAttributeOperation.SAVE.equals(operation))
 		{
 			trxAttributeProcessor.processSave(huContext, huTrxAttribute, referencedModel);
 		}
-		else if (X_M_HU_Trx_Attribute.OPERATION_Drop.equals(operation))
+		else if (HUTransactionAttributeOperation.DROP.equals(operation))
 		{
 			trxAttributeProcessor.processDrop(huContext, huTrxAttribute, referencedModel);
 		}

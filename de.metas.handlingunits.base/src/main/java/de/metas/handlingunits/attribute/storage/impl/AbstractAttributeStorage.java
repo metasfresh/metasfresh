@@ -69,13 +69,13 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	private final IHUAttributePropagatorFactory huAttributePropagatorFactory = Services.get(IHUAttributePropagatorFactory.class);
 	private final IHUPIAttributesDAO huPIAttributesDAO = Services.get(IHUPIAttributesDAO.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
 
 	// Factories and other DAOs
 	private final IAttributeStorageFactory storageFactory;
 	private final IHUAttributesDAO huAttributesDAO;
 	private final IHUStorageDAO huStorageDAO;
 
-	private final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
 
 	// Attributes
 	private IndexedAttributeValues _indexedAttributeValues = IndexedAttributeValues.NULL;

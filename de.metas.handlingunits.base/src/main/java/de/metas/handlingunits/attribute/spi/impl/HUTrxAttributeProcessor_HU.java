@@ -77,6 +77,9 @@ public class HUTrxAttributeProcessor_HU implements IHUTrxAttributeProcessor
 		// Update values
 		huAttribute.setValue(trxAttribute.getValue());
 		huAttribute.setValueNumber(trxAttribute.getValueNumber());
+		
+		// TODO tsa: why following line was missing?!?
+		// huAttribute.setValueDate(trxAttribute.getValueDate());
 
 		huAttributesDAO.save(huAttribute);
 	}

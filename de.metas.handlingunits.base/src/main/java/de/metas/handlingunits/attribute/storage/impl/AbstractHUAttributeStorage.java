@@ -42,12 +42,12 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 
+import de.metas.handlingunits.HuPackingInstructionsAttributeId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.IMutableHUTransactionAttribute;
 import de.metas.handlingunits.attribute.HUAndPIAttributes;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
@@ -55,6 +55,7 @@ import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.attribute.PIAttributes;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
+import de.metas.handlingunits.hutransaction.MutableHUTransactionAttribute;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
@@ -64,6 +65,7 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorage implements IHUAware
 {
@@ -357,7 +359,7 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 	}
 
 	@Override
-	public void updateHUTrxAttribute(final IMutableHUTransactionAttribute huTrxAttribute, final IAttributeValue fromAttributeValue)
+	public void updateHUTrxAttribute(@NonNull final MutableHUTransactionAttribute huTrxAttribute, @NonNull final IAttributeValue fromAttributeValue)
 	{
 		assertNotDisposed();
 
@@ -375,10 +377,10 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 			final HUAttributeValue attributeValueImpl = (HUAttributeValue)fromAttributeValue;
 
 			final I_M_HU_PI_Attribute piAttribute = attributeValueImpl.getM_HU_PI_Attribute();
-			huTrxAttribute.setM_HU_PI_Attribute(piAttribute);
+			huTrxAttribute.setPiAttributeId(piAttribute != null ? HuPackingInstructionsAttributeId.ofRepoId(piAttribute.getM_HU_PI_Attribute_ID()) : null);
 
 			final I_M_HU_Attribute huAttribute = attributeValueImpl.getM_HU_Attribute();
-			huTrxAttribute.setM_HU_Attribute(huAttribute);
+			huTrxAttribute.setHuAttribute(huAttribute);
 		}
 		else
 		{

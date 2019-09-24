@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Util;
@@ -41,9 +42,9 @@ import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.hutransaction.HUTransactionAttributeOperation;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
-import de.metas.handlingunits.impl.MutableHUTransactionAttribute;
-import de.metas.handlingunits.model.X_M_HU_Trx_Attribute;
+import de.metas.handlingunits.hutransaction.MutableHUTransactionAttribute;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -141,23 +142,18 @@ final class HUTrxAttributesCollector implements IAttributeStorageListener
 	 * @param operation attribute operation (save/drop)
 	 * @return attribute transaction candidate
 	 */
-	private IHUTransactionAttribute createTrxAttribute(final IAttributeStorage storage, final IAttributeValue attributeValue, final String operation)
+	private IHUTransactionAttribute createTrxAttribute(final IAttributeStorage storage, final IAttributeValue attributeValue, final HUTransactionAttributeOperation operation)
 	{
-		final MutableHUTransactionAttribute huTrxAttribute = new MutableHUTransactionAttribute();
-
-		//
-		// Set Attribute Transaction operation (Save/Drop)
-		huTrxAttribute.setOperation(operation);
-
-		//
-		// Update our "huTrxAttribute" from attributeValue
-		huTrxAttribute.setM_Attribute(attributeValue.getM_Attribute());
-		huTrxAttribute.setValueString(attributeValue.getValueAsString());
-		huTrxAttribute.setValueNumber(attributeValue.getValueAsBigDecimal());
-		huTrxAttribute.setValueDate(attributeValue.getValueAsDate());
-		huTrxAttribute.setValueStringInitial(attributeValue.getValueInitialAsString());
-		huTrxAttribute.setValueNumberInitial(attributeValue.getValueInitialAsBigDecimal());
-		huTrxAttribute.setValueDateInitial(attributeValue.getValueInitialAsDate());
+		final MutableHUTransactionAttribute huTrxAttribute = MutableHUTransactionAttribute.builder()
+				.operation(operation)
+				.attributeId(AttributeId.ofRepoId(attributeValue.getM_Attribute().getM_Attribute_ID()))
+				.valueString(attributeValue.getValueAsString())
+				.valueNumber(attributeValue.getValueAsBigDecimal())
+				.valueDate(attributeValue.getValueAsDate())
+				.valueStringInitial(attributeValue.getValueInitialAsString())
+				.valueNumberInitial(attributeValue.getValueInitialAsBigDecimal())
+				.valueDateInitial(attributeValue.getValueInitialAsDate())
+				.build();
 
 		//
 		// Update our "huTrxAttribute" with storage specific settings
@@ -178,7 +174,7 @@ final class HUTrxAttributesCollector implements IAttributeStorageListener
 	 * @param operation attribute operation (save/drop)
 	 * @return created attribute transaction candidate
 	 */
-	private IHUTransactionAttribute createAndAddTrxAttribute(final IAttributeStorage storage, final IAttributeValue attributeValue, final String operation)
+	private IHUTransactionAttribute createAndAddTrxAttribute(final IAttributeStorage storage, final IAttributeValue attributeValue, final HUTransactionAttributeOperation operation)
 	{
 		assertNotDisposed();
 
@@ -209,19 +205,19 @@ final class HUTrxAttributesCollector implements IAttributeStorageListener
 	@Override
 	public void onAttributeValueCreated(final IAttributeValueContext attributeValueContext, final IAttributeStorage storage, final IAttributeValue attributeValue)
 	{
-		createAndAddTrxAttribute(storage, attributeValue, X_M_HU_Trx_Attribute.OPERATION_Save);
+		createAndAddTrxAttribute(storage, attributeValue, HUTransactionAttributeOperation.SAVE);
 	}
 
 	@Override
 	public void onAttributeValueChanged(final IAttributeValueContext attributeValueContext, final IAttributeStorage storage, final IAttributeValue attributeValue, final Object valueOld)
 	{
-		createAndAddTrxAttribute(storage, attributeValue, X_M_HU_Trx_Attribute.OPERATION_Save);
+		createAndAddTrxAttribute(storage, attributeValue, HUTransactionAttributeOperation.SAVE);
 	}
 
 	@Override
 	public void onAttributeValueDeleted(final IAttributeValueContext attributeValueContext, final IAttributeStorage storage, final IAttributeValue attributeValue)
 	{
-		createAndAddTrxAttribute(storage, attributeValue, X_M_HU_Trx_Attribute.OPERATION_Drop);
+		createAndAddTrxAttribute(storage, attributeValue, HUTransactionAttributeOperation.DROP);
 	}
 
 	/**
@@ -317,8 +313,8 @@ final class HUTrxAttributesCollector implements IAttributeStorageListener
 	 */
 	private ArrayKey mkKey(final IHUTransactionAttribute trx)
 	{
-		final int attributeId = trx.getM_Attribute().getM_Attribute_ID();
-		final String operation = trx.getOperation();
+		final AttributeId attributeId = trx.getAttributeId();
+		final HUTransactionAttributeOperation operation = trx.getOperation();
 
 		final Object referencedObject = trx.getReferencedObject();
 		final String referencedObjectTableName;

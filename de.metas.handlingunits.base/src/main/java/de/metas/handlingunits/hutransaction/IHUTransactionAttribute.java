@@ -26,10 +26,10 @@ package de.metas.handlingunits.hutransaction;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.compiere.model.I_M_Attribute;
+import org.adempiere.mm.attributes.AttributeId;
 
+import de.metas.handlingunits.HuPackingInstructionsAttributeId;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
-import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 
 /**
  * HU Transaction Attribute Change Candidate (immutable)
@@ -39,17 +39,9 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
  */
 public interface IHUTransactionAttribute
 {
-	/**
-	 *
-	 * @return attribute
-	 */
-	I_M_Attribute getM_Attribute();
+	AttributeId getAttributeId();
 
-	/**
-	 *
-	 * @return transaction operation (save/drop)
-	 */
-	String getOperation();
+	HUTransactionAttributeOperation getOperation();
 
 	BigDecimal getValueNumber();
 	BigDecimal getValueNumberInitial();
@@ -67,11 +59,11 @@ public interface IHUTransactionAttribute
 	 */
 	Object getReferencedObject();
 
-	I_M_HU_PI_Attribute getM_HU_PI_Attribute();
+	HuPackingInstructionsAttributeId getPiAttributeId();
 
 	/**
 	 *
 	 * @return existing {@link I_M_HU_Attribute} (which also could be new and not saved yet) or <code>null</code> in case this is not an HU related transaction (e.g. we deal with ASIs)
 	 */
-	I_M_HU_Attribute getM_HU_Attribute();
+	I_M_HU_Attribute getHuAttribute();
 }
