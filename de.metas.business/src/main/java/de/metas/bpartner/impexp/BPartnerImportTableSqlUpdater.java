@@ -319,9 +319,9 @@ public class BPartnerImportTableSqlUpdater
 				+ " FROM "
 				+ I_C_BPartner.Table_Name
 				+ " p WHERE i."
-				+ I_I_BPartner.COLUMNNAME_GlobalID
+				+ I_I_BPartner.COLUMNNAME_GlobalId
 				+ "=p."
-				+ I_C_BPartner.COLUMNNAME_globalid
+				+ I_C_BPartner.COLUMNNAME_GlobalId
 				+ " AND p."
 				+ I_C_BPartner.COLUMNNAME_AD_Client_ID
 				+ "=i."
@@ -330,7 +330,7 @@ public class BPartnerImportTableSqlUpdater
 				+ "WHERE "
 				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID
 				+ " IS NULL AND "
-				+ I_I_BPartner.COLUMNNAME_GlobalID
+				+ I_I_BPartner.COLUMNNAME_GlobalId
 				+ " IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);

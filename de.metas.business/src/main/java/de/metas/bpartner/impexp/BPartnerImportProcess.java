@@ -114,7 +114,7 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 
 		public String getPreviousGlobalId()
 		{
-			return previousImportRecord == null ? null : previousImportRecord.getGlobalID();
+			return previousImportRecord == null ? null : previousImportRecord.getGlobalId();
 		}
 
 		public List<I_I_BPartner> getPreviousImportRecordsForSameBP()
@@ -154,10 +154,9 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 
 		// First line to import or this line does NOT have the same BP value
 		// => create a new BPartner or update the existing one
-		final boolean firstImportRecordOrNewBPartner =
-				previousImportRecord == null ||
+		final boolean firstImportRecordOrNewBPartner = previousImportRecord == null ||
 				!Objects.equals(importRecord.getBPValue(), previousBPValue) ||
-				!Objects.equals(importRecord.getGlobalID(), previousGlobalId);
+				!Objects.equals(importRecord.getGlobalId(), previousGlobalId);
 		if (firstImportRecordOrNewBPartner)
 		{
 			// create a new list because we are passing to a new partner
@@ -226,7 +225,7 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 	 */
 	private ImportRecordResult doNothingAndUsePreviousPartner(final I_I_BPartner importRecord, final I_I_BPartner previousImportRecord)
 	{
-		importRecord.setC_BPartner(previousImportRecord.getC_BPartner());
+		importRecord.setC_BPartner_ID(previousImportRecord.getC_BPartner_ID());
 		return ImportRecordResult.Nothing;
 	}
 
