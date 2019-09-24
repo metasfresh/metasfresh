@@ -7,9 +7,6 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_DataImport;
-import org.compiere.model.I_I_ElementValue;
-import org.compiere.model.I_I_Product;
-import org.compiere.model.I_I_ReportLine;
 import org.compiere.model.POInfo;
 import org.springframework.stereotype.Repository;
 
@@ -83,38 +80,9 @@ public class ImportTableDescriptorRepository
 				? I_AD_Issue.COLUMNNAME_AD_Issue_ID
 				: null;
 
-		// Set Additional Table Info
-		String tableUnique1 = "";
-		String tableUnique2 = "";
-		String tableUniqueParent = "";
-		String tableUniqueChild = "";
-
-		if (I_I_Product.Table_Name.equals(tableName))
-		{
-			tableUnique1 = I_I_Product.COLUMNNAME_UPC; // UPC = unique
-			tableUnique2 = I_I_Product.COLUMNNAME_Value;
-			tableUniqueParent = I_I_Product.COLUMNNAME_BPartner_Value; // Makes it unique
-			tableUniqueChild = I_I_Product.COLUMNNAME_VendorProductNo; // Vendor No may not be unique !
-		}
-		else if (I_I_ElementValue.Table_Name.equals(tableName))
-		{
-			tableUniqueParent = I_I_ElementValue.COLUMNNAME_ElementName; // the parent key
-			tableUniqueChild = I_I_ElementValue.COLUMNNAME_Value; // the key
-		}
-		else if (I_I_ReportLine.Table_Name.equals(tableName))
-		{
-			tableUniqueParent = I_I_ReportLine.COLUMNNAME_ReportLineSetName; // the parent key
-			tableUniqueChild = I_I_ReportLine.COLUMNNAME_Name; // the key
-		}
-
 		return ImportTableDescriptor.builder()
 				.tableName(tableName)
 				.keyColumnName(keyColumnName)
-				//
-				.tableUnique1(tableUnique1)
-				.tableUnique2(tableUnique2)
-				.tableUniqueParent(tableUniqueParent)
-				.tableUniqueChild(tableUniqueChild)
 				//
 				.dataImportConfigIdColumnName(dataImportConfigIdColumnName)
 				.adIssueIdColumnName(adIssueIdColumnName)
