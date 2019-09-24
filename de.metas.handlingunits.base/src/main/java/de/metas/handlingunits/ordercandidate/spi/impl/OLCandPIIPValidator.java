@@ -27,7 +27,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
@@ -36,6 +35,7 @@ import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.OLCandHUPackingAware;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
@@ -121,12 +121,12 @@ public class OLCandPIIPValidator implements IOLCandValidator
 
 		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 		final LocalDate datePromisedEffective = TimeUtil.asLocalDate(olCandEffectiveValuesBL.getDatePromised_Effective(olCand));
-		final I_C_BPartner_Location billBPLocation = olCandEffectiveValuesBL.getBill_Location_Effective(olCand);
+		final BPartnerLocationId billBPLocationId = olCandEffectiveValuesBL.getBillLocationEffectiveId(olCand);
 
-		final I_M_PriceList pl = Services.get(IPriceListDAO.class).retrievePriceListByPricingSyst(pricingSystemId, billBPLocation, SOTrx.SALES);
+		final I_M_PriceList pl = Services.get(IPriceListDAO.class).retrievePriceListByPricingSyst(pricingSystemId, billBPLocationId, SOTrx.SALES);
 		if (pl == null)
 		{
-			throw new AdempiereException("@PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @Bill_Location@ " + billBPLocation);
+			throw new AdempiereException("@PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @Bill_Location@ " + billBPLocationId);
 		}
 
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);

@@ -33,6 +33,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.lang.SOTrx;
@@ -46,6 +47,7 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.time.FixedTimeSource;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -121,7 +123,10 @@ public class PriceListDAOTest
 		bpl.setC_BPartner(bpartner);
 		save(bpl);
 
-		final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()), bpl, SOTrx.SALES);
+		final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(
+				PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()),
+				toBPartnerLocationId(bpl),
+				SOTrx.SALES);
 
 		assertThat(pl).isNotNull();
 		assertThat(pl.getM_PriceList_ID()).isEqualByComparingTo(pl2.getM_PriceList_ID());
@@ -155,10 +160,20 @@ public class PriceListDAOTest
 		bpl.setC_BPartner(bpartner);
 		save(bpl);
 
-		final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()), bpl, SOTrx.SALES);
+		final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(
+				PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()),
+				toBPartnerLocationId(bpl),
+				SOTrx.SALES);
 
 		assertThat(pl).isNotNull();
 		assertThat(pl.getM_PriceList_ID()).isEqualByComparingTo(pl1.getM_PriceList_ID());
+	}
+
+	private BPartnerLocationId toBPartnerLocationId(@NonNull final I_C_BPartner_Location bplRecord)
+	{
+		return BPartnerLocationId.ofRepoId(
+				bplRecord.getC_BPartner_ID(),
+				bplRecord.getC_BPartner_ID());
 	}
 
 	@Test

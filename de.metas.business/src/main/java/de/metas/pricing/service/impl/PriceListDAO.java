@@ -1,5 +1,6 @@
 package de.metas.pricing.service.impl;
 
+import static de.metas.util.Check.assumeNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.copy;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -53,6 +54,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.currency.ICurrencyBL;
 import de.metas.impexp.processing.product.ProductPriceCreateRequest;
@@ -174,7 +176,10 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public I_M_PriceList retrievePriceListByPricingSyst(final PricingSystemId pricingSystemId, @NonNull final I_C_BPartner_Location bpartnerLocation, final SOTrx soTrx)
+	public I_M_PriceList retrievePriceListByPricingSyst(
+			@Nullable final PricingSystemId pricingSystemId,
+			final BPartnerLocationId bpartnerLocationId,
+			final SOTrx soTrx)
 	{
 		if (pricingSystemId == null)
 		{
@@ -189,8 +194,13 @@ public class PriceListDAO implements IPriceListDAO
 			return pl;
 		}
 
+		assumeNotNull(bpartnerLocationId, "If the given pricingSystemId={} is not null and not-none, then bpartnerLocationId may not be null", pricingSystemId);
+		final I_C_BPartner_Location bpartnerLocation = loadOutOfTrx(bpartnerLocationId, I_C_BPartner_Location.class);
 		final CountryId countryId = CountryId.ofRepoId(bpartnerLocation.getC_Location().getC_Country_ID());
+
+		assumeNotNull(bpartnerLocationId, "If the given pricingSystemId={} is not null and not-none, then soTrx may not be null", pricingSystemId);
 		final List<I_M_PriceList> priceLists = retrievePriceLists(pricingSystemId, countryId, soTrx);
+
 		return !priceLists.isEmpty() ? priceLists.get(0) : null;
 	}
 

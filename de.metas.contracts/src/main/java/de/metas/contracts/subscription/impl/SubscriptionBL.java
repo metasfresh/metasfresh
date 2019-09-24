@@ -45,7 +45,6 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.MNote;
 import org.compiere.model.Query;
@@ -63,7 +62,6 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.FlatrateTermPricing;
@@ -385,9 +383,9 @@ public class SubscriptionBL implements ISubscriptionBL
 		final ProductAndCategoryId productAndCategoryId = Services.get(IProductDAO.class).retrieveProductAndCategoryIdByProductId(productId);
 
 		final I_C_Flatrate_Matching matching = retrieveMatching(
-				ctx, 
-				olCand.getC_Flatrate_Conditions_ID(), 
-				productAndCategoryId, 
+				ctx,
+				olCand.getC_Flatrate_Conditions_ID(),
+				productAndCategoryId,
 				null);
 
 		final BigDecimal deliveryQty;
@@ -779,15 +777,14 @@ public class SubscriptionBL implements ISubscriptionBL
 		final I_C_OrderLine ol = InterfaceWrapperHelper.create(
 				deliveries.get(0).getC_Flatrate_Term().getC_OrderLine_Term(),
 				I_C_OrderLine.class);
-		
-		BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(ol.getC_BPartner_ID(), ol.getC_BPartner_Location_ID());
-		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(bpLocationId);
+
+		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(ol.getC_BPartner_ID(), ol.getC_BPartner_Location_ID());
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final I_M_PriceList pl = InterfaceWrapperHelper.create(
 				priceListDAO.retrievePriceListByPricingSyst(
 						pricingSystemId,
-						bpLocation,
+						bpLocationId,
 						SOTrx.SALES),
 				I_M_PriceList.class);
 
@@ -855,9 +852,9 @@ public class SubscriptionBL implements ISubscriptionBL
 
 	@Override
 	public I_C_Flatrate_Matching retrieveMatching(
-			final Properties ctx, 
-			final int flatrateConditionsId, 
-			@NonNull final ProductAndCategoryId productAndCategoryId, 
+			final Properties ctx,
+			final int flatrateConditionsId,
+			@NonNull final ProductAndCategoryId productAndCategoryId,
 			final String trxName)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);

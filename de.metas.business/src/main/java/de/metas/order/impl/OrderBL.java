@@ -239,8 +239,7 @@ public class OrderBL implements IOrderBL
 		}
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-		final I_C_BPartner_Location shipBPLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(shipToBPLocationId);
-		final I_M_PriceList priceList = priceListDAO.retrievePriceListByPricingSyst(pricingSystemId, shipBPLocation, soTrx);
+		final I_M_PriceList priceList = priceListDAO.retrievePriceListByPricingSyst(pricingSystemId, shipToBPLocationId, soTrx);
 		return priceList;
 	}
 

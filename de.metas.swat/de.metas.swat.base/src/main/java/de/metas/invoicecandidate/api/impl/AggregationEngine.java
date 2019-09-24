@@ -91,7 +91,7 @@ import lombok.NonNull;
 
 /**
  * Aggregates multiple {@link I_C_Invoice_Candidate} records and returns a result that that is suitable to create invoices.
- * 
+ *
  * @see IAggregator
  */
 public final class AggregationEngine
@@ -395,8 +395,11 @@ public final class AggregationEngine
 		}
 		else
 		{
-			final I_C_BPartner_Location bpLocation = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(ic.getBill_BPartner_ID(), ic.getBill_Location_ID()));
-			final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()), bpLocation, SOTrx.ofBoolean(ic.isSOTrx()));
+			final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(ic.getBill_BPartner_ID(), ic.getBill_Location_ID());
+			final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(
+					PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()),
+					bpLocationId,
+					SOTrx.ofBoolean(ic.isSOTrx()));
 			if (pl == null)
 			{
 				throw new AdempiereException(ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P,

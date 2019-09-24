@@ -257,6 +257,8 @@ public interface IBPartnerDAO extends ISingletonService
 
 	BPartnerLocationId getShiptoDefaultLocationIdByBpartnerId(BPartnerId bpartnerId);
 
+	BPartnerLocationId getRemitToDefaultLocationIdByBpartnerId(BPartnerId bPartnerId);
+
 	String getBPartnerNameById(BPartnerId bpartnerId);
 
 	List<String> getBPartnerNamesByIds(Collection<BPartnerId> bpartnerIds);
