@@ -72,12 +72,12 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
 	{
-		final SelectionSize selectionSize = context.getSelectionSize();		
+		final SelectionSize selectionSize = context.getSelectionSize();
 		if (selectionSize.isNoSelection())
 		{
 			ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
-		
+
 		if (selectionSize.isAllSelected() || selectionSize.getSize() > 500)
 		{
 			// we assume that where are some invoice lines selected
@@ -173,7 +173,7 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 				.list(I_C_Doc_Outbound_Log.class);
 
 		final List<I_EDI_Document_Extension> filteredDocuments = new ArrayList<>();
-		Loggables.get().withLogger(logger, Level.INFO).addLog("Preselected {} C_Doc_Outbound_Log records to be filtered", logs.size());
+		Loggables.withLogger(logger, Level.INFO).addLog("Preselected {} C_Doc_Outbound_Log records to be filtered", logs.size());
 
 		for (final I_C_Doc_Outbound_Log log : logs)
 		{
@@ -185,7 +185,7 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 			// Only EDI-enabled documents
 			if (!ediDocument.isEdiEnabled())
 			{
-				Loggables.get().withLogger(logger, Level.INFO).addLog("Skipping ediDocument={}, because IsEdiEnabled='N'", ediDocument);
+				Loggables.withLogger(logger, Level.INFO).addLog("Skipping ediDocument={}, because IsEdiEnabled='N'", ediDocument);
 				continue;
 			}
 
@@ -194,7 +194,7 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 			// note that there might be a problem with inouts, if we used this process: inOuts might be invalid, but still we want to aggregate them, and then fix stuff in the DESADV record itself
 			if (!I_EDI_Document.EDI_EXPORTSTATUS_Pending.equals(ediDocument.getEDI_ExportStatus()))
 			{
-				Loggables.get().withLogger(logger, Level.INFO).addLog("Skipping ediDocument={}, because EDI_ExportStatus={} is != Pending", new Object[] { ediDocument, ediDocument.getEDI_ExportStatus() });
+				Loggables.withLogger(logger, Level.INFO).addLog("Skipping ediDocument={}, because EDI_ExportStatus={} is != Pending", new Object[] { ediDocument, ediDocument.getEDI_ExportStatus() });
 				continue;
 			}
 
