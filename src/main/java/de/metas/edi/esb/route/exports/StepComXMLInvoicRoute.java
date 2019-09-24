@@ -33,7 +33,7 @@ import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
 import org.springframework.stereotype.Component;
 
-import de.metas.edi.esb.bean.invoice.StepComXMLInvoicBean;
+import de.metas.edi.esb.bean.invoic.StepComXMLInvoicBean;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
@@ -52,7 +52,6 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 
 	public static final String EP_EDI_STEPCOM_XML_INVOICE_CONSUMER = "direct:edi.invoice.stepcom-xml.consumer";
 
-	public static final String EDI_XML_PARTNER_ID = "edi.props.stepcom.partner.id";
 	public static final String EDI_XML_OWNER_ID = "edi.props.stepcom.owner.id";
 	public static final String EDI_XML_APPLICATION_REF = "edi.props.stepcom.application.ref";
 
@@ -83,7 +82,6 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 
 		final String senderGln = Util.resolvePropertyPlaceholders(getContext(), StepComXMLInvoicRoute.EDI_INVOICE_SENDER_GLN);
 		final String isTest = Util.resolvePropertyPlaceholders(getContext(), StepComXMLInvoicRoute.EDI_XML_INVOICE_IS_TEST);
-		final String partnerId = Util.resolvePropertyPlaceholders(getContext(), StepComXMLInvoicRoute.EDI_XML_PARTNER_ID);
 		final String ownerId = Util.resolvePropertyPlaceholders(getContext(), StepComXMLInvoicRoute.EDI_XML_OWNER_ID);
 		final String applicationRef = Util.resolvePropertyPlaceholders(getContext(), StepComXMLInvoicRoute.EDI_XML_APPLICATION_REF);
 		final String defaultEDIMessageDatePattern = Util.resolvePropertyPlaceholders(getContext(), StepComXMLInvoicRoute.EDI_ORDER_EDIMessageDatePattern);
@@ -95,7 +93,6 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 				.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
 				.setProperty(StepComXMLInvoicRoute.EDI_INVOICE_SENDER_GLN).constant(senderGln)
 				.setProperty(StepComXMLInvoicRoute.EDI_XML_INVOICE_IS_TEST).constant(isTest)
-				.setProperty(StepComXMLInvoicRoute.EDI_XML_PARTNER_ID).constant(partnerId)
 				.setProperty(StepComXMLInvoicRoute.EDI_XML_OWNER_ID).constant(ownerId)
 				.setProperty(StepComXMLInvoicRoute.EDI_XML_APPLICATION_REF).constant(applicationRef)
 				.setProperty(StepComXMLInvoicRoute.EDI_ORDER_EDIMessageDatePattern).constant(defaultEDIMessageDatePattern)

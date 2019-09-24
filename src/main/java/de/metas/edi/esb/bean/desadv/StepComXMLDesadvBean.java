@@ -36,6 +36,7 @@ import org.apache.camel.Exchange;
 import org.apache.commons.lang.StringUtils;
 
 import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.StepComUtil;
 import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpCBPartnerLocationType;
@@ -74,6 +75,7 @@ import de.metas.edi.esb.pojo.desadv.qualifier.QuantityQual;
 import de.metas.edi.esb.pojo.desadv.qualifier.ReferenceQual;
 import de.metas.edi.esb.route.AbstractEDIRoute;
 import de.metas.edi.esb.route.exports.StepComXMLDesadvRoute;
+import lombok.NonNull;
 
 public class StepComXMLDesadvBean
 {
@@ -99,12 +101,12 @@ public class StepComXMLDesadvBean
 				.setBody(DESADV_objectFactory.createDocument(desadvDocument));
 	}
 
-	private Document createDesadvDocumentFromXMLBean(final EDIExpDesadvType xmlDesadv, final Exchange exchange)
+	private Document createDesadvDocumentFromXMLBean(@NonNull final EDIExpDesadvType xmlDesadv, @NonNull final Exchange exchange)
 	{
 		final DecimalFormat decimalFormat = exchange.getProperty(Constants.DECIMAL_FORMAT, DecimalFormat.class);
 		final String isTest = exchange.getProperty(StepComXMLDesadvRoute.EDI_XML_DESADV_IS_TEST, String.class);
 		final String dateFormat = (String)exchange.getProperty(AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern);
-		final String partnerId = exchange.getProperty(StepComXMLDesadvRoute.EDI_XML_PARTNER_ID, String.class);
+
 		final String ownerId = exchange.getProperty(StepComXMLDesadvRoute.EDI_XML_OWNER_ID, String.class);
 		final String applicationRef = exchange.getProperty(StepComXMLDesadvRoute.EDI_XML_APPLICATION_REF, String.class);
 		final String supplierGln = exchange.getProperty(StepComXMLDesadvRoute.EDI_XML_SUPPLIER_GLN, String.class);
@@ -116,6 +118,11 @@ public class StepComXMLDesadvBean
 
 		final HEADERXlief header = DESADV_objectFactory.createHEADERXlief();
 		final String documentId = xmlDesadv.getDocumentNo();
+
+		final String partnerId = StepComUtil.resolvePartnerId(
+				exchange.getContext(),
+				xmlDesadv.getCBPartnerID().getEdiRecipientGLN());
+
 		header.setDOCUMENTID(documentId);
 		header.setPARTNERID(partnerId);
 		header.setOWNERID(ownerId);
@@ -332,7 +339,7 @@ public class StepComXMLDesadvBean
 		// ORIG same as ORBU for now
 		final HREFE1 origReference = DESADV_objectFactory.createHREFE1();
 		origReference.setDOCUMENTID(header.getDOCUMENTID());
-		origReference.setREFERENCEQUAL(ReferenceQual.ORBU.name());
+		origReference.setREFERENCEQUAL(ReferenceQual.ORIG.name());
 		origReference.setREFERENCE(reference);
 		origReference.setREFERENCEDATE1(toFormattedStringDate(toDate(xmlDesadv.getDateOrdered()), dateFormat));
 		header.getHREFE1().add(orderReference);
