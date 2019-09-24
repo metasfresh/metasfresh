@@ -307,6 +307,13 @@ class NewEmail extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {string} [windowId]
+ * @prop {func} [dispatch]
+ * @prop {string} [docId]
+ * @prop {func} [handleCloseEmail]
+ */
 NewEmail.propTypes = {
   windowId: PropTypes.string,
   dispatch: PropTypes.func,
