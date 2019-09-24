@@ -760,9 +760,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		}
 		else
 		{
-			// see if there is an existing shipment for this order
-			final OrderId orderId = scheduleSourceDoc.getRecordRef().getIdAssumingTableName(I_C_Order.Table_Name, OrderId::ofRepoId);
-			candidate = candidates.getInOutForOrderId(orderId, warehouseId, bpartnerAddress);
+			// see if there is an existing shipment for this order (or flatrate term)
+			candidate = candidates.getInOutForRecordRef(scheduleSourceDoc.getRecordRef(), warehouseId, bpartnerAddress);
 		}
 
 		if (candidate == null)
