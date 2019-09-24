@@ -444,8 +444,8 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		if (DOCSTATUS_Drafted.equals(getDocStatus())
 				|| DOCSTATUS_Invalid.equals(getDocStatus())
 				|| DOCSTATUS_InProgress.equals(getDocStatus())
-				|| DOCSTATUS_Genehmigt.equals(getDocStatus())
-				|| DOCSTATUS_NichtGenehmigt.equals(getDocStatus()))
+				|| DOCSTATUS_Approved.equals(getDocStatus())
+				|| DOCSTATUS_NotApproved.equals(getDocStatus()))
 			;
 		// Std Period open?
 		else
