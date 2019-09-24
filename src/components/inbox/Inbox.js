@@ -201,6 +201,17 @@ class Inbox extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {func} dispatch
+ * @prop {bool} [open]
+ * @prop {bool} modalVisible
+ * @prop {object} [location]
+ * @prop {func} [close]
+ * @prop {shape} [inbox]
+ * @prop {bool} [all]
+ * @todo Check title, buttons. Which proptype? Required or optional?
+ */
 Inbox.propTypes = {
   dispatch: PropTypes.func.isRequired,
   open: PropTypes.bool,
