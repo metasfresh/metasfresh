@@ -294,7 +294,10 @@ prepare
 install_metasfresh 
 
 install_service metasfresh-admin
-install_service metasfresh-material-dispo
+
+# for the time being we do without material-dispo, because it's not used and this version (incl metasfresh) can lead to perf issues
+# install_service metasfresh-material-dispo
+
 install_service metasfresh-webui-api
 
 install_metasfresh-webui-frontend
