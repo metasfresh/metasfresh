@@ -14,11 +14,22 @@ import {
 } from '../../actions/AppActions';
 import InboxItem from './InboxItem';
 
+/**
+ * @file Class based component.
+ * @module Inbox
+ * @extends Component
+ */
 class Inbox extends Component {
   constructor(props) {
     super(props);
   }
 
+  /**
+   * @method handleClick
+   * @summary ToDo: Describe the method
+   * @param {*} item
+   * @todo Write the documentation
+   */
   handleClick = item => {
     const { dispatch, close, location } = this.props;
     if (item.target) {
@@ -63,6 +74,11 @@ class Inbox extends Component {
     close && close();
   };
 
+  /**
+   * @method handleMarkAllAsRead
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleMarkAllAsRead = () => {
     const { close } = this.props;
 
@@ -71,12 +87,24 @@ class Inbox extends Component {
     close && close();
   };
 
+  /**
+   * @method handleShowAll
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleShowAll = () => {
     const { close, dispatch } = this.props;
     dispatch(push('/inbox'));
     close && close();
   };
 
+  /**
+   * @method handleDelete
+   * @summary ToDo: Describe the method
+   * @param {object} event
+   * @param {*} item
+   * @todo Write the documentation
+   */
   handleDelete = (e, item) => {
     e.preventDefault();
     e.stopPropagation();
@@ -84,6 +112,12 @@ class Inbox extends Component {
     deleteUserNotification(item.id).then(() => {});
   };
 
+  /**
+   * @method handleKeyDown
+   * @summary ToDo: Describe the method
+   * @param {object} event
+   * @todo Write the documentation
+   */
   handleKeyDown = e => {
     const { close } = this.props;
     const inboxItem = document.getElementsByClassName('js-inbox-item')[0];
@@ -108,6 +142,11 @@ class Inbox extends Component {
     }
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     const { open, inbox, all, close } = this.props;
 
@@ -162,18 +201,13 @@ class Inbox extends Component {
   }
 }
 
-Inbox.propTypes = {
-  dispatch: PropTypes.func.isRequired,
-  open: PropTypes.bool,
-  modalVisible: PropTypes.bool.isRequired,
-  location: PropTypes.object,
-  close: PropTypes.func,
-  inbox: PropTypes.shape({}),
-  all: PropTypes.bool,
-};
-
-Inbox.defaultProps = {};
-
+/**
+ * @method routerInbox
+ * @summary ToDo: Describe the method
+ * @param {object} state
+ * @param {object} props
+ * @todo Write the documentation
+ */
 const routerInbox = withRouter(
   connect((state, props) => ({
     modalVisible: state.windowHandler.modal.visible,
@@ -181,6 +215,12 @@ const routerInbox = withRouter(
   }))(Inbox)
 );
 
+/**
+ * @method addClickOutsideHandler
+ * @summary ToDo: Describe the method
+ * @param {*} Child
+ * @todo Write the documentation
+ */
 const addClickOutsideHandler = Child => {
   return class WithClickOutsideHandler extends Component {
     static propTypes = {
@@ -197,5 +237,28 @@ const addClickOutsideHandler = Child => {
     }
   };
 };
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {func} dispatch
+ * @prop {bool} [open]
+ * @prop {bool} modalVisible
+ * @prop {object} [location]
+ * @prop {func} [close]
+ * @prop {shape} [inbox]
+ * @prop {bool} [all]
+ * @todo Check title, buttons. Which proptype? Required or optional?
+ */
+Inbox.propTypes = {
+  dispatch: PropTypes.func.isRequired,
+  open: PropTypes.bool,
+  modalVisible: PropTypes.bool.isRequired,
+  location: PropTypes.object,
+  close: PropTypes.func,
+  inbox: PropTypes.shape({}),
+  all: PropTypes.bool,
+};
+
+Inbox.defaultProps = {};
 
 export default onClickOutside(addClickOutsideHandler(routerInbox));

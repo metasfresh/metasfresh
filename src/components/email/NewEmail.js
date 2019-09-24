@@ -16,6 +16,11 @@ import RawList from '../widget/List/RawList';
 import Attachments from './Attachments';
 import AutocompleteTo from './AutocompleteTo';
 
+/**
+ * @file Class based component.
+ * @module NewEmail
+ * @extends Component
+ */
 class NewEmail extends Component {
   constructor(props) {
     super(props);
@@ -30,6 +35,11 @@ class NewEmail extends Component {
     };
   }
 
+  /**
+   * @method UNSAFE_componentWillMount
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   UNSAFE_componentWillMount = () => {
     const { windowId, docId, handleCloseEmail } = this.props;
     createEmail(windowId, docId)
@@ -46,6 +56,12 @@ class NewEmail extends Component {
       });
   };
 
+  /**
+   * @method getEmail
+   * @summary ToDo: Describe the method
+   * @param {*} emailId
+   * @todo Write the documentation
+   */
   getEmail = emailId => {
     getEmail(emailId).then(res => {
       this.setState({
@@ -56,6 +72,11 @@ class NewEmail extends Component {
     });
   };
 
+  /**
+   * @method getTemplates
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   getTemplates = () => {
     getTemplates().then(res => {
       this.setState({
@@ -64,12 +85,26 @@ class NewEmail extends Component {
     });
   };
 
+  /**
+   * @method change
+   * @summary ToDo: Describe the method
+   * @param {*} prop
+   * @param {*} value
+   * @todo Write the documentation
+   */
   change = (prop, value) => {
     this.setState({
       [prop]: value,
     });
   };
 
+  /**
+   * @method patch
+   * @summary ToDo: Describe the method
+   * @param {*} prop
+   * @param {*} value
+   * @todo Write the documentation
+   */
   patch = (prop, value) => {
     const { emailId } = this.state;
 
@@ -88,6 +123,11 @@ class NewEmail extends Component {
     });
   };
 
+  /**
+   * @method send
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   send = () => {
     const { emailId } = this.state;
     const { handleCloseEmail, dispatch } = this.props;
@@ -99,6 +139,12 @@ class NewEmail extends Component {
     });
   };
 
+  /**
+   * @method handleTemplate
+   * @summary ToDo: Describe the method
+   * @param {*} option
+   * @todo Write the documentation
+   */
   handleTemplate = option => {
     const { emailId, template } = this.state;
     if (template === option) return;
@@ -116,30 +162,55 @@ class NewEmail extends Component {
     });
   };
 
+  /**
+   * @method handleFocus
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleFocus = () => {
     this.setState({
       listFocused: true,
     });
   };
 
+  /**
+   * @method handleBlur
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleBlur = () => {
     this.setState({
       listFocused: false,
     });
   };
 
+  /**
+   * @method closeTemplatesList
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   closeTemplatesList = () => {
     this.setState({
       listToggled: false,
     });
   };
 
+  /**
+   * @method openTemplatesList
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   openTemplatesList = () => {
     this.setState({
       listToggled: true,
     });
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     const { handleCloseEmail, windowId, docId } = this.props;
     const {
@@ -236,6 +307,13 @@ class NewEmail extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {string} [windowId]
+ * @prop {func} [dispatch]
+ * @prop {string} [docId]
+ * @prop {func} [handleCloseEmail]
+ */
 NewEmail.propTypes = {
   windowId: PropTypes.string,
   dispatch: PropTypes.func,

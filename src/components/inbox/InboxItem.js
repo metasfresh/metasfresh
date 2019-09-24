@@ -1,12 +1,24 @@
 import counterpart from 'counterpart';
 import Moment from 'moment';
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
+/**
+ * @file Class based component.
+ * @module InboxItem
+ * @extends Component
+ */
 class InboxItem extends Component {
   constructor(props) {
     super(props);
   }
 
+  /**
+   * @method renderIconFromTarget
+   * @summary ToDo: Describe the method
+   * @param {*} target
+   * @todo Write the documentation
+   */
   renderIconFromTarget = target => {
     switch (target) {
       case '143':
@@ -16,10 +28,21 @@ class InboxItem extends Component {
     }
   };
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   componentDidMount() {
     document.getElementsByClassName('js-inbox-wrapper')[0].focus();
   }
 
+  /**
+   * @method renderCancelButton
+   * @summary ToDo: Describe the method
+   * @param {event} event
+   * @todo Write the documentation
+   */
   handleKeyDown = e => {
     const { close } = this.props;
     switch (e.key) {
@@ -46,6 +69,11 @@ class InboxItem extends Component {
     }
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     const { item, onClick, onDelete } = this.props;
     return (
@@ -94,5 +122,20 @@ class InboxItem extends Component {
     );
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} [close]
+ * @prop {*} [item]
+ * @prop {*} [onClick]
+ * @prop {*} [onDelete]
+ * @todo Check props. Which proptype? Required or optional?
+ */
+InboxItem.propTypes = {
+  close: PropTypes.any,
+  item: PropTypes.any,
+  onClick: PropTypes.any,
+  onDelete: PropTypes.any,
+};
 
 export default InboxItem;
