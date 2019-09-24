@@ -45,7 +45,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
@@ -77,6 +76,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -396,18 +396,18 @@ public final class AggregationEngine
 		else
 		{
 			final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(ic.getBill_BPartner_ID(), ic.getBill_Location_ID());
-			final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(
+			final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
 					PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()),
 					bpLocationId,
 					SOTrx.ofBoolean(ic.isSOTrx()));
-			if (pl == null)
+			if (plId == null)
 			{
 				throw new AdempiereException(ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P,
 						new Object[] {
 								ic.getM_PricingSystem_ID() > 0 ? loadOutOfTrx(ic.getM_PricingSystem_ID(), I_M_PricingSystem.class).getName() : "NO PRICING-SYTEM",
 								invoiceHeader.getBill_Location_ID() > 0 ? loadOutOfTrx(invoiceHeader.getBill_Location_ID(), I_C_BPartner_Location.class).getName() : "NO BILL-TO-LOCATION" });
 			}
-			M_PriceList_ID = pl.getM_PriceList_ID();
+			M_PriceList_ID = plId.getRepoId();
 		}
 		invoiceHeader.setM_PriceList_ID(M_PriceList_ID);
 		// #367 end

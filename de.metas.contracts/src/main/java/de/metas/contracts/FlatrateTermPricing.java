@@ -5,8 +5,6 @@ import java.time.LocalDate;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_M_PriceList;
-
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.lang.SOTrx;
@@ -76,33 +74,33 @@ public class FlatrateTermPricing
 
 	public IPricingResult computeOrThrowEx()
 	{
-		final I_M_PriceList priceList = retrievePriceListForTerm();
-		final IPricingResult pricingResult = retrievePricingResultUsingPriceList(priceList);
+		final PriceListId priceListId = retrievePriceListForTerm();
+		final IPricingResult pricingResult = retrievePricingResultUsingPriceList(priceListId);
 
 		return pricingResult;
 	}
 
-	private I_M_PriceList retrievePriceListForTerm()
+	private PriceListId retrievePriceListForTerm()
 	{
 		final PricingSystemId pricingSystemIdToUse = PricingSystemId.ofRepoIdOrNull(CoalesceUtil.firstGreaterThanZero(term.getM_PricingSystem_ID(), term.getC_Flatrate_Conditions().getM_PricingSystem_ID()));
 		final I_C_BPartner_Location bpLocationToUse = CoalesceUtil.coalesceSuppliers(term::getDropShip_Location, term::getBill_Location);
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-		final I_M_PriceList priceList = priceListDAO.retrievePriceListByPricingSyst(
+		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(
 				pricingSystemIdToUse,
 				BPartnerLocationId.ofRepoId(bpLocationToUse.getC_BPartner_ID(), bpLocationToUse.getC_BPartner_Location_ID()),
 				SOTrx.SALES);
-		if (priceList == null)
+		if (priceListId == null)
 		{
 			throw new AdempiereException(MSG_FLATRATEBL_PRICE_LIST_MISSING_2P,
 					new Object[] {
 							priceListDAO.getPricingSystemName(pricingSystemIdToUse),
 							term.getBill_Location().getName() });
 		}
-		return priceList;
+		return priceListId;
 	}
 
-	private IPricingResult retrievePricingResultUsingPriceList(@NonNull final I_M_PriceList priceList)
+	private IPricingResult retrievePricingResultUsingPriceList(@NonNull final PriceListId priceListId)
 	{
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 
@@ -115,7 +113,7 @@ public class FlatrateTermPricing
 				isSOTrx);
 
 		pricingCtx.setPriceDate(priceDate);
-		pricingCtx.setPriceListId(PriceListId.ofRepoId(priceList.getM_PriceList_ID()));
+		pricingCtx.setPriceListId(priceListId);
 
 		final IPricingResult result = pricingBL.calculatePrice(pricingCtx);
 		throwExceptionIfNotCalculated(result);

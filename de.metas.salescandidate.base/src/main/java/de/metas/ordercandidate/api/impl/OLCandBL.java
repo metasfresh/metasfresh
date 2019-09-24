@@ -33,7 +33,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_PriceList;
 import org.compiere.model.PO;
 import org.slf4j.Logger;
 
@@ -189,15 +188,15 @@ public class OLCandBL implements IOLCandBL
 
 		pricingCtx.setDisallowDiscount(olCand.isManualDiscount());
 
-		final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(
+		final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
 				pricingSystemId,
 				dropShipLocationId,
 				SOTrx.SALES);
-		if (pl == null)
+		if (plId == null)
 		{
 			throw new AdempiereException("@M_PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @DropShip_Location@ " + dropShipLocationId);
 		}
-		pricingCtx.setPriceListId(PriceListId.ofRepoId(pl.getM_PriceList_ID()));
+		pricingCtx.setPriceListId(plId);
 		pricingCtx.setProductId(effectiveValuesBL.getM_Product_Effective_ID(olCand));
 
 		pricingResult = pricingBL.calculatePrice(pricingCtx);

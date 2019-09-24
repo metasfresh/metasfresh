@@ -123,13 +123,13 @@ public class PriceListDAOTest
 		bpl.setC_BPartner(bpartner);
 		save(bpl);
 
-		final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(
+		final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
 				PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()),
 				toBPartnerLocationId(bpl),
 				SOTrx.SALES);
 
-		assertThat(pl).isNotNull();
-		assertThat(pl.getM_PriceList_ID()).isEqualByComparingTo(pl2.getM_PriceList_ID());
+		assertThat(plId).isNotNull();
+		assertThat(plId.getRepoId()).isEqualByComparingTo(pl2.getM_PriceList_ID());
 	}
 
 	@Test
@@ -160,13 +160,13 @@ public class PriceListDAOTest
 		bpl.setC_BPartner(bpartner);
 		save(bpl);
 
-		final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(
+		final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
 				PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()),
 				toBPartnerLocationId(bpl),
 				SOTrx.SALES);
 
-		assertThat(pl).isNotNull();
-		assertThat(pl.getM_PriceList_ID()).isEqualByComparingTo(pl1.getM_PriceList_ID());
+		assertThat(plId).isNotNull();
+		assertThat(plId.getRepoId()).isEqualByComparingTo(pl1.getM_PriceList_ID());
 	}
 
 	private BPartnerLocationId toBPartnerLocationId(@NonNull final I_C_BPartner_Location bplRecord)

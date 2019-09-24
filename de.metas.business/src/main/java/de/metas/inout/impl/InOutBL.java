@@ -38,7 +38,6 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_InOut;
@@ -52,7 +51,6 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.lang.SOTrx;
-import de.metas.money.CurrencyId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -116,18 +114,17 @@ public class InOutBL implements IInOutBL
 		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID());
 		Check.assumeNotNull(pricingSystemId, "No pricing system found for M_InOut_ID={}", inOut);
 
-		final I_M_PriceList priceList = priceListDAO.retrievePriceListByPricingSyst(
+		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(
 				pricingSystemId,
 				BPartnerLocationId.ofRepoId(bPartnerId, inOut.getC_BPartner_Location_ID()),
 				soTrx);
-		Check.errorIf(priceList == null,
+		Check.errorIf(priceListId == null,
 				"No price list found for M_InOutLine_ID {}; M_InOut.M_PricingSystem_ID={}, M_InOut.C_BPartner_Location_ID={}, M_InOut.SOTrx={}",
 				inOutLine.getM_InOutLine_ID(), pricingSystemId, inOut.getC_BPartner_Location_ID(), soTrx);
 
 		pricingCtx.setPricingSystemId(pricingSystemId);
-		pricingCtx.setPriceListId(PriceListId.ofRepoId(priceList.getM_PriceList_ID()));
+		pricingCtx.setPriceListId(priceListId);
 		pricingCtx.setPriceDate(TimeUtil.asLocalDate(inOut.getDateOrdered()));
-		pricingCtx.setCurrencyId(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
 		// note: the qty was already passed to the pricingCtx upon creation, further up.
 
 		return pricingCtx;

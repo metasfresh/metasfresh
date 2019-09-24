@@ -176,7 +176,7 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public I_M_PriceList retrievePriceListByPricingSyst(
+	public PriceListId retrievePriceListIdByPricingSyst(
 			@Nullable final PricingSystemId pricingSystemId,
 			final BPartnerLocationId bpartnerLocationId,
 			final SOTrx soTrx)
@@ -189,9 +189,7 @@ public class PriceListDAO implements IPriceListDAO
 		// In case we are dealing with Pricing System None, return the PriceList none
 		if (pricingSystemId.isNone())
 		{
-			final I_M_PriceList pl = loadOutOfTrx(M_PriceList_ID_None, I_M_PriceList.class);
-			Check.assumeNotNull(pl, "pl with M_PriceList_ID={} is not null", M_PriceList_ID_None);
-			return pl;
+			return PriceListId.NONE;
 		}
 
 		assumeNotNull(bpartnerLocationId, "If the given pricingSystemId={} is not null and not-none, then bpartnerLocationId may not be null", pricingSystemId);
@@ -201,7 +199,7 @@ public class PriceListDAO implements IPriceListDAO
 		assumeNotNull(bpartnerLocationId, "If the given pricingSystemId={} is not null and not-none, then soTrx may not be null", pricingSystemId);
 		final List<I_M_PriceList> priceLists = retrievePriceLists(pricingSystemId, countryId, soTrx);
 
-		return !priceLists.isEmpty() ? priceLists.get(0) : null;
+		return !priceLists.isEmpty() ? PriceListId.ofRepoId(priceLists.get(0).getM_PriceList_ID()) : null;
 	}
 
 	@Override

@@ -27,7 +27,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_PriceList;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
@@ -123,8 +122,8 @@ public class OLCandPIIPValidator implements IOLCandValidator
 		final LocalDate datePromisedEffective = TimeUtil.asLocalDate(olCandEffectiveValuesBL.getDatePromised_Effective(olCand));
 		final BPartnerLocationId billBPLocationId = olCandEffectiveValuesBL.getBillLocationEffectiveId(olCand);
 
-		final I_M_PriceList pl = Services.get(IPriceListDAO.class).retrievePriceListByPricingSyst(pricingSystemId, billBPLocationId, SOTrx.SALES);
-		if (pl == null)
+		final PriceListId plId = Services.get(IPriceListDAO.class).retrievePriceListIdByPricingSyst(pricingSystemId, billBPLocationId, SOTrx.SALES);
+		if (plId == null)
 		{
 			throw new AdempiereException("@PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @Bill_Location@ " + billBPLocationId);
 		}
@@ -136,7 +135,7 @@ public class OLCandPIIPValidator implements IOLCandValidator
 		pricingCtx.setQty(BigDecimal.ONE); // we don't care for the actual quantity we just want to verify that there is a price
 
 		pricingCtx.setPricingSystemId(pricingSystemId);
-		pricingCtx.setPriceListId(PriceListId.ofRepoId(pl.getM_PriceList_ID()));
+		pricingCtx.setPriceListId(plId);
 		pricingCtx.setProductId(packingMaterialProductId);
 		pricingCtx.setPriceDate(datePromisedEffective);
 		pricingCtx.setCurrencyId(CurrencyId.ofRepoId(olCand.getC_Currency_ID()));

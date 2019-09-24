@@ -165,15 +165,15 @@ public class OrderBL implements IOrderBL
 		}
 
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
-		final I_M_PriceList priceList = retrievePriceListOrNull(pricingSystemId, bpartnerAndLocationId, soTrx);
-		if (priceList == null)
+		final PriceListId priceListId = retrievePriceListIdOrNull(pricingSystemId, bpartnerAndLocationId, soTrx);
+		if (priceListId == null)
 		{
 			// Fail if no price list found
 			final String pricingSystemName = Services.get(IPriceListDAO.class).getPricingSystemName(pricingSystemId);
 			throw new PriceListNotFoundException(pricingSystemName, soTrx);
 		}
 
-		order.setM_PriceList_ID(priceList.getM_PriceList_ID());
+		order.setM_PriceList_ID(priceListId.getRepoId());
 	}
 
 	@Override
@@ -192,8 +192,8 @@ public class OrderBL implements IOrderBL
 		}
 
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
-		final I_M_PriceList pl = retrievePriceListOrNull(pricingSystemId, bpartnerAndLocationId, soTrx);
-		if (pl == null)
+		final PriceListId plId = retrievePriceListIdOrNull(pricingSystemId, bpartnerAndLocationId, soTrx);
+		if (plId == null)
 		{
 			final String pricingSystemName = Services.get(IPriceListDAO.class).getPricingSystemName(pricingSystemId);
 			throw new PriceListNotFoundException(pricingSystemName, soTrx);
@@ -224,11 +224,10 @@ public class OrderBL implements IOrderBL
 		final PricingSystemId pricingSystemId = pricingSystemIdOverride != null ? pricingSystemIdOverride : PricingSystemId.ofRepoIdOrNull(order.getM_PricingSystem_ID());
 		final BPartnerLocationId bpartnerAndLocationId = getShipToLocationIdOrNull(order);
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
-		final I_M_PriceList priceList = retrievePriceListOrNull(pricingSystemId, bpartnerAndLocationId, soTrx);
-		return priceList != null ? PriceListId.ofRepoId(priceList.getM_PriceList_ID()) : null;
+		return retrievePriceListIdOrNull(pricingSystemId, bpartnerAndLocationId, soTrx);
 	}
 
-	private I_M_PriceList retrievePriceListOrNull(
+	private PriceListId retrievePriceListIdOrNull(
 			final PricingSystemId pricingSystemId,
 			final BPartnerLocationId shipToBPLocationId,
 			@NonNull final SOTrx soTrx)
@@ -239,8 +238,7 @@ public class OrderBL implements IOrderBL
 		}
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-		final I_M_PriceList priceList = priceListDAO.retrievePriceListByPricingSyst(pricingSystemId, shipToBPLocationId, soTrx);
-		return priceList;
+		return priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, shipToBPLocationId, soTrx);
 	}
 
 	@Override
