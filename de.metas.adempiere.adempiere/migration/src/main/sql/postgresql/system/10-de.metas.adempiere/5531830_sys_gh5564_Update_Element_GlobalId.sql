@@ -36,15 +36,16 @@ UPDATE AD_Process_Para SET ColumnName='GlobalId', Name='Global ID', Description=
 
 
 
-DO $$ 
+
+ DO $$ 
     BEGIN
         BEGIN
             -- 2019-09-24T13:27:17.507Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('I_BPartner','ALTER TABLE public.I_BPartner ADD COLUMN GlobalId VARCHAR(255)')
+/* DDL */ perform public.db_alter_table('I_BPartner','ALTER TABLE public.I_BPartner ADD COLUMN GlobalId VARCHAR(255)')
 ;
         EXCEPTION
             WHEN duplicate_column THEN RAISE NOTICE 'column globalid already exists in I_BPartner.';
         END;
     END;
-$$
+$$;
