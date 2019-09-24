@@ -10,6 +10,11 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.122
+## Fixes
+* metasfresh-webui-frontend
+  * [#2367](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2367) Adjustments for dates in filters
+
 # metasfresh 5.121
 
 ## Features
