@@ -32,6 +32,8 @@ import org.adempiere.exceptions.DBException;
 
 import com.google.common.base.Supplier;
 
+import lombok.NonNull;
+
 /**
  * Transaction interface
  *
@@ -165,6 +167,12 @@ public interface ITrx
 	 * @task 04265
 	 */
 	ITrxListenerManager getTrxListenerManager();
+
+	default void runAfterCommit(@NonNull final Runnable runnable)
+	{
+		getTrxListenerManager()
+				.runAfterCommit(runnable);
+	}
 
 	/**
 	 * Gets the {@link ITrxManager} which created this transaction and which is responsible for its lifecycle
