@@ -7,10 +7,12 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.service.OrgId;
+import org.adempiere.warehouse.WarehouseId;
 
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
@@ -60,17 +62,20 @@ public class OLCandCreateRequest
 
 	OrgId orgId;
 
-	OLCandBPartnerInfo bpartner;
-	OLCandBPartnerInfo billBPartner;
-	OLCandBPartnerInfo dropShipBPartner;
-	OLCandBPartnerInfo handOverBPartner;
+	BPartnerInfo bpartner;
+	BPartnerInfo billBPartner;
+	BPartnerInfo dropShipBPartner;
+	BPartnerInfo handOverBPartner;
 
 	String poReference;
 
+	LocalDate dateOrdered;
 	LocalDate dateRequired;
 
-	LocalDate dateInvoiced;
+	LocalDate presetDateInvoiced;
 	DocTypeId docTypeInvoiceId;
+
+	LocalDate presetDateShipped;
 
 	int flatrateConditionsId;
 
@@ -85,6 +90,8 @@ public class OLCandCreateRequest
 	CurrencyId currencyId; // mandatory if price is provided
 	Percent discount;
 
+	WarehouseId warehouseDestId;
+
 	@Builder
 	private OLCandCreateRequest(
 			@Nullable final String externalLineId,
@@ -92,13 +99,15 @@ public class OLCandCreateRequest
 			final OrgId orgId,
 			@NonNull final String dataSourceInternalName,
 			@Nullable final String dataDestInternalName,
-			@NonNull final OLCandBPartnerInfo bpartner,
-			final OLCandBPartnerInfo billBPartner,
-			final OLCandBPartnerInfo dropShipBPartner,
-			final OLCandBPartnerInfo handOverBPartner,
+			@NonNull final BPartnerInfo bpartner,
+			final BPartnerInfo billBPartner,
+			final BPartnerInfo dropShipBPartner,
+			final BPartnerInfo handOverBPartner,
 			final String poReference,
+			@Nullable final LocalDate dateOrdered,
 			@Nullable final LocalDate dateRequired,
-			@Nullable final LocalDate dateInvoiced,
+			@Nullable final LocalDate presetDateInvoiced,
+			@Nullable final LocalDate presetDateShipped,
 			@Nullable final DocTypeId docTypeInvoiceId,
 			final int flatrateConditionsId,
 			@NonNull final ProductId productId,
@@ -109,7 +118,8 @@ public class OLCandCreateRequest
 			@Nullable final PricingSystemId pricingSystemId,
 			final BigDecimal price,
 			final CurrencyId currencyId,
-			final Percent discount)
+			final Percent discount,
+			@Nullable final WarehouseId warehouseDestId)
 	{
 		// Check.assume(qty.signum() > 0, "qty > 0"); qty might very well also be <= 0
 
@@ -128,8 +138,11 @@ public class OLCandCreateRequest
 		this.poReference = poReference;
 		this.dateRequired = dateRequired;
 
-		this.dateInvoiced = dateInvoiced;
+		this.dateOrdered = dateOrdered;
+		this.presetDateInvoiced = presetDateInvoiced;
 		this.docTypeInvoiceId = docTypeInvoiceId;
+
+		this.presetDateShipped = presetDateShipped;
 
 		this.flatrateConditionsId = flatrateConditionsId;
 		this.productId = productId;
@@ -141,5 +154,7 @@ public class OLCandCreateRequest
 		this.price = price;
 		this.currencyId = currencyId;
 		this.discount = discount;
+
+		this.warehouseDestId = warehouseDestId;
 	}
 }

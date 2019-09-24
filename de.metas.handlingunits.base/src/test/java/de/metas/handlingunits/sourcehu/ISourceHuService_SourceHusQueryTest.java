@@ -95,7 +95,7 @@ public class ISourceHuService_SourceHusQueryTest
 		final I_M_HU_Storage huStorage = newInstance(I_M_HU_Storage.class);
 		huStorage.setM_HU(hu);
 		huStorage.setM_Product_ID(product.getM_Product_ID());
-		huStorage.setC_UOM(uom);
+		huStorage.setC_UOM_ID(uom.getC_UOM_ID());
 		huStorage.setQty(qty);
 		save(huStorage);
 
@@ -110,7 +110,7 @@ public class ISourceHuService_SourceHusQueryTest
 
 		final I_M_HU hu = newInstance(I_M_HU.class);
 		hu.setM_HU_PI_Version_ID(HuPackingInstructionsVersionId.VIRTUAL.getRepoId());
-		hu.setM_Locator(locator);
+		hu.setM_Locator_ID(locator.getM_Locator_ID());
 		save(hu);
 		return hu;
 	}

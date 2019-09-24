@@ -2,6 +2,7 @@ package de.metas.inoutcandidate.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 
 import java.sql.Timestamp;
@@ -21,6 +22,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -96,7 +98,12 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public <T extends I_M_ShipmentSchedule> T getById(@NonNull final ShipmentScheduleId id, @NonNull final Class<T> modelClass)
 	{
-		return load(id, modelClass);
+		final T shipmentSchedule = load(id, modelClass);
+		if (shipmentSchedule == null)
+		{
+			throw new AdempiereException("@NotFound@ @M_ShipmentSchedule_ID@: " + id);
+		}
+		return shipmentSchedule;
 	}
 
 	@Override
@@ -106,9 +113,16 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	}
 
 	@Override
-	public <T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIdsOutOfTrx(final Set<ShipmentScheduleId> ids, final Class<T> modelClass)
+	public <T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIdsOutOfTrx(@NonNull final Set<ShipmentScheduleId> ids, final Class<T> modelClass)
 	{
 		final List<T> shipmentSchedules = loadByRepoIdAwaresOutOfTrx(ids, modelClass);
+		return Maps.uniqueIndex(shipmentSchedules, ss -> ShipmentScheduleId.ofRepoId(ss.getM_ShipmentSchedule_ID()));
+	}
+
+	@Override
+	public Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIds(@NonNull final Set<ShipmentScheduleId> ids)
+	{
+		final List<I_M_ShipmentSchedule> shipmentSchedules = loadByRepoIdAwares(ids, I_M_ShipmentSchedule.class);
 		return Maps.uniqueIndex(shipmentSchedules, ss -> ShipmentScheduleId.ofRepoId(ss.getM_ShipmentSchedule_ID()));
 	}
 
@@ -471,5 +485,11 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.stream()
 				.map(ProductId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public void save(@NonNull final I_M_ShipmentSchedule record)
+	{
+		InterfaceWrapperHelper.saveRecord(record);
 	}
 }

@@ -4,17 +4,14 @@
 package de.metas.currency;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.Properties;
+import java.time.LocalDate;
 
-import org.compiere.model.I_C_ConversionType;
-import org.compiere.model.I_C_Currency;
-import org.compiere.util.Env;
+import org.adempiere.service.ClientId;
 
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -46,74 +43,24 @@ public interface ICurrencyDAO extends ISingletonService
 {
 	CurrencyPrecision DEFAULT_PRECISION = CurrencyPrecision.TWO;
 
-	I_C_Currency getById(CurrencyId currencyId);
-
-	/**
-	 * retrieves Currency by ID
-	 *
-	 * @param ctx
-	 * @param currencyId
-	 * @return
-	 */
-	I_C_Currency retrieveCurrency(Properties ctx, int currencyId);
+	Currency getById(CurrencyId currencyId);
 
 	/**
 	 * retrieves currency by ISO code
 	 *
-	 * @param ctx
-	 * @param ISOCode
 	 * @return currency or <code>null</code>
 	 */
-	I_C_Currency retrieveCurrencyByISOCode(Properties ctx, String ISOCode);
+	Currency getByCurrencyCode(CurrencyCode currencyCode);
 
-	/**
-	 * Get Currency Iso Code.
-	 *
-	 * @param ctx Context
-	 * @param C_Currency_ID currency
-	 * @return ISO Code or <code>null</code>
-	 * @deprecated Please use {@link #getISOCodeById(CurrencyId)}
-	 */
-	@Deprecated
-	String getISO_Code(Properties ctx, int C_Currency_ID);
+	CurrencyCode getCurrencyCodeById(CurrencyId currencyId);
 
-	default String getISOCodeById(@NonNull final CurrencyId currencyId)
-	{
-		return getISO_Code(Env.getCtx(), currencyId.getRepoId());
-	}
-
-	/**
-	 * Get Standard Precision.
-	 *
-	 * @param ctx Context
-	 * @param C_Currency_ID currency
-	 * @return Standard Precision
-	 */
-	int getStdPrecision(Properties ctx, int C_Currency_ID);
-
-	default CurrencyPrecision getStdPrecision(@NonNull final CurrencyId currencyId)
-	{
-		return CurrencyPrecision.ofInt(getStdPrecision(Env.getCtx(), currencyId.getRepoId()));
-	}
+	CurrencyPrecision getStdPrecision(CurrencyId currencyId);
 
 	CurrencyPrecision getCostingPrecision(CurrencyId currencyId);
 
-	/**
-	 * @param ctx
-	 * @param adClientId
-	 * @param adOrgId
-	 * @param date
-	 * @return default {@link I_C_ConversionType}; never returns null
-	 */
-	I_C_ConversionType retrieveDefaultConversionType(Properties ctx, int adClientId, int adOrgId, Date date);
+	CurrencyConversionTypeId getDefaultConversionTypeId(ClientId adClientId, OrgId adOrgId, LocalDate date);
 
-	default CurrencyConversionTypeId getDefaultConversionTypeId(final int adClientId, final int adOrgId, final Date date)
-	{
-		final I_C_ConversionType defaultConversionType = retrieveDefaultConversionType(Env.getCtx(), adClientId, adOrgId, date);
-		return defaultConversionType != null ? CurrencyConversionTypeId.ofRepoId(defaultConversionType.getC_ConversionType_ID()) : null;
-	}
+	CurrencyConversionTypeId getConversionTypeId(ConversionTypeMethod type);
 
-	CurrencyConversionTypeId getConversionTypeId(ConversionType type);
-
-	BigDecimal retrieveRateOrNull(CurrencyConversionContext conversionCtx, int CurFrom_ID, int CurTo_ID);
+	BigDecimal retrieveRateOrNull(CurrencyConversionContext conversionCtx, CurrencyId currencyFromId, CurrencyId currencyToId);
 }

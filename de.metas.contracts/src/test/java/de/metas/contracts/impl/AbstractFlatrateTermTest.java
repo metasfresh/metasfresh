@@ -18,7 +18,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_CountryArea;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_Product;
@@ -39,11 +38,16 @@ import de.metas.contracts.model.X_C_Contract_Change;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.order.model.I_C_OrderLine;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.location.ICountryAreaBL;
+import de.metas.money.CurrencyId;
+import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
@@ -91,7 +95,7 @@ public abstract class AbstractFlatrateTermTest
 	private AcctSchemaId acctSchemaId;
 
 	@Getter
-	private I_C_Currency currency;
+	private CurrencyId currencyId;
 
 	@Getter
 	private I_C_Country country;
@@ -139,7 +143,8 @@ public abstract class AbstractFlatrateTermTest
 		createWarehouse();
 		createDocType();
 		createCountryAndCountryArea();
-		createCurrency();
+		
+		currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 	}
 
 	public I_C_Flatrate_Term prepareContractForTest(final String extensionType, final Timestamp startDate)
@@ -152,8 +157,10 @@ public abstract class AbstractFlatrateTermTest
 		final I_C_Flatrate_Conditions conditions = createFlatrateConditions(productAndPricingSystem, extensionType);
 		createContractChange(conditions);
 
-		final I_C_Flatrate_Term contract = createFlatrateTerm(conditions, productAndPricingSystem.getProduct(), startDate);
-		return contract;
+		return createFlatrateTerm(
+				conditions, 
+				productAndPricingSystem.getProductAndCategoryId(), 
+				startDate);
 	}
 
 	public List<I_C_Invoice_Candidate> createInvoiceCandidates(final I_C_Flatrate_Term flatrateTerm)
@@ -248,14 +255,6 @@ public abstract class AbstractFlatrateTermTest
 		save(countryArea);
 	}
 
-	private void createCurrency()
-	{
-		currency = newInstance(I_C_Currency.class);
-		currency.setISO_Code("EUR");
-		currency.setStdPrecision(2);
-		save(currency);
-	}
-
 	protected int prepareBPartner()
 	{
 		bpartner = FlatrateTermDataFactory.bpartnerNew()
@@ -286,7 +285,7 @@ public abstract class AbstractFlatrateTermTest
 		return FlatrateTermDataFactory.productAndPricingNew()
 				.productValue("01")
 				.productName("testProduct")
-				.currency(getCurrency())
+				.currencyId(getCurrencyId())
 				.country(getCountry())
 				.isTaxInclcuded(false)
 				.validFrom(startDate)
@@ -317,9 +316,12 @@ public abstract class AbstractFlatrateTermTest
 				.build();
 	}
 
-	protected I_C_Flatrate_Term createFlatrateTerm(@NonNull final I_C_Flatrate_Conditions conditions, @NonNull final I_M_Product product, @NonNull final Timestamp startDate)
+	protected I_C_Flatrate_Term createFlatrateTerm(
+			@NonNull final I_C_Flatrate_Conditions conditions, 
+			@NonNull final ProductAndCategoryId productAndCategoryId, 
+			@NonNull final Timestamp startDate)
 	{
-		final I_C_OrderLine orderLine = createOrderAndOrderLine(conditions, product);
+		final I_C_OrderLine orderLine = createOrderAndOrderLine(conditions, productAndCategoryId.getProductId());
 
 		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 		final I_C_Flatrate_Term contract = flatrateBL.createTerm(
@@ -328,7 +330,7 @@ public abstract class AbstractFlatrateTermTest
 				conditions,
 				startDate,
 				null,
-				product,
+				productAndCategoryId,
 				false);
 
 		final I_C_BPartner_Location bpLocation = getBpLocation();
@@ -342,7 +344,7 @@ public abstract class AbstractFlatrateTermTest
 		contract.setPriceActual(PRICE_TEN);
 		contract.setPlannedQtyPerUnit(QTY_ONE);
 		contract.setMasterStartDate(startDate);
-		contract.setM_Product(product);
+		contract.setM_Product_ID(productAndCategoryId.getProductId().getRepoId());
 		contract.setIsTaxIncluded(true);
 		contract.setC_OrderLine_Term(orderLine);
 		save(contract);
@@ -351,7 +353,9 @@ public abstract class AbstractFlatrateTermTest
 		return contract;
 	}
 
-	protected I_C_OrderLine createOrderAndOrderLine(@NonNull final I_C_Flatrate_Conditions conditions, @NonNull final I_M_Product product)
+	protected I_C_OrderLine createOrderAndOrderLine(
+			@NonNull final I_C_Flatrate_Conditions conditions,
+			@NonNull final ProductId productId)
 	{
 		final I_C_Order orderRecord = newInstance(I_C_Order.class);
 		orderRecord.setContractStatus(I_C_Order.CONTRACTSTATUS_Active);
@@ -360,7 +364,7 @@ public abstract class AbstractFlatrateTermTest
 		final I_C_OrderLine orderLineRecord = newInstance(I_C_OrderLine.class);
 		orderLineRecord.setC_Order(orderRecord);
 		orderLineRecord.setC_Flatrate_Conditions(conditions);
-		orderLineRecord.setM_Product(product);
+		orderLineRecord.setM_Product_ID(productId.getRepoId());
 		saveRecord(orderLineRecord);
 
 		return orderLineRecord;

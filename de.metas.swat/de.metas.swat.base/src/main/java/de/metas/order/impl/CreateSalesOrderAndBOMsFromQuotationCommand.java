@@ -18,7 +18,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -39,6 +38,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 
 import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.IProductPlanningDAO;
@@ -50,6 +50,7 @@ import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
 import de.metas.order.compensationGroup.OrderGroupInfo;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.AddProductPriceRequest;
@@ -150,7 +151,8 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 
 	private SalesOrderCandidate createSalesOrderCandidate(final I_C_Order fromQuotation)
 	{
-		final List<I_C_OrderLine> allOrderLines = ordersRepo.retrieveOrderLines(fromQuotation.getC_Order_ID())
+		final OrderId orderId = OrderId.ofRepoId(fromQuotation.getC_Order_ID());
+		final List<I_C_OrderLine> allOrderLines = ordersRepo.retrieveOrderLines(orderId)
 				.stream()
 				.filter(line -> line.isActive() && !line.isPackagingMaterial())
 				.sorted(Comparator.comparing(I_C_OrderLine::getLine))
@@ -417,7 +419,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 				.setFrom(fromQuotation)
 				.setSkipCalculatedColumns(true)
 				.copyToNew(I_C_Order.class);
-		newSalesOrder.setDocStatus(X_C_Order.DOCSTATUS_Drafted);
+		newSalesOrder.setDocStatus(DocStatus.Drafted.getCode());
 		newSalesOrder.setDocAction(X_C_Order.DOCACTION_Complete);
 
 		newSalesOrder.setDateOrdered(TimeUtil.asTimestamp(salesOrderDateOrdered));

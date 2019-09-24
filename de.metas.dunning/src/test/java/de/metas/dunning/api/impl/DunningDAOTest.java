@@ -10,18 +10,17 @@ package de.metas.dunning.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -31,6 +30,7 @@ import org.junit.Test;
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.exception.DunningException;
 import de.metas.dunning.interfaces.I_C_Dunning;
+import de.metas.organization.OrgId;
 
 public class DunningDAOTest extends DunningTestBase
 {
@@ -44,26 +44,26 @@ public class DunningDAOTest extends DunningTestBase
 		final I_C_Dunning dunning_302_default_notActive = createDunning(302, true, false);
 		final I_C_Dunning dunning_302_default_active = createDunning(302, true, true);
 
-		Assert.assertEquals("Invalid Dunning for org=302", dunning_302_default_active, dao.retrieveDunningByOrg(getCtx(), 302));
+		Assert.assertEquals("Invalid Dunning for org=302", dunning_302_default_active, dao.retrieveDunningByOrg(OrgId.ofRepoId(302)));
 
-		Assert.assertNull("Invalid Dunning for org=301 - no default shall be found", dao.retrieveDunningByOrg(getCtx(), 301));
+		Assert.assertNull("Invalid Dunning for org=301 - no default shall be found", dao.retrieveDunningByOrg(OrgId.ofRepoId(301)));
 	}
 
 	@Test(expected = AdempiereException.class)
 	public void retrieveDunningByOrg_InvalidOrgArgument()
 	{
-		dao.retrieveDunningByOrg(getCtx(), -1);
+		dao.retrieveDunningByOrg(OrgId.ofRepoIdOrAny(-1));
 	}
 
 	@SuppressWarnings("unused")
-	@Test(expected = DunningException.class)
+	@Test(expected = AdempiereException.class)
 	public void retrieveDunningByOrg_MoreThenOneDefaultFound()
 	{
 		final I_C_Dunning dunning_303_default_notActive = createDunning(303, true, false);
 		final I_C_Dunning dunning_303_default_active = createDunning(303, true, true);
 		final I_C_Dunning dunning_303_default_active_2 = createDunning(303, true, true);
 
-		dao.retrieveDunningByOrg(getCtx(), 303);
+		dao.retrieveDunningByOrg(OrgId.ofRepoId(303));
 	}
 
 	private I_C_Dunning createDunning(int adOrgId, boolean isDefault, boolean isActive)

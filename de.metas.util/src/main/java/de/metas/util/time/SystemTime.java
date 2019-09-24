@@ -34,6 +34,9 @@ import java.util.GregorianCalendar;
 
 import javax.annotation.Nullable;
 
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+
 /**
  * Code taken from the book "Test Driven", Chapter 7 ("Test-driving the
  * unpredictable") by Lasse Koskela.
@@ -41,9 +44,9 @@ import javax.annotation.Nullable;
  * @author ts
  *
  */
+@UtilityClass
 public final class SystemTime
 {
-
 	private static final TimeSource defaultTimeSource = () -> System.currentTimeMillis();
 
 	private static TimeSource timeSource;
@@ -51,6 +54,11 @@ public final class SystemTime
 	public static long millis()
 	{
 		return getTimeSource().millis();
+	}
+
+	public static ZoneId zoneId()
+	{
+		return ZoneId.systemDefault();
 	}
 
 	public static GregorianCalendar asGregorianCalendar()
@@ -90,7 +98,12 @@ public final class SystemTime
 
 	public static ZonedDateTime asZonedDateTime()
 	{
-		return asInstant().atZone(ZoneId.systemDefault());
+		return asZonedDateTime(zoneId());
+	}
+
+	public static ZonedDateTime asZonedDateTime(@NonNull final ZoneId zoneId)
+	{
+		return asInstant().atZone(zoneId);
 	}
 
 	/**

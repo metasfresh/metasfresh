@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Collection;
 
-import org.compiere.util.Util;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -25,9 +24,11 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor.MaterialDescriptorBuilder;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.material.event.stock.StockChangedEvent.StockChangeDetails;
 import de.metas.util.Loggables;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -120,7 +121,7 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 				return;
 			}
 
-			final int groupId = retrieveGroupIdOrZero(
+			final MaterialDispoGroupId groupId = retrieveGroupIdOrNull(
 					materialDescriptorQuery,
 					type,
 					stockChangeDetail.getTransactionId());
@@ -143,7 +144,7 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 		final BigDecimal quantityOnHand = event.getQtyOnHand();
 		if (quantityOnHand.signum() <= 0)
 		{
-			Loggables.get().addLog("Warning: something was out of sync since there is no existing 'latestMatch' with a qty to reduce");
+			Loggables.addLog("Warning: something was out of sync since there is no existing 'latestMatch' with a qty to reduce");
 			return null;
 		}
 		return quantityOnHand;
@@ -154,7 +155,7 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 	{
 		if (quantity.signum() == 0)
 		{
-			Loggables.get().addLog("The event's quantity is what was already expected; nothing to do");
+			Loggables.addLog("The event's quantity is what was already expected; nothing to do");
 			return null;
 		}
 		final CandidateType type = quantity.signum() > 0 ? CandidateType.INVENTORY_UP : CandidateType.INVENTORY_DOWN;
@@ -177,12 +178,12 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 		return candidateBuilder;
 	}
 
-	private int retrieveGroupIdOrZero(
+	private MaterialDispoGroupId retrieveGroupIdOrNull(
 			@NonNull final MaterialDescriptorQuery materialDescriptorQuery,
 			@NonNull final CandidateType type,
 			final int transactionId)
 	{
-		int groupId = 0;
+		MaterialDispoGroupId groupId = null;
 		if (CandidateType.INVENTORY_UP.equals(type) && transactionId > 0)
 		{
 			// see if there is a preceeding "down" record to connect with
@@ -252,7 +253,7 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 
 	private Instant computeDate(@NonNull final StockChangedEvent event)
 	{
-		final Instant date = Util.coalesceSuppliers(
+		final Instant date = CoalesceUtil.coalesceSuppliers(
 				() -> event.getChangeDate(),
 				() -> SystemTime.asInstant());
 		return date;

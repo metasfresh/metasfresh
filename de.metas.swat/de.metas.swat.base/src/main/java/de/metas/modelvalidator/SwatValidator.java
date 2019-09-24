@@ -29,7 +29,6 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.IModelInterceptor;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
@@ -47,7 +46,6 @@ import org.adempiere.model.tree.spi.impl.OrgTreeSupport;
 import org.adempiere.model.tree.spi.impl.ProductTreeSupport;
 import org.adempiere.process.rpl.model.I_EXP_ReplicationTrx;
 import org.adempiere.process.rpl.model.I_EXP_ReplicationTrxLine;
-import org.adempiere.scheduler.housekeeping.spi.impl.ResetSchedulerState;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.validationrule.FilterWarehouseByDocTypeValidationRule;
 import org.compiere.db.CConnection;
@@ -79,7 +77,6 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.modelvalidator.AD_User;
 import de.metas.adempiere.modelvalidator.Order;
 import de.metas.adempiere.modelvalidator.OrderLine;
-import de.metas.adempiere.modelvalidator.OrgInfo;
 import de.metas.adempiere.modelvalidator.Payment;
 import de.metas.bpartner.interceptor.C_BPartner_Location;
 import de.metas.cache.CCache.CacheMapType;
@@ -87,7 +84,6 @@ import de.metas.cache.model.IModelCacheService;
 import de.metas.cache.model.ITableCacheConfig;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
 import de.metas.document.ICounterDocBL;
-import de.metas.freighcost.modelvalidator.FreightCostValidator;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.model.I_M_InOutLine;
@@ -164,12 +160,10 @@ public class SwatValidator implements ModelValidator
 
 		// registering child validators
 		engine.addModelValidator(new ApplicationDictionary(), client);
-		engine.addModelValidator(new FreightCostValidator(), client);
 
 		engine.addModelValidator(new Order(), client);
 		engine.addModelValidator(new OrderLine(), client);
 		engine.addModelValidator(new M_InOut(), client); // 03771
-		engine.addModelValidator(new OrgInfo(), client);
 		engine.addModelValidator(new Payment(), client);
 		// 04359 this MV cripples the processing performance of Sales Orders
 		// the MV has been added to AD_ModelValidator, so that it can be enabled for certain customers *if* required.
@@ -230,11 +224,6 @@ public class SwatValidator implements ModelValidator
 		JRClient.get(); // make sure Jasper client is loaded and initialized
 
 		Services.get(IValidationRuleFactory.class).registerTableValidationRule(I_M_Warehouse.Table_Name, FilterWarehouseByDocTypeValidationRule.instance);
-
-		// task 06295: those two are implemented in de.metas.adempiere.adempiere, but we don't have such a nice central MV in there.
-		Services.get(IHouseKeepingBL.class).registerStartupHouseKeepingTask(new ResetSchedulerState());
-		// not registering this one for because is might lead to problems if a swing-client is running while the server is starting up.
-		// Services.get(IHouseKeepingBL.class).registerStartupHouseKeepingTask(new ClearTemporaryTables());
 
 		//
 		// Configure tables which are skipped when we record migration scripts

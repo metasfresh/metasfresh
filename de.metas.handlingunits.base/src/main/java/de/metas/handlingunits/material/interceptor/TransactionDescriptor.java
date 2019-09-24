@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Transaction;
 
 import de.metas.inout.InOutLineId;
@@ -46,7 +47,7 @@ public class TransactionDescriptor
 
 	int productId;
 	int transactionId;
-	int warehouseId;
+	WarehouseId warehouseId;
 	int costCollectorId;
 	InOutLineId inoutLineId;
 	int movementLineId;
@@ -62,7 +63,7 @@ public class TransactionDescriptor
 			EventDescriptor eventDescriptor,
 			int productId,
 			int transactionId,
-			int warehouseId,
+			WarehouseId warehouseId,
 			Instant transactionDate,
 			BigDecimal movementQty,
 			int costCollectorId,

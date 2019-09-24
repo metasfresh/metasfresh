@@ -23,6 +23,7 @@ package de.metas.uom;
  */
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Optional;
 
 import org.compiere.model.I_C_UOM;
@@ -50,13 +51,11 @@ public interface IUOMConversionBL extends ISingletonService
 	/**
 	 * Convert quantity from <code>uomFrom</code> to <code>uomTo</code>
 	 *
-	 * @param conversionCtx conversion context
-	 * @param qty
-	 * @param uomFrom
-	 * @param uomTo
 	 * @return converted quantity; never return NULL.
 	 */
 	BigDecimal convertQty(UOMConversionContext conversionCtx, BigDecimal qty, I_C_UOM uomFrom, I_C_UOM uomTo);
+
+	BigDecimal convertQty(UOMConversionContext conversionCtx, BigDecimal qty, UomId uomFrom, UomId uomTo);
 
 	/**
 	 * Creates a new {@link Quantity} object by converting the given {@code quantity} to the given {@code uomTo}.
@@ -132,9 +131,6 @@ public interface IUOMConversionBL extends ISingletonService
 	/**
 	 * Convert qty to target UOM and round.
 	 *
-	 * @param uomFrom from UOM
-	 * @param uomTo to UOM
-	 * @param qty qty
 	 * @return converted qty (std precision)
 	 */
 	Optional<BigDecimal> convert(I_C_UOM uomFrom, I_C_UOM uomTo, BigDecimal qty);
@@ -153,6 +149,8 @@ public interface IUOMConversionBL extends ISingletonService
 	}
 
 	Quantity convertToProductUOM(Quantity quantity, ProductId productId);
+
+	Quantity computeSum(UOMConversionContext of, Collection<Quantity> quantities, UomId toUomId);
 
 	ProductPrice convertProductPriceToUom(ProductPrice price, UomId toUomId, CurrencyPrecision pricePrecision);
 

@@ -1,7 +1,7 @@
 package de.metas.vendor.gateway.api.order;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
@@ -44,13 +44,13 @@ public class RemotePurchaseOrderCreatedItem
 
 	BigDecimal confirmedOrderQuantity;
 
-	LocalDateTime confirmedDeliveryDateOrNull;
+	ZonedDateTime confirmedDeliveryDateOrNull;
 
 	@Builder
 	private RemotePurchaseOrderCreatedItem(
 			@NonNull final PurchaseOrderRequestItem correspondingRequestItem,
 			@NonNull final BigDecimal confirmedOrderQuantity,
-			@Nullable final LocalDateTime confirmedDeliveryDateOrNull,
+			@Nullable final ZonedDateTime confirmedDeliveryDateOrNull,
 			final String remotePurchaseOrderId,
 			final MSV3OrderResponsePackageItemPartRepoId internalItemId)
 	{

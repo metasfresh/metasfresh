@@ -3,7 +3,6 @@ package de.metas.contracts.process;
 import java.sql.Timestamp;
 
 import org.compiere.Adempiere;
-import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -14,6 +13,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.process.JavaProcess;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 
 /*
@@ -59,7 +59,7 @@ public class C_Customer_Retention_Update extends JavaProcess
 				continue;
 			}
 
-			final Timestamp endDate = Util.coalesce(latestFlatrateTermForBPartnerId.getMasterEndDate(), latestFlatrateTermForBPartnerId.getEndDate());
+			final Timestamp endDate = CoalesceUtil.coalesce(latestFlatrateTermForBPartnerId.getMasterEndDate(), latestFlatrateTermForBPartnerId.getEndDate());
 
 			if (customerRetentionRepo.dateExceedsThreshold(endDate, SystemTime.asTimestamp()))
 			{

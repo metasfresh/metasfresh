@@ -24,12 +24,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  * #L%
  */
 
-import java.math.BigDecimal;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 
@@ -44,8 +44,10 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.product.IProductBL;
-import de.metas.quantity.Quantity;
+import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -107,7 +109,9 @@ public class M_InOutLine
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE, ModelValidator.TYPE_AFTER_NEW }, ifColumnsChanged = I_M_InOutLine.COLUMNNAME_MovementQty)
+	@ModelChange(//
+			timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE, ModelValidator.TYPE_AFTER_NEW }, //
+			ifColumnsChanged = { I_M_InOutLine.COLUMNNAME_MovementQty, I_M_InOutLine.COLUMNNAME_Catch_UOM_ID, I_M_InOutLine.COLUMNNAME_QtyDeliveredCatch })
 	public void onMovementQtyChange(final I_M_InOutLine inOutLine)
 	{
 		// make sure we are dealing with shipments
@@ -136,17 +140,19 @@ public class M_InOutLine
 	{
 		final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 
-		final BigDecimal qtyPickedSum = computeQtyPickedSum(allocs);
+		final ProductId productId = ProductId.ofRepoId(inOutLine.getM_Product_ID());
+		final UomId catchUomId = UomId.ofRepoIdOrNull(inOutLine.getCatch_UOM_ID());
+		final StockQtyAndUOMQty qtyPickedSum = computeQtyPickedSum(productId, catchUomId, allocs);
 
-		// Adjust "Shipment schedules" to "Shipment Line" allocations
-		final BigDecimal shipmentLine_movementQty = inOutLine.getMovementQty();
-		final BigDecimal qtyPickedToAdd = shipmentLine_movementQty.subtract(qtyPickedSum);
+		final StockQtyAndUOMQty shipmentLine_movementQty = StockQtyAndUOMQtys.create(inOutLine.getMovementQty(), productId, inOutLine.getQtyDeliveredCatch(), catchUomId);
+
+		final StockQtyAndUOMQty qtyPickedToAdd = StockQtyAndUOMQtys.subtract(shipmentLine_movementQty, qtyPickedSum);
 		if (qtyPickedToAdd.signum() == 0)
 		{
 			return;
 		}
 
-		// * find out an "alloc" where we can add our difference
+		// * find a M_ShipmentSchedule_QtyPicked record that has no HU, because there where we can add our difference
 		I_M_ShipmentSchedule adjustments_shipmentSchedule = null;
 		I_M_ShipmentSchedule_QtyPicked adjustments_alloc = null;
 		for (final I_M_ShipmentSchedule_QtyPicked alloc : allocs)
@@ -162,18 +168,31 @@ public class M_InOutLine
 
 		if (adjustments_alloc != null)
 		{
+			final StockQtyAndUOMQty currentAllocQty = createStockQtyAndUomQtyFor(productId, adjustments_alloc);
+
+			final StockQtyAndUOMQty newAllocQty = StockQtyAndUOMQtys.add(currentAllocQty, qtyPickedToAdd);
+
 			// Case: we found a line where to add the difference
-			adjustments_alloc.setQtyPicked(adjustments_alloc.getQtyPicked().add(qtyPickedToAdd));
+			adjustments_alloc.setQtyPicked(newAllocQty.getStockQty().toBigDecimal());
+			if (newAllocQty.getUOMQtyOpt().isPresent())
+			{
+				adjustments_alloc.setCatch_UOM_ID(newAllocQty.getUOMQtyOpt().get().getUomId().getRepoId());
+				adjustments_alloc.setQtyDeliveredCatch(newAllocQty.getUOMQtyOpt().get().toBigDecimal());
+			}
+			else
+			{
+				adjustments_alloc.setCatch_UOM_ID(0);
+				adjustments_alloc.setQtyDeliveredCatch(null);
+			}
 			save(adjustments_alloc);
 		}
 		else
 		{
 			// Case: there is no line were we can add the difference, so we are creating one now
-			final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(inOutLine.getM_Product()); // we assume MovementQty is in product's stocking UOM
-
 			final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
+
 			final de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked adjustments_allocNew = //
-					shipmentScheduleAllocBL.addQtyPicked(adjustments_shipmentSchedule, Quantity.of(qtyPickedToAdd, uom));
+					shipmentScheduleAllocBL.createNewQtyPickedRecord(adjustments_shipmentSchedule, qtyPickedToAdd);
 
 			adjustments_allocNew.setM_InOutLine(inOutLine);
 			adjustments_allocNew.setProcessed(inOutLine.getM_InOut().isProcessed());
@@ -181,18 +200,29 @@ public class M_InOutLine
 		}
 	}
 
-	private BigDecimal computeQtyPickedSum(final List<I_M_ShipmentSchedule_QtyPicked> allocs)
+	private StockQtyAndUOMQty computeQtyPickedSum(
+			@NonNull final ProductId productId,
+			@Nullable final UomId uomId,
+			@NonNull final List<I_M_ShipmentSchedule_QtyPicked> allocs)
 	{
+		StockQtyAndUOMQty result = StockQtyAndUOMQtys.createZero(productId, uomId);
+
 		// * calculate how much qty was shipped for all shipment schedules (in total)
-		BigDecimal qtyPickedTotal = BigDecimal.ZERO;
 		for (final I_M_ShipmentSchedule_QtyPicked alloc : allocs)
 		{
-			//
-			// Calculate how much was allocated in total
-			final BigDecimal alloc_qtyPicked = alloc.getQtyPicked();
-			qtyPickedTotal = qtyPickedTotal.add(alloc_qtyPicked);
+			final StockQtyAndUOMQty allocQty = createStockQtyAndUomQtyFor(productId, alloc);
+			result = StockQtyAndUOMQtys.add(result, allocQty);
 		}
-		return qtyPickedTotal;
+		return result;
+	}
+
+	private StockQtyAndUOMQty createStockQtyAndUomQtyFor(
+			@NonNull final ProductId productId,
+			@NonNull final I_M_ShipmentSchedule_QtyPicked alloc)
+	{
+		return StockQtyAndUOMQtys.create(
+				alloc.getQtyPicked(), productId,
+				alloc.getQtyDeliveredCatch(), UomId.ofRepoIdOrNull(alloc.getCatch_UOM_ID()));
 	}
 
 }

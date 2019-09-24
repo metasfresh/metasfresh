@@ -57,7 +57,7 @@ public interface IPaymentRow extends IAllocableDocRow
 
 	String PROPERTY_DocumentCurrency = "DocumentCurrency";
 	@ColumnInfo(columnName = PROPERTY_DocumentCurrency, seqNo = 60)
-	String getCurrencyISOCode();
+	String getCurrencyISOCodeAsString();
 	
 	@ColumnInfo(columnName = "OriginalAmt", seqNo = 70)
 	BigDecimal getPayAmt();

@@ -17,7 +17,6 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-
 import lombok.NonNull;
 
 /*
@@ -43,7 +42,7 @@ import lombok.NonNull;
  */
 
 @Callout(I_C_OrderLine.class)
-@Component("de.metas.payment.paymentterm.interceptor.C_OrderLine")
+@Component
 public class C_OrderLine
 {
 	private final PaymentTermService paymentTermService;
@@ -65,21 +64,10 @@ public class C_OrderLine
 
 	private void updatePaymentTermId(@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		final PaymentTermId basePaymentTermId;
-
-		if (orderLineRecord.getC_PaymentTerm_Override_ID() > 0)
-		{
-			basePaymentTermId = PaymentTermId.ofRepoId(orderLineRecord.getC_PaymentTerm_Override_ID());
-		}
-		else
-		{
-			// note: C_Order.C_PaymentTerm_ID is mandatory
-			basePaymentTermId = PaymentTermId.ofRepoId(orderLineRecord.getC_Order().getC_PaymentTerm_ID());
-		}
-
+		final PaymentTermId basePaymentTermId = Services.get(IOrderLineBL.class).getPaymentTermId(orderLineRecord);
 		final Percent paymentDiscount = Percent.of(orderLineRecord.getPaymentDiscount());
 		final PaymentTermId derivedPaymentTermId = paymentTermService.getOrCreateDerivedPaymentTerm(basePaymentTermId, paymentDiscount);
-		orderLineRecord.setC_PaymentTerm_Override_ID(PaymentTermId.getRepoId(derivedPaymentTermId));
+		orderLineRecord.setC_PaymentTerm_Override_ID(PaymentTermId.toRepoId(derivedPaymentTermId));
 	}
 
 	@CalloutMethod(skipIfCopying = true, columnNames = { I_C_OrderLine.COLUMNNAME_C_PaymentTerm_Override_ID, I_C_OrderLine.COLUMNNAME_PaymentDiscount })
@@ -91,13 +79,13 @@ public class C_OrderLine
 	@CalloutMethod(skipIfCopying = true, columnNames = { I_C_OrderLine.COLUMNNAME_C_PaymentTerm_Override_ID })
 	public void resetPaymentDiscount(@NonNull final I_C_OrderLine orderLineRecord, @NonNull final ICalloutField field)
 	{
-		if (orderLineRecord.getC_PaymentTerm_Override_ID() <= 0)
+		final PaymentTermId paymentTermId = PaymentTermId.ofRepoIdOrNull(orderLineRecord.getC_PaymentTerm_Override_ID());
+		if (paymentTermId == null)
 		{
 			orderLineRecord.setPaymentDiscount(null);
 			return;
 		}
 
-		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(orderLineRecord.getC_PaymentTerm_Override_ID());
 		final I_C_PaymentTerm paymentTermRecord = Services.get(IPaymentTermRepository.class).getById(paymentTermId);
 		final BigDecimal paymentDiscount = paymentTermRecord.getDiscount();
 		orderLineRecord.setPaymentDiscount(paymentDiscount);

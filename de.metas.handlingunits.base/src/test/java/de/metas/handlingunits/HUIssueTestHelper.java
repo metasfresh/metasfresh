@@ -154,7 +154,7 @@ public class HUIssueTestHelper extends HUTestHelper
 	protected void setupMasterData()
 	{
 		super.setupMasterData();
-	
+
 		//
 		// Document Types
 		{
@@ -256,12 +256,12 @@ public class HUIssueTestHelper extends HUTestHelper
 
 			createHU_PI_Item_PackingMaterial(huDefIFCO, pmIFCO);
 			pmIFCO.setAllowedPackingWeight(new BigDecimal("100"));
-			pmIFCO.setC_UOM_Weight(uomEach);
+			pmIFCO.setC_UOM_Weight_ID(uomEach.getC_UOM_ID());
 			InterfaceWrapperHelper.save(pmIFCO);
 
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_CountryMadeIn)
 					.setM_HU_PI(huDefIFCO));
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_FragileSticker)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_FragileSticker)
 					.setM_HU_PI(huDefIFCO));
 		}
 
@@ -271,12 +271,12 @@ public class HUIssueTestHelper extends HUTestHelper
 
 			createHU_PI_Item_PackingMaterial(huDefPalet, pmPalet);
 			pmPalet.setAllowedPackingWeight(new BigDecimal("400"));
-			pmPalet.setC_UOM_Weight(uomEach);
+			pmPalet.setC_UOM_Weight_ID(uomEach.getC_UOM_ID());
 			InterfaceWrapperHelper.save(pmPalet);
 
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_CountryMadeIn)
 					.setM_HU_PI(huDefPalet));
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_FragileSticker)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_FragileSticker)
 					.setM_HU_PI(huDefPalet));
 		}
 
@@ -355,7 +355,7 @@ public class HUIssueTestHelper extends HUTestHelper
 		hus1.addAll(createHUs(huContext, huDefPalet, pTomatoProductId, new BigDecimal("30"), uomEach));
 		for (final I_M_HU hu : hus1)
 		{
-			hu.setM_Locator(locator1);
+			hu.setM_Locator_ID(locator1.getM_Locator_ID());
 			InterfaceWrapperHelper.save(hu);
 		}
 
@@ -364,7 +364,7 @@ public class HUIssueTestHelper extends HUTestHelper
 		hus2.addAll(createHUs(huContext, huDefPalet, pTomatoProductId, new BigDecimal("13"), uomEach));
 		for (final I_M_HU hu : hus2)
 		{
-			hu.setM_Locator(locator2);
+			hu.setM_Locator_ID(locator2.getM_Locator_ID());
 			InterfaceWrapperHelper.save(hu);
 		}
 
@@ -373,7 +373,7 @@ public class HUIssueTestHelper extends HUTestHelper
 		hus3.addAll(createHUs(huContext, huDefPalet, pTomatoProductId, new BigDecimal("24"), uomEach));
 		for (final I_M_HU hu : hus3)
 		{
-			hu.setM_Locator(locator3);
+			hu.setM_Locator_ID(locator3.getM_Locator_ID());
 			InterfaceWrapperHelper.save(hu);
 		}
 	}

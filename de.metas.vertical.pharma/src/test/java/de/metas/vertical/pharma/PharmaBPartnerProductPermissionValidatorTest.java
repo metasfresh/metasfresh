@@ -1,15 +1,22 @@
 package de.metas.vertical.pharma;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
-import de.metas.order.OrderLineRepository;
-import de.metas.vertical.pharma.model.I_C_BPartner;
-import de.metas.vertical.pharma.model.I_M_Product;
-import de.metas.vertical.pharma.model.interceptor.C_OrderLine;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.Adempiere;
-import org.compiere.model.*;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Warehouse;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -19,17 +26,19 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.money.CurrencyId;
+import de.metas.order.OrderLineRepository;
+import de.metas.vertical.pharma.model.I_C_BPartner;
+import de.metas.vertical.pharma.model.I_M_Product;
+import de.metas.vertical.pharma.model.interceptor.C_OrderLine;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {
-		//		 needed to register the spring context with the Adempiere main class
+		// needed to register the spring context with the Adempiere main class
 		StartupListener.class, ShutdownListener.class,
 
 		// needed so that the spring context can discover those components. Note that there are other ways too, but this one is very fast
@@ -41,7 +50,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 })
 public class PharmaBPartnerProductPermissionValidatorTest
 {
-	@Rule public ExpectedException thrown = ExpectedException.none();
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
 
 	private C_OrderLine orderLineInterceptor;
 
@@ -54,7 +64,7 @@ public class PharmaBPartnerProductPermissionValidatorTest
 	@Before
 	public void init()
 	{
-		orderLineInterceptor = Adempiere.getBean(C_OrderLine.class);
+		orderLineInterceptor = SpringContextHolder.instance.getBean(C_OrderLine.class);
 	}
 
 	// here starts the CUSTOMER part
@@ -66,9 +76,9 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_BPartner cbPartner = createCBpartner("NonPrescription Product Customer", true, I_C_BPartner.ShipmentPermissionPharma_TypeB, false, null);
 		final I_C_PaymentTerm cPaymentTerm = createCPaymentTerm();
 		final I_C_Order cOrder = createCOrder(true);
-		final I_C_Currency cCurrency = createCCurrency();
+		final CurrencyId currency = createCurrency();
 		final I_C_UOM cUom = createCUom();
-		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
+		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currency, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
@@ -81,9 +91,9 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_BPartner cbPartner = createCBpartner("NonPrescription Product Customer", true, I_C_BPartner.ShipmentPermissionPharma_TypeB, false, null);
 		final I_C_PaymentTerm cPaymentTerm = createCPaymentTerm();
 		final I_C_Order cOrder = createCOrder(true);
-		final I_C_Currency cCurrency = createCCurrency();
+		final CurrencyId currencyId = createCurrency();
 		final I_C_UOM cUom = createCUom();
-		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
+		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		thrown.expect(AdempiereException.class);
 		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoPrescriptionPermission_Sales);
@@ -98,9 +108,9 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_BPartner cbPartner = createCBpartner("Prescription Product Customer", true, I_C_BPartner.ShipmentPermissionPharma_TypeA, false, null);
 		final I_C_PaymentTerm cPaymentTerm = createCPaymentTerm();
 		final I_C_Order cOrder = createCOrder(true);
-		final I_C_Currency cCurrency = createCCurrency();
+		final CurrencyId currencyId = createCurrency();
 		final I_C_UOM cUom = createCUom();
-		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
+		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
@@ -113,9 +123,9 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_BPartner cbPartner = createCBpartner("Prescription Product Customer", true, I_C_BPartner.ShipmentPermissionPharma_TypeA, false, null);
 		final I_C_PaymentTerm cPaymentTerm = createCPaymentTerm();
 		final I_C_Order cOrder = createCOrder(true);
-		final I_C_Currency cCurrency = createCCurrency();
+		final CurrencyId currencyId = createCurrency();
 		final I_C_UOM cUom = createCUom();
-		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
+		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
@@ -128,9 +138,9 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_BPartner cbPartner = createCBpartner("Prescription Product Customer", true, I_C_BPartner.ShipmentPermissionPharma_TypeA, false, null);
 		final I_C_PaymentTerm cPaymentTerm = createCPaymentTerm();
 		final I_C_Order cOrder = createCOrder(true);
-		final I_C_Currency cCurrency = createCCurrency();
+		final CurrencyId currencyId = createCurrency();
 		final I_C_UOM cUom = createCUom();
-		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
+		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		thrown.expect(AdempiereException.class);
 		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Sales);
@@ -145,9 +155,9 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_BPartner cbPartner = createCBpartner("NonPrescription Product Customer", true, I_C_BPartner.ShipmentPermissionPharma_TypeB, false, null);
 		final I_C_PaymentTerm cPaymentTerm = createCPaymentTerm();
 		final I_C_Order cOrder = createCOrder(true);
-		final I_C_Currency cCurrency = createCCurrency();
+		final CurrencyId currencyId = createCurrency();
 		final I_C_UOM cUom = createCUom();
-		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
+		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		thrown.expect(AdempiereException.class);
 		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Sales);
@@ -162,9 +172,9 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_BPartner cbPartner = createCBpartner("Narcotic Product Customer", true, I_C_BPartner.ShipmentPermissionPharma_TypeC, false, null);
 		final I_C_PaymentTerm cPaymentTerm = createCPaymentTerm();
 		final I_C_Order cOrder = createCOrder(true);
-		final I_C_Currency cCurrency = createCCurrency();
+		final CurrencyId currencyId = createCurrency();
 		final I_C_UOM cUom = createCUom();
-		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
+		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
@@ -179,9 +189,9 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_BPartner cbPartner = createCBpartner("NonPrescription Product Vendor", false, null, true, I_C_BPartner.ReceiptPermissionPharma_TypeB);
 		final I_C_PaymentTerm cPaymentTerm = createCPaymentTerm();
 		final I_C_Order cOrder = createCOrder(false);
-		final I_C_Currency cCurrency = createCCurrency();
+		final CurrencyId currencyId = createCurrency();
 		final I_C_UOM cUom = createCUom();
-		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
+		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
@@ -194,9 +204,9 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_BPartner cbPartner = createCBpartner("NonPrescription Product Vendor", false, null, true, I_C_BPartner.ReceiptPermissionPharma_TypeB);
 		final I_C_PaymentTerm cPaymentTerm = createCPaymentTerm();
 		final I_C_Order cOrder = createCOrder(false);
-		final I_C_Currency cCurrency = createCCurrency();
+		final CurrencyId currencyId = createCurrency();
 		final I_C_UOM cUom = createCUom();
-		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
+		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		thrown.expect(AdempiereException.class);
 		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoPrescriptionPermission_Purchase);
@@ -211,9 +221,9 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_BPartner cbPartner = createCBpartner("Prescription Product Vendor", false, null, true, I_C_BPartner.ReceiptPermissionPharma_TypeA);
 		final I_C_PaymentTerm cPaymentTerm = createCPaymentTerm();
 		final I_C_Order cOrder = createCOrder(false);
-		final I_C_Currency cCurrency = createCCurrency();
+		final CurrencyId currencyId = createCurrency();
 		final I_C_UOM cUom = createCUom();
-		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
+		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
@@ -226,9 +236,9 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_BPartner cbPartner = createCBpartner("Prescription Product Vendor", false, null, true, I_C_BPartner.ReceiptPermissionPharma_TypeA);
 		final I_C_PaymentTerm cPaymentTerm = createCPaymentTerm();
 		final I_C_Order cOrder = createCOrder(false);
-		final I_C_Currency cCurrency = createCCurrency();
+		final CurrencyId currencyId = createCurrency();
 		final I_C_UOM cUom = createCUom();
-		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
+		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
@@ -241,15 +251,14 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_BPartner cbPartner = createCBpartner("Prescription Product Vendor", false, null, true, I_C_BPartner.ReceiptPermissionPharma_TypeA);
 		final I_C_PaymentTerm cPaymentTerm = createCPaymentTerm();
 		final I_C_Order cOrder = createCOrder(false);
-		final I_C_Currency cCurrency = createCCurrency();
+		final CurrencyId currencyId = createCurrency();
 		final I_C_UOM cUom = createCUom();
-		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
+		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		thrown.expect(AdempiereException.class);
 		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Purchase);
 		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
-
 
 	@Test
 	public void assertTypeBbPartnerCanNotSellRxNarcoticProduct()
@@ -259,9 +268,9 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_BPartner cbPartner = createCBpartner("NonPrescription Product Vendor", false, null, true, I_C_BPartner.ReceiptPermissionPharma_TypeB);
 		final I_C_PaymentTerm cPaymentTerm = createCPaymentTerm();
 		final I_C_Order cOrder = createCOrder(false);
-		final I_C_Currency cCurrency = createCCurrency();
+		final CurrencyId currencyId = createCurrency();
 		final I_C_UOM cUom = createCUom();
-		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
+		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		thrown.expect(AdempiereException.class);
 		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Purchase);
@@ -276,9 +285,9 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_BPartner cbPartner = createCBpartner("Narcotic Product Vendor", false, null, true, I_C_BPartner.ReceiptPermissionPharma_TypeC);
 		final I_C_PaymentTerm cPaymentTerm = createCPaymentTerm();
 		final I_C_Order cOrder = createCOrder(false);
-		final I_C_Currency cCurrency = createCCurrency();
+		final CurrencyId currencyId = createCurrency();
 		final I_C_UOM cUom = createCUom();
-		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
+		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
@@ -288,19 +297,28 @@ public class PharmaBPartnerProductPermissionValidatorTest
 	 * It's really bad to keep creating these for all tests in all the different projects.
 	 */
 
-	private I_C_OrderLine createCOrderLine(final I_M_Product mProduct, final I_M_Warehouse mWarehouse, final I_C_BPartner cbPartner, final I_C_PaymentTerm cPaymentTerm, final I_C_Order cOrder, final I_C_Currency cCurrency, final I_C_UOM cUom, final BigDecimal priceActual, final BigDecimal qtyEntered)
+	private I_C_OrderLine createCOrderLine(
+			final I_M_Product mProduct, 
+			final I_M_Warehouse mWarehouse, 
+			final I_C_BPartner cbPartner, 
+			final I_C_PaymentTerm cPaymentTerm, 
+			final I_C_Order cOrder, 
+			final CurrencyId currencyId, 
+			final I_C_UOM cUom, 
+			final BigDecimal priceActual, 
+			final BigDecimal qtyEntered)
 	{
 		final I_C_OrderLine cOrderLine = newInstance(I_C_OrderLine.class);
-		cOrderLine.setM_Product(mProduct);
-		cOrderLine.setM_Warehouse(mWarehouse);
-		cOrderLine.setC_BPartner(cbPartner);
-		cOrderLine.setC_PaymentTerm_Override(cPaymentTerm);
+		cOrderLine.setM_Product_ID(mProduct.getM_Product_ID());
+		cOrderLine.setM_Warehouse_ID(mWarehouse.getM_Warehouse_ID());
+		cOrderLine.setC_BPartner_ID(cbPartner.getC_BPartner_ID());
+		cOrderLine.setC_PaymentTerm_Override_ID(cPaymentTerm.getC_PaymentTerm_ID());
 		cOrderLine.setDatePromised(Timestamp.valueOf(LocalDateTime.now().minusHours(1)));
-		cOrderLine.setC_Order(cOrder);
-		cOrderLine.setC_Currency(cCurrency);
+		cOrderLine.setC_Order_ID(cOrder.getC_Order_ID());
+		cOrderLine.setC_Currency_ID(currencyId.getRepoId());
 		cOrderLine.setPriceActual(priceActual);
 		cOrderLine.setQtyEntered(qtyEntered);
-		cOrderLine.setC_UOM(cUom);
+		cOrderLine.setC_UOM_ID(cUom.getC_UOM_ID());
 		save(cOrderLine);
 		return cOrderLine;
 	}
@@ -312,13 +330,9 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		return cUom;
 	}
 
-	private I_C_Currency createCCurrency()
+	private CurrencyId createCurrency()
 	{
-		final I_C_Currency cCurrency = newInstance(I_C_Currency.class);
-		cCurrency.setISO_Code("EUR");
-		cCurrency.setStdPrecision(2);
-		save(cCurrency);
-		return cCurrency;
+		return PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 	}
 
 	private I_C_Order createCOrder(final boolean isSOTrx)

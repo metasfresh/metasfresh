@@ -1,13 +1,11 @@
 package de.metas.contracts;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.Util;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.lang.SOTrx;
@@ -17,7 +15,10 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -64,13 +65,13 @@ public class FlatrateTermPricing
 	I_C_Flatrate_Term term;
 
 	@NonNull
-	I_M_Product termRelatedProduct;
+	ProductId termRelatedProductId;
 
 	@NonNull
 	BigDecimal qty;
 
 	@NonNull
-	Timestamp priceDate;
+	LocalDate priceDate;
 
 	public IPricingResult computeOrThrowEx()
 	{
@@ -82,8 +83,8 @@ public class FlatrateTermPricing
 
 	private I_M_PriceList retrievePriceListForTerm()
 	{
-		final PricingSystemId pricingSystemIdToUse = PricingSystemId.ofRepoIdOrNull(Util.firstGreaterThanZero(term.getM_PricingSystem_ID(), term.getC_Flatrate_Conditions().getM_PricingSystem_ID()));
-		final I_C_BPartner_Location bpLocationToUse = Util.coalesceSuppliers(term::getDropShip_Location, term::getBill_Location);
+		final PricingSystemId pricingSystemIdToUse = PricingSystemId.ofRepoIdOrNull(CoalesceUtil.firstGreaterThanZero(term.getM_PricingSystem_ID(), term.getC_Flatrate_Conditions().getM_PricingSystem_ID()));
+		final I_C_BPartner_Location bpLocationToUse = CoalesceUtil.coalesceSuppliers(term::getDropShip_Location, term::getBill_Location);
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final I_M_PriceList priceList = priceListDAO.retrievePriceListByPricingSyst(pricingSystemIdToUse, bpLocationToUse, SOTrx.SALES);
@@ -103,9 +104,9 @@ public class FlatrateTermPricing
 
 		final boolean isSOTrx = true;
 		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(
-				termRelatedProduct.getM_Product_ID(),
+				termRelatedProductId.getRepoId(),
 				term.getBill_BPartner_ID(),
-				termRelatedProduct.getC_UOM_ID(),
+				Services.get(IProductBL.class).getStockUOMId(termRelatedProductId).getRepoId(),
 				qty,
 				isSOTrx);
 
@@ -126,6 +127,7 @@ public class FlatrateTermPricing
 		}
 
 		final String priceListName = Services.get(IPriceListDAO.class).getPriceListName(result.getPriceListId());
-		throw new AdempiereException(MSG_FLATRATEBL_PRICE_MISSING_2P, new Object[] { priceListName, termRelatedProduct.getValue() });
+		final String productName = Services.get(IProductBL.class).getProductValueAndName(termRelatedProductId);
+		throw new AdempiereException(MSG_FLATRATEBL_PRICE_MISSING_2P, new Object[] { priceListName, productName });
 	}
 }

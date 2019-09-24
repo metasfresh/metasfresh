@@ -7,12 +7,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
@@ -33,6 +33,8 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.money.CurrencyId;
+import de.metas.product.ProductAndCategoryId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -181,12 +183,19 @@ public class FlatrateTermDataFactory
 	@Value
 	public static class ProductAndPricingSystem
 	{
-		final private I_M_Product product;
-		final private I_M_PricingSystem pricingSystem;
-		final private I_M_PriceList priceList;
-		final private I_M_PriceList_Version priceListVersion;
-		final private I_C_TaxCategory taxCategory;
-		final private I_C_Tax tax;
+		I_M_Product product;
+		I_M_PricingSystem pricingSystem;
+		I_M_PriceList priceList;
+		I_M_PriceList_Version priceListVersion;
+		I_C_TaxCategory taxCategory;
+		I_C_Tax tax;
+
+		public ProductAndCategoryId getProductAndCategoryId()
+		{
+			return product != null
+					? ProductAndCategoryId.of(product.getM_Product_ID(), product.getM_Product_Category_ID())
+					: null;
+		}
 	}
 
 	@Builder(builderMethodName = "productAndPricingNew")
@@ -194,7 +203,7 @@ public class FlatrateTermDataFactory
 			final String productValue,
 			final String productName,
 			@NonNull final I_C_Country country,
-			@NonNull final I_C_Currency currency,
+			@NonNull final CurrencyId currencyId,
 			@NonNull final Timestamp validFrom,
 			final boolean isTaxInclcuded)
 	{
@@ -214,7 +223,7 @@ public class FlatrateTermDataFactory
 		final I_M_PricingSystem pricingSystem = createPricingSystem();
 
 		final I_M_PriceList priceList = priceListNew()
-				.currency(currency)
+				.currencyId(currencyId)
 				.country(country)
 				.isTaxInclcuded(isTaxInclcuded)
 				.pricingSystem(pricingSystem)
@@ -276,7 +285,7 @@ public class FlatrateTermDataFactory
 		product.setValue(value);
 		product.setName(name);
 		product.setM_Product_Category_ID(10);
-		product.setC_UOM(uomRecord);
+		product.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		product.setProductType(X_M_Product.PRODUCTTYPE_Item);
 		save(product);
 		return product;
@@ -295,16 +304,16 @@ public class FlatrateTermDataFactory
 	public static I_M_PriceList createPriceList(
 			@NonNull final I_M_PricingSystem pricingSystem,
 			@NonNull final I_C_Country country,
-			@NonNull final I_C_Currency currency,
+			@NonNull final CurrencyId currencyId,
 			final boolean isTaxInclcuded)
 	{
 		final I_M_PriceList priceList = newInstance(I_M_PriceList.class);
 		priceList.setName(valuePricingSystem);
-		priceList.setM_PricingSystem(pricingSystem);
+		priceList.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
 		priceList.setIsSOPriceList(true);
 		priceList.setIsTaxIncluded(isTaxInclcuded);
-		priceList.setC_Country(country);
-		priceList.setC_Currency(currency);
+		priceList.setC_Country_ID(country.getC_Country_ID());
+		priceList.setC_Currency_ID(currencyId.getRepoId());
 		save(priceList);
 		return priceList;
 	}
@@ -321,12 +330,22 @@ public class FlatrateTermDataFactory
 	}
 
 	@Builder(builderMethodName = "productPriceNew")
-	public static I_M_ProductPrice createProductPrice(@NonNull final I_M_Product product, @NonNull final I_C_TaxCategory taxCategory, @NonNull final I_M_PriceList_Version priceListVersion)
+	public static I_M_ProductPrice createProductPrice(
+			@NonNull final I_M_Product product,
+			@NonNull final I_C_TaxCategory taxCategory,
+			@NonNull final I_M_PriceList_Version priceListVersion)
 	{
+		final int uomId = product.getC_UOM_ID();
+		if (uomId <= 0)
+		{
+			throw new AdempiereException("Expected to have the UOM set for product, else the test will fail some time later: " + product);
+		}
+
 		final I_M_ProductPrice productPrice = newInstance(I_M_ProductPrice.class);
-		productPrice.setM_Product(product);
-		productPrice.setC_TaxCategory(taxCategory);
-		productPrice.setM_PriceList_Version(priceListVersion);
+		productPrice.setM_Product_ID(product.getM_Product_ID());
+		productPrice.setC_UOM_ID(uomId);
+		productPrice.setC_TaxCategory_ID(taxCategory.getC_TaxCategory_ID());
+		productPrice.setM_PriceList_Version_ID(priceListVersion.getM_PriceList_Version_ID());
 		productPrice.setPriceLimit(BigDecimal.valueOf(2));
 		productPrice.setPriceList(BigDecimal.valueOf(2));
 		productPrice.setPriceStd(BigDecimal.valueOf(2));

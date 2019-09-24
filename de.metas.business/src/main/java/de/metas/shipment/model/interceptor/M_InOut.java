@@ -38,7 +38,7 @@ import lombok.NonNull;
  */
 
 @Interceptor(I_M_InOut.class)
-@Component("de.metas.shipment.model.interceptor.M_InOut")
+@Component
 public class M_InOut
 {
 	private static final String ERR_ShipmentDeclaration = "de.metas.shipment.model.interceptor.M_InOut.ERR_ShipmentDeclaration";

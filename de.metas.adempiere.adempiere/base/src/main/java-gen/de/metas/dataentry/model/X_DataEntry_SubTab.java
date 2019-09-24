@@ -14,7 +14,7 @@ public class X_DataEntry_SubTab extends org.compiere.model.PO implements I_DataE
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -792052436L;
+	private static final long serialVersionUID = -64994770L;
 
     /** Standard Constructor */
     public X_DataEntry_SubTab (Properties ctx, int DataEntry_SubTab_ID, String trxName)
@@ -25,7 +25,7 @@ public class X_DataEntry_SubTab extends org.compiere.model.PO implements I_DataE
 			setDataEntry_SubTab_ID (0);
 			setDataEntry_Tab_ID (0);
 			setName (null);
-			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM DataEntry_SubTab WHERE DataEntry_Group_ID=@DataEntry_Group_ID/0@
+			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM DataEntry_SubTab WHERE DataEntry_Tab_ID=@DataEntry_Tab_ID/0@
 			setTabName (null);
         } */
     }

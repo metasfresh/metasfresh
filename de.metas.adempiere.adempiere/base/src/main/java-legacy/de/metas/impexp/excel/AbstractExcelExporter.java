@@ -13,6 +13,8 @@
  *****************************************************************************/
 package de.metas.impexp.excel;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -55,6 +57,8 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -135,6 +139,8 @@ public abstract class AbstractExcelExporter
 
 	//
 	private final ExcelFormat excelFormat;
+
+	@Getter(value = AccessLevel.PROTECTED) // allow subclases to use our config
 	private final ExcelExportConstants constants;
 	//
 	private final Workbook workbook;
@@ -159,8 +165,8 @@ public abstract class AbstractExcelExporter
 			@Nullable final ExcelFormat excelFormat,
 			@Nullable final ExcelExportConstants constants)
 	{
-		this.excelFormat = excelFormat != null ? excelFormat : ExcelFormats.getDefaultFormat();
-		this.constants = constants != null ? constants : ExcelExportConstants.getFromSysConfig();
+		this.excelFormat = coalesce(excelFormat, ExcelFormats.getDefaultFormat());
+		this.constants = ExcelExportConstants.givenOrDefault(constants);
 
 		workbook = this.excelFormat.createWorkbook(this.constants.isUseStreamingWorkbookImplementation());
 		dataFormat = workbook.createDataFormat();
@@ -377,7 +383,8 @@ public abstract class AbstractExcelExporter
 		if (DisplayType.isDate(displayType))
 		{
 			final DataFormat dataFormat = getDataFormat();
-			style.setDataFormat(dataFormat.getFormat("DD.MM.YYYY"));
+			style.setDataFormat(dataFormat.getFormat(this.getLanguage().getDateFormat().toPattern()));
+
 		}
 		else if (DisplayType.isNumeric(displayType))
 		{

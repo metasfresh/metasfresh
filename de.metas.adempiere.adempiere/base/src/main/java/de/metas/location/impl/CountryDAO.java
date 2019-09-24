@@ -18,7 +18,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Language;
@@ -38,11 +37,13 @@ import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.location.CountryCustomInfo;
 import de.metas.location.CountryId;
 import de.metas.location.CountrySequences;
 import de.metas.location.ICountryDAO;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -290,7 +291,7 @@ public class CountryDAO implements ICountryDAO
 		final I_C_Country country = getIndexedCountries().getByIdOrNull(countryId);
 		if (country == null)
 		{
-			return ITranslatableString.constant("<" + countryId + ">");
+			return TranslatableStrings.constant("<" + countryId + ">");
 		}
 
 		return InterfaceWrapperHelper.getModelTranslationMap(country)

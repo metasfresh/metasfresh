@@ -468,7 +468,7 @@ public class MTree_Base extends X_AD_Tree
 	 */
 	public void updateNodeChildren(final MTreeNode parent, final List<MTreeNode> children)
 	{
-		Services.get(ITrxManager.class).run(new TrxRunnable()
+		Services.get(ITrxManager.class).runInNewTrx(new TrxRunnable()
 		{
 			@Override
 			public void run(String trxName)

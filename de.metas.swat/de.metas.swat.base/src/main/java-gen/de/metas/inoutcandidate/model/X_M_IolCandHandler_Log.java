@@ -14,7 +14,7 @@ public class X_M_IolCandHandler_Log extends org.compiere.model.PO implements I_M
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1003008725L;
+	private static final long serialVersionUID = -1174879021L;
 
     /** Standard Constructor */
     public X_M_IolCandHandler_Log (Properties ctx, int M_IolCandHandler_Log_ID, String trxName)
@@ -42,18 +42,6 @@ public class X_M_IolCandHandler_Log extends org.compiere.model.PO implements I_M
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
-	}
-
-	@Override
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
-	}
-
 	/** Set DB-Tabelle.
 		@param AD_Table_ID 
 		Database Table information
@@ -80,7 +68,7 @@ public class X_M_IolCandHandler_Log extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public de.metas.inoutcandidate.model.I_M_IolCandHandler getM_IolCandHandler() throws RuntimeException
+	public de.metas.inoutcandidate.model.I_M_IolCandHandler getM_IolCandHandler()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_IolCandHandler_ID, de.metas.inoutcandidate.model.I_M_IolCandHandler.class);
 	}

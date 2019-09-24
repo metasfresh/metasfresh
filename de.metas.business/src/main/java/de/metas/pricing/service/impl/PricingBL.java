@@ -26,13 +26,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
-import de.metas.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.base.Predicates;
@@ -42,6 +42,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
@@ -70,6 +71,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -107,7 +109,7 @@ public class PricingBL implements IPricingBL
 			pricingCtx.setQty(BigDecimal.ONE);
 		}
 		pricingCtx.setSOTrx(SOTrx.ofBoolean(isSOTrx));
-		pricingCtx.setC_UOM_ID(C_UOM_ID);
+		pricingCtx.setUomId(UomId.ofRepoIdOrNull(C_UOM_ID));
 
 		return pricingCtx;
 	}
@@ -166,10 +168,10 @@ public class PricingBL implements IPricingBL
 	{
 		// Direct
 		{
-			final Boolean isManualPrice = pricingCtx.isManualPrice();
-			if (isManualPrice != null)
+			final OptionalBoolean manualPriceEnabled = pricingCtx.getManualPriceEnabled();
+			if (manualPriceEnabled.isPresent())
 			{
-				return isManualPrice;
+				return manualPriceEnabled.isTrue();
 			}
 		}
 
@@ -287,7 +289,7 @@ public class PricingBL implements IPricingBL
 			final I_M_PriceList_Version priceListVersion = pricingCtx.getM_PriceList_Version();
 
 			logger.info("Setting to context: PriceDate={} from M_PriceList_Version={}", priceListVersion.getValidFrom(), priceListVersion);
-			pricingCtx.setPriceDate(priceListVersion.getValidFrom());
+			pricingCtx.setPriceDate(TimeUtil.asLocalDate(priceListVersion.getValidFrom()));
 		}
 	}
 
@@ -313,11 +315,12 @@ public class PricingBL implements IPricingBL
 			return;
 		}
 
-		if (pricingCtx.getC_UOM_ID() > 0 && pricingCtx.getC_UOM_ID() != result.getPrice_UOM_ID())
+		if (pricingCtx.getUomId() != null
+				&& !UomId.equals(pricingCtx.getUomId(), result.getPriceUomId()))
 		{
 			final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
-			final I_C_UOM uomTo = uomsRepo.getById(pricingCtx.getC_UOM_ID());
-			final I_C_UOM uomFrom = uomsRepo.getById(result.getPrice_UOM_ID());
+			final I_C_UOM uomTo = uomsRepo.getById(pricingCtx.getUomId());
+			final I_C_UOM uomFrom = uomsRepo.getById(result.getPriceUomId());
 
 			final BigDecimal factor = Services.get(IUOMConversionBL.class).convertQty(
 					result.getProductId(),
@@ -328,7 +331,7 @@ public class PricingBL implements IPricingBL
 			result.setPriceLimit(factor.multiply(result.getPriceLimit()));
 			result.setPriceList(factor.multiply(result.getPriceList()));
 			result.setPriceStd(factor.multiply(result.getPriceStd()));
-			result.setPrice_UOM_ID(pricingCtx.getC_UOM_ID());
+			result.setPriceUomId(pricingCtx.getUomId());
 		}
 	}
 
@@ -352,17 +355,17 @@ public class PricingBL implements IPricingBL
 			final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(plv, productId);
 			if (productPrice == null)
 			{
-				final UomId uomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+				final UomId uomId = Services.get(IProductBL.class).getStockUOMId(productId);
 				result.setPriceUomId(uomId);
 			}
 			else
 			{
-				result.setPrice_UOM_ID(productPrice.getC_UOM_ID());
+				result.setPriceUomId(UomId.ofRepoId(productPrice.getC_UOM_ID()));
 			}
 		}
 		else
 		{
-			final UomId uomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+			final UomId uomId = Services.get(IProductBL.class).getStockUOMId(productId);
 			result.setPriceUomId(uomId);
 		}
 	}
@@ -372,16 +375,17 @@ public class PricingBL implements IPricingBL
 	{
 		final PricingResult result = PricingResult.builder()
 				.priceDate(pricingCtx.getPriceDate())
+				//
+				.pricingSystemId(pricingCtx.getPricingSystemId())
+				.priceListId(pricingCtx.getPriceListId())
+				.priceListVersionId(pricingCtx.getPriceListVersionId())
+				.currencyId(pricingCtx.getCurrencyId())
+				//
+				.productId(pricingCtx.getProductId())
+				//
+				.disallowDiscount(pricingCtx.isDisallowDiscount())
+				//
 				.build();
-
-		result.setPricingSystemId(pricingCtx.getPricingSystemId());
-		result.setPriceListId(pricingCtx.getPriceListId());
-		result.setPriceListVersionId(pricingCtx.getPriceListVersionId());
-		result.setProductId(pricingCtx.getProductId());
-		result.setCurrencyId(pricingCtx.getCurrencyId());
-		result.setDisallowDiscount(pricingCtx.isDisallowDiscount());
-
-		result.setCalculated(false);
 
 		setProductInfo(pricingCtx, result);
 
@@ -414,7 +418,7 @@ public class PricingBL implements IPricingBL
 		}
 	}
 
-	private final CurrencyPrecision getPricePrecision(@NonNull final PriceListId priceListId)
+	private CurrencyPrecision getPricePrecision(@NonNull final PriceListId priceListId)
 	{
 		return Services.get(IPriceListBL.class).getPricePrecision(priceListId);
 	}

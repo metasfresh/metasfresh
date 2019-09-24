@@ -108,7 +108,7 @@ public abstract class AbstractHUDocumentLine implements IHUDocumentLine
 	@Override
 	public BigDecimal getQtyToAllocate()
 	{
-		return storage.getQty().getAsBigDecimal();
+		return storage.getQty().toBigDecimal();
 	}
 
 	@Override

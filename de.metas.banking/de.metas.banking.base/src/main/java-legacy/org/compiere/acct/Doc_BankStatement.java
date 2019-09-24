@@ -20,11 +20,9 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.service.OrgId;
 import org.compiere.acct.Fact.FactLineBuilder;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.MAccount;
-import org.compiere.util.Util;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
@@ -35,8 +33,10 @@ import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 
 /**
  * Post Bank Statement Documents.
@@ -401,7 +401,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 						.setAmtSourceDrOrCr(lineRef.getTrxAmt().negate())
 						.setCurrencyId(CurrencyId.ofRepoId(lineRef.getC_Currency_ID()))
 						.orgId(bankOrgId.isRegular() ? bankOrgId : line.getPaymentOrgId(lineRef.getC_Payment())) // bank org, payment org
-						.bpartnerIdIfNotNull(Util.coalesce(lineRefBPartnerId, bpartnerId)) // if the lineref has a C_BPartner, then use it
+						.bpartnerIdIfNotNull(CoalesceUtil.coalesce(lineRefBPartnerId, bpartnerId)) // if the lineref has a C_BPartner, then use it
 						.buildAndAdd();
 			}
 		}

@@ -5,10 +5,14 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.slf4j.Logger;
 
+import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
@@ -71,11 +75,12 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		result.setProductCategoryId(productCategoryId);
 		result.setPriceEditable(productPrice.isPriceEditable());
 		result.setDiscountEditable(productPrice.isDiscountEditable());
-		result.setEnforcePriceLimit(priceList.isEnforcePriceLimit());
+		result.setEnforcePriceLimit(extractEnforcePriceLimit(priceList));
 		result.setTaxIncluded(priceList.isTaxIncluded());
 		result.setTaxCategoryId(TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID()));
 		result.setPriceListVersionId(resultPriceListVersionId);
 		result.setPriceUomId(getProductPriceUomId(productPrice)); // 06942 : use product price uom all the time
+		result.setInvoicableQtyBasedOn(InvoicableQtyBasedOn.fromRecordString(productPrice.getInvoicableQtyBasedOn()));
 		result.setCalculated(true);
 
 		//
@@ -86,6 +91,19 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 				.priceListVersion(resultPriceListVersion)
 				.calculate()
 				.ifPresent(bomPrices -> updatePricingResultFromBOMPrices(result, bomPrices));
+	}
+
+	private BooleanWithReason extractEnforcePriceLimit(final I_M_PriceList priceList)
+	{
+		final ITranslatableString reason = TranslatableStrings.builder()
+				.appendADElement("M_PriceList_ID")
+				.append(": ")
+				.append(priceList.getName())
+				.build();
+
+		return priceList.isEnforcePriceLimit()
+				? BooleanWithReason.trueBecause(reason)
+				: BooleanWithReason.falseBecause(reason);
 	}
 
 	private I_M_ProductPrice getProductPriceOrNull(final ProductId productId, final I_M_PriceList_Version ctxPriceListVersion)
@@ -134,7 +152,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		}
 
 		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
-		return productsService.getStockingUOMId(productId);
+		return productsService.getStockUOMId(productId);
 	}
 
 	private static void updatePricingResultFromBOMPrices(final IPricingResult to, final BOMPrices from)

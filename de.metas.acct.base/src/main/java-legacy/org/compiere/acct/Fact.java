@@ -26,7 +26,6 @@ import java.util.function.Consumer;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.OrgId;
 import org.compiere.acct.FactTrxLines.FactTrxLinesType;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.MAccount;
@@ -46,6 +45,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -75,7 +75,7 @@ public final class Fact
 			@NonNull final AcctSchema acctSchema,
 			@NonNull final PostingType postingType)
 	{
-		m_doc = document;
+		this.m_doc = document;
 		this.acctSchema = acctSchema;
 		this.postingType = postingType;
 	}
@@ -108,7 +108,7 @@ public final class Fact
 	/**
 	 * Dispose
 	 */
-	public final void dispose()
+	public void dispose()
 	{
 		m_lines.clear();
 		m_lines = null;
@@ -145,7 +145,7 @@ public final class Fact
 		return createLine(docLine, account, currencyId, debitAmt, creditAmt);
 	}
 
-	public final FactLineBuilder createLine()
+	public FactLineBuilder createLine()
 	{
 		return new FactLineBuilder(this);
 	}
@@ -190,7 +190,7 @@ public final class Fact
 	 *
 	 * @param line fact line
 	 */
-	private final void add(final FactLine line)
+	private void add(final FactLine line)
 	{
 		Check.assumeNotNull(line, "line not null");
 		m_lines.add(line);
@@ -240,12 +240,12 @@ public final class Fact
 	 *
 	 * @return AcctSchema; never returns null
 	 */
-	public final AcctSchema getAcctSchema()
+	public AcctSchema getAcctSchema()
 	{
 		return acctSchema;
 	}	// getAcctSchema
 
-	public final AcctSchemaId getAcctSchemaId()
+	public AcctSchemaId getAcctSchemaId()
 	{
 		return getAcctSchema().getId();
 	}
@@ -255,7 +255,7 @@ public final class Fact
 		return getAcctSchema().getSchemaElements();
 	}
 
-	public final PostingType getPostingType()
+	public PostingType getPostingType()
 	{
 		return postingType;
 	}
@@ -737,7 +737,7 @@ public final class Fact
 	 * @param trxName transaction
 	 * @return true if all lines were saved
 	 */
-	public final void save()
+	public void save()
 	{
 		factTrxLinesStrategy
 				.createFactTrxLines(m_lines)
@@ -940,7 +940,7 @@ public final class Fact
 			return fl;
 		}
 
-		private final FactLine build()
+		private FactLine build()
 		{
 			markAsBuilt();
 
@@ -1061,12 +1061,12 @@ public final class Fact
 			return line;
 		}
 
-		private final void assertNotBuild()
+		private void assertNotBuild()
 		{
 			Check.assume(!built, "not already built");
 		}
 
-		private final void markAsBuilt()
+		private void markAsBuilt()
 		{
 			assertNotBuild();
 			built = true;
@@ -1085,47 +1085,47 @@ public final class Fact
 			return this;
 		}
 
-		private final MAccount getAccount()
+		private MAccount getAccount()
 		{
 			// TODO: check if we can enforce it all the time
 			// Check.assumeNotNull(account, "account not null for {}", this);
 			return account;
 		}
 
-		private final Doc<?> getDoc()
+		private Doc<?> getDoc()
 		{
 			return fact.m_doc;
 		}
 
-		public final FactLineBuilder setDocLine(DocLine<?> docLine)
+		public FactLineBuilder setDocLine(DocLine<?> docLine)
 		{
 			assertNotBuild();
 			this.docLine = docLine;
 			return this;
 		}
 
-		private final DocLine<?> getDocLine()
+		private DocLine<?> getDocLine()
 		{
 			return docLine;
 		}
 
-		public final FactLineBuilder setSubLine_ID(final int subLineId)
+		public FactLineBuilder setSubLine_ID(final int subLineId)
 		{
 			this.subLineId = subLineId;
 			return this;
 		}
 
-		private final Integer getSubLine_ID()
+		private Integer getSubLine_ID()
 		{
 			return subLineId;
 		}
 
-		private final AcctSchema getAcctSchema()
+		private AcctSchema getAcctSchema()
 		{
 			return fact.getAcctSchema();
 		}
 
-		private final PostingType getPostingType()
+		private PostingType getPostingType()
 		{
 			return fact.getPostingType();
 		}
@@ -1140,12 +1140,12 @@ public final class Fact
 		public FactLineBuilder setQty(final Quantity qty)
 		{
 			assertNotBuild();
-			this.qty = qty.getAsBigDecimal();
+			this.qty = qty.toBigDecimal();
 			this.uomId = qty.getUOMId();
 			return this;
 		}
 
-		private final BigDecimal getQty()
+		private BigDecimal getQty()
 		{
 			return qty;
 		}
@@ -1187,7 +1187,7 @@ public final class Fact
 			return this;
 		}
 
-		private final CurrencyId getCurrencyId()
+		private CurrencyId getCurrencyId()
 		{
 			return currencyId;
 		}
@@ -1199,17 +1199,17 @@ public final class Fact
 			return this;
 		}
 
-		private final CurrencyConversionContext getCurrencyConversionCtx()
+		private CurrencyConversionContext getCurrencyConversionCtx()
 		{
 			return currencyConversionCtx;
 		}
 
-		private final BigDecimal getAmtSourceDr()
+		private BigDecimal getAmtSourceDr()
 		{
 			return amtSourceDr;
 		}
 
-		private final BigDecimal getAmtSourceCr()
+		private BigDecimal getAmtSourceCr()
 		{
 			return amtSourceCr;
 		}

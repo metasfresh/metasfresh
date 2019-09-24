@@ -15,7 +15,7 @@ public class X_M_HU_PI_Item extends org.compiere.model.PO implements I_M_HU_PI_I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -825836056L;
+	private static final long serialVersionUID = -573678180L;
 
     /** Standard Constructor */
     public X_M_HU_PI_Item (Properties ctx, int M_HU_PI_Item_ID, String trxName)
@@ -44,18 +44,6 @@ public class X_M_HU_PI_Item extends org.compiere.model.PO implements I_M_HU_PI_I
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
 		Bezeichnet einen Geschäftspartner
@@ -82,7 +70,7 @@ public class X_M_HU_PI_Item extends org.compiere.model.PO implements I_M_HU_PI_I
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI getIncluded_HU_PI() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_PI getIncluded_HU_PI()
 	{
 		return get_ValueAsPO(COLUMNNAME_Included_HU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class);
 	}
@@ -167,7 +155,7 @@ public class X_M_HU_PI_Item extends org.compiere.model.PO implements I_M_HU_PI_I
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_PackingMaterial getM_HU_PackingMaterial() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_PackingMaterial getM_HU_PackingMaterial()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_PackingMaterial_ID, de.metas.handlingunits.model.I_M_HU_PackingMaterial.class);
 	}
@@ -223,7 +211,7 @@ public class X_M_HU_PI_Item extends org.compiere.model.PO implements I_M_HU_PI_I
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI_Version getM_HU_PI_Version() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_PI_Version getM_HU_PI_Version()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Version_ID, de.metas.handlingunits.model.I_M_HU_PI_Version.class);
 	}

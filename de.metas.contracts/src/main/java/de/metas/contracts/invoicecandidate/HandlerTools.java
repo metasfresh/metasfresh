@@ -10,7 +10,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_OrderLine;
@@ -21,6 +20,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -141,8 +141,10 @@ public class HandlerTools
 
 	public static void setDeliveredData(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		ic.setDeliveryDate(ic.getDateOrdered());
 		ic.setQtyDelivered(ic.getQtyOrdered());
+		ic.setQtyDeliveredInUOM(ic.getQtyEntered());
+
+		ic.setDeliveryDate(ic.getDateOrdered());
 	}
 
 	public static void setBPartnerData(@NonNull final I_C_Invoice_Candidate ic)
@@ -164,7 +166,7 @@ public class HandlerTools
 		if (term.getM_Product_ID() > 0)
 		{
 			final IProductBL productBL = Services.get(IProductBL.class);
-			return productBL.getStockingUOMId(term.getM_Product_ID());
+			return productBL.getStockUOMId(term.getM_Product_ID());
 		}
 
 		throw new AdempiereException("The term of param 'icRecord' needs to have a UOM; C_Invoice_Candidate_ID=" + icRecord.getC_Invoice_Candidate_ID())

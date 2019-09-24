@@ -7,18 +7,19 @@ import org.compiere.util.KeyNamePair;
 
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class HUADProcessKey extends TerminalKey
 {
-	private final int adProcessId;
+	private final AdProcessId adProcessId;
 	private final String id;
 	private final String name;
 	private final KeyNamePair value;
 
-	public HUADProcessKey(final ITerminalContext terminalContext, final int adProcessId)
+	public HUADProcessKey(final ITerminalContext terminalContext, final AdProcessId adProcessId)
 	{
 		super(terminalContext);
 
@@ -29,10 +30,8 @@ public class HUADProcessKey extends TerminalKey
 		name = value.getName();
 	}
 
-	private static final KeyNamePair extractKeyNamePair(final int adProcessId)
+	private static final KeyNamePair extractKeyNamePair(@NonNull final AdProcessId adProcessId)
 	{
-		Check.assume(adProcessId > 0, "processId > 0");
-
 		final I_AD_Process process = Services.get(IADProcessDAO.class).getById(adProcessId);
 		final I_AD_Process processTrl = InterfaceWrapperHelper.translate(process, I_AD_Process.class);
 
@@ -69,7 +68,7 @@ public class HUADProcessKey extends TerminalKey
 		return value;
 	}
 
-	public int getAD_Process_ID()
+	public AdProcessId getAdProcessId()
 	{
 		return adProcessId;
 	}

@@ -13,7 +13,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.tree.AdTreeId;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Role_Included;
 import org.compiere.model.I_AD_User_Roles;
@@ -26,6 +25,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_AD_Role;
 import de.metas.cache.CCache;
 import de.metas.menu.AdMenuId;
+import de.metas.organization.OrgId;
 import de.metas.security.IRoleDAO;
 import de.metas.security.IRolesTreeNode;
 import de.metas.security.IUserRolePermissions;
@@ -130,6 +130,7 @@ public class RoleDAO implements IRoleDAO
 		rolePermissions.addPermissionIfCondition(record.isAutoRoleLogin(), IUserRolePermissions.PERMISSION_AutoRoleLogin);
 		rolePermissions.addPermissionIfCondition(record.isAllowLoginDateOverride(), IUserRolePermissions.PERMISSION_AllowLoginDateOverride);
 		rolePermissions.addPermissionIfCondition(record.isRoleAlwaysUseBetaFunctions(), IUserRolePermissions.PERMISSION_UseBetaFunctions);
+		rolePermissions.addPermissionIfCondition(record.isAttachmentDeletionAllowed(), IUserRolePermissions.PERMISSION_IsAttachmentDeletionAllowed);
 
 		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Product(), IUserRolePermissions.PERMISSION_InfoWindow_Product);
 		rolePermissions.addPermissionIfCondition(record.isAllow_Info_BPartner(), IUserRolePermissions.PERMISSION_InfoWindow_BPartner);

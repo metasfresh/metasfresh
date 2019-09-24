@@ -12,6 +12,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.inventory.IHUInventoryBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Inventory;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Services;
 
 /*
@@ -42,7 +43,7 @@ public class HUInventoryBL implements IHUInventoryBL
 	public List<I_M_Inventory> moveToGarbage(
 			final Collection<I_M_HU> husToDestroy,
 			final Timestamp movementDate,
-			final int activityId,
+			final ActivityId activityId,
 			final String description,
 			final boolean isCompleteInventory,
 			final boolean isCreateMovement)

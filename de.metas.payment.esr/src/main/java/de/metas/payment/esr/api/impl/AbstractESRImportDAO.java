@@ -32,7 +32,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.comparator.AccessorComparator;
 import org.adempiere.util.comparator.ComparableComparator;
 import org.adempiere.util.comparator.ComparatorChain;
@@ -45,6 +44,7 @@ import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
+import de.metas.organization.OrgId;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.model.I_ESR_Import;
@@ -136,7 +136,7 @@ public abstract class AbstractESRImportDAO implements IESRImportDAO
 
 		if (referenceNo == null)
 		{
-			Loggables.get().addLog("Found no C_ReferenceNo record for esrReferenceNumber={}", esrReferenceNumber);
+			Loggables.addLog("Found no C_ReferenceNo record for esrReferenceNumber={}", esrReferenceNumber);
 			return null;
 		}
 

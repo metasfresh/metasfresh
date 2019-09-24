@@ -206,28 +206,28 @@ $P{ad_org_id}
 				</reportElement>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
-					<font size="6" isBold="true"/>
+					<font size="6" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{other}]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
 				<reportElement x="55" y="27" width="30" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
-					<font size="6" isBold="true"/>
+					<font size="6" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{from}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement x="85" y="27" width="124" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
-					<font size="6" isBold="true"/>
+					<font size="6" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{startdate}]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
 				<reportElement x="10" y="10" width="308" height="14" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
-					<font size="10" isBold="true"/>
+					<font size="10" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{missing_in_marginalcosting}]]></textFieldExpression>
 			</textField>
@@ -237,7 +237,7 @@ $P{ad_org_id}
 				</reportElement>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
-					<font size="6" isBold="true"/>
+					<font size="6" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["30"]]></textFieldExpression>
 			</textField>
@@ -245,7 +245,7 @@ $P{ad_org_id}
 				<reportElement x="390" y="27" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
-					<font size="6" isBold="true"/>
+					<font size="6" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["40"]]></textFieldExpression>
 			</textField>
@@ -253,7 +253,7 @@ $P{ad_org_id}
 				<reportElement x="290" y="27" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
-					<font size="6" isBold="true"/>
+					<font size="6" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["20"]]></textFieldExpression>
 			</textField>
@@ -267,21 +267,21 @@ $P{ad_org_id}
 			<textField>
 				<reportElement x="10" y="27" width="46" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
-					<font size="6" isBold="true"/>
+					<font size="6" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{timeperiod}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement x="85" y="35" width="124" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
-					<font size="6" isBold="true"/>
+					<font size="6" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{enddate}]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
 				<reportElement x="55" y="35" width="30" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
-					<font size="6" isBold="true"/>
+					<font size="6" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{to}]]></textFieldExpression>
 			</textField>
@@ -291,7 +291,7 @@ $P{ad_org_id}
 				</reportElement>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
-					<font size="6" isBold="true"/>
+					<font size="6" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["10"]]></textFieldExpression>
 			</textField>
@@ -301,7 +301,7 @@ $P{ad_org_id}
 				</reportElement>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
-					<font size="6" isBold="true"/>
+					<font size="6" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{total}]]></textFieldExpression>
 			</textField>
@@ -311,7 +311,7 @@ $P{ad_org_id}
 				</reportElement>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
-					<font size="6" isBold="true"/>
+					<font size="6" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{budget}]]></textFieldExpression>
 			</textField>
@@ -321,7 +321,7 @@ $P{ad_org_id}
 				</reportElement>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
-					<font size="6" isBold="true"/>
+					<font size="6" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["50"]]></textFieldExpression>
 			</textField>
@@ -331,7 +331,7 @@ $P{ad_org_id}
 				</reportElement>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
-					<font size="6" isBold="true"/>
+					<font size="6" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["90"]]></textFieldExpression>
 			</textField>

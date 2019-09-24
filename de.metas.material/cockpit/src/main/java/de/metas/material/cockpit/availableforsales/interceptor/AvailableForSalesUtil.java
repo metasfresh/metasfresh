@@ -1,8 +1,6 @@
 package de.metas.material.cockpit.availableforsales.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.compiere.util.Util.coalesce;
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -16,14 +14,13 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Product;
@@ -37,6 +34,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 
 import de.metas.Profiles;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfig;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesMultiQuery;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesMultiResult;
@@ -52,6 +51,7 @@ import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
@@ -114,12 +114,14 @@ public class AvailableForSalesUtil
 		{
 			return false;
 		}
-		if (orderLineRecord.getM_Product_ID() <= 0)
+		
+		final ProductId productId = ProductId.ofRepoIdOrNull(orderLineRecord.getM_Product_ID());
+		if (productId == null)
 		{
 			return false;
 		}
 
-		final I_M_Product productRecord = orderLineRecord.getM_Product();
+		final I_M_Product productRecord = Services.get(IProductDAO.class).getById(productId);
 		if (!productRecord.isStocked())
 		{
 			return false;
@@ -178,7 +180,7 @@ public class AvailableForSalesUtil
 		{
 			return; // nothing to do
 		}
-		if (config.isRunAsync() && Adempiere.isSpringProfileActive(Profiles.PROFILE_Webui))
+		if (config.isRunAsync() && SpringContextHolder.instance.isSpringProfileActive(Profiles.PROFILE_Webui))
 		{
 			final UserId errorNotificationRecipient = UserId.ofRepoId(Env.getAD_User_ID());
 
@@ -206,7 +208,7 @@ public class AvailableForSalesUtil
 		// We cannot use a thread-inherited transaction that would otherwise be used by default.
 		// Because when this method is called, it means that the thread-inherited transaction is already committed
 		// Therefore, let's create our own trx to work in
-		final Runnable runnable = () -> Services.get(ITrxManager.class).run(innerTrx -> retrieveDataAndUpdateOrderLines(requests, config));
+		final Runnable runnable = () -> Services.get(ITrxManager.class).runInNewTrx(innerTrx -> retrieveDataAndUpdateOrderLines(requests, config));
 
 		final ExecutorService executor = Executors.newSingleThreadExecutor();
 		final Future<?> future = executor.submit(runnable);
@@ -223,11 +225,11 @@ public class AvailableForSalesUtil
 	private void handleAsyncException(@NonNull final UserId errorNotificationRecipient, @NonNull Exception e1)
 	{
 		final Throwable cause = AdempiereException.extractCause(e1);
-		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(cause);
+		final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(cause);
 
 		final TargetRecordAction targetAction = TargetRecordAction
 				.ofRecordAndWindow(
-						TableRecordReference.of(I_AD_Issue.Table_Name, issue.getAD_Issue_ID()),
+						TableRecordReference.of(I_AD_Issue.Table_Name, issueId),
 						IErrorManager.AD_ISSUE_WINDOW_ID.getRepoId());
 
 		final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
@@ -320,8 +322,9 @@ public class AvailableForSalesUtil
 			@NonNull final ColorId insufficientQtyAvailableForSalesColorId)
 	{
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 
-		final I_C_OrderLine salesOrderLineRecord = load(orderLineId, I_C_OrderLine.class);
+		final I_C_OrderLine salesOrderLineRecord = ordersRepo.getOrderLineById(orderLineId, I_C_OrderLine.class);
 
 		// We do everything in the order line's UOM right from the start in order to depend on QtyEntered as opposed to QtyOrdered.
 		// Because QtyEntered is what the user can see.. (who knows, QtyOrdered might even be zero in some cases)
@@ -354,6 +357,7 @@ public class AvailableForSalesUtil
 		{
 			salesOrderLineRecord.setInsufficientQtyAvailableForSalesColor(null);
 		}
-		saveRecord(salesOrderLineRecord);
+		
+		ordersRepo.save(salesOrderLineRecord);
 	}
 }

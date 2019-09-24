@@ -52,7 +52,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.ADialog;
@@ -61,7 +60,6 @@ import org.compiere.grid.ed.VLookup;
 import org.compiere.grid.ed.VNumber;
 import org.compiere.grid.ed.api.ISwingEditorFactory;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
@@ -75,6 +73,7 @@ import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
@@ -85,6 +84,7 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exception.ProductPriceNotFoundException;
 import de.metas.pricing.service.IPriceListBL;
@@ -93,6 +93,7 @@ import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -152,7 +153,7 @@ public class CreateInvoiceCandidateDialog
 
 	private final ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 
-	private final int partnerId;
+	private final BPartnerId partnerId;
 	private final int currencyId;
 	private final Timestamp date;
 
@@ -172,7 +173,7 @@ public class CreateInvoiceCandidateDialog
 
 		//
 		// Initialize inherited values
-		this.partnerId = partnerId;
+		this.partnerId = BPartnerId.ofRepoId(partnerId);
 		this.currencyId = currencyId;
 		this.date = date;
 
@@ -199,14 +200,7 @@ public class CreateInvoiceCandidateDialog
 		// TODO fix the lookup field with the validation rule
 		// productField = factory.getVLookup(windowNo, tabNo, DisplayType.Search, tableName, I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID, mandatory, autocomplete);
 		productField = factory.getVLookup(windowNo, tabNo, DisplayType.Table, tableName, I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID, mandatory, autocomplete);
-		productField.addVetoableChangeListener(new VetoableChangeListener()
-		{
-			@Override
-			public void vetoableChange(final PropertyChangeEvent e)
-			{
-				onProductChanged(e);
-			}
-		});
+		productField.addVetoableChangeListener((VetoableChangeListener)e -> onProductChanged(e));
 
 		taxField = factory.getVLookup(windowNo, tabNo, DisplayType.Table, tableName, I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID, mandatory, autocomplete);
 		activityField = factory.getVLookup(windowNo, tabNo, DisplayType.Table, tableName, I_C_Invoice_Candidate.COLUMNNAME_C_Activity_ID, mandatory, autocomplete);
@@ -330,12 +324,12 @@ public class CreateInvoiceCandidateDialog
 
 		//
 		// Get pricing system (or dispose window if none was found)
-		final PricingSystemId pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(ctx, partnerId, soTrx, ITrx.TRXNAME_None);
+		final PricingSystemId pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(partnerId, soTrx);
 		if (pricingSystemId == null)
 		{
 			missingCollector.add(I_C_Invoice_Candidate.COLUMNNAME_M_PricingSystem_ID);
 		}
-		pricingSystemField.setValue(PricingSystemId.getRepoId(pricingSystemId));
+		pricingSystemField.setValue(PricingSystemId.toRepoId(pricingSystemId));
 
 		// do not load UOMs; instead, they shall be loaded when the product is modified
 		// priceUOMField.loadFirstItem();
@@ -396,7 +390,7 @@ public class CreateInvoiceCandidateDialog
 			final I_M_Product product,
 			final I_M_PricingSystem pricingSystem)
 	{
-		final I_C_UOM priceUOM;
+		final UomId priceUomId;
 		try
 		{
 			final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
@@ -426,16 +420,16 @@ public class CreateInvoiceCandidateDialog
 			{
 				throw new ProductPriceNotFoundException("@NotFound@: @M_ProductPrice_ID@");
 			}
-			priceUOM = productPrice.getC_UOM();
+			priceUomId = UomId.ofRepoIdOrNull(productPrice.getC_UOM_ID());
 		}
 		catch (final ProductPriceNotFoundException ppnfe)
 		{
 			ADialog.error(windowNo, getContentPane(), ppnfe);
 			return;
 		}
-		Check.assumeNotNull(priceUOM, "priceUOM not null");
+		Check.assumeNotNull(priceUomId, "priceUomId not null");
 
-		final int uomId = priceUOM.getC_UOM_ID();
+		final int uomId = priceUomId.getRepoId();
 		priceUOMField.setValue(uomId);
 	}
 
@@ -518,7 +512,7 @@ public class CreateInvoiceCandidateDialog
 	 */
 	private void onDialogOk()
 	{
-		Services.get(ITrxManager.class).run(new TrxRunnable2()
+		Services.get(ITrxManager.class).runInNewTrx(new TrxRunnable2()
 		{
 			@Override
 			public void run(final String localTrxName) throws Exception
@@ -561,7 +555,7 @@ public class CreateInvoiceCandidateDialog
 
 				//
 				// Set field values
-				ic.setBill_BPartner_ID(partnerId);
+				ic.setBill_BPartner_ID(partnerId.getRepoId());
 				ic.setC_Currency_ID(currencyId);
 				ic.setDateOrdered(date);
 

@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2018-04-10T12:18:32 -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="label" pageWidth="294" pageHeight="198" columnWidth="294" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="7f6f4715-2c9f-4a69-8fdd-c5a5d8b66d53">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
 	<property name="com.jaspersoft.studio.unit." value="mm"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="mm"/>
 	<property name="com.jaspersoft.studio.unit.pageWidth" value="mm"/>
@@ -20,12 +19,24 @@
 	<queryString>
 		<![CDATA[SELECT * FROM report.picking_tu_label($P{m_hu_id});]]>
 	</queryString>
-	<field name="org_name" class="java.lang.String"/>
-	<field name="bp_gln" class="java.lang.String"/>
-	<field name="bp_gln_9_12" class="java.lang.String"/>
-	<field name="addr_name" class="java.lang.String"/>
-	<field name="address" class="java.lang.String"/>
-	<field name="barcode" class="java.lang.String"/>
+	<field name="org_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="org_name"/>
+	</field>
+	<field name="bp_gln" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bp_gln"/>
+	</field>
+	<field name="bp_gln_9_12" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bp_gln_9_12"/>
+	</field>
+	<field name="addr_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="addr_name"/>
+	</field>
+	<field name="address" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="address"/>
+	</field>
+	<field name="barcode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="barcode"/>
+	</field>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -35,7 +46,7 @@
 			<textField isBlankWhenNull="true">
 				<reportElement x="10" y="10" width="272" height="14" uuid="f48ef71f-b642-4fe7-a981-b19690ad27ce"/>
 				<textElement textAlignment="Center">
-					<font size="11" isBold="true"/>
+					<font fontName="Arial" size="11" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{org_name}]]></textFieldExpression>
 			</textField>
@@ -54,7 +65,7 @@
 			<textField isBlankWhenNull="true">
 				<reportElement x="25" y="47" width="50" height="21" uuid="f57f4587-5a39-4194-8275-279f829378d9"/>
 				<textElement textAlignment="Left">
-					<font size="14" isBold="true"/>
+					<font fontName="Arial" size="14" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bp_gln_9_12}]]></textFieldExpression>
 			</textField>
@@ -63,7 +74,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
 				</reportElement>
 				<textElement textAlignment="Left">
-					<font size="14" isBold="true"/>
+					<font fontName="Arial" size="14" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{addr_name}]]></textFieldExpression>
 			</textField>

@@ -36,7 +36,7 @@ import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrd
  * #L%
  */
 @Interceptor(I_C_Order.class)
-@Component("de.metas.purchasecandidate.interceptor.C_Order")
+@Component
 public class C_Order
 {
 	@Autowired

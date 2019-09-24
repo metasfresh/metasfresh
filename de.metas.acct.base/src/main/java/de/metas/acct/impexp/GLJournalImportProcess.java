@@ -12,7 +12,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_GL_Journal;
@@ -27,6 +26,8 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult;
 
 /*
  * #%L
@@ -55,7 +56,7 @@ import de.metas.acct.api.AcctSchemaId;
  *
  * Import {@link I_I_GLJournal} records to {@link I_GLJournal}.
  */
-public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
+public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJournal>
 {
 	private int m_AD_Client_ID = -1;
 	private int m_AD_Org_ID = -1;
@@ -105,9 +106,13 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 				+ "SET AD_Client_ID = COALESCE (AD_Client_ID,").append(m_AD_Client_ID).append("),"
 				+ " AD_OrgDoc_ID = COALESCE (AD_OrgDoc_ID,").append(m_AD_Org_ID).append("),");
 		if (m_C_AcctSchema_ID != 0)
+		{
 			sql.append(" C_AcctSchema_ID = COALESCE (C_AcctSchema_ID,").append(m_C_AcctSchema_ID).append("),");
+		}
 		if (m_DateAcct != null)
+		{
 			sql.append(" DateAcct = COALESCE (DateAcct,").append(DB.TO_DATE(m_DateAcct)).append("),");
+		}
 		sql.append(" Updated = COALESCE (Updated, now()) "
 				+ "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
@@ -121,7 +126,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 				+ " AND I_IsImported<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
+		{
 			log.warn("Invalid Doc Org=" + no);
+		}
 
 		// Set AcctSchema
 		sql = new StringBuffer("UPDATE I_GLJournal i "
@@ -145,7 +152,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 				+ " AND I_IsImported<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
+		{
 			log.warn("Invalid AcctSchema=" + no);
+		}
 
 		// Set DateAcct (mandatory)
 		sql = new StringBuffer("UPDATE I_GLJournal i "
@@ -170,7 +179,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 				+ " AND I_IsImported<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
+		{
 			log.warn("Invalid DocType=" + no);
+		}
 
 		// GL Category
 		sql = new StringBuffer("UPDATE I_GLJournal i "
@@ -186,7 +197,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 				+ " AND I_IsImported<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
+		{
 			log.warn("Invalid GLCategory=" + no);
+		}
 
 		// Set Currency
 		sql = new StringBuffer("UPDATE I_GLJournal i "
@@ -209,7 +222,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 				+ " AND I_IsImported<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
+		{
 			log.warn("Invalid Currency=" + no);
+		}
 
 		// Set Conversion Type
 		sql = new StringBuffer("UPDATE I_GLJournal i "
@@ -231,7 +246,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 				+ " AND I_IsImported<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
+		{
 			log.warn("Invalid CurrencyTypeValue=" + no);
+		}
 
 		sql = new StringBuffer("UPDATE I_GLJournal i "
 				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No ConversionType, '"
@@ -239,7 +256,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 				+ " AND I_IsImported<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
+		{
 			log.warn("No CourrencyType=" + no);
+		}
 
 		// Set/Overwrite Home Currency Rate
 		sql = new StringBuffer("UPDATE I_GLJournal i "
@@ -280,7 +299,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 				+ " AND I_IsImported<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
+		{
 			log.warn("No Rate=" + no);
+		}
 
 		// Set Period
 		sql = new StringBuffer("UPDATE I_GLJournal i "
@@ -306,7 +327,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 				+ " AND I_IsImported<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
+		{
 			log.warn("Invalid Period=" + no);
+		}
 		sql = new StringBuffer("UPDATE I_GLJournal i "
 				+ "SET I_ErrorMsg=I_ErrorMsg||'WARN=Period Closed, ' "
 				+ "WHERE C_Period_ID IS NOT NULL AND NOT EXISTS"
@@ -314,7 +337,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 				+ " AND I_IsImported<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
+		{
 			log.warn("Period Closed=" + no);
+		}
 
 		// Posting Type
 		sql = new StringBuffer("UPDATE I_GLJournal i "
@@ -329,7 +354,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 				+ " AND I_IsImported<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
+		{
 			log.warn("Invalid PostingTypee=" + no);
+		}
 
 		// Set Org from Name (* is overwritten and default)
 		sql = new StringBuffer("UPDATE I_GLJournal i "
@@ -353,7 +380,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 				+ " AND I_IsImported<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
+		{
 			log.warn("Invalid Org=" + no);
+		}
 
 		// Set AccountFrom
 		sql = new StringBuffer("UPDATE I_GLJournal i "
@@ -372,7 +401,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 				+ " AND I_IsImported<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
+		{
 			log.warn("Invalid Account=" + no);
+		}
 
 		// Set AccountTo
 		sql = new StringBuffer("UPDATE I_GLJournal i "
@@ -391,7 +422,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 				+ " AND I_IsImported<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
+		{
 			log.warn("Invalid Account=" + no);
+		}
 
 		// Set BPartner
 		sql = new StringBuffer("UPDATE I_GLJournal i "
@@ -407,7 +440,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 				+ " AND I_IsImported<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
+		{
 			log.warn("Invalid BPartner=" + no);
+		}
 
 		// Set Product
 		sql = new StringBuffer("UPDATE I_GLJournal i "
@@ -424,7 +459,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 				+ " AND I_IsImported<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
+		{
 			log.warn("Invalid Product=" + no);
+		}
 
 		// Set Project
 		sql = new StringBuffer("UPDATE I_GLJournal i "
@@ -440,7 +477,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 				+ " AND I_IsImported<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
+		{
 			log.warn("Invalid Project=" + no);
+		}
 
 		// Set TrxOrg
 		sql = new StringBuffer("UPDATE I_GLJournal i "
@@ -456,7 +495,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 				+ " AND I_IsImported<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
+		{
 			log.warn("Invalid OrgTrx=" + no);
+		}
 
 		// Source Amounts
 		sql = new StringBuffer("UPDATE I_GLJournal "
@@ -477,7 +518,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 				+ " AND I_IsImported<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
+		{
 			log.warn("Zero Source Balance=" + no);
+		}
 
 		// Accounted Amounts (Only if No Error)
 		sql = new StringBuffer("UPDATE I_GLJournal "
@@ -552,7 +595,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 		try
 		{
 			if (pstmt != null)
+			{
 				pstmt.close();
+			}
 		}
 		catch (SQLException ex1)
 		{
@@ -600,7 +645,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 		// New Batch if Batch Document No changes
 		String impBatchDocumentNo = importRecord.getBatchDocumentNo();
 		if (impBatchDocumentNo == null)
+		{
 			impBatchDocumentNo = "";
+		}
 		if (context.batch == null
 				|| importRecord.isCreateNewBatch()
 				|| context.journal.getC_AcctSchema_ID() != importRecord.getC_AcctSchema_ID()
@@ -642,7 +689,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 		// Journal
 		String impJournalDocumentNo = importRecord.getJournalDocumentNo();
 		if (impJournalDocumentNo == null)
+		{
 			impJournalDocumentNo = "";
+		}
 		Timestamp impDateAcct = TimeUtil.getDay(importRecord.getDateAcct());
 		if (context.journal == null
 				|| importRecord.isCreateNewJournal()
@@ -661,10 +710,14 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 			//
 			String description = importRecord.getBatchDescription();
 			if (description == null || description.length() == 0)
+			{
 				description = "(Import)";
+			}
 			context.journal.setDescription(description);
 			if (importRecord.getJournalDocumentNo() != null && importRecord.getJournalDocumentNo().length() > 0)
+			{
 				context.journal.setDocumentNo(importRecord.getJournalDocumentNo());
+			}
 			//
 			context.journal.setC_AcctSchema_ID(importRecord.getC_AcctSchema_ID());
 			context.journal.setC_DocType_ID(importRecord.getC_DocType_ID());
@@ -709,7 +762,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 			final AccountDimension acctDim = newAccountDimension(importRecord, importRecord.getAccountFrom_ID());
 			final MAccount acct = MAccount.get(getCtx(), acctDim);
 			if (acct != null && acct.get_ID() == 0)
+			{
 				acct.save();
+			}
 			if (acct == null || acct.get_ID() == 0)
 			{
 				importRecord.setI_ErrorMsg("ERROR creating Account");
@@ -728,7 +783,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 			final AccountDimension acctDim = newAccountDimension(importRecord, importRecord.getAccountTo_ID());
 			final MAccount acct = MAccount.get(getCtx(), acctDim);
 			if (acct != null && acct.get_ID() == 0)
+			{
 				acct.save();
+			}
 			if (acct == null || acct.get_ID() == 0)
 			{
 				importRecord.setI_ErrorMsg("ERROR creating Account");

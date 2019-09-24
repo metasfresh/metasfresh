@@ -96,7 +96,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	public I_C_UOM getStockingUOM(final I_PP_Cost_Collector cc)
 	{
 		final ProductId productId = ProductId.ofRepoId(cc.getM_Product_ID());
-		return Services.get(IProductBL.class).getStockingUOM(productId);
+		return Services.get(IProductBL.class).getStockUOM(productId);
 	}
 
 	@Override
@@ -277,7 +277,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	private Quantity getQtyReceived(final I_PP_Order ppOrder)
 	{
 		final ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
-		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(productId);
+		final I_C_UOM uom = Services.get(IProductBL.class).getStockUOM(productId);
 		return Quantity.of(ppOrder.getQtyDelivered(), uom);
 	}
 
@@ -326,7 +326,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		cc.setAD_OrgTrx_ID(from.getAD_OrgTrx_ID());
 		cc.setC_Activity_ID(from.getC_Activity_ID());
 		cc.setC_Campaign_ID(from.getC_Campaign_ID());
-		cc.setC_Project_ID(from.getC_Project_ID());
+		// cc.setC_Project_ID(from.getC_Project_ID()); Taken out because the Project is no longer a physical column in PP_Order #5328
 		cc.setUser1_ID(from.getUser1_ID());
 		cc.setUser2_ID(from.getUser2_ID());
 		cc.setDescription(from.getDescription());
@@ -553,9 +553,9 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		cc.setS_Resource_ID(ResourceId.toRepoId(request.getResourceId()));
 		cc.setMovementDate(TimeUtil.asTimestamp(request.getMovementDate()));
 		cc.setDateAcct(TimeUtil.asTimestamp(request.getMovementDate()));
-		cc.setMovementQty(request.getQty().getAsBigDecimal());
-		cc.setScrappedQty(request.getQtyScrap().getAsBigDecimal());
-		cc.setQtyReject(request.getQtyReject().getAsBigDecimal());
+		cc.setMovementQty(request.getQty().toBigDecimal());
+		cc.setScrappedQty(request.getQtyScrap().toBigDecimal());
+		cc.setQtyReject(request.getQtyReject().toBigDecimal());
 		cc.setM_Product_ID(ProductId.toRepoId(request.getProductId()));
 
 		final PPOrderRoutingActivity orderActivity = request.getOrderActivity();

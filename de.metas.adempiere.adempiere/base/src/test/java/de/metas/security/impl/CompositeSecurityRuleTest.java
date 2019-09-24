@@ -26,12 +26,12 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.permissions.Access;
 import mockit.Mocked;

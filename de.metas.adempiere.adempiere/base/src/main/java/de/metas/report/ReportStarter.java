@@ -5,7 +5,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.print.JRReportViewerProvider;
 import org.compiere.util.Ini;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.io.Files;
@@ -26,6 +25,7 @@ import de.metas.util.Check;
 import de.metas.util.FileUtils;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -156,7 +156,7 @@ public abstract class ReportStarter extends JavaProcess
 			// Jasper reporting
 			case Jasper:
 			case Other:
-				outputType = Util.coalesce(
+				outputType = CoalesceUtil.coalesce(
 						// needs to take precedence because we might be invoked for an outer "preview" process, but with isPrintPreview()=false
 						processInfo.getJRDesiredOutputType(),
 						desiredOutputType,
@@ -175,7 +175,7 @@ public abstract class ReportStarter extends JavaProcess
 
 		//
 		// Generate report data
-		Loggables.get().addLog("ReportStarter.startProcess run report: reportingSystemType={}, title={}, outputType={}", reportingSystemType, processInfo.getTitle(), outputType);
+		Loggables.addLog("ReportStarter.startProcess run report: reportingSystemType={}, title={}, outputType={}", reportingSystemType, processInfo.getTitle(), outputType);
 		final ExecuteReportResult result = getExecuteReportStrategy().executeReport(getProcessInfo(), outputType);
 
 		//
@@ -197,7 +197,7 @@ public abstract class ReportStarter extends JavaProcess
 
 	private static final String extractReportFilename(final ProcessInfo pi, final OutputType outputType)
 	{
-		final String fileBasename = Util.firstValidValue(
+		final String fileBasename = CoalesceUtil.firstValidValue(
 				basename -> !Check.isEmpty(basename, true),
 				() -> extractReportBasename_IfDocument(pi),
 				() -> pi.getTitle(),
@@ -292,7 +292,7 @@ public abstract class ReportStarter extends JavaProcess
 		}
 	}
 
-	private static enum ReportingSystemType
+	private enum ReportingSystemType
 	{
 		Jasper,
 
@@ -300,7 +300,7 @@ public abstract class ReportStarter extends JavaProcess
 
 		/** May be used when no invocation to the jasper service is done */
 		Other
-	};
+	}
 
 	@Value
 	@Builder

@@ -60,9 +60,8 @@ public class MRequestAction extends X_R_RequestAction
 	/**
 	 * 	Parent Action Constructor
 	 *	@param request parent
-	 *	@param newRecord new (copy all)
 	 */
-	public MRequestAction (MRequest request, boolean newRecord)
+	public MRequestAction (final MRequest request)
 	{
 		this (request.getCtx(), 0, request.get_TrxName());
 		setClientOrg(request);
@@ -77,9 +76,13 @@ public class MRequestAction extends X_R_RequestAction
 	{
 		String nc = getNullColumns();
 		if (nc == null)
+		{
 			setNullColumns(columnName);
+		}
 		else
+		{
 			setNullColumns(nc + ";" + columnName);
+		}
 	}	//	addNullColumn
 	
 
@@ -129,18 +132,23 @@ public class MRequestAction extends X_R_RequestAction
 		getChangeHTML(sb, "A_Asset_ID");
 		
 		if (sb.length() == 0)
+		{
 			sb.append("./.");
+		}
 		//	Unicode check
 		char[] chars = sb.toString().toCharArray();
 		sb = new StringBuffer(chars.length);
-		for (int i = 0; i < chars.length; i++)
+		for (char c : chars)
 		{
-			char c = chars[i];
 			int ii = c;
 			if (ii > 255)
+			{
 				sb.append("&#").append(ii).append(";");
+			}
 			else
+			{
 				sb.append(c);
+			}
 		}
 		return sb.toString();
 	}	//	getChangesHTML
@@ -155,7 +163,9 @@ public class MRequestAction extends X_R_RequestAction
 		if (get_Value(columnName) != null)
 		{
 			if (sb.length() > 0)
+			{
 				sb.append("<br>");
+			}
 			sb.append(Msg.getElement(getCtx(), columnName))
 				.append(": ").append(get_DisplayValue(columnName, true));
 		}
@@ -165,7 +175,9 @@ public class MRequestAction extends X_R_RequestAction
 			if (nc != null && nc.indexOf(columnName) != -1)
 			{
 				if (sb.length() > 0)
+				{
 					sb.append("<br>");
+				}
 				sb.append("(")
 					.append(Msg.getElement(getCtx(), columnName))
 					.append(")");

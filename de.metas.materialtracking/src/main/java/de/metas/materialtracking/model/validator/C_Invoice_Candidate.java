@@ -3,8 +3,9 @@ package de.metas.materialtracking.model.validator;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Table;
 import org.compiere.model.ModelValidator;
 
 import de.metas.cache.model.impl.TableRecordCacheLocal;
@@ -52,8 +53,12 @@ public class C_Invoice_Candidate
 		}
 		else
 		{
-			final I_AD_Table table = ic.getAD_Table();
-			if (table != null && I_M_InOutLine.Table_Name.equals(table.getTableName()))
+			final AdTableId adTableId = AdTableId.ofRepoIdOrNull(ic.getAD_Table_ID());
+			final String tableName = adTableId != null
+					? Services.get(IADTableDAO.class).retrieveTableName(adTableId)
+					: null;
+					
+			if (tableName != null && I_M_InOutLine.Table_Name.equals(tableName))
 			{
 				referencedObject = TableRecordCacheLocal.getReferencedValue(ic, I_M_InOutLine.class);
 			}
@@ -97,13 +102,13 @@ public class C_Invoice_Candidate
 		if (createLink)
 		{
 			materialTrackingBL.linkModelToMaterialTracking(MTLinkRequest.builder()
-					.setModel(ic)
-					.setMaterialTracking(ic.getM_Material_Tracking())
+					.model(ic)
+					.materialTrackingRecord(ic.getM_Material_Tracking())
 					.build());
 		}
 		else
 		{
-			materialTrackingBL.unlinkModelFromMaterialTracking(ic);
+			materialTrackingBL.unlinkModelFromMaterialTrackings(ic);
 		}
 	}
 }

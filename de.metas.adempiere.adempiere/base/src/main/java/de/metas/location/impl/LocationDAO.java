@@ -2,6 +2,7 @@ package de.metas.location.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 
 import java.util.List;
 import java.util.Set;
@@ -9,7 +10,9 @@ import java.util.Set;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Location;
 
+import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
+import de.metas.location.LocationCreateRequest;
 import de.metas.location.LocationId;
 import lombok.NonNull;
 
@@ -53,5 +56,30 @@ public class LocationDAO implements ILocationDAO
 	public void save(final I_C_Location location)
 	{
 		InterfaceWrapperHelper.save(location);
+	}
+
+	@Override
+	public CountryId getCountryIdByLocationId(@NonNull final LocationId id)
+	{
+		final I_C_Location location = getById(id);
+		return CountryId.ofRepoId(location.getC_Country_ID());
+	}
+
+	@Override
+	public LocationId createLocation(@NonNull final LocationCreateRequest request)
+	{
+		// NOTE: C_Location table might be heavily used, so it's better to create the address OOT to not lock it.
+		final I_C_Location locationRecord = newInstanceOutOfTrx(I_C_Location.class);
+		locationRecord.setAddress1(request.getAddress1());
+		locationRecord.setAddress2(request.getAddress2());
+		locationRecord.setAddress3(request.getAddress3());
+		locationRecord.setAddress4(request.getAddress4());
+		locationRecord.setPostal(request.getPostal());
+		locationRecord.setCity(request.getCity());
+		locationRecord.setC_Country_ID(request.getCountryId().getRepoId());
+
+		save(locationRecord);
+
+		return LocationId.ofRepoId(locationRecord.getC_Location_ID());
 	}
 }

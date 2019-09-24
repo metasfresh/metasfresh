@@ -31,7 +31,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.IValuePreferenceBL;
-import org.adempiere.service.OrgId;
 import org.compiere.model.ModelValidationEngine;
 import org.slf4j.Logger;
 
@@ -45,6 +44,9 @@ import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.i18n.Language;
 import de.metas.location.ICountryDAO;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
 import de.metas.security.IRoleDAO;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
@@ -97,6 +99,14 @@ public class Login
 	private final transient IUserBL userBL = Services.get(IUserBL.class);
 	private final transient IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	private final transient IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
+	private final transient IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
+	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final transient ISessionBL sessionBL = Services.get(ISessionBL.class);
+	private final transient ISystemBL systemBL = Services.get(ISystemBL.class);
+	private final transient IPrinterRoutingBL printerRoutingBL = Services.get(IPrinterRoutingBL.class);
+	private final transient ICountryDAO countriesRepo = Services.get(ICountryDAO.class);
+	private final transient IPostingService postingService = Services.get(IPostingService.class);
+	private final transient IValuePreferenceBL valuePreferenceBL = Services.get(IValuePreferenceBL.class);
 
 	//
 	// State
@@ -151,7 +161,6 @@ public class Login
 		//
 		// If not authenticated so far, use AD_User as backup
 		//
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final int maxLoginFailure = sysConfigBL.getIntValue("ZK_LOGIN_FAILURES_MAX", 3);
 		final int accountLockExpire = sysConfigBL.getIntValue("USERACCOUNT_LOCK_EXPIRE", 30);
 		final MFSession session = startSession();
@@ -217,8 +226,6 @@ public class Login
 		//
 		if (Ini.isSwingClient())
 		{
-			final ISystemBL systemBL = Services.get(ISystemBL.class);
-
 			if (systemBL.isRememberUserAllowed("SWING_LOGIN_ALLOW_REMEMBER_ME"))
 			{
 				Ini.setProperty(Ini.P_UID, username);
@@ -240,8 +247,8 @@ public class Login
 		// Use user's AD_Language, if any
 		if (!Check.isEmpty(user.getAD_Language()))
 		{
-			final Language language = Language.getLanguage(user.getAD_Language());
-			Env.verifyLanguage(language);
+			Language language = Language.getLanguage(user.getAD_Language());
+			language = Env.verifyLanguageFallbackToBase(language);
 			ctx.setAD_Language(language.getAD_Language());
 		}
 
@@ -278,7 +285,7 @@ public class Login
 	{
 		final LoginContext ctx = getCtx();
 
-		final MFSession session = Services.get(ISessionBL.class).getCurrentOrCreateNewSession(ctx.getSessionContext());
+		final MFSession session = sessionBL.getCurrentOrCreateNewSession(ctx.getSessionContext());
 		final String remoteAddr = getRemoteAddr();
 		if (remoteAddr != null)
 		{
@@ -292,7 +299,7 @@ public class Login
 	private void destroySessionOnLoginIncorrect(final MFSession session)
 	{
 		session.setLoginIncorrect();
-		Services.get(ISessionBL.class).logoutCurrentSession();
+		sessionBL.logoutCurrentSession();
 
 		getCtx().resetAD_Session_ID();
 	}
@@ -306,7 +313,9 @@ public class Login
 	public Set<KeyNamePair> setRoleAndGetClients(final KeyNamePair role)
 	{
 		if (role == null || role.getKey() < 0)
+		{
 			throw new IllegalArgumentException("Role missing");
+		}
 
 		//
 		// Get user role
@@ -358,7 +367,9 @@ public class Login
 	public Set<KeyNamePair> setClientAndGetOrgs(final KeyNamePair client)
 	{
 		if (client == null || client.getKey() < 0)
+		{
 			throw new IllegalArgumentException("Client missing");
+		}
 
 		//
 		// Get login organizations
@@ -424,7 +435,7 @@ public class Login
 
 		//
 		// Update AD_Session
-		final MFSession session = Services.get(ISessionBL.class).getCurrentSession(ctx.getSessionContext());
+		final MFSession session = sessionBL.getCurrentSession(ctx.getSessionContext());
 		if (session != null)
 		{
 			session.setLoginInfo(clientId, orgId, roleId, userId, ctx.getLoginDate());
@@ -450,7 +461,7 @@ public class Login
 		}
 
 		return null;
-	}	// validateLogin
+	}    // validateLogin
 
 	/**
 	 * Load Preferences into Context for selected client.
@@ -468,20 +479,25 @@ public class Login
 	 * @return AD_Message of error (NoValidAcctInfo) or ""
 	 */
 	public String loadPreferences(
-			final KeyNamePair org,
+			@NonNull final KeyNamePair org,
 			final java.sql.Timestamp timestamp)
 	{
 		Check.assumeNotNull(org, "Parameter org is not null");
 
 		final LoginContext ctx = getCtx();
 		final ClientId clientId = ctx.getClientId();
-		final OrgId orgId = OrgId.ofRepoId(org.getKey());
 		final UserId userId = ctx.getUserId();
 		final RoleId roleId = ctx.getRoleId();
 
 		//
 		// Org Info - assumes that it is valid
-		ctx.setOrg(orgId, org.getName());
+		{
+			final OrgId orgId = OrgId.ofRepoId(org.getKey());
+			ctx.setOrg(orgId, org.getName());
+			final OrgInfo orgInfo = orgsRepo.getOrgInfoById(orgId);
+			ctx.setProperty(Env.CTXNAME_StoreCreditCardData, orgInfo.getStoreCreditCardNumberMode().getCode());
+			ctx.setProperty(Env.CTXNAME_TimeZone, orgInfo.getTimeZone() != null ? orgInfo.getTimeZone().getId() : null);
+		}
 
 		//
 		// Date (default today)
@@ -502,16 +518,15 @@ public class Login
 		ctx.setUserOrgs(userRolePermissions.getAD_Org_IDs_AsString());
 
 		// Other
-		ctx.setPrinterName(Services.get(IPrinterRoutingBL.class).getDefaultPrinterName()); // Optional Printer
+		ctx.setPrinterName(printerRoutingBL.getDefaultPrinterName()); // Optional Printer
 		ctx.setAutoCommit(Ini.isPropertyBool(Ini.P_A_COMMIT));
 		ctx.setAutoNew(Ini.isPropertyBool(Ini.P_A_NEW));
-		ctx.setProperty(Env.CTXNAME_ShowAcct, Services.get(IPostingService.class).isEnabled()
+		ctx.setProperty(Env.CTXNAME_ShowAcct, postingService.isEnabled()
 				&& userRolePermissions.hasPermission(IUserRolePermissions.PERMISSION_ShowAcct)
 				&& Ini.isPropertyBool(Ini.P_SHOW_ACCT));
 		ctx.setProperty("#ShowTrl", Ini.isPropertyBool(Ini.P_SHOW_TRL));
 		ctx.setProperty("#ShowAdvanced", Ini.isPropertyBool(Ini.P_SHOW_ADVANCED));
 
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		ctx.setProperty("#CashAsPayment", sysConfigBL.getBooleanValue("CASH_AS_PAYMENT", true, clientId.getRepoId()));
 
 		String retValue = "";
@@ -553,7 +568,7 @@ public class Login
 
 		//
 		// Country
-		ctx.setProperty("#C_Country_ID", Services.get(ICountryDAO.class).getDefault(ctx.getSessionContext()).getC_Country_ID());
+		ctx.setProperty("#C_Country_ID", countriesRepo.getDefault(ctx.getSessionContext()).getC_Country_ID());
 
 		//
 		// metas: c.ghita@metas.ro : start : 01552
@@ -571,7 +586,7 @@ public class Login
 		ModelValidationEngine.get().afterLoadPreferences(ctx.getSessionContext());
 
 		return retValue;
-	}	// loadPreferences
+	}    // loadPreferences
 
 	/**
 	 * Loads accounting info
@@ -601,7 +616,7 @@ public class Login
 		final OrgId orgId = ctx.getOrgId();
 		final UserId userId = ctx.getUserId();
 
-		Services.get(IValuePreferenceBL.class)
+		valuePreferenceBL
 				.getAllWindowPreferences(clientId.getRepoId(), orgId.getRepoId(), userId.getRepoId())
 				.stream()
 				.flatMap(userValuePreferences -> userValuePreferences.values().stream())
@@ -609,11 +624,10 @@ public class Login
 	}
 
 	/**
-	 *
 	 * Set System Status Message.
-	 *
+	 * <p>
 	 * See http://dewiki908/mediawiki/index.php/05730_Use_different_Theme_colour_on_UAT_system.
-	 *
+	 * <p>
 	 * NOTE: we are retrieving from database and we are storing in context because this String is used in low level UI components and in some cases there is no database connection at all
 	 */
 	private void loadUIWindowHeaderNotice()
@@ -621,8 +635,6 @@ public class Login
 		final LoginContext ctx = getCtx();
 		final ClientId clientId = ctx.getClientId();
 		final OrgId orgId = ctx.getOrgId();
-
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 		final String windowHeaderNoticeText = sysConfigBL.getValue(SYSCONFIG_UI_WindowHeader_Notice_Text, clientId.getRepoId(), orgId.getRepoId());
 		ctx.setProperty(Env.CTXNAME_UI_WindowHeader_Notice_Text, windowHeaderNoticeText);
@@ -643,7 +655,7 @@ public class Login
 	public String getRemoteAddr()
 	{
 		return getCtx().getRemoteAddr();
-	}	// RemoteAddr
+	}    // RemoteAddr
 
 	public void setRemoteHost(final String remoteHost)
 	{
@@ -653,7 +665,7 @@ public class Login
 	public String getRemoteHost()
 	{
 		return getCtx().getRemoteHost();
-	}	// RemoteHost
+	}    // RemoteHost
 
 	public void setWebSession(final String webSession)
 	{
@@ -663,10 +675,10 @@ public class Login
 	public String getWebSession()
 	{
 		return getCtx().getWebSession();
-	}	// WebSession
+	}    // WebSession
 
 	public boolean isAllowLoginDateOverride()
 	{
 		return getCtx().isAllowLoginDateOverride();
 	}
-}	// Login
+}    // Login

@@ -10,12 +10,12 @@ package de.metas.materialtracking;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,9 +41,13 @@ public interface IMaterialTrackingPPOrderBL extends ISingletonService
 	boolean isQualityInspection(I_PP_Order ppOrder);
 
 	/**
+	 * Like {@link #isQualityInspection(I_PP_Order)}, but with just the PP_Order_ID; Might be better performance-wise.
+	 * TODO use PPOrderId when porting this to master
+	 */
+	boolean isQualityInspection(int ppOrderId);
+
+	/**
 	 * Asserts given manufacturing order is a Quality Inspection order
-	 *
-	 * @param ppOrder
 	 */
 	void assertQualityInspectionOrder(I_PP_Order ppOrder);
 
@@ -62,8 +66,7 @@ public interface IMaterialTrackingPPOrderBL extends ISingletonService
 
 	/**
 	 * Retrieve the inout lines that were issued with the given PP_Order.
-	 * 
-	 * @param ppOrder
+	 *
 	 * @return the found inout lines
 	 */
 	List<I_M_InOutLine> retrieveIssuedInOutLines(I_PP_Order ppOrder);

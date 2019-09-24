@@ -29,13 +29,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Region;
 import org.compiere.util.Env;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 
 /**

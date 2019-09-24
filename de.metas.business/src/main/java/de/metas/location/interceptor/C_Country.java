@@ -1,5 +1,7 @@
 package de.metas.location.interceptor;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -14,8 +16,6 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import de.metas.util.Services;
-
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -39,7 +39,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  * #L%
  */
 @Interceptor(I_C_Country.class)
-@Component("de.metas.location.model.interceptor.C_Country")
+@Component
 public class C_Country
 {
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
@@ -58,9 +58,15 @@ public class C_Country
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Country.COLUMNNAME_IsActive)
-	public void onChangeCountry(final I_C_Country country)
+	public void onChangeCountryIsActive(final I_C_Country country)
 	{
 		setCountryAttributeAsActive(country, country.isActive());
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Country.COLUMNNAME_Name)
+	public void onChangeCountryName(final I_C_Country country)
+	{
+		setCountryAttributeName(country);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
@@ -69,12 +75,23 @@ public class C_Country
 		setCountryAttributeAsActive(country, false);
 	}
 
-	private I_M_AttributeValue setCountryAttributeAsActive(final I_C_Country country,final boolean isActive)
+	private I_M_AttributeValue setCountryAttributeAsActive(final I_C_Country country, final boolean isActive)
 	{
 		final I_M_AttributeValue attributeValue = getAttributeValue(country);
 		if (attributeValue != null)
 		{
 			attributeValue.setIsActive(isActive);
+			save(attributeValue);
+		}
+		return attributeValue;
+	}
+
+	private I_M_AttributeValue setCountryAttributeName(final I_C_Country country)
+	{
+		final I_M_AttributeValue attributeValue = getAttributeValue(country);
+		if (attributeValue != null)
+		{
+			attributeValue.setName(country.getName());
 			save(attributeValue);
 		}
 		return attributeValue;

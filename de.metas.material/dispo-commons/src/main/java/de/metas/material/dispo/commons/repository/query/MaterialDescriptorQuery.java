@@ -2,7 +2,7 @@ package de.metas.material.dispo.commons.repository.query;
 
 import javax.annotation.Nullable;
 
-import org.compiere.util.Util;
+import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
@@ -10,6 +10,7 @@ import de.metas.material.dispo.commons.repository.atp.BPartnerClassifier;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.util.Check;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -91,7 +92,7 @@ public class MaterialDescriptorQuery
 	 */
 	// DateOperator dateOperator;
 
-	int warehouseId;
+	WarehouseId warehouseId;
 	int productId;
 	AttributesKey storageAttributesKey;
 
@@ -109,7 +110,7 @@ public class MaterialDescriptorQuery
 	 */
 	@Builder(toBuilder = true)
 	private MaterialDescriptorQuery(
-			final int warehouseId,
+			final WarehouseId warehouseId,
 			final int productId,
 			final AttributesKey storageAttributesKey,
 			final BPartnerClassifier customer,
@@ -118,14 +119,14 @@ public class MaterialDescriptorQuery
 			final DateAndSeqNo timeRangeStart,
 			final DateAndSeqNo timeRangeEnd)
 	{
-		this.warehouseId = warehouseId > 0 ? warehouseId : -1;
+		this.warehouseId = warehouseId;
 
 		this.productId = productId;
 		this.storageAttributesKey = storageAttributesKey != null
 				? storageAttributesKey
 				: AttributesKey.ALL;
 
-		this.customerIdOperator = Util.coalesce(customerIdOperator, CustomerIdOperator.GIVEN_ID_ONLY);
+		this.customerIdOperator = CoalesceUtil.coalesce(customerIdOperator, CustomerIdOperator.GIVEN_ID_ONLY);
 		this.customer = customer != null ? customer : BPartnerClassifier.any();
 
 		if (atTime != null)

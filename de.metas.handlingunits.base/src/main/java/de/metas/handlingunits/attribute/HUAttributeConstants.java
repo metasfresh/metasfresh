@@ -72,8 +72,6 @@ public final class HUAttributeConstants
 	 */
 	public static final String ATTR_ReceiptInOutLine_ID = "HU_ReceiptInOutLine_ID";
 
-	public static final String ATTR_BestBeforeDate = AttributeConstants.ATTR_BestBeforeDate;
-
 	public static final String ATTR_Expired = "HU_Expired";
 	public static final String ATTR_Expired_Value_Expired = "expired";
 
@@ -82,9 +80,6 @@ public final class HUAttributeConstants
 
 	public static final String ATTR_Quarantine = "HU_Quarantine";
 	public static final String ATTR_Quarantine_Value_Quarantine = "quarantine";
-
-	public static final String ATTR_TE = AttributeConstants.ATTR_TE;
-	public static final String ATTR_DateReceived = AttributeConstants.ATTR_DateReceived;
 
 	public static String sqlBestBeforeDate(final String huIdColumnName)
 	{

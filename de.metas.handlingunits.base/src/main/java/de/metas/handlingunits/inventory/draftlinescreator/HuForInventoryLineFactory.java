@@ -5,8 +5,6 @@ import java.util.stream.Stream;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.service.OrgId;
-import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_M_Attribute;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +16,7 @@ import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine.HuF
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -51,7 +50,7 @@ public class HuForInventoryLineFactory
 		final HuForInventoryLineBuilder builder = HuForInventoryLine
 				.builder()
 				.orgId(OrgId.ofRepoId(huRecord.getAD_Org_ID()))
-				.locatorId(LocatorId.ofRecord(huRecord.getM_Locator()));
+				.locatorId(IHandlingUnitsBL.extractLocatorId(huRecord));
 
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 

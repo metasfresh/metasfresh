@@ -31,11 +31,13 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
 import javax.swing.SwingUtilities;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutRecord;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -43,7 +45,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.beans.DelayedPropertyChangeSupport;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.util.DB;
@@ -58,6 +59,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.TableAccessLevel;
@@ -149,14 +151,7 @@ public class GridField
 	}   // dispose
 
 	/** Lookup supplier for this field */
-	private ExtendedMemorizingSupplier<Lookup> lookupSupplier = ExtendedMemorizingSupplier.of(new Supplier<Lookup>()
-	{
-		@Override
-		public Lookup get()
-		{
-			return createLookup();
-		}
-	});
+	private ExtendedMemorizingSupplier<Lookup> lookupSupplier = ExtendedMemorizingSupplier.of(() -> createLookup());
 	/** New Row / inserting */
 	private boolean m_inserting = false;
 
@@ -370,12 +365,16 @@ public class GridField
 			final boolean mandatory = mandatoryLogic.evaluate(evaluationCtx, true); // ignoreUparsable=true //failOnMissingParam=false
 			log.trace(m_vo.getColumnName() + " Mandatory(" + mandatoryLogic + ") => Mandatory-" + mandatory);
 			if (mandatory)
+			{
 				return true;
+			}
 		}
 
 		// Not mandatory
 		if (!m_vo.isMandatory() || isVirtualColumn())
+		{
 			return false;
+		}
 
 		// Numeric Keys and Created/Updated as well as
 		// ASI/Created/Updated are not mandatory (persistence layer manages them)
@@ -505,9 +504,13 @@ public class GridField
 			final OrgId orgId = OrgId.ofRepoIdOrAny(Env.getContextAsInt(rowCtx, m_vo.WindowNo, m_vo.TabNo, "AD_Org_ID"));
 			String keyColumn = Env.getContext(rowCtx, m_vo.WindowNo, m_vo.TabNo, GridTab.CTX_KeyColumnName);
 			if ("EntityType".equals(keyColumn))
+			{
 				keyColumn = "AD_EntityType_ID";
+			}
 			if (!keyColumn.endsWith("_ID"))
+			 {
 				keyColumn += "_ID";			// AD_Language_ID
+			}
 			int Record_ID = Env.getContextAsInt(rowCtx, m_vo.WindowNo, m_vo.TabNo, keyColumn);
 			int AD_Table_ID = m_vo.getAD_Table_ID();
 
@@ -638,7 +641,9 @@ public class GridField
 		final int displayType = m_vo.getDisplayType();
 		if (m_vo.IsKey || displayType == DisplayType.RowID
 				|| DisplayType.isLOB(displayType))
+		{
 			return null;
+		}
 		// Set Parent to context if not explitly set
 		if (isParentValue()
 				&& (m_vo.DefaultValue == null || m_vo.DefaultValue.length() == 0))
@@ -694,9 +699,13 @@ public class GridField
 					stmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 					rs = stmt.executeQuery();
 					if (rs.next())
+					{
 						defStr = rs.getString(1);
+					}
 					else
+					{
 						log.warn("(" + m_vo.getColumnName() + ") - no Result: " + sql);
+					}
 				}
 				catch (SQLException e)
 				{
@@ -753,7 +762,7 @@ public class GridField
 		/**
 		 * (d) Preference (user) - P|
 		 */
-		defStr = Env.getPreference(ctx, m_vo.AD_Window_ID, m_vo.getColumnName(), false);
+		defStr = Env.getPreference(ctx, m_vo.getAdWindowId(), m_vo.getColumnName(), false);
 		if (!defStr.equals(""))
 		{
 			log.debug("[UserPreference] " + m_vo.getColumnName() + "=" + defStr);
@@ -763,7 +772,7 @@ public class GridField
 		/**
 		 * (e) Preference (System) - # $
 		 */
-		defStr = Env.getPreference(ctx, m_vo.AD_Window_ID, m_vo.getColumnName(), true);
+		defStr = Env.getPreference(ctx, m_vo.getAdWindowId(), m_vo.getColumnName(), true);
 		if (!defStr.equals(""))
 		{
 			log.debug("[SystemPreference] " + m_vo.getColumnName() + "=" + defStr);
@@ -878,7 +887,9 @@ public class GridField
 				return false;
 			}
 			else
+			{
 				return true;
+			}
 		}
 
 		// Search not cached
@@ -934,11 +945,13 @@ public class GridField
 		// ** static content **
 		// not displayed
 		if (!m_vo.isDisplayed(tabLayoutMode))
+		 {
 			return false;
 		// no restrictions
 		// metas: 03093: not needed
 		// if (m_vo.DisplayLogic.equals(""))
 		// return true;
+		}
 
 		// ** dynamic content **
 		if (checkContext)
@@ -1033,14 +1046,10 @@ public class GridField
 		return m_vo.getAD_Reference_Value_ID();
 	}
 
-	/**
-	 * Get AD_Window_ID
-	 *
-	 * @return window
-	 */
-	public int getAD_Window_ID()
+	@Nullable
+	public AdWindowId getAdWindowId()
 	{
-		return m_vo.AD_Window_ID;
+		return m_vo.getAdWindowId();
 	}
 
 	/**
@@ -1124,7 +1133,9 @@ public class GridField
 	public boolean isReadOnly()
 	{
 		if (isVirtualColumn())
+		{
 			return true;
+		}
 		return m_vo.isReadOnly();
 	}
 
@@ -1136,7 +1147,9 @@ public class GridField
 	public boolean isUpdateable()
 	{
 		if (isVirtualColumn())
+		{
 			return false;
+		}
 		return m_vo.isUpdateable();
 	}
 
@@ -1168,7 +1181,9 @@ public class GridField
 	public boolean isAlwaysUpdateable()
 	{
 		if (isVirtualColumn() || !m_vo.isUpdateable())
+		{
 			return false;
+		}
 		return m_vo.isAlwaysUpdateable();
 	}
 
@@ -1337,22 +1352,34 @@ public class GridField
 	public boolean isParentValue()
 	{
 		if (m_parentValue != null)
+		{
 			return m_parentValue.booleanValue();
+		}
 		if (!DisplayType.isID(m_vo.getDisplayType()) || m_vo.TabNo == 0)
+		{
 			m_parentValue = Boolean.FALSE;
+		}
 		else
 		{
 			String LinkColumnName = Env.getContext(getGridFieldContext(), m_vo.WindowNo, m_vo.TabNo, GridTab.CTX_LinkColumnName);
 			if (LinkColumnName == null || LinkColumnName.length() == 0)
+			{
 				m_parentValue = Boolean.FALSE; // teo_sarca, [ 1673886 ]
+			}
 			else
+			{
 				m_parentValue = Boolean.valueOf(m_vo.getColumnName().equals(LinkColumnName));
+			}
 			if (m_parentValue)
+			{
 				log.debug(m_parentValue
 						+ " - Link(" + LinkColumnName + ", W=" + m_vo.WindowNo + ",T=" + m_vo.TabNo
 						+ ") = " + m_vo.getColumnName());
+			}
 			else
+			{
 				m_parentValue = Boolean.valueOf(isIndirectParentValue());
+			}
 		}
 		return m_parentValue.booleanValue();
 	}	// isParentValue
@@ -1415,8 +1442,10 @@ public class GridField
 	public void setValueToNull(final boolean updateContext)
 	{
 		// log.debug(ColumnName + "=" + newValue);
-		if (m_valueNoFire)      // set the old value
+		if (m_valueNoFire)
+		{
 			m_oldValue = m_value;
+		}
 		m_value = null;
 		m_inserting = false;
 		m_error = false;        // reset error
@@ -1444,8 +1473,10 @@ public class GridField
 	public void setValue(Object newValue, boolean inserting)
 	{
 		// log.debug(ColumnName + "=" + newValue);
-		if (m_valueNoFire)      // set the old value
+		if (m_valueNoFire)
+		{
 			m_oldValue = m_value;
+		}
 		m_value = newValue;
 		m_inserting = inserting;
 		m_error = false;        // reset error
@@ -1455,7 +1486,9 @@ public class GridField
 		// Does not fire, if same value
 		Object oldValue = m_oldValue;
 		if (inserting)
+		{
 			oldValue = INSERTING;
+		}
 		m_propertyChangeListeners.firePropertyChange(PROPERTY, oldValue, m_value);
 	}   // setValue
 
@@ -1603,7 +1636,9 @@ public class GridField
 				|| m_vo.getColumnName().equals("AD_Client_ID")
 				|| m_vo.getColumnName().equals("AD_Org_ID")
 				|| m_vo.getColumnName().equals("DocumentNo"))
+		{
 			return false;
+		}
 		return true;
 	}
 
@@ -1641,9 +1676,13 @@ public class GridField
 		{
 			sb.append(m_vo.getColumnName()).append("=").append(m_value);
 			if (isKey())
+			{
 				sb.append("(Key)");
+			}
 			if (isParentColumn())
+			{
 				sb.append("(Parent)");
+			}
 		}
 		else
 		{
@@ -1704,7 +1743,7 @@ public class GridField
 				.setCtx(ctx)
 				.setWindowNo(WindowNo)
 				.setTabNo(TabNo)
-				.setAD_Window_ID(0)
+				.setAdWindowId(null)
 				.setAD_Tab_ID(AD_Tab_ID)
 				.setTemplateTabId(templateTabId)
 				.setTabReadOnly(false)
@@ -1768,7 +1807,9 @@ public class GridField
 			final Properties ctx = getGridFieldContext();
 			m_backupValue = Env.getContext(ctx, m_vo.WindowNo, m_vo.getColumnName());
 			if (log.isTraceEnabled())
+			{
 				log.trace("Backup " + m_vo.WindowNo + "|" + m_vo.getColumnName() + "=" + m_backupValue);
+			}
 			m_isBackupValue = true;
 		}
 	}
@@ -1783,7 +1824,9 @@ public class GridField
 		if (m_isBackupValue)
 		{
 			if (LogManager.isLevelFinest())
+			{
 				log.trace("Restore " + m_vo.WindowNo + "|" + m_vo.getColumnName() + "=" + m_backupValue);
+			}
 			final Properties ctx = getGridFieldContextRW();
 			Env.setContext(ctx, m_vo.WindowNo, m_vo.getColumnName(), m_backupValue);
 		}
@@ -1924,15 +1967,7 @@ public class GridField
 					+ Arrays.asList(propertyChangeListeners));
 		}
 
-		Services.get(IClientUI.class).invokeLater(getWindowNo(), new Runnable()
-		{
-
-			@Override
-			public void run()
-			{
-				requestFocusInCurrentThread();
-			}
-		});
+		Services.get(IClientUI.class).invokeLater(getWindowNo(), () -> requestFocusInCurrentThread());
 	}
 
 	/**
@@ -1995,7 +2030,7 @@ public class GridField
 		if(log.isWarnEnabled())
 		{
 			log.warn("No IsActive flag found on WindowNo=" + m_vo.WindowNo + ", TabNo=" + m_vo.TabNo
-					+ ", WindowName=" + Services.get(IADWindowDAO.class).retrieveWindowName(getAD_Window_ID())
+					+ ", WindowName=" + Services.get(IADWindowDAO.class).retrieveWindowName(getAdWindowId())
 					+ ", TableName=" + Services.get(IADTableDAO.class).retrieveTableName(getAD_Table_ID())
 					+ ". Considering IsActive=Y");
 		}

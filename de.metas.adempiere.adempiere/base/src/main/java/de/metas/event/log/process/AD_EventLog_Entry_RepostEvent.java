@@ -1,6 +1,6 @@
 package de.metas.event.log.process;
 
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
 import com.google.common.collect.ImmutableList;
 
@@ -44,7 +44,7 @@ import de.metas.util.Services;
 public class AD_EventLog_Entry_RepostEvent extends JavaProcess
 {
 	private final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
-	private final EventLogService eventLogService = Adempiere.getBean(EventLogService.class);
+	private final EventLogService eventLogService = SpringContextHolder.instance.getBean(EventLogService.class);
 
 	@Override
 	protected String doIt() throws Exception

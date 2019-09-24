@@ -153,7 +153,7 @@ public class PPOrderCost
 
 		return toBuilder()
 				.accumulatedAmount(getAccumulatedAmount().add(amt))
-				.accumulatedQty(getAccumulatedQty().add(qty.getAsBigDecimal()))
+				.accumulatedQty(getAccumulatedQty().add(qty.toBigDecimal()))
 				.build();
 	}
 

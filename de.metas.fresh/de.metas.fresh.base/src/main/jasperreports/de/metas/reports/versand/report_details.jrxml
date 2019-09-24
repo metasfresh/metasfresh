@@ -157,14 +157,14 @@ group by
 				<staticText>
 					<reportElement x="100" y="1" width="130" height="13" uuid="0c061af5-3b22-4c96-91cb-492aaeb3c33d"/>
 					<textElement>
-						<font size="9" isBold="true"/>
+						<font size="9" fontName="Arial" isBold="true"/>
 					</textElement>
 					<text><![CDATA[versendete Pakete pro Monat:]]></text>
 				</staticText>
 				<textField evaluationTime="Group" evaluationGroup="periode">
 					<reportElement x="229" y="1" width="12" height="13" uuid="2d5fbc15-104e-4951-855f-be5eb4964d76"/>
 					<textElement textAlignment="Right">
-						<font size="9" isBold="true"/>
+						<font size="9" fontName="Arial" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{periode_COUNT}]]></textFieldExpression>
 				</textField>

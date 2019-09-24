@@ -1,6 +1,6 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 
-import static org.compiere.util.Util.coalesce;
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import org.springframework.context.annotation.Conditional;
 import org.springframework.http.HttpStatus;
@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import de.metas.ordercandidate.rest.JsonAttachment;
-import de.metas.ordercandidate.rest.SyncAdvise;
-import de.metas.ordercandidate.rest.SyncAdvise.IfExists;
-import de.metas.ordercandidate.rest.SyncAdvise.IfNotExists;
+import de.metas.rest_api.SyncAdvise;
+import de.metas.rest_api.SyncAdvise.IfExists;
+import de.metas.rest_api.SyncAdvise.IfNotExists;
+import de.metas.rest_api.ordercandidates.response.JsonAttachment;
 import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsService.CreateOLCandsRequest;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -46,7 +46,7 @@ import lombok.NonNull;
 @RestController
 @RequestMapping(RestApiConstants.ENDPOINT_INVOICE_440)
 @Conditional(RestApiStartupCondition.class)
-@Api(value = "forum-datenaustausch.ch invoice v4.4 XML endpoint")
+@Api(description = "forum-datenaustausch.ch invoice v4.4 XML endpoint")
 public class HealthcareChInvoice440RestController
 {
 	private final XmlToOLCandsService xmlToOLCandsService;
@@ -62,20 +62,29 @@ public class HealthcareChInvoice440RestController
 
 			@RequestParam("file") @NonNull final MultipartFile xmlInvoiceFile,
 
-			@ApiParam(allowEmptyValue = true, defaultValue = "DONT_UPDATE", value = "To the biller this is always applied, but to the debitor it's applied only if the debitor is the XML's insurance") //
-			@RequestParam final SyncAdvise.IfExists ifBPartnersExist,
+			@ApiParam(required = false, defaultValue = "DONT_UPDATE", value = "This is applied only to the biller; the invoice recipient needs to already exist in metasfresh.") //
+			@RequestParam(required = false) final SyncAdvise.IfExists ifBPartnersExist,
 
-			@ApiParam(allowEmptyValue = true, defaultValue = "CREATE", value = "To the biller this is always applied, but to the debitor it's applied only if the debitor is the XML's insurance") //
-			@RequestParam final SyncAdvise.IfNotExists ifBPartnersNotExist,
+			@ApiParam(required = false, defaultValue = "CREATE", value = "This is applied only to the biller; the invoice recipient needs to already exist in metasfresh.") //
+			@RequestParam(required = false) final SyncAdvise.IfNotExists ifBPartnersNotExist,
 
-			@ApiParam(allowEmptyValue = true, defaultValue = "DONT_UPDATE") @RequestParam final SyncAdvise.IfExists ifProductsExist,
+			@ApiParam(required = false, defaultValue = "DONT_UPDATE") //
+			@RequestParam(required = false) final SyncAdvise.IfExists ifProductsExist,
 
-			@ApiParam(allowEmptyValue = true, defaultValue = "CREATE") @RequestParam final SyncAdvise.IfNotExists ifProductsNotExist)
+			@ApiParam(required = false, defaultValue = "CREATE") //
+			@RequestParam(required = false) final SyncAdvise.IfNotExists ifProductsNotExist)
 	{
-		final SyncAdvise bPartnerSyncAdvise = SyncAdvise.builder()
+
+		// wrt to the biller-bpartner's org, we use the same advise as with the biller itself
+		final SyncAdvise billerSyncAdvise = SyncAdvise.builder()
 				.ifExists(coalesce(ifBPartnersExist, IfExists.DONT_UPDATE))
 				.ifNotExists(coalesce(ifBPartnersNotExist, IfNotExists.CREATE))
 				.build();
+
+		// The only kinds of debitors that xmlToOLCandsService is implemented to create are health insurances
+		// Those insurances are supposed to live at Org=*, because we don't want them to be duplicated;
+		// Likewise, we don't want normal Org>0 users to edit them.
+		final SyncAdvise debitorSyncAdvise = SyncAdvise.READ_ONLY;
 
 		final SyncAdvise productSyncAdvise = SyncAdvise.builder()
 				.ifExists(coalesce(ifProductsExist, IfExists.DONT_UPDATE))
@@ -84,8 +93,8 @@ public class HealthcareChInvoice440RestController
 
 		final CreateOLCandsRequest createOLCandsRequest = CreateOLCandsRequest.builder()
 				.xmlInvoiceFile(xmlInvoiceFile)
-				.billerSyncAdvise(bPartnerSyncAdvise) // wrt to the biller-bpartner's org, use the same advise as with the biller itself
-				.debitorSyncAdvise(bPartnerSyncAdvise)
+				.billerSyncAdvise(billerSyncAdvise)
+				.debitorSyncAdvise(debitorSyncAdvise)
 				.productSyncAdvise(productSyncAdvise)
 				.build();
 

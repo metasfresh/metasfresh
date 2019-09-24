@@ -144,31 +144,31 @@ public class InvoiceDetailWriter
 
 		// Pricing
 		final IPricingResult pricingResult = line.getPrice();
-		final int priceUOMId;
+		final UomId priceUOMId;
 		final BigDecimal price;
 		final BigDecimal discount;
 		final BigDecimal qtyEnteredInPriceUOM;
 
 		if (pricingResult != null)
 		{
-			priceUOMId = pricingResult.getPrice_UOM_ID();
+			priceUOMId = pricingResult.getPriceUomId();
 			price = pricingResult.getPriceStd();
-			discount = pricingResult.getDiscount().getValue();
+			discount = pricingResult.getDiscount().toBigDecimal();
 
 			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 			qtyEnteredInPriceUOM = uomConversionBL
 					.convertQuantityTo(
 							lineQty,
 							UOMConversionContext.of(line.getProductId()),
-							UomId.ofRepoId(priceUOMId))
-					.getAsBigDecimal();
+							priceUOMId)
+					.toBigDecimal();
 		}
 		else
 		{
-			priceUOMId = lineQty.getUOMId();
+			priceUOMId = lineQty.getUomId();
 			price = null;
 			discount = null;
-			qtyEnteredInPriceUOM = lineQty.getAsBigDecimal();
+			qtyEnteredInPriceUOM = lineQty.toBigDecimal();
 		}
 
 		final I_C_Invoice_Detail invoiceDetail = InterfaceWrapperHelper.newInstance(I_C_Invoice_Detail.class, getContext());
@@ -183,14 +183,14 @@ public class InvoiceDetailWriter
 		invoiceDetail.setM_Product(line.getM_Product());
 		invoiceDetail.setNote(line.getProductName());
 		// invoiceDetail.setM_AttributeSetInstance(M_AttributeSetInstance);
-		invoiceDetail.setQty(lineQty.getAsBigDecimal());
-		invoiceDetail.setC_UOM_ID(lineQty.getUOMId());
+		invoiceDetail.setQty(lineQty.toBigDecimal());
+		invoiceDetail.setC_UOM_ID(lineQty.getUomId().getRepoId());
 		invoiceDetail.setDiscount(discount);
 		invoiceDetail.setPriceEntered(price);
 		invoiceDetail.setPriceActual(price);
 
 		invoiceDetail.setQtyEnteredInPriceUOM(qtyEnteredInPriceUOM);
-		invoiceDetail.setPrice_UOM_ID(priceUOMId);
+		invoiceDetail.setPrice_UOM_ID(UomId.toRepoId(priceUOMId));
 
 		invoiceDetail.setPercentage(line.getPercentage());
 

@@ -3,19 +3,20 @@ package de.metas.payment.grossprofit;
 import static java.math.BigDecimal.ONE;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_PaymentTerm;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.CurrencyRepository;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.money.CurrencyId;
-import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -52,10 +53,8 @@ public class PaymentTermGrossProfitComponentTest
 	{
 		AdempiereTestHelper.get().init();
 
-		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
-		currencyRecord.setStdPrecision(2); // the precision is crucial for the rounding, when we subtract the contract's discount
-		saveRecord(currencyRecord);
-		currencyId = CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
+		// the precision is crucial for the rounding, when we subtract the contract's discount
+		currencyId = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR, CurrencyPrecision.TWO).getId();
 
 		moneyService = new MoneyService(new CurrencyRepository());
 	}
@@ -73,7 +72,7 @@ public class PaymentTermGrossProfitComponentTest
 
 		// invoke the method under test
 		final Money result = component.applyToInput(Money.of(ONE, currencyId));
-		assertThat(result.getValue()).isEqualByComparingTo("0.97");
+		assertThat(result.toBigDecimal()).isEqualByComparingTo("0.97");
 	}
 
 	@Test
@@ -83,7 +82,7 @@ public class PaymentTermGrossProfitComponentTest
 
 		// invoke the method under test
 		final Money result = component.applyToInput(Money.of(ONE, currencyId));
-		assertThat(result.getValue()).isEqualByComparingTo("1");
+		assertThat(result.toBigDecimal()).isEqualByComparingTo("1");
 	}
 
 }

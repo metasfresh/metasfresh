@@ -2,6 +2,7 @@ package de.metas.server.housekeep;
 
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.compiere.process.RoleAccessUpdate;
+import org.springframework.stereotype.Component;
 
 /*
  * #%L
@@ -25,6 +26,7 @@ import org.compiere.process.RoleAccessUpdate;
  * #L%
  */
 
+@Component
 public class RoleAccessUpdateHouseKeepingTask implements IStartupHouseKeepingTask
 {
 

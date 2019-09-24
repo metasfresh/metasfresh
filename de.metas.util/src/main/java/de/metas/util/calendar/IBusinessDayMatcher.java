@@ -2,6 +2,7 @@ package de.metas.util.calendar;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -57,6 +58,13 @@ public interface IBusinessDayMatcher
 		final LocalDate previousDate = getPreviousBusinessDay(dateTime.toLocalDate(), targetWorkingDays);
 		return LocalDateTime.of(previousDate, dateTime.toLocalTime());
 	}
+	
+	default ZonedDateTime getPreviousBusinessDay(@NonNull final ZonedDateTime dateTime, final int targetWorkingDays)
+	{
+		final LocalDate previousDate = getPreviousBusinessDay(dateTime.toLocalDate(), targetWorkingDays);
+		return ZonedDateTime.of(previousDate, dateTime.toLocalTime(), dateTime.getZone());
+	}
+
 
 	default LocalDate getPreviousBusinessDay(@NonNull final LocalDate date, final int targetWorkingDays)
 	{

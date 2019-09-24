@@ -24,19 +24,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_C_OLCand;
 import de.metas.handlingunits.model.I_C_OrderLine;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -71,13 +67,6 @@ public class OLCandHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public I_M_Product getM_Product()
-	{
-		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
-		return olCandEffectiveValuesBL.getM_Product_Effective(olCand);
-	}
-
-	@Override
 	public void setM_Product_ID(final int productId)
 	{
 		olCand.setM_Product_Override_ID(productId);
@@ -98,21 +87,17 @@ public class OLCandHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
+	public int getM_HU_PI_Item_Product_ID()
 	{
-		final int m_HU_PI_Item_Product_ID = getM_HU_PI_Item_Product_ID();
-		if (m_HU_PI_Item_Product_ID <= 0)
-		{
-			return null;
+		final Integer valueOverrideOrValue = InterfaceWrapperHelper.getValueOverrideOrValue(olCand, I_C_OLCand.COLUMNNAME_M_HU_PI_Item_Product_ID);
+		return valueOverrideOrValue == null ? 0 : valueOverrideOrValue;
 		}
-		return loadOutOfTrx(m_HU_PI_Item_Product_ID, I_M_HU_PI_Item_Product.class);
-	}
 
 	@Override
-	public void setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product huPiItemProduct)
+	public void setM_HU_PI_Item_Product_ID(final int huPiItemProductId)
 	{
-		olCand.setM_HU_PI_Item_Product_Override(huPiItemProduct);
-		values.setM_HU_PI_Item_Product(huPiItemProduct);
+		olCand.setM_HU_PI_Item_Product_Override_ID(huPiItemProductId);
+		values.setM_HU_PI_Item_Product_ID(huPiItemProductId);
 	}
 
 	@Override
@@ -130,22 +115,22 @@ public class OLCandHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public I_C_UOM getC_UOM()
+	public int getC_UOM_ID()
 	{
 		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
-		return olCandEffectiveValuesBL.getC_UOM_Effective(olCand);
+		return olCandEffectiveValuesBL.getC_UOM_Effective_ID(olCand);
 	}
 
 	@Override
-	public void setC_UOM(final I_C_UOM uom)
+	public void setC_UOM_ID(final int uomId)
 	{
-		values.setC_UOM(uom);
+		values.setC_UOM_ID(uomId);
 
 		// NOTE: uom is mandatory
 		// we assume orderLine's UOM is correct
-		if (uom != null)
+		if (uomId > 0)
 		{
-			olCand.setPrice_UOM_Internal(uom);
+			olCand.setPrice_UOM_Internal_ID(uomId);
 		}
 	}
 
@@ -162,38 +147,18 @@ public class OLCandHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public I_C_BPartner getC_BPartner()
+	public int getC_BPartner_ID()
 	{
 		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
-		return olCandEffectiveValuesBL.getC_BPartner_Effective(olCand);
+		final BPartnerId bpartnerId = olCandEffectiveValuesBL.getBPartnerEffectiveId(olCand);
+		return BPartnerId.toRepoId(bpartnerId);
 	}
 
 	@Override
-	public void setC_BPartner(final I_C_BPartner partner)
+	public void setC_BPartner_ID(final int partnerId)
 	{
-		olCand.setC_BPartner_Override(partner);
-		values.setC_BPartner(partner);
-	}
-
-	@Override
-	public void setDateOrdered(final Timestamp dateOrdered)
-	{
-		olCand.setDatePromised_Override(dateOrdered);
-		values.setDateOrdered(dateOrdered);
-	}
-
-	@Override
-	public Timestamp getDateOrdered()
-	{
-		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
-		return olCandEffectiveValuesBL.getDatePromised_Effective(olCand);
-	}
-
-	@Override
-	public int getM_HU_PI_Item_Product_ID()
-	{
-		final Integer valueOverrideOrValue = InterfaceWrapperHelper.getValueOverrideOrValue(olCand, I_C_OLCand.COLUMNNAME_M_HU_PI_Item_Product_ID);
-		return valueOverrideOrValue == null ? 0 : valueOverrideOrValue;
+		olCand.setC_BPartner_Override_ID(partnerId);
+		values.setC_BPartner_ID(partnerId);
 	}
 
 	@Override

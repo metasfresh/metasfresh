@@ -66,7 +66,9 @@ public interface IDocumentBL extends ISingletonService
 	 * @param document
 	 * @return true if document is completed
 	 * @throws IllegalArgumentException if document is not a valid {@link IDocument}.
+	 * @deprecated Please directly use {@link DocStatus}'s methods
 	 */
+	@Deprecated
 	boolean isDocumentCompletedOrClosed(Object document);
 
 	boolean isDocumentTable(String tableName);
@@ -139,35 +141,28 @@ public interface IDocumentBL extends ISingletonService
 	 */
 	String getDocumentNo(Object model);
 
-	boolean isStatusCompletedOrClosedOrReversed(String docStatus);
-
-	boolean issDocumentCompletedOrClosedOrReversed(Object document);
-
+	/**
+	 * @deprecated Please directly use {@link DocStatus}'s methods
+	 */
+	@Deprecated
 	boolean issDocumentDraftedOrInProgress(Object document);
 
+	/**
+	 * @deprecated Please directly use {@link DocStatus}'s methods
+	 */
+	@Deprecated
 	boolean isDocumentCompleted(Object document);
 
 	/**
-	 * @param document
-	 * @return true if the doc has status 'CL', false otherwise
+	 * @deprecated Please directly use {@link DocStatus}'s methods
 	 */
+	@Deprecated
 	boolean isDocumentClosed(Object document);
 
 	/**
-	 * Returns <code>true</code> if the given <code>document</code>'s status is one of the given <code>docStatusesToCheckFor</code>.
-	 *
-	 * @param document
-	 * @param docStatusesToCheckFor
-	 * @return
+	 * @deprecated Please directly use {@link DocStatus}'s methods
 	 */
-	boolean isDocumentStatusOneOf(Object document, String... docStatusesToCheckFor);
-
-	boolean isStatusStrOneOf(String docStatus, String... docStatusesToCheckFor);
-
-	/**
-	 * @param document
-	 * @return true if given document is Reversed or Voided
-	 */
+	@Deprecated
 	boolean isDocumentReversedOrVoided(Object document);
 
 	/**

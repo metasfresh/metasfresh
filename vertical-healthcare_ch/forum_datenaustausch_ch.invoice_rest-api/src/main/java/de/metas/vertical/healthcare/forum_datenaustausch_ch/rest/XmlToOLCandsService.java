@@ -3,9 +3,10 @@ package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER;
 import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXTERNAL_REFERENCE;
 import static de.metas.util.Check.assumeNotEmpty;
+import static de.metas.util.Check.assumeNotNull;
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
-import static org.compiere.util.Util.coalesce;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,25 +30,26 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
-import de.metas.ordercandidate.rest.JsonAttachment;
-import de.metas.ordercandidate.rest.JsonBPartner;
-import de.metas.ordercandidate.rest.JsonBPartner.JsonBPartnerBuilder;
-import de.metas.ordercandidate.rest.JsonBPartnerContact;
-import de.metas.ordercandidate.rest.JsonBPartnerInfo;
-import de.metas.ordercandidate.rest.JsonBPartnerInfo.JsonBPartnerInfoBuilder;
-import de.metas.ordercandidate.rest.JsonBPartnerLocation;
-import de.metas.ordercandidate.rest.JsonBPartnerLocation.JsonBPartnerLocationBuilder;
-import de.metas.ordercandidate.rest.JsonDocTypeInfo;
-import de.metas.ordercandidate.rest.JsonOLCand;
-import de.metas.ordercandidate.rest.JsonOLCandCreateBulkRequest;
-import de.metas.ordercandidate.rest.JsonOLCandCreateBulkResponse;
-import de.metas.ordercandidate.rest.JsonOLCandCreateRequest;
-import de.metas.ordercandidate.rest.JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder;
-import de.metas.ordercandidate.rest.JsonOrganization;
-import de.metas.ordercandidate.rest.JsonProductInfo;
-import de.metas.ordercandidate.rest.JsonProductInfo.Type;
-import de.metas.ordercandidate.rest.OrderCandidatesRestEndpoint;
-import de.metas.ordercandidate.rest.SyncAdvise;
+import de.metas.rest_api.JsonExternalId;
+import de.metas.rest_api.SyncAdvise;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartner.JsonRequestBPartnerBuilder;
+import de.metas.rest_api.bpartner.request.JsonRequestContact;
+import de.metas.rest_api.bpartner.request.JsonRequestLocation;
+import de.metas.rest_api.bpartner.request.JsonRequestLocation.JsonRequestLocationBuilder;
+import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
+import de.metas.rest_api.ordercandidates.request.JsonDocTypeInfo;
+import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
+import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
+import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder;
+import de.metas.rest_api.ordercandidates.request.JsonOrganization;
+import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
+import de.metas.rest_api.ordercandidates.request.JsonProductInfo.Type;
+import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
+import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact.JsonRequestBPartnerLocationAndContactBuilder;
+import de.metas.rest_api.ordercandidates.response.JsonAttachment;
+import de.metas.rest_api.ordercandidates.response.JsonOLCand;
+import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
@@ -356,7 +358,7 @@ public class XmlToOLCandsService
 	{
 		final LocalDate dateInvoiced = TimeUtil.asLocalDate(invoice.getRequestDate());
 		requestBuilder.dateRequired(dateInvoiced); // this will be dateOrdered and dateDelivered
-		requestBuilder.dateInvoiced(dateInvoiced);
+		requestBuilder.presetDateInvoiced(dateInvoiced);
 	}
 
 	private ImmutableList<JsonOLCandCreateRequestBuilder> insertBodyIntoBuilders(
@@ -407,7 +409,7 @@ public class XmlToOLCandsService
 			@NonNull final InsuranceAndBiller insuranceAndBiller,
 			@NonNull final HighLevelContext context)
 	{
-		final JsonBPartnerInfo recipientBPartnerInfo = createJsonBPartnerInfo(
+		final JsonRequestBPartnerLocationAndContact recipientBPartnerInfo = createJsonBPartnerInfo(
 				insuranceAndBiller.getInsurance(),
 				context);
 
@@ -436,11 +438,13 @@ public class XmlToOLCandsService
 			@NonNull final BillerAddressType biller,
 			@NonNull final HighLevelContext context)
 	{
+		final Name name = createName(biller);
+
 		final JsonOrganization org = JsonOrganization
 				.builder()
 				.syncAdvise(context.getBillerSyncAdvise())
-				.code(createBPartnerExternalId(biller))
-				.name(createNameString(biller))
+				.code(createBPartnerExternalId(biller).getValue())
+				.name(name.getSingleStringName())
 				.bpartner(createJsonBPartnerInfo(biller, context))
 				.build();
 		return org;
@@ -454,23 +458,23 @@ public class XmlToOLCandsService
 				.build();
 	}
 
-	private JsonBPartnerInfo createJsonBPartnerInfo(
+	private JsonRequestBPartnerLocationAndContact createJsonBPartnerInfo(
 			@NonNull final InsuranceAddressType insurance,
 			@NonNull final HighLevelContext context)
 	{
 		final CompanyType company = insurance.getCompany();
-		final String insuranceExternalId = createBPartnerExternalId(insurance);
-		final String recipientExternalId = createBPartnerExternalId(context.getInvoiceRecipientEAN());
+		final JsonExternalId insuranceExternalId = createBPartnerExternalId(insurance);
+		final JsonExternalId recipientExternalId = createBPartnerExternalId(context.getInvoiceRecipientEAN());
 
-		final JsonBPartnerBuilder bPartner = JsonBPartner
+		final JsonRequestBPartnerBuilder bPartner = JsonRequestBPartner
 				.builder()
 				.externalId(recipientExternalId);
 
-		final JsonBPartnerInfoBuilder bPartnerInfo = createJsonBPartnerInfoBuilder();
+		final JsonRequestBPartnerLocationAndContactBuilder bPartnerInfo = JsonRequestBPartnerLocationAndContact.builder();
 
 		if (recipientExternalId.equals(insuranceExternalId))
 		{
-			final JsonBPartnerLocation location = createJsonBPartnerLocation(
+			final JsonRequestLocation location = createJsonBPartnerLocation(
 					insuranceExternalId,
 					insurance.getEanParty(),
 					company.getPostal());
@@ -484,7 +488,7 @@ public class XmlToOLCandsService
 		}
 
 		// build a "sparse" bPartner that is only suitable for lookup, because we don't have the masterdata needed to insert or update
-		final JsonBPartnerLocation location = JsonBPartnerLocation.builder()
+		final JsonRequestLocation location = JsonRequestLocation.builder()
 				.gln(context.getInvoiceRecipientEAN())
 				.externalId(createLocationExternalId(recipientExternalId))
 				.build();
@@ -497,21 +501,21 @@ public class XmlToOLCandsService
 
 	}
 
-	private JsonBPartnerInfo createJsonBPartnerInfo(
+	private JsonRequestBPartnerLocationAndContact createJsonBPartnerInfo(
 			@NonNull final BillerAddressType biller,
 			@NonNull final HighLevelContext context)
 	{
-		final String name = createNameString(biller);
+		final Name name = createName(biller);
 
 		final CompanyType company = biller.getCompany();
-		final String billerBPartnerExternalId = createBPartnerExternalId(biller);
+		final JsonExternalId billerBPartnerExternalId = createBPartnerExternalId(biller);
 
-		final JsonBPartnerBuilder bPartnerBuilder = JsonBPartner
+		final JsonRequestBPartnerBuilder bPartnerBuilder = JsonRequestBPartner
 				.builder()
-				.name(name)
+				.name(name.getSingleStringName())
 				.externalId(billerBPartnerExternalId);
 
-		final JsonBPartnerLocation location;
+		final JsonRequestLocation location;
 		final String email;
 		if (company != null)
 		{
@@ -534,14 +538,16 @@ public class XmlToOLCandsService
 					biller.getPerson().getPostal());
 		}
 
-		final JsonBPartnerContact contact = JsonBPartnerContact
+		final JsonRequestContact contact = JsonRequestContact
 				.builder()
-				.externalId(billerBPartnerExternalId + "_singlePerson")
-				.name(name)
+				.externalId(JsonExternalId.of(billerBPartnerExternalId + "_singlePerson"))
+				.firstName(name.getFirstName())
+				.lastName(coalesce(name.getLastName(), name.getSingleStringName()))
+				.name(name.getSingleStringName())
 				.email(email)
 				.build();
 
-		final JsonBPartnerInfo bPartnerInfo = createJsonBPartnerInfoBuilder()
+		final JsonRequestBPartnerLocationAndContact bPartnerInfo = JsonRequestBPartnerLocationAndContact.builder()
 				.syncAdvise(context.getBillerSyncAdvise())
 				.bpartner(bPartnerBuilder.build())
 				.contact(contact)
@@ -551,8 +557,10 @@ public class XmlToOLCandsService
 		return bPartnerInfo;
 	}
 
-	private String createNameString(@NonNull final BillerAddressType biller)
+	private Name createName(@NonNull final BillerAddressType biller)
 	{
+		final Name.NameBuilder name = Name.builder();
+
 		final String orgName;
 		if (biller.getCompany() != null)
 		{
@@ -561,8 +569,24 @@ public class XmlToOLCandsService
 		else
 		{
 			orgName = biller.getPerson().getGivenname() + " " + biller.getPerson().getFamilyname();
+
+			name.firstName(biller.getPerson().getGivenname());
+			name.lastName(biller.getPerson().getFamilyname());
 		}
-		return orgName;
+		name.singleStringName(orgName);
+
+		return name.build();
+	}
+
+	@Value
+	@Builder
+	private static class Name
+	{
+		String firstName;
+		String lastName;
+
+		@NonNull
+		String singleStringName;
 	}
 
 	private String extracFirsttEmailOrNull(@Nullable final OnlineAddressType online)
@@ -574,23 +598,23 @@ public class XmlToOLCandsService
 		return online.getEmail().get(0);
 	}
 
-	private String createBPartnerExternalId(@NonNull final String eanParty)
+	private JsonExternalId createBPartnerExternalId(@NonNull final String eanParty)
 	{
-		return "EAN-" + eanParty;
+		return JsonExternalId.of("EAN-" + eanParty);
 	}
 
-	private String createBPartnerExternalId(@NonNull final InsuranceAddressType insurance)
+	private JsonExternalId createBPartnerExternalId(@NonNull final InsuranceAddressType insurance)
 	{
-		return "EAN-" + insurance.getEanParty();
+		return JsonExternalId.of("EAN-" + insurance.getEanParty());
 	}
 
-	private String createBPartnerExternalId(@NonNull final BillerAddressType biller)
+	private JsonExternalId createBPartnerExternalId(@NonNull final BillerAddressType biller)
 	{
-		return "EAN-" + biller.getEanParty();
+		return JsonExternalId.of("EAN-" + biller.getEanParty());
 	}
 
-	private JsonBPartnerLocation createJsonBPartnerLocation(
-			@NonNull final String bPartnerExternalId,
+	private JsonRequestLocation createJsonBPartnerLocation(
+			@NonNull final JsonExternalId bPartnerExternalId,
 			@NonNull final String gln,
 			@NonNull final PostalAddressType postal)
 	{
@@ -602,7 +626,7 @@ public class XmlToOLCandsService
 		final String statecode = zip != null ? StringUtils.trim(zip.getStatecode()) : null;
 		final String countrycode = zip != null ? StringUtils.trim(zip.getCountrycode()) : null;
 
-		final JsonBPartnerLocationBuilder builder = JsonBPartnerLocation.builder();
+		final JsonRequestLocationBuilder builder = JsonRequestLocation.builder();
 
 		if (!Check.isEmpty(street, true))
 		{
@@ -619,25 +643,20 @@ public class XmlToOLCandsService
 			builder.gln(gln);
 		}
 
-		final JsonBPartnerLocation location = builder
+		final JsonRequestLocation location = builder
 				.externalId(createLocationExternalId(bPartnerExternalId)) // TODO
 				.city(city)
 				.postal(zip.getValue())
-				.state(statecode)
+				.region(statecode)
 				.postal(statecode)
 				.countryCode(coalesce(countrycode, "CH")) // TODO
 				.build();
 		return location;
 	}
 
-	private String createLocationExternalId(final String bPartnerExternalId)
+	private JsonExternalId createLocationExternalId(@NonNull final JsonExternalId bPartnerExternalId)
 	{
-		return bPartnerExternalId + "_singleAddress";
-	}
-
-	private JsonBPartnerInfoBuilder createJsonBPartnerInfoBuilder()
-	{
-		return JsonBPartnerInfo.builder();
+		return JsonExternalId.of(bPartnerExternalId.getValue() + "_singleAddress");
 	}
 
 	JsonOLCandCreateRequestBuilder copyBuilder(@NonNull final JsonOLCandCreateRequestBuilder builder)
@@ -764,15 +783,15 @@ public class XmlToOLCandsService
 		final JsonOLCandCreateRequest request = requestBuilder.build();
 
 		final String poReference = assumeNotEmpty(request.getPoReference(), "request.poReference may not be empty; request={}", request);
-		final String billerExternalId = assumeNotEmpty(request.getOrg().getBpartner().getBpartner().getExternalId(), "request.org.bpartner.bpartner.externalId may not be empty; request={}", request);
-		final String billRecipientExternalId = assumeNotEmpty(request.getBpartner().getBpartner().getExternalId(), "request.bpartner.bpartner.externalId may not be empty; request={}", request);
+		final JsonExternalId billerExternalId = assumeNotNull(request.getOrg().getBpartner().getBpartner().getExternalId(), "request.org.bpartner.bpartner.externalId may not be null; request={}", request);
+		final JsonExternalId billRecipientExternalId = assumeNotNull(request.getBpartner().getBpartner().getExternalId(), "request.bpartner.bpartner.externalId may not be null; request={}", request);
 
 		return ""
 				+ poReference // probably the "diversest" property
 				+ "_"
-				+ billerExternalId // biller, might be the same for different bill receivers
+				+ billerExternalId.getValue() // biller, might be the same for different bill receivers
 				+ "_"
-				+ billRecipientExternalId; // bill receiver, might be the same for different billers
+				+ billRecipientExternalId.getValue(); // bill receiver, might be the same for different billers
 	}
 
 	private String createExternalId(

@@ -14,11 +14,12 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.IOrderLinePricingConditions;
-import de.metas.util.Check;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Services;
 
 /*
@@ -51,7 +52,7 @@ public class C_Order
 
 	private C_Order()
 	{
-	};
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_M_PriceList_ID })
 	public void onPriceListChangeInterceptor(final I_C_Order order)
@@ -72,7 +73,7 @@ public class C_Order
 			return;
 		}
 
-		final I_M_PriceList pl = order.getM_PriceList();
+		final I_M_PriceList pl = Services.get(IPriceListDAO.class).getById(order.getM_PriceList_ID());
 
 		order.setM_PricingSystem_ID(pl.getM_PricingSystem_ID());
 		order.setC_Currency_ID(pl.getC_Currency_ID());
@@ -160,11 +161,11 @@ public class C_Order
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
 	public void setDeliveryViaRule(final I_C_Order order) throws Exception
 	{
-		final String deliveryViaRule = Services.get(IOrderBL.class).evaluateOrderDeliveryViaRule(order);
+		final DeliveryViaRule deliveryViaRule = Services.get(IOrderBL.class).evaluateOrderDeliveryViaRule(order);
 
-		if (!Check.isEmpty(deliveryViaRule, true))
+		if (deliveryViaRule != null)
 		{
-			order.setDeliveryViaRule(deliveryViaRule);
+			order.setDeliveryViaRule(deliveryViaRule.getCode());
 		}
 	}
 

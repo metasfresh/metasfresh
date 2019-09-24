@@ -97,8 +97,6 @@ public class PP_Cost_Collector
 	 * <li>destroy all assigned top level HUs because they were created by this cost collector
 	 * <li>make sure those HUs were not touched
 	 * </ul>
-	 *
-	 * @param cc
 	 */
 	private final void reverseCostCollector_Receipt(final I_PP_Cost_Collector cc)
 	{
@@ -144,10 +142,12 @@ public class PP_Cost_Collector
 						// Make sure the HU is on the same locator where we received it
 						if (hu.getM_Locator_ID() != receiptLocatorId)
 						{
-							throw new HUException("@NotMatched@ @M_Locator_ID@"
-									+ "\n @Expected@: " + receiptLocatorId
-									+ "\n @Actual@: " + hu.getM_Locator()
-									+ "\n @M_HU_ID@: " + handlingUnitsBL.getDisplayName(hu));
+							throw new HUException("M_Locator_ID mismatch between HU and cost collector")
+									.appendParametersToMessage()
+									.setParameter("Expected M_Locator_ID", receiptLocatorId)
+									.setParameter("Actual M_Locator", IHandlingUnitsBL.extractLocatorOrNull(hu))
+									.setParameter("PP_Cost_Collector", cc)
+									.setParameter("M_HU", handlingUnitsBL.getDisplayName(hu));
 						}
 
 						//
@@ -157,20 +157,22 @@ public class PP_Cost_Collector
 						for (final IHUProductStorage productStorage : huStorage.getProductStorages())
 						{
 							// Skip ZERO quantity storages => those are not relevant
-							final BigDecimal qty = productStorage.getQty(receiptQtyUOM).getAsBigDecimal();
+							final BigDecimal qty = productStorage.getQty(receiptQtyUOM).toBigDecimal();
 							if (qty.signum() == 0)
 							{
 								continue;
 							}
 
-							// Make sure we have HU stoarges only about our received product
+							// Make sure we have HU storages only about our received product
 							if (!ProductId.equals(productStorage.getProductId(), receiptProductId))
 							{
 								final IProductBL productsService = Services.get(IProductBL.class);
-								throw new HUException("@NotMatched@ @M_M_Product_ID@"
-										+ "\n @Expected@: " + productsService.getProductValueAndName(receiptProductId)
-										+ "\n @Actual@: " + productsService.getProductValueAndName(productStorage.getProductId())
-										+ "\n @M_HU_ID@: " + handlingUnitsBL.getDisplayName(hu));
+								throw new HUException("M_Product_ID mismatch between HU and cost collector")
+										.appendParametersToMessage()
+										.setParameter("Expected M_Product", productsService.getProductValueAndName(receiptProductId))
+										.setParameter("Actual M_Product", productsService.getProductValueAndName(productStorage.getProductId()))
+										.setParameter("PP_Cost_Collector", cc)
+										.setParameter("M_HU", handlingUnitsBL.getDisplayName(hu));
 							}
 
 							// sum up the HU qty for our received product
@@ -182,9 +184,12 @@ public class PP_Cost_Collector
 					// Make sure the SUM of all HU storages for our product matches the receipt quantity of this cost collector
 					if (!huQtySum.comparesEqualTo(receiptQty))
 					{
-						throw new HUException("@NotMatched@ @Qty@"
-								+ "\n @Expected@: " + receiptQty
-								+ "\n @Actual@: " + huQtySum);
+						throw new HUException("Quantity mismatch between sum quantity of HUs and cost collector")
+								.appendParametersToMessage()
+								.setParameter("Expected quantity", receiptQty)
+								.setParameter("Actual HUs quantity sum", huQtySum)
+								.setParameter("PP_Cost_Collector", cc)
+								.setParameter("M_HUs", hus);
 					}
 
 					// Destroy the HUs

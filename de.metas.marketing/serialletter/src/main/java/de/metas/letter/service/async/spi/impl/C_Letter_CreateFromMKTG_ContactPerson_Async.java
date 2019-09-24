@@ -2,8 +2,6 @@ package de.metas.letter.service.async.spi.impl;
 
 import java.util.Set;
 
-import de.metas.location.Location;
-import de.metas.location.LocationRepository;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
 
@@ -13,6 +11,8 @@ import de.metas.letter.BoilerPlate;
 import de.metas.letter.BoilerPlateRepository;
 import de.metas.letters.model.Letter;
 import de.metas.letters.model.LetterRepository;
+import de.metas.location.Location;
+import de.metas.location.LocationRepository;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.util.Loggables;
@@ -57,7 +57,7 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 			final ContactPerson contactPerson = contactRepo.getByCampaignContactPersonId(campaignContactPersonID);
 			if(contactPerson.getLocationId() == null)
 			{
-				Loggables.get().addLog(
+				Loggables.addLog(
 						"contact person with id={} has no location; skipping",
 						contactPerson.getContactPersonId());
 				continue;
@@ -70,7 +70,7 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 			String body = "";
 			if (contactPerson.getBoilerPlateId() == null)
 			{
-				Loggables.get().addLog(
+				Loggables.addLog(
 						"contact person with id={} has no boilerPlate text-snippet; skipping",
 						contactPerson.getContactPersonId());
 				continue;
@@ -83,7 +83,7 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 
 				if (boilerPlate == null)
 				{
-					Loggables.get().addLog(
+					Loggables.addLog(
 							"contact person with id={} has no boilerPlate text-snippet for language={}; skipping",
 							contactPerson.getContactPersonId(), contactPerson.getLanguage());
 					continue;
@@ -107,7 +107,7 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 					.bodyParsed(body)
 					.build();
 			final Letter savedLetter = letterRepo.save(letter);
-			Loggables.get().addLog(
+			Loggables.addLog(
 					"Created and saved a letter with id={} for contact person with id={}; boilerPlateId={}; language={}",
 					savedLetter.getId(), contactPerson.getContactPersonId(), contactPerson.getBoilerPlateId(), contactPerson.getLanguage());
 		}

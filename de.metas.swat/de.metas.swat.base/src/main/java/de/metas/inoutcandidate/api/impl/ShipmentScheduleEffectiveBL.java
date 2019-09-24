@@ -1,31 +1,10 @@
 package de.metas.inoutcandidate.api.impl;
 
-import static org.compiere.util.Util.coalesce;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
@@ -33,6 +12,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_User;
@@ -46,6 +26,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -164,7 +145,7 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	@Override
 	public I_AD_User getAD_User(final I_M_ShipmentSchedule sched)
 	{
-		final I_AD_User user = sched.getAD_User_Override_ID() <= 0 ? InterfaceWrapperHelper.create(sched.getAD_User(), I_AD_User.class) : InterfaceWrapperHelper.create(sched.getAD_User_Override(), I_AD_User.class);
+		final I_AD_User user = sched.getAD_User_Override_ID() <= 0 ? InterfaceWrapperHelper.loadOutOfTrx(sched.getAD_User_ID(), I_AD_User.class) : InterfaceWrapperHelper.loadOutOfTrx(sched.getAD_User_Override_ID(), I_AD_User.class);
 		return user;
 	}
 
@@ -186,10 +167,12 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	}
 
 	@Override
-	public Timestamp getDeliveryDate(final I_M_ShipmentSchedule sched)
+	public ZonedDateTime getDeliveryDate(final I_M_ShipmentSchedule sched)
 	{
-		final Timestamp deliveryDate = InterfaceWrapperHelper.getValueOverrideOrValue(sched, I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate);
-		return deliveryDate;
+		return TimeUtil.asZonedDateTime(
+				CoalesceUtil.coalesceSuppliers(
+						sched::getDeliveryDate_Override,
+						sched::getDeliveryDate));
 	}
 
 	@Override

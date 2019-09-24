@@ -1,8 +1,10 @@
 package de.metas.attachments;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -30,6 +32,7 @@ import lombok.Value;
 @Value
 public class AttachmentEntryId implements RepoIdAware
 {
+	@JsonCreator
 	public static AttachmentEntryId ofRepoId(final int repoId)
 	{
 		return new AttachmentEntryId(repoId);
@@ -50,5 +53,12 @@ public class AttachmentEntryId implements RepoIdAware
 	private AttachmentEntryId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

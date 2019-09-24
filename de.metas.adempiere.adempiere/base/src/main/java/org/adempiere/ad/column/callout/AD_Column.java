@@ -46,7 +46,7 @@ import de.metas.util.Services;
  *
  */
 @Callout(I_AD_Column.class)
-@Component("org.adempiere.ad.column.callout.AD_Column")
+@Component
 public class AD_Column
 {
 	public static final String ENTITYTYPE_Dictionary = "D";
@@ -185,15 +185,24 @@ public class AD_Column
 		{
 			updateAmountColumn(column);
 		}
-
+		else if (columnName.indexOf("Amount") != -1)
+		{
+			updateAmountColumn(column);
+		}
 		else if (columnName.toUpperCase().indexOf("QTY") != -1)
 		{
 			updateQtyColumn(column);
 		}
 
+		else if (columnName.endsWith("Number"))
+		{
+			updateNumberColumn(column);
+		}
+
 		else if (columnName.toUpperCase().startsWith("IS")
 				|| Pattern.matches("(Allow)[A-Z].*", columnName)
-				|| Pattern.matches("(Has)[A-Z].*", columnName))
+				|| Pattern.matches("(Has)[A-Z].*", columnName)
+				|| "Processed".equals(columnName))
 		{
 			column.setAD_Reference_ID(DisplayType.YesNo);
 
@@ -301,7 +310,12 @@ public class AD_Column
 	{
 		column.setAD_Reference_ID(DisplayType.Quantity);
 		column.setFieldLength(10);
+	}
 
+	private static void updateNumberColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.Number);
+		column.setFieldLength(10);
 	}
 
 	private static void updateFlagColumn(final I_AD_Column column)

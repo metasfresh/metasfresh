@@ -1,9 +1,12 @@
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
+import static org.compiere.model.I_C_AllocationHdr.COLUMNNAME_IsApproved;
+
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+
 import org.compiere.util.Env;
 
 /** Generated Model for C_AllocationHdr
@@ -74,7 +77,9 @@ public class X_C_AllocationHdr extends org.compiere.model.PO implements I_C_Allo
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ApprovalAmt);
 		if (bd == null)
-			 return Env.ZERO;
+		{
+			return Env.ZERO;
+		}
 		return bd;
 	}
 
@@ -85,10 +90,14 @@ public class X_C_AllocationHdr extends org.compiere.model.PO implements I_C_Allo
 	@Override
 	public void setC_AllocationHdr_ID (int C_AllocationHdr_ID)
 	{
-		if (C_AllocationHdr_ID < 1) 
+		if (C_AllocationHdr_ID < 1)
+		{
 			set_ValueNoCheck (COLUMNNAME_C_AllocationHdr_ID, null);
-		else 
+		}
+		else
+		{
 			set_ValueNoCheck (COLUMNNAME_C_AllocationHdr_ID, Integer.valueOf(C_AllocationHdr_ID));
+		}
 	}
 
 	/** Get Zuordnung.
@@ -99,7 +108,9 @@ public class X_C_AllocationHdr extends org.compiere.model.PO implements I_C_Allo
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_AllocationHdr_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -122,10 +133,14 @@ public class X_C_AllocationHdr extends org.compiere.model.PO implements I_C_Allo
 	@Override
 	public void setC_Currency_ID (int C_Currency_ID)
 	{
-		if (C_Currency_ID < 1) 
+		if (C_Currency_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_Currency_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+		}
 	}
 
 	/** Get Währung.
@@ -136,7 +151,9 @@ public class X_C_AllocationHdr extends org.compiere.model.PO implements I_C_Allo
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -247,35 +264,35 @@ public class X_C_AllocationHdr extends org.compiere.model.PO implements I_C_Allo
 		return (java.lang.String)get_Value(COLUMNNAME_DocAction);
 	}
 
-	/** 
-	 * DocStatus AD_Reference_ID=131
-	 * Reference name: _Document Status
-	 */
-	public static final int DOCSTATUS_AD_Reference_ID=131;
-	/** Drafted = DR */
-	public static final String DOCSTATUS_Drafted = "DR";
-	/** Completed = CO */
-	public static final String DOCSTATUS_Completed = "CO";
-	/** Approved = AP */
-	public static final String DOCSTATUS_Approved = "AP";
-	/** NotApproved = NA */
-	public static final String DOCSTATUS_NotApproved = "NA";
-	/** Voided = VO */
-	public static final String DOCSTATUS_Voided = "VO";
-	/** Invalid = IN */
-	public static final String DOCSTATUS_Invalid = "IN";
-	/** Reversed = RE */
-	public static final String DOCSTATUS_Reversed = "RE";
-	/** Closed = CL */
-	public static final String DOCSTATUS_Closed = "CL";
-	/** Unknown = ?? */
-	public static final String DOCSTATUS_Unknown = "??";
-	/** InProgress = IP */
-	public static final String DOCSTATUS_InProgress = "IP";
-	/** WaitingPayment = WP */
-	public static final String DOCSTATUS_WaitingPayment = "WP";
-	/** WaitingConfirmation = WC */
-	public static final String DOCSTATUS_WaitingConfirmation = "WC";
+//	/** 
+//	 * DocStatus AD_Reference_ID=131
+//	 * Reference name: _Document Status
+//	 */
+//	public static final int DOCSTATUS_AD_Reference_ID=131;
+//	/** Drafted = DR */
+//	public static final String DOCSTATUS_Drafted = "DR";
+//	/** Completed = CO */
+//	public static final String DOCSTATUS_Completed = "CO";
+//	/** Approved = AP */
+//	public static final String DOCSTATUS_Approved = "AP";
+//	/** NotApproved = NA */
+//	public static final String DOCSTATUS_NotApproved = "NA";
+//	/** Voided = VO */
+//	public static final String DOCSTATUS_Voided = "VO";
+//	/** Invalid = IN */
+//	public static final String DOCSTATUS_Invalid = "IN";
+//	/** Reversed = RE */
+//	public static final String DOCSTATUS_Reversed = "RE";
+//	/** Closed = CL */
+//	public static final String DOCSTATUS_Closed = "CL";
+//	/** Unknown = ?? */
+//	public static final String DOCSTATUS_Unknown = "??";
+//	/** InProgress = IP */
+//	public static final String DOCSTATUS_InProgress = "IP";
+//	/** WaitingPayment = WP */
+//	public static final String DOCSTATUS_WaitingPayment = "WP";
+//	/** WaitingConfirmation = WC */
+//	public static final String DOCSTATUS_WaitingConfirmation = "WC";
 	/** Set Belegstatus.
 		@param DocStatus 
 		The current status of the document
@@ -334,8 +351,10 @@ public class X_C_AllocationHdr extends org.compiere.model.PO implements I_C_Allo
 		Object oo = get_Value(COLUMNNAME_IsApproved);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -360,8 +379,10 @@ public class X_C_AllocationHdr extends org.compiere.model.PO implements I_C_Allo
 		Object oo = get_Value(COLUMNNAME_IsManual);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -386,8 +407,10 @@ public class X_C_AllocationHdr extends org.compiere.model.PO implements I_C_Allo
 		Object oo = get_Value(COLUMNNAME_Posted);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -412,8 +435,10 @@ public class X_C_AllocationHdr extends org.compiere.model.PO implements I_C_Allo
 		Object oo = get_Value(COLUMNNAME_Processed);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -435,8 +460,10 @@ public class X_C_AllocationHdr extends org.compiere.model.PO implements I_C_Allo
 		Object oo = get_Value(COLUMNNAME_Processing);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -461,10 +488,14 @@ public class X_C_AllocationHdr extends org.compiere.model.PO implements I_C_Allo
 	@Override
 	public void setReversal_ID (int Reversal_ID)
 	{
-		if (Reversal_ID < 1) 
+		if (Reversal_ID < 1)
+		{
 			set_Value (COLUMNNAME_Reversal_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_Reversal_ID, Integer.valueOf(Reversal_ID));
+		}
 	}
 
 	/** Get Reversal ID.
@@ -475,7 +506,9 @@ public class X_C_AllocationHdr extends org.compiere.model.PO implements I_C_Allo
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Reversal_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 }

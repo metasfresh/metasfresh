@@ -5,15 +5,14 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Product;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.GroupTemplateId;
@@ -22,7 +21,11 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.model.I_M_Product_Category;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -82,7 +85,7 @@ public class C_Order_CreateCompensationMultiGroups extends OrderCompensationGrou
 				.map(e -> createGroup(e.getKey(), e.getValue()))
 				.collect(ImmutableList.toImmutableList());
 
-		final int orderId = OrderGroupRepository.extractOrderIdFromGroups(groups);
+		final OrderId orderId = OrderGroupRepository.extractOrderIdFromGroups(groups);
 		groupsRepo.renumberOrderLinesForOrderId(orderId);
 
 		return MSG_OK;
@@ -110,12 +113,15 @@ public class C_Order_CreateCompensationMultiGroups extends OrderCompensationGrou
 
 	private GroupTemplate extractGroupTemplate(final I_C_OrderLine orderLine)
 	{
-		final I_M_Product product = orderLine.getM_Product();
-		if (product == null)
+		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
+		if (productId == null)
 		{
 			return null;
 		}
-		final I_M_Product_Category productCategory = InterfaceWrapperHelper.loadOutOfTrx(product.getM_Product_Category_ID(), I_M_Product_Category.class);
+		
+		final IProductDAO productsRepo = Services.get(IProductDAO.class);
+		final ProductCategoryId productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
+		final I_M_Product_Category productCategory = productsRepo.getProductCategoryById(productCategoryId, I_M_Product_Category.class);
 		final GroupTemplateId groupTemplateId = GroupTemplateId.ofRepoIdOrNull(productCategory.getC_CompensationGroup_Schema_ID());
 		if (groupTemplateId == null)
 		{

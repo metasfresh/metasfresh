@@ -34,7 +34,7 @@ import de.metas.product.ProductId;
  * #L%
  */
 
-@Component("de.metas.costing.interceptors.M_Product")
+@Component
 @Interceptor(I_M_Product.class)
 public class M_Product
 {

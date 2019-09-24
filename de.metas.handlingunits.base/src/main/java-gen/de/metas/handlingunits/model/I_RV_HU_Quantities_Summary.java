@@ -32,8 +32,6 @@ public interface I_RV_HU_Quantities_Summary
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_RV_HU_Quantities_Summary, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_RV_HU_Quantities_Summary, org.compiere.model.I_AD_Client>(I_RV_HU_Quantities_Summary.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -161,10 +159,6 @@ public interface I_RV_HU_Quantities_Summary
 	 */
 	public int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
-
     /** Column definition for M_Product_ID */
     public static final org.adempiere.model.ModelColumn<I_RV_HU_Quantities_Summary, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_RV_HU_Quantities_Summary, org.compiere.model.I_M_Product>(I_RV_HU_Quantities_Summary.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
@@ -172,7 +166,6 @@ public interface I_RV_HU_Quantities_Summary
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -182,7 +175,6 @@ public interface I_RV_HU_Quantities_Summary
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

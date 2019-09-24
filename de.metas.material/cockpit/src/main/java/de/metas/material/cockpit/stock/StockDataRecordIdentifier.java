@@ -1,12 +1,13 @@
 package de.metas.material.cockpit.stock;
 
+import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.WarehouseId;
+
+import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.util.Check;
 
 /*
  * #%L
@@ -33,36 +34,23 @@ import de.metas.util.Check;
 @Value
 public class StockDataRecordIdentifier
 {
-	public static StockDataRecordIdentifier createForMaterial(
-			@NonNull final MaterialDescriptor material)
-	{
-		final StockDataRecordIdentifier identifier = StockDataRecordIdentifier.builder()
-				.productDescriptor(material)
-				.warehouseId(material.getWarehouseId())
-				.build();
-		return identifier;
-	}
-
-	int clientId;
-
-	int orgId;
-
+	ClientId clientId;
+	OrgId orgId;
 	ProductDescriptor productDescriptor;
-
-	int warehouseId;
+	WarehouseId warehouseId;
 
 	@Builder
 	private StockDataRecordIdentifier(
-			int clientId,
-			int orgId,
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId,
 			@NonNull final ProductDescriptor productDescriptor,
-			int warehouseId)
+			@NonNull final WarehouseId warehouseId)
 	{
 		productDescriptor.getStorageAttributesKey().assertNotAllOrOther();
 
-		this.clientId = Check.assumeGreaterThanZero(clientId, "clientId");
+		this.clientId = clientId;
 		this.orgId = orgId;
-		this.warehouseId =  Check.assumeGreaterThanZero(warehouseId, "warehouseId");
+		this.warehouseId = warehouseId;
 		this.productDescriptor = productDescriptor;
 	}
 }

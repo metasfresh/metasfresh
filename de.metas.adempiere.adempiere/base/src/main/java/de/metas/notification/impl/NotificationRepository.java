@@ -4,11 +4,13 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Note;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.JsonObjectMapperHolder;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.i18n.IADMessageDAO;
@@ -65,14 +68,12 @@ public class NotificationRepository implements INotificationRepository
 	/** AD_Message to be used when there was no AD_Message provided */
 	private static final String DEFAULT_AD_MESSAGE = "webui.window.notification.caption";
 
-	private final ObjectMapper jsonMapper;
+	private final ObjectMapper jsonMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 	private final AttachmentEntryService attachmentEntryService;
 
 	public NotificationRepository(@NonNull AttachmentEntryService attachmentEntryService)
 	{
-		this.jsonMapper = new ObjectMapper();
-		this.jsonMapper.findAndRegisterModules();
 		this.attachmentEntryService = attachmentEntryService;
 	}
 
@@ -131,7 +132,7 @@ public class NotificationRepository implements INotificationRepository
 			final ITableRecordReference targetRecord = targetRecordAction.getRecord();
 			notificationPO.setAD_Table_ID(targetRecord.getAD_Table_ID());
 			notificationPO.setRecord_ID(targetRecord.getRecord_ID());
-			notificationPO.setAD_Window_ID(targetRecordAction.getAdWindowId());
+			notificationPO.setAD_Window_ID(targetRecordAction.getAdWindowId().map(AdWindowId::getRepoId).orElse(-1));
 		}
 		else if (targetAction instanceof TargetViewAction)
 		{
@@ -173,7 +174,7 @@ public class NotificationRepository implements INotificationRepository
 	{
 		final UserNotificationBuilder builder = UserNotification.builder()
 				.id(notificationPO.getAD_Note_ID())
-				.timestamp(notificationPO.getCreated().getTime())
+				.timestamp(TimeUtil.asInstant(notificationPO.getCreated()))
 				.important(notificationPO.isImportant())
 				.recipientUserId(notificationPO.getAD_User_ID())
 				.read(notificationPO.isProcessed());

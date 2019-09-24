@@ -1,6 +1,6 @@
 package org.compiere.apps.form.fileimport;
 
-import org.compiere.impexp.ImpDataLine;
+import de.metas.impexp.ImpDataLine;
 
 class RawDataTableColumnModel extends TableColumnModel
 {

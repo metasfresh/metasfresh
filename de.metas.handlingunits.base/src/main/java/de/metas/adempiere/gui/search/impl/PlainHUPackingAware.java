@@ -25,14 +25,8 @@ package de.metas.adempiere.gui.search.impl;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-
 import de.metas.adempiere.gui.search.IHUPackingAware;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.product.IProductDAO;
-import de.metas.util.Services;
+import lombok.ToString;
 
 /**
  * Plain POJO implementation of {@link IHUPackingAware}
@@ -40,16 +34,17 @@ import de.metas.util.Services;
  * @author tsa
  *
  */
+@ToString
 public class PlainHUPackingAware implements IHUPackingAware
 {
 	private int productId = -1;
 	private int asiId = -1;
 	private BigDecimal qty;
-	private I_C_UOM uom;
-	private I_M_HU_PI_Item_Product huPiItemProduct;
+	private int uomId;
+	private int huPiItemProductId;
 	private BigDecimal qtyPacks;
 
-	private I_C_BPartner partner;
+	private int partnerId;
 	private Timestamp dateOrdered;
 
 	private boolean inDispute = false;
@@ -61,34 +56,21 @@ public class PlainHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public I_M_Product getM_Product()
-	{
-		final int productId = getM_Product_ID();
-		if (productId <= 0)
-		{
-			return null;
-		}
-
-		// NOTE: we assume M_Product is cached
-		return Services.get(IProductDAO.class).getById(productId);
-	}
-
-	@Override
 	public void setM_Product_ID(final int productId)
 	{
 		this.productId = productId;
 	}
 
 	@Override
-	public I_C_UOM getC_UOM()
+	public int getC_UOM_ID()
 	{
-		return uom;
+		return uomId;
 	}
 
 	@Override
-	public void setC_UOM(final I_C_UOM uom)
+	public void setC_UOM_ID(final int uomId)
 	{
-		this.uom = uom;
+		this.uomId = uomId;
 	}
 
 	@Override
@@ -104,15 +86,15 @@ public class PlainHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
+	public int getM_HU_PI_Item_Product_ID()
 	{
-		return huPiItemProduct;
+		return huPiItemProductId;
 	}
 
 	@Override
-	public void setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product huPiItemProduct)
+	public void setM_HU_PI_Item_Product_ID(final int huPiItemProductId)
 	{
-		this.huPiItemProduct = huPiItemProduct;
+		this.huPiItemProductId = huPiItemProductId;
 	}
 
 	@Override
@@ -140,33 +122,15 @@ public class PlainHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public I_C_BPartner getC_BPartner()
+	public int getC_BPartner_ID()
 	{
-		return partner;
+		return partnerId;
 	}
 
 	@Override
-	public void setC_BPartner(final I_C_BPartner partner)
+	public void setC_BPartner_ID(final int partnerId)
 	{
-		this.partner = partner;
-	}
-
-	@Override
-	public void setDateOrdered(final Timestamp dateOrdered)
-	{
-		this.dateOrdered = dateOrdered;
-	}
-
-	@Override
-	public Timestamp getDateOrdered()
-	{
-		return dateOrdered;
-	}
-
-	@Override
-	public int getM_HU_PI_Item_Product_ID()
-	{
-		return huPiItemProduct.getM_HU_PI_Item_Product_ID();
+		this.partnerId = partnerId;
 	}
 
 	@Override
@@ -179,12 +143,5 @@ public class PlainHUPackingAware implements IHUPackingAware
 	public void setInDispute(final boolean inDispute)
 	{
 		this.inDispute = inDispute;
-	}
-
-	@Override
-	public String toString()
-	{
-		return String.format("PlainHUPackingAware [productId=%s, asiId=%s, qty=%s, uom=%s, huPiItemProduct=%s, qtyPacks=%s, partner=%s, dateOrdered=%s, inDispute=%s]", productId, asiId, qty, uom,
-				huPiItemProduct, qtyPacks, partner, dateOrdered, inDispute);
 	}
 }

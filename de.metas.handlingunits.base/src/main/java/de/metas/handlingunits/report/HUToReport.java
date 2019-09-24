@@ -3,6 +3,7 @@ package de.metas.handlingunits.report;
 import java.util.List;
 import java.util.stream.Stream;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 
 /*
@@ -31,7 +32,7 @@ public interface HUToReport
 {
 	HuId getHUId();
 
-	int getBPartnerId();
+	BPartnerId getBPartnerId();
 
 	String getHUUnitType();
 

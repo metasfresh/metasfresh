@@ -32,6 +32,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.lock.api.ILock;
 import de.metas.util.lang.Percent;
+import lombok.NonNull;
 
 /**
  * Updates {@link I_C_Invoice_Candidate}s which are scheduled to be recomputed.
@@ -101,7 +102,7 @@ public interface IInvoiceCandInvalidUpdater
 	IInvoiceCandInvalidUpdater setOnlyC_Invoice_Candidates(Iterable<? extends I_C_Invoice_Candidate> invoiceCandidates);
 
 	// TODO: find a better place for this method
-	static void updatePriceAndTax(final I_C_Invoice_Candidate ic, final PriceAndTax priceAndTax)
+	static void updatePriceAndTax(@NonNull final I_C_Invoice_Candidate ic, @NonNull final PriceAndTax priceAndTax)
 	{
 		//
 		// Pricing System & Currency
@@ -128,15 +129,18 @@ public interface IInvoiceCandInvalidUpdater
 		{
 			ic.setPriceActual(priceAndTax.getPriceActual());
 		}
-		if (priceAndTax.getPriceUOMId() > 0)
+		if (priceAndTax.getPriceUOMId() != null)
 		{
-			ic.setPrice_UOM_ID(priceAndTax.getPriceUOMId());
+			ic.setPrice_UOM_ID(priceAndTax.getPriceUOMId().getRepoId());
 		}
 		if (priceAndTax.getDiscount() != null)
 		{
-			ic.setDiscount(Percent.getValueOrNull(priceAndTax.getDiscount()));
+			ic.setDiscount(Percent.toBigDecimalOrNull(priceAndTax.getDiscount()));
 		}
-
+		if (priceAndTax.getInvoicableQtyBasedOn() != null)
+		{
+			ic.setInvoicableQtyBasedOn(priceAndTax.getInvoicableQtyBasedOn().getRecordString());
+		}
 		//
 		// Tax
 		if (priceAndTax.getTaxIncluded() != null)
@@ -146,7 +150,7 @@ public interface IInvoiceCandInvalidUpdater
 
 		//
 		// Compensation group
-		if(priceAndTax.getCompensationGroupBaseAmt() != null)
+		if (priceAndTax.getCompensationGroupBaseAmt() != null)
 		{
 			ic.setGroupCompensationBaseAmt(priceAndTax.getCompensationGroupBaseAmt());
 		}

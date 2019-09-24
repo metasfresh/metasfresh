@@ -24,10 +24,11 @@ package org.compiere.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Util.ArrayKey;
+
+import lombok.NonNull;
 
 /**
  * Helper class to assist developer to build immutable {@link ArrayKey}s. Use {@link Util#mkKey()} or {@link Util#mkKey(Object...)} to get yours.
@@ -37,13 +38,10 @@ import org.compiere.util.Util.ArrayKey;
  */
 public class ArrayKeyBuilder
 {
-	// private static final transient Logger logger = CLogMgt.getLogger(ArrayKeyBuilder.class);
-
-	private final List<Object> keyParts = new ArrayList<>();
+	private final ArrayList<Object> keyParts = new ArrayList<>();
 
 	/* package */ ArrayKeyBuilder()
 	{
-		super();
 	}
 
 	public ArrayKey build()
@@ -63,7 +61,7 @@ public class ArrayKeyBuilder
 		return this;
 	}
 
-	public ArrayKeyBuilder appendAll(final Collection<Object> objs)
+	public ArrayKeyBuilder appendAll(@NonNull final Collection<Object> objs)
 	{
 		keyParts.addAll(objs);
 		return this;

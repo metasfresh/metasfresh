@@ -98,7 +98,7 @@
 			<textField>
 				<reportElement x="37" y="20" width="170" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
-					<font size="7" isBold="true"/>
+					<font size="7" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
 			</textField>
@@ -177,7 +177,7 @@
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement x="627" y="20" width="60" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="true"/>
+					<font size="7" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{base_week}]]></textFieldExpression>
 			</textField>
@@ -368,63 +368,63 @@
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement x="207" y="10" width="60" height="10" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="true" isItalic="false"/>
+					<font size="7" fontName="Arial" isBold="true" isItalic="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{base_week_sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="387" y="10" width="60" height="10" uuid="537afb78-eaa6-4498-a064-db9a2c2630c8"/>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="true" isItalic="false"/>
+					<font size="7" fontName="Arial" isBold="true" isItalic="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{week_difference_percentage}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement x="447" y="10" width="60" height="10" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="true" isItalic="false"/>
+					<font size="7" fontName="Arial" isBold="true" isItalic="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{base_year_sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement x="267" y="10" width="60" height="10" uuid="612fe2cb-dddc-4eb7-8d4c-22f677db79c7"/>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="true" isItalic="false"/>
+					<font size="7" fontName="Arial" isBold="true" isItalic="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{comp_week_sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="37" y="10" width="170" height="10" uuid="57ce5783-0241-4a23-9207-b7b7cd151c5f"/>
 				<textElement>
-					<font size="7" isBold="true" isItalic="false"/>
+					<font size="7" fontName="Arial" isBold="true" isItalic="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{total}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement x="327" y="10" width="60" height="10" uuid="9f978343-f230-4e83-a79d-8c5089b5f11c"/>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="true" isItalic="false"/>
+					<font size="7" fontName="Arial" isBold="true" isItalic="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{week_difference}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement x="507" y="10" width="60" height="10" uuid="612fe2cb-dddc-4eb7-8d4c-22f677db79c7"/>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="true" isItalic="false"/>
+					<font size="7" fontName="Arial" isBold="true" isItalic="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{comp_year_sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="627" y="10" width="60" height="10" uuid="537afb78-eaa6-4498-a064-db9a2c2630c8"/>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="true" isItalic="false"/>
+					<font size="7" fontName="Arial" isBold="true" isItalic="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{year_difference_percentage}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement x="567" y="10" width="60" height="10" uuid="9f978343-f230-4e83-a79d-8c5089b5f11c"/>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="true" isItalic="false"/>
+					<font size="7" fontName="Arial" isBold="true" isItalic="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{year_difference}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>

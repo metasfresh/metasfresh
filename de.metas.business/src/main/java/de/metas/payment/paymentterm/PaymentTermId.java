@@ -1,8 +1,12 @@
 package de.metas.payment.paymentterm;
 
+import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -30,6 +34,7 @@ import lombok.Value;
 @Value
 public class PaymentTermId implements RepoIdAware
 {
+	@JsonCreator
 	public static PaymentTermId ofRepoId(final int repoId)
 	{
 		return new PaymentTermId(repoId);
@@ -40,15 +45,27 @@ public class PaymentTermId implements RepoIdAware
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	public static int getRepoId(final PaymentTermId paymentTermId)
-	{
-		return paymentTermId != null ? paymentTermId.getRepoId() : -1;
-	}
-
 	int repoId;
 
 	private PaymentTermId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_PaymentTerm_ID");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
+	}
+
+	public static int toRepoId(final PaymentTermId id)
+	{
+		return id != null ? id.getRepoId() : -1;
+	}
+
+	public static boolean equals(final PaymentTermId id1, final PaymentTermId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

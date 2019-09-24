@@ -20,11 +20,9 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -33,6 +31,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
@@ -66,11 +65,11 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
@@ -148,7 +147,7 @@ public class HUTransformService
 		this.referencedObjects = referencedObjects != null ? ImmutableList.copyOf(referencedObjects) : ImmutableList.of();
 
 		final Properties effectiveCtx = ctx != null ? ctx : Env.getCtx();
-		final String effectiveTrxName = Util.coalesce(trxName, ITrx.TRXNAME_ThreadInherited);
+		final String effectiveTrxName = CoalesceUtil.coalesce(trxName, ITrx.TRXNAME_ThreadInherited);
 		final IMutableHUContext mutableHUContext = Services.get(IHUContextFactory.class).createMutableHUContext(effectiveCtx, effectiveTrxName);
 		if (emptyHUListener != null)
 		{
@@ -561,7 +560,7 @@ public class HUTransformService
 
 		// gh #1759: explicitly take the capacity from the tuPIItemProduct which the user selected
 		final ProductId productId = ProductId.ofRepoId(tuPIItemProduct.getM_Product_ID());
-		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(tuPIItemProduct.getC_UOM_ID());
+		final I_C_UOM uom = IHUPIItemProductBL.extractUOMOrNull(tuPIItemProduct);
 		final Capacity capacity = Services.get(IHUCapacityBL.class).getCapacity(tuPIItemProduct, productId, uom);
 		destination.addCUPerTU(capacity);
 
@@ -850,9 +849,9 @@ public class HUTransformService
 			// create the new LU
 			final I_M_HU newLuHU = handlingUnitsDAO
 					.createHUBuilder(huContext)
-					.setC_BPartner(sourceTuHU.getC_BPartner())
+					.setC_BPartner(IHandlingUnitsBL.extractBPartnerOrNull(sourceTuHU))
 					.setC_BPartner_Location_ID(sourceTuHU.getC_BPartner_Location_ID())
-					.setLocatorId(LocatorId.ofRecord(sourceTuHU.getM_Locator()))
+					.setLocatorId(IHandlingUnitsBL.extractLocatorId(sourceTuHU))
 					.setHUPlanningReceiptOwnerPM(isOwnPackingMaterials)
 					.setHUStatus(sourceTuHU.getHUStatus()) // gh #1975: when creating a new parent-LU inherit the source's status
 					.create(luPIItem.getM_HU_PI_Version());
@@ -930,7 +929,7 @@ public class HUTransformService
 		{
 			final IHUProductStorage firstProductStorage = productStorages.get(0);
 
-			final BigDecimal qtyOfStorage = firstProductStorage.getQty().getAsBigDecimal();
+			final BigDecimal qtyOfStorage = firstProductStorage.getQty().toBigDecimal();
 
 			final BigDecimal sourceQtyCUperTU; // will be used to get the overall cuQty to transfer, by multiplying with the given qtyTU
 			if (handlingUnitsBL.isAggregateHU(sourceTuHU))
@@ -966,7 +965,8 @@ public class HUTransformService
 			}
 
 			final I_M_HU_PI_Item materialItem = handlingUnitsDAO
-					.retrievePIItems(tuPI, sourceTuHU.getC_BPartner()).stream()
+					.retrievePIItems(tuPI, IHandlingUnitsBL.extractBPartnerOrNull(sourceTuHU))
+					.stream()
 					.filter(i -> X_M_HU_PI_Item.ITEMTYPE_Material.equals(i.getItemType()))
 					.findFirst().orElse(null);
 			if (materialItem == null)
@@ -1056,11 +1056,13 @@ public class HUTransformService
 				@Nullable final Boolean keepNewCUsUnderSameParent,
 				@Nullable final Boolean onlyFromUnreservedHUs)
 		{
+			Check.assumeNotEmpty(sourceHUs, "sourceHUs is not empty");
+			
 			this.sourceHUs = sourceHUs;
 			this.qtyCU = qtyCU;
 			this.productId = productId;
-			this.keepNewCUsUnderSameParent = Util.coalesce(keepNewCUsUnderSameParent, false);
-			this.onlyFromUnreservedHUs = Util.coalesce(onlyFromUnreservedHUs, false);
+			this.keepNewCUsUnderSameParent = CoalesceUtil.coalesce(keepNewCUsUnderSameParent, false);
+			this.onlyFromUnreservedHUs = CoalesceUtil.coalesce(onlyFromUnreservedHUs, false);
 		}
 	}
 

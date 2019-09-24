@@ -14,7 +14,7 @@ public class X_AD_ImpFormat extends org.compiere.model.PO implements I_AD_ImpFor
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2005384924L;
+	private static final long serialVersionUID = -1649907738L;
 
     /** Standard Constructor */
     public X_AD_ImpFormat (Properties ctx, int AD_ImpFormat_ID, String trxName)
@@ -70,7 +70,7 @@ public class X_AD_ImpFormat extends org.compiere.model.PO implements I_AD_ImpFor
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
+	public org.compiere.model.I_AD_Table getAD_Table()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
 	}

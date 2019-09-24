@@ -1,5 +1,7 @@
 package de.metas.order.document.counterDoc;
 
+import java.util.List;
+
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -88,15 +90,15 @@ public class C_Order_CounterDocHandler extends CounterDocumentHandlerAdapter
 		final de.metas.adempiere.model.I_C_Order counterOrder = InterfaceWrapperHelper.newInstance(de.metas.adempiere.model.I_C_Order.class, document.getCtx());
 		final MOrder counterOrderPO = LegacyAdapters.convertToPO(counterOrder);
 
-		counterOrder.setAD_Org(counterOrg); // 09700
+		counterOrder.setAD_Org_ID(counterOrg.getAD_Org_ID()); // 09700
 
 		//
 		Services.get(IOrderBL.class).setDocTypeTargetIdAndUpdateDescription(order, counterDocType.getC_DocType_ID());
 		counterOrder.setIsSOTrx(counterDocType.isSOTrx());
 
 		// the new order needs to figure out the pricing by itself
-		counterOrder.setM_PricingSystem(null);
-		counterOrder.setM_PriceList(null);
+		counterOrder.setM_PricingSystem_ID(-1);
+		counterOrder.setM_PriceList_ID(-1);
 
 		counterOrder.setDateOrdered(order.getDateOrdered());
 		counterOrder.setDateAcct(order.getDateAcct());
@@ -120,11 +122,9 @@ public class C_Order_CounterDocHandler extends CounterDocumentHandlerAdapter
 		counterOrderPO.copyLinesFrom(orderPO, counter, copyASI);
 
 		// Update copied lines
-		final boolean requery = true;
-		final MOrderLine[] counterLines = counterOrderPO.getLines(requery, null);
-		for (int i = 0; i < counterLines.length; i++)
+		final List<MOrderLine> counterLines = counterOrderPO.getLinesRequery();
+		for (final MOrderLine counterLine : counterLines)
 		{
-			final MOrderLine counterLine = counterLines[i];
 			Services.get(IOrderLineBL.class).setOrder(counterLine, counterOrderPO); // copies header values (BP, etc.)
 			counterLine.setPrice();
 			counterLine.setTax();

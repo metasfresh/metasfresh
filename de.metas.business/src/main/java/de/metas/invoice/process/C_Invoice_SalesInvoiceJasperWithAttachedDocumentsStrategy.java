@@ -1,7 +1,5 @@
 package de.metas.invoice.process;
 
-import lombok.NonNull;
-
 import java.util.List;
 
 import org.adempiere.service.ISysConfigBL;
@@ -16,10 +14,10 @@ import com.google.common.collect.ImmutableList;
 
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.report.jasper.OutputType;
-import de.metas.attachments.AttachmentConstants;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
+import de.metas.attachments.AttachmentTags;
 import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfo;
@@ -29,6 +27,7 @@ import de.metas.report.ExecuteReportStrategyUtil.PdfDataProvider;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -84,7 +83,7 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 		final boolean isPDF = OutputType.PDF.equals(outputType);
 		if (!isPDF)
 		{
-			Loggables.get().withLogger(logger, Level.WARN).addLog("Concatenating additional PDF-Data is not supported with outputType={}; returning only the jasper data itself.", outputType);
+			Loggables.withLogger(logger, Level.WARN).addLog("Concatenating additional PDF-Data is not supported with outputType={}; returning only the jasper data itself.", outputType);
 			return new ExecuteReportResult(outputType, invoiceData);
 		}
 
@@ -92,7 +91,7 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 
 		final AttachmentEntryQuery attachmentQuery = AttachmentEntryQuery.builder()
 				.referencedRecord(TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId))
-				.tagSetToTrue(AttachmentConstants.TAGNAME_CONCATENATE_PDF_TO_INVOICE_PDF)
+				.tagSetToTrue(AttachmentTags.TAGNAME_CONCATENATE_PDF_TO_INVOICE_PDF)
 				.mimeType(MimeType.TYPE_PDF)
 				.build();
 

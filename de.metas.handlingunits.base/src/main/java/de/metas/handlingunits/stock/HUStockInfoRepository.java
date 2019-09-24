@@ -8,6 +8,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.springframework.stereotype.Repository;
 
 import de.metas.bpartner.BPartnerId;
@@ -19,8 +20,8 @@ import de.metas.handlingunits.stock.HUStockInfoQuery.HUStockInfoSingleQuery.Attr
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -92,6 +93,8 @@ public class HUStockInfoRepository
 	private HUStockInfo ofRecord(@NonNull final I_M_HU_Stock_Detail_V record)
 	{
 		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+
 		final ITranslatableString huStatus = adReferenceDAO.retrieveListNameTranslatableString(X_M_HU.HUSTATUS_AD_Reference_ID, record.getHUStatus());
 
 		return HUStockInfo.builder()
@@ -102,11 +105,17 @@ public class HUStockInfoRepository
 				.huId(HuId.ofRepoId(record.getM_HU_ID()))
 				.huStatus(huStatus)
 				.huStorageRepoId(record.getM_HU_Storage_ID())
-				.locatorId(LocatorId.ofRecord(record.getM_Locator()))
+				.locatorId(extractLocatorId(record))
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
-				.qty(Quantity.of(record.getQty(), record.getC_UOM()))
+				.qty(Quantity.of(record.getQty(), uomsRepo.getById(record.getC_UOM_ID())))
 				.build();
 
+	}
+
+	private LocatorId extractLocatorId(final I_M_HU_Stock_Detail_V record)
+	{
+		final int locatorRepoId = record.getM_Locator_ID();
+		return Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(locatorRepoId);
 	}
 
 }

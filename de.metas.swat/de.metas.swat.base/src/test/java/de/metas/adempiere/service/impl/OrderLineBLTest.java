@@ -40,9 +40,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_C_Currency;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.money.CurrencyId;
 import de.metas.order.IOrderLineBL;
 import de.metas.pricing.rules.MockedPricingRule;
 import de.metas.uom.CreateUOMConversionRequest;
@@ -83,17 +85,15 @@ public class OrderLineBLTest
 		product.setM_Product_Category_ID(20);
 		InterfaceWrapperHelper.save(product);
 
-		final I_C_Currency currency = InterfaceWrapperHelper.create(ctx, I_C_Currency.class, ITrx.TRXNAME_None);
-		currency.setStdPrecision(0);
-		InterfaceWrapperHelper.save(currency);
+		final CurrencyId currency = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_M_PriceList priceList = InterfaceWrapperHelper.create(ctx, I_M_PriceList.class, ITrx.TRXNAME_None);
-		priceList.setC_Currency_ID(currency.getC_Currency_ID());
+		priceList.setC_Currency_ID(currency.getRepoId());
 		InterfaceWrapperHelper.save(priceList);
 
 		final I_C_Order order = InterfaceWrapperHelper.create(ctx, I_C_Order.class, ITrx.TRXNAME_None);
 		order.setM_PriceList_ID(priceList.getM_PriceList_ID());
-		order.setC_Currency_ID(currency.getC_Currency_ID());
+		order.setC_Currency_ID(currency.getRepoId());
 		InterfaceWrapperHelper.save(order);
 
 		final I_M_PriceList_Version plv = InterfaceWrapperHelper.create(ctx, I_M_PriceList_Version.class, ITrx.TRXNAME_None);
@@ -114,12 +114,12 @@ public class OrderLineBLTest
 		final I_M_ProductPrice productprice = InterfaceWrapperHelper.create(ctx, I_M_ProductPrice.class, ITrx.TRXNAME_None);
 		productprice.setM_Product_ID(product.getM_Product_ID());
 		productprice.setM_PriceList_Version_ID(plv.getM_PriceList_Version_ID());
-		productprice.setC_UOM(priceUom);
+		productprice.setC_UOM_ID(priceUom.getC_UOM_ID());
 		InterfaceWrapperHelper.save(productprice);
 
 		orderline.setM_PriceList_Version_ID(plv.getM_PriceList_Version_ID());
 
-		orderline.setM_Product(product);
+		orderline.setM_Product_ID(product.getM_Product_ID());
 
 		orderline.setC_Order(order);
 
@@ -129,9 +129,9 @@ public class OrderLineBLTest
 
 		orderline.setQtyOrdered(BigDecimal.ONE);
 
-		orderline.setPrice_UOM(priceUom);
+		orderline.setPrice_UOM_ID(priceUom.getC_UOM_ID());
 
-		orderline.setC_UOM(uom);
+		orderline.setC_UOM_ID(uom.getC_UOM_ID());
 
 		return orderline;
 	}

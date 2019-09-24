@@ -27,30 +27,41 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAttributeSet;
 import org.compiere.model.MProductCategory;
+import org.compiere.model.X_C_UOM;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableMap;
+
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.cache.CCache;
+import de.metas.cache.CCache.CacheMapType;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.IProductCostingBL;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
@@ -103,17 +114,17 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public I_C_UOM getStockingUOM(@NonNull final I_M_Product product)
+	public I_C_UOM getStockUOM(@NonNull final I_M_Product product)
 	{
 		return Services.get(IUOMDAO.class).getById(product.getC_UOM_ID());
 	}
 
 	@Override
-	public I_C_UOM getStockingUOM(final int productId)
+	public I_C_UOM getStockUOM(final int productId)
 	{
 		// we don't know if the product of productId was already committed, so we can't load it out-of-trx
 		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
-		return Check.assumeNotNull(getStockingUOM(product), "The uom for productId={} may not be null", productId);
+		return Check.assumeNotNull(getStockUOM(product), "The uom for productId={} may not be null", productId);
 	}
 
 	/**
@@ -138,7 +149,7 @@ public final class ProductBL implements IProductBL
 			return BigDecimal.ZERO;
 		}
 
-		final I_C_UOM stockingUom = getStockingUOM(product);
+		final I_C_UOM stockingUom = getStockUOM(product);
 
 		//
 		// Calculate the rate to convert from stocking UOM to "uomTo"
@@ -203,9 +214,9 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public boolean isStocked(final int productId)
+	public boolean isStocked(@Nullable final ProductId productId)
 	{
-		if (productId <= 0)
+		if (productId == null)
 		{
 			return false;
 		}
@@ -248,24 +259,15 @@ public final class ProductBL implements IProductBL
 		return getAttributeSetId(product);
 	}
 
-	public I_M_AttributeSet getM_AttributeSet(@NonNull final ProductId productId)
+	@Override
+	public I_M_AttributeSet getAttributeSetOrNull(@NonNull final ProductId productId)
 	{
 		final AttributeSetId attributeSetId = getAttributeSetId(productId);
 		if (attributeSetId.isNone())
 		{
 			return null;
 		}
-		return Services.get(IAttributeDAO.class).getAttributeSetById(attributeSetId);
-	}
 
-	@Override
-	public I_M_AttributeSet getM_AttributeSet(I_M_Product product)
-	{
-		final AttributeSetId attributeSetId = getAttributeSetId(product);
-		if (attributeSetId.isNone())
-		{
-			return null;
-		}
 		return Services.get(IAttributeDAO.class).getAttributeSetById(attributeSetId);
 	}
 
@@ -362,7 +364,7 @@ public final class ProductBL implements IProductBL
 	@Override
 	public boolean isInstanceAttribute(@NonNull final ProductId productId)
 	{
-		final I_M_AttributeSet mas = getM_AttributeSet(productId);
+		final I_M_AttributeSet mas = getAttributeSetOrNull(productId);
 		return mas != null && mas.isInstanceAttribute();
 	}
 
@@ -406,6 +408,23 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public ImmutableMap<ProductId, String> getProductValues(@NonNull final Set<ProductId> productIds)
+	{
+		if (productIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final IProductDAO productsRepo = Services.get(IProductDAO.class);
+
+		return productsRepo.getByIds(productIds)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						product -> ProductId.ofRepoId(product.getM_Product_ID()),
+						product -> product.getValue()));
+	}
+
+	@Override
 	public String getProductName(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
@@ -414,5 +433,46 @@ public final class ProductBL implements IProductBL
 			return "<" + productId + ">";
 		}
 		return product.getName();
+	}
+
+	@Override
+	public boolean isFreightCostProduct(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+
+		final String productType = product.getProductType();
+
+		return X_M_Product.PRODUCTTYPE_FreightCost.equals(productType);
+	}
+
+	private final CCache<ProductId, Optional<UomId>> catchUomCache = CCache
+			.<ProductId, Optional<UomId>> builder()
+			.tableName(I_C_UOM_Conversion.Table_Name)
+			.cacheMapType(CacheMapType.LRU)
+			.initialCapacity(500)
+			.build();
+
+	@Override
+	public Optional<UomId> getCatchUOMId(@NonNull final ProductId productId)
+	{
+		return catchUomCache.getOrLoad(productId, this::getCatchUOMId0);
+	}
+
+	public Optional<UomId> getCatchUOMId0(@NonNull final ProductId productId)
+	{
+		final I_C_UOM catchUomRecord = Services.get(IQueryBL.class).createQueryBuilder(I_C_UOM_Conversion.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_UOM_Conversion.COLUMN_M_Product_ID, productId)
+				.addEqualsFilter(I_C_UOM_Conversion.COLUMN_IsCatchUOMForProduct, true)
+				.andCollect(I_C_UOM_Conversion.COLUMN_C_UOM_To_ID)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_UOM.COLUMNNAME_UOMType, X_C_UOM.UOMTYPE_Weigth)
+				.create()
+				.firstOnly(I_C_UOM.class); // we have a unique constraint
+		if (catchUomRecord == null)
+		{
+			return Optional.empty();
+		}
+		return Optional.of(UomId.ofRepoId(catchUomRecord.getC_UOM_ID()));
 	}
 }

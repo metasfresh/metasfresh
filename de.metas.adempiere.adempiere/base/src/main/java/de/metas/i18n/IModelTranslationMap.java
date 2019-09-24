@@ -70,7 +70,7 @@ public interface IModelTranslationMap
 			columnTrls.put(adLanguage, Strings.nullToEmpty(columnTrl));
 		}
 
-		return ImmutableTranslatableString.ofMap(columnTrls, defaultValue);
+		return TranslatableStrings.ofMap(columnTrls, defaultValue);
 	}
 
 	/**

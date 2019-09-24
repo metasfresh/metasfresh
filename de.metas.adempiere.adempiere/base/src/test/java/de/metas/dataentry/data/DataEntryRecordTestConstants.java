@@ -3,6 +3,7 @@ package de.metas.dataentry.data;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
@@ -39,23 +40,23 @@ import lombok.NonNull;
 
 public class DataEntryRecordTestConstants
 {
-	public static final ZonedDateTime DATE_TIME = ZonedDateTime.of(2019/* year */, 02/* month */, 12/* dayOfMonth */, 12/* hour */, 20/* minute */, 42/* second */, 2/* nanoOfSecond */, ZoneId.of("+01:00"));
+	public static final LocalDate DATE = LocalDate.of(2019/* year */, 02/* month */, 12/* dayOfMonth */);
 
 	public static final ZonedDateTime CREATED = ZonedDateTime.of(2019/* year */, 02/* month */, 12/* dayOfMonth */, 13/* hour */, 20/* minute */, 42/* second */, 2/* nanoOfSecond */, ZoneId.of("+01:00"));
 
 	public static final ZonedDateTime UPDATED = ZonedDateTime.of(2019/* year */, 02/* month */, 12/* dayOfMonth */, 14/* hour */, 20/* minute */, 42/* second */, 2/* nanoOfSecond */, ZoneId.of("+01:00"));
 
-	public static final CreatedUpdatedInfo CREATED_UPDATED_INFO = CreatedUpdatedInfo
+	public static final DataEntryCreatedUpdatedInfo CREATED_UPDATED_INFO = DataEntryCreatedUpdatedInfo
 			.createNew(UserId.ofRepoId(10), CREATED)
 			.updated(UserId.ofRepoId(20), UPDATED);
 
-	public static final ImmutableList<DataEntryRecordField<?>> SIMPLE_DATA_ENTRY_FIELD_DATA = createDataEntryFieldData(DATE_TIME);
+	public static final ImmutableList<DataEntryRecordField<?>> SIMPLE_DATA_ENTRY_FIELD_DATA = createDataEntryFieldData(DATE);
 
-	private static ImmutableList<DataEntryRecordField<?>> createDataEntryFieldData(@NonNull final ZonedDateTime dateTime)
+	private static ImmutableList<DataEntryRecordField<?>> createDataEntryFieldData(@NonNull final LocalDate date)
 	{
 		return ImmutableList
 				.<DataEntryRecordField<?>> builder()
-				.add(DataEntryRecordFieldDate.of(DataEntryFieldId.ofRepoId(30), CREATED_UPDATED_INFO, dateTime))
+				.add(DataEntryRecordFieldDate.of(DataEntryFieldId.ofRepoId(30), CREATED_UPDATED_INFO, date))
 				.add(DataEntryRecordFieldListValue.of(DataEntryFieldId.ofRepoId(31), CREATED_UPDATED_INFO, DataEntryListValueId.ofRepoId(41)))
 				.add(DataEntryRecordFieldNumber.of(DataEntryFieldId.ofRepoId(32), CREATED_UPDATED_INFO, new BigDecimal("0.23")))
 				.add(DataEntryRecordFieldString.of(DataEntryFieldId.ofRepoId(33), CREATED_UPDATED_INFO, "stringFieldValue"))

@@ -3,7 +3,6 @@ package de.metas.material.cockpit.availableforsales.interceptor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +13,7 @@ import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo.ConfigQuery;
 import de.metas.material.cockpit.availableforsales.interceptor.AvailableForSalesUtil.CheckAvailableForSalesRequest;
 import de.metas.material.cockpit.availableforsales.model.I_C_OrderLine;
+import de.metas.organization.OrgId;
 import lombok.NonNull;
 
 /*
@@ -39,7 +39,7 @@ import lombok.NonNull;
  */
 
 @Interceptor(I_C_OrderLine.class)
-@Component("de.metas.material.cockpit.availableforsales.interceptor.C_OrderLine")
+@Component
 public class C_OrderLine
 {
 	private final AvailableForSalesUtil availableForSalesUtil;

@@ -113,7 +113,7 @@ import lombok.NonNull;
 					return null;
 				}
 
-				if (po.is_ValueChanged(IDocument.DocStatus) && Services.get(IDocumentBL.class).isDocumentReversedOrVoided(po))
+				if (po.is_ValueChanged(IDocument.COLUMNNAME_DocStatus) && Services.get(IDocumentBL.class).isDocumentReversedOrVoided(po))
 				{
 					voidDocOutbound(po);
 				}

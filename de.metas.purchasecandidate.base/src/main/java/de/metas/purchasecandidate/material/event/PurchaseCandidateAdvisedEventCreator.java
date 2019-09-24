@@ -2,13 +2,13 @@ package de.metas.purchasecandidate.material.event;
 
 import java.util.Optional;
 
-import org.adempiere.service.OrgId;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import de.metas.material.planning.IMutableMRPContext;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.VendorProductInfoService;
@@ -61,12 +61,12 @@ public class PurchaseCandidateAdvisedEventCreator
 		}
 
 		final ProductId productId = ProductId.ofRepoId(supplyRequiredDescriptor.getMaterialDescriptor().getProductId());
-		final OrgId orgId = OrgId.ofRepoId(supplyRequiredDescriptor.getEventDescriptor().getOrgId());
+		final OrgId orgId = supplyRequiredDescriptor.getEventDescriptor().getOrgId();
 
 		final Optional<VendorProductInfo> defaultVendorProductInfo = vendorProductInfoService.getDefaultVendorProductInfo(productId, orgId);
 		if (!defaultVendorProductInfo.isPresent())
 		{
-			Loggables.get().addLog("Found no VendorProductInfo for productId={} and orgId={}", productId.getRepoId(), orgId.getRepoId());
+			Loggables.addLog("Found no VendorProductInfo for productId={} and orgId={}", productId.getRepoId(), orgId.getRepoId());
 			return Optional.empty();
 		}
 
@@ -81,7 +81,7 @@ public class PurchaseCandidateAdvisedEventCreator
 				.vendorId(defaultVendorProductInfo.get().getVendorId().getRepoId())
 				.build();
 
-		Loggables.get().addLog("Created PurchaseCandidateAdvisedEvent");
+		Loggables.addLog("Created PurchaseCandidateAdvisedEvent");
 		return Optional.of(event);
 	}
 }

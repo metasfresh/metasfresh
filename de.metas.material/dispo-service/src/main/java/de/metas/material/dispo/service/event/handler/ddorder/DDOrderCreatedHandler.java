@@ -21,6 +21,7 @@ import de.metas.material.event.ddorder.AbstractDDOrderEvent;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import lombok.NonNull;
 
 /*
@@ -93,8 +94,8 @@ public class DDOrderCreatedHandler extends DDOrderAdvisedOrCreatedHandler<DDOrde
 		final DDOrderCreatedEvent ddOrderCreatedEvent = cast(ddOrderEvent);
 
 		final DDOrder ddOrder = ddOrderCreatedEvent.getDdOrder();
-		final int groupId = ddOrder.getMaterialDispoGroupId();
-		if (groupId <= 0)
+		final MaterialDispoGroupId groupId = ddOrder.getMaterialDispoGroupId();
+		if (groupId == null)
 		{
 			// returned false, but don't write another log message; we already logged in the other createQuery() method
 			return CandidatesQuery.FALSE;

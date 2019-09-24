@@ -30,6 +30,7 @@ import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
+import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
@@ -59,6 +60,7 @@ import de.metas.material.event.forecast.ForecastLine;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class,
 		ShutdownListener.class,
+		ModelProductDescriptorExtractor.class,
 		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
 public class M_ForecastEventCreatorTest
 {
@@ -151,7 +153,7 @@ public class M_ForecastEventCreatorTest
 		assertThat(materialDescriptor.getDate()).isEqualTo(asInstant(forecastLineRecord.getDatePromised()));
 		assertThat(materialDescriptor.getProductId()).isEqualTo(forecastLineRecord.getM_Product_ID());
 		assertThat(materialDescriptor.getQuantity()).isEqualTo(forecastLineRecord.getQty());
-		assertThat(materialDescriptor.getWarehouseId()).isEqualTo(forecastLineRecord.getM_Warehouse_ID());
+		assertThat(materialDescriptor.getWarehouseId().getRepoId()).isEqualTo(forecastLineRecord.getM_Warehouse_ID());
 	}
 
 }

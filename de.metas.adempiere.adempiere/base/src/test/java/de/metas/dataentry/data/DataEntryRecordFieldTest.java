@@ -4,11 +4,21 @@ import static de.metas.dataentry.data.DataEntryRecordTestConstants.CREATED_UPDAT
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
+import java.time.Month;
 
+import org.compiere.util.TimeUtil;
 import org.junit.Test;
 
+import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableMultimap;
+
 import de.metas.dataentry.DataEntryFieldId;
+import de.metas.dataentry.DataEntryListValueId;
+import de.metas.dataentry.FieldType;
+import de.metas.dataentry.layout.DataEntryField;
+import de.metas.dataentry.layout.DataEntryListValue;
+import de.metas.i18n.TranslatableStrings;
 
 /*
  * #%L
@@ -62,9 +72,101 @@ public class DataEntryRecordFieldTest
 	}
 
 	@Test
-	public void createDataEntryRecordField_ZonedDateTime()
+	public void createDataEntryRecordField_LocalDate()
 	{
-		final DataEntryRecordField<ZonedDateTime> result1 = DataEntryRecordField.createDataEntryRecordField(DataEntryFieldId.ofRepoId(1), CREATED_UPDATED_INFO, DataEntryRecordTestConstants.DATE_TIME);
-		assertThat(result1.getValue()).isEqualTo(DataEntryRecordTestConstants.DATE_TIME);
+		final DataEntryRecordField<LocalDate> result1 = DataEntryRecordField.createDataEntryRecordField(DataEntryFieldId.ofRepoId(1), CREATED_UPDATED_INFO, DataEntryRecordTestConstants.DATE);
+		assertThat(result1.getValue()).isEqualTo(DataEntryRecordTestConstants.DATE);
 	}
+
+	@Test
+	public void convertValueToFieldType_MakeSureCoversPrimitiveDataTypes()
+	{
+		final ImmutableMultimap<Class<?>, Object> testValuesByClass = ImmutableMultimap.<Class<?>, Object> builder()
+				.put(Integer.class, 1234)
+				.put(Integer.class, "1234")
+				.put(Integer.class, BigDecimal.valueOf(1234))
+				//
+				.put(String.class, "some dummy")
+				.put(String.class, 111)
+				.put(String.class, new BigDecimal("1234.55"))
+				//
+				.put(BigDecimal.class, new BigDecimal("123.456"))
+				.put(BigDecimal.class, "123.456")
+				.put(BigDecimal.class, 123)
+				//
+				.put(Boolean.class, Boolean.TRUE)
+				.put(Boolean.class, "Y")
+				.put(Boolean.class, "N")
+				.put(Boolean.class, "true")
+				.put(Boolean.class, "false")
+				//
+				.put(LocalDate.class, LocalDate.of(2019, Month.JULY, 3))
+				.put(LocalDate.class, "2019-07-03")
+				.put(LocalDate.class, TimeUtil.asTimestamp(LocalDate.of(2019, Month.JULY, 3)))
+				//
+				.build();
+
+		for (final FieldType fieldType : FieldType.values())
+		{
+			// Skip types not handled by this test
+			if (FieldType.LIST.equals(fieldType))
+			{
+				continue;
+			}
+
+			final DataEntryField field = DataEntryField.builder()
+					.id(DataEntryFieldId.ofRepoId(123))
+					.caption(TranslatableStrings.anyLanguage("caption"))
+					.description(TranslatableStrings.anyLanguage("description"))
+					.type(fieldType)
+					.build();
+
+			final Class<?> valueType = fieldType.getClazz();
+
+			final ImmutableCollection<Object> testValues = testValuesByClass.get(valueType);
+			assertThat(testValues)
+					.as("Test values shall exist for " + valueType + " - " + field)
+					.isNotEmpty();
+
+			for (final Object value : testValues)
+			{
+				final Object valueConv = DataEntryRecordField.convertValueToFieldType(value, field);
+				assertThat(valueConv).isInstanceOf(valueType);
+			}
+		}
+	}
+
+	@Test
+	public void convertValueToFieldType_ListDataType()
+	{
+		final DataEntryField field = DataEntryField.builder()
+				.id(DataEntryFieldId.ofRepoId(123))
+				.caption(TranslatableStrings.anyLanguage("caption"))
+				.description(TranslatableStrings.anyLanguage("description"))
+				.type(FieldType.LIST)
+				.listValue(DataEntryListValue.builder()
+						.id(DataEntryListValueId.ofRepoId(1))
+						.name(TranslatableStrings.anyLanguage("item1"))
+						.build())
+				.listValue(DataEntryListValue.builder()
+						.id(DataEntryListValueId.ofRepoId(2))
+						.name(TranslatableStrings.anyLanguage("item2"))
+						.build())
+				.build();
+
+		assertThat(DataEntryRecordField.convertValueToFieldType(1, field))
+				.isEqualTo(DataEntryListValueId.ofRepoId(1));
+		assertThat(DataEntryRecordField.convertValueToFieldType("1", field))
+				.isEqualTo(DataEntryListValueId.ofRepoId(1));
+		assertThat(DataEntryRecordField.convertValueToFieldType("item1", field))
+				.isEqualTo(DataEntryListValueId.ofRepoId(1));
+
+		assertThat(DataEntryRecordField.convertValueToFieldType(2, field))
+				.isEqualTo(DataEntryListValueId.ofRepoId(2));
+		assertThat(DataEntryRecordField.convertValueToFieldType("2", field))
+				.isEqualTo(DataEntryListValueId.ofRepoId(2));
+		assertThat(DataEntryRecordField.convertValueToFieldType("item2", field))
+				.isEqualTo(DataEntryListValueId.ofRepoId(2));
+	}
+
 }

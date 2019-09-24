@@ -1,7 +1,5 @@
 package de.metas.adempiere.gui.search.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -12,36 +10,25 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.search.IInfoSimple;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
-import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.handlingunits.IHUPIItemProductDAO;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.IProductBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -72,20 +59,6 @@ import de.metas.util.Services;
 	public int getM_Product_ID()
 	{
 		return infoWindow.getRecordId(rowIndexModel);
-	}
-
-	@Override
-	public I_M_Product getM_Product()
-	{
-		final int productId = getM_Product_ID();
-		if (productId <= 0)
-		{
-			return null;
-		}
-
-		// NOTE: we assume M_Product is cached
-		final I_M_Product product = InterfaceWrapperHelper.create(Env.getCtx(), productId, I_M_Product.class, ITrx.TRXNAME_None);
-		return product;
 	}
 
 	@Override
@@ -136,7 +109,7 @@ import de.metas.util.Services;
 	}
 
 	@Override
-	public void setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product huPiItemProduct)
+	public void setM_HU_PI_Item_Product_ID(final int huPiItemProductId)
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -160,29 +133,6 @@ import de.metas.util.Services;
 	}
 
 	@Override
-	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
-	{
-		final int piItemProductId = getM_HU_PI_Item_Product_ID();
-		if (piItemProductId <= 0)
-		{
-			return null;
-		}
-		return retrieveM_HU_PI_Item_ProductById(piItemProductId);
-	}
-
-	// NOTE: commented @Cached out because is no longer applied anyways (not a service)
-	// @Cached
-	/* package */I_M_HU_PI_Item_Product retrieveM_HU_PI_Item_ProductById(final int huPiItemProductId)
-	{
-		if (huPiItemProductId <= 0)
-		{
-			return null;
-		}
-		final I_M_HU_PI_Item_Product huPiItemProduct = Services.get(IHUPIItemProductDAO.class).getById(HUPIItemProductId.ofRepoId(huPiItemProductId));
-		return huPiItemProduct;
-	}
-
-	@Override
 	public BigDecimal getQtyTU()
 	{
 		final BigDecimal qty = infoWindow.getValue(rowIndexModel, IHUPackingAware.COLUMNNAME_QtyPacks);
@@ -196,66 +146,28 @@ import de.metas.util.Services;
 	}
 
 	@Override
-	public I_C_UOM getC_UOM()
+	public int getC_UOM_ID()
 	{
-		return getC_UOM(getM_Product_ID());
-	}
-
-	/* package */I_C_UOM getC_UOM(final int productId)
-	{
-		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
-		return Services.get(IProductBL.class).getStockingUOM(product);
+		return Services.get(IProductBL.class).getStockUOMId(getM_Product_ID()).getRepoId();
 	}
 
 	@Override
-	public void setC_UOM(final I_C_UOM uom)
+	public void setC_UOM_ID(final int uomId)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public void setC_BPartner(final I_C_BPartner partner)
+	public void setC_BPartner_ID(final int partnerId)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public I_C_BPartner getC_BPartner()
+	public int getC_BPartner_ID()
 	{
 		final KeyNamePair bpartnerKNP = infoWindow.getValue(rowIndexModel, IHUPackingAware.COLUMNNAME_C_BPartner_ID);
-		if (bpartnerKNP == null || bpartnerKNP.getKey() <= 0)
-		{
-			return null;
-		}
-
-		return retrieveC_BPartnerById(bpartnerKNP.getKey());
-	}
-
-	// NOTE: commented @Cached out because is no longer applied anyways (not a service)
-	// @Cached
-	/* package */I_C_BPartner retrieveC_BPartnerById(final int partnerID)
-	{
-		if (partnerID <= 0)
-		{
-			return null;
-		}
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(Env.getCtx(), partnerID, I_C_BPartner.class, ITrx.TRXNAME_None);
-
-		return partner;
-	}
-
-	// DateOrdered does not exist yet in Info Windows
-
-	@Override
-	public void setDateOrdered(final Timestamp dateOrdered)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Timestamp getDateOrdered()
-	{
-		throw new UnsupportedOperationException();
+		return bpartnerKNP != null ? bpartnerKNP.getKey() : -1;
 	}
 
 	@Override

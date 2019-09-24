@@ -80,14 +80,14 @@ public class AsyncAddToIndexProcessor extends WorkpackageProcessorAdapter
 			if (!modelIdsToRemove.isEmpty())
 			{
 				final IESIndexerResult result = modelIndexer.removeFromIndexByIds(modelIdsToRemove);
-				Loggables.get().addLog(result.getSummary());
+				Loggables.addLog(result.getSummary());
 				result.throwExceptionIfAnyFailure();
 			}
 
 			if (!modelsToAdd.isEmpty())
 			{
 				final IESIndexerResult result = modelIndexer.addToIndex(ESModelIndexerDataSources.ofCollection(modelsToAdd));
-				Loggables.get().addLog(result.getSummary());
+				Loggables.addLog(result.getSummary());
 				result.throwExceptionIfAnyFailure();
 			}
 

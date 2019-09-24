@@ -1,0 +1,10 @@
+de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItemTest.serializeDeserialize=[
+  {
+    "bpartnerIdentifier": "ext-12345",
+    "bpartnerComposite": {
+      "bpartner": {
+        "code": "code"
+      }
+    }
+  }
+]

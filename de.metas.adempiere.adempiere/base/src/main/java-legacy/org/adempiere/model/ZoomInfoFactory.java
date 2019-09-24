@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IPair;
@@ -42,7 +43,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
@@ -63,7 +64,7 @@ public class ZoomInfoFactory
 
 	private static final transient ZoomInfoFactory instance = new ZoomInfoFactory();
 
-	public static interface IZoomSource
+	public interface IZoomSource
 	{
 		Properties getCtx();
 
@@ -71,7 +72,7 @@ public class ZoomInfoFactory
 
 		String getTrxName();
 
-		int getAD_Window_ID();
+		AdWindowId getAD_Window_ID();
 
 		String getTableName();
 
@@ -117,25 +118,25 @@ public class ZoomInfoFactory
 	 */
 	public static final class POZoomSource implements IZoomSource
 	{
-		public static final POZoomSource of(final PO po, final int adWindowId)
+		public static POZoomSource of(final PO po, final AdWindowId adWindowId)
 		{
 			return new POZoomSource(po, adWindowId);
 		}
 
-		public static final POZoomSource of(final PO po)
+		public static POZoomSource of(final PO po)
 		{
-			final int adWindowId = 0;
+			final AdWindowId adWindowId = null;
 			return new POZoomSource(po, adWindowId);
 		}
 
 		private final PO po;
-		private final int adWindowId;
+		private final AdWindowId adWindowId;
 		private final String keyColumnName;
 
 		@Getter
 		private final boolean genericZoomOrigin;
 
-		private POZoomSource(@NonNull final PO po, final int adWindowId)
+		private POZoomSource(@NonNull final PO po, final AdWindowId adWindowId)
 		{
 			this.po = po;
 			this.adWindowId = adWindowId;
@@ -161,12 +162,12 @@ public class ZoomInfoFactory
 			final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 			final ArrayList<String> eligibleKeyColumnNames = new ArrayList<>();
-			for (int i = 0; i < keyColumnNamesArr.length; i++)
+			for (String element : keyColumnNamesArr)
 			{
-				final I_AD_Column column = adTableDAO.retrieveColumn(po.get_TableName(), keyColumnNamesArr[i]);
+				final I_AD_Column column = adTableDAO.retrieveColumn(po.get_TableName(), element);
 				if (column.isGenericZoomOrigin())
 				{
-					eligibleKeyColumnNames.add(keyColumnNamesArr[i]);
+					eligibleKeyColumnNames.add(element);
 				}
 			}
 
@@ -193,7 +194,7 @@ public class ZoomInfoFactory
 		}
 
 		@Override
-		public int getAD_Window_ID()
+		public AdWindowId getAD_Window_ID()
 		{
 			return adWindowId;
 		}
@@ -296,10 +297,10 @@ public class ZoomInfoFactory
 	@SuppressWarnings("serial")
 	public static final class ZoomInfo implements Serializable
 	{
-		public static final ZoomInfo of(
+		public static ZoomInfo of(
 				@NonNull final String zoomInfoId,
 				@NonNull final String internalName,
-				final int windowId,
+				final AdWindowId windowId,
 				@NonNull final MQuery query,
 				@NonNull final ITranslatableString destinationDisplay)
 		{
@@ -310,19 +311,19 @@ public class ZoomInfoFactory
 		private final String _internalName;
 		private final ITranslatableString _destinationDisplay;
 		private final MQuery _query;
-		private final int _windowId;
+		private final AdWindowId _windowId;
 
 		private ZoomInfo(
 				@NonNull final String zoomInfoId,
 				@NonNull final String internalName,
-				final int windowId,
+				@NonNull final AdWindowId windowId,
 				@NonNull final MQuery query,
 				@NonNull final ITranslatableString destinationDisplay)
 		{
 			_zoomInfoId = Check.assumeNotEmpty(zoomInfoId, "zoomInfoId is not empty");
 			_internalName = Check.assumeNotEmpty(internalName, "internalName is not empty");
 
-			_windowId = Check.assumeGreaterThanZero(windowId, "windowId");
+			_windowId = windowId;
 
 			_query = query;
 			_destinationDisplay = destinationDisplay;
@@ -352,8 +353,8 @@ public class ZoomInfoFactory
 
 		public ITranslatableString getLabel()
 		{
-			final ITranslatableString postfix = ImmutableTranslatableString.constant(" (#" + getRecordCount() + ")");
-			return ITranslatableString.compose("", _destinationDisplay, postfix);
+			final ITranslatableString postfix = TranslatableStrings.constant(" (#" + getRecordCount() + ")");
+			return TranslatableStrings.join("", _destinationDisplay, postfix);
 		}
 
 		public int getRecordCount()
@@ -367,7 +368,7 @@ public class ZoomInfoFactory
 			return _query.getRecordCountDuration();
 		}
 
-		public int getAD_Window_ID()
+		public AdWindowId getAdWindowId()
 		{
 			return _windowId;
 		}
@@ -401,17 +402,17 @@ public class ZoomInfoFactory
 	 */
 	public Stream<ZoomInfo> streamZoomInfos(final IZoomSource zoomOrigin)
 	{
-		final int targetAD_Window_ID = -1;
+		final AdWindowId targetAD_Window_ID = null;
 		final boolean checkRecordsCount = true;
 		return streamZoomInfos(zoomOrigin, targetAD_Window_ID, checkRecordsCount);
 	}
 
-	private Stream<ZoomInfo> streamZoomInfos(final IZoomSource zoomOrigin, final int targetAD_Window_ID, final boolean checkRecordsCount)
+	private Stream<ZoomInfo> streamZoomInfos(final IZoomSource zoomOrigin, final AdWindowId targetAD_Window_ID, final boolean checkRecordsCount)
 	{
 		logger.debug("source={}", zoomOrigin);
 
 		final IUserRolePermissions rolePermissions = Env.getUserRolePermissions();
-		final Set<Integer> alreadySeenWindowIds = new HashSet<>();
+		final Set<AdWindowId> alreadySeenWindowIds = new HashSet<>();
 
 		final String tableName = zoomOrigin.getTableName();
 		final List<IZoomProvider> zoomProviders = retrieveZoomProviders(tableName);
@@ -430,24 +431,24 @@ public class ZoomInfoFactory
 				})
 				//
 				// Filter out those windows on which current logged in user does not have permissions
-				.filter(zoomInfo -> rolePermissions.checkWindowPermission(zoomInfo.getAD_Window_ID()).hasReadAccess())
+				.filter(zoomInfo -> rolePermissions.checkWindowPermission(zoomInfo.getAdWindowId()).hasReadAccess())
 				//
 				// Filter by targetAD_Window_ID if any.
 				// If not our target window ID, skip it.
 				// This shall not happen because we asked the zoomProvider to return only those for our target window,
 				// but if is happening (because of a bug zoom provider) we shall not be so fragile.
 				.filter(zoomInfo -> {
-					if (targetAD_Window_ID <= 0)
+					if (targetAD_Window_ID == null)
 					{
 						return true; // accept
 					}
 
-					final int adWindowId = zoomInfo.getAD_Window_ID();
+					final AdWindowId adWindowId = zoomInfo.getAdWindowId();
 
 					// If not our target window ID, skip it
 					// This shall not happen because we asked the zoomProvider to return only those for our target window,
 					// but if is happening (because of a bug zoom provider) we shall not be so fragile.
-					if (targetAD_Window_ID != adWindowId)
+					if (!AdWindowId.equals(targetAD_Window_ID, adWindowId))
 					{
 						new AdempiereException("Got a ZoomInfo which is not for our target window. Skipping it."
 								+ "\n zoomInfo: " + zoomInfo
@@ -472,7 +473,7 @@ public class ZoomInfoFactory
 
 					if (zoomInfo.getRecordCount() > 0)
 					{
-						final int adWindowId = zoomInfo.getAD_Window_ID();
+						final AdWindowId adWindowId = zoomInfo.getAdWindowId();
 						if (!alreadySeenWindowIds.add(adWindowId))
 						{
 							logger.debug("Skipping zoomInfo {} because there is already one for destination '{}'", zoomInfo, adWindowId);
@@ -503,10 +504,8 @@ public class ZoomInfoFactory
 	 * @param targetWindowId target AD_Window_ID (must be provided)
 	 * @return ZoomInfo; never returns <code>null</code>
 	 */
-	public ZoomInfo retrieveZoomInfo(final IZoomSource zoomSource, final int targetWindowId)
+	public ZoomInfo retrieveZoomInfo(@NonNull final IZoomSource zoomSource, @NonNull final AdWindowId targetWindowId)
 	{
-		Check.assume(targetWindowId > 0, "targetWindowId > 0");
-
 		// NOTE: we need to check the records count because in case there are multiple ZoomInfos for the same targetWindowId,
 		// we shall pick the one which actually has some data. Usually there would be only one (see #1808)
 		final boolean checkRecordsCount = true;

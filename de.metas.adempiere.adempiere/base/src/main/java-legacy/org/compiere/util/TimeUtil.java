@@ -37,6 +37,7 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Date;
@@ -600,8 +601,8 @@ public class TimeUtil
 	public static int getDaysBetween(@NonNull Instant start, @NonNull Instant end)
 	{
 		// Thanks to http://mattgreencroft.blogspot.com/2014/12/java-8-time-choosing-right-object.html
-		final LocalDate d1 = LocalDateTime.ofInstant(start, ZoneId.systemDefault()).toLocalDate();
-		final LocalDate d2 = LocalDateTime.ofInstant(end, ZoneId.systemDefault()).toLocalDate();
+		final LocalDate d1 = LocalDateTime.ofInstant(start, SystemTime.zoneId()).toLocalDate();
+		final LocalDate d2 = LocalDateTime.ofInstant(end, SystemTime.zoneId()).toLocalDate();
 		return Period.between(d1, d2).getDays();
 	}
 
@@ -1101,7 +1102,7 @@ public class TimeUtil
 		}
 	}
 
-	public static final LocalDateTime min(final LocalDateTime date1, final LocalDateTime date2)
+	public static final ZonedDateTime min(final ZonedDateTime date1, final ZonedDateTime date2)
 	{
 		if (date1 == date2)
 		{
@@ -1307,20 +1308,22 @@ public class TimeUtil
 		}
 	}
 
-	public static boolean isDateOrTimeObject(final Object value)
+	public static boolean isDateOrTimeObject(@Nullable final Object value)
 	{
-		if (value == null)
-		{
-			return false;
-		}
+		return value != null
+				? isDateOrTimeClass(value.getClass())
+				: false;
+	}
 
-		return value instanceof Date
-				|| value instanceof Instant
-				|| value instanceof LocalDateTime
-				|| value instanceof LocalDate
-				|| value instanceof LocalTime
-				|| value instanceof ZonedDateTime
-				|| value instanceof XMLGregorianCalendar;
+	public static boolean isDateOrTimeClass(@NonNull final Class<?> clazz)
+	{
+		return java.util.Date.class.isAssignableFrom(clazz)
+				|| Instant.class.isAssignableFrom(clazz)
+				|| ZonedDateTime.class.isAssignableFrom(clazz)
+				|| LocalDateTime.class.isAssignableFrom(clazz)
+				|| LocalDate.class.isAssignableFrom(clazz)
+				|| LocalTime.class.isAssignableFrom(clazz)
+				|| XMLGregorianCalendar.class.isAssignableFrom(clazz);
 	}
 
 	/** @deprecated your method argument is already a {@link Timestamp}; you don't need to call this method. */
@@ -1358,7 +1361,7 @@ public class TimeUtil
 		{
 			return null;
 		}
-		final Instant instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+		final Instant instant = localDate.atStartOfDay(SystemTime.zoneId()).toInstant();
 		return Timestamp.from(instant);
 	}
 
@@ -1370,11 +1373,11 @@ public class TimeUtil
 		final Instant instant;
 		if (localTime == null)
 		{
-			instant = localDateEff.atStartOfDay(ZoneId.systemDefault()).toInstant();
+			instant = localDateEff.atStartOfDay(SystemTime.zoneId()).toInstant();
 		}
 		else
 		{
-			instant = localDateEff.atTime(localTime).atZone(ZoneId.systemDefault()).toInstant();
+			instant = localDateEff.atTime(localTime).atZone(SystemTime.zoneId()).toInstant();
 		}
 
 		return Timestamp.from(instant);
@@ -1587,6 +1590,13 @@ public class TimeUtil
 		return localDate;
 	}
 
+	public static LocalDate asLocalDate(final Timestamp ts)
+	{
+		return ts != null
+				? ts.toLocalDateTime().toLocalDate()
+				: null;
+	}
+
 	public static LocalDate asLocalDate(final Object obj)
 	{
 		if (obj == null)
@@ -1596,6 +1606,10 @@ public class TimeUtil
 		else if (obj instanceof LocalDate)
 		{
 			return (LocalDate)obj;
+		}
+		else if (obj instanceof String)
+		{
+			return LocalDate.parse(obj.toString());
 		}
 		else
 		{
@@ -1652,7 +1666,7 @@ public class TimeUtil
 		}
 		else
 		{
-			return asInstant(obj).atZone(ZoneId.systemDefault()).toLocalDateTime();
+			return asInstant(obj).atZone(SystemTime.zoneId()).toLocalDateTime();
 		}
 	}
 
@@ -1662,9 +1676,20 @@ public class TimeUtil
 		return zonedDateTime;
 	}
 
+	/**
+	 * @deprecated favor using {@link #asZonedDateTime(Object, ZoneId)}
+	 */
+	@Deprecated
+	public static ZonedDateTime asZonedDateTime(@Nullable final LocalDate localDate)
+	{
+		return localDate != null
+				? localDate.atStartOfDay(SystemTime.zoneId())
+				: null;
+	}
+
 	public static ZonedDateTime asZonedDateTime(final Object obj)
 	{
-		return asZonedDateTime(obj, ZoneId.systemDefault());
+		return asZonedDateTime(obj, SystemTime.zoneId());
 	}
 
 	public static ZonedDateTime asZonedDateTime(final Object obj, @NonNull final ZoneId zoneId)
@@ -1675,7 +1700,7 @@ public class TimeUtil
 		}
 		else if (obj instanceof ZonedDateTime)
 		{
-			return (ZonedDateTime)obj;
+			return convertToTimeZone((ZonedDateTime)obj, zoneId);
 		}
 		else
 		{
@@ -1712,7 +1737,7 @@ public class TimeUtil
 
 	public static Instant asInstant(@Nullable final Object obj)
 	{
-		return asInstant(obj, ZoneId.systemDefault());
+		return asInstant(obj, SystemTime.zoneId());
 	}
 
 	public static Instant asInstant(
@@ -1725,6 +1750,10 @@ public class TimeUtil
 		else if (obj instanceof Instant)
 		{
 			return (Instant)obj;
+		}
+		else if (obj instanceof Timestamp)
+		{
+			return ((Timestamp)obj).toInstant();
 		}
 		else if (obj instanceof Date)
 		{
@@ -1755,6 +1784,16 @@ public class TimeUtil
 		{
 			return ((ZonedDateTime)obj).toInstant();
 		}
+		else if (obj instanceof Integer)
+		{
+			final int millis = ((Integer)obj).intValue();
+			return Instant.ofEpochMilli(millis);
+		}
+		else if (obj instanceof Long)
+		{
+			final long millis = ((Long)obj).longValue();
+			return Instant.ofEpochMilli(millis);
+		}
 		else
 		{
 			throw new IllegalArgumentException("Cannot convert " + obj + " (" + obj.getClass() + ") to " + Instant.class);
@@ -1780,6 +1819,24 @@ public class TimeUtil
 		else
 		{
 			return duration2;
+		}
+	}
+
+	public static boolean isLastDayOfMonth(@NonNull final LocalDate localDate)
+	{
+		final LocalDate lastDayOfMonth = localDate.with(TemporalAdjusters.lastDayOfMonth());
+		return localDate.equals(lastDayOfMonth);
+	}
+
+	public static ZonedDateTime convertToTimeZone(@NonNull final ZonedDateTime date, @NonNull final ZoneId zoneId)
+	{
+		if (date.getZone().equals(zoneId))
+		{
+			return date;
+		}
+		else
+		{
+			return date.toInstant().atZone(zoneId);
 		}
 	}
 }	// TimeUtil

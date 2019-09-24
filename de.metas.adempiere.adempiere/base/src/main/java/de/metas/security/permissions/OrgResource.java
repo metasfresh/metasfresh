@@ -26,8 +26,6 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.I_AD_Client;
@@ -36,6 +34,8 @@ import org.compiere.util.KeyNamePair;
 
 import com.google.common.base.Function;
 
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 

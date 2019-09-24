@@ -1,12 +1,13 @@
 package de.metas.bpartner;
 
-import lombok.NonNull;
-import lombok.Value;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -78,5 +79,10 @@ public class BPartnerLocationId implements RepoIdAware
 	public static int toRepoIdOr(final BPartnerLocationId bpLocationId, final int defaultValue)
 	{
 		return bpLocationId != null ? bpLocationId.getRepoId() : defaultValue;
+	}
+
+	public static boolean equals(final BPartnerLocationId id1, final BPartnerLocationId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

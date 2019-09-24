@@ -36,7 +36,6 @@ import java.util.function.Supplier;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Util;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -54,6 +53,7 @@ import de.metas.event.log.EventLogEntryCollector;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -69,7 +69,7 @@ import lombok.Value;
 @Value
 public final class Event
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -132,8 +132,8 @@ public final class Event
 
 	private Event(final Builder builder)
 	{
-		uuid = Util.coalesceSuppliers(() -> builder.uuid, () -> UUID.randomUUID());
-		when = Util.coalesceSuppliers(() -> builder.when, () -> Instant.now());
+		uuid = CoalesceUtil.coalesceSuppliers(() -> builder.uuid, () -> UUID.randomUUID());
+		when = CoalesceUtil.coalesceSuppliers(() -> builder.when, () -> Instant.now());
 
 		summary = builder.summary;
 		detailPlain = builder.getDetailPlain();
@@ -168,7 +168,7 @@ public final class Event
 		this.loggingStatus = loggingStatus;
 	}
 
-	private static final ImmutableMap<String, Object> deepCopy(final Map<String, Object> properties)
+	private static ImmutableMap<String, Object> deepCopy(final Map<String, Object> properties)
 	{
 		if (properties == null || properties.isEmpty())
 		{
@@ -186,7 +186,7 @@ public final class Event
 		return Objects.equals(EventBusConstants.getSenderId(), senderId);
 	}
 
-	public final boolean hasRecipient(final int userId)
+	public boolean hasRecipient(final int userId)
 	{
 		if (isAllRecipients())
 		{
@@ -289,7 +289,7 @@ public final class Event
 	 *         <li>false if event was already received by given event bus ID
 	 *         </ul>
 	 */
-	public final boolean markReceivedByEventBusId(final String eventBusId)
+	public boolean markReceivedByEventBusId(final String eventBusId)
 	{
 		return receivedByEventBusIds.add(eventBusId);
 	}
@@ -299,7 +299,7 @@ public final class Event
 	 * @param eventBusId
 	 * @return true if this event was received by a even bus with given ID.
 	 */
-	public final boolean wasReceivedByEventBusId(final String eventBusId)
+	public boolean wasReceivedByEventBusId(final String eventBusId)
 	{
 		return receivedByEventBusIds.contains(eventBusId);
 	}
@@ -491,7 +491,7 @@ public final class Event
 			return this;
 		}
 
-		private final Map<String, Object> getProperties()
+		private Map<String, Object> getProperties()
 		{
 			return properties;
 		}
@@ -563,7 +563,7 @@ public final class Event
 			return this;
 		}
 
-		public final Builder putPropertyFromObject(final String name, final Object value)
+		public Builder putPropertyFromObject(final String name, final Object value)
 		{
 			if (value == null)
 			{

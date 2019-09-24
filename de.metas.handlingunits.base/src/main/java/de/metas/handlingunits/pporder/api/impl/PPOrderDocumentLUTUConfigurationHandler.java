@@ -31,9 +31,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
 import org.eevolution.api.IPPOrderBL;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.impl.AbstractDocumentLUTUConfigurationHandler;
@@ -64,7 +65,11 @@ import lombok.NonNull;
 	@Override
 	public I_M_HU_LUTU_Configuration createNewLUTUConfiguration(@NonNull final I_PP_Order ppOrder)
 	{
-		final I_C_BPartner bpartner = ppOrder.getC_BPartner();
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(ppOrder.getC_BPartner_ID());
+		final I_C_BPartner bpartner = bpartnerId != null
+				? Services.get(IBPartnerDAO.class).getById(bpartnerId)
+				: null;
+				
 		final I_M_HU_PI_Item_Product tuPIItemProduct = getM_HU_PI_Item_Product(ppOrder);
 		final ProductId cuProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
 		final I_C_UOM cuUOM = Services.get(IUOMDAO.class).getById(ppOrder.getC_UOM_ID());
@@ -79,7 +84,7 @@ import lombok.NonNull;
 				bpartner,
 				true); // noLUForVirtualTU == true => for a "virtual" TU, we want the LU-part of the lutuconfig to be empty by default
 
-		final BigDecimal cuPerTu = lutuConfiguration.getM_HU_PI_Item_Product().getQty();
+		final BigDecimal cuPerTu = ILUTUConfigurationFactory.extractHUPIItemProduct(lutuConfiguration).getQty();
 		if (cuPerTu.signum() > 0)
 		{
 			final BigDecimal undeliveredQtyCU = ppOrder.getQtyOrdered().subtract(ppOrder.getQtyDelivered());
@@ -101,10 +106,13 @@ import lombok.NonNull;
 
 		//
 		// First, try getting the M_HU_Item_Product the ppOrder's M_HU_LUTU_Configuration
-		if (ppOrder.getM_HU_LUTU_Configuration_ID() > 0 && ppOrder.getM_HU_LUTU_Configuration().getM_HU_PI_Item_Product_ID() > 0)
 		{
-			final I_M_HU_PI_Item_Product pip = ppOrder.getM_HU_LUTU_Configuration().getM_HU_PI_Item_Product();
-			return pip;
+			final I_M_HU_LUTU_Configuration lutuConfiguration = ppOrder.getM_HU_LUTU_Configuration();
+			final I_M_HU_PI_Item_Product pip = lutuConfiguration != null ? ILUTUConfigurationFactory.extractHUPIItemProductOrNull(lutuConfiguration) : null;
+			if (pip != null)
+			{
+				return pip;
+			}
 		}
 
 		//
@@ -132,11 +140,10 @@ import lombok.NonNull;
 			@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration,
 			@NonNull final I_PP_Order ppOrder)
 	{
-		final I_C_BPartner bpartner = ppOrder.getC_BPartner();
-		lutuConfiguration.setC_BPartner(bpartner);
+		lutuConfiguration.setC_BPartner_ID(ppOrder.getC_BPartner_ID());
 
-		final I_M_Locator ppOrderReceiptLocator = ppOrder.getM_Locator();
-		lutuConfiguration.setM_Locator(ppOrderReceiptLocator);
+		final int ppOrderReceiptLocatorId = ppOrder.getM_Locator_ID();
+		lutuConfiguration.setM_Locator_ID(ppOrderReceiptLocatorId);
 
 		lutuConfiguration.setHUStatus(X_M_HU.HUSTATUS_Active);
 	}

@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,11 +60,11 @@ public class AvailableToPromiseResultTest
 		AdempiereTestHelper.get().init();
 	}
 
-	private I_MD_Candidate_ATP_QueryResult createStockRecord(int warehouseId)
+	private I_MD_Candidate_ATP_QueryResult createStockRecord(WarehouseId warehouseId)
 	{
 		final I_MD_Candidate_ATP_QueryResult viewRecord = newInstance(I_MD_Candidate_ATP_QueryResult.class);
 		viewRecord.setM_Product_ID(PRODUCT_ID);
-		viewRecord.setM_Warehouse_ID(warehouseId);
+		viewRecord.setM_Warehouse_ID(warehouseId.getRepoId());
 		viewRecord.setDateProjected(TimeUtil.asTimestamp(BEFORE_NOW));
 		viewRecord.setStorageAttributesKey(STORAGE_ATTRIBUTES_KEY.getAsString());
 		viewRecord.setQty(BigDecimal.TEN);
@@ -82,7 +83,7 @@ public class AvailableToPromiseResultTest
 						.productId(10)
 						.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
 						.storageAttributesKey(STORAGE_ATTRIBUTES_KEY_OTHER)
-						.date(TimeUtil.asLocalDateTime(NOW))
+						.date(TimeUtil.asZonedDateTime(NOW))
 						.build());
 
 		final List<AvailableToPromiseResultGroup> emptyResults = AvailableToPromiseResult.createEmptyWithPredefinedBuckets(query).getResultGroups();
@@ -115,7 +116,7 @@ public class AvailableToPromiseResultTest
 	{
 		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.of(AvailableToPromiseQuery.builder()
 				.productId(10)
-				.date(TimeUtil.asLocalDateTime(NOW))
+				.date(TimeUtil.asZonedDateTime(NOW))
 				.build());
 
 		final List<AvailableToPromiseResultGroup> emptyResults = AvailableToPromiseResult.createEmptyWithPredefinedBuckets(query).getResultGroups();
@@ -135,20 +136,20 @@ public class AvailableToPromiseResultTest
 		final AvailableToPromiseResultGroup emptyResult1 = AvailableToPromiseResultGroup.builder()
 				.productId(PRODUCT_ID)
 				.storageAttributesKey(AttributesKey.ofAttributeValueIds(1))
-				.warehouseId(100)
+				.warehouseId(WarehouseId.ofRepoId(100))
 				.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
 				.build();
 		final AvailableToPromiseResultGroup emptyResult2 = AvailableToPromiseResultGroup.builder()
 				.productId(PRODUCT_ID)
 				.storageAttributesKey(AttributesKey.ofAttributeValueIds(2))
-				.warehouseId(100)
+				.warehouseId(WarehouseId.ofRepoId(100))
 				.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
 				.build();
 		final AvailableToPromiseResult stockResult = new AvailableToPromiseResult(ImmutableList.of(emptyResult1, emptyResult2));
 
 		final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
 				.productId(PRODUCT_ID)
-				.warehouseId(100)
+				.warehouseId(WarehouseId.ofRepoId(100))
 				.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
 				.qty(BigDecimal.ONE)
 				.seqNo(1)
@@ -175,14 +176,14 @@ public class AvailableToPromiseResultTest
 	{
 		final AvailableToPromiseResultGroup group = AvailableToPromiseResultGroup.builder()
 				.productId(PRODUCT_ID)
-				.warehouseId(100)
+				.warehouseId(WarehouseId.ofRepoId(100))
 				.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
 				.storageAttributesKey(AttributesKey.ofAttributeValueIds(1))
 				.build();
 
 		final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
 				.productId(PRODUCT_ID)
-				.warehouseId(100)
+				.warehouseId(WarehouseId.ofRepoId(100))
 				.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
 				.qty(BigDecimal.ONE)
 				.seqNo(1)
@@ -203,14 +204,14 @@ public class AvailableToPromiseResultTest
 	{
 		final AvailableToPromiseResultGroup group = AvailableToPromiseResultGroup.builder()
 				.productId(PRODUCT_ID)
-				.warehouseId(100)
+				.warehouseId(WarehouseId.ofRepoId(100))
 				.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
 				.storageAttributesKey(AttributesKey.ofAttributeValueIds(1, 3))
 				.build();
 
 		final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
 				.productId(PRODUCT_ID)
-				.warehouseId(100)
+				.warehouseId(WarehouseId.ofRepoId(100))
 				.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
 				.qty(BigDecimal.ONE)
 				.seqNo(1)

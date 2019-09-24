@@ -80,9 +80,9 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 		final boolean updateOnlyLocked = true; // don't create missing schedules; for that we have CreateMissingShipmentSchedulesWorkpackageProcessor
 		final int updatedCount = shipmentScheduleUpdater.updateShipmentSchedule(ctx, adUserId, pinstanceId, updateOnlyLocked);
 
-		Loggables.get().addLog("Updated {} shipment schedule entries", updatedCount);
+		Loggables.addLog("Updated {} shipment schedule entries", updatedCount);
 		
-		Loggables.get().addLog("AD_PInstance_ID  = {}", pinstanceId);
+		Loggables.addLog("AD_PInstance_ID  = {}", pinstanceId);
 
 		return Result.SUCCESS;
 	}

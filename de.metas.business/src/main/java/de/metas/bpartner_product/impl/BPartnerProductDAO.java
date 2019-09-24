@@ -39,7 +39,6 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
@@ -56,6 +55,7 @@ import de.metas.bpartner_product.ProductExclude;
 import de.metas.bpartner_product.ProductExclude.ProductExcludeBuilder;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.organization.OrgId;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
@@ -110,11 +110,18 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	}
 
 	@Override
-	public List<I_C_BPartner_Product> retrieveAllVendors(@NonNull final ProductId productId, @NonNull final OrgId orgId)
+	public List<I_C_BPartner_Product> retrieveForProductIds(@NonNull final Set<ProductId> productIds)
 	{
-		return retrieveAllVendorsQuery(productId, orgId)
-				.orderByDescending(I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor) // current vendors first
-				.orderByDescending(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID)
+		if (productIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL
+				.createQueryBuilderOutOfTrx(org.compiere.model.I_C_BPartner_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_BPartner_Product.COLUMN_M_Product_ID, productIds)
 				.create()
 				.list(I_C_BPartner_Product.class);
 	}
@@ -144,7 +151,9 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(record -> BPartnerId.ofRepoId(record.getC_BPartner_ID())));
 	}
 
-	private IQueryBuilder<I_C_BPartner_Product> retrieveAllVendorsQuery(final ProductId productId, final OrgId orgId)
+	private IQueryBuilder<I_C_BPartner_Product> retrieveAllVendorsQuery(
+			final ProductId productId,
+			final OrgId orgId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL

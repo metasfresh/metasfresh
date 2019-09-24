@@ -18,8 +18,8 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.model.I_C_Currency;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.refund.AssignableInvoiceCandidate;
 import de.metas.contracts.refund.AssignableInvoiceCandidateFactory;
@@ -36,6 +36,9 @@ import de.metas.contracts.refund.RefundContractRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidate;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
 import de.metas.contracts.refund.RefundTestTools;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleRepository;
@@ -136,10 +139,10 @@ public class CandidateAssignServiceAllQties_Amount_Test
 	{
 		AdempiereTestHelper.get().init();
 
-		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
-		currencyRecord.setC_Currency_ID(CURRENCY_ID.getRepoId());
-		currencyRecord.setStdPrecision(2);
-		saveRecord(currencyRecord);
+		PlainCurrencyDAO.prepareCurrency()
+				.currencyCode(CurrencyCode.EUR)
+				.currencyId(CURRENCY_ID)
+				.build();
 
 		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
@@ -158,7 +161,7 @@ public class CandidateAssignServiceAllQties_Amount_Test
 		quantity_85 = Quantity.of("85", uomRecord);
 
 		final I_M_Product productRecord = newInstance(I_M_Product.class);
-		productRecord.setC_UOM(uomRecord);
+		productRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		saveRecord(productRecord);
 		productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
 
@@ -170,7 +173,8 @@ public class CandidateAssignServiceAllQties_Amount_Test
 		final InvoiceScheduleRepository invoiceScheduleRepository = refundConfigRepository.getInvoiceScheduleRepository();
 
 		final AssignableInvoiceCandidateFactory assignableInvoiceCandidateFactory = new AssignableInvoiceCandidateFactory(
-				candidateAssignServiceAllQties.getAssignmentToRefundCandidateRepository());
+				candidateAssignServiceAllQties.getAssignmentToRefundCandidateRepository(),
+				new CurrencyRepository());
 
 		this.assignableInvoiceCandidateRepository = new AssignableInvoiceCandidateRepository(assignableInvoiceCandidateFactory);
 
@@ -234,6 +238,7 @@ public class CandidateAssignServiceAllQties_Amount_Test
 		final RefundInvoiceCandidate refundCandidate = RefundInvoiceCandidate
 				.builder()
 				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(BPartnerLocationId.ofRepoId(2156423,  2))
 				.invoiceableFrom(LocalDate.parse("2019-11-30"))
 				.refundContract(savedRefundContract)
 				.refundConfig(savedRefundConfig_0)
@@ -250,8 +255,11 @@ public class CandidateAssignServiceAllQties_Amount_Test
 	@Test
 	public void updateAssignment()
 	{
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+
 		final AssignableInvoiceCandidate assignableCandidate_14 = AssignableInvoiceCandidate.builder()
-				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				// .bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(productId)
 				.invoiceableFrom(LocalDate.parse("2018-12-17"))
 				.money(money_14_00)
@@ -280,7 +288,8 @@ public class CandidateAssignServiceAllQties_Amount_Test
 		}
 
 		final AssignableInvoiceCandidate assignableCandidate_12 = AssignableInvoiceCandidate.builder()
-				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				// .bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(productId)
 				.invoiceableFrom(LocalDate.parse("2018-12-17"))
 				.money(money_12_00)
@@ -319,7 +328,8 @@ public class CandidateAssignServiceAllQties_Amount_Test
 
 		// add a 3rd assignable candidate, but note that with its quantity, we stay within savedRefundConfig_15
 		final AssignableInvoiceCandidate assignableCandidate_20 = AssignableInvoiceCandidate.builder()
-				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				// .bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(productId)
 				.invoiceableFrom(LocalDate.parse("2018-12-17"))
 				.money(money_20_00)
@@ -362,7 +372,8 @@ public class CandidateAssignServiceAllQties_Amount_Test
 
 		final AssignableInvoiceCandidate assignableCandidate_30 = AssignableInvoiceCandidate.builder()
 				.id(InvoiceCandidateId.ofRepoId(1000025))
-				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				// .bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(productId)
 				.invoiceableFrom(LocalDate.parse("2018-12-17"))
 				.money(money_30_00)
@@ -418,8 +429,11 @@ public class CandidateAssignServiceAllQties_Amount_Test
 	@Test
 	public void updateAssignment2()
 	{
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+
 		final AssignableInvoiceCandidate assignableCandidate_3 = AssignableInvoiceCandidate.builder()
-				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				// .bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(productId)
 				.invoiceableFrom(LocalDate.parse("2018-12-17"))
 				.money(money_3_00)
@@ -454,7 +468,8 @@ public class CandidateAssignServiceAllQties_Amount_Test
 
 		// add a 2nd assignable candidate, but note that with its quantity, we stay within savedRefundConfig_0
 		final AssignableInvoiceCandidate assignableCandidate_6 = AssignableInvoiceCandidate.builder()
-				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				// .bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(productId)
 				.invoiceableFrom(LocalDate.parse("2018-12-17"))
 				.money(money_6_00)
@@ -490,7 +505,8 @@ public class CandidateAssignServiceAllQties_Amount_Test
 
 		// add a 3rd assignable candidate, but note that with its quantity, jump right into savedRefundConfig_50
 		final AssignableInvoiceCandidate assignableCandidate_46 = AssignableInvoiceCandidate.builder()
-				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				// .bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(productId)
 				.invoiceableFrom(LocalDate.parse("2018-12-17"))
 				.money(money_46_00)
@@ -538,7 +554,8 @@ public class CandidateAssignServiceAllQties_Amount_Test
 
 		final AssignableInvoiceCandidate assignableCandidate_30 = AssignableInvoiceCandidate.builder()
 				.id(InvoiceCandidateId.ofRepoId(1000025))
-				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				// .bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(productId)
 				.invoiceableFrom(LocalDate.parse("2018-12-17"))
 				.money(money_30_00)

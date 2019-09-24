@@ -2,13 +2,17 @@ package de.metas.pricing.exceptions;
 
 import java.time.LocalDate;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
-import de.metas.location.CountryId;
-import de.metas.location.ICountryDAO;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
@@ -54,11 +58,11 @@ public class ProductNotOnPriceListException extends AdempiereException
 	}
 
 	private static ITranslatableString buildMessage(
-			final IPricingContext pricingCtx,
+			@Nullable final IPricingContext pricingCtx,
 			final int documentLineNo,
 			final ProductId productId)
 	{
-		final TranslatableStringBuilder sb = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder sb = TranslatableStrings.builder();
 
 		if (documentLineNo > 0)
 		{
@@ -69,7 +73,18 @@ public class ProductNotOnPriceListException extends AdempiereException
 			sb.appendADElement("Line").append(": ").append(documentLineNo);
 		}
 
-		final ProductId productIdEffective = productId != null ? productId : pricingCtx.getProductId();
+		ProductId productIdEffective = null;
+
+		if (productId != null)
+		{
+			productIdEffective = productId;
+
+		}
+		else if (pricingCtx != null)
+		{
+			productIdEffective = pricingCtx.getProductId();
+		}
+
 		if (productIdEffective != null)
 		{
 			final String productName = Services.get(IProductBL.class).getProductValueAndName(productIdEffective);
@@ -80,8 +95,8 @@ public class ProductNotOnPriceListException extends AdempiereException
 			sb.appendADElement("M_Product_ID").append(": ").append(productName);
 		}
 
-		final PricingSystemId pricingSystemId = pricingCtx.getPricingSystemId();
-		final PriceListId priceListId = pricingCtx.getPriceListId();
+		final PricingSystemId pricingSystemId = pricingCtx == null ? null : pricingCtx.getPricingSystemId();
+		final PriceListId priceListId = pricingCtx == null ? null : pricingCtx.getPriceListId();
 		if (priceListId != null)
 		{
 			final String priceListName = Services.get(IPriceListDAO.class).getPriceListName(priceListId);
@@ -101,7 +116,7 @@ public class ProductNotOnPriceListException extends AdempiereException
 			sb.appendADElement("M_PricingSystem_ID").append(": ").append(pricingSystemName);
 		}
 
-		final BPartnerId bpartnerId = pricingCtx.getBPartnerId();
+		final BPartnerId bpartnerId = pricingCtx == null ? null : pricingCtx.getBPartnerId();
 		if (bpartnerId != null)
 		{
 			String bpartnerName = Services.get(IBPartnerBL.class).getBPartnerValueAndName(bpartnerId);
@@ -112,7 +127,7 @@ public class ProductNotOnPriceListException extends AdempiereException
 			sb.appendADElement("C_BPartner_ID").append(": ").append(bpartnerName);
 		}
 
-		final CountryId countryId = pricingCtx.getCountryId();
+		final CountryId countryId = pricingCtx == null ? null : pricingCtx.getCountryId();
 		if (countryId != null)
 		{
 			final ITranslatableString countryName = Services.get(ICountryDAO.class).getCountryNameById(countryId);
@@ -123,7 +138,7 @@ public class ProductNotOnPriceListException extends AdempiereException
 			sb.appendADElement("C_Country_ID").append(": ").append(countryName);
 		}
 
-		final LocalDate priceDate = pricingCtx.getPriceDate();
+		final LocalDate priceDate = pricingCtx == null ? null : pricingCtx.getPriceDate();
 		if (priceDate != null)
 		{
 			if (!sb.isEmpty())

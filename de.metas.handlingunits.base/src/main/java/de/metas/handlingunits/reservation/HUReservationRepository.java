@@ -11,6 +11,7 @@ import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableMap;
@@ -20,6 +21,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Reservation;
 import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -73,11 +75,14 @@ public class HUReservationRepository
 			@NonNull final OrderLineId orderLineId,
 			@NonNull final List<I_M_HU_Reservation> huReservationRecords)
 	{
+		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+		
 		final Map<HuId, Quantity> reservedQtyByVhuId = new HashMap<>();
 		for (final I_M_HU_Reservation huReservationRecord : huReservationRecords)
 		{
 			final HuId vhuId = HuId.ofRepoId(huReservationRecord.getVHU_ID());
-			final Quantity reservedQty = Quantity.of(huReservationRecord.getQtyReserved(), huReservationRecord.getC_UOM());
+			final I_C_UOM uom = uomsRepo.getById(huReservationRecord.getC_UOM_ID());
+			final Quantity reservedQty = Quantity.of(huReservationRecord.getQtyReserved(), uom);
 
 			reservedQtyByVhuId.put(vhuId, reservedQty);
 		}
@@ -96,8 +101,8 @@ public class HUReservationRepository
 
 			final I_M_HU_Reservation huReservationRecord = createOrLoadRecordFor(vhuId);
 			huReservationRecord.setC_OrderLineSO_ID(huReservation.getSalesOrderLineId().getRepoId());
-			huReservationRecord.setQtyReserved(qtyReserved.getAsBigDecimal());
-			huReservationRecord.setC_UOM_ID(qtyReserved.getUOMId());
+			huReservationRecord.setQtyReserved(qtyReserved.toBigDecimal());
+			huReservationRecord.setC_UOM_ID(qtyReserved.getUomId().getRepoId());
 			saveRecord(huReservationRecord);
 		}
 	}

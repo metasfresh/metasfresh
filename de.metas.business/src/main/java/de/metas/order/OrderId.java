@@ -1,8 +1,12 @@
 package de.metas.order;
 
+import javax.annotation.Nullable;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -29,6 +33,7 @@ import lombok.Value;
 @Value
 public class OrderId implements RepoIdAware
 {
+	@JsonCreator
 	public static OrderId ofRepoId(final int repoId)
 	{
 		return new OrderId(repoId);
@@ -39,15 +44,22 @@ public class OrderId implements RepoIdAware
 		return repoId > 0 ? new OrderId(repoId) : null;
 	}
 
-	public static int getRepoIdOr(final OrderId orderId, final int defaultValue)
+	public static int toRepoId(@Nullable final OrderId orderId)
 	{
-		return orderId != null ? orderId.getRepoId() : defaultValue;
+		return orderId != null ? orderId.getRepoId() : -1;
 	}
 
 	int repoId;
 
 	private OrderId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Order_ID");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

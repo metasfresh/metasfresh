@@ -13,15 +13,14 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.is;
@@ -30,11 +29,11 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.TimeUtil;
 import org.junit.Test;
 
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
@@ -45,27 +44,30 @@ import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.impl.AggregationEngine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Services;
 
 /**
  * This abstract class implements one generic test-scenario (see method {@link #testStandardScenario()}) and declared a number of methods that need to be implemented by the actual test cases.
  *
  * Tests from {@link I_C_Invoice_Candidate}s to {@link IInvoiceHeader}s.
- *
- * @author ts
- *
  */
 public abstract class AbstractNewAggregationEngineTests extends AbstractAggregationEngineTestBase
 {
 
 	protected static final String IC_PO_REFERENCE = "ic-POReference";
 
-	protected static final Timestamp IC_DATE_ACCT = TimeUtil.getDay(2015, 01, 15); // task 08437
+	protected static final LocalDate IC_DATE_ACCT = LocalDate.of(2015, Month.JANUARY, 15); // task 08437
 
-	protected static final BigDecimal TWENTY = new BigDecimal("20");
-	protected static final BigDecimal FIFTY = new BigDecimal("50");
-	protected static final BigDecimal THIRTY = new BigDecimal("30");
+	protected static final BigDecimal FIVE = new BigDecimal("5");
 	protected static final BigDecimal TEN = new BigDecimal("10");
+	protected static final BigDecimal TWENTY = new BigDecimal("20");
+	protected static final BigDecimal THIRTY = new BigDecimal("30");
+	protected static final BigDecimal FIFTY = new BigDecimal("50");
+	protected static final BigDecimal HUNDRET = new BigDecimal("100");
+	protected static final BigDecimal TWO_HUNDRET = new BigDecimal("200");
+	protected static final BigDecimal FIVE_HUNDRET = new BigDecimal("500");
+	protected static final BigDecimal THOUSAND = new BigDecimal("1000");
 
 	@Override
 	public void init()
@@ -77,7 +79,7 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 	}
 
 	@Test
-	public void testStandardScenario()
+	public final void testStandardScenario()
 	{
 		final List<I_C_Invoice_Candidate> invoiceCandidates = step_createInvoiceCandidates();
 		final List<I_M_InOutLine> inOutLines = step_createInOutLines(invoiceCandidates);
@@ -92,7 +94,7 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 
 		step_validate_before_aggregation(invoiceCandidates, inOutLines);
 
-		final AggregationEngine engine = new AggregationEngine();
+		final AggregationEngine engine = AggregationEngine.newInstance();
 		for (final I_C_Invoice_Candidate ic : invoiceCandidates)
 		{
 			engine.addInvoiceCandidate(ic);
@@ -145,7 +147,7 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 	 * @param invoiceLine
 	 * @param expectedAllocatedQty
 	 */
-	protected void validateIcIlAllocationQty(
+	protected final void validateIcIlAllocationQty(
 			final I_C_Invoice_Candidate ic,
 			final IInvoiceHeader invoice,
 			final IInvoiceLineRW invoiceLine,
@@ -169,7 +171,7 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 		assertThat(candsForInvoiceLine1.size(), is(1));
 		assertThat(candsForInvoiceLine1.get(0), is(ic));
 
-		final BigDecimal qtyInvoiced = aggregateForLine.getAllocatedQty(ic, invoiceLine);
-		assertThat(qtyInvoiced, comparesEqualTo(expectedAllocatedQty));
+		final StockQtyAndUOMQty qtyInvoiced = aggregateForLine.getAllocatedQty(ic, invoiceLine);
+		assertThat(qtyInvoiced.getStockQty().toBigDecimal(), comparesEqualTo(expectedAllocatedQty));
 	}
 }

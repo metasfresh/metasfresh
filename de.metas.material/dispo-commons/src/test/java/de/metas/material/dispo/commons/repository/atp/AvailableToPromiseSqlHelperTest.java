@@ -80,7 +80,7 @@ public class AvailableToPromiseSqlHelperTest
 		final IQueryBuilder<I_MD_Candidate_ATP_QueryResult> dbQuery = AvailableToPromiseSqlHelper.createDBQueryForStockQueryBuilder(query);
 
 		final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> dbFilter = dbQuery.getCompositeFilter();
-		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Warehouse_ID, WAREHOUSE_ID);
+		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Warehouse_ID, WAREHOUSE_ID.getRepoId());
 
 		final ICompositeQueryFilter includedCompositeOrFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);
 		assertThat(includedCompositeOrFilter).isJoinOr();
@@ -96,7 +96,7 @@ public class AvailableToPromiseSqlHelperTest
 				.productId(10)
 				.productId(20)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
-				.date(TimeUtil.asLocalDateTime(NOW))
+				.date(TimeUtil.asZonedDateTime(NOW))
 				.build();
 
 		final IQueryBuilder<I_MD_Candidate_ATP_QueryResult> dbQuery = AvailableToPromiseSqlHelper.createDBQueryForStockQueryBuilder(query);
@@ -118,7 +118,7 @@ public class AvailableToPromiseSqlHelperTest
 				.productId(PRODUCT_ID)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
 				.storageAttributesKey(AttributesKey.ofAttributeValueIds(3))
-				.date(TimeUtil.asLocalDateTime(NOW))
+				.date(TimeUtil.asZonedDateTime(NOW))
 				.build();
 
 		final IQueryBuilder<I_MD_Candidate_ATP_QueryResult> dbQuery = AvailableToPromiseSqlHelper.createDBQueryForStockQueryBuilder(query);
@@ -143,7 +143,7 @@ public class AvailableToPromiseSqlHelperTest
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
 				.storageAttributesKey(AttributesKey.ofAttributeValueIds(3))
 				.storageAttributesKey(AttributesKey.OTHER)
-				.date(TimeUtil.asLocalDateTime(NOW))
+				.date(TimeUtil.asZonedDateTime(NOW))
 				.build();
 
 		// invoke the method under test

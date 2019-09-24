@@ -1,6 +1,6 @@
 package de.metas.event.log.process;
 
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
@@ -54,7 +54,7 @@ public class AD_EventLog_RepostEvent extends JavaProcess
 
 		final EventLogId eventLogId = EventLogId.ofRepoId(eventLogRecord.getAD_EventLog_ID());
 
-		final EventLogService eventLogService = Adempiere.getBean(EventLogService.class);
+		final EventLogService eventLogService = SpringContextHolder.instance.getBean(EventLogService.class);
 		final Event event = eventLogService.loadEventForReposting(eventLogId);
 
 		eventBus.postEvent(event);

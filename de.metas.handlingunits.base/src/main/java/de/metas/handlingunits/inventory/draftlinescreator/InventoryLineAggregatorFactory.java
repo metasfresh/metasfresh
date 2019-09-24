@@ -45,7 +45,7 @@ public class InventoryLineAggregatorFactory
 
 	public InventoryLineAggregator createFor(@NonNull final DocBaseAndSubType docBaseAndSubType)
 	{
-		final AggregationType aggregationMode = AggregationType.getByDocType(docBaseAndSubType);
+		final AggregationType aggregationMode = AggregationType.getByDocTypeOrNull(docBaseAndSubType);
 		Check.assumeNotNull(aggregationMode, "Unexpected docBaseAndSubType={} with no registered aggegationMode", docBaseAndSubType);
 
 		switch (aggregationMode)
@@ -82,7 +82,7 @@ public class InventoryLineAggregatorFactory
 		@Override
 		public InventoryLineAggregationKey createAggregationKey(@NonNull final InventoryLine inventoryLine)
 		{
-			return new SingleHUInventoryLineInventoryLineAggregationKey(inventoryLine.getSingleHU().getHuId());
+			return new SingleHUInventoryLineInventoryLineAggregationKey(inventoryLine.getSingleLineHU().getHuId());
 		}
 
 		@Override

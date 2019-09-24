@@ -52,6 +52,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.process.PInstanceId;
 import de.metas.security.permissions.Access;
 import de.metas.util.lang.RepoIdAware;
@@ -243,10 +244,10 @@ public interface IQuery<T>
 	 * be considered.
 	 *
 	 * @param clazz model interface class
-	 * @return iterator
-	 * @throws DBException
 	 */
 	<ET extends T> Iterator<ET> iterate(Class<ET> clazz) throws DBException;
+
+	<ET extends T> QueryResultPage<ET> paginate(Class<ET> clazz, int pageSize) throws DBException;
 
 	/**
 	 * Only records that are in T_Selection with AD_PInstance_ID.

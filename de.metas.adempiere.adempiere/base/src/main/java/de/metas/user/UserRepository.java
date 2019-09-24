@@ -14,6 +14,7 @@ import de.metas.i18n.Language;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.rest.ExternalId;
 import lombok.NonNull;
 
 /*
@@ -62,14 +63,18 @@ public class UserRepository
 		return User.builder()
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID()))
 				.id(UserId.ofRepoId(userRecord.getAD_User_ID()))
+				.externalId(ExternalId.ofOrNull(userRecord.getExternalId()))
+
 				.name(userRecord.getName())
 				.firstName(userRecord.getFirstname())
 				.lastName(userRecord.getLastname())
 				.birthday(TimeUtil.asLocalDate(userRecord.getBirthday()))
 				.emailAddress(userRecord.getEMail())
+
 				.userLanguage(userLanguage)
 				.bPartnerLanguage(bPartnerLanguage)
 				.language(language)
+
 				.build();
 	}
 
@@ -84,10 +89,13 @@ public class UserRepository
 		{
 			userRecord = load(user.getId().getRepoId(), I_AD_User.class);
 		}
-
+		userRecord.setC_BPartner_ID(BPartnerId.toRepoId(user.getBpartnerId()));
 		userRecord.setName(user.getName());
+		userRecord.setFirstname(user.getFirstName());
+		userRecord.setLastname(user.getLastName());
+		userRecord.setBirthday(TimeUtil.asTimestamp(user.getBirthday()));
 		userRecord.setEMail(user.getEmailAddress());
-		userRecord.setAD_Language(Language.asLanguageString(user.getLanguage()));
+		userRecord.setAD_Language(Language.asLanguageStringOrNull(user.getUserLanguage()));
 		saveRecord(userRecord);
 
 		return user

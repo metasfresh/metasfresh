@@ -1,211 +1,161 @@
 de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTest.execute_MultipleHUInventoryLineAggregator=[
-  [
-    {
-      "id": 100012,
-      "asiId": {
-        "repoId": 100009,
-        "regular": true,
-        "none": false
-      },
-      "inventoryId": 100002,
-      "productId": 40,
-      "storageAttributesKey": "10§&§11",
-      "locatorId": {
-        "repoId": 100004,
-        "warehouseId": 100003
-      },
-      "singleHUAggregation": false,
-      "inventoryLineHUs": [
-        {
-          "id": {
-            "repoId": 100013
-          },
-          "huId": {
-            "repoId": 100
-          },
-          "qtyBook": {
-            "qty": 10,
-            "sourceQty": 10,
-            "infinite": false,
-            "zero": false
-          },
-          "qtyCount": {
-            "qty": 10,
-            "sourceQty": 10,
-            "infinite": false,
-            "zero": false
-          }
-        },
-        {
-          "id": {
-            "repoId": 100014
-          },
-          "huId": {
-            "repoId": 200
-          },
-          "qtyBook": {
-            "qty": 1,
-            "sourceQty": 1,
-            "infinite": false,
-            "zero": false
-          },
-          "qtyCount": {
-            "qty": 1,
-            "sourceQty": 1,
-            "infinite": false,
-            "zero": false
-          }
-        }
-      ]
+  {
+    "id": 100009,
+    "docBaseAndSubType": {
+      "docBaseType": "MMI",
+      "docSubType": "ISH"
     },
-    {
-      "id": 100019,
-      "asiId": {
-        "repoId": 100015,
-        "regular": true,
-        "none": false
-      },
-      "inventoryId": 100002,
-      "productId": 40,
-      "storageAttributesKey": "10§&§11§&§12",
-      "locatorId": {
-        "repoId": 100004,
-        "warehouseId": 100003
-      },
-      "singleHUAggregation": false,
-      "inventoryLineHUs": [
-        {
-          "id": {
-            "repoId": 100020
+    "inventoryType": "PHYSICAL",
+    "lines": [
+      {
+        "id": 100013,
+        "orgId": 5,
+        "asiId": 100010,
+        "productId": 40,
+        "storageAttributesKey": "10§&§11",
+        "locatorId": "100002_100003",
+        "huAggregationType": "MULTI_HU",
+        "inventoryType": "PHYSICAL",
+        "inventoryLineHUs": [
+          {
+            "id": 100014,
+            "huId": 100,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": "10",
+              "uomId": 100001
+            },
+            "qtyCount": {
+              "qty": "10",
+              "uomId": 100001
+            }
           },
-          "huId": {
-            "repoId": 300
-          },
-          "qtyBook": {
-            "qty": 2,
-            "sourceQty": 2,
-            "infinite": false,
-            "zero": false
-          },
-          "qtyCount": {
-            "qty": 2,
-            "sourceQty": 2,
-            "infinite": false,
-            "zero": false
+          {
+            "id": 100015,
+            "huId": 200,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": "1",
+              "uomId": 100001
+            },
+            "qtyCount": {
+              "qty": "1",
+              "uomId": 100001
+            }
           }
-        }
-      ]
-    }
-  ]
+        ]
+      },
+      {
+        "id": 100020,
+        "orgId": 5,
+        "asiId": 100016,
+        "productId": 40,
+        "storageAttributesKey": "10§&§11§&§12",
+        "locatorId": "100002_100003",
+        "huAggregationType": "MULTI_HU",
+        "inventoryType": "PHYSICAL",
+        "inventoryLineHUs": [
+          {
+            "id": 100021,
+            "huId": 300,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": "2",
+              "uomId": 100001
+            },
+            "qtyCount": {
+              "qty": "2",
+              "uomId": 100001
+            }
+          }
+        ]
+      }
+    ]
+  }
 ]
 
 
 de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTest.execute_SingleHUInventoryLineAggregator=[
-  [
-    {
-      "id": 100013,
-      "asiId": {
-        "repoId": 100009,
-        "regular": true,
-        "none": false
-      },
-      "inventoryId": 100002,
-      "productId": 40,
-      "storageAttributesKey": "10§&§11§&§12",
-      "locatorId": {
-        "repoId": 100004,
-        "warehouseId": 100003
-      },
-      "singleHUAggregation": true,
-      "inventoryLineHUs": [
-        {
-          "huId": {
-            "repoId": 300
-          },
-          "qtyBook": {
-            "qty": 2,
-            "sourceQty": 2,
-            "infinite": false,
-            "zero": false
-          },
-          "qtyCount": {
-            "qty": 2,
-            "sourceQty": 2,
-            "infinite": false,
-            "zero": false
-          }
-        }
-      ]
+  {
+    "id": 100009,
+    "docBaseAndSubType": {
+      "docBaseType": "MMI",
+      "docSubType": "ISH"
     },
-    {
-      "id": 100017,
-      "asiId": {
-        "repoId": 100014,
-        "regular": true,
-        "none": false
-      },
-      "inventoryId": 100002,
-      "productId": 40,
-      "storageAttributesKey": "10§&§11",
-      "locatorId": {
-        "repoId": 100004,
-        "warehouseId": 100003
-      },
-      "singleHUAggregation": true,
-      "inventoryLineHUs": [
-        {
-          "huId": {
-            "repoId": 100
-          },
-          "qtyBook": {
-            "qty": 10,
-            "sourceQty": 10,
-            "infinite": false,
-            "zero": false
-          },
-          "qtyCount": {
-            "qty": 10,
-            "sourceQty": 10,
-            "infinite": false,
-            "zero": false
+    "inventoryType": "PHYSICAL",
+    "lines": [
+      {
+        "id": 100013,
+        "orgId": 5,
+        "asiId": 100010,
+        "productId": 40,
+        "storageAttributesKey": "10§&§11",
+        "locatorId": "100002_100003",
+        "huAggregationType": "SINGLE_HU",
+        "inventoryType": "PHYSICAL",
+        "inventoryLineHUs": [
+          {
+            "huId": 100,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": "10",
+              "uomId": 100001
+            },
+            "qtyCount": {
+              "qty": "10",
+              "uomId": 100001
+            }
           }
-        }
-      ]
-    },
-    {
-      "id": 100021,
-      "asiId": {
-        "repoId": 100018,
-        "regular": true,
-        "none": false
+        ]
       },
-      "inventoryId": 100002,
-      "productId": 40,
-      "storageAttributesKey": "10§&§11",
-      "locatorId": {
-        "repoId": 100004,
-        "warehouseId": 100003
-      },
-      "singleHUAggregation": true,
-      "inventoryLineHUs": [
-        {
-          "huId": {
-            "repoId": 200
-          },
-          "qtyBook": {
-            "qty": 1,
-            "sourceQty": 1,
-            "infinite": false,
-            "zero": false
-          },
-          "qtyCount": {
-            "qty": 1,
-            "sourceQty": 1,
-            "infinite": false,
-            "zero": false
+      {
+        "id": 100017,
+        "orgId": 5,
+        "asiId": 100014,
+        "productId": 40,
+        "storageAttributesKey": "10§&§11",
+        "locatorId": "100002_100003",
+        "huAggregationType": "SINGLE_HU",
+        "inventoryType": "PHYSICAL",
+        "inventoryLineHUs": [
+          {
+            "huId": 200,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": "1",
+              "uomId": 100001
+            },
+            "qtyCount": {
+              "qty": "1",
+              "uomId": 100001
+            }
           }
-        }
-      ]
-    }
-  ]
+        ]
+      },
+      {
+        "id": 100022,
+        "orgId": 5,
+        "asiId": 100018,
+        "productId": 40,
+        "storageAttributesKey": "10§&§11§&§12",
+        "locatorId": "100002_100003",
+        "huAggregationType": "SINGLE_HU",
+        "inventoryType": "PHYSICAL",
+        "inventoryLineHUs": [
+          {
+            "huId": 300,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": "2",
+              "uomId": 100001
+            },
+            "qtyCount": {
+              "qty": "2",
+              "uomId": 100001
+            }
+          }
+        ]
+      }
+    ]
+  }
 ]

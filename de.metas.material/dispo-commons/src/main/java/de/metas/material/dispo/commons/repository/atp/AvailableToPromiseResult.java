@@ -1,6 +1,7 @@
 package de.metas.material.dispo.commons.repository.atp;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -8,10 +9,10 @@ import java.util.function.Predicate;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.warehouse.WarehouseId;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.material.event.commons.AttributesKey;
 import lombok.Data;
@@ -57,16 +58,16 @@ public class AvailableToPromiseResult
 		{
 			final List<IPair<AttributesKey, Predicate<AttributesKey>>> storageAttributesKeysAndMatchers = extractStorageAttributesKeyAndMatchers(query);
 
-			Set<Integer> warehouseIds = query.getWarehouseIds();
+			Set<WarehouseId> warehouseIds = query.getWarehouseIds();
 			if (warehouseIds.isEmpty())
 			{
-				warehouseIds = ImmutableSet.of(AvailableToPromiseResultGroup.WAREHOUSE_ID_ANY);
+				warehouseIds = Collections.singleton(null);
 			}
 
 			final BPartnerClassifier bpartner = query.getBpartner();
 			final List<Integer> productIds = query.getProductIds();
 
-			for (final int warehouseId : warehouseIds)
+			for (final WarehouseId warehouseId : warehouseIds)
 			{
 				for (final int productId : productIds)
 				{
@@ -182,7 +183,7 @@ public class AvailableToPromiseResult
 	{
 		boolean alreadyIncludedInMatchingGroup = false;
 
-		if(!request.getBpartner().isSpecificBPartner())
+		if (!request.getBpartner().isSpecificBPartner())
 		{
 			for (final AvailableToPromiseResultGroup resultGroup : resultGroups)
 			{
@@ -212,10 +213,10 @@ public class AvailableToPromiseResult
 				.storageAttributesKey(request.getStorageAttributesKey())
 				.warehouseId(request.getWarehouseId())
 				.bpartner(request.getBpartner())
-//				.qty(request.getQty())
-//				.date(request.getDate())
-//				.seqNo(request.getSeqNo())
-//				.empty(false)
+				// .qty(request.getQty())
+				// .date(request.getDate())
+				// .seqNo(request.getSeqNo())
+				// .empty(false)
 				.build();
 
 		group.addQty(request);

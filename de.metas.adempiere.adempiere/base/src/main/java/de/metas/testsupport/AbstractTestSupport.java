@@ -48,13 +48,11 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
-
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.impl.PlainCurrencyBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
 
 public class AbstractTestSupport
 {
@@ -300,7 +298,7 @@ public class AbstractTestSupport
 			order = db.newInstance(Env.getCtx(), I_C_Order.class);
 			order.setDocumentNo(orderDocNo);
 			final I_C_DocType orderDocType = createSalesOrderDocType();
-			order.setC_DocType(orderDocType);
+			order.setC_DocType_ID(orderDocType.getC_DocType_ID());
 			InterfaceWrapperHelper.save(order);
 		}
 
@@ -348,7 +346,7 @@ public class AbstractTestSupport
 			orderLine.setDescription(orderLineDescription);
 
 			final PlainCurrencyBL currencyConversionBL = (PlainCurrencyBL)Services.get(ICurrencyBL.class);
-			orderLine.setC_Currency(currencyConversionBL.getBaseCurrency(Env.getCtx()));
+			orderLine.setC_Currency_ID(currencyConversionBL.getBaseCurrency(Env.getCtx()).getId().getRepoId());
 			InterfaceWrapperHelper.save(orderLine);
 		}
 

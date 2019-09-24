@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Location;
-import org.compiere.util.Util;
 import org.springframework.stereotype.Component;
 
 import de.metas.banking.model.I_C_Payment_Request;
@@ -21,6 +20,7 @@ import de.metas.payment.esr.ESRStringUtil;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_C_Bank;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /*
@@ -55,7 +55,7 @@ public class ESRInfoProviderImpl implements ESRPaymentInfoProvider
 
 		final I_C_BPartner bpartnerRecord = loadOutOfTrx(invoiceWithoutEsrInfo.getBiller().getId(), I_C_BPartner.class);
 
-		final String companyName = Util.coalesce(bpartnerRecord.getCompanyName(), bpartnerRecord.getName());
+		final String companyName = CoalesceUtil.coalesce(bpartnerRecord.getCompanyName(), bpartnerRecord.getName());
 
 		final I_C_Payment_Request paymentRequestRecord = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Payment_Request.class)

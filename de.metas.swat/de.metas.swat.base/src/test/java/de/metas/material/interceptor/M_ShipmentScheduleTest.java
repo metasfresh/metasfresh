@@ -10,7 +10,9 @@ import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_Order;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -75,6 +77,10 @@ public class M_ShipmentScheduleTest
 	private static final BPartnerId BPARTNER_ID1 = BPartnerId.ofRepoId(40);
 	private static final BPartnerId BPARTNER_ID2 = BPartnerId.ofRepoId(45);
 
+	private static final WarehouseId WAREHOUSE_ID = WarehouseId.ofRepoId(30);
+
+	private static final int PRODUCT_ID = 20;
+
 	private static final BigDecimal ONE = BigDecimal.ONE;
 	private static final BigDecimal FOUR = new BigDecimal("4");
 	private static final BigDecimal FIVE = new BigDecimal("5");
@@ -93,8 +99,8 @@ public class M_ShipmentScheduleTest
 		oldShipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
 		oldShipmentSchedule.setQtyOrdered_Calculated(TWENTY); // note that setQtyOrdered is just for display!, QtyOrdered_Calculated one or QtyOrdered_Override is where the qty is!
 		oldShipmentSchedule.setQtyReserved(FOUR);
-		oldShipmentSchedule.setM_Product_ID(20);
-		oldShipmentSchedule.setM_Warehouse_ID(30);
+		oldShipmentSchedule.setM_Product_ID(PRODUCT_ID);
+		oldShipmentSchedule.setM_Warehouse_ID(WAREHOUSE_ID.getRepoId());
 		oldShipmentSchedule.setC_BPartner_ID(BPARTNER_ID1.getRepoId());
 		oldShipmentSchedule.setC_BPartner_Override_ID(BPARTNER_ID2.getRepoId());
 		save(oldShipmentSchedule);
@@ -102,8 +108,8 @@ public class M_ShipmentScheduleTest
 		shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
 		shipmentSchedule.setQtyOrdered_Calculated(TEN); // decrease by ten
 		shipmentSchedule.setQtyReserved(FIVE); // increase by one
-		shipmentSchedule.setM_Product_ID(20);
-		shipmentSchedule.setM_Warehouse_ID(30);
+		shipmentSchedule.setM_Product_ID(PRODUCT_ID);
+		shipmentSchedule.setM_Warehouse_ID(WAREHOUSE_ID.getRepoId());
 		shipmentSchedule.setC_BPartner_ID(BPARTNER_ID1.getRepoId());
 		shipmentSchedule.setC_BPartner_Override_ID(BPARTNER_ID2.getRepoId());
 		save(shipmentSchedule);
@@ -116,7 +122,8 @@ public class M_ShipmentScheduleTest
 		final OrderLineDescriptor orderLineDescriptor = OrderLineDescriptor.builder()
 				.orderBPartnerId(10)
 				.orderId(20)
-				.orderLineId(30).build();
+				.orderLineId(30)
+				.build();
 		setupShipmentScheduleReferencedLineFactory(orderLineDescriptor);
 
 		final AbstractShipmentScheduleEvent result = M_ShipmentSchedule.INSTANCE
@@ -130,8 +137,8 @@ public class M_ShipmentScheduleTest
 
 		assertThat(createdEvent.getMaterialDescriptor().getCustomerId()).isEqualTo(BPARTNER_ID2);
 		assertThat(createdEvent.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(TEN);
-		assertThat(createdEvent.getMaterialDescriptor().getProductId()).isEqualTo(20);
-		assertThat(createdEvent.getMaterialDescriptor().getWarehouseId()).isEqualTo(30);
+		assertThat(createdEvent.getMaterialDescriptor().getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(createdEvent.getMaterialDescriptor().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 		assertThat(createdEvent.getReservedQuantity()).isEqualByComparingTo(FIVE);
 		assertThat(createdEvent.getDocumentLineDescriptor()).isEqualTo(orderLineDescriptor);
 	}
@@ -146,9 +153,9 @@ public class M_ShipmentScheduleTest
 	{
 		final ShipmentScheduleReferencedLine shipmentScheduleReferencedLine = //
 				ShipmentScheduleReferencedLine.builder()
-						.groupId(10)
+						.recordRef(TableRecordReference.of(I_C_Order.Table_Name, 10))
 						.shipperId(ShipperId.optionalOfRepoId(20))
-						.warehouseId(WarehouseId.ofRepoId(30))
+						.warehouseId(WAREHOUSE_ID)
 						.documentLineDescriptor(orderLineDescriptor).build();
 		// @formatter:off
 		new Expectations(ShipmentScheduleReferencedLineFactory.class)
@@ -178,8 +185,8 @@ public class M_ShipmentScheduleTest
 		assertThat(updatedEvent.getShipmentScheduleId()).isEqualTo(shipmentSchedule.getM_ShipmentSchedule_ID());
 		assertThat(updatedEvent.getMaterialDescriptor().getCustomerId()).isEqualTo(BPARTNER_ID2);
 		assertThat(updatedEvent.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(TEN);
-		assertThat(updatedEvent.getMaterialDescriptor().getProductId()).isEqualTo(20);
-		assertThat(updatedEvent.getMaterialDescriptor().getWarehouseId()).isEqualTo(30);
+		assertThat(updatedEvent.getMaterialDescriptor().getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(updatedEvent.getMaterialDescriptor().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 		assertThat(updatedEvent.getReservedQuantity()).isEqualByComparingTo(FIVE);
 		assertThat(updatedEvent.getReservedQuantityDelta()).isEqualByComparingTo(ONE);
 		assertThat(updatedEvent.getOrderedQuantityDelta()).isEqualByComparingTo(TEN.negate());
@@ -198,8 +205,8 @@ public class M_ShipmentScheduleTest
 		assertThat(deletedEvent.getShipmentScheduleId()).isEqualTo(shipmentSchedule.getM_ShipmentSchedule_ID());
 		assertThat(deletedEvent.getMaterialDescriptor().getCustomerId()).isEqualTo(BPARTNER_ID2);
 		assertThat(deletedEvent.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(TEN);
-		assertThat(deletedEvent.getMaterialDescriptor().getProductId()).isEqualTo(20);
-		assertThat(deletedEvent.getMaterialDescriptor().getWarehouseId()).isEqualTo(30);
+		assertThat(deletedEvent.getMaterialDescriptor().getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(deletedEvent.getMaterialDescriptor().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 		assertThat(deletedEvent.getReservedQuantity()).isEqualByComparingTo(FIVE);
 	}
 }

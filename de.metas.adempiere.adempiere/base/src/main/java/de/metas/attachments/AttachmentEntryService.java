@@ -1,15 +1,5 @@
 package de.metas.attachments;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-
 import java.io.File;
 import java.net.URI;
 import java.util.Collection;
@@ -17,11 +7,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ITableRecordReference;
+import javax.annotation.Nullable;
+
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_AttachmentEntry;
-import org.compiere.model.X_AD_AttachmentEntry;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -32,6 +20,10 @@ import de.metas.attachments.automaticlinksharing.RecordToReferenceProviderServic
 import de.metas.attachments.migration.AttachmentMigrationService;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 
 /*
  * #%L
@@ -59,6 +51,7 @@ import de.metas.util.collections.CollectionUtils;
 public class AttachmentEntryService
 {
 	private final AttachmentEntryRepository attachmentEntryRepository;
+	private final AttachmentLogRepository attachmentLogRepository;
 	private final AttachmentEntryFactory attachmentEntryFactory;
 	private final AttachmentMigrationService attachmentMigrationService;
 	private final RecordToReferenceProviderService attachmentHandlerRegistry;
@@ -68,11 +61,13 @@ public class AttachmentEntryService
 	{
 		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
 		final AttachmentEntryRepository attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory);
+		final AttachmentLogRepository attachmentLogRepository = new AttachmentLogRepository();
 		final AttachmentMigrationService attachmentMigrationService = new AttachmentMigrationService(attachmentEntryFactory);
 		final RecordToReferenceProviderService attachmentHandlerRegistry = new RecordToReferenceProviderService(Optional.empty());
 
 		return new AttachmentEntryService(
 				attachmentEntryRepository,
+				attachmentLogRepository,
 				attachmentEntryFactory,
 				attachmentMigrationService,
 				attachmentHandlerRegistry);
@@ -85,11 +80,13 @@ public class AttachmentEntryService
 	 */
 	public AttachmentEntryService(
 			@NonNull final AttachmentEntryRepository attachmentEntryRepository,
+			@NonNull final AttachmentLogRepository attachmentLogRepository,
 			@NonNull final AttachmentEntryFactory attachmentEntryFactory,
 			@NonNull final AttachmentMigrationService attachmentMigrationService,
 			@NonNull final RecordToReferenceProviderService attachmentHandlerRegistry)
 	{
 		this.attachmentEntryRepository = attachmentEntryRepository;
+		this.attachmentLogRepository = attachmentLogRepository;
 		this.attachmentEntryFactory = attachmentEntryFactory;
 		this.attachmentMigrationService = attachmentMigrationService;
 		this.attachmentHandlerRegistry = attachmentHandlerRegistry;
@@ -141,7 +138,7 @@ public class AttachmentEntryService
 	}
 
 	/**
-	 * @param referencedRecords may be a single model object, a a single {@link ITableRecordReference} or a collection of both.
+	 * @param referencedRecords may be a single model object, a a single {@link TableRecordReference} or a collection of both.
 	 */
 	@SuppressWarnings("unchecked")
 	public AttachmentEntry createNewAttachment(
@@ -186,7 +183,7 @@ public class AttachmentEntryService
 		return CollectionUtils.singleElement(entryWithReferencedRecords);
 	}
 
-	/** Note: the given objects may be "record" models or {@link ITableRecordReference}s. */
+	/** Note: the given objects may be "record" models or {@link TableRecordReference}s. */
 	public Collection<AttachmentEntry> createAttachmentLinks(
 			@NonNull final Collection<AttachmentEntry> entries,
 			@NonNull final Collection<? extends Object> referencedRecords)
@@ -196,7 +193,7 @@ public class AttachmentEntryService
 		return expandAndSave(referencedRecords, unsavedAttachmentsWithLinks);
 	}
 
-	/** Note: the given objects may be "record" models or {@link ITableRecordReference}s. */
+	/** Note: the given objects may be "record" models or {@link TableRecordReference}s. */
 	public Collection<AttachmentEntry> shareAttachmentLinks(
 			@NonNull final Collection<? extends Object> referencedRecordsSource,
 			@NonNull final Collection<? extends Object> referencedRecordsDest)
@@ -266,6 +263,11 @@ public class AttachmentEntryService
 
 		if (withRemovedLinkedRecordAndId.getLinkedRecords().isEmpty())
 		{
+			final AttachmentLog attachmentLog = AttachmentLog.builder()
+					.attachmentEntry(attachment)
+					.recordRef(tableRecordReference)
+					.build();
+			attachmentLogRepository.save(attachmentLog);
 			attachmentEntryRepository.delete(withRemovedLinkedRecordAndId);
 		}
 		return withRemovedLinkedRecordAndId;
@@ -280,8 +282,8 @@ public class AttachmentEntryService
 	{
 		return getByReferencedRecordMigrateIfNeeded(query.getReferencedRecord())
 				.stream()
-				.filter(e -> e.hasAllTagsSetToTrue(query.getTagsSetToTrue()))
-				.filter(e -> e.hasAllTagsSetToAnyValue(query.getTagsSetToAnyValue()))
+				.filter(e -> e.getTags().hasAllTagsSetToTrue(query.getTagsSetToTrue()))
+				.filter(e -> e.getTags().hasAllTagsSetToAnyValue(query.getTagsSetToAnyValue()))
 				.filter(e -> Check.isEmpty(query.getMimeType(), true) || Objects.equals(e.getMimeType(), query.getMimeType()))
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -310,8 +312,12 @@ public class AttachmentEntryService
 
 	public byte[] retrieveData(@NonNull final AttachmentEntryId attachmentEntryId)
 	{
-		final I_AD_AttachmentEntry record = load(attachmentEntryId, I_AD_AttachmentEntry.class);
-		return record.getBinaryData();
+		return attachmentEntryRepository.retrieveAttachmentEntryData(attachmentEntryId);
+	}
+
+	public AttachmentEntryDataResource retrieveDataResource(@NonNull final AttachmentEntryId attachmentEntryId)
+	{
+		return attachmentEntryRepository.retrieveAttachmentEntryDataResource(attachmentEntryId);
 	}
 
 	public AttachmentEntry getByFilenameOrNull(
@@ -332,14 +338,7 @@ public class AttachmentEntryService
 			@NonNull final AttachmentEntryId attachmentEntryId,
 			@NonNull final byte[] data)
 	{
-		final I_AD_AttachmentEntry entryRecord = load(attachmentEntryId, I_AD_AttachmentEntry.class);
-		if (X_AD_AttachmentEntry.TYPE_Data.equals(entryRecord.getType()))
-		{
-			throw new AdempiereException("Only entries of type Data support attaching data").setParameter("entryRecord", entryRecord);
-		}
-
-		entryRecord.setBinaryData(data);
-		saveRecord(entryRecord);
+		attachmentEntryRepository.updateAttachmentEntryData(attachmentEntryId, data);
 	}
 
 	/**

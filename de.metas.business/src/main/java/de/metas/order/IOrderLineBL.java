@@ -31,6 +31,7 @@ import org.compiere.model.I_M_PriceList_Version;
 
 import de.metas.currency.CurrencyPrecision;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.limit.PriceLimitRuleResult;
@@ -45,11 +46,13 @@ public interface IOrderLineBL extends ISingletonService
 {
 
 	// task 08002
-	public static final String DYNATTR_DoNotRecalculatePrices = IOrderLineBL.class.getName() + "#DoNotRecalcualtePrices";
+	String DYNATTR_DoNotRecalculatePrices = IOrderLineBL.class.getName() + "#DoNotRecalcualtePrices";
 
 	Quantity getQtyEntered(org.compiere.model.I_C_OrderLine orderLine);
 
 	Quantity getQtyOrdered(OrderAndLineId orderAndLineId);
+
+	Quantity getQtyOrdered(I_C_OrderLine orderLine);
 
 	Quantity getQtyToDeliver(OrderAndLineId orderAndLineId);
 
@@ -197,13 +200,11 @@ public interface IOrderLineBL extends ISingletonService
 	 */
 	boolean isTaxIncluded(org.compiere.model.I_C_OrderLine orderLine);
 
-	/**
-	 * Calls {@link IOrderBL#getPrecision(org.compiere.model.I_C_Order)} for the given <code>orderLine</code>'s <code>C_Order</code>.
-	 *
-	 * @param orderLine
-	 * @return
-	 */
-	int getPrecision(org.compiere.model.I_C_OrderLine orderLine);
+	CurrencyPrecision getPricePrecision(org.compiere.model.I_C_OrderLine orderLine);
+
+	CurrencyPrecision getAmountPrecision(org.compiere.model.I_C_OrderLine orderLine);
+
+	CurrencyPrecision getTaxPrecision(org.compiere.model.I_C_OrderLine orderLine);
 
 	/**
 	 * Copy the details from the original order line into the new order line of the counter document
@@ -223,10 +224,10 @@ public interface IOrderLineBL extends ISingletonService
 	 * @return true if the line shall be copied and false if not
 	 */
 	boolean isAllowedCounterLineCopy(org.compiere.model.I_C_OrderLine fromLine);
-	
+
 	ProductPrice getCostPrice(org.compiere.model.I_C_OrderLine orderLine);
 
-	int getC_PaymentTerm_ID(org.compiere.model.I_C_OrderLine orderLine);
+	PaymentTermId getPaymentTermId(org.compiere.model.I_C_OrderLine orderLine);
 
 	Map<OrderAndLineId, Quantity> getQtyToDeliver(Collection<OrderAndLineId> orderAndLineIds);
 

@@ -94,9 +94,9 @@ public class RepositoryCommons
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, query.getParentId().getRepoId());
 		}
 
-		if (query.getGroupId() > 0)
+		if (query.getGroupId() != null)
 		{
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_GroupId, query.getGroupId());
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_GroupId, query.getGroupId().toInt());
 		}
 
 		addMaterialDescriptorToQueryBuilderIfNotNull(
@@ -158,7 +158,7 @@ public class RepositoryCommons
 			return atLeastOneFilterAdded;
 		}
 
-		if (materialDescriptorQuery.getWarehouseId() > 0)
+		if (materialDescriptorQuery.getWarehouseId() != null)
 		{
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, materialDescriptorQuery.getWarehouseId());
 			atLeastOneFilterAdded = true;

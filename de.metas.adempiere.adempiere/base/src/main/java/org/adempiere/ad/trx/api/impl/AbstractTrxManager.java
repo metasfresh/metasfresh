@@ -397,23 +397,6 @@ public abstract class AbstractTrxManager implements ITrxManager
 	}
 
 	@Override
-	public ITrx[] getActiveTransactions()
-	{
-		trxName2trxLock.lock();
-		try
-		{
-			final Collection<ITrx> collections = trxName2trx.values();
-			final ITrx[] trxs = new ITrx[collections.size()];
-			collections.toArray(trxs);
-			return trxs;
-		}
-		finally
-		{
-			trxName2trxLock.unlock();
-		}
-	}
-
-	@Override
 	public List<ITrx> getActiveTransactionsList()
 	{
 		trxName2trxLock.lock();
@@ -468,17 +451,17 @@ public abstract class AbstractTrxManager implements ITrxManager
 	}	// createTrxName
 
 	@Override
-	public <T> T call(final Callable<T> callable)
+	public <T> T callInNewTrx(final Callable<T> callable)
 	{
 		final TrxCallable<T> trxCallable = TrxCallableWrappers.wrapIfNeeded(callable);
-		return call(trxCallable);
+		return callInNewTrx(trxCallable);
 	}
 
 	@Override
 	public void runInNewTrx(final Runnable runnable)
 	{
 		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(runnable);
-		call(callable);
+		callInNewTrx(callable);
 	}
 
 	/**
@@ -488,11 +471,11 @@ public abstract class AbstractTrxManager implements ITrxManager
 	public void runInNewTrx(final TrxRunnable runnable)
 	{
 		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(runnable);
-		call(callable);
+		callInNewTrx(callable);
 	}
 
 	@Override
-	public <T> T call(final TrxCallable<T> callable)
+	public <T> T callInNewTrx(final TrxCallable<T> callable)
 	{
 		return call(ITrx.TRXNAME_None, callable);
 	}

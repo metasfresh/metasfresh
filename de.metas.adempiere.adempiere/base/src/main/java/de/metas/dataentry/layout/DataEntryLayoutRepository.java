@@ -8,10 +8,12 @@ import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.window.api.IADWindowDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Tab;
-import org.compiere.model.I_AD_Table;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
@@ -85,25 +87,37 @@ public class DataEntryLayoutRepository
 	private DataEntryLayout retrieveByWindowId(@NonNull final AdWindowId adWindowId)
 	{
 		final ImmutableList<I_DataEntry_Tab> tabRecords = retrieveTabRecords(adWindowId);
-		if (tabRecords.isEmpty())
+
+		final I_AD_Tab firstADTab = Services.get(IADWindowDAO.class).retrieveFirstTab(adWindowId);
+		if (firstADTab == null)
 		{
-			return DataEntryLayout.empty(adWindowId);
+			throw new AdempiereException("@NotFound@ @AD_Tab_ID@: (@AD_Window_ID@: " + adWindowId.getRepoId() + ")");
 		}
 
+		final AdTableId mainTableId = AdTableId.ofRepoId(firstADTab.getAD_Table_ID());
+		final String mainTableName = Services.get(IADTableDAO.class).retrieveTableName(mainTableId);
+
+		if (tabRecords.isEmpty())
+		{
+			return DataEntryLayout.empty(adWindowId, mainTableId);
+		}
+
+		final DocumentLinkColumnName parentLinkColumnName = DocumentLinkColumnName.of(InterfaceWrapperHelper.getKeyColumnName(mainTableName));
 		final List<DataEntryTab> tabs = new ArrayList<>();
 		for (final I_DataEntry_Tab tabRecord : tabRecords)
 		{
-			final Optional<DataEntryTab> tab = ofRecord(tabRecord);
+			final Optional<DataEntryTab> tab = ofRecord(tabRecord, parentLinkColumnName);
 			tab.ifPresent(tabs::add);
 		}
 
 		if (tabs.isEmpty())
 		{
-			return DataEntryLayout.empty(adWindowId);
+			return DataEntryLayout.empty(adWindowId, mainTableId);
 		}
 
 		return DataEntryLayout.builder()
 				.windowId(adWindowId)
+				.mainTableId(mainTableId)
 				.tabs(tabs)
 				.build();
 	}
@@ -119,24 +133,17 @@ public class DataEntryLayoutRepository
 				.listImmutable(I_DataEntry_Tab.class);
 	}
 
-	private static Optional<DataEntryTab> ofRecord(@NonNull final I_DataEntry_Tab tabRecord)
+	private static Optional<DataEntryTab> ofRecord(
+			@NonNull final I_DataEntry_Tab tabRecord,
+			@NonNull final DocumentLinkColumnName parentLinkColumnName)
 	{
-		final I_AD_Tab firstADTab = Services.get(IADWindowDAO.class).retrieveFirstTab(tabRecord.getDataEntry_TargetWindow_ID());
-		final I_AD_Table windowMainTable = firstADTab.getAD_Table();
-		final String parentLinkColumnName = InterfaceWrapperHelper.getKeyColumnName(windowMainTable.getTableName());
-
 		final IModelTranslationMap modelTranslationMap = InterfaceWrapperHelper.getModelTranslationMap(tabRecord);
+		final ITranslatableString captionTrl = modelTranslationMap.getColumnTrl(I_DataEntry_Tab.COLUMNNAME_TabName, tabRecord.getTabName());
+		final ITranslatableString descriptionTrl = modelTranslationMap.getColumnTrl(I_DataEntry_Tab.COLUMNNAME_Description, tabRecord.getDescription());
 
-		final ITranslatableString captionTrl = modelTranslationMap
-				.getColumnTrl(I_DataEntry_Tab.COLUMNNAME_TabName, tabRecord.getTabName());
-
-		final ITranslatableString descriptionTrl = modelTranslationMap
-				.getColumnTrl(I_DataEntry_Tab.COLUMNNAME_Description, tabRecord.getDescription());
-
-		final DataEntryTab.DataEntryTabBuilder tab = DataEntryTab
-				.builder()
+		final DataEntryTab.DataEntryTabBuilder tab = DataEntryTab.builder()
 				.id(DataEntryTabId.ofRepoId(tabRecord.getDataEntry_Tab_ID()))
-				.documentLinkColumnName(DocumentLinkColumnName.of(parentLinkColumnName))
+				.documentLinkColumnName(parentLinkColumnName)
 				.caption(captionTrl)
 				.description(descriptionTrl)
 				.internalName(I_DataEntry_Tab.COLUMNNAME_DataEntry_Tab_ID + "-" + tabRecord.getDataEntry_Tab_ID());
@@ -167,12 +174,8 @@ public class DataEntryLayoutRepository
 			@NonNull final I_DataEntry_SubTab subTabRecord)
 	{
 		final IModelTranslationMap modelTranslationMap = InterfaceWrapperHelper.getModelTranslationMap(subTabRecord);
-
-		final ITranslatableString captionTrl = modelTranslationMap
-				.getColumnTrl(I_DataEntry_SubTab.COLUMNNAME_TabName, subTabRecord.getTabName());
-
-		final ITranslatableString descriptionTrl = modelTranslationMap
-				.getColumnTrl(I_DataEntry_SubTab.COLUMNNAME_Description, subTabRecord.getDescription());
+		final ITranslatableString captionTrl = modelTranslationMap.getColumnTrl(I_DataEntry_SubTab.COLUMNNAME_TabName, subTabRecord.getTabName());
+		final ITranslatableString descriptionTrl = modelTranslationMap.getColumnTrl(I_DataEntry_SubTab.COLUMNNAME_Description, subTabRecord.getDescription());
 
 		final DataEntrySubTab.DataEntrySubTabBuilder subTab = DataEntrySubTab.builder()
 				.id(DataEntrySubTabId.ofRepoId(subTabRecord.getDataEntry_SubTab_ID()))
@@ -245,7 +248,8 @@ public class DataEntryLayoutRepository
 	{
 		final ImmutableList<I_DataEntry_Field> fieldRecords = retrieveFieldRecords(lineRecord);
 
-		final DataEntryLineBuilder line = DataEntryLine.builder();
+		final DataEntryLineBuilder line = DataEntryLine.builder()
+				.seqNo(lineRecord.getSeqNo());
 
 		for (final I_DataEntry_Field fieldRecord : fieldRecords)
 		{
@@ -348,20 +352,14 @@ public class DataEntryLayoutRepository
 
 	private static DataEntryListValue ofRecord(@NonNull final I_DataEntry_ListValue listValueRecord)
 	{
-		final IModelTranslationMap modelTranslationMap = InterfaceWrapperHelper.getModelTranslationMap(listValueRecord);
-
 		final DataEntryListValueId id = DataEntryListValueId.ofRepoId(listValueRecord.getDataEntry_ListValue_ID());
-		final DataEntryFieldId fieldId = DataEntryFieldId.ofRepoId(listValueRecord.getDataEntry_Field_ID());
-
-		final ITranslatableString nameTrl = modelTranslationMap
-				.getColumnTrl(I_DataEntry_ListValue.COLUMNNAME_Name, listValueRecord.getName());
-
-		final ITranslatableString descriptionTrl = modelTranslationMap
-				.getColumnTrl(I_DataEntry_ListValue.COLUMNNAME_Description, listValueRecord.getDescription());
+		
+		final IModelTranslationMap trls = InterfaceWrapperHelper.getModelTranslationMap(listValueRecord);
+		final ITranslatableString nameTrl = trls.getColumnTrl(I_DataEntry_ListValue.COLUMNNAME_Name, listValueRecord.getName());
+		final ITranslatableString descriptionTrl = trls.getColumnTrl(I_DataEntry_ListValue.COLUMNNAME_Description, listValueRecord.getDescription());
 
 		return DataEntryListValue.builder()
 				.id(id)
-				.fieldId(fieldId)
 				.name(nameTrl)
 				.description(descriptionTrl)
 				.build();

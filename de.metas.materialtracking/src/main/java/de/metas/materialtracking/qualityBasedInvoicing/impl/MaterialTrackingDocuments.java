@@ -52,6 +52,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /* package */class MaterialTrackingDocuments implements IMaterialTrackingDocuments
 {
@@ -77,11 +78,8 @@ import de.metas.util.Services;
 
 	private Set<Integer> ppOrdersToBeConsideredNotClosed = new HashSet<>();
 
-	public MaterialTrackingDocuments(final I_M_Material_Tracking materialTracking)
+	public MaterialTrackingDocuments(@NonNull final I_M_Material_Tracking materialTracking)
 	{
-		super();
-
-		Check.assumeNotNull(materialTracking, "materialTracking not null");
 		_materialTracking = materialTracking;
 	}
 
@@ -131,7 +129,7 @@ import de.metas.util.Services;
 		final ArrayList<IQualityInspectionOrder> result = new ArrayList<>();
 		for (final IQualityInspectionOrder order : allProductionOrders)
 		{
-			if (materialTrackingPPOrderDAO.isInvoiced(order.getPP_Order()))
+			if (materialTrackingPPOrderDAO.isPPOrderInvoicedForMaterialTracking(order.getPP_Order(), _materialTracking))
 			{
 				continue;
 			}
@@ -298,8 +296,8 @@ import de.metas.util.Services;
 		final I_M_Material_Tracking materialTracking = getM_Material_Tracking();
 		materialTrackingBL.linkModelToMaterialTracking(
 				MTLinkRequest.builder()
-						.setModel(model)
-						.setMaterialTracking(materialTracking)
+						.model(model)
+						.materialTrackingRecord(materialTracking)
 						.build());
 	}
 

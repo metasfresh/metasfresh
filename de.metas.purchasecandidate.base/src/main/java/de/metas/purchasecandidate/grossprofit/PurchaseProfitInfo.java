@@ -10,7 +10,6 @@ import org.adempiere.exceptions.AdempiereException;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.util.lang.Percent;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -108,23 +107,23 @@ public class PurchaseProfitInfo
 			return Optional.empty();
 		}
 
-		final Percent profitPercent = Percent.ofDelta(profitPurchasePriceActual.getValue(), profitSalesPriceActual.getValue());
+		final Percent profitPercent = Percent.ofDelta(profitPurchasePriceActual.toBigDecimal(), profitSalesPriceActual.toBigDecimal());
 		return Optional.of(profitPercent);
 	}
 
 	public BigDecimal getProfitSalesPriceActualAsBigDecimalOr(final BigDecimal defaultValue)
 	{
-		return profitSalesPriceActual.map(Money::getValue).orElse(defaultValue);
+		return profitSalesPriceActual.map(Money::toBigDecimal).orElse(defaultValue);
 	}
 
 	public BigDecimal getProfitPurchasePriceActualAsBigDecimalOr(@Nullable final BigDecimal defaultValue)
 	{
-		return profitPurchasePriceActual.map(Money::getValue).orElse(defaultValue);
+		return profitPurchasePriceActual.map(Money::toBigDecimal).orElse(defaultValue);
 	}
 
 	public BigDecimal getPurchasePriceActualAsBigDecimalOr(@Nullable final BigDecimal defaultValue)
 	{
-		return purchasePriceActual.map(Money::getValue).orElse(defaultValue);
+		return purchasePriceActual.map(Money::toBigDecimal).orElse(defaultValue);
 	}
 
 	//

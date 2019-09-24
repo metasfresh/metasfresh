@@ -33,6 +33,7 @@ de.metas.endcustomer.mf15/metasfresh.properties
 
 de.metas.shipper.gateway.go/src/main/resources/application.properties
 de.metas.vertical.pharma.msv3.server/application.properties
+de.metas.vertical.pharma.securpharm/sandbox.properties
 de.metas.report/report-service/application.properties
 de.metas.material/dispo-service/application.properties
 
@@ -41,3 +42,4 @@ de.metas.material/dispo-service/application.properties
 **/.idea
 
 **/LICENSE.txt
+

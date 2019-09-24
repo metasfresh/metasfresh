@@ -88,8 +88,8 @@ public class PP_Order
 			return;
 		}
 
-		// Applies only on those Quality Inspection orders which are linked to a material tracking
-		final I_M_Material_Tracking materialTracking = materialTrackingDAO.retrieveMaterialTrackingForModel(ppOrder);
+		// a quality inspection has at most one material tracking
+		final I_M_Material_Tracking materialTracking = materialTrackingDAO.retrieveSingleMaterialTrackingForModel(ppOrder);
 		if (materialTracking == null)
 		{
 			return;
@@ -149,7 +149,7 @@ public class PP_Order
 		}
 
 		final String msg = msgBL.translate(InterfaceWrapperHelper.getCtx(ppOrder), sb.toString());
-		Loggables.get().addLog(msg);
+		Loggables.addLog(msg);
 		throw new AdempiereException(msg);
 	}
 

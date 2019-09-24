@@ -3,7 +3,7 @@ package de.metas.material.dispo.commons.interceptor;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -59,7 +59,7 @@ public class OrderAvailableToPromiseTool
 	public static void updateOrderLineRecords(@NonNull final I_C_Order orderRecord)
 	{
 		// we use the date at which the order needs to be ready for shipping
-		final LocalDateTime preparationDate = TimeUtil.asLocalDateTime(orderRecord.getPreparationDate());
+		final ZonedDateTime preparationDate = TimeUtil.asZonedDateTime(orderRecord.getPreparationDate());
 
 		final List<I_C_OrderLine> orderLineRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_OrderLine.class)
@@ -118,7 +118,7 @@ public class OrderAvailableToPromiseTool
 	public static void updateOrderLineRecordAndDoNotSave(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		// we use the date at which the order needs to be ready for shipping
-		final LocalDateTime preparationDate = TimeUtil.asLocalDateTime(orderLineRecord.getC_Order().getPreparationDate());
+		final ZonedDateTime preparationDate = TimeUtil.asZonedDateTime(orderLineRecord.getC_Order().getPreparationDate());
 
 		final OrderLineKey orderLineKey = OrderLineKey.forOrderLineRecord(orderLineRecord);
 
@@ -131,7 +131,7 @@ public class OrderAvailableToPromiseTool
 	}
 
 	private static AvailableToPromiseQuery createSingleQuery(
-			@NonNull final LocalDateTime preparationDate,
+			@NonNull final ZonedDateTime preparationDate,
 			@NonNull final OrderLineKey orderLineKey)
 	{
 		final AvailableToPromiseQuery query = AvailableToPromiseQuery

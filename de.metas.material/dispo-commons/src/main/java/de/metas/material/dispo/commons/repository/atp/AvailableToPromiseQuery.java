@@ -1,6 +1,6 @@
 package de.metas.material.dispo.commons.repository.atp;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -8,6 +8,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -51,17 +52,17 @@ public class AvailableToPromiseQuery
 	{
 		return AvailableToPromiseQuery.builder()
 				.warehouseId(materialDescriptor.getWarehouseId())
-				.date(TimeUtil.asLocalDateTime(materialDescriptor.getDate()))
+				.date(TimeUtil.asZonedDateTime(materialDescriptor.getDate()))
 				.productId(materialDescriptor.getProductId())
 				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
 				.bpartner(BPartnerClassifier.specificOrNone(materialDescriptor.getCustomerId()))
 				.build();
 	}
 
-	ImmutableSet<Integer> warehouseIds;
+	ImmutableSet<WarehouseId> warehouseIds;
 
 	/** optional; if null, then "now" is used */
-	LocalDateTime date;
+	ZonedDateTime date;
 
 	ImmutableList<Integer> productIds;
 	ImmutableList<AttributesKey> storageAttributesKeys;
@@ -70,8 +71,8 @@ public class AvailableToPromiseQuery
 
 	@Builder(toBuilder = true)
 	private AvailableToPromiseQuery(
-			@Singular final Set<Integer> warehouseIds,
-			@Nullable final LocalDateTime date,
+			@Singular final Set<WarehouseId> warehouseIds,
+			@Nullable final ZonedDateTime date,
 			@Singular final List<Integer> productIds,
 			@Singular final List<AttributesKey> storageAttributesKeys,
 			@Nullable final BPartnerClassifier bpartner)
@@ -79,7 +80,7 @@ public class AvailableToPromiseQuery
 		Check.assumeNotEmpty(productIds, "productIds is not empty");
 
 		this.warehouseIds = warehouseIds == null || warehouseIds.isEmpty() ? ImmutableSet.of() : ImmutableSet.copyOf(warehouseIds);
-		this.date = date != null ? date : SystemTime.asLocalDateTime();
+		this.date = date != null ? date : SystemTime.asZonedDateTime();
 		this.productIds = ImmutableList.copyOf(productIds);
 		this.storageAttributesKeys = ImmutableList.copyOf(storageAttributesKeys);
 		this.bpartner = bpartner != null ? bpartner : BPartnerClassifier.none();
@@ -87,10 +88,10 @@ public class AvailableToPromiseQuery
 
 	public AvailableToPromiseQuery withDate(@NonNull final Date newDate)
 	{
-		return withDateTime(TimeUtil.asLocalDateTime(newDate));
+		return withDateTime(TimeUtil.asZonedDateTime(newDate));
 	}
 
-	public AvailableToPromiseQuery withDateTime(@NonNull final LocalDateTime newDate)
+	public AvailableToPromiseQuery withDateTime(@NonNull final ZonedDateTime newDate)
 	{
 		if (Objects.equals(this.date, newDate))
 		{

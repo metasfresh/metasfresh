@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.acct;
 
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -26,13 +28,15 @@ import javax.annotation.Nullable;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
+import org.adempiere.service.ClientId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MTax;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -54,7 +58,9 @@ import de.metas.inout.IInOutBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
@@ -195,7 +201,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 		//
 		// Skip not stockable (e.g. service products) because they have no cost
-		final int productId = getM_MatchInv().getM_Product_ID();
+		final ProductId productId = ProductId.ofRepoIdOrNull(getM_MatchInv().getM_Product_ID());
 		if (!productBL.isStocked(productId))
 		{
 			return ImmutableList.of();
@@ -267,7 +273,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 	/**
 	 * Create the InvoicePriceVariance fact line
-	 * 
+	 *
 	 * @param fact
 	 * @param dr_NotInvoicedReceipts
 	 * @param cr_InventoryClearing
@@ -399,7 +405,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		final BigDecimal qtyInvoiced = getQtyInvoiced();
 		if (qtyInvoiced.signum() != 0) // task 08337: guard against division by zero
 		{
-			return getQty().divide(qtyInvoiced, 12, RoundingMode.HALF_UP).getAsBigDecimal();
+			return getQty().divide(qtyInvoiced, 12, RoundingMode.HALF_UP).toBigDecimal();
 		}
 		else
 		{
@@ -437,10 +443,10 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 			final I_C_Invoice invoice = invoiceLine.getC_Invoice();
 			Check.assumeNotNull(invoice, "invoice not null");
 			invoiceCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
-					invoice.getDateAcct(),
+					TimeUtil.asLocalDate(invoice.getDateAcct()),
 					CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
-					invoice.getAD_Client_ID(),
-					invoice.getAD_Org_ID());
+					ClientId.ofRepoId(invoice.getAD_Client_ID()),
+					OrgId.ofRepoId(invoice.getAD_Org_ID()));
 		}
 		return invoiceCurrencyConversionCtx;
 	}
@@ -462,7 +468,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		fl.setC_Activity_ID(invoiceLine.getC_Activity_ID());
 		fl.setC_Campaign_ID(invoiceLine.getC_Campaign_ID());
 		fl.setC_Project_ID(invoiceLine.getC_Project_ID());
-		fl.setC_UOM_ID(invoiceLine.getPrice_UOM_ID());
+		fl.setC_UOM_ID(firstGreaterThanZero(invoiceLine.getPrice_UOM_ID(), invoiceLine.getC_UOM_ID()));
 		fl.setUser1_ID(invoiceLine.getUser1_ID());
 		fl.setUser2_ID(invoiceLine.getUser2_ID());
 	}
@@ -496,7 +502,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		Check.assume(!isSOTrx(), "Cannot create cost details for sales match invoice");
 
 		final IInOutBL inOutBL = Services.get(IInOutBL.class);
-		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
+		final ICostingService costDetailService = SpringContextHolder.instance.getBean(ICostingService.class);
 
 		final BigDecimal matchAmt = getInvoiceLineMatchedAmt();
 		final CurrencyId currentId = getInvoiceCurrencyId();

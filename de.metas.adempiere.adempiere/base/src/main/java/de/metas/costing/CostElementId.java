@@ -43,7 +43,6 @@ public class CostElementId implements RepoIdAware
 		return new CostElementId(repoId);
 	}
 
-	@JsonCreator
 	public static CostElementId ofRepoIdOrNull(final int repoId)
 	{
 		if (repoId <= 0)

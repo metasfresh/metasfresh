@@ -30,13 +30,13 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.compiere.util.Util;
-
 import de.metas.currency.CurrencyPrecision;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingAttribute;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -45,12 +45,15 @@ import de.metas.pricing.rules.IPricingRule;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.Percent;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.ToString;
 
 /**
@@ -64,116 +67,86 @@ import lombok.ToString;
  *
  */
 @ToString
-class PricingResult implements IPricingResult
+@Data
+final class PricingResult implements IPricingResult
 {
-	@Getter
-	@Setter
 	private boolean calculated = false;
 
-	@Getter
-	@Setter
 	private PricingSystemId pricingSystemId;
-	@Getter
-	@Setter
 	private PriceListId priceListId;
-	@Setter
-	@Getter
-	private CurrencyId currencyId;
-	private int C_UOM_ID = -1;
-	@Setter
-	@Getter
-	private ProductId productId;
-	@Setter
-	@Getter
-	private ProductCategoryId productCategoryId;
-	@Setter
-	@Getter
 	private PriceListVersionId priceListVersionId;
-	@Setter
-	@Getter
-	private TaxCategoryId taxCategoryId;
-	@Setter
-	@Getter
-	private PricingConditionsResult pricingConditions;
-
-	@Setter
-	@Getter
+	private CurrencyId currencyId;
+	private UomId priceUomId;
 	private CurrencyPrecision precision;
 
-	@Setter
-	@Getter
-	private BigDecimal priceList = BigDecimal.ZERO;
+	private ProductId productId;
+	private ProductCategoryId productCategoryId;
 
-	@Setter
-	@Getter
-	private BigDecimal priceStd = BigDecimal.ZERO;
-
-	@Setter
-	@Getter
-	private BigDecimal priceLimit = BigDecimal.ZERO;
-	private Percent discount = Percent.ZERO;
-	@Setter
-	@Getter
-	private boolean enforcePriceLimit = false;
-
-	@Setter
-	@Getter
+	private TaxCategoryId taxCategoryId;
 	private boolean taxIncluded = false;
 
-	@Setter
-	@Getter
+	private PricingConditionsResult pricingConditions;
+
+
+	private BigDecimal priceList = BigDecimal.ZERO;
+	private BigDecimal priceStd = BigDecimal.ZERO;
+	private BigDecimal priceLimit = BigDecimal.ZERO;
+	private Percent discount = Percent.ZERO;
+
+	@NonNull
+	private BooleanWithReason enforcePriceLimit = BooleanWithReason.FALSE;
+
 	private boolean usesDiscountSchema = false;
-	@Setter
-	@Getter
 	private boolean disallowDiscount = false;
 
-	@Getter
 	private final LocalDate priceDate;
 
-	@Setter
-	@Getter
 	private boolean priceEditable = true;
 
-	@Setter
-	@Getter
 	private boolean discountEditable = true;
 
+	private InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.NominalWeight;
+
+	@Getter(AccessLevel.NONE)
 	private final List<IPricingRule> rulesApplied = new ArrayList<>();
 
+	@Getter(AccessLevel.NONE)
 	private final List<IPricingAttribute> pricingAttributes = new ArrayList<>();
 
 	@Builder
 	private PricingResult(
-			@NonNull final LocalDate priceDate)
+			@NonNull final LocalDate priceDate,
+			//
+			@Nullable final PricingSystemId pricingSystemId,
+			@Nullable final PriceListId priceListId,
+			@Nullable final PriceListVersionId priceListVersionId,
+			@Nullable final CurrencyId currencyId,
+			//
+			@Nullable final ProductId productId,
+			//
+			final boolean disallowDiscount)
 	{
+		this.calculated = false;
+
 		this.priceDate = priceDate;
+
+		this.pricingSystemId = pricingSystemId;
+		this.priceListId = priceListId;
+		this.priceListVersionId = priceListVersionId;
+		this.currencyId = currencyId;
+
+		this.productId = productId;
+
+		this.disallowDiscount = disallowDiscount;
 	}
 
 	/**
-	 * @return the c_UOM_ID
-	 */
-	@Override
-	public int getPrice_UOM_ID()
-	{
-		return C_UOM_ID;
-	}
-
-	/**
-	 * @param c_UOM_ID the c_UOM_ID to set
-	 */
-	@Override
-	public void setPrice_UOM_ID(final int c_UOM_ID)
-	{
-		C_UOM_ID = c_UOM_ID;
-	}
-
-	/**
-	 * @return the discount
+	 * @return discount, never {@code null}
 	 */
 	@Override
 	public Percent getDiscount()
 	{
-		return Util.coalesce(discount, Percent.ZERO);
+		return CoalesceUtil.coalesce(discount, Percent.ZERO);
 	}
 
 	@Override

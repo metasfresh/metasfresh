@@ -17,9 +17,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocation;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.BPartnerLocationRepository;
+import de.metas.bpartner.service.BPartnerLocationInfo;
+import de.metas.bpartner.service.BPartnerLocationInfoRepository;
 import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlateId;
 import de.metas.location.LocationId;
@@ -56,9 +56,9 @@ import lombok.NonNull;
 @Repository
 public class ContactPersonRepository
 {
-	private final BPartnerLocationRepository bpLocationRepo;
+	private final BPartnerLocationInfoRepository bpLocationRepo;
 
-	public ContactPersonRepository(@NonNull final BPartnerLocationRepository bpLocationRepo)
+	public ContactPersonRepository(@NonNull final BPartnerLocationInfoRepository bpLocationRepo)
 	{
 		this.bpLocationRepo = bpLocationRepo;
 	}
@@ -86,7 +86,7 @@ public class ContactPersonRepository
 		{
 			if (contactPerson.getBpLocationId() != null)
 			{
-				final BPartnerLocation bpLocation = bpLocationRepo.getByBPartnerLocationId(contactPerson.getBpLocationId());
+				final BPartnerLocationInfo bpLocation = bpLocationRepo.getByBPartnerLocationId(contactPerson.getBpLocationId());
 				contactPersonRecord.setC_BPartner_Location_ID(bpLocation.getId().getRepoId());
 				contactPersonRecord.setC_Location_ID(bpLocation.getLocationId().getRepoId());
 			}
@@ -102,7 +102,7 @@ public class ContactPersonRepository
 		}
 
 		contactPersonRecord.setName(contactPerson.getName());
-		contactPersonRecord.setAD_Language(Language.asLanguageString(contactPerson.getLanguage()));
+		contactPersonRecord.setAD_Language(Language.asLanguageStringOrNull(contactPerson.getLanguage()));
 
 		contactPersonRecord.setMKTG_Platform_ID(contactPerson.getPlatformId().getRepoId());
 		contactPersonRecord.setRemoteRecordId(contactPerson.getRemoteId());
@@ -158,7 +158,7 @@ public class ContactPersonRepository
 
 		if (contactPerson.getBpLocationId() != null)
 		{
-			final BPartnerLocation bpLocation = bpLocationRepo.getByBPartnerLocationId(contactPerson.getBpLocationId());
+			final BPartnerLocationInfo bpLocation = bpLocationRepo.getByBPartnerLocationId(contactPerson.getBpLocationId());
 			final LocationId locationId = bpLocation.getLocationId();
 			baseQueryFilter.addEqualsFilter(I_MKTG_ContactPerson.COLUMNNAME_C_Location_ID, locationId);
 		}

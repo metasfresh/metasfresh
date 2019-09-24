@@ -45,8 +45,8 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.MNote;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
@@ -63,6 +63,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.FlatrateTermPricing;
@@ -101,9 +102,12 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.process.PInstanceId;
+import de.metas.product.IProductDAO;
 import de.metas.product.IProductPA;
+import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -169,7 +173,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		Services.get(IAttributeSetInstanceBL.class).cloneASI(ol, newTerm);
 
 		newTerm.setPriceActual(ol.getPriceActual());
-		newTerm.setC_Currency(ol.getC_Currency());
+		newTerm.setC_Currency_ID(ol.getC_Currency_ID());
 
 		setPricingSystemTaxCategAndIsTaxIncluded(ol, newTerm);
 
@@ -204,7 +208,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	private void setPricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
 	{
 		final PricingSystemTaxCategoryAndIsTaxIncluded computed = computePricingSystemTaxCategAndIsTaxIncluded(ol, newTerm);
-		newTerm.setM_PricingSystem_ID(PricingSystemId.getRepoId(computed.getPricingSystemId()));
+		newTerm.setM_PricingSystem_ID(PricingSystemId.toRepoId(computed.getPricingSystemId()));
 		newTerm.setC_TaxCategory_ID(computed.getTaxCategoryId().getRepoId());
 		newTerm.setIsTaxIncluded(computed.isTaxIncluded());
 	}
@@ -242,10 +246,10 @@ public class SubscriptionBL implements ISubscriptionBL
 	{
 		final org.compiere.model.I_C_Order order = ol.getC_Order();
 		return FlatrateTermPricing.builder()
-				.termRelatedProduct(ol.getM_Product())
+				.termRelatedProductId(ProductId.ofRepoId(ol.getM_Product_ID()))
 				.qty(ol.getQtyEntered())
 				.term(newTerm)
-				.priceDate(order.getDateOrdered())
+				.priceDate(TimeUtil.asLocalDate(order.getDateOrdered()))
 				.build()
 				.computeOrThrowEx();
 	}
@@ -377,7 +381,14 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		final I_C_Flatrate_Conditions cond = olCand.getC_Flatrate_Conditions();
 
-		final I_C_Flatrate_Matching matching = retrieveMatching(ctx, olCand.getC_Flatrate_Conditions_ID(), olCandEffectiveValuesBL.getM_Product_Effective(olCand), null);
+		final ProductId productId = olCandEffectiveValuesBL.getM_Product_Effective_ID(olCand);
+		final ProductAndCategoryId productAndCategoryId = Services.get(IProductDAO.class).retrieveProductAndCategoryIdByProductId(productId);
+
+		final I_C_Flatrate_Matching matching = retrieveMatching(
+				ctx, 
+				olCand.getC_Flatrate_Conditions_ID(), 
+				productAndCategoryId, 
+				null);
 
 		final BigDecimal deliveryQty;
 		if (matching != null)
@@ -431,7 +442,6 @@ public class SubscriptionBL implements ISubscriptionBL
 		}
 		newTerm.setIsSimulation(cond.isSimulation());
 
-		final ProductId productId = olCandEffectiveValuesBL.getM_Product_Effective_ID(olCand);
 		newTerm.setM_Product_ID(ProductId.toRepoId(productId));
 		Services.get(IAttributeSetInstanceBL.class).cloneASI(olCand, newTerm);
 
@@ -449,10 +459,10 @@ public class SubscriptionBL implements ISubscriptionBL
 				olCand,
 				newTerm.getPlannedQtyPerUnit(),
 				PricingSystemId.ofRepoIdOrNull(newTerm.getM_PricingSystem_ID()),
-				olCand.getDateCandidate());
+				TimeUtil.asLocalDate(olCand.getDateCandidate()));
 
 		newTerm.setPriceActual(pricingResult.getPriceStd());
-		newTerm.setC_UOM_ID(pricingResult.getPrice_UOM_ID());
+		newTerm.setC_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId()));
 
 		// task 03805:
 		// Make sure the currency ID for term is the same as the one from olCand
@@ -769,12 +779,15 @@ public class SubscriptionBL implements ISubscriptionBL
 		final I_C_OrderLine ol = InterfaceWrapperHelper.create(
 				deliveries.get(0).getC_Flatrate_Term().getC_OrderLine_Term(),
 				I_C_OrderLine.class);
+		
+		BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(ol.getC_BPartner_ID(), ol.getC_BPartner_Location_ID());
+		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(bpLocationId);
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final I_M_PriceList pl = InterfaceWrapperHelper.create(
 				priceListDAO.retrievePriceListByPricingSyst(
 						pricingSystemId,
-						ol.getC_BPartner_Location(),
+						bpLocation,
 						SOTrx.SALES),
 				I_M_PriceList.class);
 
@@ -813,11 +826,12 @@ public class SubscriptionBL implements ISubscriptionBL
 		delivery.setSeqNo(seqNo);
 
 		final int flatrateConditionsId = term.getC_Flatrate_Conditions_ID();
-		final I_M_Product product = term.getM_Product();
+		final ProductId productId= ProductId.ofRepoIdOrNull(term.getM_Product_ID());
+		final ProductAndCategoryId productAndCategoryId = Services.get(IProductDAO.class).retrieveProductAndCategoryIdByProductId(productId);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
 		final String trxName = InterfaceWrapperHelper.getTrxName(term);
-		final I_C_Flatrate_Matching matching = retrieveMatching(ctx, flatrateConditionsId, product, trxName);
+		final I_C_Flatrate_Matching matching = retrieveMatching(ctx, flatrateConditionsId, productAndCategoryId, trxName);
 
 		final BigDecimal qtyPerDelivery = matching == null ? BigDecimal.ONE : matching.getQtyPerDelivery();
 
@@ -840,17 +854,19 @@ public class SubscriptionBL implements ISubscriptionBL
 	}
 
 	@Override
-	public I_C_Flatrate_Matching retrieveMatching(final Properties ctx, final int flatrateConditionsId, final I_M_Product product, final String trxName)
+	public I_C_Flatrate_Matching retrieveMatching(
+			final Properties ctx, 
+			final int flatrateConditionsId, 
+			@NonNull final ProductAndCategoryId productAndCategoryId, 
+			final String trxName)
 	{
-		Check.assume(product != null, "Param 'product' is null");
-
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL
 				.createQueryBuilder(I_C_Flatrate_Matching.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Matching.COLUMNNAME_C_Flatrate_Conditions_ID, flatrateConditionsId)
-				.addInArrayFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_Category_Matching_ID, product.getM_Product_Category_ID(), null)
-				.addInArrayFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_ID, product.getM_Product_ID(), null)
+				.addInArrayFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_Category_Matching_ID, productAndCategoryId.getProductCategoryId(), null)
+				.addInArrayFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_ID, productAndCategoryId.getProductId(), null)
 				.create()
 				.setClient_ID()
 				.firstOnly(I_C_Flatrate_Matching.class);

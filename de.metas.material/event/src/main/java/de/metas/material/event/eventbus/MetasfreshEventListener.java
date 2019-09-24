@@ -65,8 +65,8 @@ public class MetasfreshEventListener
 			// make sure that every record we create has the correct AD_Client_ID and AD_Org_ID
 			final Properties temporaryCtx = Env.copyCtx(Env.getCtx());
 
-			Env.setContext(temporaryCtx, Env.CTXNAME_AD_Client_ID, lightWeightEvent.getEventDescriptor().getClientId());
-			Env.setContext(temporaryCtx, Env.CTXNAME_AD_Org_ID, lightWeightEvent.getEventDescriptor().getOrgId());
+			Env.setClientId(temporaryCtx, lightWeightEvent.getEventDescriptor().getClientId());
+			Env.setOrgId(temporaryCtx, lightWeightEvent.getEventDescriptor().getOrgId());
 
 			try (final IAutoCloseable c = Env.switchContext(temporaryCtx))
 			{
@@ -76,7 +76,7 @@ public class MetasfreshEventListener
 
 		private void invokeListenerInTrx(@NonNull final MaterialEvent materialEvent)
 		{
-			Services.get(ITrxManager.class).run(() -> {
+			Services.get(ITrxManager.class).runInNewTrx(() -> {
 				materialEventHandlerRegistry.onEvent(materialEvent);
 			});
 		}

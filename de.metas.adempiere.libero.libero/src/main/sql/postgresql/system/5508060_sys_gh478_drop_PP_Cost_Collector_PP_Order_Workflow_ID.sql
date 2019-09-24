@@ -40,5 +40,5 @@ DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=53832
 DELETE FROM AD_Column WHERE AD_Column_ID=53832
 ;
 
-alter table PP_Cost_Collector drop PP_Order_Workflow_ID;
+select * from db_alter_table('PP_Cost_Collector','alter table PP_Cost_Collector drop PP_Order_Workflow_ID');
 

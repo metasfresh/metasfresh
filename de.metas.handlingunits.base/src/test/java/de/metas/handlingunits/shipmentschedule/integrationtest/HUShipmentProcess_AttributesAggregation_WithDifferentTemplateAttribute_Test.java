@@ -6,8 +6,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.X_M_Attribute;
 
 import de.metas.handlingunits.attribute.strategy.impl.CopyHUAttributeTransferStrategy;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
@@ -62,18 +64,17 @@ public class HUShipmentProcess_AttributesAggregation_WithDifferentTemplateAttrib
 	{
 		super.initialize();
 
-
-		template_huPIAttribute = helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attribute)
+		template_huPIAttribute = helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attribute)
 				.setM_HU_PI(helper.huDefNone)
 				.setUseInASI(true)
 		// .setTransferStrategyClass() // does not matter
 		); // assign it to template
-		tu_huPIAttribute = helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attribute)
+		tu_huPIAttribute = helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attribute)
 				.setM_HU_PI(piTU)
 				.setUseInASI(true)
 		// .setTransferStrategyClass() // does not matter
 		);
-		lu_huPIAttribute = helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attribute)
+		lu_huPIAttribute = helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attribute)
 				.setM_HU_PI(piLU)
 				.setUseInASI(true)
 				.setTransferStrategyClass(CopyHUAttributeTransferStrategy.class) // make sure it will copied to ASI
@@ -86,8 +87,10 @@ public class HUShipmentProcess_AttributesAggregation_WithDifferentTemplateAttrib
 	@Override
 	protected void initializeAttributeConfig(@NonNull final I_M_IolCandHandler handlerRecord)
 	{
+		this.attribute = new AttributesTestHelper().createM_Attribute("Discriminator", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+
 		final I_M_ShipmentSchedule_AttributeConfig attributeConfigRecord = newInstance(I_M_ShipmentSchedule_AttributeConfig.class);
-		attributeConfigRecord.setM_Attribute(attribute);
+		attributeConfigRecord.setM_Attribute_ID(attribute.getM_Attribute_ID());
 		attributeConfigRecord.setOnlyIfInReferencedASI(false);
 		attributeConfigRecord.setM_IolCandHandler(handlerRecord);
 		save(attributeConfigRecord);

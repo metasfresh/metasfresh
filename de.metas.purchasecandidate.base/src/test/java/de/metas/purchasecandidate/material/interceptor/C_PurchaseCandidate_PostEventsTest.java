@@ -64,7 +64,7 @@ public class C_PurchaseCandidate_PostEventsTest
 		save(uomRecord);
 
 		final I_M_Product productRecord = newInstance(I_M_Product.class);
-		productRecord.setC_UOM(uomRecord);
+		productRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		save(productRecord);
 
 		final I_C_PurchaseCandidate purchaseCandidateRecord = newInstance(I_C_PurchaseCandidate.class);
@@ -87,7 +87,7 @@ public class C_PurchaseCandidate_PostEventsTest
 		final PurchaseCandidateUpdatedEvent result = mi.createUpdatedEvent(purchaseCandidateRecord);
 
 		assertThat(result).isNotNull();
-		assertThat(result.getPurchaseMaterialDescriptor().getWarehouseId()).isEqualTo(20);
+		assertThat(result.getPurchaseMaterialDescriptor().getWarehouseId().getRepoId()).isEqualTo(20);
 		assertThat(result.getVendorId()).isEqualTo(30);
 
 	}

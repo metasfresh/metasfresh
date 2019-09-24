@@ -95,7 +95,7 @@ public class AttachmentMigrationService
 	public List<AttachmentEntry> convertAttachmentLOBToEntries(@NonNull final I_AD_Attachment attachment)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		return trxManager.call(() -> {
+		return trxManager.callInNewTrx(() -> {
 
 			return convertAttachmentLOBToEntries0(attachment);
 		});
@@ -174,7 +174,7 @@ public class AttachmentMigrationService
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		sysConfigBL.setValue(SYSCONFIG_EXIST_RECORDS_TO_MIGRATE, existRecordsToMigrate, 0);
-		Loggables.get().addLog("Setting SysConfig {} to {}", SYSCONFIG_EXIST_RECORDS_TO_MIGRATE, StringUtils.ofBoolean(existRecordsToMigrate));
+		Loggables.addLog("Setting SysConfig {} to {}", SYSCONFIG_EXIST_RECORDS_TO_MIGRATE, StringUtils.ofBoolean(existRecordsToMigrate));
 
 		return existRecordsToMigrate;
 	}

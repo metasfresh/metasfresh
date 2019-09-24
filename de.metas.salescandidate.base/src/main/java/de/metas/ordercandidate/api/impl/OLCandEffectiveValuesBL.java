@@ -2,36 +2,14 @@ package de.metas.ordercandidate.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Util;
+import org.compiere.util.TimeUtil;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -39,7 +17,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.product.ProductId;
-import de.metas.util.time.SystemTime;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
@@ -95,12 +73,13 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
-	public Timestamp getDatePromised_Effective(@NonNull final I_C_OLCand olCand)
+	public ZonedDateTime getDatePromised_Effective(@NonNull final I_C_OLCand olCand)
 	{
-		return Util.coalesceSuppliers(
-				() -> olCand.getDatePromised_Override(),
-				() -> olCand.getDatePromised(),
-				() -> SystemTime.asDayTimestamp());
+		return CoalesceUtil.coalesceSuppliers(
+				() -> TimeUtil.asZonedDateTime(olCand.getDatePromised_Override()),
+				() -> TimeUtil.asZonedDateTime(olCand.getDatePromised()),
+				() -> TimeUtil.asZonedDateTime(olCand.getDateOrdered()),
+				() -> TimeUtil.asZonedDateTime(olCand.getDateCandidate()));
 	}
 
 	private int getBill_BPartner_Effective_ID(final I_C_OLCand olCand)

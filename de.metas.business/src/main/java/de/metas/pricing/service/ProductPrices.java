@@ -1,5 +1,6 @@
 package de.metas.pricing.service;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -14,9 +15,7 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.product.ProductPriceCreateRequest;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -25,10 +24,14 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.i18n.IMsgBL;
+import de.metas.impexp.processing.product.ProductPriceCreateRequest;
 import de.metas.logging.LogManager;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -44,12 +47,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -98,6 +101,11 @@ public class ProductPrices
 			return;
 		}
 
+		if(productPrice.isInvalidPrice())
+		{
+			return;
+		}
+
 		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(productPrice.getM_PriceList_Version_ID());
 		final I_M_PriceList_Version priceListVersion = priceListsRepo.getPriceListVersionByIdInTrx(priceListVersionId);
@@ -134,6 +142,7 @@ public class ProductPrices
 		return newQuery(plv)
 				.setProductId(productId)
 				.noAttributePricing()
+				.onlyValidPrices(true)
 				//
 				.addMatchersIfAbsent(MATCHERS_MainProductPrice); // IMORTANT: keep it last
 	}
@@ -156,15 +165,22 @@ public class ProductPrices
 
 	private static AdempiereException newDuplicateMainProductPriceException(@NonNull final I_M_ProductPrice someMainProductPrice)
 	{
+		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 		final IProductBL productBL = Services.get(IProductBL.class);
+
 		final String productName = productBL.getProductValueAndName(ProductId.ofRepoId(someMainProductPrice.getM_Product_ID()));
 
-		final I_M_PriceList_Version plv = someMainProductPrice.getM_PriceList_Version();
-		final I_M_PriceList pl = plv.getM_PriceList();
-		final I_M_PricingSystem ps = pl.getM_PricingSystem();
+		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(someMainProductPrice.getM_PriceList_Version_ID());
+		final I_M_PriceList_Version plv = priceListsRepo.getPriceListVersionById(priceListVersionId);
+
+		final PriceListId priceListId = PriceListId.ofRepoId(plv.getM_PriceList_ID());
+		final I_M_PriceList pl = priceListsRepo.getById(priceListId);
+
+		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(pl.getM_PricingSystem_ID());
+		final String pricingSystemName = priceListsRepo.getPricingSystemName(pricingSystemId);
 
 		final AdempiereException exception = new DuplicateMainProductPriceException(someMainProductPrice)
-				.setParameter(I_M_PricingSystem.Table_Name, ps.getName())
+				.setParameter(I_M_PricingSystem.Table_Name, pricingSystemName)
 				.setParameter(I_M_PriceList.Table_Name, pl.getName())
 				.setParameter(I_M_PriceList_Version.Table_Name, plv.getName())
 				.setParameter(I_M_Product.Table_Name, productName);
@@ -186,9 +202,12 @@ public class ProductPrices
 			final Properties ctx = InterfaceWrapperHelper.getCtx(anyDublicatedMainProductPrice);
 			final IMsgBL msgBL = Services.get(IMsgBL.class);
 
+			final I_M_Product productRecord = load(anyDublicatedMainProductPrice.getM_Product_ID(), I_M_Product.class);
+			final I_M_PriceList_Version plvRecord = load(anyDublicatedMainProductPrice.getM_PriceList_Version_ID(), I_M_PriceList_Version.class);
+
 			return msgBL.getMsg(ctx,
 					"M_ProductPrice_DublicateMainPrice",
-					new Object[] { anyDublicatedMainProductPrice.getM_Product().getValue(), anyDublicatedMainProductPrice.getM_PriceList_Version().getName() });
+					new Object[] { productRecord.getValue(), plvRecord.getName() });
 		}
 	}
 
@@ -242,6 +261,8 @@ public class ProductPrices
 
 	public static I_M_ProductPrice createProductPriceOrUpdateExistentOne(@NonNull ProductPriceCreateRequest ppRequest, @NonNull final I_M_PriceList_Version plv)
 	{
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+
 		final BigDecimal price = ppRequest.getPrice().setScale(2);
 		I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceOrNull(plv, ProductId.ofRepoId(ppRequest.getProductId()));
 		if (pp == null)
@@ -249,19 +270,20 @@ public class ProductPrices
 			pp = newInstance(I_M_ProductPrice.class, plv);
 		}
 		// do not update the price with value 0; 0 means that no price was changed
-		else if (pp != null && price.signum()== 0)
+		else if (pp != null && price.signum() == 0)
 		{
 			return pp;
 		}
 
-		pp.setM_PriceList_Version(plv);
+		pp.setM_PriceList_Version_ID(plv.getM_PriceList_Version_ID());
 		pp.setM_Product_ID(ppRequest.getProductId());
 		pp.setSeqNo(ppRequest.getSeqNo());
 		pp.setPriceLimit(price);
 		pp.setPriceList(price);
 		pp.setPriceStd(price);
-		final I_C_UOM uom = InterfaceWrapperHelper.load(ppRequest.getProductId(), I_M_Product.class).getC_UOM();
-		pp.setC_UOM(uom);
+
+		final org.compiere.model.I_M_Product product = productDAO.getById(ppRequest.getProductId());
+		pp.setC_UOM_ID(product.getC_UOM_ID());
 		pp.setC_TaxCategory_ID(ppRequest.getTaxCategoryId());
 		save(pp);
 

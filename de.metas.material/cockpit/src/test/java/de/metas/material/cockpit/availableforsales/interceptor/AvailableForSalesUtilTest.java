@@ -81,15 +81,15 @@ class AvailableForSalesUtilTest
 		saveRecord(uomRecord);
 
 		final I_M_Product productRecord = newInstance(I_M_Product.class);
-		productRecord.setC_UOM(uomRecord);
+		productRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		saveRecord(productRecord);
 		productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
 
 		final I_C_OrderLine orderLineRecord = newInstance(I_C_OrderLine.class);
-		orderLineRecord.setM_Product(productRecord);
+		orderLineRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		orderLineRecord.setQtyOrdered(THREE);
 		orderLineRecord.setQtyEntered(THREE);
-		orderLineRecord.setC_UOM(uomRecord);
+		orderLineRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		saveRecord(orderLineRecord);
 		orderLineId = OrderLineId.ofRepoId(orderLineRecord.getC_OrderLine_ID());
 

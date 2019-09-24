@@ -72,7 +72,7 @@ public class DLM_MassMigrate extends JavaProcess
 		}
 		else
 		{
-			Loggables.get().addLog("Skipping load_production_table_rows because of the process parameter IsRun_load_production_table_rows");
+			Loggables.addLog("Skipping load_production_table_rows because of the process parameter IsRun_load_production_table_rows");
 		}
 
 		if (run_update_production_table)
@@ -81,11 +81,11 @@ public class DLM_MassMigrate extends JavaProcess
 		}
 		else
 		{
-			Loggables.get().addLog("Skipping update_production_table because of the process parameter IsRun_update_production_table");
+			Loggables.addLog("Skipping update_production_table because of the process parameter IsRun_update_production_table");
 		}
 
 		final String elapsedTime = stopWatch.stop().toString();
-		Loggables.get().addLog("overall elapsed time={}", elapsedTime);
+		Loggables.addLog("overall elapsed time={}", elapsedTime);
 
 		return MSG_OK;
 	}
@@ -100,41 +100,36 @@ public class DLM_MassMigrate extends JavaProcess
 	{
 		final Mutable<Boolean> done = new Mutable<>(false);
 
-		final Mutable<Integer> updates = new Mutable<Integer>(0);
+		final Mutable<Integer> updates = new Mutable<>(0);
 		final Mutable<String> lastTableName = new Mutable<>();
 		final Mutable<Integer> lastTableUpdates = new Mutable<>(0);
 
 		do
 		{
-			Services.get(ITrxManager.class).run(new TrxRunnable()
-			{
-				@Override
-				public void run(String localTrxName) throws Exception
+			Services.get(ITrxManager.class).runInNewTrx((TrxRunnable)localTrxName -> {
+				final CPreparedStatement stmt = DB.prepareStatement("select * from " + dbFunctionName + "();", localTrxName);
+
+				final Stopwatch stopWatch = Stopwatch.createStarted();
+				final ResultSet rs = stmt.executeQuery();
+				final String elapsedTime = stopWatch.stop().toString();
+
+				if (!rs.next())
 				{
-					final CPreparedStatement stmt = DB.prepareStatement("select * from " + dbFunctionName + "();", localTrxName);
-
-					final Stopwatch stopWatch = Stopwatch.createStarted();
-					final ResultSet rs = stmt.executeQuery();
-					final String elapsedTime = stopWatch.stop().toString();
-
-					if (!rs.next())
-					{
-						done.setValue(true);
-						Loggables.get().addLog("{}: we are done", dbFunctionName);
-						return;
-					}
-
-					final String tablename = rs.getString("tablename");
-					final int updatecount = rs.getInt("updatecount");
-					final int massmigrate_id = rs.getInt("massmigrate_id");
-
-					Loggables.get().addLog("{}: MassMigrate_ID={}; elapsed time={}; Table={}; Updated={}", dbFunctionName, massmigrate_id, elapsedTime, tablename, updatecount);
-
-					updates.setValue(updates.getValue() + updatecount);
-
-					lastTableName.setValue(tablename);
-					lastTableUpdates.setValue(updatecount);
+					done.setValue(true);
+					Loggables.addLog("{}: we are done", dbFunctionName);
+					return;
 				}
+
+				final String tablename = rs.getString("tablename");
+				final int updatecount = rs.getInt("updatecount");
+				final int massmigrate_id = rs.getInt("massmigrate_id");
+
+				Loggables.addLog("{}: MassMigrate_ID={}; elapsed time={}; Table={}; Updated={}", dbFunctionName, massmigrate_id, elapsedTime, tablename, updatecount);
+
+				updates.setValue(updates.getValue() + updatecount);
+
+				lastTableName.setValue(tablename);
+				lastTableUpdates.setValue(updatecount);
 			});
 
 			if (vacuum && !Check.isEmpty(lastTableName.getValue()) && lastTableUpdates.getValue() > 0)
@@ -145,12 +140,12 @@ public class DLM_MassMigrate extends JavaProcess
 				DB.executeFunctionCallEx(ITrx.TRXNAME_None, "VACUUM ANALYZE dlm.massmigrate_records", new Object[0]);
 				final String elapsedTime = stopWatch.stop().toString();
 
-				Loggables.get().addLog("{}: Vacuumed {} and dlm.massmigrate_records; elapsed time={}", dbFunctionName, lastTableName.getValue(), elapsedTime);
+				Loggables.addLog("{}: Vacuumed {} and dlm.massmigrate_records; elapsed time={}", dbFunctionName, lastTableName.getValue(), elapsedTime);
 			}
 
 			if (maxUpdates > 0 && updates.getValue() >= maxUpdates)
 			{
-				Loggables.get().addLog(
+				Loggables.addLog(
 						"{}: we now updated {} which is >= maxUpdates={}; Stopping now",
 						dbFunctionName, updates.getValue(), maxUpdates);
 				break;

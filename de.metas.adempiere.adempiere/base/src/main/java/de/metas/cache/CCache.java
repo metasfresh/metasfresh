@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -100,7 +101,7 @@ public class CCache<K, V> implements CacheInterface
 				.build();
 	}
 
-	public static enum CacheMapType
+	public enum CacheMapType
 	{
 		/**
 		 * Data is cached in a normal hash map
@@ -142,7 +143,7 @@ public class CCache<K, V> implements CacheInterface
 	private boolean m_justReset = true;
 
 	/** Can provide a collection of cache keys for a given record reference. */
-	private final Optional<CacheInvalidationKeysMapper<K>> invalidationKeysMapper;
+	private final Optional<CachingKeysMapper<K>> invalidationKeysMapper;
 
 	/**
 	 * If {@link #DEBUG} is enabled, this variable contains the object's identity code (see {@link System#identityHashCode(Object)}).
@@ -153,6 +154,8 @@ public class CCache<K, V> implements CacheInterface
 	 * If {@link #DEBUG} is enabled, this variable contains the constructor's stack trace (when this object was created)
 	 */
 	private final String debugAquireStacktrace;
+
+	private CacheAdditionListener<K, V> additionListener;
 
 	/**
 	 * Metasfresh Cache - expires after 2 hours
@@ -180,8 +183,9 @@ public class CCache<K, V> implements CacheInterface
 				initialCapacity,
 				expireMinutes,
 				CacheMapType.HashMap,
-				(CacheInvalidationKeysMapper<K>)null,
-				(CacheRemovalListener<K, V>)null);
+				(CachingKeysMapper<K>)null,
+				(CacheRemovalListener<K, V>)null,
+				(CacheAdditionListener<K, V>)null);
 	}
 
 	@Builder
@@ -192,12 +196,14 @@ public class CCache<K, V> implements CacheInterface
 			final Integer initialCapacity,
 			final Integer expireMinutes,
 			final CacheMapType cacheMapType,
-			@Nullable final CacheInvalidationKeysMapper<K> invalidationKeysMapper,
-			@Nullable final CacheRemovalListener<K, V> removalListener)
+			@Nullable final CachingKeysMapper<K> invalidationKeysMapper,
+			@Nullable final CacheRemovalListener<K, V> removalListener,
+			@Nullable final CacheAdditionListener<K, V> additionListener)
 	{
 		this.cacheId = NEXT_CACHE_ID.getAndIncrement();
 
 		this.invalidationKeysMapper = Optional.ofNullable(invalidationKeysMapper);
+		this.additionListener = additionListener;
 
 		final String tableNameEffective;
 		if (cacheName == null)
@@ -345,7 +351,6 @@ public class CCache<K, V> implements CacheInterface
 				removalListener.itemRemoved(key, value);
 			});
 		}
-
 		return cacheBuilder.build();
 	}
 
@@ -438,7 +443,7 @@ public class CCache<K, V> implements CacheInterface
 
 	private long resetForRecordIdUsingKeysMapper(
 			@NonNull final TableRecordReference recordRef,
-			@NonNull final CacheInvalidationKeysMapper<K> keysMapper)
+			@NonNull final CachingKeysMapper<K> keysMapper)
 	{
 		if (keysMapper.isResetAll(recordRef))
 		{
@@ -446,7 +451,7 @@ public class CCache<K, V> implements CacheInterface
 		}
 
 		long counter = 0; // note that also the "reset-all" reset() method only returns an approx number.
-		for (final K key : keysMapper.computeKeysToInvalidate(recordRef))
+		for (final K key : keysMapper.computeCachingKeys(recordRef))
 		{
 			final boolean keyRemoved = remove(key) != null;
 			if (keyRemoved)
@@ -476,13 +481,10 @@ public class CCache<K, V> implements CacheInterface
 		return sb.toString();
 	}
 
-	/**
-	 * @see java.util.Map#containsKey(java.lang.Object)
-	 */
 	public boolean containsKey(final K key)
 	{
 		return cache.getIfPresent(key) != null;
-	}	// containsKey
+	}
 
 	public V remove(final K key)
 	{
@@ -499,7 +501,8 @@ public class CCache<K, V> implements CacheInterface
 	/**
 	 * @see java.util.Map#get(java.lang.Object)
 	 */
-	@Nullable public V get(final K key)
+	@Nullable
+	public V get(final K key)
 	{
 		return cache.getIfPresent(key);
 	}	// get
@@ -640,7 +643,16 @@ public class CCache<K, V> implements CacheInterface
 		if (!keysToLoad.isEmpty())
 		{
 			final Map<K, V> valuesLoaded = valuesLoader.apply(keysToLoad);
-			valuesLoaded.forEach(cache::put); // add loaded values to cache
+
+			// add loaded values to cache and notify listener
+			for (final Entry<K, V> entry : valuesLoaded.entrySet())
+			{
+				final K key = entry.getKey();
+				final V value = entry.getValue();
+
+				cache.put(key, value);
+				fireAdditionListener(key, value);
+			}
 			values.addAll(valuesLoaded.values()); // add loaded values to the list we will return
 		}
 
@@ -666,13 +678,6 @@ public class CCache<K, V> implements CacheInterface
 		return value;
 	}
 
-	/**
-	 * Put value
-	 *
-	 * @param key key
-	 * @param value value
-	 * @return previous value
-	 */
 	public void put(final K key, final V value)
 	{
 		m_justReset = false;
@@ -683,8 +688,17 @@ public class CCache<K, V> implements CacheInterface
 		else
 		{
 			cache.put(key, value);
+			fireAdditionListener(key, value);
 		}
-	}	// put
+	}
+
+	private void fireAdditionListener(final K key, final V value)
+	{
+		if (additionListener != null)
+		{
+			additionListener.itemAdded(key, value);
+		}
+	}
 
 	/**
 	 * Add all key/value pairs to this cache.
@@ -694,6 +708,11 @@ public class CCache<K, V> implements CacheInterface
 	public void putAll(final Map<? extends K, ? extends V> map)
 	{
 		cache.putAll(map);
+
+		for (final Entry<? extends K, ? extends V> entry : map.entrySet())
+		{
+			fireAdditionListener(entry.getKey(), entry.getValue());
+		}
 	}
 
 	/**
@@ -739,38 +758,6 @@ public class CCache<K, V> implements CacheInterface
 			cache.invalidateAll();
 		}
 	}
-
-	// /**
-	// * Adds an additional table which when the cache is reset for that one, it also shall reset this cache.
-	// *
-	// * @param tableName
-	// * @return this
-	// */
-	// public CCache<K, V> addResetForTableName(final String tableName)
-	// {
-	// Check.assumeNotEmpty(tableName, "tableName not empty");
-	// CacheMgt.get().addCacheResetListener(tableName, new ICacheResetListener()
-	// {
-	// @Override
-	// public int reset(final CacheInvalidateMultiRequest multiRequest)
-	// {
-	// if (!multiRequest.matchesTableNameEffective(tableName))
-	// {
-	// return 0;
-	// }
-	//
-	// return CCache.this.reset();
-	// }
-	//
-	// @Override
-	// public String toString()
-	// {
-	// return "->" + CCache.this.toString();
-	// }
-	// });
-	//
-	// return this;
-	// }
 
 	/**
 	 * @return cache statistics

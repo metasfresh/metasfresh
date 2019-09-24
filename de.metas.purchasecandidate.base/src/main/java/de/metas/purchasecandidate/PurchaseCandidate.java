@@ -3,7 +3,7 @@ package de.metas.purchasecandidate;
 import static java.util.stream.Collectors.toCollection;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -11,14 +11,15 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.error.AdIssueId;
 import de.metas.order.OrderAndLineId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
@@ -78,10 +79,10 @@ public class PurchaseCandidate
 	private PurchaseProfitInfo profitInfoOrNull;
 
 	@NonNull
-	private LocalDateTime purchaseDatePromised;
+	private ZonedDateTime purchaseDatePromised;
 
 	@Setter(AccessLevel.NONE)
-	private LocalDateTime purchaseDatePromisedInitial;
+	private ZonedDateTime purchaseDatePromisedInitial;
 
 	private final Duration reminderTime;
 
@@ -119,7 +120,7 @@ public class PurchaseCandidate
 			//
 			@NonNull final Quantity qtyToPurchase,
 			//
-			@NonNull final LocalDateTime purchaseDatePromised,
+			@NonNull final ZonedDateTime purchaseDatePromised,
 			final Duration reminderTime,
 			//
 			@Nullable final PurchaseProfitInfo profitInfoOrNull,
@@ -324,7 +325,7 @@ public class PurchaseCandidate
 			return this;
 		}
 
-		public ErrorItemBuilder adIssueId(final int adIssueId)
+		public ErrorItemBuilder adIssueId(final AdIssueId adIssueId)
 		{
 			innerBuilder.adIssueId(adIssueId);
 			return this;
@@ -360,7 +361,7 @@ public class PurchaseCandidate
 			return this;
 		}
 
-		public OrderItemBuilder datePromised(@NonNull final LocalDateTime datePromised)
+		public OrderItemBuilder datePromised(@NonNull final ZonedDateTime datePromised)
 		{
 			innerBuilder.datePromised(datePromised);
 			return this;

@@ -44,7 +44,7 @@ import lombok.NonNull;
  * #L%
  */
 @Interceptor(I_AD_User.class)
-@Component("de.metas.marketing.base.model.interceptor.AD_User")
+@Component
 public class AD_User
 {
 

@@ -25,14 +25,16 @@ package de.metas.banking.model.validator;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.impexp.IImportProcessFactory;
 import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_I_BankStatement;
 
 import de.metas.acct.posting.IDocumentRepostingSupplierService;
+import de.metas.banking.impexp.BankStatementImportProcess;
 import de.metas.banking.model.I_I_Datev_Payment;
 import de.metas.banking.payment.impexp.DatevPaymentImportProcess;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.banking.spi.impl.BankStatementDocumentRepostingSupplier;
+import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.util.Services;
 
 /**
@@ -53,6 +55,8 @@ public class Banking extends AbstractModuleInterceptor
 		Services.get(IBankStatementListenerService.class).addListener(PaySelectionBankStatementListener.instance);
 
 		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_Datev_Payment.class, DatevPaymentImportProcess.class);
+
+		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_BankStatement.class, BankStatementImportProcess.class);
 	}
 
 	@Override

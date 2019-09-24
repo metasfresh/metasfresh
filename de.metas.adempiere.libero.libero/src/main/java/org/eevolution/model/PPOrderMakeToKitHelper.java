@@ -16,7 +16,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Storage;
 import org.compiere.model.MClient;
 import org.compiere.model.MStorage;
-import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TimeUtil;
@@ -27,6 +26,7 @@ import org.eevolution.api.ReceiptCostCollectorCandidate;
 
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.order.DeliveryRule;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -44,12 +44,12 @@ import de.metas.util.time.SystemTime;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -101,9 +101,9 @@ public class PPOrderMakeToKitHelper
 
 		boolean forceIssue = false;
 		final I_C_OrderLine oline = ppOrder.getC_OrderLine();
-		final String orderDeliveryRule = oline.getC_Order().getDeliveryRule();
-		if (X_C_Order.DELIVERYRULE_CompleteLine.equals(orderDeliveryRule) ||
-				X_C_Order.DELIVERYRULE_CompleteOrder.equals(orderDeliveryRule))
+		final DeliveryRule orderDeliveryRule = DeliveryRule.ofCode(oline.getC_Order().getDeliveryRule());
+		if (DeliveryRule.COMPLETE_LINE.equals(orderDeliveryRule) ||
+				DeliveryRule.COMPLETE_ORDER.equals(orderDeliveryRule))
 		{
 			final boolean isCompleteQtyDeliver = isQtyAvailable(ppOrder, issue, today);
 			if (!isCompleteQtyDeliver)
@@ -111,13 +111,13 @@ public class PPOrderMakeToKitHelper
 				throw new LiberoException("@NoQtyAvailable@");
 			}
 		}
-		else if (X_C_Order.DELIVERYRULE_Availability.equals(orderDeliveryRule) ||
-				X_C_Order.DELIVERYRULE_AfterReceipt.equals(orderDeliveryRule) ||
-				X_C_Order.DELIVERYRULE_Manual.equals(orderDeliveryRule))
+		else if (DeliveryRule.AVAILABILITY.equals(orderDeliveryRule) ||
+				DeliveryRule.AFTER_RECEIPT.equals(orderDeliveryRule) ||
+				DeliveryRule.MANUAL.equals(orderDeliveryRule))
 		{
 			throw new LiberoException("@ActionNotSupported@");
 		}
-		else if (X_C_Order.DELIVERYRULE_Force.equals(orderDeliveryRule))
+		else if (DeliveryRule.FORCE.equals(orderDeliveryRule))
 		{
 			forceIssue = true;
 		}
@@ -178,7 +178,7 @@ public class PPOrderMakeToKitHelper
 
 		ppCostCollectorBL.createReceipt(candidate);
 
-		ppOrder.setQtyDelivered(qtyToReceive.getAsBigDecimal());
+		ppOrder.setQtyDelivered(qtyToReceive.toBigDecimal());
 	}
 
 	/**
@@ -207,7 +207,7 @@ public class PPOrderMakeToKitHelper
 			final BigDecimal qtyToDeliver = bomLineModel.getQtyToDeliver();
 			final BigDecimal qtyScrapComponent = bomLineModel.getQtyScrapComponent();
 
-			if (M_Product_ID > 0 && Services.get(IProductBL.class).isStocked(M_Product_ID))
+			if (M_Product_ID > 0 && Services.get(IProductBL.class).isStocked(ProductId.ofRepoIdOrNull(M_Product_ID)))
 			{
 				int M_AttributeSetInstance_ID = 0;
 				if (value == null && isSelected)
@@ -238,11 +238,15 @@ public class PPOrderMakeToKitHelper
 					{
 						// TODO Selection of ASI
 						if (storage.getQtyOnHand().signum() == 0)
+						{
 							continue;
+						}
 						BigDecimal issueActual = toIssue.min(storage.getQtyOnHand());
 						toIssue = toIssue.subtract(issueActual);
 						if (toIssue.signum() <= 0)
+						{
 							break;
+						}
 					}
 				}
 				else
@@ -260,7 +264,9 @@ public class PPOrderMakeToKitHelper
 
 				isCompleteQtyDeliver = onHand.compareTo(qtyToDeliver.add(qtyScrapComponent)) >= 0;
 				if (!isCompleteQtyDeliver)
+				{
 					break;
+				}
 
 			}
 		} // for each line
@@ -354,7 +360,7 @@ public class PPOrderMakeToKitHelper
 		final I_PP_Order_BOMLine orderBOMLine = InterfaceWrapperHelper.create(ctx, PP_Order_BOMLine_ID, I_PP_Order_BOMLine.class, trxName);
 
 		final int productId = orderBOMLine.getM_Product_ID();
-		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(productId);
+		final I_C_UOM uom = Services.get(IProductBL.class).getStockUOM(productId);
 
 		BigDecimal toIssue = qty.add(qtyScrap);
 		for (final I_M_Storage storage : storages)

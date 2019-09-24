@@ -90,7 +90,7 @@ public class EmptiesInOutLinesProducer extends AbstractPackingMaterialDocumentLi
 	{
 		final I_M_InOut inout = getM_InOut();
 		final I_M_InOutLine inoutLine = inOutBL.newInOutLine(inout, I_M_InOutLine.class);
-		final UomId uomId = productBL.getStockingUOMId(packingMaterial.getM_Product_ID());
+		final UomId uomId = productBL.getStockUOMId(packingMaterial.getM_Product_ID());
 
 		inoutLine.setM_Product_ID(packingMaterial.getM_Product_ID());
 		inoutLine.setC_UOM_ID(uomId.getRepoId()); // prevent the system from picking its default-UOM; there might be no UOM-conversion to/from the product's UOM

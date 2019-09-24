@@ -3,10 +3,9 @@ package de.metas.vertical.pharma.vendor.gateway.msv3.purchaseOrder;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import org.adempiere.ad.service.IErrorManager;
-import org.adempiere.service.OrgId;
-import org.compiere.model.I_AD_Issue;
-
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.vendor.gateway.api.order.MSV3OrderResponsePackageItemPartRepoId;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequest;
@@ -100,8 +99,8 @@ public class MSV3PurchaseOrderTransaction
 		}
 		if (otherException != null)
 		{
-			final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(otherException);
-			transactionRecord.setAD_Issue(issue);
+			final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(otherException);
+			transactionRecord.setAD_Issue_ID(issueId.getRepoId());
 		}
 
 		save(transactionRecord);

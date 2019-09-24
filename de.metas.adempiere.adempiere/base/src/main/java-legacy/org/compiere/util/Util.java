@@ -16,8 +16,6 @@
  *****************************************************************************/
 package org.compiere.util;
 
-import java.awt.Color;
-import java.awt.font.TextAttribute;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
@@ -28,39 +26,19 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.text.AttributedCharacterIterator;
-import java.text.AttributedCharacterIterator.Attribute;
-import java.text.AttributedString;
-import java.text.MessageFormat;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import javax.annotation.concurrent.Immutable;
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.KeyStroke;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.reflect.ClassInstanceProvider;
 import org.adempiere.util.reflect.IClassInstanceProvider;
 import org.slf4j.Logger;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
-import com.google.common.base.Predicates;
 import com.google.common.io.BaseEncoding;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
 
 /**
  * General Utilities
@@ -75,174 +53,6 @@ public class Util
 	/** Logger */
 	private static Logger log = LogManager.getLogger(Util.class.getName());
 
-
-
-	/**************************************************************************
-	 * Return a Iterator with only the relevant attributes. Fixes implementation in AttributedString, which returns everything
-	 *
-	 * @param aString attributed string
-	 * @param relevantAttributes relevant attributes
-	 * @return iterator
-	 */
-	static public AttributedCharacterIterator getIterator(AttributedString aString,
-			AttributedCharacterIterator.Attribute[] relevantAttributes)
-	{
-		final AttributedCharacterIterator iter = aString.getIterator();
-		final Set<Attribute> set = iter.getAllAttributeKeys();
-		// System.out.println("AllAttributeKeys=" + set);
-		if (set.size() == 0)
-			return iter;
-		// Check, if there are unwanted attributes
-		final Set<AttributedCharacterIterator.Attribute> unwanted = new HashSet<>(iter.getAllAttributeKeys());
-		for (final Attribute relevantAttribute : relevantAttributes)
-			unwanted.remove(relevantAttribute);
-		if (unwanted.size() == 0)
-			return iter;
-
-		// Create new String
-		final StringBuffer sb = new StringBuffer();
-		for (char c = iter.first(); c != AttributedCharacterIterator.DONE; c = iter.next())
-			sb.append(c);
-		aString = new AttributedString(sb.toString());
-
-		// copy relevant attributes
-		final Iterator<Attribute> it = iter.getAllAttributeKeys().iterator();
-		while (it.hasNext())
-		{
-			final AttributedCharacterIterator.Attribute att = it.next();
-			if (!unwanted.contains(att))
-			{
-				for (char c = iter.first(); c != AttributedCharacterIterator.DONE; c = iter.next())
-				{
-					final Object value = iter.getAttribute(att);
-					if (value != null)
-					{
-						final int start = iter.getRunStart(att);
-						final int limit = iter.getRunLimit(att);
-						// System.out.println("Attribute=" + att + " Value=" + value + " Start=" + start + " Limit=" + limit);
-						aString.addAttribute(att, value, start, limit);
-						iter.setIndex(limit);
-					}
-				}
-			}
-			// else
-			// System.out.println("Unwanted: " + att);
-		}
-		return aString.getIterator();
-	}	// getIterator
-
-	/**
-	 * Dump a Map (key=value) to out
-	 *
-	 * @param map Map
-	 */
-	@SuppressWarnings("rawtypes")
-	static public void dump(Map map)
-	{
-		System.out.println("Dump Map - size=" + map.size());
-		final Iterator it = map.keySet().iterator();
-		while (it.hasNext())
-		{
-			final Object key = it.next();
-			final Object value = map.get(key);
-			System.out.println(key + "=" + value);
-		}
-	}	// dump (Map)
-
-	/**
-	 * Print Action and Input Map for component
-	 *
-	 * @param comp Component with ActionMap
-	 */
-	public static void printActionInputMap(JComponent comp)
-	{
-		// Action Map
-		final ActionMap am = comp.getActionMap();
-		final Object[] amKeys = am.allKeys(); // including Parents
-		if (amKeys != null)
-		{
-			System.out.println("-------------------------");
-			System.out.println("ActionMap for Component " + comp.toString());
-			for (final Object amKey : amKeys)
-			{
-				final Action a = am.get(amKey);
-
-				final StringBuffer sb = new StringBuffer("- ");
-				sb.append(a.getValue(Action.NAME));
-				if (a.getValue(Action.ACTION_COMMAND_KEY) != null)
-					sb.append(", Cmd=").append(a.getValue(Action.ACTION_COMMAND_KEY));
-				if (a.getValue(Action.SHORT_DESCRIPTION) != null)
-					sb.append(" - ").append(a.getValue(Action.SHORT_DESCRIPTION));
-				System.out.println(sb.toString() + " - " + a);
-			}
-		}
-		/**
-		 * Same as below KeyStroke[] kStrokes = comp.getRegisteredKeyStrokes(); if (kStrokes != null) { System.out.println("-------------------------"); System.out.println("Registered Key Strokes - "
-		 * + comp.toString()); for (int i = 0; i < kStrokes.length; i++) { System.out.println("- " + kStrokes[i].toString()); } } /** Focused
-		 */
-		InputMap im = comp.getInputMap(JComponent.WHEN_FOCUSED);
-		KeyStroke[] kStrokes = im.allKeys();
-		if (kStrokes != null)
-		{
-			System.out.println("-------------------------");
-			System.out.println("InputMap for Component When Focused - " + comp.toString());
-			for (final KeyStroke kStroke : kStrokes)
-			{
-				System.out.println("- " + kStroke.toString() + " - "
-						+ im.get(kStroke).toString());
-			}
-		}
-		/** Focused in Window */
-		im = comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-		kStrokes = im.allKeys();
-		if (kStrokes != null)
-		{
-			System.out.println("-------------------------");
-			System.out.println("InputMap for Component When Focused in Window - " + comp.toString());
-			for (final KeyStroke kStroke : kStrokes)
-			{
-				System.out.println("- " + kStroke.toString() + " - "
-						+ im.get(kStroke).toString());
-			}
-		}
-		/** Focused when Ancester */
-		im = comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-		kStrokes = im.allKeys();
-		if (kStrokes != null)
-		{
-			System.out.println("-------------------------");
-			System.out.println("InputMap for Component When Ancestor - " + comp.toString());
-			for (final KeyStroke kStroke : kStrokes)
-			{
-				System.out.println("- " + kStroke.toString() + " - "
-						+ im.get(kStroke).toString());
-			}
-		}
-		System.out.println("-------------------------");
-	}   // printActionInputMap
-
-	/**
-	 * Is 8 Bit
-	 *
-	 * @param str string
-	 * @return true if string contains chars > 255
-	 */
-	public static boolean is8Bit(String str)
-	{
-		if (str == null || str.length() == 0)
-			return true;
-		final char[] cc = str.toCharArray();
-		for (final char element : cc)
-		{
-			if (element > 255)
-			{
-				// System.out.println("Not 8 Bit - " + str);
-				return false;
-			}
-		}
-		return true;
-	}	// is8Bit
-
 	/**
 	 * Clean Ampersand (used to indicate shortcut)
 	 *
@@ -252,56 +62,21 @@ public class Util
 	public static String cleanAmp(String in)
 	{
 		if (in == null || in.length() == 0)
+		{
 			return in;
+		}
 		final int pos = in.indexOf('&');
 		if (pos == -1)
+		{
 			return in;
+		}
 		//
 		if (pos + 1 < in.length() && in.charAt(pos + 1) != ' ')
+		{
 			in = in.substring(0, pos) + in.substring(pos + 1);
+		}
 		return in;
 	}	// cleanAmp
-
-	/**
-	 * Trim to max character length
-	 *
-	 * @param str string
-	 * @param length max (incl) character length
-	 * @return string
-	 */
-	public static String trimLength(String str, int length)
-	{
-		if (str == null)
-			return str;
-		if (length <= 0)
-			throw new IllegalArgumentException("Trim length invalid: " + length);
-		if (str.length() > length)
-			return str.substring(0, length);
-		return str;
-	}	// trimLength
-
-	/**
-	 * Size of String in bytes
-	 *
-	 * @param str string
-	 * @return size in bytes
-	 */
-	public static int size(String str)
-	{
-		if (str == null)
-			return 0;
-		final int length = str.length();
-		int size = length;
-		try
-		{
-			size = str.getBytes("UTF-8").length;
-		}
-		catch (final UnsupportedEncodingException e)
-		{
-			log.error(str, e);
-		}
-		return size;
-	}	// size
 
 	/**
 	 * Trim to max byte size
@@ -313,18 +88,26 @@ public class Util
 	public static String trimSize(String str, int size)
 	{
 		if (str == null)
+		{
 			return str;
+		}
 		if (size <= 0)
+		{
 			throw new IllegalArgumentException("Trim size invalid: " + size);
+		}
 		// Assume two byte code
 		final int length = str.length();
 		if (length < size / 2)
+		{
 			return str;
+		}
 		try
 		{
 			final byte[] bytes = str.getBytes("UTF-8");
 			if (bytes.length <= size)
+			{
 				return str;
+			}
 			// create new - may cut last character in half
 			final byte[] result = new byte[size];
 			System.arraycopy(bytes, 0, result, 0, size);
@@ -336,26 +119,6 @@ public class Util
 		}
 		return str;
 	}	// trimSize
-
-	/**************************************************************************
-	 * Test
-	 *
-	 * @param args args
-	 */
-	public static void main(String[] args)
-	{
-		final String str = "a�b�c?d?e?f?g?";
-		System.out.println(str + " = " + str.length() + " - " + size(str));
-		final String str1 = trimLength(str, 10);
-		System.out.println(str1 + " = " + str1.length() + " - " + size(str1));
-		final String str2 = trimSize(str, 10);
-		System.out.println(str2 + " = " + str2.length() + " - " + size(str2));
-		//
-		final AttributedString aString = new AttributedString("test test");
-		aString.addAttribute(TextAttribute.FOREGROUND, Color.blue);
-		aString.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON, 2, 4);
-		getIterator(aString, new AttributedCharacterIterator.Attribute[] { TextAttribute.UNDERLINE });
-	}	// main
 
 	private static IClassInstanceProvider classInstanceProvider = ClassInstanceProvider.instance; // default/production implementation.
 
@@ -487,66 +250,6 @@ public class Util
 	}
 
 	/**
-	 * Little method that throws an {@link AdempiereException} if the given boolean condition is false. It might be a good idea to use "assume" instead of the assert keyword, because
-	 * <li>assert is
-	 * globally switched on and off and you never know what else libs are using assert</li>
-	 * <li>there are critical assumptions that should always be validated. Not only during development time or when
-	 * someone minds to use the -ea cmdline parameter</li>
-	 *
-	 * @param cond
-	 * @param errMsg the error message to pass to the assertion error, if the condition is <code>false</code>
-	 * @param params message parameters (@see {@link MessageFormat})
-	 */
-	@Deprecated
-	public static void assume(final boolean cond, final String errMsg, Object... params)
-	{
-		Check.assume(cond, errMsg, params);
-	}
-
-	/**
-	 * Assumes that given <code>object</code> is not null
-	 *
-	 * @param object
-	 * @param assumptionMessage message
-	 * @param params message parameters (@see {@link MessageFormat})
-	 * @see #assume(boolean, String, Object...)
-	 */
-	@Deprecated
-	public static void assumeNotNull(Object object, final String assumptionMessage, Object... params)
-	{
-		Check.assumeNotNull(object, assumptionMessage, params);
-	}
-
-	/**
-	 * This method similar to {@link #assume(boolean, String, Object...)}, the error is throw <b>if the condition is true</b> and the message should be formulated in terms of an error message instead
-	 * of an assumption.
-	 * <p>
-	 * Example: instead of "parameter 'xy' is not null" (description of the assumption that was violated), one should write "parameter 'xy' is null" (description of the error).
-	 *
-	 * @param cond
-	 * @param errMsg
-	 * @param params
-	 */
-	@Deprecated
-	public static void errorIf(final boolean cond, final String errMsg, Object... params)
-	{
-		Check.errorIf(cond, errMsg, params);
-	}
-
-	/**
-	 *
-	 * @param message
-	 * @param params
-	 * @return
-	 * @deprecated use {@link StringUtils#formatMessage(String, Object...)} instead
-	 */
-	@Deprecated
-	public static String formatMessage(final String message, Object... params)
-	{
-		return StringUtils.formatMessage(message, params);
-	}
-
-	/**
 	 * Returns an instance of {@link ArrayKey} that can be used as a key in HashSets and HashMaps.
 	 *
 	 * @param input
@@ -577,6 +280,8 @@ public class Util
 	@Immutable
 	public static class ArrayKey implements Comparable<ArrayKey>
 	{
+		public static final String SEPARATOR = "#";
+
 		public static final ArrayKey of(final Object... input)
 		{
 			return new ArrayKey(input);
@@ -595,13 +300,6 @@ public class Util
 			this.array = input;
 		}
 
-		public Object[] getArray()
-		{
-			final Object[] newArray = new Object[array.length];
-			System.arraycopy(array, 0, newArray, 0, array.length);
-			return newArray;
-		}
-
 		@Override
 		public int hashCode()
 		{
@@ -617,7 +315,7 @@ public class Util
 			}
 			if (other instanceof ArrayKey)
 			{
-				return Arrays.equals(this.array, ((ArrayKey)other).getArray());
+				return Arrays.equals(this.array, ((ArrayKey)other).array);
 			}
 			return false;
 		}
@@ -625,17 +323,22 @@ public class Util
 		@Override
 		public String toString()
 		{
-			if (_stringBuilt != null)
+			String stringBuilt = this._stringBuilt;
+			if (stringBuilt == null)
 			{
-				return _stringBuilt;
+				stringBuilt = _stringBuilt = buildToString();
 			}
+			return stringBuilt;
+		}
 
+		private String buildToString()
+		{
 			final StringBuilder sb = new StringBuilder();
 			for (final Object k : array)
 			{
 				if (sb.length() > 0)
 				{
-					sb.append("#");
+					sb.append(SEPARATOR);
 				}
 				if (k == null)
 				{
@@ -647,8 +350,7 @@ public class Util
 				}
 			}
 
-			_stringBuilt = sb.toString();
-			return _stringBuilt;
+			return sb.toString();
 		}
 
 		@Override
@@ -685,17 +387,6 @@ public class Util
 			}
 			return key1.compareTo(key2);
 		}
-	}
-
-	/**
-	 * Tests whether two objects are equals.
-	 *
-	 * @deprecated please use {@link Check#equals(Object, Object)}
-	 */
-	@Deprecated
-	public static final boolean equals(Object a, Object b)
-	{
-		return Check.equals(a, b);
 	}
 
 	/**
@@ -877,133 +568,6 @@ public class Util
 		return msg;
 	}
 
-	/**
-	 * @return first not null value from list
-	 * @see #coalesce(Object...)
-	 */
-	// NOTE: this method is optimized for common usage
-	public static final <T> T coalesce(final T value1, final T value2)
-	{
-		return value1 == null ? value2 : value1;
-	}
-
-	/**
-	 * @return first not null value from list
-	 * @see #coalesce(Object...)
-	 */
-	// NOTE: this method is optimized for common usage
-	public static final <T> T coalesce(final T value1, final T value2, final T value3)
-	{
-		return value1 != null ? value1 : (value2 != null ? value2 : value3);
-	}
-
-	/**
-	 *
-	 * @param values
-	 * @return first not null value from list
-	 */
-	@SafeVarargs
-	public static final <T> T coalesce(final T... values)
-	{
-		if (values == null || values.length == 0)
-		{
-			return null;
-		}
-		for (final T value : values)
-		{
-			if (value != null)
-			{
-				return value;
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Similar to {@link #coalesce(Object...)}, but invokes the given suppliers' get methods one by one.
-	 *
-	 * @param values
-	 * @return
-	 */
-	@SafeVarargs
-	public static final <T> T coalesceSuppliers(final Supplier<T>... values)
-	{
-		return firstValidValue(Predicates.notNull(), values);
-	}
-
-	@SafeVarargs
-	public static final <T> T firstValidValue(@NonNull final Predicate<T> isValidPredicate, final Supplier<T>... values)
-	{
-		if (values == null || values.length == 0)
-		{
-			return null;
-		}
-		for (final Supplier<T> supplier : values)
-		{
-			final T value = supplier.get();
-			if (isValidPredicate.test(value))
-			{
-				return value;
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Analog to {@link #coalesce(Object...)}, returns the first <code>int</code> value that is greater than 0.
-	 *
-	 * @param values
-	 * @return first greater than zero value or zero
-	 */
-	public static final int firstGreaterThanZero(int... values)
-	{
-		if (values == null || values.length == 0)
-		{
-			return 0;
-		}
-		for (final int value : values)
-		{
-			if (value > 0)
-			{
-				return value;
-			}
-		}
-		return 0;
-	}
-
-	@SafeVarargs
-	public static final int firstGreaterThanZeroSupplier(@NonNull final Supplier<Integer>... suppliers)
-	{
-		if (suppliers == null || suppliers.length == 0)
-		{
-			return 0;
-		}
-		for (final Supplier<Integer> supplier : suppliers)
-		{
-			final Integer value = supplier.get();
-			if (value > 0)
-			{
-				return value;
-			}
-		}
-		return 0;
-	}
-
-	/**
-	 * @return the first non-empty string or {@code null}.
-	 */
-	public static final String firstNotEmptyTrimmed(@NonNull final String... values)
-	{
-		for (int i = 0; i < values.length; i++)
-		{
-			if (!Check.isEmpty(values[i], true))
-			{
-				return values[i].trim();
-			}
-		}
-		return null;
-	}
-
 	public static String replaceNonDigitCharsWithZero(String stringToModify)
 	{
 		final int size = stringToModify.length();
@@ -1025,24 +589,6 @@ public class Util
 		}
 
 		return stringWithZeros.toString();
-	}
-
-	// thx to http://www.java2s.com/Code/Java/XML/DOMUtilgetElementText.htm
-	public static String getElementText(Node element)
-	{
-		final StringBuffer buf = new StringBuffer();
-		final NodeList list = element.getChildNodes();
-		boolean found = false;
-		for (int i = 0; i < list.getLength(); i++)
-		{
-			final Node node = list.item(i);
-			if (node.getNodeType() == Node.TEXT_NODE)
-			{
-				buf.append(node.getNodeValue());
-				found = true;
-			}
-		}
-		return found ? buf.toString() : null;
 	}
 
 	public static int getMinimumOfThree(final int no1, final int no2, final int no3)

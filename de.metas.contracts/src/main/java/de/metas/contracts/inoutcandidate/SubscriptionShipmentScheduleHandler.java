@@ -20,7 +20,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
@@ -67,7 +67,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		if (subscriptionLine.getQty().signum() <= 0)
 		{
-			Loggables.get().addLog(
+			Loggables.addLog(
 					"Skip C_SubscriptionProgress_ID={} with Qty={}",
 					subscriptionLine.getC_SubscriptionProgress_ID(), subscriptionLine.getQty());
 			return ImmutableList.of();
@@ -121,7 +121,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		// only display item products
 		// note: at least for C_Subscription_Progress records, we won't even create records for non-items
-		final boolean display = Services.get(IProductBL.class).isItem(term.getM_Product());
+		final boolean display = Services.get(IProductBL.class).isItem(term.getM_Product_ID());
 		newSched.setIsDisplayed(display);
 
 		save(newSched);
@@ -138,13 +138,13 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 
 	private void updateNewSchedWithValuesFromReferencedLine(@NonNull final I_M_ShipmentSchedule newSched)
 	{
-		final ShipmentScheduleReferencedLine subscriptionFromgressInfos = Adempiere
+		final ShipmentScheduleReferencedLine subscriptionFromgressInfos = SpringContextHolder.instance
 				.getBean(ShipmentScheduleSubscriptionReferenceProvider.class)
 				.provideFor(newSched);
 
 		newSched.setM_Warehouse_ID(subscriptionFromgressInfos.getWarehouseId().getRepoId());
-		newSched.setPreparationDate(subscriptionFromgressInfos.getPreparationDate());
-		newSched.setDeliveryDate(subscriptionFromgressInfos.getDeliveryDate());
+		newSched.setPreparationDate(TimeUtil.asTimestamp(subscriptionFromgressInfos.getPreparationDate()));
+		newSched.setDeliveryDate(TimeUtil.asTimestamp(subscriptionFromgressInfos.getDeliveryDate()));
 	}
 
 	@Override

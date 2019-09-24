@@ -1,0 +1,66 @@
+package de.metas.util;
+
+import javax.annotation.Nullable;
+
+/*
+ * #%L
+ * de.metas.util
+ * %%
+ * Copyright (C) 2019 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+public enum OptionalBoolean
+{
+	TRUE, FALSE, UNKNOWN;
+
+	public static OptionalBoolean ofBoolean(final boolean value)
+	{
+		return value ? TRUE : FALSE;
+	}
+
+	public static OptionalBoolean ofNullableBoolean(@Nullable final Boolean value)
+	{
+		return value != null ? ofBoolean(value) : UNKNOWN;
+	}
+	
+	public static OptionalBoolean ofNullableString(@Nullable final String value)
+	{
+		return ofNullableBoolean(StringUtils.toBooleanOrNull(value));
+	}
+
+
+	public boolean isTrue()
+	{
+		return this == TRUE;
+	}
+
+	public boolean isFalse()
+	{
+		return this == FALSE;
+	}
+
+	public boolean isPresent()
+	{
+		return this == TRUE || this == FALSE;
+	}
+
+	public boolean isUnknown()
+	{
+		return this == UNKNOWN;
+	}
+}

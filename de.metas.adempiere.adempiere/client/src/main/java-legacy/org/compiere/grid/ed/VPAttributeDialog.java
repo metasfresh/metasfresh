@@ -44,6 +44,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -135,7 +136,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	private final int m_WindowNo;
 	private final IVPAttributeContext attributeContext;
 	private final MAttributeSet _attributeSet;
-	private final MAttributeSetInstance _asiTemplate;
+	private final I_M_AttributeSetInstance _asiTemplate;
 	private final List<I_M_Attribute> _availableAttributes;
 	private final boolean _allowSelectExistingASI;
 
@@ -249,14 +250,14 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		return asiTemplate == null || asiTemplate.getM_AttributeSetInstance_ID() <= 0;
 	}
 
-	private MAttributeSetInstance getASITemplate()
+	private I_M_AttributeSetInstance getASITemplate()
 	{
 		return _asiTemplate;
 	}
 
 	private MAttributeInstance getAITemplate(final I_M_Attribute attribute)
 	{
-		final MAttributeSetInstance asiTemplate = getASITemplate();
+		final I_M_AttributeSetInstance asiTemplate = getASITemplate();
 		if (asiTemplate == null)
 		{
 			return null;
@@ -365,7 +366,9 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 				public void mouseClicked(MouseEvent e)
 				{
 					if (SwingUtilities.isRightMouseButton(e))
+					{
 						popupMenu.show((Component)e.getSource(), e.getX(), e.getY());
+					}
 				}
 			});
 			mZoom = new CMenuItem(msgBL.getMsg(ctx, "Zoom"), Images.getImageIcon2("Zoom16"));
@@ -508,9 +511,13 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 					}
 				}
 				if (found)
+				{
 					log.debug("Attribute=" + attribute.getName() + " #" + values.length + " - found: " + instance);
+				}
 				else
+				{
 					log.warn("Attribute=" + attribute.getName() + " #" + values.length + " - NOT found: " + instance);
+				}
 			}	// setComboBox
 			else
 			{
@@ -519,9 +526,13 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 			label.setLabelFor(editor);
 			centerPanel.add(editor, null);
 			if (readOnly)
+			{
 				editor.setEnabled(false);
+			}
 			else
+			{
 				attributeId2editor.put(attributeId, editor);
+			}
 		}
 		else if (MAttribute.ATTRIBUTEVALUETYPE_Number.equals(attribute.getAttributeValueType()))
 		{
@@ -552,9 +563,13 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 			label.setLabelFor(editor);
 			centerPanel.add(editor, null);
 			if (readOnly)
+			{
 				editor.setEnabled(false);
+			}
 			else
+			{
 				attributeId2editor.put(attributeId, editor);
+			}
 		}
 		else if (MAttribute.ATTRIBUTEVALUETYPE_Date.equals(attribute.getAttributeValueType()))
 		{
@@ -567,13 +582,19 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 					attribute.getName() // title
 			);
 			if (instance != null)
+			{
 				editor.setValue(instance.getValueDate());
+			}
 			label.setLabelFor(editor);
 			centerPanel.add(editor, null);
 			if (readOnly)
+			{
 				editor.setEnabled(false);
+			}
 			else
+			{
 				attributeId2editor.put(attributeId, editor);
+			}
 		}
 		else
 		// Text Field
@@ -589,13 +610,19 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 					null // ObscureType
 			);
 			if (instance != null)
+			{
 				editor.setText(instance.getValue());
+			}
 			label.setLabelFor(editor);
 			centerPanel.add(editor, null);
 			if (readOnly)
+			{
 				editor.setEnabled(false);
+			}
 			else
+			{
 				attributeId2editor.put(attributeId, editor);
+			}
 		}
 
 		//
@@ -839,14 +866,16 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		int M_Lot_ID = 0;
 		KeyNamePair pp = fieldLot.getSelectedItem();
 		if (pp != null)
+		{
 			M_Lot_ID = pp.getKey();
+		}
 		MQuery zoomQuery = new MQuery("M_Lot");
 		zoomQuery.addRestriction("M_Lot_ID", Operator.EQUAL, M_Lot_ID);
 		log.info(zoomQuery.toString());
 		//
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		//
-		int AD_Window_ID = 257;		// Lot
+		AdWindowId AD_Window_ID = AdWindowId.ofRepoId(257);		// Lot
 		AWindow frame = new AWindow();
 		if (frame.initWindow(AD_Window_ID, zoomQuery))
 		{
@@ -872,7 +901,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	private I_M_AttributeSetInstance saveSelection()
 	{
 		final IMutable<I_M_AttributeSetInstance> asiRef = new Mutable<>();
-		trxManager.run(new TrxRunnableAdapter()
+		trxManager.runInNewTrx(new TrxRunnableAdapter()
 		{
 			@Override
 			public void run(String localTrxName) throws Exception
@@ -890,7 +919,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		log.info("");
 
 		final MAttributeSet attributeSet = getM_AttributeSet();
-		final MAttributeSetInstance asiTemplate2 = getASITemplate();
+		final I_M_AttributeSetInstance asiTemplate2 = getASITemplate();
 
 		// Create a new ASI which is copying the existing one
 

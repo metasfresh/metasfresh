@@ -25,7 +25,6 @@ package de.metas.handlingunits.client.terminal.mmovement.model.assign.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +37,7 @@ import org.compiere.model.I_M_Locator;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUAssignBuilder;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
@@ -133,7 +133,7 @@ public class HUAssignTULUModel extends AbstractLTCUModel
 				documentLine = tuKey.findDocumentLineOrNull();
 			}
 
-			final I_C_BPartner tuBPartner = tuHU.getC_BPartner();
+			final I_C_BPartner tuBPartner = IHandlingUnitsBL.extractBPartnerOrNull(tuHU);
 			if (bpartner == null)
 			{
 				bpartner = tuBPartner;
@@ -153,7 +153,7 @@ public class HUAssignTULUModel extends AbstractLTCUModel
 				throw new AdempiereException(ERR_TU_LOCATION_MATCH, new Object[] { tuHU.getValue(), bpLocationId, tuBPLocationId });
 			}
 
-			final I_M_Locator tuLocator = tuHU.getM_Locator();
+			final I_M_Locator tuLocator = IHandlingUnitsBL.extractLocator(tuHU);
 			if (locator == null)
 			{
 				locator = tuLocator;
@@ -234,14 +234,7 @@ public class HUAssignTULUModel extends AbstractLTCUModel
 		}
 
 		final List<I_M_HU_PI_Item> luPIItemsSorted = new ArrayList<>(luPIItems.values());
-		Collections.sort(luPIItemsSorted, new Comparator<I_M_HU_PI_Item>()
-		{
-			@Override
-			public int compare(final I_M_HU_PI_Item o1, final I_M_HU_PI_Item o2)
-			{
-				return o1.getM_HU_PI_Item_ID() - o2.getM_HU_PI_Item_ID();
-			}
-		});
+		Collections.sort(luPIItemsSorted, (o1, o2) -> o1.getM_HU_PI_Item_ID() - o2.getM_HU_PI_Item_ID());
 
 		return luPIItemsSorted;
 	}

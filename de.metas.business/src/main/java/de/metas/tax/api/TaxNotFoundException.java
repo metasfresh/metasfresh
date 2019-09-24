@@ -5,20 +5,19 @@ import java.util.Date;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import de.metas.location.CountryId;
-import de.metas.location.ICountryDAO;
-
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_Charge;
 import org.compiere.model.MLocation;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -70,7 +69,7 @@ public class TaxNotFoundException extends AdempiereException
 			final CountryId billFromCountryId,
 			final int billToC_Location_ID)
 	{
-		super(ImmutableTranslatableString.empty());
+		super(TranslatableStrings.empty());
 
 		this.productId = productId;
 		setParameter("productId", productId);
@@ -107,7 +106,7 @@ public class TaxNotFoundException extends AdempiereException
 	@Override
 	protected ITranslatableString buildMessage()
 	{
-		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder message = TranslatableStrings.builder();
 		message.appendADMessage(MSG_TaxNotFound);
 
 		//

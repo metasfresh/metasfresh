@@ -32,35 +32,6 @@ import de.metas.util.StringUtils;
 
 public class UtilTest
 {
-	@Test
-	public void test_coalesce3()
-	{
-		final Object o1 = new Object();
-		final Object o2 = new Object();
-		final Object o3 = new Object();
-		test_coalesce3(o1, o1, o2, o3);
-		test_coalesce3(o1, null, o1, o2);
-		test_coalesce3(o1, null, null, o1);
-		test_coalesce3(null, null, null, null);
-	}
-
-	public <T> void test_coalesce3(final T expected, final T value1, final T value2, final T value3)
-	{
-		{
-			final T actual = Util.coalesce(value1, value2, value3);
-			Assert.assertSame(expected, actual);
-		}
-		{
-			final Object actual = Util.coalesce(new Object[] { value1, value2, value3 });
-			Assert.assertSame(expected, actual);
-		}
-	}
-
-	@Test
-	public void coalesceIntIds()
-	{
-		assertThat(Util.firstGreaterThanZero(0, 3, 1)).isEqualTo(3);
-	}
 
 	@Test
 	public void test_clearAmp()

@@ -37,11 +37,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.concurrent.Immutable;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IRolePermLoggingBL;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
@@ -62,6 +62,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.organization.OrgId;
 import de.metas.security.ISecurityRuleEngine;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.RoleId;
@@ -535,17 +536,17 @@ class UserRolePermissions implements IUserRolePermissions
 	 * @return null in no access, TRUE if r/w and FALSE if r/o
 	 */
 	@Override
-	public Boolean getWindowAccess(final int AD_Window_ID)
+	public Boolean getWindowAccess(@NonNull final AdWindowId AD_Window_ID)
 	{
 		final Boolean access = checkWindowPermission(AD_Window_ID).getReadWriteBoolean();
-		Services.get(IRolePermLoggingBL.class).logWindowAccess(getRoleId(), AD_Window_ID, access);
+		Services.get(IRolePermLoggingBL.class).logWindowAccess(getRoleId(), AD_Window_ID.getRepoId(), access);
 		return access;
 	}
 
 	@Override
-	public ElementPermission checkWindowPermission(final int AD_Window_ID)
+	public ElementPermission checkWindowPermission(@NonNull final AdWindowId AD_Window_ID)
 	{
-		return windowPermissions.getPermission(AD_Window_ID);
+		return windowPermissions.getPermission(AD_Window_ID.getRepoId());
 	}
 
 	/**

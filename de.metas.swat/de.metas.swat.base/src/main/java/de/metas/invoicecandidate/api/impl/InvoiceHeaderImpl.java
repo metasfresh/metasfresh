@@ -1,37 +1,21 @@
 package de.metas.invoicecandidate.api.impl;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.compiere.model.I_C_DocType;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.util.Check;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Default implementation for {@link IInvoiceHeader}
@@ -53,9 +37,9 @@ import de.metas.util.Check;
 
 	private String poReference;
 
-	private Timestamp dateInvoiced;
+	private LocalDate dateInvoiced;
 
-	private Timestamp dateAcct;
+	private LocalDate dateAcct;
 
 	private int AD_Org_ID;
 
@@ -70,7 +54,9 @@ import de.metas.util.Check;
 	private int Bill_User_ID;
 
 	// 03805: add attribute C_Currency_ID
-	private int C_Currency_ID;
+	@Getter
+	@Setter
+	private CurrencyId currencyId;
 
 	// 04258
 	private String Description;
@@ -85,7 +71,7 @@ import de.metas.util.Check;
 
 	private boolean taxIncluded;
 
-	private int C_PaymentTerm_ID = -1;;
+	private int C_PaymentTerm_ID = -1;
 
 	/* package */ InvoiceHeaderImpl()
 	{
@@ -104,7 +90,7 @@ import de.metas.util.Check;
 				+ ", Bill_BPartner_ID=" + Bill_BPartner_ID
 				+ ", Bill_Location_ID=" + Bill_Location_ID
 				+ ", Bill_User_ID=" + Bill_User_ID
-				+ ", C_Currency_ID=" + C_Currency_ID
+				+ ", currencyId=" + currencyId
 				+ ", C_Order_ID=" + C_Order_ID
 				+ ", docTypeInvoiceId=" + docTypeInvoice
 				+ ", lines=" + lines
@@ -115,6 +101,15 @@ import de.metas.util.Check;
 	public List<IInvoiceCandAggregate> getLines()
 	{
 		return lines;
+	}
+
+	@Override
+	public List<I_C_Invoice_Candidate> getAllInvoiceCandidates()
+	{
+		return getLines()
+				.stream()
+				.flatMap(line -> line.getAllCands().stream())
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
@@ -130,13 +125,13 @@ import de.metas.util.Check;
 	}
 
 	@Override
-	public Timestamp getDateInvoiced()
+	public LocalDate getDateInvoiced()
 	{
 		return dateInvoiced;
 	}
 
 	@Override
-	public Timestamp getDateAcct()
+	public LocalDate getDateAcct()
 	{
 		return dateAcct;
 	}
@@ -177,12 +172,6 @@ import de.metas.util.Check;
 		return AD_Org_ID;
 	}
 
-	@Override
-	public int getC_Currency_ID()
-	{
-		return C_Currency_ID;
-	}
-
 	public void setLines(final List<IInvoiceCandAggregate> lines)
 	{
 		this.lines = lines;
@@ -198,12 +187,12 @@ import de.metas.util.Check;
 		this.poReference = poReference;
 	}
 
-	public void setDateInvoiced(final Timestamp dateInvoiced)
+	public void setDateInvoiced(final LocalDate dateInvoiced)
 	{
 		this.dateInvoiced = dateInvoiced;
 	}
 
-	public void setDateAcct(final Timestamp dateAcct)
+	public void setDateAcct(final LocalDate dateAcct)
 	{
 		this.dateAcct = dateAcct;
 	}
@@ -236,11 +225,6 @@ import de.metas.util.Check;
 	public void setBill_User_ID(final int bill_User_ID)
 	{
 		Bill_User_ID = bill_User_ID;
-	}
-
-	public void setC_Currency_ID(final int currency_ID)
-	{
-		C_Currency_ID = currency_ID;
 	}
 
 	@Override
@@ -325,17 +309,17 @@ import de.metas.util.Check;
 	 *
 	 * @return total net amount
 	 */
-	public BigDecimal calculateTotalNetAmtFromLines()
+	public Money calculateTotalNetAmtFromLines()
 	{
 		final List<IInvoiceCandAggregate> lines = getLines();
 		Check.assume(lines != null && !lines.isEmpty(), "Invoice {} was not aggregated yet", this);
 
-		BigDecimal totalNetAmt = BigDecimal.ZERO;
+		Money totalNetAmt = Money.zero(currencyId);
 		for (final IInvoiceCandAggregate lineAgg : lines)
 		{
 			for (final IInvoiceLineRW line : lineAgg.getAllLines())
 			{
-				final BigDecimal lineNetAmt = line.getNetLineAmt();
+				final Money lineNetAmt = line.getNetLineAmt();
 				totalNetAmt = totalNetAmt.add(lineNetAmt);
 			}
 		}

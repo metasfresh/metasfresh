@@ -22,6 +22,7 @@ import java.awt.event.WindowListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.compiere.apps.form.FormFrame;
 
 /**
@@ -36,7 +37,7 @@ public class WindowManager
 	{
 	}
 
-	private List<Window> windows = new ArrayList<Window>();
+	private List<Window> windows = new ArrayList<>();
 	private WindowEventListener eventListener = new WindowEventListener(this);
 
 	/**
@@ -75,7 +76,7 @@ public class WindowManager
 			w.removeWindowListener(eventListener);
 			w.dispose();
 		}
-		windows = new ArrayList<Window>();
+		windows = new ArrayList<>();
 	}
 
 	/**
@@ -94,7 +95,7 @@ public class WindowManager
 				w.dispose();
 			}
 		}
-		windows = new ArrayList<Window>();
+		windows = new ArrayList<>();
 		add(window);
 	}
 
@@ -137,15 +138,17 @@ public class WindowManager
 	 * @param AD_Window_ID
 	 * @return AWindow reference, null if not found
 	 */
-	public AWindow find(int AD_Window_ID)
+	public AWindow find(final AdWindowId adWindowId)
 	{
 		for (Window w : windows)
 		{
 			if (w instanceof AWindow)
 			{
 				AWindow a = (AWindow)w;
-				if (a.getAD_Window_ID() == AD_Window_ID)
+				if (AdWindowId.equals(a.getAdWindowId(), adWindowId))
+				{
 					return a;
+				}
 			}
 		}
 		return null;
@@ -159,7 +162,9 @@ public class WindowManager
 			{
 				FormFrame ff = (FormFrame)w;
 				if (ff.getAD_Form_ID() == AD_FORM_ID)
+				{
 					return ff;
+				}
 			}
 		}
 		return null;
@@ -215,7 +220,7 @@ class WindowEventListener implements ComponentListener, WindowListener
 		{
 			w.removeComponentListener(this);
 			w.removeWindowListener(this);
-			windowManager.remove((Window)w);
+			windowManager.remove(w);
 		}
 	}
 

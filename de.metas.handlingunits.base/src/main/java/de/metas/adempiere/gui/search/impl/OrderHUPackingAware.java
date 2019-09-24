@@ -13,27 +13,21 @@ package de.metas.adempiere.gui.search.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.handlingunits.model.I_C_Order;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.util.Check;
 
 public class OrderHUPackingAware implements IHUPackingAware
@@ -55,12 +49,6 @@ public class OrderHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public I_M_Product getM_Product()
-	{
-		return order.getM_Product();
-	}
-
-	@Override
 	public void setM_Product_ID(final int productId)
 	{
 		order.setM_Product_ID(productId);
@@ -79,14 +67,14 @@ public class OrderHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public I_C_UOM getC_UOM()
+	public int getC_UOM_ID()
 	{
 		// TODO Auto-generated method stub
-		return null;
+		return -1;
 	}
 
 	@Override
-	public void setC_UOM(final I_C_UOM uom)
+	public void setC_UOM_ID(final int uomId)
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -104,15 +92,15 @@ public class OrderHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
+	public int getM_HU_PI_Item_Product_ID()
 	{
-		return order.getM_HU_PI_Item_Product();
+		return order.getM_HU_PI_Item_Product_ID();
 	}
 
 	@Override
-	public void setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product huPiItemProduct)
+	public void setM_HU_PI_Item_Product_ID(final int huPiItemProductId)
 	{
-		order.setM_HU_PI_Item_Product(huPiItemProduct);
+		order.setM_HU_PI_Item_Product_ID(huPiItemProductId);
 
 	}
 
@@ -129,34 +117,15 @@ public class OrderHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public void setC_BPartner(final I_C_BPartner partner)
+	public void setC_BPartner_ID(final int bpartnerId)
 	{
-		order.setC_BPartner_ID(partner.getC_BPartner_ID());
+		order.setC_BPartner_ID(bpartnerId);
 	}
 
 	@Override
-	public I_C_BPartner getC_BPartner()
+	public int getC_BPartner_ID()
 	{
-		return order.getC_BPartner();
-	}
-
-	@Override
-	public void setDateOrdered(final Timestamp dateOrdered)
-	{
-		order.setDateOrdered(dateOrdered);
-
-	}
-
-	@Override
-	public Timestamp getDateOrdered()
-	{
-		return order.getDateOrdered();
-	}
-
-	@Override
-	public int getM_HU_PI_Item_Product_ID()
-	{
-		return order.getM_HU_PI_Item_Product_ID();
+		return order.getC_BPartner_ID();
 	}
 
 	@Override
@@ -175,8 +144,8 @@ public class OrderHUPackingAware implements IHUPackingAware
 	public String toString()
 	{
 		return String
-				.format("OrderHUPackingAware [order=%s, getM_Product_ID()=%s, getM_Product()=%s, getM_AttributeSetInstance_ID()=%s, getC_UOM()=%s, getQty()=%s, getM_HU_PI_Item_Product()=%s, getQtyPacks()=%s, getC_BPartner()=%s, getDateOrdered()=%s, getM_HU_PI_Item_Product_ID()=%s, isInDispute()=%s]",
-						order, getM_Product_ID(), getM_Product(), getM_AttributeSetInstance_ID(), getC_UOM(), getQty(), getM_HU_PI_Item_Product(), getQtyTU(), getC_BPartner(), getDateOrdered(),
+				.format("OrderHUPackingAware [order=%s, getM_Product_ID()=%s, getM_Product()=%s, getM_AttributeSetInstance_ID()=%s, getC_UOM()=%s, getQty()=%s, getM_HU_PI_Item_Product()=%s, getQtyPacks()=%s, getC_BPartner()=%s, getM_HU_PI_Item_Product_ID()=%s, isInDispute()=%s]",
+						order, getM_Product_ID(), getM_Product_ID(), getM_AttributeSetInstance_ID(), getC_UOM_ID(), getQty(), getM_HU_PI_Item_Product_ID(), getQtyTU(), getC_BPartner_ID(),
 						getM_HU_PI_Item_Product_ID(), isInDispute());
 	}
 }

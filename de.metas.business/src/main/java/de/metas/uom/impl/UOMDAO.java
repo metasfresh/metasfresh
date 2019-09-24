@@ -56,6 +56,17 @@ public class UOMDAO implements IUOMDAO
 	}
 
 	@Override
+	public I_C_UOM getByIdOrNull(final int uomId)
+	{
+		if (uomId <= 0)
+		{
+			return null;
+		}
+
+		return loadOutOfTrx(uomId, I_C_UOM.class); // assume it's cached on table level
+	}
+
+	@Override
 	public I_C_UOM getById(@NonNull final UomId uomId)
 	{
 		return loadOutOfTrx(uomId, I_C_UOM.class); // assume it's cached on table level
@@ -66,6 +77,13 @@ public class UOMDAO implements IUOMDAO
 	{
 		final boolean throwExIfNull = true;
 		return retrieveUomIdByX12DE355(Env.getCtx(), x12de355, throwExIfNull);
+	}
+
+	@Override
+	public String getX12DE355ById(final UomId uomId)
+	{
+		I_C_UOM uom = getById(uomId);
+		return uom.getX12DE355();
 	}
 
 	@Override

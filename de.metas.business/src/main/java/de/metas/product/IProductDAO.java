@@ -27,11 +27,12 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 
+import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -95,6 +96,8 @@ public interface IProductDAO extends ISingletonService
 		boolean outOfTrx = false;
 	}
 
+	Stream<I_M_Product> streamAllProducts();
+
 	/** @return product category or null */
 	ProductCategoryId retrieveProductCategoryByProductId(ProductId productId);
 
@@ -110,6 +113,8 @@ public interface IProductDAO extends ISingletonService
 
 	<T extends I_M_Product_Category> T getProductCategoryById(ProductCategoryId id, Class<T> modelClass);
 
+	Stream<I_M_Product_Category> streamAllProductCategories();
+	
 	String getProductCategoryNameById(ProductCategoryId id);
 
 	ProductId getProductIdByResourceId(ResourceId resourceId);

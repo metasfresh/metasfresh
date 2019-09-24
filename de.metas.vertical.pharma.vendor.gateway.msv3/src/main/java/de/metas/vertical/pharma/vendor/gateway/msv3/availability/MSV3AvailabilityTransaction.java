@@ -6,14 +6,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-import org.adempiere.ad.service.IErrorManager;
-import org.adempiere.service.OrgId;
-import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_BPartner;
 
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQuery;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQueryItem;
@@ -132,8 +132,8 @@ public class MSV3AvailabilityTransaction
 		}
 		if (otherException != null)
 		{
-			final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(otherException);
-			transactionRecord.setAD_Issue(issue);
+			final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(otherException);
+			transactionRecord.setAD_Issue_ID(issueId.getRepoId());
 		}
 
 		save(transactionRecord);

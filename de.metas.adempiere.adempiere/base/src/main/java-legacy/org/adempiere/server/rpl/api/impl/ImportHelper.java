@@ -210,7 +210,7 @@ public class ImportHelper implements IImportHelper
 	{
 		final IMutable<Document> retValue = new Mutable<>();
 		Services.get(ITrxManager.class)
-				.run(localTrxName -> retValue.setValue(importXMLDocument0(result, documentToBeImported, localTrxName)));
+				.runInNewTrx(localTrxName -> retValue.setValue(importXMLDocument0(result, documentToBeImported, localTrxName)));
 
 		return retValue.getValue();
 	}

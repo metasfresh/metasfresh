@@ -1,5 +1,19 @@
 package org.adempiere.server.rpl.imp;
 
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Properties;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.server.rpl.IImportProcessor;
+import org.adempiere.server.rpl.IReplicationProcessor;
+import org.adempiere.server.rpl.api.IIMPProcessorBL;
+import org.adempiere.server.rpl.api.IIMPProcessorDAO;
+import org.apache.commons.lang3.StringUtils;
+import org.compiere.model.I_IMP_Processor;
+import org.compiere.model.I_IMP_ProcessorParameter;
+import org.slf4j.Logger;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -28,19 +42,6 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.server.rpl.IImportProcessor;
-import org.adempiere.server.rpl.IReplicationProcessor;
-import org.adempiere.server.rpl.api.IIMPProcessorBL;
-import org.adempiere.server.rpl.api.IIMPProcessorDAO;
-import org.apache.commons.lang3.StringUtils;
-import org.compiere.model.I_IMP_Processor;
-import org.compiere.model.I_IMP_ProcessorParameter;
-import org.slf4j.Logger;
-
-import java.text.MessageFormat;
-import java.util.List;
-import java.util.Properties;
 
 public class RabbitMqImportProcessor implements IImportProcessor
 {
@@ -175,6 +176,6 @@ public class RabbitMqImportProcessor implements IImportProcessor
 
 	private ILoggable getLogger(@NonNull final Level level)
 	{
-		return Loggables.get().withLogger(log, level);
+		return Loggables.withLogger(log, level);
 	}
 }

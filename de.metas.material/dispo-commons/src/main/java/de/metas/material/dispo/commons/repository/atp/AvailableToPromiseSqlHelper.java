@@ -7,6 +7,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
 import org.compiere.db.Database;
 import org.compiere.model.IQuery;
@@ -81,7 +82,7 @@ import lombok.experimental.UtilityClass;
 		}
 
 		// Warehouse
-		final Set<Integer> warehouseIds = query.getWarehouseIds();
+		final Set<WarehouseId> warehouseIds = query.getWarehouseIds();
 		if (!warehouseIds.isEmpty())
 		{
 			queryBuilder.addInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Warehouse_ID, warehouseIds);

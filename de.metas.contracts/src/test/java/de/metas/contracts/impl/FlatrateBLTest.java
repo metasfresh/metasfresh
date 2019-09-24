@@ -30,7 +30,6 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pricing.model.I_C_PricingRule;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
@@ -47,7 +46,6 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,12 +66,14 @@ import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.organization.OrgId;
 import de.metas.pricing.rules.MockedPricingRule;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import mockit.Expectations;
 import mockit.Mocked;
 
@@ -194,7 +194,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		final I_M_Product product = newInstance(I_M_Product.class);
 		product.setM_Product_Category_ID(20);
-		product.setC_UOM(productUOM);
+		product.setC_UOM_ID(productUOM.getC_UOM_ID());
 		save(product);
 
 		final I_C_Period period = newInstance(I_C_Period.class);
@@ -242,7 +242,7 @@ public class FlatrateBLTest extends ContractsTestBase
 						dataEntry.getDate_Reported(),
 						OrgId.ofRepoId(dataEntry.getAD_Org_ID()),
 						(WarehouseId)null,
-						Util.firstGreaterThanZero(currentTerm.getDropShip_Location_ID(), currentTerm.getBill_Location_ID()),
+						CoalesceUtil.firstGreaterThanZero(currentTerm.getDropShip_Location_ID(), currentTerm.getBill_Location_ID()),
 						isSOTrx);
 				minTimes = 0;
 				result = 3;

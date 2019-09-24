@@ -10,18 +10,17 @@ package de.metas.handlingunits.allocation.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static de.metas.business.BusinessTestHelper.createBPartner;
 
@@ -35,6 +34,7 @@ import org.junit.Test;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.MockedAllocationSourceDestination;
@@ -93,7 +93,7 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 				helper.getHUContext(),
 				pTomato,
 				new BigDecimal(qty), // qtyRequest,
-				pTomato.getC_UOM(),
+				uomKg,
 				helper.getTodayDate(),
 				referencedModel);
 	}
@@ -133,7 +133,7 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 
 		//
 		// Assert: M_HU.C_BPartner_ID is set
-		Assert.assertEquals("Invalid BPartner in " + hus.get(0), bpartner01, hus.get(0).getC_BPartner());
+		Assert.assertEquals("Invalid BPartner in " + hus.get(0), bpartner01, IHandlingUnitsBL.extractBPartnerOrNull(hus.get(0)));
 	}
 
 	/**
@@ -170,10 +170,10 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 
 		//
 		// Assert: M_HU.C_BPartner_ID is set
-		Assert.assertEquals("Invalid BPartner in " + hus.get(0), bpartner02, hus.get(0).getC_BPartner());
-		Assert.assertEquals("Invalid BPartner in " + hus.get(1), bpartner02, hus.get(1).getC_BPartner());
-		Assert.assertEquals("Invalid BPartner in " + hus.get(2), bpartner02, hus.get(2).getC_BPartner());
-		Assert.assertEquals("Invalid BPartner in " + hus.get(3), bpartner02, hus.get(3).getC_BPartner());
+		Assert.assertEquals("Invalid BPartner in " + hus.get(0), bpartner02, IHandlingUnitsBL.extractBPartnerOrNull(hus.get(0)));
+		Assert.assertEquals("Invalid BPartner in " + hus.get(1), bpartner02, IHandlingUnitsBL.extractBPartnerOrNull(hus.get(1)));
+		Assert.assertEquals("Invalid BPartner in " + hus.get(2), bpartner02, IHandlingUnitsBL.extractBPartnerOrNull(hus.get(2)));
+		Assert.assertEquals("Invalid BPartner in " + hus.get(3), bpartner02, IHandlingUnitsBL.extractBPartnerOrNull(hus.get(3)));
 	}
 
 	@Test
@@ -207,10 +207,10 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 
 		//
 		// Assert: M_HU.C_BPartner_ID is set
-		Assert.assertEquals("Invalid BPartner in " + hus.get(0), null, hus.get(0).getC_BPartner());
-		Assert.assertEquals("Invalid BPartner in " + hus.get(1), null, hus.get(1).getC_BPartner());
-		Assert.assertEquals("Invalid BPartner in " + hus.get(2), null, hus.get(2).getC_BPartner());
-		Assert.assertEquals("Invalid BPartner in " + hus.get(3), null, hus.get(3).getC_BPartner());
+		Assert.assertEquals("Invalid BPartner in " + hus.get(0), null, IHandlingUnitsBL.extractBPartnerOrNull(hus.get(0)));
+		Assert.assertEquals("Invalid BPartner in " + hus.get(1), null, IHandlingUnitsBL.extractBPartnerOrNull(hus.get(1)));
+		Assert.assertEquals("Invalid BPartner in " + hus.get(2), null, IHandlingUnitsBL.extractBPartnerOrNull(hus.get(2)));
+		Assert.assertEquals("Invalid BPartner in " + hus.get(3), null, IHandlingUnitsBL.extractBPartnerOrNull(hus.get(3)));
 	}
 
 }

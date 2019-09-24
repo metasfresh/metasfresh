@@ -31,6 +31,7 @@ import org.compiere.model.I_M_Transaction;
 
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.hutransaction.IHUTrxDAO;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.materialtransaction.MTransactionUtil;
@@ -104,7 +105,7 @@ public class MTransactionProductStorage extends AbstractProductStorage
 		// then this storage is already full with that qty
 		if (inbound && !reversal)
 		{
-			qty = qty.add(capacityTotal.getCapacityQty());
+			qty = qty.add(capacityTotal.toBigDecimal());
 		}
 
 		//
@@ -135,7 +136,7 @@ public class MTransactionProductStorage extends AbstractProductStorage
 				continue;
 			}
 
-			final BigDecimal trxQtyAbs = convertToStorageUOM(trxLine.getQty(), trxLine.getC_UOM());
+			final BigDecimal trxQtyAbs = convertToStorageUOM(trxLine.getQty(), IHUTrxBL.extractUOMOrNull(trxLine));
 			final BigDecimal trxQty;
 			if (!reversal)
 			{

@@ -60,8 +60,8 @@ import de.metas.printing.model.I_AD_Archive;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.I_C_Printing_Queue_Recipient;
 import de.metas.printing.model.validator.AD_Archive;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class OrderCheckupTestHelper
 {
@@ -166,19 +166,16 @@ public class OrderCheckupTestHelper
 	{
 		final I_C_Order order = InterfaceWrapperHelper.create(ctx, I_C_Order.class, ITrx.TRXNAME_None);
 		order.setIsSOTrx(true);
-		order.setM_Warehouse(warehouse);
+		order.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 		InterfaceWrapperHelper.save(order);
 		return order;
 	}
 
-	public I_C_OrderLine createOrderLine(final I_C_Order order, final I_M_Product product)
+	public I_C_OrderLine createOrderLine(@NonNull final I_C_Order order, @NonNull final I_M_Product product)
 	{
-		Check.assumeNotNull(order, "order not null");
-		Check.assumeNotNull(product, "product not null");
-
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(ctx, I_C_OrderLine.class, ITrx.TRXNAME_None);
-		orderLine.setC_Order(order);
-		orderLine.setM_Product(product);
+		orderLine.setC_Order_ID(order.getC_Order_ID());
+		orderLine.setM_Product_ID(product.getM_Product_ID());
 		InterfaceWrapperHelper.save(orderLine);
 		return orderLine;
 	}

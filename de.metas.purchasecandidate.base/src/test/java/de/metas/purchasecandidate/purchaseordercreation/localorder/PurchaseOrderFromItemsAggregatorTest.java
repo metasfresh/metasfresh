@@ -10,14 +10,12 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.X_C_Order;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,10 +25,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.engine.DocStatus;
 import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.impl.OrderLineBL;
+import de.metas.organization.OrgId;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.purchasecandidate.DemandGroupReference;
@@ -128,7 +128,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.groupReference(DemandGroupReference.EMPTY)
 				.orgId(OrgId.ofRepoId(10))
-				.purchaseDatePromised(SystemTime.asLocalDateTime())
+				.purchaseDatePromised(SystemTime.asZonedDateTime())
 				.vendorId(vendorProductInfo.getVendorId())
 				.aggregatePOs(vendorProductInfo.isAggregatePOs())
 				.productId(vendorProductInfo.getProductId())
@@ -142,10 +142,10 @@ public class PurchaseOrderFromItemsAggregatorTest
 
 		final PurchaseOrderFromItemsAggregator aggregator = PurchaseOrderFromItemsAggregator.newInstance();
 
-		Services.get(ITrxManager.class).run(() -> {
+		Services.get(ITrxManager.class).runInNewTrx(() -> {
 			aggregator.add(PurchaseOrderItem.builder()
 					.purchaseCandidate(purchaseCandidate)
-					.datePromised(SystemTime.asLocalDateTime())
+					.datePromised(SystemTime.asZonedDateTime())
 					.purchasedQty(TEN)
 					.remotePurchaseOrderId(NullVendorGatewayInvoker.NO_REMOTE_PURCHASE_ID)
 					.build());
@@ -157,7 +157,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 		assertThat(createdPurchaseOrders).hasSize(1);
 
 		final I_C_Order purchaseOrder = createdPurchaseOrders.get(0);
-		assertThat(purchaseOrder.getDocStatus()).isEqualTo(X_C_Order.DOCSTATUS_Completed);
+		assertThat(purchaseOrder.getDocStatus()).isEqualTo(DocStatus.Completed.getCode());
 
 		// these properties are currently set by MOrder.beforeSafe, which is not called in our test
 		// assertThat(purchaseOrder.getM_PricingSystem_ID()).isGreaterThan(0);

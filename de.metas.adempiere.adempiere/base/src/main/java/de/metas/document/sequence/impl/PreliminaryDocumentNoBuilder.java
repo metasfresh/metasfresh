@@ -10,7 +10,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MSequence;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import de.metas.document.DocTypeSequenceMap;
 import de.metas.document.DocumentNoBuilderException;
@@ -18,6 +17,7 @@ import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 
 /*
  * #%L
@@ -69,7 +69,7 @@ import de.metas.util.Services;
 	}
 
 	@Override
-	public final IDocumentNoInfo buildOrNull()
+	public IDocumentNoInfo buildOrNull()
 	{
 		// Check if already built
 		if (_built.getAndSet(true))
@@ -87,7 +87,7 @@ import de.metas.util.Services;
 		}
 	}
 
-	private final IDocumentNoInfo buildOrNull0()
+	private IDocumentNoInfo buildOrNull0()
 	{
 		final I_C_DocType newDocType = getNewDocType();
 		if (newDocType == null)
@@ -96,7 +96,7 @@ import de.metas.util.Services;
 		}
 
 		final String docBaseType = newDocType.getDocBaseType();
-		final String docSubType = Util.coalesce(newDocType.getDocSubType(), DOCSUBTYPE_NONE);
+		final String docSubType = CoalesceUtil.coalesce(newDocType.getDocSubType(), DOCSUBTYPE_NONE);
 		final boolean isSOTrx = newDocType.isSOTrx();
 		final boolean hasChanges = newDocType.isHasCharges();
 
@@ -161,12 +161,12 @@ import de.metas.util.Services;
 		}
 	}
 
-	private final void assertNotBuilt()
+	private void assertNotBuilt()
 	{
 		Check.assume(!_built.get(), "not already built");
 	}
 
-	private final int getOldSequence_ID()
+	private int getOldSequence_ID()
 	{
 		if (_oldSequence_ID == null)
 		{
@@ -175,7 +175,7 @@ import de.metas.util.Services;
 		return _oldSequence_ID;
 	}
 
-	private final int retrieveOldSequence_ID()
+	private int retrieveOldSequence_ID()
 	{
 		final boolean isNewDocumentNo = isNewDocumentNo();
 		if (isNewDocumentNo)
@@ -199,7 +199,7 @@ import de.metas.util.Services;
 		return Env.getCtx();
 	}
 
-	private final int getAD_Client_ID()
+	private int getAD_Client_ID()
 	{
 		if (_adClientId == null)
 		{
@@ -208,7 +208,7 @@ import de.metas.util.Services;
 		return _adClientId;
 	}
 
-	private final int extractAD_Client_ID()
+	private int extractAD_Client_ID()
 	{
 		final Object documentModel = getDocumentModel();
 		if (documentModel != null)
@@ -224,7 +224,7 @@ import de.metas.util.Services;
 		throw new DocumentNoBuilderException("Could not get AD_Client_ID");
 	}
 
-	private final int getAD_Org_ID()
+	private int getAD_Org_ID()
 	{
 		if (_adOrgId == null)
 		{
@@ -233,7 +233,7 @@ import de.metas.util.Services;
 		return _adOrgId;
 	}
 
-	private final int extractAD_Org_ID()
+	private int extractAD_Org_ID()
 	{
 		final Object documentModel = getDocumentModel();
 		if (documentModel != null)
@@ -257,7 +257,7 @@ import de.metas.util.Services;
 		return this;
 	}
 
-	private final I_C_DocType getNewDocType()
+	private I_C_DocType getNewDocType()
 	{
 		return _newDocType;
 	}
@@ -270,7 +270,7 @@ import de.metas.util.Services;
 		return this;
 	}
 
-	private final I_C_DocType getOldDocType()
+	private I_C_DocType getOldDocType()
 	{
 		if (_oldDocType == null)
 		{
@@ -291,12 +291,12 @@ import de.metas.util.Services;
 		return this;
 	}
 
-	private final String getOldDocumentNo()
+	private String getOldDocumentNo()
 	{
 		return _oldDocumentNo;
 	}
 
-	private final boolean isNewDocumentNo()
+	private boolean isNewDocumentNo()
 	{
 		final String oldDocumentNo = getOldDocumentNo();
 		if (oldDocumentNo == null)
@@ -318,7 +318,7 @@ import de.metas.util.Services;
 		return this;
 	}
 
-	private final Object getDocumentModel()
+	private Object getDocumentModel()
 	{
 		Check.assumeNotNull(_documentModel, "_documentModel not null");
 		return _documentModel;

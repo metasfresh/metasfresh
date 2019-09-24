@@ -1,6 +1,7 @@
 package org.adempiere.invoice.service.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -64,6 +65,23 @@ import lombok.NonNull;
  */
 public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 {
+	@Override
+	public void save(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		saveRecord(invoice);
+	}
+
+	@Override
+	public void delete(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		InterfaceWrapperHelper.delete(invoice);
+	}
+
+	@Override
+	public void save(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
+	{
+		saveRecord(invoiceLine);
+	}
 
 	@Override
 	public BigDecimal retrieveOpenAmt(final org.compiere.model.I_C_Invoice invoice)

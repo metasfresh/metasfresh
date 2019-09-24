@@ -64,6 +64,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderPA;
 import de.metas.pricing.PricingSystemId;
 import de.metas.util.Check;
@@ -329,7 +330,7 @@ public class ContractChangeBL implements IContractChangeBL
 		final String trxName = InterfaceWrapperHelper.getTrxName(currentTerm);
 		final I_C_Order termChangeOrder = orderPA.copyOrder(currentTermOrder, false, trxName);
 		final PricingSystemId pricingSystemId = getPricingSystemId(currentTerm, changeConditions);
-		termChangeOrder.setM_PricingSystem_ID(PricingSystemId.getRepoId(pricingSystemId));
+		termChangeOrder.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId));
 
 		termChangeOrder.setDateOrdered(SystemTime.asDayTimestamp());
 		termChangeOrder.setDatePromised(changeDate);
@@ -406,8 +407,8 @@ public class ContractChangeBL implements IContractChangeBL
 		{
 			logger.info("Adjusting QtyOrdered of order " + oldOrder.getDocumentNo() + ", line " + oldOl.getLine());
 			oldOl.setQtyOrdered(oldOl.getQtyOrdered().subtract(surplusQty));
-			final IOrderPA orderPA = Services.get(IOrderPA.class);
-			orderPA.reserveStock(oldOrder, oldOl);
+			final IOrderBL orderBL = Services.get(IOrderBL.class);
+			orderBL.reserveStock(oldOrder, oldOl);
 		}
 	}
 

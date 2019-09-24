@@ -10,20 +10,26 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.compiere.model.I_C_Currency;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.CurrencyRepository;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -52,6 +58,7 @@ import lombok.NonNull;
 public class AssignableInvoiceCandidateFactory
 {
 	private final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository;
+	private final CurrencyRepository currenciesRepo;
 
 	@VisibleForTesting
 	public static AssignableInvoiceCandidateFactory newForUnitTesting()
@@ -64,12 +71,17 @@ public class AssignableInvoiceCandidateFactory
 		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(refundContractRepository, refundInvoiceCandidateFactory);
 		final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository = new AssignmentToRefundCandidateRepository(refundInvoiceCandidateRepository);
 
-		return new AssignableInvoiceCandidateFactory(assignmentToRefundCandidateRepository);
+		final CurrencyRepository currenciesRepo = new CurrencyRepository();
+
+		return new AssignableInvoiceCandidateFactory(assignmentToRefundCandidateRepository, currenciesRepo);
 	}
 
-	public AssignableInvoiceCandidateFactory(@NonNull final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository)
+	public AssignableInvoiceCandidateFactory(
+			@NonNull final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository,
+			@NonNull final CurrencyRepository currenciesRepo)
 	{
 		this.assignmentToRefundCandidateRepository = assignmentToRefundCandidateRepository;
+		this.currenciesRepo = currenciesRepo;
 	}
 
 	/** Note: does not load&include {@link AssignmentToRefundCandidate}s; those need to be retrieved using {@link AssignmentToRefundCandidateRepository}. */
@@ -82,9 +94,8 @@ public class AssignableInvoiceCandidateFactory
 				.getNetAmtInvoiced()
 				.add(assignableRecord.getNetAmtToInvoice());
 
-		final I_C_Currency currencyRecord = assignableRecord.getC_Currency();
-		final CurrencyId currencyId = CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
-		final int precision = currencyRecord.getStdPrecision();
+		final CurrencyId currencyId = CurrencyId.ofRepoId(assignableRecord.getC_Currency_ID());
+		final CurrencyPrecision precision = currenciesRepo.getStdPrecision(currencyId);
 		final Money money = Money.of(stripTrailingDecimalZeros(moneyAmount), currencyId);
 
 		final Quantity quantity = extractQuantity(assignableRecord);
@@ -94,10 +105,10 @@ public class AssignableInvoiceCandidateFactory
 
 		final AssignableInvoiceCandidate invoiceCandidate = AssignableInvoiceCandidate.builder()
 				.id(invoiceCandidateId)
-				.bpartnerId(BPartnerId.ofRepoId(assignableRecord.getBill_BPartner_ID()))
+				.bpartnerLocationId(BPartnerLocationId.ofRepoId(assignableRecord.getBill_BPartner_ID(),assignableRecord.getBill_Location_ID()))
 				.invoiceableFrom(TimeUtil.asLocalDate(invoicableFromDate))
 				.money(money)
-				.precision(precision)
+				.precision(precision.toInt())
 				.quantity(quantity)
 				.quantityOld(quantityOld)
 				.productId(ProductId.ofRepoId(assignableRecord.getM_Product_ID()))
@@ -109,9 +120,15 @@ public class AssignableInvoiceCandidateFactory
 
 	private Quantity extractQuantity(@NonNull final I_C_Invoice_Candidate assignableRecord)
 	{
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+
+		final I_M_Product product = productDAO.getById(assignableRecord.getM_Product_ID());
+		final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
+
 		final Quantity quantity = Quantity.of(
 				assignableRecord.getQtyToInvoice().add(stripTrailingDecimalZeros(assignableRecord.getQtyInvoiced())),
-				assignableRecord.getM_Product().getC_UOM());
+				uom);
 		return quantity;
 	}
 }

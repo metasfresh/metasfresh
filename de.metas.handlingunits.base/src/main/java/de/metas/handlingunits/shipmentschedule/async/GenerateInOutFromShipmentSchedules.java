@@ -10,7 +10,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.util.api.IParams;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -59,7 +59,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		if (shipmentSchedulesWithHU.isEmpty())
 		{
 			// this is a frequent case and we received no complaints so far. So don't throw an exception, just log it
-			Loggables.get().addLog("No unprocessed candidates were found");
+			Loggables.addLog("No unprocessed candidates were found");
 		}
 
 		final IParams parameters = getParameters();
@@ -82,7 +82,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				// Think about HUs which are linked to multiple shipments: you will not see them in Aggregation POS because are already assigned, but u are not able to create shipment from them again.
 				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)
 				.createShipments(shipmentSchedulesWithHU);
-		Loggables.get().addLog("Generated: {}", result);
+		Loggables.addLog("Generated: {}", result);
 
 		return Result.SUCCESS;
 	}
@@ -106,7 +106,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	private final List<ShipmentScheduleWithHU> retrieveCandidates(
 			@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules)
 	{
-		final ShipmentScheduleWithHUService shipmentScheduleWithHUService = Adempiere.getBean(ShipmentScheduleWithHUService.class);
+		final ShipmentScheduleWithHUService shipmentScheduleWithHUService = SpringContextHolder.instance.getBean(ShipmentScheduleWithHUService.class);
 
 		final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
 

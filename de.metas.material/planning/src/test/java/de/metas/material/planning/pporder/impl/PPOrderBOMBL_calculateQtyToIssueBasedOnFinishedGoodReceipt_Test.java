@@ -79,7 +79,7 @@ public class PPOrderBOMBL_calculateQtyToIssueBasedOnFinishedGoodReceipt_Test
 		// Finished good
 		ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class);
 		ppOrder.setM_Product_ID(pABAliceSalad.getRepoId());
-		ppOrder.setC_UOM(uomEa);
+		ppOrder.setC_UOM_ID(uomEa.getC_UOM_ID());
 
 		PPOrderBOMBL_TestUtils.setCommonValues(ppOrder);
 		
@@ -127,7 +127,7 @@ public class PPOrderBOMBL_calculateQtyToIssueBasedOnFinishedGoodReceipt_Test
 	private void assertQtyToIssueBasedOnFinishedGoodReceived(final String expectedStr)
 	{
 		final BigDecimal expected = new BigDecimal(expectedStr);
-		final BigDecimal actual = ppOrderBOMBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM()).getAsBigDecimal();
+		final BigDecimal actual = ppOrderBOMBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM()).toBigDecimal();
 		Assert.assertThat("Invalid calculated QtyToIssue based on finished goods received", actual, Matchers.comparesEqualTo(expected));
 	}
 

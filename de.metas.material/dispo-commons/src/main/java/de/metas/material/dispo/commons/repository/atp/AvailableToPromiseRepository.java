@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -121,14 +122,10 @@ public class AvailableToPromiseRepository
 	private IQuery<I_MD_Candidate_ATP_QueryResult> createDBQueryForMaterialQueryOrNull(
 			@NonNull final AvailableToPromiseMultiQuery multiQuery)
 	{
-		final Function<AvailableToPromiseQuery, IQuery<I_MD_Candidate_ATP_QueryResult>> createDbQueryForSingleStockQuery = //
-				stockQuery -> AvailableToPromiseSqlHelper
-						.createDBQueryForStockQuery(stockQuery);
-
 		return multiQuery.getQueries()
 				.stream()
 				.filter(Predicates.notNull())
-				.map(createDbQueryForSingleStockQuery)
+				.map(AvailableToPromiseSqlHelper::createDBQueryForStockQuery)
 				.reduce(IQuery.unionDistict())
 				.orElse(null);
 	}
@@ -141,7 +138,7 @@ public class AvailableToPromiseRepository
 		return AddToResultGroupRequest.builder()
 				.productId(stockRecord.getM_Product_ID())
 				.bpartner(BPartnerClassifier.specificOrAny(customerId)) // records that have no bPartner-ID are applicable to any bpartner
-				.warehouseId(stockRecord.getM_Warehouse_ID())
+				.warehouseId(WarehouseId.ofRepoId(stockRecord.getM_Warehouse_ID()))
 				.storageAttributesKey(AttributesKey.ofString(stockRecord.getStorageAttributesKey()))
 				.qty(stockRecord.getQty())
 				.date(TimeUtil.asInstant(stockRecord.getDateProjected()))

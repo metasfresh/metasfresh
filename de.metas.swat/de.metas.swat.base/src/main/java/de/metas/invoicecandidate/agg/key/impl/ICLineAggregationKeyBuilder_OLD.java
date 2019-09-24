@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.agg.key.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -13,40 +15,49 @@ package de.metas.invoicecandidate.agg.key.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.Currency;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.aggregation.api.AbstractAggregationKeyBuilder;
-import de.metas.aggregation.api.IAggregationAttribute;
-import de.metas.aggregation.api.IAggregationKey;
-import de.metas.aggregation.api.impl.AggregationAttribute_Attribute;
-import de.metas.aggregation.api.impl.AggregationKey;
+import de.metas.aggregation.api.AggregationAttribute;
+import de.metas.aggregation.api.AggregationId;
+import de.metas.aggregation.api.AggregationKey;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.Language;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.impl.AggregationKeyEvaluationContext;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
+import de.metas.invoicecandidate.model.I_M_ProductGroup;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
+import de.metas.money.CurrencyId;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductPrice;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -88,8 +99,12 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 	}
 
 	@Override
-	public IAggregationKey buildAggregationKey(final I_C_Invoice_Candidate ic)
+	public AggregationKey buildAggregationKey(final I_C_Invoice_Candidate ic)
 	{
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+
 		final I_C_Invoice_Candidate_Agg agg = ic.getC_Invoice_Candidate_Agg();
 		Check.assumeNotNull(agg, "invoice candidate aggregation not null for {}", ic);
 
@@ -97,22 +112,26 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 
 		if (agg.getM_ProductGroup_ID() > 0)
 		{
+			final I_M_ProductGroup productGroupgrcord = agg.getM_ProductGroup();
+			final I_M_Product productProxyRecord = loadOutOfTrx(productGroupgrcord.getM_Product_Proxy_ID(), I_M_Product.class);
+
 			// NOTE: the only reason why we add all these strings instead of just adding agg.getC_Invoice_Candidate_Agg_ID() is because we want an user friendly string
 			sb.append(agg.getName());
 			sb.append("_").append(agg.getSeqNo());
-			sb.append("_").append(agg.getAD_Org().getName());
-			sb.append("_").append(agg.getM_ProductGroup().getName());
-			sb.append("_").append(agg.getM_ProductGroup().getM_Product_Proxy().getValue());
+			sb.append("_").append(agg.getAD_Org_ID());
+			sb.append("_").append(productGroupgrcord.getName());
+			sb.append("_").append(productProxyRecord.getValue());
 		}
 		else
 		{
 			if (ic.getM_Product_ID() > 0)
 			{
-				sb.append(ic.getM_Product().getValue());
+				final I_M_Product product = productDAO.getById(ic.getM_Product_ID());
+				sb.append(product.getValue());
 			}
 			else if (ic.getC_Charge_ID() > 0)
 			{
-				sb.append(ic.getC_Charge().getName());
+				sb.append("C_Charge_ID=" + ic.getC_Charge_ID());
 			}
 			else
 			{
@@ -129,15 +148,18 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 
 		final NumberFormat numberFormat = createCurrencyNumberFormat(ic);
 
-		final BigDecimal priceActual = Services.get(IInvoiceCandBL.class).getPriceActual(ic);
-		sb.append("/" + numberFormat.format(priceActual));
-		sb.append("/" + NumberUtils.stripTrailingDecimalZeros(priceActual));
+		final ProductPrice priceActual = invoiceCandBL.getPriceActual(ic);
+		final BigDecimal priceActualAmt = priceActual.toMoney().toBigDecimal();
+
+		sb.append("/" + numberFormat.format(priceActualAmt));
+		sb.append("/" + NumberUtils.stripTrailingDecimalZeros(priceActualAmt));
 
 		//
 		// 06718: Use UOM in aggregation
 		if (ic.getC_UOM_ID() > 0)
 		{
-			final String uomName = ic.getC_UOM().getName(); // Unique
+			final I_C_UOM uom = uomDAO.getById(ic.getC_UOM_ID());
+			final String uomName = uom.getName(); // Unique
 			sb.append("/" + uomName);
 		}
 
@@ -147,7 +169,7 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 		sb.append("/" + ic.getC_Activity_ID());
 
 		// Add Tax
-		final I_C_Tax taxEffective = Services.get(IInvoiceCandBL.class).getTaxEffective(ic);
+		final I_C_Tax taxEffective = invoiceCandBL.getTaxEffective(ic);
 		sb.append("/" + taxEffective.getC_Tax_ID());
 
 		// Add IsPrinted
@@ -160,7 +182,7 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 		//
 		// Add InvoiceLineAttributes
 		{
-			final IAggregationAttribute attribute = new AggregationAttribute_Attribute(AggregationKeyEvaluationContext.ATTRIBUTE_CODE_AggregatePer_ProductAttributes);
+			final AggregationAttribute attribute = new AggregationAttribute(AggregationKeyEvaluationContext.ATTRIBUTE_CODE_AggregatePer_ProductAttributes);
 			final Evaluatee ctx = null; // does not matter because it is actually not used
 			final Object value = attribute.evaluate(ctx);
 			sb.append("#").append(value);
@@ -176,13 +198,13 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 		// Sales iols from different inOuts shall go into different invoice lines
 		if (ic.isSOTrx())
 		{
-			final IAggregationAttribute attribute = new AggregationAttribute_Attribute(AggregationKeyEvaluationContext.ATTRIBUTE_CODE_AggregatePer_M_InOut_ID);
+			final AggregationAttribute attribute = new AggregationAttribute(AggregationKeyEvaluationContext.ATTRIBUTE_CODE_AggregatePer_M_InOut_ID);
 			final Evaluatee ctx = null; // does not matter because it is actually not used
 			final Object value = attribute.evaluate(ctx);
 			sb.append("#").append(value);
 		}
 
-		final int aggregationId = -1;
+		final AggregationId aggregationId = null;
 		return new AggregationKey(sb.toString(), aggregationId);
 	}
 
@@ -194,7 +216,10 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 	 */
 	private NumberFormat createCurrencyNumberFormat(final I_C_Invoice_Candidate ic)
 	{
-		final I_C_BPartner_Location billBPLocation = ic.getBill_Location();
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+
+		final I_C_BPartner_Location billBPLocation = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(ic.getBill_BPartner_ID(), ic.getBill_Location_ID()));
 		Check.assumeNotNull(billBPLocation, "billBPLocation not null for {}", ic);
 
 		// We use the language of the bill location to determine the number format.
@@ -203,10 +228,11 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 		final Locale locale = Language.getLanguage(langInfo).getLocale();
 		final NumberFormat numberFormat = NumberFormat.getCurrencyInstance(locale);
 
-		final I_C_Currency currency = ic.getC_Currency();
-		if (currency != null)
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(ic.getC_Currency_ID());
+		if (currencyId != null)
 		{
-			numberFormat.setCurrency(Currency.getInstance(currency.getISO_Code()));
+			final CurrencyCode currencyCode = currencyDAO.getCurrencyCodeById(currencyId);
+			numberFormat.setCurrency(Currency.getInstance(currencyCode.toThreeLetterCode()));
 		}
 
 		return numberFormat;
@@ -218,7 +244,7 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 		final String aggregationKey1 = buildKey(model1);
 		final String aggregationKey2 = buildKey(model2);
 
-		return Check.equals(aggregationKey1, aggregationKey2);
+		return Objects.equals(aggregationKey1, aggregationKey2);
 	}
 
 	@Override

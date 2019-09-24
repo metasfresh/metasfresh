@@ -45,7 +45,7 @@ import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationBuilder;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.allocation.api.IAllocationLineBuilder;
-import de.metas.document.engine.IDocument;
+import de.metas.document.engine.DocStatus;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -155,7 +155,10 @@ public class AllocationBL implements IAllocationBL
 	}
 
 	@Override
-	public I_C_AllocationHdr autoAllocateSpecificPayment(org.compiere.model.I_C_Invoice invoice, org.compiere.model.I_C_Payment payment, boolean ignoreIsAutoAllocateAvailableAmt)
+	public I_C_AllocationHdr autoAllocateSpecificPayment(
+			org.compiere.model.I_C_Invoice invoice,
+			org.compiere.model.I_C_Payment payment,
+			boolean ignoreIsAutoAllocateAvailableAmt)
 	{
 		if (invoice.isPaid())
 		{
@@ -177,7 +180,8 @@ public class AllocationBL implements IAllocationBL
 		}
 
 		// payment must be completed
-		if (!IDocument.STATUS_Completed.equals(payment.getDocStatus()))
+		final DocStatus docStatus = DocStatus.ofCode(payment.getDocStatus());
+		if (!docStatus.isCompleted())
 		{
 			return null;
 		}

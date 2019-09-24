@@ -6,8 +6,6 @@ import java.sql.Timestamp;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.service.IErrorManager;
-import org.compiere.model.I_AD_Issue;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -19,6 +17,8 @@ import de.metas.contracts.refund.CandidateAssignmentService;
 import de.metas.contracts.refund.RefundInvoiceCandidate;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidateService;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
@@ -48,7 +48,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@Component("de.metas.contracts.refund.interceptor.C_Invoice_Candidate")
+@Component
 @Interceptor(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate_Manage_Refund_Candidates
 {
@@ -110,27 +110,32 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 		catch (final RuntimeException e)
 		{
 			// allow the "normal ICs" to be updated, even if something is wrong with the "refund-ICs"
-			final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(e);
-			Loggables.get()
-					.withLogger(logger, Level.WARN)
+			final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(e);
+			Loggables.withLogger(logger, Level.WARN)
 					.addLog("associateDuringUpdateProcess0 - Caught an exception withe processing C_Invoice_Candidate_ID={}; "
 							+ "please check the async workpackage log; AD_Issue_ID={}; e={}",
-							invoiceCandidateRecord.getC_Invoice_Candidate_ID(), issue.getAD_Issue_ID(), e.toString());
+							invoiceCandidateRecord.getC_Invoice_Candidate_ID(), issueId, e.toString());
 
 		}
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void deleteAssignment(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
+	public void deleteAssignment(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		if (refundInvoiceCandidateService.isRefundInvoiceCandidateRecord(invoiceCandidateRecord))
+		if (refundInvoiceCandidateService.isRefundInvoiceCandidateRecord(icRecord))
 		{
-			final RefundInvoiceCandidate refundCandidate = refundInvoiceCandidateRepository.ofRecord(invoiceCandidateRecord);
+			final RefundInvoiceCandidate refundCandidate = refundInvoiceCandidateRepository.ofRecord(icRecord);
 			invoiceCandidateAssignmentService.removeAllAssignments(refundCandidate);
 		}
 		else
 		{
-			final AssignableInvoiceCandidate assignableCandidate = assignableInvoiceCandidateRepository.ofRecord(invoiceCandidateRecord);
+			final Timestamp invoicableFromDate = getValueOverrideOrValue(icRecord, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
+			if (invoicableFromDate == null)
+			{
+				return; // this IC was not yet once validated; it's certainly no assigned, and we can't create an AssignableInvoiceCandidate from it, because invoicableFromDate may not be null
+			}
+
+			final AssignableInvoiceCandidate assignableCandidate = assignableInvoiceCandidateRepository.ofRecord(icRecord);
 			if (assignableCandidate.isAssigned())
 			{
 				invoiceCandidateAssignmentService.unassignCandidate(assignableCandidate);

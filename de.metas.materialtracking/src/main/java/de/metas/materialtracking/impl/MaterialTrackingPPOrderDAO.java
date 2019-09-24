@@ -4,13 +4,14 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.compiere.model.I_C_Invoice;
 
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.IMaterialTrackingPPOrderDAO;
+import de.metas.materialtracking.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_C_Invoice_Detail;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -86,14 +87,17 @@ public class MaterialTrackingPPOrderDAO implements IMaterialTrackingPPOrderDAO
 	}
 
 	@Override
-	public boolean isInvoiced(final I_PP_Order ppOrder)
+	public boolean isPPOrderInvoicedForMaterialTracking(
+			@NonNull final I_PP_Order ppOrder,
+			@NonNull final I_M_Material_Tracking materialTrackingRecord)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_C_Invoice_Detail.class, ppOrder)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Detail.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID())
 				.andCollect(de.metas.invoicecandidate.model.I_C_Invoice_Detail.COLUMN_C_Invoice_Candidate_ID)
-				.addEqualsFilter(I_C_Invoice.COLUMNNAME_Processed, true)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, true)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_Material_Tracking_ID, materialTrackingRecord.getM_Material_Tracking_ID())
 				.create()
 				.match();
 	}

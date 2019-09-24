@@ -146,7 +146,7 @@ public class ReceiptScheduleHUSelectPanel extends AbstractHUSelectPanel<ReceiptS
 		final boolean edited = super.editHUs(huEditorModel);
 
 		// task 07367: destroy the HUs that were not used
-		Services.get(ITrxManager.class).run(new TrxRunnable()
+		Services.get(ITrxManager.class).runInNewTrx(new TrxRunnable()
 		{
 			@Override
 			public void run(final String localTrxName) throws Exception

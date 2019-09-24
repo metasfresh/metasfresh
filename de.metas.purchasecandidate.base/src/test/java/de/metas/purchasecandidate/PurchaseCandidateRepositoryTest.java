@@ -16,8 +16,9 @@ import org.compiere.model.I_C_UOM;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_C_Currency;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
@@ -85,7 +86,7 @@ public class PurchaseCandidateRepositoryTest
 
 		productRecord = newInstance(I_M_Product.class);
 		productRecord.setValue("product.Value");
-		productRecord.setC_UOM(uom);
+		productRecord.setC_UOM_ID(uom.getC_UOM_ID());
 		saveRecord(productRecord);
 
 		purchaseCandidateRecord = newInstance(I_C_PurchaseCandidate.class);
@@ -108,8 +109,6 @@ public class PurchaseCandidateRepositoryTest
 		{{
 			referenceGenerator.getNextDemandReference(); result = "nextDemandReference";
 		}}; // @formatter:on
-
-		final I_C_UOM uom = newInstance(I_C_UOM.class);
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidateTestTool.createPurchaseCandidate(0, Quantity.of(TEN, uom));
 
@@ -139,7 +138,7 @@ public class PurchaseCandidateRepositoryTest
 	{
 		final I_C_OrderLine purchaseOrderLineRecord = newInstance(I_C_OrderLine.class);
 		purchaseOrderLineRecord.setQtyOrdered(ONE);
-		purchaseOrderLineRecord.setM_Product(productRecord);
+		purchaseOrderLineRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		purchaseOrderLineRecord.setC_Order_ID(40);
 		saveRecord(purchaseOrderLineRecord);
 
@@ -157,17 +156,17 @@ public class PurchaseCandidateRepositoryTest
 		final PurchaseCandidate purchaseCandidate = purchaseCandidateRepository.getById(id);
 
 		assertThat(purchaseCandidate.isProcessed()).isTrue();
-		assertThat(purchaseCandidate.getQtyToPurchase().getAsBigDecimal()).isEqualByComparingTo(TEN);
-		assertThat(purchaseCandidate.getQtyToPurchase().getUOMId()).isEqualTo(uom.getC_UOM_ID());
-		assertThat(purchaseCandidate.getPurchasedQty().getAsBigDecimal()).isEqualByComparingTo(ONE);
-		assertThat(purchaseCandidate.getPurchasedQty().getUOMId()).isEqualTo(uom.getC_UOM_ID());
+		assertThat(purchaseCandidate.getQtyToPurchase().toBigDecimal()).isEqualByComparingTo(TEN);
+		assertThat(purchaseCandidate.getQtyToPurchase().getUomId().getRepoId()).isEqualTo(uom.getC_UOM_ID());
+		assertThat(purchaseCandidate.getPurchasedQty().toBigDecimal()).isEqualByComparingTo(ONE);
+		assertThat(purchaseCandidate.getPurchasedQty().getUomId().getRepoId()).isEqualTo(uom.getC_UOM_ID());
 
 		assertThat(purchaseCandidate.getPurchaseErrorItems()).isEmpty(); // because or single purchaseCandidateAllocRecord has AD_Issue_ID<=0
 		assertThat(purchaseCandidate.getPurchaseOrderItems()).hasSize(1);
 
 		final PurchaseOrderItem purchaseOrderItem = purchaseCandidate.getPurchaseOrderItems().get(0);
-		assertThat(purchaseOrderItem.getPurchasedQty().getAsBigDecimal()).isEqualByComparingTo(ONE);
-		assertThat(purchaseOrderItem.getPurchasedQty().getUOMId()).isEqualTo(uom.getC_UOM_ID());
+		assertThat(purchaseOrderItem.getPurchasedQty().toBigDecimal()).isEqualByComparingTo(ONE);
+		assertThat(purchaseOrderItem.getPurchasedQty().getUomId().getRepoId()).isEqualTo(uom.getC_UOM_ID());
 		assertThat(purchaseOrderItem.getVendorId().getRepoId()).isEqualTo(VENDOR_ID);
 		assertThat(purchaseOrderItem.getPurchaseOrderAndLineId().getOrderLineRepoId()).isEqualTo(purchaseOrderLineRecord.getC_OrderLine_ID());
 	}
@@ -175,10 +174,9 @@ public class PurchaseCandidateRepositoryTest
 	@Test
 	public void getById_with_profitInfo()
 	{
-		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
-		saveRecord(currencyRecord);
+		final CurrencyId currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
-		purchaseCandidateRecord.setC_Currency(currencyRecord);
+		purchaseCandidateRecord.setC_Currency_ID(currencyId.getRepoId());
 		purchaseCandidateRecord.setProfitPurchasePriceActual(ONE);
 		purchaseCandidateRecord.setProfitSalesPriceActual(TEN);
 		purchaseCandidateRecord.setPurchasePriceActual(TWO);
@@ -192,19 +190,19 @@ public class PurchaseCandidateRepositoryTest
 		final PurchaseProfitInfo profitInfo = purchaseCandidate.getProfitInfoOrNull();
 		assertThat(profitInfo).isNotNull();
 
-		final CurrencyId curencyId = profitInfo.getCommonCurrency();
-		assertThat(curencyId.getRepoId()).isEqualTo(currencyRecord.getC_Currency_ID());
+		assertThat(profitInfo.getCommonCurrency())
+				.isEqualTo(currencyId);
 
 		assertThat(profitInfo.getProfitPurchasePriceActual())
 				.isPresent()
-				.contains(Money.of(ONE, curencyId));
+				.contains(Money.of(ONE, currencyId));
 
 		assertThat(profitInfo.getProfitSalesPriceActual())
 				.isPresent()
-				.contains(Money.of(TEN, curencyId));
+				.contains(Money.of(TEN, currencyId));
 
 		assertThat(profitInfo.getPurchasePriceActual())
 				.isPresent()
-				.contains(Money.of(TWO, curencyId));
+				.contains(Money.of(TWO, currencyId));
 	}
 }

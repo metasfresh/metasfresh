@@ -1,13 +1,17 @@
 package de.metas.dunning_gateway.spi.model;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Map;
+
+import com.google.common.collect.ImmutableMap;
+
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.Value;
 
 /*
  * #%L
@@ -32,31 +36,31 @@ import java.util.Map;
  */
 
 @Value
+@ToString(exclude = "data")
 public class DunningAttachment
 {
 	String fileName;
-
 	String mimeType;
-
+	ImmutableMap<String, String> tags;
+	
+	@Getter(AccessLevel.PRIVATE)
 	byte[] data;
-
-	Map<String, String> tags;
-
-	public InputStream getDataAsInputStream()
-	{
-		return new ByteArrayInputStream(getData());
-	}
 
 	@Builder
 	private DunningAttachment(
-			@NonNull String fileName,
-			@NonNull String mimeType,
-			@NonNull byte[] data,
-			@Singular Map<String, String> tags)
+			@NonNull final String fileName,
+			@NonNull final String mimeType,
+			@NonNull final byte[] data,
+			@NonNull final Map<String, String> tags)
 	{
 		this.fileName = fileName;
 		this.mimeType = mimeType;
 		this.data = data;
-		this.tags = tags;
+		this.tags = ImmutableMap.copyOf(tags);
+	}
+
+	public InputStream getDataAsInputStream()
+	{
+		return new ByteArrayInputStream(getData());
 	}
 }

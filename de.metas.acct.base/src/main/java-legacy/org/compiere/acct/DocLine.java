@@ -24,11 +24,9 @@ import java.util.function.IntFunction;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.trx.api.ITrx;
-import de.metas.location.LocationId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Acct;
@@ -38,7 +36,6 @@ import org.compiere.model.MCharge;
 import org.compiere.model.PO;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -52,10 +49,12 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.IProductCostingBL;
+import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -65,6 +64,7 @@ import de.metas.uom.UomId;
 import de.metas.util.NumberUtils;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 
@@ -91,7 +91,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	private final DT m_doc;
 
 	/** Qty */
-	private Quantity m_qty = null;
+	private Quantity qty = null;
 
 	// -- GL Amounts
 	/** Debit Journal Amt */
@@ -349,7 +349,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	{
 		if (m_DateAcct == null)
 		{
-			m_DateAcct = Util.coalesceSuppliers(
+			m_DateAcct = CoalesceUtil.coalesceSuppliers(
 					() -> getValueAsLocalDateOrNull("DateAcct"),
 					() -> getDoc().getDateAcct());
 		}
@@ -365,7 +365,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	{
 		if (m_DateDoc == null)
 		{
-			m_DateDoc = Util.coalesceSuppliers(
+			m_DateDoc = CoalesceUtil.coalesceSuppliers(
 					() -> getValueAsLocalDateOrNull("DateDoc"),
 					() -> getValueAsLocalDateOrNull("DateTrx"),
 					() -> getDoc().getDateAcct());
@@ -600,12 +600,12 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 	protected final I_C_UOM getProductStockingUOM()
 	{
-		return productBL.getStockingUOM(getProductId());
+		return productBL.getStockUOM(getProductId());
 	}
-	
+
 	protected final UomId getProductStockingUOMId()
 	{
-		return productBL.getStockingUOMId(getProductId());
+		return productBL.getStockUOMId(getProductId());
 	}
 
 
@@ -658,12 +658,17 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	{
 		if (isSOTrx)
 		{
-			m_qty = quantity.negate();
+			setQty(quantity.negate());
 		}
 		else
 		{
-			m_qty = quantity;
+			setQty(quantity);
 		}
+	}
+
+	protected final void setQty(@NonNull final Quantity quantity)
+	{
+		this.qty = quantity;
 	}
 
 	/**
@@ -673,7 +678,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 */
 	public final Quantity getQty()
 	{
-		return m_qty;
+		return qty;
 	}   // getQty
 
 	public final String getDescription()
@@ -718,7 +723,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 	private final int getC_BPartner_Location_ID()
 	{
-		return Util.coalesceSuppliers(
+		return CoalesceUtil.coalesceSuppliers(
 				() -> getValue("C_BPartner_Location_ID"),
 				() -> m_doc.getC_BPartner_Location_ID());
 	}
@@ -927,7 +932,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 				.add("id", get_ID())
 				.add("description", getDescription())
 				.add("productId", getProductId())
-				.add("qty", m_qty)
+				.add("qty", getQty())
 				.add("amtSource", getAmtSource())
 				.toString();
 	}

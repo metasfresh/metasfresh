@@ -2,6 +2,7 @@ package de.metas.material.cockpit.view.eventhandler;
 
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -67,7 +68,7 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 	{
 		final List<PPOrderLine> newPPOrderLines = ppOrderChangedEvent.getNewPPOrderLines();
 
-		final ImmutableList.Builder<UpdateMainDataRequest> requests = ImmutableList.builder();
+		final List<UpdateMainDataRequest> requests = new ArrayList<>();
 		for (final PPOrderLine newPPOrderLine : newPPOrderLines)
 		{
 			final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
@@ -107,8 +108,7 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 			requests.add(request);
 		}
 
-		final List<ChangedPPOrderLineDescriptor> changedPPOrderLines = ppOrderChangedEvent.getPpOrderLineChanges();
-		for (final ChangedPPOrderLineDescriptor changedPPOrderLine : changedPPOrderLines)
+		for (final ChangedPPOrderLineDescriptor changedPPOrderLine : ppOrderChangedEvent.getPpOrderLineChanges())
 		{
 			final BigDecimal qtyDelta = changedPPOrderLine.computeOpenQtyDelta();
 			if (qtyDelta.signum() == 0)
@@ -128,8 +128,7 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 			requests.add(request);
 		}
 
-		requests.build()
-				.forEach(request -> dataUpdateRequestHandler.handleDataUpdateRequest(request));
+		requests.forEach(dataUpdateRequestHandler::handleDataUpdateRequest);
 	}
 
 }

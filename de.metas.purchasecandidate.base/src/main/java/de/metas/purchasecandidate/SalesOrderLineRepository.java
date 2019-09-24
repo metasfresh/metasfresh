@@ -3,7 +3,7 @@ package de.metas.purchasecandidate;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -77,7 +77,7 @@ public class SalesOrderLineRepository
 	{
 		final OrderLine orderLine = orderLineRepository.ofRecord(salesOrderLineRecord);
 
-		final LocalDateTime preparationDate = TimeUtil.asLocalDateTime(salesOrderLineRecord.getC_Order().getPreparationDate());
+		final ZonedDateTime preparationDate = TimeUtil.asZonedDateTime(salesOrderLineRecord.getC_Order().getPreparationDate());
 
 		final SalesOrder salesOrder = new SalesOrder(preparationDate);
 		final Quantity deliveredQty = Quantity.of(

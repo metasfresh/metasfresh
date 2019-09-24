@@ -3,9 +3,13 @@ package de.metas.handlingunits.inventory.tabcallout;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
 import org.compiere.Adempiere;
+import org.compiere.model.I_M_Inventory;
 
+import de.metas.document.DocBaseAndSubType;
 import de.metas.handlingunits.inventory.InventoryLineRecordService;
+import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.model.I_M_InventoryLine;
+import de.metas.inventory.HUAggregationType;
 import lombok.NonNull;
 
 /*
@@ -30,15 +34,23 @@ import lombok.NonNull;
  * #L%
  */
 
-
 public class M_InventoryLineTabCallout extends TabCalloutAdapter
 {
 	@Override
 	public void onNew(@NonNull final ICalloutRecord calloutRecord)
 	{
-		final I_M_InventoryLine inventoryLineRecord = calloutRecord.getModel(I_M_InventoryLine.class);
-
 		final InventoryLineRecordService inventoryLineRecordService = Adempiere.getBean(InventoryLineRecordService.class);
-		inventoryLineRecordService.updateHUAggregationTypeIfAllowed(inventoryLineRecord);
+
+		final I_M_InventoryLine inventoryLineRecord = calloutRecord.getModel(I_M_InventoryLine.class);
+		final I_M_Inventory inventoryRecord = inventoryLineRecord.getM_Inventory();
+
+		final DocBaseAndSubType docBaseAndSubType = InventoryRepository.extractDocBaseAndSubTypeOrNull(inventoryRecord);
+		if (docBaseAndSubType == null)
+		{
+			return;
+		}
+
+		final HUAggregationType huAggregationType = inventoryLineRecordService.computeHUAggregationType(inventoryLineRecord, docBaseAndSubType);
+		inventoryLineRecord.setHUAggregationType(huAggregationType.getCode());
 	}
 }

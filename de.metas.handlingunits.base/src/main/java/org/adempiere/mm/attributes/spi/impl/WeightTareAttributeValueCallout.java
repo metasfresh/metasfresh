@@ -36,6 +36,7 @@ import org.compiere.model.X_M_Attribute;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
@@ -166,7 +167,7 @@ public class WeightTareAttributeValueCallout
 			return BigDecimal.ZERO;
 		}
 
-		final I_M_Product product = huPackingMaterial.getM_Product();
+		final I_M_Product product = IHUPackingMaterialDAO.extractProductOrNull(huPackingMaterial);
 		if (product == null)
 		{
 			return BigDecimal.ZERO;

@@ -105,7 +105,7 @@ public class AvailabilityCheckService
 		final Quantity qtyToPurchase = purchaseCandidatesGroup.getQtyToPurchase();
 		final ProductAndQuantity productAndQuantity = ProductAndQuantity.of(
 				purchaseCandidatesGroup.getVendorProductNo(),
-				qtyToPurchase.getAsBigDecimal().max(ONE), // check availability for at least one, even if qtyToPurchase is still zero
+				qtyToPurchase.toBigDecimal().max(ONE), // check availability for at least one, even if qtyToPurchase is still zero
 				qtyToPurchase.getUOMId());
 
 		return AvailabilityRequestItem.builder()

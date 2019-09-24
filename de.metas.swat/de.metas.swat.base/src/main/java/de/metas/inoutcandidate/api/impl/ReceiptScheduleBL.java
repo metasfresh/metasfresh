@@ -1,5 +1,7 @@
 package de.metas.inoutcandidate.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -44,7 +46,6 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentLocation;
 import de.metas.inout.model.I_M_InOutLine;
@@ -98,9 +99,9 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	{
 		if (rs.getM_Warehouse_Override_ID() > 0)
 		{
-			return rs.getM_Warehouse_Override();
+			return loadOutOfTrx(rs.getM_Warehouse_Override_ID(), I_M_Warehouse.class);
 		}
-		return rs.getM_Warehouse();
+		return loadOutOfTrx(rs.getM_Warehouse_ID(), I_M_Warehouse.class);
 	}
 
 	@Override
@@ -167,7 +168,9 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		ProductId productId = ProductId.ofRepoId(rs.getM_Product_ID());
 		final BigDecimal qtyToMove = getQtyToMove(rs);
 		final BigDecimal qtyToMoveConv = Services.get(IUOMConversionBL.class)
-				.convertQty(productId, qtyToMove, rs.getC_UOM(), uom);
+				.convertQty(productId, qtyToMove,
+						loadOutOfTrx(rs.getC_UOM_ID(), I_C_UOM.class),
+						uom);
 		return qtyToMoveConv;
 	}
 
@@ -186,8 +189,8 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	@Override
 	public I_C_BPartner_Location getC_BPartner_Location_Effective(final I_M_ReceiptSchedule sched)
 	{
-		final I_C_BPartner_Location location = InterfaceWrapperHelper.create(
-				sched.getC_BP_Location_Override_ID() <= 0 ? sched.getC_BPartner_Location() : sched.getC_BP_Location_Override(),
+		final I_C_BPartner_Location location = InterfaceWrapperHelper.load(
+				sched.getC_BP_Location_Override_ID() <= 0 ? sched.getC_BPartner_Location_ID() : sched.getC_BP_Location_Override_ID(),
 				I_C_BPartner_Location.class);
 		return location;
 	}
@@ -207,8 +210,8 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	@Override
 	public I_C_BPartner getC_BPartner_Effective(final I_M_ReceiptSchedule sched)
 	{
-		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(
-				sched.getC_BPartner_Override_ID() <= 0 ? sched.getC_BPartner() : sched.getC_BPartner_Override(),
+		final I_C_BPartner bPartner = InterfaceWrapperHelper.load(
+				sched.getC_BPartner_Override_ID() <= 0 ? sched.getC_BPartner_ID() : sched.getC_BPartner_Override_ID(),
 				I_C_BPartner.class);
 		return bPartner;
 	}
@@ -223,15 +226,6 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		}
 
 		return rs.getAD_User_ID();
-	}
-
-	@Override
-	public I_AD_User getAD_User_Effective(final I_M_ReceiptSchedule rs)
-	{
-		final I_AD_User user = InterfaceWrapperHelper.create(
-				rs.getAD_User_Override_ID() <= 0 ? rs.getAD_User() : rs.getAD_User_Override(),
-				I_AD_User.class);
-		return user;
 	}
 
 	private IDocumentLocation asDocumentLocation(final I_M_ReceiptSchedule receiptSchedule)
@@ -450,7 +444,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			return Collections.emptyList();
 		}
 
-		final I_C_UOM qtyToAllocateUOM = receiptLine.getC_UOM();
+		final I_C_UOM qtyToAllocateUOM = loadOutOfTrx(receiptLine.getC_UOM_ID(), I_C_UOM.class);
 
 		//
 		// Iterate receipt schedules and try to allocate on them as much as possible

@@ -56,7 +56,7 @@ public class FactAcctLogBL implements IFactAcctLogBL
 		final IFactAcctLogDAO factAcctLogDAO = Services.get(IFactAcctLogDAO.class);
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-		trxManager.run(new TrxRunnableAdapter()
+		trxManager.runInNewTrx(new TrxRunnableAdapter()
 		{
 
 			@Override

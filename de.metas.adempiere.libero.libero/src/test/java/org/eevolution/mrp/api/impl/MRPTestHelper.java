@@ -31,11 +31,13 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -85,21 +87,31 @@ import org.junit.Assume;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
-import de.metas.adempiere.model.I_AD_OrgInfo;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
+import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.logging.LogManager;
+import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.eventbus.MaterialEventConverter;
+import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.material.planning.DurationUnitCodeUtils;
 import de.metas.material.planning.ErrorCodes;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.impl.MRPContext;
+import de.metas.material.planning.pporder.PPOrderPojoConverter;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -294,7 +306,22 @@ public class MRPTestHelper
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
 
 		modelInterceptorRegistry.addModelInterceptor(new org.compiere.wf.model.validator.AD_Workflow(), client);
-		modelInterceptorRegistry.addModelInterceptor(new org.eevolution.model.LiberoValidator(), client);
+
+		modelInterceptorRegistry.addModelInterceptor(createLiberoValidator(), client);
+	}
+
+	private org.eevolution.model.LiberoValidator createLiberoValidator()
+	{
+		final ModelProductDescriptorExtractor productDescriptorFactory = new ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory();
+		final PPOrderPojoConverter ppOrderConverter = new PPOrderPojoConverter(productDescriptorFactory);
+
+		final MaterialEventConverter materialEventConverter = new MaterialEventConverter();
+		final MetasfreshEventBusService materialEventService = MetasfreshEventBusService.createLocalServiceThatIsReadyToUse(
+				materialEventConverter,
+				PlainEventBusFactory.newInstance());
+		final PostMaterialEventService postMaterialEventService = new PostMaterialEventService(materialEventService);
+
+		return new org.eevolution.model.LiberoValidator(ppOrderConverter, postMaterialEventService);
 	}
 
 	public Timestamp getToday()
@@ -329,9 +356,6 @@ public class MRPTestHelper
 		org.setName(name);
 		InterfaceWrapperHelper.save(org);
 
-		final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.newInstance(I_AD_OrgInfo.class, org);
-		orgInfo.setAD_Org_ID(org.getAD_Org_ID());
-
 		//
 		// InTransit Warehouse
 		final I_M_Warehouse warehouseInTransit = createWarehouse(name + "_InTransit", org);
@@ -345,9 +369,12 @@ public class MRPTestHelper
 		bpartner.setAD_OrgBP_ID(org.getAD_Org_ID());
 		InterfaceWrapperHelper.save(bpartner);
 		//
-		final I_C_BPartner_Location bpLocation = createBPLocation(bpartner);
-		orgInfo.setOrgBP_Location(bpLocation);
-		InterfaceWrapperHelper.save(orgInfo);
+		final BPartnerLocationId bpLocationId = createBPLocation(bpartner);
+
+		Services.get(IOrgDAO.class).createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
+				.orgId(OrgId.ofRepoId(org.getAD_Org_ID()))
+				.orgBPartnerLocationId(Optional.of(bpLocationId))
+				.build());
 
 		return org;
 	}
@@ -447,7 +474,7 @@ public class MRPTestHelper
 		final ProductId productId = product != null ? ProductId.ofRepoId(product.getM_Product_ID()) : null;
 		final BigDecimal fromToMultiplier = new BigDecimal(fromToMultiplierStr);
 		final BigDecimal toFromMultiplier = new BigDecimal(toFromMultiplierStr);
-		
+
 		Services.get(IUOMConversionDAO.class).createUOMConversion(CreateUOMConversionRequest.builder()
 				.productId(productId)
 				.fromUomId(UomId.ofRepoId(uomFrom.getC_UOM_ID()))
@@ -529,6 +556,8 @@ public class MRPTestHelper
 			final I_M_Warehouse warehouse,
 			final I_C_BPartner bpartner)
 	{
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
 		final I_PP_MRP mrp = InterfaceWrapperHelper.newInstance(I_PP_MRP.class, contextProvider);
 		mrp.setAD_Org_ID(warehouse.getAD_Org_ID());
 		mrp.setS_Resource(plant);
@@ -546,7 +575,10 @@ public class MRPTestHelper
 		mrp.setIsAvailable(true);
 		//
 		mrp.setM_Product(product);
-		Services.get(IMRPBL.class).setQty(mrp, qty, qty, product.getC_UOM());
+
+		final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
+
+		Services.get(IMRPBL.class).setQty(mrp, qty, qty, uom);
 		//
 		// mrp.setC_BPartner(C_BPartner);
 
@@ -610,7 +642,7 @@ public class MRPTestHelper
 		return bpartner;
 	}
 
-	public I_C_BPartner_Location createBPLocation(final I_C_BPartner bpartner)
+	private BPartnerLocationId createBPLocation(final I_C_BPartner bpartner)
 	{
 		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, bpartner);
 		bpLocation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
@@ -619,7 +651,7 @@ public class MRPTestHelper
 		bpLocation.setIsShipToDefault(true);
 		bpLocation.setIsShipTo(true);
 		InterfaceWrapperHelper.save(bpLocation);
-		return bpLocation;
+		return BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
 	}
 
 	public DDNetworkBuilder newDDNetwork()
@@ -774,14 +806,14 @@ public class MRPTestHelper
 	public I_PP_Order createPP_Order(final I_PP_Product_BOM productBOM, final String qtyOrderedStr, final I_C_UOM uom)
 	{
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class, contextProvider);
-		ppOrder.setAD_Org(this.adOrg01);
+		ppOrder.setAD_Org_ID(this.adOrg01.getAD_Org_ID());
 
 		setCommonProperties(ppOrder);
 
 		ppOrder.setM_Product_ID(productBOM.getM_Product_ID());
 		ppOrder.setPP_Product_BOM_ID(productBOM.getPP_Product_BOM_ID());
 		ppOrder.setAD_Workflow(this.workflow_Standard);
-		ppOrder.setM_Warehouse(this.warehouse_plant01);
+		ppOrder.setM_Warehouse_ID(this.warehouse_plant01.getM_Warehouse_ID());
 		ppOrder.setS_Resource(this.plant01);
 		ppOrder.setQtyOrdered(new BigDecimal(qtyOrderedStr));
 		ppOrder.setDatePromised(getToday());

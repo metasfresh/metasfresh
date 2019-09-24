@@ -23,16 +23,8 @@ package de.metas.adempiere.gui.search.impl;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
-import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.handlingunits.IHUPIItemProductDAO;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.util.Services;
@@ -56,16 +48,9 @@ public class ShipmentScheduleHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public I_M_Product getM_Product()
-	{
-		return shipmentSchedule.getM_Product();
-	}
-
-	@Override
 	public void setM_Product_ID(final int productId)
 	{
 		shipmentSchedule.setM_Product_ID(productId);
-
 	}
 
 	@Override
@@ -81,18 +66,18 @@ public class ShipmentScheduleHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public I_C_UOM getC_UOM()
+	public int getC_UOM_ID()
 	{
-		return shipmentSchedule.getC_UOM();
+		return shipmentSchedule.getC_UOM_ID();
 	}
 
 	@Override
-	public void setC_UOM(final I_C_UOM uom)
+	public void setC_UOM_ID(final int uomId)
 	{
 		// we assume inoutLine's UOM is correct
-		if (uom != null)
+		if (uomId > 0)
 		{
-			shipmentSchedule.setC_UOM_ID(uom.getC_UOM_ID());
+			shipmentSchedule.setC_UOM_ID(uomId);
 		}
 	}
 
@@ -118,21 +103,9 @@ public class ShipmentScheduleHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
+	public void setM_HU_PI_Item_Product_ID(final int huPiItemProductId)
 	{
-		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(getM_HU_PI_Item_Product_ID());
-		if (piItemProductId == null)
-		{
-			return null;
-		}
-		return Services.get(IHUPIItemProductDAO.class).getById(piItemProductId);
-	}
-
-	@Override
-	public void setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product huPiItemProduct)
-	{
-		values.setM_HU_PI_Item_Product(huPiItemProduct);
-
+		values.setM_HU_PI_Item_Product_ID(huPiItemProductId);
 	}
 
 	@Override
@@ -149,29 +122,16 @@ public class ShipmentScheduleHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public void setC_BPartner(final I_C_BPartner partner)
+	public void setC_BPartner_ID(final int partnerId)
 	{
-		values.setC_BPartner(partner);
+		values.setC_BPartner_ID(partnerId);
 
 	}
 
 	@Override
-	public I_C_BPartner getC_BPartner()
+	public int getC_BPartner_ID()
 	{
-		return values.getC_BPartner();
-	}
-
-	@Override
-	public void setDateOrdered(final Timestamp dateOrdered)
-	{
-		values.setDateOrdered(dateOrdered);
-
-	}
-
-	@Override
-	public Timestamp getDateOrdered()
-	{
-		return values.getDateOrdered();
+		return values.getC_BPartner_ID();
 	}
 
 	@Override
@@ -185,5 +145,4 @@ public class ShipmentScheduleHUPackingAware implements IHUPackingAware
 	{
 		values.setInDispute(inDispute);
 	}
-
 }

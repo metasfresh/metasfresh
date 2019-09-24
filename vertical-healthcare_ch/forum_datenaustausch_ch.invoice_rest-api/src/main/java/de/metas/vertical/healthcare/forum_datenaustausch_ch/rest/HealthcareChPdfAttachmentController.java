@@ -1,10 +1,8 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 
-import static de.metas.attachments.AttachmentConstants.TAGNAME_CONCATENATE_PDF_TO_INVOICE_PDF;
+import static de.metas.attachments.AttachmentTags.TAGNAME_CONCATENATE_PDF_TO_INVOICE_PDF;
 import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE;
 import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER;
-
-import lombok.NonNull;
 
 import java.io.IOException;
 
@@ -21,12 +19,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ordercandidate.rest.JsonAttachment;
-import de.metas.ordercandidate.rest.OrderCandidatesRestEndpoint;
+import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
+import de.metas.rest_api.ordercandidates.response.JsonAttachment;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -71,7 +70,7 @@ public class HealthcareChPdfAttachmentController
 	// TODO only allow PDF
 	public ResponseEntity<JsonAttachment> attachPdfFile(
 
-			@ApiParam(value = "Reference string that was returned by the invoice-rest-controller", allowEmptyValue = false) //
+			@ApiParam(required = true, value = "Reference string that was returned by the invoice-rest-controller") //
 			@PathVariable("externalReference") final String externalReference,
 
 			@RequestParam("file") @NonNull final MultipartFile file)

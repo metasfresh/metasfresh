@@ -40,6 +40,6 @@ public class NoOpIssueSolver<T extends IReplicationIssueAware> implements IRepli
 	@Override
 	public void solveIssues(final IReplicationIssueAware recordWithIssues, final IReplicationIssueSolverParams params)
 	{
-		Loggables.get().addLog("NoOpIssueSolver is called with IReplicationIssueAware={}", recordWithIssues);
+		Loggables.addLog("NoOpIssueSolver is called with IReplicationIssueAware={}", recordWithIssues);
 	}
 }

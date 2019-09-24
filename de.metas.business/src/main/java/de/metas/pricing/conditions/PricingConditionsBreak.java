@@ -1,9 +1,9 @@
 package de.metas.pricing.conditions;
 
-import static org.compiere.util.Util.coalesce;
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
@@ -64,7 +64,7 @@ public class PricingConditionsBreak
 	// Quality
 	BigDecimal qualityDiscountPercentage;
 
-	LocalDateTime dateCreated;
+	Instant dateCreated;
 
 	UserId createdById;
 
@@ -82,7 +82,7 @@ public class PricingConditionsBreak
 			@Nullable final Percent paymentDiscountOverrideOrNull,
 			@Nullable final PaymentTermId derivedPaymentTermIdOrNull,
 			final BigDecimal qualityDiscountPercentage,
-			final LocalDateTime dateCreated,
+			final Instant dateCreated,
 			final UserId createdById,
 			final boolean hasChanges)
 	{

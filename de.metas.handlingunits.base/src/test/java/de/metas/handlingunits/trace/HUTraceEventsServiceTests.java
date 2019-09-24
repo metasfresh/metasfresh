@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -24,6 +23,7 @@ import com.google.common.collect.ImmutableList;
 
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -35,11 +35,11 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
-import de.metas.util.time.TimeSource;
 import mockit.Expectations;
 import mockit.Injectable;
 
@@ -89,7 +89,7 @@ public class HUTraceEventsServiceTests
 	 * Create two records (AD_Users, but doesn't matter) and different {@link I_M_HU_Assignment} that reference them.
 	 */
 	@Test
-	public void reateAndAddEventsWithTwoLUs()
+	public void createAndAddEventsWithTwoLUs()
 	{
 		final I_AD_User user1 = newInstance(I_AD_User.class);
 		user1.setLogin("user");
@@ -102,28 +102,25 @@ public class HUTraceEventsServiceTests
 		save(user2);
 
 		final I_M_HU luHu11 = saveFluent(newInstance(I_M_HU.class));
-		final I_M_HU vhu11 = saveFluent(newInstance(I_M_HU.class));
-		vhu11.setHUStatus(X_M_HU.HUSTATUS_Active);
+		final I_M_HU vhu11 = createVHU(X_M_HU.HUSTATUS_Active);
 
 		final ProductId prod11 = newProduct("prod11");
 		final Quantity qty11 = Quantity.of(11, uom);
 
 		final I_M_HU luHu12 = saveFluent(newInstance(I_M_HU.class));
-		final I_M_HU vhu12 = saveFluent(newInstance(I_M_HU.class));
-		vhu12.setHUStatus(X_M_HU.HUSTATUS_Active);
+		final I_M_HU vhu12 = createVHU(X_M_HU.HUSTATUS_Active);
 
 		final ProductId prod12 = newProduct("prod12");
 		final Quantity qty12 = Quantity.of(12, uom);
 
 		final I_M_HU luHu21 = saveFluent(newInstance(I_M_HU.class));
-		final I_M_HU vhu21 = saveFluent(newInstance(I_M_HU.class));
-		vhu21.setHUStatus(X_M_HU.HUSTATUS_Active);
+		final I_M_HU vhu21 = createVHU(X_M_HU.HUSTATUS_Active);
 
 		final ProductId prod21 = newProduct("prod21");
 		final Quantity qty21 = Quantity.of(21, uom);
 
 		final I_M_HU luHu22 = saveFluent(newInstance(I_M_HU.class));
-		final I_M_HU vhu22 = saveFluent(newInstance(I_M_HU.class));
+		final I_M_HU vhu22 = createVHU(X_M_HU.HUSTATUS_Active);
 		vhu22.setHUStatus(X_M_HU.HUSTATUS_Active);
 
 		final ProductId prod22 = newProduct("prod22");
@@ -141,7 +138,7 @@ public class HUTraceEventsServiceTests
 
 			final I_M_HU_Assignment huAssignment12 = newInstance(I_M_HU_Assignment.class);
 			huAssignment12.setM_HU_ID(luHu12.getM_HU_ID());
-			huAssignment12.setVHU(vhu12);
+			huAssignment12.setVHU_ID(vhu12.getM_HU_ID());
 			huAssignment12.setAD_Table_ID(ref1.getAD_Table_ID());
 			huAssignment12.setRecord_ID(ref1.getRecord_ID());
 			save(huAssignment12);
@@ -150,42 +147,34 @@ public class HUTraceEventsServiceTests
 
 			final I_M_HU_Assignment huAssignment21 = newInstance(I_M_HU_Assignment.class);
 			huAssignment21.setM_HU_ID(luHu21.getM_HU_ID());
-			huAssignment21.setVHU(vhu21);
+			huAssignment21.setVHU_ID(vhu21.getM_HU_ID());
 			huAssignment21.setAD_Table_ID(ref2.getAD_Table_ID());
 			huAssignment21.setRecord_ID(ref2.getRecord_ID());
 			save(huAssignment21);
 
 			final I_M_HU_Assignment huAssignment22 = newInstance(I_M_HU_Assignment.class);
 			huAssignment22.setM_HU_ID(luHu22.getM_HU_ID());
-			huAssignment22.setVHU(vhu22);
+			huAssignment22.setVHU_ID(vhu22.getM_HU_ID());
 			huAssignment22.setAD_Table_ID(ref2.getAD_Table_ID());
 			huAssignment22.setRecord_ID(ref2.getRecord_ID());
 			save(huAssignment22);
 
 			// create a 5th assignment that references user2 but has the same HU-ID *and* updated time! as huAssignment22
-			// @formatter:off
-			SystemTime.setTimeSource(new TimeSource()
-			{
-				@Override public long millis() { return huAssignment22.getUpdated().getTime(); }
-			});
-			// @formatter:on
+			SystemTime.setTimeSource(() -> huAssignment22.getUpdated().getTime());
 			final I_M_HU_Assignment huAssignment22double = newInstance(I_M_HU_Assignment.class);
 			huAssignment22double.setM_HU_ID(luHu22.getM_HU_ID());
-			huAssignment22double.setVHU(vhu22);
+			huAssignment22double.setVHU_ID(vhu22.getM_HU_ID());
 			huAssignment22double.setAD_Table_ID(ref1.getAD_Table_ID());
 			huAssignment22double.setRecord_ID(ref1.getRecord_ID());
 			save(huAssignment22double);
-
 			SystemTime.resetTimeSource();
 
 			// set up the mocked huAccessService
 			// @formatter:off
 			new Expectations()
 			{{
-				huAccessService.retrieveHuAssignments(user1);
-				result = ImmutableList.of(huAssignment11, huAssignment12);
-				huAccessService.retrieveHuAssignments(user2);
-				result = ImmutableList.of(huAssignment21, huAssignment22, huAssignment22double);
+				huAccessService.retrieveHuAssignments(user1); result = ImmutableList.of(huAssignment11, huAssignment12);
+				huAccessService.retrieveHuAssignments(user2); result = ImmutableList.of(huAssignment21, huAssignment22, huAssignment22double);
 				
 				// the LU HUs are already top level HUs themselves, so the method shall return their IDs
 				huAccessService.retrieveTopLevelHuId(luHu11); result = luHu11.getM_HU_ID();
@@ -207,8 +196,7 @@ public class HUTraceEventsServiceTests
 
 		huTraceEventsService.createAndAddEvents(builder, ImmutableList.of(user1, user2));
 
-		final List<I_M_HU_Trace> allHuTraceRecords = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
-				.create().list();
+		final List<I_M_HU_Trace> allHuTraceRecords = retrieveAllHUTraceRecords();
 
 		assertThat(allHuTraceRecords)
 				.as("there shall be no record for the 5th assignment")
@@ -219,6 +207,24 @@ public class HUTraceEventsServiceTests
 		assertThat(allHuTraceRecords.get(1).getM_HU_ID()).isEqualTo(luHu12.getM_HU_ID());
 		assertThat(allHuTraceRecords.get(2).getM_HU_ID()).isEqualTo(luHu21.getM_HU_ID());
 		assertThat(allHuTraceRecords.get(3).getM_HU_ID()).isEqualTo(luHu22.getM_HU_ID());
+	}
+
+	private I_M_HU createVHU(final String huStatus)
+	{
+		final I_M_HU vhu = saveFluent(newInstance(I_M_HU.class));
+		vhu.setM_HU_PI_Version_ID(HuPackingInstructionsVersionId.VIRTUAL.getRepoId());
+		vhu.setHUStatus(huStatus);
+		saveRecord(vhu);
+		return vhu;
+	}
+
+	private List<I_M_HU_Trace> retrieveAllHUTraceRecords()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU_Trace.class)
+				.orderBy(I_M_HU_Trace.COLUMN_M_HU_Trace_ID)
+				.create()
+				.list();
 	}
 
 	@Test

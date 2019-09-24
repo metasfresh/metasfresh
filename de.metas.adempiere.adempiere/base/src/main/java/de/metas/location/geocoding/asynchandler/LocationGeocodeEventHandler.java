@@ -4,8 +4,6 @@ import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
-import org.adempiere.ad.service.IErrorManager;
-import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.X_C_Location;
 import org.springframework.context.annotation.Profile;
@@ -14,6 +12,8 @@ import org.springframework.stereotype.Component;
 import com.google.common.base.Joiner;
 
 import de.metas.Profiles;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.event.IEventBusFactory;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
@@ -97,10 +97,10 @@ class LocationGeocodeEventHandler
 		}
 		catch (final Exception ex)
 		{
-			final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(ex);
+			final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(ex);
 
 			locationRecord.setGeocodingStatus(X_C_Location.GEOCODINGSTATUS_Error);
-			locationRecord.setGeocoding_Issue_ID(issue.getAD_Issue_ID());
+			locationRecord.setGeocoding_Issue_ID(issueId.getRepoId());
 		}
 		finally
 		{

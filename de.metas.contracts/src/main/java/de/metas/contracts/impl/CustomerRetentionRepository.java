@@ -16,7 +16,6 @@ import org.compiere.model.I_C_Customer_Retention;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.X_C_Customer_Retention;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -29,6 +28,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.invoice.InvoiceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -118,12 +118,20 @@ public class CustomerRetentionRepository
 
 	public I_C_Customer_Retention retrieveCustomerRetention(@NonNull final BPartnerId bpartnerId)
 	{
-		return queryBL.createQueryBuilder(I_C_Customer_Retention.class)
+		final I_C_Customer_Retention firstOnly = queryBL.createQueryBuilder(I_C_Customer_Retention.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Customer_Retention.COLUMN_C_BPartner_ID, bpartnerId.getRepoId())
 				.create()
 				.firstOnly(I_C_Customer_Retention.class);
+		if (firstOnly != null)
+		{
+			return firstOnly;
+		}
+		else
+		{
+			return createNewCustomerRetention(bpartnerId);
+		}
 	}
 
 	public boolean isNewCustomer(@NonNull final BPartnerId bpartnerId)
@@ -166,7 +174,7 @@ public class CustomerRetentionRepository
 			return;
 		}
 
-		final Timestamp contractEndDate = Util.coalesce(latestFlatrateTermForBPartnerId.getMasterEndDate(), latestFlatrateTermForBPartnerId.getEndDate());
+		final Timestamp contractEndDate = CoalesceUtil.coalesce(latestFlatrateTermForBPartnerId.getMasterEndDate(), latestFlatrateTermForBPartnerId.getEndDate());
 
 		if (dateExceedsThreshold(contractEndDate, SystemTime.asTimestamp()))
 		{
@@ -209,6 +217,11 @@ public class CustomerRetentionRepository
 
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
+
+		if (!hasCustomerRetention(bpartnerId))
+		{
+			createNewCustomerRetention(bpartnerId);
+		}
 
 		if (!isNewCustomer(bpartnerId))
 		{

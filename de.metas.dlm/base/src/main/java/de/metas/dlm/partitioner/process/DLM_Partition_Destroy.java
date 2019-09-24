@@ -64,14 +64,7 @@ public class DLM_Partition_Destroy extends JavaProcess
 		{
 			trxManager.run("DLM_Partition_Destroy_ID_" + partitionDB.getDLM_Partition_ID(), // trxName prefix
 					true,
-					new TrxRunnable()
-					{
-						@Override
-						public void run(final String localTrxName) throws Exception
-						{
-							destroyPartitionWithinTrx(partitionDB);
-						}
-					});
+					(TrxRunnable)localTrxName -> destroyPartitionWithinTrx(partitionDB));
 
 		}
 		return MSG_OK;
@@ -86,7 +79,7 @@ public class DLM_Partition_Destroy extends JavaProcess
 				partitionDB.getDLM_Partition_ID(),
 				IDLMAware.COLUMNNAME_DLM_Partition_ID, 0);
 
-		Loggables.get().addLog("Unassigned {} records from {}", updateCount, partitionDB);
+		Loggables.addLog("Unassigned {} records from {}", updateCount, partitionDB);
 
 		partitionDB.setPartitionSize(0);
 		InterfaceWrapperHelper.save(partitionDB);
@@ -99,7 +92,7 @@ public class DLM_Partition_Destroy extends JavaProcess
 					.create()
 					.deleteDirectly();
 
-			Loggables.get().addLog("Deleted {} {} records that referenced", deleteCount, I_DLM_Partition_Workqueue.Table_Name, partitionDB);
+			Loggables.addLog("Deleted {} {} records that referenced", deleteCount, I_DLM_Partition_Workqueue.Table_Name, partitionDB);
 		}
 	}
 

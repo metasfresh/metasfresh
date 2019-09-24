@@ -5,7 +5,7 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -13,10 +13,16 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_InvoiceSchedule;
+import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
@@ -26,8 +32,8 @@ import org.compiere.util.TimeUtil;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.model.I_C_Currency;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
@@ -42,12 +48,15 @@ import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
 import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.currency.Currency;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.money.Currency;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
@@ -56,6 +65,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import de.metas.util.time.SystemTime;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -83,7 +93,13 @@ import lombok.NonNull;
 
 public class RefundTestTools
 {
+	public static RefundTestTools newInstance()
+	{
+		return builder().build();
+	}
+
 	public static final BPartnerId BPARTNER_ID = BPartnerId.ofRepoId(10);
+	public static final BPartnerLocationId BPARTNERLOCATION_ID = BPartnerLocationId.ofRepoId(BPARTNER_ID, 20);
 	private static final BigDecimal TWENTY = new BigDecimal("20");
 	private static final BigDecimal NINE = new BigDecimal("9");
 	private static final BigDecimal TWO = new BigDecimal("2");
@@ -121,7 +137,6 @@ public class RefundTestTools
 		return assignableCandidateInvoiceDate.plusDays(1);
 	}
 
-	@Getter
 	private final Currency currency;
 
 	@Getter
@@ -130,43 +145,44 @@ public class RefundTestTools
 	@Getter
 	private I_M_Product productRecord;
 
-	@Getter
-	private I_C_Currency currencyRecord;
-
 	private RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
 
 	// used when creating refund configs
 	private InvoiceSchedule invoiceSchedule;
 
-	public RefundTestTools()
+	public BPartnerLocationId billBPartnerLocationId;
+
+	@Builder
+	private RefundTestTools(
+			@Nullable final Currency currency)
 	{
-		final I_C_ILCandHandler icHandlerRecord = newInstance(I_C_ILCandHandler.class);
+		final I_C_ILCandHandler icHandlerRecord = InterfaceWrapperHelper.newInstance(I_C_ILCandHandler.class);
 		icHandlerRecord.setClassname(FlatrateTerm_Handler.class.getName());
 		saveRecord(icHandlerRecord);
 
-		final I_C_DocType docTypeRecord = newInstance(I_C_DocType.class);
+		final I_C_DocType docTypeRecord = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
 		docTypeRecord.setIsSOTrx(true); // needs to match the C_Invoice_Candidate record we will test with
 		docTypeRecord.setDocBaseType(X_C_DocType.DOCBASETYPE_ARCreditMemo);
 		docTypeRecord.setDocSubType(X_C_DocType.DOCSUBTYPE_Rueckverguetungsrechnung);
 		saveRecord(docTypeRecord);
 
-		currencyRecord = newInstance(I_C_Currency.class);
-		currencyRecord.setStdPrecision(2);
-		saveRecord(currencyRecord);
+		if (currency != null)
+		{
+			this.currency = currency;
+		}
+		else
+		{
+			this.currency = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR);
+		}
 
-		currency = Currency.builder()
-				.id(CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID()))
-				.precision(currencyRecord.getStdPrecision())
-				.build();
-
-		uomRecord = newInstance(I_C_UOM.class);
+		uomRecord = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
 
-		productRecord = newInstance(I_M_Product.class);
-		productRecord.setC_UOM(uomRecord);
+		productRecord = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		productRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		saveRecord(productRecord);
 
-		final I_C_InvoiceSchedule invoiceScheduleRecord = newInstance(I_C_InvoiceSchedule.class);
+		final I_C_InvoiceSchedule invoiceScheduleRecord = InterfaceWrapperHelper.newInstance(I_C_InvoiceSchedule.class);
 		invoiceScheduleRecord.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Monthly);
 		invoiceScheduleRecord.setInvoiceDay(INVOICE_SCHEDULE_DAY_OF_MONTH);
 		invoiceScheduleRecord.setInvoiceDistance(1);
@@ -185,6 +201,35 @@ public class RefundTestTools
 
 		refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(
 				refundContractRepository, refundInvoiceCandidateFactory);
+
+		final I_C_Country country_DE = InterfaceWrapperHelper.newInstance(I_C_Country.class);
+		country_DE.setAD_Language("de");
+		save(country_DE);
+
+		final I_C_Location loc = InterfaceWrapperHelper.newInstance(I_C_Location.class);
+		loc.setC_Country_ID(country_DE.getC_Country_ID());
+		save(loc);
+
+		final I_C_BPartner partner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		partner.setC_BPartner_ID(BPARTNER_ID.getRepoId());
+		save(partner);
+
+		final I_C_BPartner_Location bpLoc = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
+		bpLoc.setC_Location_ID(loc.getC_Location_ID());
+		bpLoc.setC_BPartner_ID(BPARTNER_ID.getRepoId());
+		if (billBPartnerLocationId != null)
+		{
+			Check.assumeEquals(billBPartnerLocationId.getBpartnerId(), BPARTNER_ID, "BP Location shall have the same BP: {}, {}", billBPartnerLocationId, BPARTNER_ID);
+			bpLoc.setC_BPartner_Location_ID(BPARTNERLOCATION_ID.getRepoId());
+		}
+		save(bpLoc);
+
+		billBPartnerLocationId = BPartnerLocationId.ofRepoId(bpLoc.getC_BPartner_ID(), bpLoc.getC_BPartner_Location_ID());
+	}
+
+	public CurrencyId getCurrencyId()
+	{
+		return currency.getId();
 	}
 
 	public static I_C_Invoice_Candidate retrieveRecord(@NonNull final InvoiceCandidateId invoiceCandidateId)
@@ -214,18 +259,20 @@ public class RefundTestTools
 
 	public RefundInvoiceCandidate createRefundCandidate(@NonNull final RefundContract refundContract)
 	{
+
 		Check.assumeNotNull(refundContract.getId(),
 				"The given refundContract has to be persisted (i.e. id!=null); refundContract={}", refundContract);
 
-		final I_C_Invoice_Candidate invoiceCandidateRecord = newInstance(I_C_Invoice_Candidate.class);
+		final I_C_Invoice_Candidate invoiceCandidateRecord = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class);
 		invoiceCandidateRecord.setIsSOTrx(true); // pls keep in sync with C_DocType that we create in this classe's constructor
-		invoiceCandidateRecord.setM_Product(productRecord);
+		invoiceCandidateRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		invoiceCandidateRecord.setPriceActual(HUNDRED);
-		invoiceCandidateRecord.setC_Currency_ID(currency.getId().getRepoId());
+		invoiceCandidateRecord.setC_Currency_ID(getCurrencyId().getRepoId());
 		invoiceCandidateRecord.setDateToInvoice(TimeUtil.asTimestamp(REFUND_CANDIDATE_INVOICE_DATE));
 		invoiceCandidateRecord.setRecord_ID(refundContract.getId().getRepoId());
 		invoiceCandidateRecord.setAD_Table_ID(getTableId(I_C_Flatrate_Term.class));
-		invoiceCandidateRecord.setBill_BPartner_ID(BPARTNER_ID.getRepoId());
+		invoiceCandidateRecord.setBill_BPartner_ID(billBPartnerLocationId.getBpartnerId().getRepoId());
+		invoiceCandidateRecord.setBill_Location_ID(billBPartnerLocationId.getRepoId());
 		invoiceCandidateRecord.setQtyToInvoice(ONE);
 		invoiceCandidateRecord.setProcessed(false);
 		saveRecord(invoiceCandidateRecord);
@@ -240,15 +287,15 @@ public class RefundTestTools
 	 */
 	public RefundContract createRefundContract_APPLY_TO_ALL_QTIES()
 	{
-		// final I_C_InvoiceSchedule invoiceScheduleRecord = newInstance(I_C_InvoiceSchedule.class);
+		// final I_C_InvoiceSchedule invoiceScheduleRecord = InterfaceWrapperHelper.newInstance(I_C_InvoiceSchedule.class);
 		// invoiceScheduleRecord.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Daily);
 		// saveRecord(invoiceScheduleRecord);
 
-		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
+		final I_C_Flatrate_Conditions conditions = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class);
 		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund);
 		saveRecord(conditions);
 
-		final I_C_Flatrate_RefundConfig refundConfigRecord = newInstance(I_C_Flatrate_RefundConfig.class);
+		final I_C_Flatrate_RefundConfig refundConfigRecord = InterfaceWrapperHelper.newInstance(I_C_Flatrate_RefundConfig.class);
 		refundConfigRecord.setC_Flatrate_Conditions(conditions);
 		refundConfigRecord.setM_Product(productRecord);
 		refundConfigRecord.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Invoice); // keep in sync with the C_DocType's subType that we set up in the constructor.
@@ -258,12 +305,13 @@ public class RefundTestTools
 		refundConfigRecord.setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated);
 		saveRecord(refundConfigRecord);
 
-		final I_C_Flatrate_Term contractRecord = newInstance(I_C_Flatrate_Term.class);
+		final I_C_Flatrate_Term contractRecord = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class);
 		contractRecord.setC_Flatrate_Conditions(conditions);
 		contractRecord.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Refund);
 		contractRecord.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
-		contractRecord.setBill_BPartner_ID(BPARTNER_ID.getRepoId());
-		contractRecord.setM_Product(productRecord);
+		contractRecord.setBill_BPartner_ID(billBPartnerLocationId.getBpartnerId().getRepoId());
+		contractRecord.setBill_Location_ID(billBPartnerLocationId.getRepoId());
+		contractRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		contractRecord.setStartDate(TimeUtil.asTimestamp(CONTRACT_START_DATE));
 		contractRecord.setEndDate(TimeUtil.asTimestamp(CONTRACT_END_DATE));
 		saveRecord(contractRecord);
@@ -281,15 +329,15 @@ public class RefundTestTools
 	{
 		final I_C_Invoice_Candidate invoiceCandidateRecord = createAssignableInvoiceCandidateRecord(quantityAsBigDecimal);
 
-		final Money money = Money.of(TEN, currency.getId());
+		final Money money = Money.of(TEN, getCurrencyId());
 
 		return AssignableInvoiceCandidate
 				.builder()
 				.id(InvoiceCandidateId.ofRepoId(invoiceCandidateRecord.getC_Invoice_Candidate_ID()))
-				.bpartnerId(BPARTNER_ID)
+				.bpartnerLocationId(billBPartnerLocationId)
 				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.money(money)
-				.precision(currency.getPrecision())
+				.precision(currency.getPrecision().toInt())
 				.invoiceableFrom(ASSIGNABLE_CANDIDATE_INVOICE_DATE)
 				.quantity(Quantity.of(quantityAsBigDecimal, uomRecord))
 				.build();
@@ -302,7 +350,7 @@ public class RefundTestTools
 
 		final RefundConfig refundConfig = singleElement(refundCandidate.getRefundConfigs());
 
-		final I_C_Invoice_Candidate_Assignment assignmentRecord = newInstance(I_C_Invoice_Candidate_Assignment.class);
+		final I_C_Invoice_Candidate_Assignment assignmentRecord = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate_Assignment.class);
 		assignmentRecord.setC_Invoice_Candidate_Term_ID(refundCandidate.getId().getRepoId());
 		assignmentRecord.setC_Invoice_Candidate_Assigned_ID(assignableInvoiceCandidate.getId().getRepoId());
 		assignmentRecord.setC_Flatrate_Term_ID(refundCandidate.getRefundContract().getId().getRepoId());
@@ -330,16 +378,18 @@ public class RefundTestTools
 
 	public I_C_Invoice_Candidate createAssignableInvoiceCandidateRecord(@NonNull final BigDecimal quantityToInvoice)
 	{
-		final I_C_Invoice_Candidate invoiceCandidateRecord = newInstance(I_C_Invoice_Candidate.class);
+
+		final I_C_Invoice_Candidate invoiceCandidateRecord = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class);
 		invoiceCandidateRecord.setIsSOTrx(true); // pls keep in sync with C_DocType that we create in this class's constructor
 		invoiceCandidateRecord.setNetAmtInvoiced(ONE);
 		invoiceCandidateRecord.setNetAmtToInvoice(NINE);
-		invoiceCandidateRecord.setC_Currency_ID(currency.getId().getRepoId());
+		invoiceCandidateRecord.setC_Currency_ID(getCurrencyId().getRepoId());
 		invoiceCandidateRecord.setQtyToInvoice(quantityToInvoice);
 		invoiceCandidateRecord.setDateToInvoice(TimeUtil.asTimestamp(ASSIGNABLE_CANDIDATE_INVOICE_DATE));
-		invoiceCandidateRecord.setBill_BPartner_ID(BPARTNER_ID.getRepoId());
+		invoiceCandidateRecord.setBill_BPartner_ID(billBPartnerLocationId.getBpartnerId().getRepoId());
+		invoiceCandidateRecord.setBill_Location_ID(billBPartnerLocationId.getRepoId());
 
-		invoiceCandidateRecord.setM_Product(productRecord);
+		invoiceCandidateRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		saveRecord(invoiceCandidateRecord);
 		return invoiceCandidateRecord;
 	}

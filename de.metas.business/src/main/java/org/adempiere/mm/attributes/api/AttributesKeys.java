@@ -1,7 +1,5 @@
 package org.adempiere.mm.attributes.api;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -56,9 +54,11 @@ public final class AttributesKeys
 	public static Optional<AttributesKey> createAttributesKeyFromAttributeSet(
 			@NonNull final IAttributeSet attributeSet)
 	{
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+
 		final int[] attributeValueIds = attributeSet.getAttributes().stream()
 				.sorted(Comparator.comparing(I_M_Attribute::getM_Attribute_ID))
-				.map(attribute -> Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(
+				.map(attribute -> attributesRepo.retrieveAttributeValueOrNull(
 						attribute,
 						attributeSet.getValueAsString(attribute)))
 				.filter(Predicates.notNull())
@@ -78,54 +78,41 @@ public final class AttributesKeys
 	 *         In that case it's up to the caller to interpret the empty result.<br>
 	 *         That can for example be done using using {@link Optional#orElse(Object)} with {@link AttributesKey#NONE}.
 	 */
-	public static Optional<AttributesKey> createAttributesKeyFromASIAllAttributeValues(final int attributeSetInstanceId)
+	public static Optional<AttributesKey> createAttributesKeyFromASIAllAttributeValues(@NonNull final AttributeSetInstanceId attributeSetInstanceId)
 	{
-		return createAttributesKeyWithFilter(
-				attributeSetInstanceId,
-				ai -> true);
-	}
-
-	public static Optional<AttributesKey> createAttributesKeyFromASIStorageAttributes(final AttributeSetInstanceId attributeSetInstanceId)
-	{
-		if (AttributeSetInstanceId.isRegular(attributeSetInstanceId))
-		{
-			return createAttributesKeyWithFilter(
-					attributeSetInstanceId.getRepoId(),
-					ai -> ai.getM_Attribute().isStorageRelevant());
-		}
-		else
-		{
-			return Optional.empty();
-		}
+		return createAttributesKeyWithFilter(attributeSetInstanceId, Predicates.alwaysTrue());
 	}
 
 	/**
 	 * Similar to {@link #createAttributesKeyFromASIAllAttributeValues(int)}, but only attributes flagged as "storage relevant" are considered.
 	 * <p>
 	 * Please make sure the output of this method is in sync with the DB function @{code GenerateASIStorageAttributesKey}.
-	 *
-	 * @return see {@link #createAttributesKeyFromASIAllAttributeValues(int)}
 	 */
-	public static Optional<AttributesKey> createAttributesKeyFromASIStorageAttributes(final int attributeSetInstanceId)
+	public static Optional<AttributesKey> createAttributesKeyFromASIStorageAttributes(@NonNull final AttributeSetInstanceId attributeSetInstanceId)
 	{
-		return createAttributesKeyWithFilter(
-				attributeSetInstanceId,
-				ai -> ai.getM_Attribute().isStorageRelevant());
-	}
-
-	private static Optional<AttributesKey> createAttributesKeyWithFilter(
-			final int attributeSetInstanceId,
-			@NonNull final Predicate<? super I_M_AttributeInstance> additionalFilter)
-	{
-		if (attributeSetInstanceId == AttributeConstants.M_AttributeSetInstance_ID_None)
+		if (attributeSetInstanceId.isNone())
 		{
 			return Optional.empty();
 		}
 
-		final I_M_AttributeSetInstance attributeSetInstance = load(attributeSetInstanceId, I_M_AttributeSetInstance.class);
+		final IAttributeSetInstanceBL asiService = Services.get(IAttributeSetInstanceBL.class);
+		return createAttributesKeyWithFilter(attributeSetInstanceId, asiService::isStorageRelevant);
+	}
 
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		final int[] attributeValueIds = attributeDAO.retrieveAttributeInstances(attributeSetInstance).stream()
+	private static Optional<AttributesKey> createAttributesKeyWithFilter(
+			@NonNull final AttributeSetInstanceId attributeSetInstanceId,
+			@NonNull final Predicate<? super I_M_AttributeInstance> additionalFilter)
+	{
+		if (attributeSetInstanceId.isNone())
+		{
+			return Optional.empty();
+		}
+
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		final I_M_AttributeSetInstance attributeSetInstance = attributesRepo.getAttributeSetInstanceById(attributeSetInstanceId);
+
+		final int[] attributeValueIds = attributesRepo.retrieveAttributeInstances(attributeSetInstance)
+				.stream()
 				.filter(ai -> ai.getM_AttributeValue_ID() > 0)
 				.filter(additionalFilter)
 				// no point in sorting; AttributesKey.ofAttributeValueIds(..) does its own sorting.
@@ -147,7 +134,7 @@ public final class AttributesKeys
 			return AttributeSetInstanceId.NONE;
 		}
 
-		final IAttributeSet attributeSet = createAttributeSetFromStorageAttributesKey(attributesKey);
+		final ImmutableAttributeSet attributeSet = createAttributeSetFromStorageAttributesKey(attributesKey);
 
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASIFromAttributeSet(attributeSet);
@@ -155,7 +142,7 @@ public final class AttributesKeys
 		return AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 	}
 
-	public IAttributeSet createAttributeSetFromStorageAttributesKey(@NonNull final AttributesKey attributesKey)
+	public ImmutableAttributeSet createAttributeSetFromStorageAttributesKey(@NonNull final AttributesKey attributesKey)
 	{
 		final Builder builder = ImmutableAttributeSet.builder();
 		for (final I_M_AttributeValue attributeValueRecord : extractAttributeSetFromStorageAttributesKey(attributesKey))

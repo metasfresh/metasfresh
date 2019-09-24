@@ -354,9 +354,9 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 			final I_M_HU newHU = newHUs.get(0);
 
-			newHU.setM_Locator(ppOrder.getM_Locator());
+			newHU.setM_Locator_ID(ppOrder.getM_Locator_ID());
 			Services.get(IHandlingUnitsDAO.class).saveHU(newHU);
-			Assert.assertNotNull("HU's locator shall be set", newHU.getM_Locator());
+			Assert.assertTrue("HU's locator shall be set", newHU.getM_Locator_ID() > 0);
 
 			return newHU;
 		});
@@ -425,7 +425,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 		// FIXME: because MPPCostCollector.completeIt() is not refactored, it's not executed
 		// we need to set the BOM Line's QtyDelivered by ourselves
-		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(pFolie);
+		final I_C_UOM uom = Services.get(IProductBL.class).getStockUOM(pFolie);
 		ppOrderBOMBL.addQty(OrderBOMLineQtyChangeRequest.builder()
 				.orderBOMLineId(ppOrderBOMLineId_Folie)
 				.usageVariance(false)
@@ -508,12 +508,12 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		saveRecord(docType);
 
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(Env.getCtx(), I_PP_Order.class, ITrx.TRXNAME_None);
-		ppOrder.setAD_Org(masterData.adOrg01);
-		ppOrder.setC_DocTypeTarget(docType);
+		ppOrder.setAD_Org_ID(masterData.adOrg01.getAD_Org_ID());
+		ppOrder.setC_DocTypeTarget_ID(docType.getC_DocType_ID());
 		ppOrder.setM_Product_ID(productBOM.getM_Product_ID());
 		ppOrder.setPP_Product_BOM_ID(productBOM.getPP_Product_BOM_ID());
 		ppOrder.setAD_Workflow(masterData.workflow_Standard);
-		ppOrder.setM_Warehouse(masterData.warehouse_plant01);
+		ppOrder.setM_Warehouse_ID(masterData.warehouse_plant01.getM_Warehouse_ID());
 		ppOrder.setS_Resource(masterData.plant01);
 		ppOrder.setQtyOrdered(new BigDecimal(qtyOrderedStr));
 		ppOrder.setDatePromised(SystemTime.asDayTimestamp());
@@ -628,8 +628,8 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 		final I_M_HU_Storage huStorage = newInstance(I_M_HU_Storage.class);
 		huStorage.setM_HU(hu);
-		huStorage.setM_Product(pFolie);
-		huStorage.setC_UOM(uomMillimeter);
+		huStorage.setM_Product_ID(pFolie.getM_Product_ID());
+		huStorage.setC_UOM_ID(uomMillimeter.getC_UOM_ID());
 		huStorage.setQty(new BigDecimal(qtyOfFolie));
 		Services.get(IHandlingUnitsBL.class)
 				.getStorageFactory()
@@ -642,10 +642,10 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 	private void setBOMLineQtyDeliveredAndSave(final I_PP_Order_BOMLine orderBOMLine, final Quantity qtyDelivered)
 	{
 		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
-		final I_C_UOM productStockingUOM = productBL.getStockingUOM(productId);
+		final I_C_UOM productStockingUOM = productBL.getStockUOM(productId);
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
 		final Quantity qtyDeliveredInStockingUOM = uomConversionService.convertQuantityTo(qtyDelivered, conversionCtx, productStockingUOM);
-		orderBOMLine.setQtyDelivered(qtyDeliveredInStockingUOM.getAsBigDecimal());
+		orderBOMLine.setQtyDelivered(qtyDeliveredInStockingUOM.toBigDecimal());
 
 		ppOrderBOMDAO.save(orderBOMLine);
 	}

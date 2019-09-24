@@ -9,6 +9,8 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.order.IOrderBL;
@@ -42,14 +44,10 @@ public class OrderHeaderAggregation
 	// services
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+	private final transient IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 
 	private I_C_Order order;
 	private OrderLinesAggregator orderLinesAggregator = null;
-
-	public OrderHeaderAggregation()
-	{
-		super();
-	}
 
 	public I_C_Order build()
 	{
@@ -90,7 +88,7 @@ public class OrderHeaderAggregation
 		final int adOrgId = candidate.getAD_Org_ID();
 		final int warehouseId = candidate.getM_Warehouse_ID();
 
-		final I_C_BPartner bpartner = candidate.getC_BPartner();
+		final I_C_BPartner bpartner = bpartnersRepo.getById(candidate.getC_BPartner_ID());
 
 		final int pricingSystemId = candidate.getM_PricingSystem_ID();
 
@@ -156,7 +154,7 @@ public class OrderHeaderAggregation
 			order.setSalesRep_ID(Env.getAD_User_ID(ctx));
 		}
 
-		order.setDocStatus(IDocument.STATUS_Drafted);
+		order.setDocStatus(DocStatus.Drafted.getCode());
 		order.setDocAction(IDocument.ACTION_Complete);
 
 		//

@@ -14,7 +14,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_CostDetail;
 import org.springframework.stereotype.Component;
@@ -32,6 +31,7 @@ import de.metas.costing.CostPrice;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
@@ -83,7 +83,7 @@ public class CostDetailRepository implements ICostDetailRepository
 		record.setAmt(cd.getAmt().getValue());
 		record.setC_Currency_ID(cd.getAmt().getCurrencyId().getRepoId());
 
-		record.setQty(cd.getQty().getAsBigDecimal());
+		record.setQty(cd.getQty().toBigDecimal());
 		record.setC_UOM_ID(cd.getQty().getUOMId());
 
 		record.setIsChangingCosts(cd.isChangingCosts());
@@ -92,10 +92,10 @@ public class CostDetailRepository implements ICostDetailRepository
 		{
 			record.setPrev_CurrentCostPrice(previousAmounts.getCostPrice().getOwnCostPrice().getValue());
 			record.setPrev_CurrentCostPriceLL(previousAmounts.getCostPrice().getComponentsCostPrice().getValue());
-			record.setPrev_CurrentQty(previousAmounts.getQty().getAsBigDecimal());
+			record.setPrev_CurrentQty(previousAmounts.getQty().toBigDecimal());
 
 			record.setPrev_CumulatedAmt(previousAmounts.getCumulatedAmt().getValue());
-			record.setPrev_CumulatedQty(previousAmounts.getCumulatedQty().getAsBigDecimal());
+			record.setPrev_CumulatedQty(previousAmounts.getCumulatedQty().toBigDecimal());
 		}
 
 		record.setIsSOTrx(cd.isOutboundTrx());

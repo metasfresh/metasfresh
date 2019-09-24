@@ -13,31 +13,33 @@ package org.adempiere.ad.dao.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
 
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 
-/*package*/class SetColumnNameQueryUpdater<T> implements ISqlQueryUpdater<T>
+/* package */class SetColumnNameQueryUpdater<T> implements ISqlQueryUpdater<T>
 {
 	private final String columnName;
 	private final Object value;
 	private final ModelColumnNameValue<?> valueColumn;
 
-	public SetColumnNameQueryUpdater(final String columnName, final Object value)
+	public SetColumnNameQueryUpdater(@NonNull final String columnName, final Object value)
 	{
 		Check.assumeNotEmpty(columnName, "columnName not empty");
 		this.columnName = columnName;
@@ -82,11 +84,31 @@ import de.metas.util.Check;
 		}
 		else
 		{
-			valueToSet = value;
+			valueToSet = convertToPOValue(value);
 		}
 
 		final boolean updated = InterfaceWrapperHelper.setValue(model, columnName, valueToSet);
 		return updated;
+	}
+
+	private static Object convertToPOValue(final Object value)
+	{
+		if (value == null)
+		{
+			return null;
+		}
+		else if (value instanceof RepoIdAware)
+		{
+			return ((RepoIdAware)value).getRepoId();
+		}
+		else if (TimeUtil.isDateOrTimeObject(value))
+		{
+			return TimeUtil.asTimestamp(value);
+		}
+		else
+		{
+			return value;
+		}
 	}
 
 }

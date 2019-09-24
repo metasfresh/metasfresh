@@ -15,7 +15,7 @@ public class X_M_InventoryLine_HU extends org.compiere.model.PO implements I_M_I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 136583101L;
+	private static final long serialVersionUID = 1008110903L;
 
     /** Standard Constructor */
     public X_M_InventoryLine_HU (Properties ctx, int M_InventoryLine_HU_ID, String trxName)
@@ -24,7 +24,6 @@ public class X_M_InventoryLine_HU extends org.compiere.model.PO implements I_M_I
       /** if (M_InventoryLine_HU_ID == 0)
         {
 			setC_UOM_ID (0);
-			setM_HU_ID (0);
 			setM_InventoryLine_HU_ID (0);
 			setM_InventoryLine_ID (0);
         } */
@@ -44,18 +43,6 @@ public class X_M_InventoryLine_HU extends org.compiere.model.PO implements I_M_I
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
-	}
 
 	/** Set Maßeinheit.
 		@param C_UOM_ID 
@@ -83,7 +70,7 @@ public class X_M_InventoryLine_HU extends org.compiere.model.PO implements I_M_I
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU getM_HU() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU getM_HU()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
 	}
@@ -139,7 +126,7 @@ public class X_M_InventoryLine_HU extends org.compiere.model.PO implements I_M_I
 	}
 
 	@Override
-	public org.compiere.model.I_M_InventoryLine getM_InventoryLine() throws RuntimeException
+	public org.compiere.model.I_M_InventoryLine getM_InventoryLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_InventoryLine_ID, org.compiere.model.I_M_InventoryLine.class);
 	}
@@ -214,6 +201,28 @@ public class X_M_InventoryLine_HU extends org.compiere.model.PO implements I_M_I
 	public java.math.BigDecimal getQtyCount () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyCount);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Internal Use Qty.
+		@param QtyInternalUse 
+		Internal Use Quantity removed from Inventory
+	  */
+	@Override
+	public void setQtyInternalUse (java.math.BigDecimal QtyInternalUse)
+	{
+		set_Value (COLUMNNAME_QtyInternalUse, QtyInternalUse);
+	}
+
+	/** Get Internal Use Qty.
+		@return Internal Use Quantity removed from Inventory
+	  */
+	@Override
+	public java.math.BigDecimal getQtyInternalUse () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInternalUse);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

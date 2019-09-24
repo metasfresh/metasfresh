@@ -8,6 +8,7 @@ import de.metas.material.planning.IMaterialDemandMatcher;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.util.Loggables;
 import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -34,14 +35,12 @@ import de.metas.util.StringUtils;
  * This implementation figures out if a particular demand could be matched by a PPOrder.
  * The business logic of the {@link #matches(IMaterialPlanningContext)} method is coming from
  * <code>/de.metas.adempiere.libero.libero/src/main/java/org/eevolution/mrp/spi/impl/PPOrderMRPSupplyProducer.java</code>
- *
- * @author metas-dev <dev@metasfresh.com>
  */
 @Service
 public class PPOrderDemandMatcher implements IMaterialDemandMatcher
 {
 	@Override
-	public boolean matches(final IMaterialPlanningContext mrpContext)
+	public boolean matches(@NonNull final IMaterialPlanningContext mrpContext)
 	{
 		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
 
@@ -51,10 +50,9 @@ public class PPOrderDemandMatcher implements IMaterialDemandMatcher
 		}
 
 		final I_M_Product product = mrpContext.getM_Product();
-		Loggables.get().addLog(
+		Loggables.addLog(
 				"Product {}_{} is not set to be manufactured; PPOrderDemandMatcher returns false; productPlanning={}; product={}",
 				product.getValue(), product.getName(), productPlanning, product);
 		return false;
-
 	}
 }

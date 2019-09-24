@@ -29,7 +29,6 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -37,7 +36,7 @@ import de.metas.invoice.IInvoiceLineBL;
 import de.metas.util.Services;
 
 @Callout(I_C_InvoiceLine.class)
-@Component("de.metas.invoice.callout.C_InvoiceLine")
+@Component
 public class C_InvoiceLine
 {
 
@@ -99,10 +98,7 @@ public class C_InvoiceLine
 		}
 
 		final I_C_OrderLine ol = invoiceLine.getC_OrderLine();
-
-		final I_M_Product product = ol.getM_Product();
-
-		invoiceLine.setM_Product(product);
+		invoiceLine.setM_Product_ID(ol.getM_Product_ID());
 	}
 
 	@CalloutMethod(columnNames = { I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID })

@@ -1,7 +1,9 @@
 package de.metas.bpartner.service.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static de.metas.util.Check.assumeNotNull;
+import static de.metas.util.Check.isEmpty;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
@@ -27,12 +29,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -49,8 +53,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
@@ -60,50 +62,54 @@ import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.Query;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
+import de.metas.bpartner.GLN;
+import de.metas.bpartner.service.BPartnerContactQuery;
 import de.metas.bpartner.service.BPartnerIdNotFoundException;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
-import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.email.EMailAddress;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
 import de.metas.pricing.PricingSystemId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import lombok.Builder;
+import de.metas.util.rest.ExternalId;
 import lombok.NonNull;
-import lombok.Value;
 
 public class BPartnerDAO implements IBPartnerDAO
 {
 	private static final Logger logger = LogManager.getLogger(BPartnerDAO.class);
-
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	private final GLNLoadingCache glnsLoadingCache = new GLNLoadingCache();
 
 	@Override
 	public void save(@NonNull final I_C_BPartner bpartner)
@@ -149,7 +155,18 @@ public class BPartnerDAO implements IBPartnerDAO
 		return bpartner;
 	}
 
-	@Override public BPartnerId getBPartnerIdByValue(@NonNull final String value)
+	public List<I_C_BPartner> getByIds(@NonNull final Collection<BPartnerId> bpartnerIds)
+	{
+		if (bpartnerIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return loadByRepoIdAwaresOutOfTrx(bpartnerIds, I_C_BPartner.class);
+	}
+
+	@Override
+	public BPartnerId getBPartnerIdByValue(@NonNull final String value)
 	{
 		final String valueFixed = value.trim();
 
@@ -175,11 +192,13 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public Optional<BPartnerContactId> getContactIdByExternalId(@NonNull final BPartnerId bpartnerId, @NonNull final String externalId)
+	public Optional<BPartnerContactId> getContactIdByExternalId(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final ExternalId externalId)
 	{
 		return retrieveContacts(bpartnerId)
 				.stream()
-				.filter(contact -> externalId.equals(contact.getExternalId()))
+				.filter(contact -> Objects.equals(externalId.getValue(), contact.getExternalId()))
 				.findFirst()
 				.map(record -> BPartnerContactId.ofRepoId(bpartnerId, record.getAD_User_ID()));
 	}
@@ -195,39 +214,72 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public EMailAddress getContactEMail(@NonNull final BPartnerContactId contactId)
+	{
+		final I_AD_User contact = getContactById(contactId);
+		if (contact == null)
+		{
+			throw new AdempiereException("@NotFound@ " + contactId);
+		}
+
+		final EMailAddress contactEmail = EMailAddress.ofNullableString(contact.getEMail());
+		if (contactEmail == null)
+		{
+			throw new AdempiereException("Contact has no email: " + contact.getName());
+		}
+		return contactEmail;
+	}
+
+	@Override
 	public <T extends org.compiere.model.I_AD_User> T retrieveDefaultContactOrNull(final I_C_BPartner bPartner, final Class<T> clazz)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
 		final String trxName = InterfaceWrapperHelper.getTrxName(bPartner);
 
-		final String wc = org.compiere.model.I_AD_User.COLUMNNAME_IsDefaultContact + "=" + DB.TO_STRING("Y") + " AND " +
-				org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID + "=?";
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bPartner.getC_BPartner_ID());
 
-		final T result = new Query(ctx, org.compiere.model.I_AD_User.Table_Name, wc, trxName)
-				.setParameters(bPartner.getC_BPartner_ID())
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
-				.firstOnly(clazz);
-
-		return result;
+		return retrieveDefaultContactOrNull(ctx, bpartnerId, trxName, clazz);
 	}
 
 	@Override
-	public Optional<BPartnerLocationId> getBPartnerLocationIdByExternalId(@NonNull final BPartnerId bpartnerId, @NonNull final String externalId)
+	public Optional<UserId> getDefaultContactId(@NonNull final BPartnerId bpartnerId)
+	{
+		final I_AD_User defaultContact = retrieveDefaultContactOrNull(Env.getCtx(), bpartnerId, ITrx.TRXNAME_None, I_AD_User.class);
+		return defaultContact != null
+				? Optional.of(UserId.ofRepoId(defaultContact.getAD_User_ID()))
+				: Optional.empty();
+	}
+
+	private <T extends I_AD_User> T retrieveDefaultContactOrNull(final Properties ctx, final BPartnerId bpartnerId, final String trxName, final Class<T> clazz)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_User.class, ctx, trxName)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_IsDefaultContact, true)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstOnly(clazz);
+	}
+
+	@Override
+	public Optional<BPartnerLocationId> getBPartnerLocationIdByExternalId(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final ExternalId externalId)
 	{
 		return retrieveBPartnerLocations(bpartnerId)
 				.stream()
-				.filter(bpLocation -> externalId.equals(bpLocation.getExternalId()))
+				.filter(bpLocation -> Objects.equals(externalId.getValue(), bpLocation.getExternalId()))
 				.findFirst()
 				.map(record -> BPartnerLocationId.ofRepoId(bpartnerId, record.getC_BPartner_Location_ID()));
 	}
 
 	@Override
-	public Optional<BPartnerLocationId> getBPartnerLocationIdByGln(@NonNull final BPartnerId bpartnerId, @NonNull final String gln)
+	public Optional<BPartnerLocationId> getBPartnerLocationIdByGln(@NonNull final BPartnerId bpartnerId, @NonNull final GLN gln)
 	{
+		final String glnCode = gln.getCode();
+
 		return retrieveBPartnerLocations(bpartnerId)
 				.stream()
-				.filter(bpLocation -> gln.equals(bpLocation.getGLN()))
+				.filter(bpLocation -> glnCode.equals(bpLocation.getGLN()))
 				.findFirst()
 				.map(record -> BPartnerLocationId.ofRepoId(bpartnerId, record.getC_BPartner_Location_ID()));
 	}
@@ -236,6 +288,15 @@ public class BPartnerDAO implements IBPartnerDAO
 	public I_C_BPartner_Location getBPartnerLocationById(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
 		return retrieveBPartnerLocations(bpartnerLocationId.getBpartnerId())
+				.stream()
+				.filter(bpLocation -> bpLocation.getC_BPartner_Location_ID() == bpartnerLocationId.getRepoId())
+				.findFirst()
+				.orElse(null);
+	}
+
+	public I_C_BPartner_Location getBPartnerLocationByIdInTrx(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return retrieveBPartnerLocationsInTrx(bpartnerLocationId.getBpartnerId())
 				.stream()
 				.filter(bpLocation -> bpLocation.getC_BPartner_Location_ID() == bpartnerLocationId.getRepoId())
 				.findFirst()
@@ -350,10 +411,32 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public int getDefaultShipToLocationCountryId(final BPartnerId bpartnerId)
+	public CountryId retrieveBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpLocationId)
+	{
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationById(bpLocationId);
+		final LocationId locationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
+
+		final ILocationDAO locationRepos = Services.get(ILocationDAO.class);
+		return locationRepos.getCountryIdByLocationId(locationId);
+	}
+
+	@Override
+	public CountryId retrieveBPartnerLocationCountryIdInTrx(@NonNull final BPartnerLocationId bpLocationId)
+	{
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdInTrx(bpLocationId);
+		final LocationId locationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
+
+		final ILocationDAO locationRepos = Services.get(ILocationDAO.class);
+		return locationRepos.getCountryIdByLocationId(locationId);
+	}
+
+	@Override
+	public CountryId getDefaultShipToLocationCountryIdOrNull(final BPartnerId bpartnerId)
 	{
 		final I_C_BPartner_Location bpl = getDefaultShipToLocation(bpartnerId);
-		return bpl != null ? bpl.getC_Location().getC_Country_ID() : -1;
+		return bpl != null
+				? CountryId.ofRepoId(bpl.getC_Location().getC_Country_ID())
+				: null;
 	}
 
 	@Override
@@ -450,20 +533,41 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public PricingSystemId retrievePricingSystemId(@NonNull final BPartnerId bPartnerId, final SOTrx soTrx)
+	public PricingSystemId retrievePricingSystemId(@NonNull final BPartnerId bpartnerId, final SOTrx soTrx)
 	{
-		return retrievePricingSystemId(Env.getCtx(), bPartnerId.getRepoId(), soTrx, ITrx.TRXNAME_None);
+		return retrievePricingSystemIdOrNull(bpartnerId, soTrx, ITrx.TRXNAME_None);
 	}
 
 	@Override
-	public PricingSystemId retrievePricingSystemId(
-			final Properties ctx,
-			final int bPartnerId,
+	public PricingSystemId retrievePricingSystemIdInTrx(@NonNull final BPartnerId bpartnerId, final SOTrx soTrx)
+	{
+		return retrievePricingSystemIdOrNull(bpartnerId, soTrx, ITrx.TRXNAME_ThreadInherited);
+	}
+
+	/**
+	 * Returns the <code>M_PricingSystem_ID</code> to use for a given bPartner.
+	 *
+	 *
+	 * @param bPartnerId the ID of the BPartner for which we need the pricing system id
+	 * @param soTrx
+	 *            <ul>
+	 *            <li>if <code>true</code>, then the method first checks <code>C_BPartner.M_PricingSystem_ID</code> , then (if the BPartner has a C_BP_Group_ID) in
+	 *            <code>C_BP_Group.M_PricingSystem_ID</code> and finally (if the C_BPArtner has a AD_Org_ID>0) in <code>AD_OrgInfo.M_PricingSystem_ID</code></li>
+	 *            <li>if <code>false</code></li>, then the method first checks <code>C_BPartner.PO_PricingSystem_ID</code>, then (if the BPartner has a C_BP_Group_ID!) in
+	 *            <code>C_BP_Group.PO_PricingSystem_ID</code>. Note that <code>AD_OrgInfo</code> has currently no <code>PO_PricingSystem_ID</code> column.
+	 *            </ul>
+	 */
+	private PricingSystemId retrievePricingSystemIdOrNull(
+			@NonNull final BPartnerId bpartnerId,
 			final SOTrx soTrx,
 			final String trxName)
 	{
-		final de.metas.interfaces.I_C_BPartner bPartner = InterfaceWrapperHelper.create(ctx, bPartnerId, de.metas.interfaces.I_C_BPartner.class, trxName);
-		// try to set the pricing system from BPartner
+		final Properties ctx = Env.getCtx();
+		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(ctx, bpartnerId.getRepoId(), I_C_BPartner.class, trxName);
+		if (bPartner == null)
+		{
+			throw new AdempiereException("No BPartner found for " + bpartnerId);
+		}
 
 		// metas: The method always retrieved SO-PricingSys. This caused errors in PO-Documents.
 		final Integer bpPricingSysId;
@@ -507,13 +611,13 @@ public class BPartnerDAO implements IBPartnerDAO
 			}
 		}
 
-		final int adOrgId = bPartner.getAD_Org_ID();
-		if (adOrgId > 0 && soTrx.isSales())
+		final OrgId adOrgId = OrgId.ofRepoIdOrAny(bPartner.getAD_Org_ID());
+		if (adOrgId.isRegular() && soTrx.isSales())
 		{
-			final I_AD_OrgInfo orgInfo = create(Services.get(IOrgDAO.class).retrieveOrgInfo(ctx, adOrgId, ITrx.TRXNAME_None), I_AD_OrgInfo.class);
-			if (orgInfo.getM_PricingSystem_ID() > 0)
+			final OrgInfo orgInfo = Services.get(IOrgDAO.class).getOrgInfoById(adOrgId);
+			if (orgInfo.getPricingSystemId() != null)
 			{
-				return PricingSystemId.ofRepoId(orgInfo.getM_PricingSystem_ID());
+				return orgInfo.getPricingSystemId();
 			}
 		}
 
@@ -869,6 +973,23 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public List<String> getBPartnerNamesByIds(@NonNull final Collection<BPartnerId> bpartnerIds)
+	{
+		final ImmutableMap<BPartnerId, String> bpartnerNamesById = getByIds(bpartnerIds)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						bpartner -> BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()),
+						bpartner -> bpartner.getName()));
+
+		return bpartnerIds.stream()
+				.map(bpartnerId -> {
+					final String name = bpartnerNamesById.get(bpartnerId);
+					return name != null ? name : "<" + bpartnerId.getRepoId() + ">";
+				})
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
 	public I_C_BPartner_Location retrieveBPartnerLocation(@NonNull final BPartnerLocationQuery query)
 	{
 		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = Services.get(IQueryBL.class)
@@ -936,7 +1057,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 	}
 
-	private String getOrderByColumnNameForType(BPartnerLocationQuery.Type type)
+	private static String getOrderByColumnNameForType(final BPartnerLocationQuery.Type type)
 	{
 		switch (type)
 		{
@@ -953,35 +1074,41 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public Optional<BPartnerId> retrieveBPartnerIdBy(@NonNull final BPartnerQuery query)
 	{
+		if (query.getBPartnerId() != null)
+		{
+			return Optional.of(query.getBPartnerId());
+		}
+
 		final StringJoiner searchedByInfo = new StringJoiner(", ");
 		BPartnerId existingBPartnerId = null;
 
 		if (query.getExternalId() != null)
 		{
-			existingBPartnerId = getBPartnerIdByExternalIdIfExists(query)
-					.orElse(null);
+			existingBPartnerId = getBPartnerIdByExternalIdIfExists(query).orElse(null);
 			searchedByInfo.add(StringUtils.formatMessage("ExternalId={}", query.getExternalId()));
 		}
+
 		// ..BPartner code (aka value)
 		if (existingBPartnerId == null && query.getBpartnerValue() != null)
 		{
-			existingBPartnerId = getBPartnerIdByValueIfExists(query)
-					.orElse(null);
+			existingBPartnerId = getBPartnerIdByValueIfExists(query).orElse(null);
 			searchedByInfo.add(StringUtils.formatMessage("Value/Code={}", query.getBpartnerValue()));
 		}
+
 		// ..BPartner Name
 		if (existingBPartnerId == null && query.getBpartnerName() != null)
 		{
-			existingBPartnerId = getBPartnerIdByNameIfExists(query)
-					.orElse(null);
+			existingBPartnerId = getBPartnerIdByNameIfExists(query).orElse(null);
 			searchedByInfo.add(StringUtils.formatMessage("Name={}", query.getBpartnerName()));
 		}
+
 		// BPLocation's GLN
-		if (existingBPartnerId == null && query.getLocationGln() != null)
+		if (existingBPartnerId == null && !query.getGlns().isEmpty())
 		{
-			existingBPartnerId = getBPartnerIdByLocationGlnIfExists(query)
-					.orElse(null);
-			searchedByInfo.add(StringUtils.formatMessage("Location.GLN={}", query.getLocationGln()));
+			final GLNQuery glnsQuery = toGLNQuery(query);
+
+			existingBPartnerId = glnsLoadingCache.getSingleBPartnerId(glnsQuery).orElse(null);
+			searchedByInfo.add(StringUtils.formatMessage("Location.GLNs={}", query.getGlns()));
 		}
 
 		if (existingBPartnerId == null && query.isFailIfNotExists())
@@ -993,10 +1120,84 @@ public class BPartnerDAO implements IBPartnerDAO
 		return Optional.ofNullable(existingBPartnerId);
 	}
 
-	private Optional<BPartnerId> getBPartnerIdByExternalIdIfExists(@NonNull final BPartnerQuery query)
+	@Override
+	public ImmutableSet<BPartnerId> retrieveBPartnerIdsBy(@NonNull final BPartnerQuery query)
 	{
 		final IQueryBuilder<I_C_BPartner> queryBuilder = createQueryBuilder(query.isOutOfTrx(), I_C_BPartner.class)
-				.addEqualsFilter(I_C_BPartner.COLUMN_ExternalId, query.getExternalId());
+		// .addOnlyContextClient()
+		// .addOnlyActiveRecordsFilter() also load inactive records!
+		;
+
+		if (!query.getOnlyOrgIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, query.getOnlyOrgIds());
+		}
+
+		if (query.getBPartnerId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, query.getBPartnerId());
+		}
+
+		// ..BPartner external-id
+		if (query.getExternalId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_BPartner.COLUMNNAME_ExternalId, query.getExternalId().getValue());
+		}
+
+		// ..BPartner code (aka value)
+		if (!isEmpty(query.getBpartnerValue(), true))
+		{
+			queryBuilder.addEqualsFilter(I_C_BPartner.COLUMNNAME_Value, query.getBpartnerValue());
+		}
+
+		// ..BPartner Name
+		if (!isEmpty(query.getBpartnerName(), true))
+		{
+			queryBuilder.addEqualsFilter(I_C_BPartner.COLUMNNAME_Name, query.getBpartnerName());
+		}
+
+		// BPLocation's GLN
+		if (!query.getGlns().isEmpty())
+		{
+			final ImmutableSet<BPartnerId> bpartnerIdsForGLN = glnsLoadingCache.getBPartnerIds(toGLNQuery(query));
+			if (bpartnerIdsForGLN.isEmpty())
+			{
+				return ImmutableSet.of();
+			}
+
+			queryBuilder.addInArrayFilter(I_C_BPartner.COLUMN_C_BPartner_ID, bpartnerIdsForGLN);
+		}
+
+		//
+		// Execute
+		final ImmutableSet<BPartnerId> bpartnerIds = queryBuilder
+				.create()
+				.listIds(BPartnerId::ofRepoId);
+
+		if (bpartnerIds.isEmpty() && query.isFailIfNotExists())
+		{
+			throw new AdempiereException("@NotFound@ @C_BPartner_ID@")
+					.setParameter("query", query);
+		}
+
+		return bpartnerIds;
+	}
+
+	private static GLNQuery toGLNQuery(final BPartnerQuery query)
+	{
+		return GLNQuery.builder()
+				.glns(query.getGlns())
+				.onlyOrgIds(query.getOnlyOrgIds())
+				.outOfTrx(query.isOutOfTrx())
+				.build();
+	}
+
+	private Optional<BPartnerId> getBPartnerIdByExternalIdIfExists(@NonNull final BPartnerQuery query)
+	{
+		final ExternalId externalId = assumeNotNull(query.getExternalId(), "Param query needs to have a non-null externalId; query={}", query);
+
+		final IQueryBuilder<I_C_BPartner> queryBuilder = createQueryBuilder(query.isOutOfTrx(), I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMN_ExternalId, externalId.getValue());
 
 		if (!query.getOnlyOrgIds().isEmpty())
 		{
@@ -1033,64 +1234,6 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		final int bpartnerRepoId = queryBuilder.create().firstId();
 		return BPartnerId.optionalOfRepoId(bpartnerRepoId);
-	}
-
-	@Value
-	@Builder
-	private static class BPartnerLocationGLNQuery
-	{
-		@NonNull
-		String gln;
-		@NonNull
-		ImmutableSet<OrgId> onlyOrgIds;
-
-		boolean outOfTrx;
-	}
-
-	private final CCache<BPartnerLocationGLNQuery, Optional<BPartnerId>> //
-			bpartnerIdsByGLNQuery = CCache.<BPartnerLocationGLNQuery, Optional<BPartnerId>>builder()
-			.tableName(I_C_BPartner_Location.Table_Name)
-			.build();
-
-	private Optional<BPartnerId> getBPartnerIdByLocationGlnIfExists(@NonNull final BPartnerQuery query)
-	{
-		final BPartnerLocationGLNQuery glnQuery = BPartnerLocationGLNQuery.builder()
-				.gln(query.getLocationGln())
-				.onlyOrgIds(query.getOnlyOrgIds())
-				.outOfTrx(query.isOutOfTrx())
-				.build();
-
-		if (glnQuery.isOutOfTrx())
-		{
-			return bpartnerIdsByGLNQuery.getOrLoad(glnQuery, this::retrieveBPartnerIdByLocationGln);
-		}
-		else
-		{
-			return retrieveBPartnerIdByLocationGln(glnQuery);
-		}
-	}
-
-	private Optional<BPartnerId> retrieveBPartnerIdByLocationGln(@NonNull final BPartnerLocationGLNQuery query)
-	{
-		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = createQueryBuilder(query.isOutOfTrx(), I_C_BPartner_Location.class)
-				.addEqualsFilter(I_C_BPartner_Location.COLUMN_GLN, query.getGln());
-
-		if (!query.getOnlyOrgIds().isEmpty())
-		{
-			queryBuilder.addInArrayFilter(I_C_BPartner_Location.COLUMNNAME_AD_Org_ID, query.getOnlyOrgIds());
-		}
-
-		final I_C_BPartner_Location bpartnerLocationRecord = queryBuilder
-				.create()
-				.first(I_C_BPartner_Location.class);
-
-		if (bpartnerLocationRecord == null)
-		{
-			return Optional.empty();
-		}
-
-		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(bpartnerLocationRecord.getC_BPartner_ID());
-		return Optional.ofNullable(bPartnerId);
 	}
 
 	@Override
@@ -1141,5 +1284,109 @@ public class BPartnerDAO implements IBPartnerDAO
 				.create()
 				.listIds(BPartnerId::ofRepoId)
 				.stream();
+	}
+
+	@Override
+	public List<BPartnerId> getParentsUpToTheTopInTrx(@NonNull final BPartnerId bpartnerId)
+	{
+		final ArrayList<BPartnerId> path = new ArrayList<>();
+
+		BPartnerId currentBPartnerId = bpartnerId;
+		while (currentBPartnerId != null)
+		{
+			if (path.contains(currentBPartnerId))
+			{
+				throw new AdempiereException("Cycle detected: " + path);
+			}
+
+			path.add(0, currentBPartnerId);
+
+			currentBPartnerId = getParentIdInTrx(currentBPartnerId);
+		}
+
+		return path;
+	}
+
+	private BPartnerId getParentIdInTrx(@NonNull final BPartnerId bpartnerId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMN_C_BPartner_ID, bpartnerId)
+				.addNotNull(I_C_BPartner.COLUMN_BPartner_Parent_ID)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listDistinct(I_C_BPartner.COLUMNNAME_BPartner_Parent_ID, Integer.class)
+				.stream()
+				.map(BPartnerId::ofRepoId)
+				.findAny()
+				.orElse(null);
+	}
+
+	@Override
+	public boolean isActionPriceAllowed(@NonNull final BPartnerId bpartnerId)
+	{
+		final I_C_BPartner bpartner = getById(bpartnerId);
+
+		return bpartner.isAllowActionPrice();
+	}
+
+	@Override
+	public boolean pricingSystemBelongsToCustomerForPriceMutation(final PricingSystemId pricingSystemId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final boolean belongsToCustomerForMutation = queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addOnlyContextClient()
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsCustomer, true)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsAllowPriceMutation, true)
+				.addEqualsFilter(I_C_BPartner.COLUMN_M_PricingSystem_ID, pricingSystemId.getRepoId())
+				.create()
+				.match();
+
+		return belongsToCustomerForMutation;
+	}
+
+	@Override
+	public Optional<BPartnerContactId> getBPartnerContactIdBy(@NonNull final BPartnerContactQuery contactQuery)
+	{
+		final IQueryBuilder<I_AD_User> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addInArrayFilter(I_AD_User.COLUMN_AD_Org_ID, Env.getOrgId(), OrgId.ANY);
+
+		if (contactQuery.getBPartnerId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_AD_User.COLUMN_C_BPartner_ID, contactQuery.getBPartnerId());
+		}
+		else
+		{ // we don't know which one, but is has to be some C_BPartner_ID
+			queryBuilder.addNotEqualsFilter(I_AD_User.COLUMN_C_BPartner_ID, null);
+		}
+
+		if (contactQuery.getUserId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_AD_User.COLUMN_AD_User_ID, contactQuery.getUserId());
+		}
+		else if (contactQuery.getExternalId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_AD_User.COLUMN_ExternalId, contactQuery.getExternalId().getValue());
+		}
+		else if (!Check.isEmpty(contactQuery.getValue(), true))
+		{
+			queryBuilder.addEqualsFilter(I_AD_User.COLUMN_Value, contactQuery.getValue().trim());
+		}
+
+		final I_AD_User userRecord = queryBuilder
+				.create()
+				.firstOnlyOrNull(I_AD_User.class);
+
+		if (userRecord == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(BPartnerContactId.ofRepoId(userRecord.getC_BPartner_ID(), userRecord.getAD_User_ID()));
 	}
 }

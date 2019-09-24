@@ -13,11 +13,11 @@ package de.metas.materialtracking.model.validator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -57,8 +57,7 @@ public class M_PriceList_Version
 	 *
 	 * @param plv
 	 */
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE,
-			ifColumnsChanged = I_M_PriceList_Version.COLUMNNAME_Processed)
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_M_PriceList_Version.COLUMNNAME_Processed)
 	public void reenqueuePPOrders(final I_M_PriceList_Version plv)
 	{
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
@@ -67,12 +66,11 @@ public class M_PriceList_Version
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		final IMaterialTrackingPPOrderDAO materialTrackingPPOrderDAO = Services.get(IMaterialTrackingPPOrderDAO.class);
 
-		final org.compiere.model.I_M_PriceList_Version previousPLV = priceListDAO.retrievePreviousVersionOrNull(plv);
+		final org.compiere.model.I_M_PriceList_Version previousPLV = priceListDAO.retrievePreviousVersionOrNull(plv, true);
 
-		final ICompositeQueryFilter<I_C_Invoice_Candidate> plvFilter =
-				queryBL.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
-						.setJoinOr()
-						.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_PriceList_Version_ID, plv.getM_PriceList_Version_ID());
+		final ICompositeQueryFilter<I_C_Invoice_Candidate> plvFilter = queryBL.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
+				.setJoinOr()
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_PriceList_Version_ID, plv.getM_PriceList_Version_ID());
 		if (previousPLV != null)
 		{
 			plvFilter.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_PriceList_Version_ID, previousPLV.getM_PriceList_Version_ID());

@@ -9,13 +9,15 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.i18n.IMsgBL;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 
 @Callout(I_M_HU_PI_Item_Product.class)
@@ -67,21 +69,22 @@ public class M_HU_PI_Item_Product
 	{
 		if (itemProduct.isAllowAnyProduct())
 		{
-			itemProduct.setM_Product(null);
+			itemProduct.setM_Product_ID(-1);
 			itemProduct.setIsInfiniteCapacity(true);
 		}
 	}
 
 	private void setUOMItemProduct(final I_M_HU_PI_Item_Product huPiItemProduct)
 	{
-		final I_M_Product product = huPiItemProduct.getM_Product();
-
-		if (product == null)
+		final ProductId productId = ProductId.ofRepoIdOrNull(huPiItemProduct.getM_Product_ID());
+		if (productId == null)
 		{
 			// nothing to do
 			return;
 		}
-		huPiItemProduct.setC_UOM(product.getC_UOM());
+
+		final UomId stockingUOMId = Services.get(IProductBL.class).getStockUOMId(productId);
+		huPiItemProduct.setC_UOM_ID(stockingUOMId.getRepoId());
 	}
 
 	private void validateItemProduct(final I_M_HU_PI_Item_Product itemProduct)

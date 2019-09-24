@@ -46,6 +46,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 import de.metas.security.permissions.Access;
 import de.metas.user.UserId;
@@ -889,7 +890,9 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 * @param modelClass
 	 * @return record; never returns null
 	 * @throws AdempiereException if no model found
+	 * @deprecated use proper Repository
 	 */
+	@Deprecated
 	protected final <ModelType> ModelType getRecord(final Class<ModelType> modelClass)
 	{
 		String trxName = getTrxName();
@@ -951,6 +954,11 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		return getProcessInfo().getUserId();
 	}
 
+	protected final ClientId getClientId()
+	{
+		return getProcessInfo().getClientId();
+	}
+
 	/**
 	 * @deprecated please use {@link #getClientID()}.
 	 */
@@ -958,6 +966,11 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	protected final int getAD_Client_ID()
 	{
 		return getProcessInfo().getAD_Client_ID();
+	}
+	
+	protected final OrgId getOrgId()
+	{
+		return getProcessInfo().getOrgId();
 	}
 
 	/**

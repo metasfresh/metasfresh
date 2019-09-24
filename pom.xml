@@ -50,11 +50,14 @@
 			two versions might clash in ait modules -->
 		<metasfresh.cxf.version>3.1.6</metasfresh.cxf.version>
 
-		<jackson.version>2.9.8</jackson.version>
+		<jackson.version>2.9.9</jackson.version>
 
+		<!-- jackson-dataformat-xml:2.9.9 has two different version in its dependency tree -->
+		<woodstox.stax2-api.version>4.1</woodstox.stax2-api.version>
+		
 		<!-- woodstox is in the dependency tree of both cxf-core and jackson-dataformat-xml -->
-		<woodstox.version>5.0.3</woodstox.version>
-
+		<woodstox.version>5.1.0</woodstox.version>
+		
 		<license.name>gpl_v2</license.name>
 
 		<acceptance.reports.dir>target/acceptance-reports</acceptance.reports.dir>
@@ -83,7 +86,9 @@
 		<module>de.metas.aggregation</module>
 
 		<module>de.metas.business</module>
+
 		<module>de.metas.business.rest-api</module>
+		<module>de.metas.business.rest-api-impl</module>
 
 		<module>de.metas.jax.rs</module>
 
@@ -118,7 +123,6 @@
 		<module>de.metas.invoice_gateway.spi</module>
 
 		<module>de.metas.inbound.mail</module>
-		<module>de.metas.invoice.rest-api</module>
 
 		<module>de.metas.fresh</module>
 
@@ -131,13 +135,10 @@
 		<module>de.metas.handlingunits.base</module>
 		<module>de.metas.handlingunits.client</module>
 
-		<module>de.metas.order.rest-api</module>
-
-		<module>de.metas.ordercandidate.rest-api</module>
-		<module>de.metas.ordercandidate.rest-api-impl</module>
-
 		<module>de.metas.payment.esr</module>
 		<module>de.metas.payment.sepa</module>
+		<module>de.metas.payment.paypal</module>
+
 		<module>de.metas.printing</module>
 
 		<module>de.metas.printing.rest-api-impl</module>
@@ -185,9 +186,11 @@
 		<module>de.metas.vertical.pharma.msv3.server-peer-metasfresh</module>
 		<module>de.metas.vertical.pharma.vendor.gateway.msv3</module>
 
+		<module>de.metas.vertical.pharma.securpharm</module>
+
 		<module>vertical-healthcare_ch</module>
 
-	</modules>
+    </modules>
 
 	<dependencyManagement>
 		<dependencies>

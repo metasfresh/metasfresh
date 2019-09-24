@@ -93,7 +93,7 @@ public class PPOrderBOMLineProductStorage extends AbstractProductStorage
 		}
 
 		final Quantity qtyIssued = qtyCapacity.subtract(qtyToIssueOrReceive);
-		return qtyIssued.getAsBigDecimal();
+		return qtyIssued.toBigDecimal();
 	}
 
 	@Override

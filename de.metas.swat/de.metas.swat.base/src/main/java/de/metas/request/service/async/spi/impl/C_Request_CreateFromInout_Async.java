@@ -14,7 +14,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.request.api.IRequestDAO;
+import de.metas.request.api.IRequestBL;
 import de.metas.util.Services;
 
 /*
@@ -143,7 +143,7 @@ public class C_Request_CreateFromInout_Async extends WorkpackageProcessorAdapter
 	{
 		// Services
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-		final IRequestDAO requestDAO = Services.get(IRequestDAO.class);
+		final IRequestBL requestBL = Services.get(IRequestBL.class);
 
 		// retrieve the items (inout lines) that were enqueued and put them in a list
 		final List<I_M_InOutLine> lines = queueDAO.retrieveItems(workPackage, I_M_InOutLine.class, localTrxName);
@@ -151,7 +151,7 @@ public class C_Request_CreateFromInout_Async extends WorkpackageProcessorAdapter
 		// for each line that was enqueued, create a R_Request containing the information from the inout line and inout
 		for (final I_M_InOutLine line : lines)
 		{
-			requestDAO.createRequestFromInOutLine(line);
+			requestBL.createRequestFromInOutLine(line);
 		}
 
 		return Result.SUCCESS;

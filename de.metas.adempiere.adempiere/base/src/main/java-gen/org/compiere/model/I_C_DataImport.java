@@ -32,8 +32,6 @@ public interface I_C_DataImport
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_C_DataImport, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_DataImport, org.compiere.model.I_AD_Client>(I_C_DataImport.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -86,17 +84,13 @@ public interface I_C_DataImport
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_C_DataImport, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_DataImport, org.compiere.model.I_AD_Org>(I_C_DataImport.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Data import.
+	 * Set Daten Import.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -105,7 +99,7 @@ public interface I_C_DataImport
 	public void setC_DataImport_ID (int C_DataImport_ID);
 
 	/**
-	 * Get Data import.
+	 * Get Daten Import.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -147,6 +141,31 @@ public interface I_C_DataImport
     public static final org.adempiere.model.ModelColumn<I_C_DataImport, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_DataImport, org.compiere.model.I_AD_User>(I_C_DataImport.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Interner Name.
+	 * Generally used to give records a name that can be safely referenced from code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setInternalName (java.lang.String InternalName);
+
+	/**
+	 * Get Interner Name.
+	 * Generally used to give records a name that can be safely referenced from code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getInternalName();
+
+    /** Column definition for InternalName */
+    public static final org.adempiere.model.ModelColumn<I_C_DataImport, Object> COLUMN_InternalName = new org.adempiere.model.ModelColumn<I_C_DataImport, Object>(I_C_DataImport.class, "InternalName", null);
+    /** Column name InternalName */
+    public static final String COLUMNNAME_InternalName = "InternalName";
 
 	/**
 	 * Set Aktiv.

@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
 import de.metas.order.compensationGroup.GroupCompensationLine.GroupCompensationLineBuilder;
 import de.metas.product.ProductId;
@@ -63,7 +64,7 @@ public class GroupTests
 		uomId = UomId.ofRepoId(uomRecord.getC_UOM_ID());
 
 		final I_M_Product productRecord = newInstance(I_M_Product.class);
-		productRecord.setC_UOM(uomRecord);
+		productRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		saveRecord(productRecord);
 		productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
 	}
@@ -73,7 +74,8 @@ public class GroupTests
 	{
 		final Group group = Group.builder()
 				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
-				.precision(2)
+				.pricePrecision(CurrencyPrecision.TWO)
+				.amountPrecision(CurrencyPrecision.TWO)
 				.bpartnerId(BPartnerId.ofRepoId(3))
 				.soTrx(SOTrx.SALES)
 				.regularLine(regularLine(480).build())
@@ -104,15 +106,13 @@ public class GroupTests
 		}
 	}
 
-	/**
-	 * NOTE: This test is using the same data as {@link #test_updateAllPercentageLines_twoPercentDiscountLines()}
-	 */
 	@Test
 	void addNewCompensationLine()
 	{
 		final Group group = Group.builder()
 				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
-				.precision(2)
+				.pricePrecision(CurrencyPrecision.TWO)
+				.amountPrecision(CurrencyPrecision.TWO)
 				.bpartnerId(BPartnerId.ofRepoId(3))
 				.soTrx(SOTrx.SALES)
 				.regularLine(regularLine(480).build())

@@ -2,9 +2,10 @@ package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.ITableRecordReference;
 
+import de.metas.error.AdIssueId;
+import de.metas.organization.OrgId;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -51,20 +52,20 @@ public class PurchaseErrorItem implements PurchaseItem
 
 	Throwable throwable;
 
-	int adIssueId;
+	AdIssueId adIssueId;
 
 	@Builder
 	private PurchaseErrorItem(
 			final PurchaseItemId purchaseItemId,
 			@Nullable final Throwable throwable,
-			@Nullable final int adIssueId,
+			@Nullable final AdIssueId adIssueId,
 			@NonNull final PurchaseCandidateId purchaseCandidateId,
 			@NonNull final OrgId orgId,
 			@Nullable final ITableRecordReference transactionReference)
 	{
 		this.purchaseItemId = purchaseItemId;
 
-		Check.assume(adIssueId > 0 || throwable != null, "At least one of the given issue or thorwable need to be non-null");
+		Check.assume(adIssueId != null || throwable != null, "At least one of the given issue or thorwable need to be non-null");
 
 		this.throwable = throwable;
 		this.adIssueId = adIssueId;

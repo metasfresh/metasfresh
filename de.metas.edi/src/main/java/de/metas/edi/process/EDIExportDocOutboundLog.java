@@ -50,6 +50,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.SelectionSize;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 
@@ -71,11 +72,13 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
 	{
-		if (context.getSelectionSize() <= 0)
+		final SelectionSize selectionSize = context.getSelectionSize();		
+		if (selectionSize.isNoSelection())
 		{
-			ProcessPreconditionsResolution.rejectWithInternalReason("nothing selected");
+			ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
-		if (context.getSelectionSize() > 500)
+		
+		if (selectionSize.isAllSelected() || selectionSize.getSize() > 500)
 		{
 			// we assume that where are some invoice lines selected
 			ProcessPreconditionsResolution.accept();
@@ -195,7 +198,7 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 				continue;
 			}
 
-			Loggables.get().addLog("Adding ediDocument {}", ediDocument);
+			Loggables.addLog("Adding ediDocument {}", ediDocument);
 			filteredDocuments.add(ediDocument);
 		}
 		return filteredDocuments;

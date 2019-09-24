@@ -58,7 +58,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.images.Images;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.APanel;
 import org.compiere.model.GridTabVO;
@@ -76,6 +75,7 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -770,7 +770,7 @@ public class VSortTab extends CPanel implements APanelTab
 		final AtomicBoolean ok = new AtomicBoolean(true);
 		final StringBuffer info = new StringBuffer();
 		Services.get(ITrxManager.class)
-				.run(new TrxRunnableAdapter()
+				.runInNewTrx(new TrxRunnableAdapter()
 				{
 					@Override
 					public void run(String localTrxName) throws Exception

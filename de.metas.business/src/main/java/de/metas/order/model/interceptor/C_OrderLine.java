@@ -1,5 +1,7 @@
 package de.metas.order.model.interceptor;
 
+import static org.adempiere.model.InterfaceWrapperHelper.isCopy;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -55,7 +57,7 @@ import lombok.NonNull;
 
 @Interceptor(I_C_OrderLine.class)
 @Callout(I_C_OrderLine.class)
-@Component("de.metas.order.model.interceptor.C_OrderLine")
+@Component
 public class C_OrderLine
 {
 	private static final Logger logger = LogManager.getLogger(C_OrderLine.class);
@@ -69,7 +71,7 @@ public class C_OrderLine
 		this.groupChangesHandler = groupChangesHandler;
 
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
-	};
+	}
 
 	/**
 	 * 09557: If a purchase order line is deleted, then all sales order lines need to un-reference it to avoid an FK-constraint-error
@@ -281,6 +283,10 @@ public class C_OrderLine
 			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyEntered, I_C_OrderLine.COLUMNNAME_M_DiscountSchemaBreak_ID })
 	public void updatePricesOverrideExistingDiscounts(final I_C_OrderLine orderLine)
 	{
+		if (isCopy(orderLine))
+		{
+			return;
+		}
 		if (orderLine.isProcessed())
 		{
 			return;

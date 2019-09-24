@@ -39,7 +39,6 @@ import org.adempiere.ad.persistence.IModelClassInfo;
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.ad.persistence.ModelClassIntrospector;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -53,13 +52,11 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
-import org.compiere.model.I_AD_Issue;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.Env;
@@ -70,9 +67,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.model.IModelCacheService;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
@@ -360,9 +360,9 @@ public class InterfaceWrapperHelper
 	/**
 	 * Loads given model, out of transaction.
 	 * NOTE: to be used, mainly for loading master data models.
+	 * NOTE: when we are where we want to be, this will only be invoked from repositories!
 	 *
 	 * @param id model's ID
-	 * @param modelClass
 	 * @return loaded model
 	 */
 	public static <T> T loadOutOfTrx(final int id, final Class<T> modelClass)
@@ -392,6 +392,7 @@ public class InterfaceWrapperHelper
 		return id == null ? newInstance(modelClass) : load(id.getRepoId(), modelClass);
 	}
 
+	@Deprecated
 	public static <T> T loadOrNew(@Nullable final RepoIdAware id, final Class<T> modelClass, final Object contextProvider)
 	{
 		return id == null ? newInstance(modelClass, contextProvider) : load(id.getRepoId(), modelClass);
@@ -594,6 +595,16 @@ public class InterfaceWrapperHelper
 		}
 	}
 
+	public static void saveAll(@NonNull final Collection<?> models)
+	{
+		if (models.isEmpty())
+		{
+			return;
+		}
+
+		models.forEach(InterfaceWrapperHelper::saveRecord);
+	}
+
 	/**
 	 * Does the same as {@link #save(Object)},
 	 * but this method can be static-imported into repository implementations which usually have their own method named "save()".
@@ -627,8 +638,8 @@ public class InterfaceWrapperHelper
 		else
 		{
 			final AdempiereException ex = new AdempiereException("Model not handled: " + modelToSave + "(class=" + modelToSave.getClass() + "). Ignored.");
-			final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(ex);
-			logger.warn("Could not save the given model; message={}; AD_Issue_ID={}", ex.getLocalizedMessage(), issue.getAD_Issue_ID());
+			final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(ex);
+			logger.warn("Could not save the given model; message={}; AD_Issue_ID={}", ex.getLocalizedMessage(), issueId);
 		}
 	}
 
@@ -949,8 +960,12 @@ public class InterfaceWrapperHelper
 		}
 	}
 
-	public static final boolean isModelInterface(final Class<?> modelClass)
+	public static final boolean isModelInterface(@Nullable final Class<?> modelClass)
 	{
+		if (modelClass == null)
+		{
+			return false;
+		}
 		final IModelClassInfo modelClassInfo = getModelClassInfoOrNull(modelClass);
 		if (modelClassInfo == null)
 		{
@@ -1245,8 +1260,10 @@ public class InterfaceWrapperHelper
 	 * @param columnName
 	 * @return value of [columnName]_Override or [columnName]; <b>might return null</b>, so don't blindly use as int.
 	 * @throws AdempiereException if neither the "normal" value nor the override value is available.
-	 *
+	 * 
+	 * @deprecated Favor using the actual getters. It's easier to trace/debug later.
 	 */
+	@Deprecated
 	public static <T> T getValueOverrideOrValue(final Object model, final String columnName)
 	{
 		final boolean throwExIfColumnNotFound = true;
@@ -1409,7 +1426,7 @@ public class InterfaceWrapperHelper
 			return interfaceClass.isAssignableFrom(model.getClass());
 		}
 
-		final String modelTableName = getModelTableName(model);
+		final String modelTableName = getModelTableNameOrNull(model); // make sure not to fail if 'model' has some unrelated class
 
 		return interfaceTableName.equals(modelTableName);
 	}

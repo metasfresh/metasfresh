@@ -1,9 +1,6 @@
 package de.metas.inventory;
 
-import static de.metas.inventory.InventoryConstants.DocSubType_INVENTORY_WITH_AGGREGATED_HUS;
-import static de.metas.inventory.InventoryConstants.DocSubType_INVENTORY_WITH_SINGLE_HU;
-import static de.metas.inventory.InventoryConstants.HUAggregationType_MULTI_HU;
-import static de.metas.inventory.InventoryConstants.HUAggregationType_SINGLE_HU;
+import java.util.stream.Stream;
 
 import org.compiere.model.X_C_DocType;
 
@@ -26,47 +23,50 @@ import lombok.NonNull;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 public enum AggregationType
 {
+	// NOTE to developer: Please keep in sync doc sub types with list reference "C_DocType SubType" {@code AD_Reference_ID=148}
+
 	SINGLE_HU(
-			HUAggregationType_SINGLE_HU,
-			DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory, DocSubType_INVENTORY_WITH_SINGLE_HU)),
+			HUAggregationType.SINGLE_HU,
+			DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory, "ISH")),
 
 	MULTIPLE_HUS(
-			HUAggregationType_MULTI_HU,
-			DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory, DocSubType_INVENTORY_WITH_AGGREGATED_HUS));
+			HUAggregationType.MULTI_HU,
+			DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory, "IAH"));
 
 	@Getter
-	private final String refListValue;
+	private final HUAggregationType huAggregationType;
 
 	@Getter
 	private final DocBaseAndSubType docBaseAndSubType;
 
-	private static ImmutableMap<DocBaseAndSubType, AggregationType> docType2aggregationMode = ImmutableMap
-			.<DocBaseAndSubType, AggregationType> builder()
-			.put(SINGLE_HU.getDocBaseAndSubType(), SINGLE_HU)
-			.put(MULTIPLE_HUS.getDocBaseAndSubType(), MULTIPLE_HUS)
-			.build();
+	private static ImmutableMap<DocBaseAndSubType, AggregationType> docType2aggregationMode = Stream.of(values())
+			.collect(ImmutableMap.toImmutableMap(AggregationType::getDocBaseAndSubType, t -> t));
 
 	private AggregationType(
-			@NonNull final String refListValue,
+			@NonNull final HUAggregationType huAggregationType,
 			@NonNull final DocBaseAndSubType docBaseAndSubType)
 	{
-		this.refListValue = refListValue;
+		this.huAggregationType = huAggregationType;
 		this.docBaseAndSubType = docBaseAndSubType;
 	}
 
-	public static AggregationType getByDocType(@NonNull final DocBaseAndSubType docBaseAndSubType)
+	public String getHuAggregationTypeCode()
+	{
+		return getHuAggregationType().getCode();
+	}
+
+	public static AggregationType getByDocTypeOrNull(@NonNull final DocBaseAndSubType docBaseAndSubType)
 	{
 		return docType2aggregationMode.get(docBaseAndSubType);
 	}

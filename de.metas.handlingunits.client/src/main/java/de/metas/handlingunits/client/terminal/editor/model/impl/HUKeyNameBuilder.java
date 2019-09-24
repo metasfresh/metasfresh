@@ -56,6 +56,7 @@ import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -231,7 +232,7 @@ import de.metas.util.StringUtils;
 	{
 		final HUKey huKey = getKey();
 
-		BigDecimal qty = productStorage.getQty().getAsBigDecimal();
+		BigDecimal qty = productStorage.getQty().toBigDecimal();
 		if (qty.signum() == 0)
 		{
 			return null;
@@ -379,7 +380,7 @@ import de.metas.util.StringUtils;
 				return null; // Invalid weight
 			}
 
-			uom = pm == null ? null : pm.getC_UOM_Weight();
+			uom = pm == null ? null : Services.get(IUOMDAO.class).getById(pm.getC_UOM_Weight_ID());
 			if (uom == null)
 			{
 				return null; // No PM UOM

@@ -9,7 +9,7 @@ import org.compiere.model.I_C_Payment;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
-import de.metas.document.engine.IDocument;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
@@ -62,8 +62,8 @@ public class C_BankStatementLine_UnLink_Payments extends JavaProcess
 		//
 		// Make sure we are allowed to modify this line
 		final I_C_BankStatement bankStatement = bankStatementLine.getC_BankStatement();
-		final String docStatus = bankStatement.getDocStatus();
-		if (!docActionBL.isStatusStrOneOf(docStatus, IDocument.STATUS_Drafted, IDocument.STATUS_Completed, IDocument.STATUS_InProgress))
+		final DocStatus docStatus = DocStatus.ofCode(bankStatement.getDocStatus());
+		if (!docStatus.isDraftedOrInProgress() && !docStatus.isCompleted())
 		{
 			throw new AdempiereException("@Invalid@ @DocStatus@: " + docStatus);
 		}

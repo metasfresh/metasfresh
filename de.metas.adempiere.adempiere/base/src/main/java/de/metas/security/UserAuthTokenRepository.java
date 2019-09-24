@@ -1,16 +1,18 @@
 package de.metas.security;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import java.util.List;
 import java.util.UUID;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_User_AuthToken;
 import org.springframework.stereotype.Repository;
 
 import de.metas.cache.CCache;
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -48,7 +50,7 @@ public class UserAuthTokenRepository
 		return authTokensByToken.getOrLoad(token, () -> retrieveByToken(token));
 	}
 
-	private UserAuthToken retrieveByToken(final String token)
+	private UserAuthToken retrieveByToken(@NonNull final String token)
 	{
 		final List<I_AD_User_AuthToken> userAuthTokens = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User_AuthToken.class)
@@ -57,6 +59,60 @@ public class UserAuthTokenRepository
 				.setLimit(2)
 				.create()
 				.list(I_AD_User_AuthToken.class);
+
+		return extractSingleToken(userAuthTokens);
+	}
+
+	/** Supposed to be called from model interceptor. */
+	public void beforeSave(final I_AD_User_AuthToken userAuthTokenPO)
+	{
+		if (Check.isEmpty(userAuthTokenPO.getAuthToken(), true))
+		{
+			userAuthTokenPO.setAuthToken(generateAuthTokenString());
+		}
+		fromRecord(userAuthTokenPO); // make sure it's valid
+	}
+
+	public void resetAuthTokensAndSave(@NonNull final UserId userId, @NonNull final RoleId roleId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final List<I_AD_User_AuthToken> userAuthTokenRecords = queryBL
+				.createQueryBuilder(I_AD_User_AuthToken.class)
+				// .addOnlyActiveRecordsFilter() reset 'em all; we don't want inactive tokens to retain their static values infinitely
+				.addEqualsFilter(I_AD_User_AuthToken.COLUMN_AD_User_ID, userId)
+				.addEqualsFilter(I_AD_User_AuthToken.COLUMN_AD_Role_ID, roleId)
+				.create()
+				.list(I_AD_User_AuthToken.class);
+
+		for (final I_AD_User_AuthToken userAuthTokenRecord : userAuthTokenRecords)
+		{
+			userAuthTokenRecord.setAuthToken(generateAuthTokenString());
+			saveRecord(userAuthTokenRecord);
+		}
+	}
+
+	private static String generateAuthTokenString()
+	{
+		return UUID.randomUUID().toString().replace("-", "");
+	}
+
+	public UserAuthToken retrieveByUserId(@NonNull final UserId userId, @NonNull final RoleId roleId)
+	{
+		final List<I_AD_User_AuthToken> userAuthTokens = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User_AuthToken.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_User_AuthToken.COLUMN_AD_User_ID, userId)
+				.addEqualsFilter(I_AD_User_AuthToken.COLUMN_AD_Role_ID, roleId)
+				.setLimit(2)
+				.create()
+				.list(I_AD_User_AuthToken.class);
+
+		return extractSingleToken(userAuthTokens);
+	}
+
+	private UserAuthToken extractSingleToken(@NonNull final List<I_AD_User_AuthToken> userAuthTokens)
+	{
 		if (userAuthTokens.isEmpty())
 		{
 			throw new AdempiereException("Invalid token (1)");
@@ -66,10 +122,10 @@ public class UserAuthTokenRepository
 			throw new AdempiereException("Invalid token (2)");
 		}
 
-		return toUserAuthToken(userAuthTokens.get(0));
+		return fromRecord(userAuthTokens.get(0));
 	}
 
-	private static UserAuthToken toUserAuthToken(final I_AD_User_AuthToken userAuthTokenPO)
+	private static UserAuthToken fromRecord(final I_AD_User_AuthToken userAuthTokenPO)
 	{
 		return UserAuthToken.builder()
 				.userId(UserId.ofRepoId(userAuthTokenPO.getAD_User_ID()))
@@ -79,20 +135,5 @@ public class UserAuthTokenRepository
 				.orgId(OrgId.ofRepoId(userAuthTokenPO.getAD_Org_ID()))
 				.roleId(RoleId.ofRepoId(userAuthTokenPO.getAD_Role_ID()))
 				.build();
-	}
-
-	public void beforeSave(final I_AD_User_AuthToken userAuthTokenPO)
-	{
-		if (Check.isEmpty(userAuthTokenPO.getAuthToken(), true))
-		{
-			userAuthTokenPO.setAuthToken(generateAuthTokenString());
-		}
-
-		toUserAuthToken(userAuthTokenPO); // make sure it's valid
-	}
-
-	private static String generateAuthTokenString()
-	{
-		return UUID.randomUUID().toString().replace("-", "");
 	}
 }

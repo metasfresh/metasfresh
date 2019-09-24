@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_M_Shipment_Declaration;
 import org.compiere.model.I_M_Shipment_Declaration_Line;
 import org.compiere.util.TimeUtil;
@@ -20,6 +19,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipment.ShipmentDeclaration;
@@ -153,7 +153,7 @@ public class ShipmentDeclarationRepository
 		record.setAD_Org_ID(orgId.getRepoId());
 
 		final Quantity quantity = line.getQuantity();
-		record.setQty(quantity.getAsBigDecimal());
+		record.setQty(quantity.toBigDecimal());
 		record.setC_UOM_ID(quantity.getUOMId());
 
 		final ProductId productId = line.getProductId();

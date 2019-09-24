@@ -20,6 +20,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.process.SelectionSize;
 
 public class AProcessModelTest
 {
@@ -104,7 +105,7 @@ public class AProcessModelTest
 			}
 
 			@Override
-			public int getSelectionSize()
+			public SelectionSize getSelectionSize()
 			{
 				throw new UnsupportedOperationException();
 			}

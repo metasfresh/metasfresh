@@ -1,0 +1,80 @@
+{
+  "requestItems" : [ {
+    "bpartnerIdentifier" : "ext-fghij_2",
+    "bpartnerComposite" : {
+      "bpartner" : {
+        "externalId" : "fghij_2",
+        "code" : "code",
+        "name" : "bPartner.name",
+        "companyName" : "bPartner.companyName",
+        "parentId" : 1,
+        "phone" : "bPartner.phone",
+        "language" : "bPartner.de_CH",
+        "url" : "bPartner.url",
+        "group" : "bpGroupRecord.name"
+      },
+      "locations" : {
+        "requestItems" : [ {
+          "locationIdentifier" : "ext-l1_externalId",
+          "location" : {
+            "externalId" : "l1_externalId",
+            "address1" : "l1_address1",
+            "address2" : "l1_address2",
+            "postal" : "l1_postal",
+            "poBox" : "l1_poBox",
+            "district" : "l1_district",
+            "region" : "l1_region",
+            "city" : "l1_city",
+            "countryCode" : "CH",
+            "gln" : "l1_gln"
+          }
+        }, {
+          "locationIdentifier" : "ext-l2_externalId",
+          "location" : {
+            "externalId" : "l2_externalId",
+            "address1" : "l2_address1",
+            "address2" : "l2_address2",
+            "postal" : "l2_postal",
+            "poBox" : "l2_poBox",
+            "district" : "l2_district",
+            "region" : "l2_region",
+            "city" : "l2_city",
+            "countryCode" : "DE",
+            "gln" : "l2_gln"
+          }
+        } ],
+        "syncAdvise" : {
+          "ifNotExists" : "CREATE",
+          "ifExists" : "UPDATE_MERGE"
+        }
+      },
+      "contacts" : {
+        "requestItems" : [ {
+          "contactIdentifier" : "ext-c1_externalId",
+          "contact" : {
+            "externalId" : "c1_externalId",
+            "name" : "c1_name",
+            "email" : "c1_email@email.net",
+            "phone" : "c1_phone"
+          }
+        }, {
+          "contactIdentifier" : "ext-c2_externalId",
+          "contact" : {
+            "externalId" : "c2_externalId",
+            "name" : "c2_name",
+            "email" : "c2_email@email.net",
+            "phone" : "c2_phone"
+          }
+        } ],
+        "syncAdvise" : {
+          "ifNotExists" : "CREATE",
+          "ifExists" : "UPDATE_MERGE"
+        }
+      }
+    }
+  } ],
+  "syncAdvise" : {
+    "ifNotExists" : "CREATE",
+    "ifExists" : "UPDATE_MERGE"
+  }
+}

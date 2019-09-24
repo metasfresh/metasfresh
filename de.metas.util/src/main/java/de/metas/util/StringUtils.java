@@ -68,6 +68,7 @@ public final class StringUtils
 		return ImmutablePair.of(trim(street), trim(number));
 	}
 
+	@Nullable
 	public static String trim(@Nullable String untrimmedStringOrNull)
 	{
 		if (untrimmedStringOrNull == null)
@@ -77,10 +78,27 @@ public final class StringUtils
 		return untrimmedStringOrNull.trim();
 	}
 
+	@Nullable
+	public static String trimBlankToNull(@Nullable final String str)
+	{
+		if (str == null || str.isEmpty())
+		{
+			return null;
+		}
+
+		final String strTrim = str.trim();
+		if (strTrim.isEmpty())
+		{
+			return null;
+		}
+
+		return strTrim;
+	}
+
 	public enum TruncateAt
 	{
 		STRING_START, STRING_END
-	};
+	}
 
 	/**
 	 * Truncate string to a given length, if required.
@@ -209,7 +227,7 @@ public final class StringUtils
 	 *         <li><code>defaultValue</code> if value is null or other
 	 *         </ul>
 	 */
-	public static final Boolean toBoolean(final Object value, final Boolean defaultValue)
+	public static Boolean toBoolean(final Object value, final Boolean defaultValue)
 	{
 		if (value == null)
 		{
@@ -250,7 +268,7 @@ public final class StringUtils
 	 *         <li>false if value is null or other
 	 *         </ul>
 	 */
-	public static final boolean toBoolean(final Object value)
+	public static boolean toBoolean(final Object value)
 	{
 		final Boolean defaultValue = Boolean.FALSE;
 		return toBoolean(value, defaultValue);
@@ -267,7 +285,7 @@ public final class StringUtils
 	 *         <li>"N" if value is false
 	 *         </ul>
 	 */
-	public static final String ofBoolean(@Nullable final Boolean value)
+	public static String ofBoolean(@Nullable final Boolean value)
 	{
 		if (value == null)
 		{
@@ -447,7 +465,7 @@ public final class StringUtils
 	 * @param stringToVerify
 	 * @return {@link code true} if the given string consists only of digits (i.e. contains no letter, whitespace decimal point etc).
 	 */
-	public static final boolean isNumber(final String stringToVerify)
+	public static boolean isNumber(final String stringToVerify)
 	{
 		// Null or empty strings are not numbers
 		if (stringToVerify == null || stringToVerify.isEmpty())
@@ -466,13 +484,13 @@ public final class StringUtils
 		return true;
 	}
 
-	public static final String toString(final Collection<?> collection, final String separator)
+	public static String toString(final Collection<?> collection, final String separator)
 	{
 		return toStringBuilder(collection, separator)
 				.toString();
 	}
 
-	public static final StringBuilder toStringBuilder(final Collection<?> collection, final String separator)
+	public static StringBuilder toStringBuilder(final Collection<?> collection, final String separator)
 	{
 		if (collection == null)
 		{
@@ -522,7 +540,9 @@ public final class StringUtils
 	{
 		if (value == null || value.length() == 0
 				|| oldPart == null || oldPart.length() == 0)
+		{
 			return value;
+		}
 		//
 		final int oldPartLength = oldPart.length();
 		String oldValue = value;
@@ -532,7 +552,9 @@ public final class StringUtils
 		{
 			retValue.append(oldValue.substring(0, pos));
 			if (newPart != null && newPart.length() > 0)
+			{
 				retValue.append(newPart);
+			}
 			oldValue = oldValue.substring(pos + oldPartLength);
 			pos = oldValue.indexOf(oldPart);
 		}
@@ -572,7 +594,9 @@ public final class StringUtils
 		for (int i = 0; i < text.length(); i++)
 		{
 			if (Character.isDigit(text.charAt(i)))
+			{
 				sb.append(text.charAt(i));
+			}
 		}
 		return sb.toString();
 	}
@@ -597,7 +621,9 @@ public final class StringUtils
 		{
 			final char c = element;
 			if (Character.isLetter(c) || !Character.isDigit(c))
+			{
 				out.append(c);
+			}
 		}
 		return out.toString();
 	}
@@ -618,7 +644,9 @@ public final class StringUtils
 			if (Character.isWhitespace(c))
 			{
 				if (!lastWasSpace)
+				{
 					out.append(' ');
+				}
 				lastWasSpace = true;
 			}
 			else
@@ -726,7 +754,9 @@ public final class StringUtils
 	{
 		// If the content is null, then return null - teo_sarca [ 1748346 ]
 		if (content == null || content.isEmpty())
+		{
 			return content;
+		}
 		//
 		final StringBuilder out = new StringBuilder();
 		final char[] chars = content.toCharArray();
@@ -751,15 +781,21 @@ public final class StringUtils
 					break;
 				case '\n':
 					if (maskCR)
+					{
 						out.append("<br>");
+					}
 					break;
-					//
+				//
 				default:
 					final int ii = c;
-					if (ii > 255)		// Write Unicode
+					if (ii > 255)
+					{
 						out.append("&#").append(ii).append(";");
+					}
 					else
+					{
 						out.append(c);
+					}
 					break;
 			}
 		}
@@ -776,13 +812,17 @@ public final class StringUtils
 	public static int getCount(String string, char countChar)
 	{
 		if (string == null || string.length() == 0)
+		{
 			return 0;
+		}
 		int counter = 0;
 		final char[] array = string.toCharArray();
 		for (final char element : array)
 		{
 			if (element == countChar)
+			{
 				counter++;
+			}
 		}
 		return counter;
 	}	// getCount
@@ -810,7 +850,9 @@ public final class StringUtils
 	public static int findIndexOf(String str, char search1, char search2)
 	{
 		if (str == null)
+		{
 			return -1;
+		}
 		//
 		int endIndex = -1;
 		int parCount = 0;
@@ -820,15 +862,23 @@ public final class StringUtils
 		{
 			final char c = str.charAt(endIndex);
 			if (c == '\'')
+			{
 				ignoringText = !ignoringText;
+			}
 			else if (!ignoringText)
 			{
 				if (parCount == 0 && (c == search1 || c == search2))
+				{
 					return endIndex;
+				}
 				else if (c == ')')
+				{
 					parCount--;
+				}
 				else if (c == '(')
+				{
 					parCount++;
+				}
 			}
 		}
 		return -1;
@@ -844,7 +894,9 @@ public final class StringUtils
 	public static int findIndexOf(String str, String search)
 	{
 		if (str == null || search == null || search.length() == 0)
+		{
 			return -1;
+		}
 		//
 		int endIndex = -1;
 		int parCount = 0;
@@ -854,18 +906,26 @@ public final class StringUtils
 		{
 			final char c = str.charAt(endIndex);
 			if (c == '\'')
+			{
 				ignoringText = !ignoringText;
+			}
 			else if (!ignoringText)
 			{
 				if (parCount == 0 && c == search.charAt(0))
 				{
 					if (str.substring(endIndex).startsWith(search))
+					{
 						return endIndex;
+					}
 				}
 				else if (c == ')')
+				{
 					parCount--;
+				}
 				else if (c == '(')
+				{
 					parCount++;
+				}
 			}
 		}
 		return -1;
@@ -909,21 +969,27 @@ public final class StringUtils
 	public static String initCap(String in)
 	{
 		if (in == null || in.length() == 0)
+		{
 			return in;
+		}
 		//
 		boolean capitalize = true;
 		final char[] data = in.toCharArray();
 		for (int i = 0; i < data.length; i++)
 		{
 			if (data[i] == ' ' || Character.isWhitespace(data[i]))
+			{
 				capitalize = true;
+			}
 			else if (capitalize)
 			{
 				data[i] = Character.toUpperCase(data[i]);
 				capitalize = false;
 			}
 			else
+			{
 				data[i] = Character.toLowerCase(data[i]);
+			}
 		}
 		return new String(data);
 	}	// initCap

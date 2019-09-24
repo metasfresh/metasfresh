@@ -21,11 +21,11 @@ import de.metas.contracts.refund.AssignmentToRefundCandidateRepository;
 import de.metas.contracts.refund.CandidateAssignmentService.UpdateAssignmentResult;
 import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.currency.CurrencyRepository;
 import de.metas.contracts.refund.RefundContract;
 import de.metas.contracts.refund.RefundInvoiceCandidate;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidateService;
-import de.metas.money.CurrencyRepository;
 import de.metas.money.MoneyService;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -168,7 +168,7 @@ public class CandidateAssignServiceExceedingQty
 		final boolean partialAssignRequired = assignableCandidate.getQuantity().compareTo(quantityToAssignEffective) > 0;
 		if (partialAssignRequired)
 		{
-			final SplitResult splitResult = assignableCandidate.splitQuantity(quantityToAssignEffective.getAsBigDecimal());
+			final SplitResult splitResult = assignableCandidate.splitQuantity(quantityToAssignEffective.toBigDecimal());
 			candidateToAssign = splitResult.getNewCandidate();
 		}
 		else

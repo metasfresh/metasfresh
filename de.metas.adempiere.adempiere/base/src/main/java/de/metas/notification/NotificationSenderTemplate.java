@@ -3,16 +3,17 @@ package de.metas.notification;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.lang3.StringUtils;
@@ -20,17 +21,20 @@ import org.apache.ecs.ClearElement;
 import org.apache.ecs.xhtml.body;
 import org.apache.ecs.xhtml.br;
 import org.apache.ecs.xhtml.html;
-import org.compiere.model.I_AD_Client;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.document.DocBaseAndSubType;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMail;
-import de.metas.email.IMailBL;
-import de.metas.email.Mailbox;
+import de.metas.email.EMailCustomType;
+import de.metas.email.MailService;
+import de.metas.email.mailboxes.ClientEMailConfig;
+import de.metas.email.mailboxes.Mailbox;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.i18n.IMsgBL;
@@ -40,6 +44,7 @@ import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.UserNotificationRequest.TargetViewAction;
 import de.metas.notification.spi.IRecordTextProvider;
 import de.metas.notification.spi.impl.NullRecordTextProvider;
+import de.metas.process.AdProcessId;
 import de.metas.security.IRoleDAO;
 import de.metas.security.RoleId;
 import de.metas.ui.web.WebuiURLs;
@@ -84,8 +89,8 @@ public class NotificationSenderTemplate
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final INotificationRepository notificationsRepo = Services.get(INotificationRepository.class);
 	private final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
-	private final IMailBL mailBL = Services.get(IMailBL.class);
-	private final IClientDAO clientDAO = Services.get(IClientDAO.class);
+	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
+	private final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
 
 	private IRecordTextProvider recordTextProvider = NullRecordTextProvider.instance;
 
@@ -253,19 +258,19 @@ public class NotificationSenderTemplate
 		return "#" + record.getRecord_ID();
 	}
 
-	private int resolveTargetWindowId(final TargetRecordAction targetRecordAction)
+	private Optional<AdWindowId> resolveTargetWindowId(final TargetRecordAction targetRecordAction)
 	{
-		if (targetRecordAction.getAdWindowId() > 0)
+		if (targetRecordAction.getAdWindowId().isPresent())
 		{
 			return targetRecordAction.getAdWindowId();
 		}
 		if (targetRecordAction.getRecord() == null)
 		{
-			return -1;
+			return Optional.empty();
 		}
 
 		final RecordZoomWindowFinder recordWindowFinder = RecordZoomWindowFinder.newInstance(targetRecordAction.getRecord());
-		return recordWindowFinder.findAD_Window_ID();
+		return recordWindowFinder.findAdWindowId();
 	}
 
 	private String extractSubjectText(final UserNotificationRequest request)
@@ -422,28 +427,25 @@ public class NotificationSenderTemplate
 			subject = extractSubjectFromContent(extractContentText(request, /* html */false));
 		}
 
-		final EMail mail = mailBL.createEMail(Env.getCtx(),
+		final EMail mail = mailService.createEMail(
 				mailbox,
 				notificationsConfig.getEmail(),
 				subject,
 				content,
 				html);
 		request.getAttachments().forEach(mail::addAttachment);
-		mailBL.send(mail);
+		mailService.send(mail);
 	}
 
 	private Mailbox findMailbox(@NonNull final UserNotificationsConfig notificationsConfig)
 	{
-		final I_AD_Client adClient = clientDAO.getById(notificationsConfig.getClientId());
-		final Mailbox mailbox = mailBL.findMailBox(
-				adClient,
-				OrgId.toRepoId(notificationsConfig.getOrgId()),
-				0,  // AD_Process_ID
-				null,  // C_DocType - Task FRESH-203 this shall work as before
-				null,  // customType
-				null); // sender
-		Check.assumeNotNull(mailbox, "IMailbox for adClient={}, AD_Org_ID={}", adClient, notificationsConfig.getOrgId());
-		return mailbox;
+		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(notificationsConfig.getClientId());
+		return mailService.findMailBox(
+				tenantEmailConfig,
+				notificationsConfig.getOrgId(),
+				(AdProcessId)null,  // AD_Process_ID
+				(DocBaseAndSubType)null,  // Task FRESH-203 this shall work as before
+				(EMailCustomType)null);  // customType
 	}
 
 	private String extractMailContent(final UserNotificationRequest request)
@@ -475,8 +477,8 @@ public class NotificationSenderTemplate
 				formatter.recordDisplayText(targetRecord, targetRecordDisplayText);
 			}
 
-			final int targetWindowId = targetRecordAction.getAdWindowId();
-			if (targetWindowId > 0)
+			final AdWindowId targetWindowId = targetRecordAction.getAdWindowId().orElse(null);
+			if (targetWindowId != null)
 			{
 				formatter.recordWindowId(targetRecord, targetWindowId);
 			}

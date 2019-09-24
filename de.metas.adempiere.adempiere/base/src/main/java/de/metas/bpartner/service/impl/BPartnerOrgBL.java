@@ -23,6 +23,7 @@ package de.metas.bpartner.service.impl;
  */
 
 
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -30,7 +31,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
@@ -38,14 +38,18 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class BPartnerOrgBL implements IBPartnerOrgBL
 {
@@ -80,27 +84,43 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 	}
 
 	@Override
-	public I_C_Location retrieveOrgLocation(Properties ctx, int orgId, String trxName)
+	public I_C_Location retrieveOrgLocation(@NonNull final OrgId orgId)
 	{
-		final I_C_BPartner_Location bPartnerLocation = retrieveOrgBPLocation(ctx, orgId, trxName);
-		if (bPartnerLocation != null) // 03378 : Temporary. Will be removed when OrgBP_Location is mandatory.
+		final BPartnerLocationId orgBPLocationId = retrieveOrgBPLocationId(orgId);
+		if(orgBPLocationId == null)
 		{
-			return bPartnerLocation.getC_Location();
+			return null;
+		}
+		
+		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(orgBPLocationId);
+		if (bpLocation != null) // 03378 : Temporary. Will be removed when OrgBP_Location is mandatory.
+		{
+			return bpLocation.getC_Location();
 		}
 		return null;
 	}
 
 	@Override
-	public I_C_BPartner_Location retrieveOrgBPLocation(Properties ctx, int orgId, String trxName)
+	public BPartnerLocationId retrieveOrgBPLocationId(final OrgId orgId)
 	{
-		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-		final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.create(
-					orgDAO.retrieveOrgInfo(ctx, orgId, trxName),
-					I_AD_OrgInfo.class);
-		return orgInfo.getOrgBP_Location();
+		final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
+		return orgsRepo.getOrgInfoById(orgId).getOrgBPartnerLocationId();
+	}
+
+	
+	@Override
+	public Optional<UserId> retrieveUserInChargeOrNull(@NonNull final OrgId orgId)
+	{
+		final I_AD_User user = retrieveUserInChargeOrNull(Env.getCtx(), orgId.getRepoId(), ITrx.TRXNAME_None);
+		if (user != null)
+		{
+			return Optional.of(UserId.ofRepoId(user.getAD_User_ID()));
+		}
+		return Optional.empty();
 	}
 
 	@Override
+	@Deprecated
 	public I_AD_User retrieveUserInChargeOrNull(final Properties ctx, final int orgId, final String trxName)
 	{
 		final IBPartnerDAO bPartnerPA = Services.get(IBPartnerDAO.class);

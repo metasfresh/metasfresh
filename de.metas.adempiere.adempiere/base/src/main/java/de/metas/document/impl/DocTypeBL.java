@@ -86,6 +86,13 @@ public class DocTypeBL implements IDocTypeBL
 	}
 
 	@Override
+	public boolean isPrepay(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+		return isPrepay(docType);
+	}
+
+	@Override
 	public boolean isPrepay(final I_C_DocType dt)
 	{
 		return X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(dt.getDocSubType())

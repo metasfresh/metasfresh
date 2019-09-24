@@ -9,16 +9,13 @@ import java.util.Properties;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -32,10 +29,12 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.order.model.I_C_OrderLine;
+import de.metas.document.engine.DocStatus;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
@@ -43,6 +42,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
@@ -137,7 +137,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 						, term1.getStartDate()
 						, OrgId.ofRepoId(term1.getAD_Org_ID())
 						, (WarehouseId)null
-						, Util.firstGreaterThanZero(term1.getDropShip_Location_ID(), term1.getBill_Location_ID())
+						, CoalesceUtil.firstGreaterThanZero(term1.getDropShip_Location_ID(), term1.getBill_Location_ID())
 						, SOTrx.SALES.toBoolean());
 				minTimes = 0;
 				result = 3;
@@ -189,15 +189,15 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	private I_C_OrderLine createOrderLine(@NonNull final I_M_Product product, @NonNull final I_C_Flatrate_Conditions conditions)
 	{
 		final I_C_Order order = newInstance(I_C_Order.class);
-		order.setAD_Org(product.getAD_Org());
-		order.setDocStatus(X_C_Order.DOCSTATUS_Completed);
+		order.setAD_Org_ID(product.getAD_Org_ID());
+		order.setDocStatus(DocStatus.Completed.getCode());
 		save(order);
 
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
-		orderLine.setAD_Org(product.getAD_Org());
-		orderLine.setC_Order(order);
-		orderLine.setC_Flatrate_Conditions(conditions);
-		orderLine.setM_Product(product);
+		orderLine.setAD_Org_ID(product.getAD_Org_ID());
+		orderLine.setC_Order_ID(order.getC_Order_ID());
+		orderLine.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
+		orderLine.setM_Product_ID(product.getM_Product_ID());
 		save(orderLine);
 		return orderLine;
 	}
@@ -216,7 +216,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		term.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
 		term.setC_Flatrate_Conditions(conditions);
 		term.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription);
-		term.setM_Product(product);
+		term.setM_Product_ID(product.getM_Product_ID());
 		term.setStartDate(startDate);
 		term.setC_OrderLine_Term(orderLine);
 		term.setIsAutoRenew(isAutoRenew);

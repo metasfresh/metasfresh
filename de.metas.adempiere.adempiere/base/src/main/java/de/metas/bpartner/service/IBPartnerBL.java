@@ -1,6 +1,7 @@
 package de.metas.bpartner.service;
 
 import java.util.Comparator;
+import java.util.Optional;
 
 /*
  * #%L
@@ -38,8 +39,12 @@ import com.google.common.base.Predicates;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
+import de.metas.order.DeliveryViaRule;
+import de.metas.shipping.ShipperId;
 import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
@@ -50,11 +55,11 @@ import lombok.Value;
 
 public interface IBPartnerBL extends ISingletonService
 {
-	public String getBPartnerValue(final BPartnerId bpartnerId);
+	String getBPartnerValue(final BPartnerId bpartnerId);
 
-	public String getBPartnerName(final BPartnerId bpartnerId);
+	String getBPartnerName(final BPartnerId bpartnerId);
 
-	public String getBPartnerValueAndName(final BPartnerId bpartnerId);
+	String getBPartnerValueAndName(final BPartnerId bpartnerId);
 
 	/**
 	 * make full address
@@ -119,7 +124,7 @@ public interface IBPartnerBL extends ISingletonService
 	 * @param isSOTrx
 	 * @return true if InOut consolidation is allowed for given partner
 	 */
-	boolean isAllowConsolidateInOutEffective(I_C_BPartner partner, boolean isSOTrx);
+	boolean isAllowConsolidateInOutEffective(I_C_BPartner partner, SOTrx soTrx);
 
 	/**
 	 * Use {@link IBPartnerAware} to get BPartner from given model.
@@ -178,6 +183,8 @@ public interface IBPartnerBL extends ISingletonService
 
 	UserId getSalesRepIdOrNull(BPartnerId bpartnerId);
 
+	ShipperId getShipperIdOrNull(final BPartnerId bpartnerId);
+
 	@Value
 	@Builder
 	public static class RetrieveBillContactRequest
@@ -202,4 +209,12 @@ public interface IBPartnerBL extends ISingletonService
 		@NonNull
 		Comparator<User> comparator = Comparator.comparing(User::getName);
 	}
+
+	int getFreightCostIdByBPartnerId(BPartnerId bpartnerId);
+
+	CountryId getBPartnerLocationCountryId(BPartnerLocationId bpLocationId);
+
+	DeliveryViaRule getDeliveryViaRuleOrNull(BPartnerId bpartnerId, SOTrx soTrx);
+
+	Optional<ShipmentAllocationBestBeforePolicy> getBestBeforePolicy(BPartnerId bpartnerId);
 }

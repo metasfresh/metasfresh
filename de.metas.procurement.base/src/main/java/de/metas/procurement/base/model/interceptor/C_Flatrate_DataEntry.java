@@ -1,7 +1,6 @@
 package de.metas.procurement.base.model.interceptor;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -11,7 +10,11 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyId;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -77,7 +80,9 @@ public class C_Flatrate_DataEntry
 		if (dataEntry.getC_Currency_ID() > 0)
 		{
 			// round to currency precision
-			flatrateAmt = product.setScale(dataEntry.getC_Currency().getStdPrecision(), RoundingMode.HALF_UP);
+			final CurrencyId currencyId = CurrencyId.ofRepoId(dataEntry.getC_Currency_ID());
+			final CurrencyPrecision precision = Services.get(ICurrencyDAO.class).getStdPrecision(currencyId);
+			flatrateAmt = precision.round(product);
 		}
 		else
 		{

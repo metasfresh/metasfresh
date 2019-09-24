@@ -6,6 +6,8 @@ import java.util.Arrays;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.util.NumberUtils;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -40,18 +42,24 @@ import lombok.Value;
 @Value
 public final class Amount implements Comparable<Amount>
 {
-	public static Amount of(@NonNull final BigDecimal value, @NonNull String currencyCode)
+	public static Amount of(@NonNull final BigDecimal value, @NonNull CurrencyCode currencyCode)
 	{
 		return new Amount(value, currencyCode);
 	}
 
+	@Getter(AccessLevel.NONE)
 	BigDecimal value;
-	String currencyCode;
+	CurrencyCode currencyCode;
 
-	private Amount(@NonNull final BigDecimal value, @NonNull String currencyCode)
+	private Amount(@NonNull final BigDecimal value, @NonNull CurrencyCode currencyCode)
 	{
 		this.value = NumberUtils.stripTrailingDecimalZeros(value);
 		this.currencyCode = currencyCode;
+	}
+	
+	public BigDecimal getAsBigDecimal()
+	{
+		return value;
 	}
 
 	public static void assertSameCurrency(final Amount... amounts)
@@ -61,7 +69,7 @@ public final class Amount implements Comparable<Amount>
 			return;
 		}
 
-		final String expectedCurrencyCode = amounts[0].getCurrencyCode();
+		final CurrencyCode expectedCurrencyCode = amounts[0].getCurrencyCode();
 		for (int i = 1; i < amounts.length; i++)
 		{
 			if (!expectedCurrencyCode.equals(amounts[i].getCurrencyCode()))
@@ -75,12 +83,12 @@ public final class Amount implements Comparable<Amount>
 	public int compareTo(@NonNull final Amount other)
 	{
 		assertSameCurrency(this, other);
-		return getValue().compareTo(other.getValue());
+		return getAsBigDecimal().compareTo(other.getAsBigDecimal());
 	}
 
 	public boolean valueComparingEqualsTo(@NonNull final BigDecimal other)
 	{
-		return getValue().compareTo(other) == 0;
+		return getAsBigDecimal().compareTo(other) == 0;
 	}
 
 	public Amount min(@NonNull final Amount other)

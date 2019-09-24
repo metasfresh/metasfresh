@@ -43,7 +43,7 @@ public interface IProcessPreconditionsContext
 {
 	@Nullable
 	AdWindowId getAdWindowId();
-	
+
 	@Nullable
 	AdTabId getAdTabId();
 
@@ -63,34 +63,31 @@ public interface IProcessPreconditionsContext
 	 * @return all selected rows's model(s)
 	 */
 	<T> List<T> getSelectedModels(final Class<T> modelClass);
-	
+
 	/** @return single Record_ID; throws exception otherwise */
 	int getSingleSelectedRecordId();
 
 	/**
 	 * Gets how many rows were selected.
 	 * In case the size is not determined, an exception is thrown.
-	 * 
+	 *
 	 * Instead of calling this method, always consider using {@link #isNoSelection()}, {@link #isSingleSelection()}, {@link #isMoreThanOneSelected()} if applicable.
 	 */
-	int getSelectionSize();
+	SelectionSize getSelectionSize();
 
-	/** @return true if there is no selected rows */
 	default boolean isNoSelection()
 	{
-		return getSelectionSize() <= 0;
+		return getSelectionSize().isNoSelection();
 	}
 
-	/** @return true if only one row is selected */
 	default boolean isSingleSelection()
 	{
-		return getSelectionSize() == 1;
+		return getSelectionSize().isSingleSelection();
 	}
 
-	/** @return true if there are more then one selected row */
 	default boolean isMoreThanOneSelected()
 	{
-		return getSelectionSize() > 1;
+		return getSelectionSize().isMoreThanOneSelected();
 	}
 
 	/** @return selected included rows of current single selected document */
@@ -98,4 +95,5 @@ public interface IProcessPreconditionsContext
 	{
 		return ImmutableSet.of();
 	}
+
 }

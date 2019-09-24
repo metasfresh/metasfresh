@@ -21,6 +21,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -37,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
@@ -59,6 +61,7 @@ import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.sql.IStatementsFactory;
 import org.adempiere.sql.impl.StatementsFactory;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.db.AdempiereDatabase;
@@ -76,6 +79,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.cache.CacheMgt;
 import de.metas.i18n.ILanguageDAO;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.IADPInstanceDAO;
@@ -88,6 +92,7 @@ import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /**
  * General Database Interface
@@ -119,6 +124,7 @@ import lombok.NonNull;
  *         <li>FR [
  *         2873891 ] DB.getKeyNamePairs should use trxName https://sourceforge.net/tracker/?func=detail&aid=2873891&group_id=176962&atid=879335
  */
+@UtilityClass
 public final class DB
 {
 	public static final String SYSCONFIG_SYSTEM_NATIVE_SEQUENCE = "SYSTEM_NATIVE_SEQUENCE";
@@ -128,7 +134,7 @@ public final class DB
 	/**
 	 * Specifies what to do in case the SQL command fails.
 	 */
-	public static enum OnFail
+	public enum OnFail
 	{
 		/**
 		 * Throws {@link DBException}
@@ -284,14 +290,16 @@ public final class DB
 			s_connectionLock.unlock();
 		}
 		if (closed)
+		{
 			log.debug("Target database closed");
+		}
 	}	// closeTarget
 
 	/**
 	 *
 	 * @return current {@link CConnection} or <code>null</code>
 	 */
-	private static final CConnection getCConnection()
+	private static CConnection getCConnection()
 	{
 		s_connectionLock.lock();
 		try
@@ -450,8 +458,8 @@ public final class DB
 	 * Create new Connection. The connection must be closed explicitly by the application
 	 *
 	 * @param autoCommit auto commit
+	 * @param readOnly
 	 * @param trxLevel - Connection.TRANSACTION_READ_UNCOMMITTED, Connection.TRANSACTION_READ_COMMITTED, Connection.TRANSACTION_REPEATABLE_READ, or Connection.TRANSACTION_READ_COMMITTED.
-	 * @return Connection connection
 	 */
 	public static Connection createConnection(boolean autoCommit, boolean readOnly, int trxLevel)
 	{
@@ -507,7 +515,9 @@ public final class DB
 	{
 		final CConnection s_cc = getCConnection();
 		if (s_cc != null)
+		{
 			return s_cc.getDBInfo();
+		}
 		return "No Database";
 	}	// getDatabaseInfo
 // @formatter:off
@@ -641,7 +651,9 @@ public final class DB
 	public static CallableStatement prepareCall(String SQL, int resultSetConcurrency, String trxName)
 	{
 		if (SQL == null || SQL.length() == 0)
+		{
 			throw new IllegalArgumentException("Required parameter missing - " + SQL);
+		}
 		return statementsFactory.newCCallableStatement(ResultSet.TYPE_FORWARD_ONLY, resultSetConcurrency, SQL, trxName);
 	}	// prepareCall
 
@@ -658,7 +670,9 @@ public final class DB
 		int concurrency = ResultSet.CONCUR_READ_ONLY;
 		String upper = sql.toUpperCase();
 		if (upper.startsWith("UPDATE ") || upper.startsWith("DELETE "))
+		{
 			concurrency = ResultSet.CONCUR_UPDATABLE;
+		}
 		return prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, concurrency, null);
 	}	// prepareStatement
 
@@ -667,7 +681,9 @@ public final class DB
 		int concurrency = ResultSet.CONCUR_READ_ONLY;
 		String upper = sql.toUpperCase();
 		if (upper.startsWith("UPDATE ") || upper.startsWith("DELETE "))
+		{
 			concurrency = ResultSet.CONCUR_UPDATABLE;
+		}
 		return prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, concurrency, trxName);
 	}	// prepareStatement
 
@@ -702,7 +718,9 @@ public final class DB
 			String trxName)
 	{
 		if (sql == null || sql.length() == 0)
+		{
 			throw new IllegalArgumentException("No SQL");
+		}
 		//
 		return statementsFactory.newCPreparedStatement(resultSetType, resultSetConcurrency, sql, trxName);
 	}	// prepareStatement
@@ -777,37 +795,62 @@ public final class DB
 			@Nullable final Object param) throws SQLException
 	{
 		if (param == null)
+		{
 			pstmt.setObject(index, null);
+		}
 		else if (param instanceof String)
+		{
 			pstmt.setString(index, (String)param);
+		}
 		else if (param instanceof Integer)
+		{
 			pstmt.setInt(index, ((Integer)param).intValue());
+		}
 		else if (param instanceof BigDecimal)
+		{
 			pstmt.setBigDecimal(index, (BigDecimal)param);
-		//
+		}
 		else if (param instanceof Timestamp)
+		{
 			pstmt.setTimestamp(index, (Timestamp)param);
+		}
 		else if (param instanceof Instant)
+		{
 			pstmt.setTimestamp(index, TimeUtil.asTimestamp(param));
-		else if (param instanceof java.util.Date) // metas: support for java.util.Date
+		}
+		else if (param instanceof java.util.Date)
+		{
 			pstmt.setTimestamp(index, new Timestamp(((java.util.Date)param).getTime()));
+		}
 		else if (param instanceof LocalDateTime)
+		{
 			pstmt.setTimestamp(index, TimeUtil.asTimestamp((LocalDateTime)param));
+		}
 		else if (param instanceof LocalDate)
+		{
 			pstmt.setTimestamp(index, TimeUtil.asTimestamp((LocalDate)param));
+		}
 		else if (param instanceof ZonedDateTime)
+		{
 			pstmt.setTimestamp(index, TimeUtil.asTimestamp(param));
-		//
+		}
 		else if (param instanceof Boolean)
+		{
 			pstmt.setString(index, ((Boolean)param).booleanValue() ? "Y" : "N");
-		//
+		}
 		else if (param instanceof RepoIdAware)
+		{
 			pstmt.setInt(index, ((RepoIdAware)param).getRepoId());
+		}
 		else if (param instanceof ReferenceListAwareEnum)
+		{
 			pstmt.setString(index, ((ReferenceListAwareEnum)param).getCode());
-		//
+			//
+		}
 		else
+		{
 			throw new DBException("Unknown parameter type " + index + " - " + param + " (" + param.getClass() + ")");
+		}
 	}
 
 	/**
@@ -896,17 +939,15 @@ public final class DB
 	@Deprecated
 	public static int executeUpdate(final String sql,
 			final Object[] params,
-			final OnFail onFail,
+			@NonNull final OnFail onFail,
 			final String trxName,
 			final int timeOut,
 			final ISqlUpdateReturnProcessor updateReturnProcessor)
 	{
-		if (sql == null || sql.length() == 0)
+		if (Check.isEmpty(sql, true))
 		{
 			throw new IllegalArgumentException("Required parameter missing - " + sql);
 		}
-
-		Check.assumeNotNull(onFail, "onFail not null");
 
 		//
 		int no = -1;
@@ -1145,7 +1186,9 @@ public final class DB
 		{
 			Trx trx = Trx.get(trxName, false);
 			if (trx != null)
+			{
 				return trx.commit(true);
+			}
 
 			if (throwException)
 			{
@@ -1160,7 +1203,9 @@ public final class DB
 		{
 			log.error("[" + trxName + "]", e);
 			if (throwException)
+			{
 				throw e;
+			}
 			return false;
 		}
 	}	// commit
@@ -1180,17 +1225,25 @@ public final class DB
 			Connection conn = null;
 			Trx trx = trxName == null ? null : Trx.get(trxName, true);
 			if (trx != null)
+			{
 				return trx.rollback(true);
+			}
 			else
+			{
 				conn = DB.getConnectionRW();
+			}
 			if (conn != null && !conn.getAutoCommit())
+			{
 				conn.rollback();
+			}
 		}
 		catch (SQLException e)
 		{
 			log.error("[" + trxName + "]", e);
 			if (throwException)
+			{
 				throw e;
+			}
 			return false;
 		}
 		return true;
@@ -1246,9 +1299,13 @@ public final class DB
 			setParameters(pstmt, params);
 			rs = pstmt.executeQuery();
 			if (rs.next())
+			{
 				retValue = rs.getInt(1);
+			}
 			else
+			{
 				log.debug("Got no integer value for {}", sql);
+			}
 		}
 		catch (SQLException e)
 		{
@@ -1338,9 +1395,13 @@ public final class DB
 			setParameters(pstmt, params);
 			rs = pstmt.executeQuery();
 			if (rs.next())
+			{
 				retValue = rs.getString(1);
+			}
 			else
+			{
 				log.debug("Got no string value for {}", sql);
+			}
 		}
 		catch (SQLException e)
 		{
@@ -1430,9 +1491,13 @@ public final class DB
 			setParameters(pstmt, params);
 			rs = pstmt.executeQuery();
 			if (rs.next())
+			{
 				retValue = rs.getBigDecimal(1);
+			}
 			else
+			{
 				log.debug("Got no BigDecimal value for {}", sql);
+			}
 		}
 		catch (SQLException e)
 		{
@@ -1522,9 +1587,13 @@ public final class DB
 			setParameters(pstmt, params);
 			rs = pstmt.executeQuery();
 			if (rs.next())
+			{
 				retValue = rs.getTimestamp(1);
+			}
 			else
+			{
 				log.debug("Got no Timestamp value for {}", sql);
+			}
 		}
 		catch (SQLException e)
 		{
@@ -1723,20 +1792,18 @@ public final class DB
 	 * @param whereClause where clause
 	 * @return true (default) or false if tested that not SO
 	 */
-	public static boolean isSOTrx(final String tableName, final String whereClause)
+	public static Optional<SOTrx> retrieveRecordSOTrx(final String tableName, final String whereClause)
 	{
-		final boolean defaultIsSOTrx = true;
-
 		if (Check.isEmpty(tableName, true))
 		{
 			log.error("No TableName");
-			return defaultIsSOTrx;
+			return Optional.empty();
 		}
 
 		if (Check.isEmpty(whereClause, true))
 		{
 			log.error("No Where Clause");
-			return defaultIsSOTrx;
+			return Optional.empty();
 		}
 
 		//
@@ -1768,7 +1835,7 @@ public final class DB
 		// Fallback: no IsSOTrx
 		else
 		{
-			return defaultIsSOTrx;
+			return Optional.empty();
 		}
 
 		//
@@ -1783,12 +1850,12 @@ public final class DB
 			if (rs.next())
 			{
 				final boolean isSOTrx = DisplayType.toBoolean(rs.getString(1));
-				return isSOTrx;
+				return SOTrx.optionalOfBoolean(isSOTrx);
 			}
 			else
 			{
 				log.trace("No records were found to fetch the IsSOTrx from SQL: {}", sqlSelectIsSOTrx);
-				return defaultIsSOTrx;
+				return Optional.empty();
 			}
 		}
 		catch (final Exception ex)
@@ -1796,7 +1863,7 @@ public final class DB
 			final SQLException sqlEx = DBException.extractSQLExceptionOrNull(ex);
 			log.trace("Error while checking isSOTrx (SQL: {})", sqlSelectIsSOTrx, sqlEx);
 
-			return defaultIsSOTrx;
+			return Optional.empty();
 		}
 		finally
 		{
@@ -1816,9 +1883,13 @@ public final class DB
 	public static int getNextID(Properties ctx, String TableName, String trxName)
 	{
 		if (ctx == null)
+		{
 			throw new IllegalArgumentException("Context missing");
+		}
 		if (TableName == null || TableName.length() == 0)
+		{
 			throw new IllegalArgumentException("TableName missing");
+		}
 		return getNextID(Env.getAD_Client_ID(ctx), TableName, trxName);
 	}	// getNextID
 
@@ -1883,7 +1954,7 @@ public final class DB
 	 * @param param
 	 * @return parameter as SQL code
 	 */
-	public static final String TO_SQL(final Object param)
+	public static String TO_SQL(final Object param)
 	{
 		// TODO: check and refactor together with buildSqlList(...)
 		if (param == null)
@@ -1992,7 +2063,9 @@ public final class DB
 	public static String TO_CHAR(String columnName, int displayType, @Nullable String AD_Language_NOTUSED, final String formatPattern)
 	{
 		if (columnName == null || columnName.length() == 0)
+		{
 			throw new IllegalArgumentException("Required parameter missing");
+		}
 		return Database.TO_CHAR(columnName, displayType, formatPattern);
 	}   // TO_CHAR
 
@@ -2042,7 +2115,9 @@ public final class DB
 		// Length
 		String text = txt;
 		if (maxLength != 0 && text.length() > maxLength)
+		{
 			text = txt.substring(0, maxLength);
+		}
 
 		// copy characters (we need to look through anyway)
 		final StringBuilder out = new StringBuilder();
@@ -2074,7 +2149,7 @@ public final class DB
 	 * @param comment
 	 * @return SQL multiline comment
 	 */
-	public static final String TO_COMMENT(final String comment)
+	public static String TO_COMMENT(final String comment)
 	{
 		if (Check.isEmpty(comment, true))
 		{
@@ -2096,11 +2171,13 @@ public final class DB
 		try
 		{
 			if (rs != null)
+			{
 				rs.close();
+			}
 		}
 		catch (SQLException e)
 		{
-			;
+
 		}
 	}
 
@@ -2114,11 +2191,13 @@ public final class DB
 		try
 		{
 			if (st != null)
+			{
 				st.close();
+			}
 		}
 		catch (SQLException e)
 		{
-			;
+
 		}
 	}
 
@@ -2145,7 +2224,9 @@ public final class DB
 	public static void close(POResultSet<?> rs)
 	{
 		if (rs != null)
+		{
 			rs.close();
+		}
 	}
 
 	/**
@@ -2226,7 +2307,9 @@ public final class DB
 		{
 			counter++;
 			if (counter > 1)
+			{
 				insert.append(" UNION ");
+			}
 			insert.append("SELECT ");
 			insert.append(pinstanceRepoId);
 			insert.append(", ");
@@ -2263,6 +2346,22 @@ public final class DB
 	{
 		final ImmutableList<Integer> ids = RepoIdAwares.asRepoIds(selection);
 		return createT_Selection(ids, trxName);
+	}
+
+	public static PInstanceId createT_Selection(@NonNull final TableRecordReferenceSet recordRefs, final String trxName)
+	{
+		final Set<Integer> ids = recordRefs.toIntSet();
+		return createT_Selection(ids, trxName);
+	}
+
+	public static String createT_Selection_SqlWhereClause(
+			@NonNull final PInstanceId selectionId,
+			@NonNull final String sqlJoinColumn)
+	{
+		Check.assumeNotEmpty(sqlJoinColumn, "sqlJoinColumn is not empty");
+
+		return "EXISTS (SELECT 1 FROM T_SELECTION zz WHERE zz.AD_PInstance_ID=" + selectionId.getRepoId()
+				+ " AND zz.T_Selection_ID=" + sqlJoinColumn + ")";
 	}
 
 	/**
@@ -2454,7 +2553,7 @@ public final class DB
 		return sql.insert(0, "(").append(")").toString();
 	}
 
-	public static final boolean isUseNativeSequences()
+	public static boolean isUseNativeSequences()
 	{
 		final boolean useNativeSequencesDefault = false;
 		final boolean result = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, useNativeSequencesDefault);
@@ -2497,7 +2596,7 @@ public final class DB
 		return useNativeSequences;
 	}
 
-	public static final void setUseNativeSequences(final boolean enabled)
+	public static void setUseNativeSequences(final boolean enabled)
 	{
 		final Properties ctx = Env.getCtx();
 		final int adClientId = Env.getAD_Client_ID(ctx);
@@ -2508,7 +2607,7 @@ public final class DB
 		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, enabled, adOrgId);
 	}
 
-	public static final String getTableSequenceName(final String tableName)
+	public static String getTableSequenceName(final String tableName)
 	{
 		Check.assumeNotEmpty(tableName, "tableName not empty");
 		return tableName + "_SEQ";
@@ -2517,7 +2616,7 @@ public final class DB
 	/**
 	 * Create database table sequence for given table name.
 	 */
-	public static final void createTableSequence(final String tableName)
+	public static void createTableSequence(final String tableName)
 	{
 		final String sequenceName = getTableSequenceName(tableName);
 		CConnection.get().getDatabase().createSequence(sequenceName,
@@ -2536,7 +2635,7 @@ public final class DB
 	 * @param fieldLength length
 	 * @return SQL Data Type in Oracle Notation
 	 */
-	public static final String getSQLDataType(int displayType, String columnName, int fieldLength)
+	public static String getSQLDataType(int displayType, String columnName, int fieldLength)
 	{
 		return getDatabase().getSQLDataType(displayType, columnName, fieldLength);
 	}
@@ -2553,7 +2652,7 @@ public final class DB
 	 * @param sql
 	 * @return converted SQL
 	 */
-	public static final String convertSqlToNative(final String sql)
+	public static String convertSqlToNative(final String sql)
 	{
 		Check.assumeNotEmpty(sql, "sql not empty");
 		final Convert converter = getDatabase().getConvert();
@@ -2577,7 +2676,7 @@ public final class DB
 	 * @return default value for given <code>returnType</code>
 	 */
 	@SuppressWarnings("unchecked")
-	public static final <AT> AT retrieveDefaultValue(final Class<AT> returnType)
+	public static <AT> AT retrieveDefaultValue(final Class<AT> returnType)
 	{
 		if (returnType.isAssignableFrom(BigDecimal.class))
 		{
@@ -2614,7 +2713,7 @@ public final class DB
 	 * The value is converted to given type.<br/>
 	 */
 	@SuppressWarnings("unchecked")
-	public static final <AT> AT retrieveValue(final ResultSet rs, final String columnName, final Class<AT> returnType) throws SQLException
+	public static <AT> AT retrieveValue(final ResultSet rs, final String columnName, final Class<AT> returnType) throws SQLException
 	{
 		final AT value;
 		if (returnType.isAssignableFrom(BigDecimal.class))
@@ -2659,7 +2758,7 @@ public final class DB
 	 * The value is converted to given type.<br/>
 	 */
 	@SuppressWarnings("unchecked")
-	public static final <AT> AT retrieveValue(final ResultSet rs, final int columnIndex, final Class<AT> returnType) throws SQLException
+	public static <AT> AT retrieveValue(final ResultSet rs, final int columnIndex, final Class<AT> returnType) throws SQLException
 	{
 		final AT value;
 		if (returnType.isAssignableFrom(BigDecimal.class))
@@ -2709,7 +2808,7 @@ public final class DB
 		return value;
 	}
 
-	public static final <AT> AT retrieveValueOrDefault(final ResultSet rs, final int columnIndex, final Class<AT> returnType) throws SQLException
+	public static <AT> AT retrieveValueOrDefault(final ResultSet rs, final int columnIndex, final Class<AT> returnType) throws SQLException
 	{
 		final AT value = retrieveValue(rs, columnIndex, returnType);
 		if (value != null)
@@ -2721,7 +2820,7 @@ public final class DB
 	}
 
 	@FunctionalInterface
-	public static interface ResultSetConsumer
+	public interface ResultSetConsumer
 	{
 		void accept(ResultSet rs) throws SQLException;
 	}
@@ -2745,7 +2844,7 @@ public final class DB
 		}
 		catch (SQLException ex)
 		{
-			throw new DBException(sql);
+			throw new DBException(ex, sql, sqlParams);
 		}
 		finally
 		{
@@ -2754,7 +2853,7 @@ public final class DB
 	}
 
 	@FunctionalInterface
-	public static interface ResultSetRowLoader<T>
+	public interface ResultSetRowLoader<T>
 	{
 		T retrieveRow(ResultSet rs) throws SQLException;
 	}
@@ -2820,6 +2919,73 @@ public final class DB
 		{
 			close(rs, pstmt);
 		}
+	}
+
+	public static String normalizeDBIdentifier(@NonNull final String dbIdentifier, @NonNull final DatabaseMetaData md)
+	{
+		try
+		{
+			if (md.storesUpperCaseIdentifiers())
+			{
+				return dbIdentifier.toUpperCase();
+			}
+			else if (md.storesLowerCaseIdentifiers())
+			{
+				return dbIdentifier.toLowerCase();
+			}
+			else
+			{
+				return dbIdentifier;
+			}
+		}
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex);
+		}
+	}
+
+	public static boolean isDBColumnPresent(@NonNull final String tableName, @NonNull final String columnName)
+	{
+		final String catalog = getDatabase().getCatalog();
+		final String schema = getDatabase().getSchema();
+		String tableNameNorm = tableName;
+		String columnNameNorm = columnName;
+
+		Connection conn = null;
+		ResultSet rs = null;
+		try
+		{
+			conn = getConnectionRO();
+			final DatabaseMetaData md = conn.getMetaData();
+			tableNameNorm = normalizeDBIdentifier(tableName, md);
+			columnNameNorm = normalizeDBIdentifier(columnName, md);
+
+			//
+			rs = md.getColumns(catalog, schema, tableNameNorm, columnNameNorm);
+			if (rs.next())
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex)
+					.appendParametersToMessage()
+					.setParameter("catalog", catalog)
+					.setParameter("schema", schema)
+					.setParameter("tableNameNorm", tableNameNorm)
+					.setParameter("columnNameNorm", columnNameNorm);
+		}
+		finally
+		{
+			DB.close(rs);
+			DB.close(conn);
+		}
+
 	}
 
 } // DB

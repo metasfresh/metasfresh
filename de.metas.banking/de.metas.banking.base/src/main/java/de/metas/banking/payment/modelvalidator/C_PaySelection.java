@@ -26,13 +26,11 @@ package de.metas.banking.payment.modelvalidator;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.ModelValidator;
@@ -41,6 +39,9 @@ import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.banking.model.I_C_BP_BankAccount;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.service.IBankingBL;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 
 @Interceptor(I_C_PaySelection.class)
@@ -83,16 +84,20 @@ public class C_PaySelection
 				continue;
 			}
 
-			final Properties ctx = InterfaceWrapperHelper.getCtx(paySelectionLine);
-
-			final I_C_Currency iCurrency = invoice.getC_Currency();
-			final I_C_Currency baCurrency = bankAccount.getC_Currency();
+			final CurrencyCode invoiceCurrencyCode = getCurrencyCodeById(invoice.getC_Currency_ID());
+			final CurrencyCode bankAccountCurrencyCode = getCurrencyCodeById(bankAccount.getC_Currency_ID());
 
 			throw new AdempiereException(MSG_PaySelection_CannotChangeBPBankAccount_InvalidCurrency, new Object[] {
 					paySelection.getName(), // name of the record we deal with
-					baCurrency.getISO_Code(), // BPBA Actual Currency (actual)
-					iCurrency.getISO_Code() }); // Invoice Currency (expected)
+					bankAccountCurrencyCode.toThreeLetterCode(), // BPBA Actual Currency (actual)
+					invoiceCurrencyCode.toThreeLetterCode() }); // Invoice Currency (expected)
 		}
+	}
+
+	private CurrencyCode getCurrencyCodeById(final int currencyRepoId)
+	{
+		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
+		return currenciesRepo.getCurrencyCodeById(CurrencyId.ofRepoId(currencyRepoId));
 	}
 
 	/**

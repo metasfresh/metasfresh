@@ -1,11 +1,10 @@
 package de.metas.purchasecandidate.purchaseordercreation.remoteorder;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
@@ -16,6 +15,7 @@ import com.google.common.collect.Maps;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.order.OrderAndLineId;
+import de.metas.organization.OrgId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
@@ -125,7 +125,7 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 
 				final I_C_UOM uom = uomsById.get(remotePurchaseOrderCreatedItem.getUomId());
 
-				LocalDateTime confirmedDeliveryDate = remotePurchaseOrderCreatedItem.getConfirmedDeliveryDateOrNull();
+				ZonedDateTime confirmedDeliveryDate = remotePurchaseOrderCreatedItem.getConfirmedDeliveryDateOrNull();
 				if (confirmedDeliveryDate == null)
 				{
 					Loggables
@@ -164,7 +164,7 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 	private static PurchaseOrderRequestItem createPurchaseOrderRequestItem(final PurchaseCandidate purchaseCandidate)
 	{
 		final Quantity qtyToPurchase = purchaseCandidate.getQtyToPurchase();
-		final ProductAndQuantity productAndQuantity = ProductAndQuantity.of(purchaseCandidate.getVendorProductNo(), qtyToPurchase.getAsBigDecimal(), qtyToPurchase.getUOMId());
+		final ProductAndQuantity productAndQuantity = ProductAndQuantity.of(purchaseCandidate.getVendorProductNo(), qtyToPurchase.toBigDecimal(), qtyToPurchase.getUOMId());
 		return PurchaseOrderRequestItem.builder()
 				.purchaseCandidateId(PurchaseCandidateId.getRepoIdOr(purchaseCandidate.getId(), -1))
 				.productAndQuantity(productAndQuantity)

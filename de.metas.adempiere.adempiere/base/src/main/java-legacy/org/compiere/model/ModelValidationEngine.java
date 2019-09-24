@@ -51,16 +51,14 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.IImportInterceptor;
-import org.adempiere.impexp.IImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.processing.model.MADProcessablePO;
 import org.adempiere.processing.service.IProcessingService;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.KeyNamePair;
@@ -70,6 +68,8 @@ import org.springframework.context.ApplicationContext;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.IImportProcess;
 import de.metas.logging.LogManager;
 import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;
@@ -276,7 +276,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	private static Collection<Object> getSpringInterceptors()
 	{
-		final ApplicationContext context = Adempiere.getSpringApplicationContext();
+		final ApplicationContext context = SpringContextHolder.instance.getApplicationContext();
 		if (context == null)
 		{
 			// NOTE: atm it returns null only when started from our tools (like the "model generator")
@@ -571,7 +571,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 		if (AD_User_ID == 0 && AD_Role_ID == 0)
 		{
-			; // don't validate for user system on role system
+			 // don't validate for user system on role system
 		}
 		else if (hasInitErrors)
 		{

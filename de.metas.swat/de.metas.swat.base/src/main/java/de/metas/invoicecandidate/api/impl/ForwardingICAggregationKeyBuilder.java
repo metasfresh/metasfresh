@@ -24,21 +24,22 @@ package de.metas.invoicecandidate.api.impl;
 
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Order;
 
 import de.metas.aggregation.api.AbstractAggregationKeyBuilder;
+import de.metas.aggregation.api.AggregationKey;
 import de.metas.aggregation.api.IAggregationFactory;
-import de.metas.aggregation.api.IAggregationKey;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
-import de.metas.aggregation.api.impl.AggregationKey;
 import de.metas.aggregation.model.X_C_Aggregation;
-import de.metas.document.IDocTypeBL;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.invoicecandidate.api.IInvoiceAggregationFactory;
 import de.metas.invoicecandidate.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -76,7 +77,7 @@ public class ForwardingICAggregationKeyBuilder extends AbstractAggregationKeyBui
 	}
 
 	@Override
-	public final IAggregationKey buildAggregationKey(final I_C_Invoice_Candidate ic)
+	public final AggregationKey buildAggregationKey(final I_C_Invoice_Candidate ic)
 	{
 		final IAggregationKeyBuilder<I_C_Invoice_Candidate> icAggregationKeyBuilder = getDelegate(ic);
 		if (icAggregationKeyBuilder == null)
@@ -95,7 +96,10 @@ public class ForwardingICAggregationKeyBuilder extends AbstractAggregationKeyBui
 	 */
 	protected IAggregationKeyBuilder<I_C_Invoice_Candidate> getDelegate(final I_C_Invoice_Candidate ic)
 	{
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(ic.getBill_BPartner(), I_C_BPartner.class);
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
+
+		final I_C_BPartner bpartner = bpartnerDAO.getById(ic.getBill_BPartner_ID(), I_C_BPartner.class);
 		if (bpartner == null)
 		{
 			return null;
@@ -103,8 +107,9 @@ public class ForwardingICAggregationKeyBuilder extends AbstractAggregationKeyBui
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 
-		final I_C_Order prepayOrder = ic.getC_Order();
-		if (prepayOrder !=null  && Services.get(IDocTypeBL.class).isPrepay(prepayOrder.getC_DocType())
+		final OrderId prepayOrderId = OrderId.ofRepoIdOrNull(ic.getC_Order_ID());
+		if (prepayOrderId !=null 
+				&& Services.get(IOrderBL.class).isPrepay(prepayOrderId)
 				&& X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header.equals(aggregationUsageLevel))
 		{
 			return invoiceAggregationFactory.getPrepayOrderAggregationKeyBuilder(ctx);
@@ -117,19 +122,19 @@ public class ForwardingICAggregationKeyBuilder extends AbstractAggregationKeyBui
 	@Override
 	public final boolean isSame(final I_C_Invoice_Candidate ic1, final I_C_Invoice_Candidate ic2)
 	{
-		final IAggregationKey aggregationKey1 = buildAggregationKey(ic1);
+		final AggregationKey aggregationKey1 = buildAggregationKey(ic1);
 		if (aggregationKey1 == null)
 		{
 			return false;
 		}
 
-		final IAggregationKey aggregationKey2 = buildAggregationKey(ic2);
+		final AggregationKey aggregationKey2 = buildAggregationKey(ic2);
 		if (aggregationKey2 == null)
 		{
 			return false;
 		}
 
-		final boolean same = Check.equals(aggregationKey1, aggregationKey2);
+		final boolean same = Objects.equals(aggregationKey1, aggregationKey2);
 		return same;
 	}
 }

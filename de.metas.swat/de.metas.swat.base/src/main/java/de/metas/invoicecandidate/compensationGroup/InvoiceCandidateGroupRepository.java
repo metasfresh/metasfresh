@@ -15,6 +15,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.Group.GroupBuilder;
 import de.metas.order.compensationGroup.GroupCompensationAmtType;
@@ -101,11 +102,11 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		final GroupId groupId = extractSingleGroupId(invoiceCandidates);
 
 		final I_C_Order order = invoiceCandidates.get(0).getC_Order();
-		final int precision = orderBL.getPrecision(order);
 
 		final GroupBuilder groupBuilder = Group.builder()
 				.groupId(groupId)
-				.precision(precision)
+				.pricePrecision(orderBL.getPricePrecision(order))
+				.amountPrecision(orderBL.getAmountPrecision(order))
 				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
 				.soTrx(SOTrx.ofBoolean(order.isSOTrx()));
 
@@ -134,7 +135,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	}
 
 	/**
-	 * note to dev: keep in sync with {@link #updateInvoiceCandidateFromCompensationLine(I_C_Invoice_Candidate, GroupCompensationLine, GroupId)}
+	 * note to dev: keep in sync with {@link #updateInvoiceCandidateFromCompensationLine(I_C_Invoice_Candidate, GroupCompensationLine)}
 	 */
 	private GroupCompensationLine createCompensationLine(final I_C_Invoice_Candidate invoiceCandidate)
 	{
@@ -185,7 +186,8 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	public GroupId extractGroupId(final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		InvoiceCandidateCompensationGroupUtils.assertInGroup(invoiceCandidate);
-		return OrderGroupRepository.createGroupId(invoiceCandidate.getC_Order_ID(), invoiceCandidate.getC_Order_CompensationGroup_ID());
+		OrderId orderId = OrderId.ofRepoId(invoiceCandidate.getC_Order_ID());
+		return OrderGroupRepository.createGroupId(orderId, invoiceCandidate.getC_Order_CompensationGroup_ID());
 	}
 
 	@Override
@@ -253,7 +255,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 
 	private IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForGroupQuery(final GroupId groupId)
 	{
-		final int orderId = OrderGroupRepository.extractOrderIdFromGroupId(groupId);
+		final OrderId orderId = OrderGroupRepository.extractOrderIdFromGroupId(groupId);
 		final int orderCompensationGroupId = groupId.getOrderCompensationGroupId();
 
 		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
@@ -285,11 +287,12 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.build();
 
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
-		final int precision = orderBL.getPrecision(invoiceCandidate.getC_Order());
+		final I_C_Order order = invoiceCandidate.getC_Order();
 
 		return Group.builder()
 				.groupId(extractGroupId(invoiceCandidate))
-				.precision(precision)
+				.pricePrecision(orderBL.getPricePrecision(order))
+				.amountPrecision(orderBL.getAmountPrecision(order))
 				.regularLine(aggregatedRegularLine)
 				.compensationLine(compensationLine)
 				.build();

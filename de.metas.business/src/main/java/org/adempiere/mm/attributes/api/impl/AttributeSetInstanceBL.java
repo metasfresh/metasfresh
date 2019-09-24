@@ -1,8 +1,8 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.compiere.util.Util.coalesce;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -20,6 +20,7 @@ import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
@@ -323,5 +324,26 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 
 		I_M_AttributeSetInstance asi = Services.get(IAttributeDAO.class).getAttributeSetInstanceById(asiId);
 		return asi != null ? asi.getDescription() : "";
+	}
+
+	@Override
+	public void updateASIAttributeFromModel(@NonNull final String attributeCode, @NonNull final Object fromModel)
+	{
+		UpdateASIAttributeFromModelCommand.builder()
+				.attributeSetInstanceBL(this)
+				//
+				.attributeCode(attributeCode)
+				.sourceModel(fromModel)
+				//
+				.execute();
+	}
+
+	@Override
+	public boolean isStorageRelevant(@NonNull final I_M_AttributeInstance ai)
+	{
+		final IAttributesBL attributesService = Services.get(IAttributesBL.class);
+
+		final AttributeId attributeId = AttributeId.ofRepoId(ai.getM_Attribute_ID());
+		return attributesService.isStorageRelevant(attributeId);
 	}
 }

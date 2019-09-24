@@ -101,7 +101,7 @@ import lombok.NonNull;
 		{
 			return Quantity.QTY_INFINITE;
 		}
-		return capacityAvailable.getCapacityQty();
+		return capacityAvailable.toBigDecimal();
 	}
 
 	@Override
@@ -125,7 +125,7 @@ import lombok.NonNull;
 	public BigDecimal getQtyCapacity()
 	{
 		final CapacityInterface capacityTotal = getTotalCapacity();
-		return capacityTotal.getCapacityQty();
+		return capacityTotal.toBigDecimal();
 	}
 
 	@Override

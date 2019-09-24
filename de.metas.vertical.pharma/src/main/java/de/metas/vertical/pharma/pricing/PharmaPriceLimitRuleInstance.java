@@ -5,11 +5,15 @@ import java.math.RoundingMode;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IEditablePricingContext;
@@ -74,13 +78,16 @@ class PharmaPriceLimitRuleInstance
 		}
 
 		final IPricingContext pricingContext = context.getPricingContext();
-		if (!isEligibleBPartner(pricingContext))
+		final BooleanWithReason bpartnerEligible = checkEligibleBPartner(pricingContext);
+		if (bpartnerEligible.isFalse())
 		{
-			return PriceLimitRuleResult.notApplicable("BPartner not eligible");
+			return PriceLimitRuleResult.notApplicable(bpartnerEligible.getReason());
 		}
-		if (!isEligibleProduct(pricingContext.getProductId()))
+
+		final BooleanWithReason productEligible = checkEligibleProduct(pricingContext.getProductId());
+		if (productEligible.isFalse())
 		{
-			return PriceLimitRuleResult.notApplicable("Product not eligible");
+			return PriceLimitRuleResult.notApplicable(productEligible.getReason());
 		}
 
 		//
@@ -90,6 +97,7 @@ class PharmaPriceLimitRuleInstance
 		{
 			return PriceLimitRuleResult.notApplicable("No PriceLimit found for product");
 		}
+
 		return PriceLimitRuleResult.priceLimit(priceLimit.getValueAsBigDecimal(), priceLimit.toFormulaString());
 	}
 
@@ -107,51 +115,66 @@ class PharmaPriceLimitRuleInstance
 				.orElseThrow(() -> new AdempiereException("No price limit restrictions defined"));
 	}
 
-	private boolean isEligibleBPartner(final IPricingContext pricingContext)
+	private BooleanWithReason checkEligibleBPartner(final IPricingContext pricingContext)
 	{
 		if (pricingContext.isPropertySet(IPriceLimitRule.OPTION_SkipCheckingBPartnerEligible))
 		{
-			return true;
+			return BooleanWithReason.TRUE;
 		}
 
-		return isEligibleBPartner(pricingContext.getBPartnerId());
+		return checkEligibleBPartner(pricingContext.getBPartnerId());
 	}
 
-	private boolean isEligibleBPartner(final BPartnerId bpartnerId)
+	private BooleanWithReason checkEligibleBPartner(final BPartnerId bpartnerId)
 	{
 		if (bpartnerId == null)
 		{
-			return false;
+			return BooleanWithReason.falseBecause("no bpartner");
 		}
 
 		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
 		if (bpartner == null || !bpartner.isActive())
 		{
-			return false;
+			return BooleanWithReason.falseBecause("bpartner not found or not active");
 		}
 
-		return PharmaCustomerPermissions.of(bpartner).hasOnlyPermission(PharmaCustomerPermission.PHARMACIE);
+		final PharmaCustomerPermissions pharmaCustomerPermissions = PharmaCustomerPermissions.of(bpartner);
+		if (!pharmaCustomerPermissions.hasOnlyPermission(PharmaCustomerPermission.PHARMACIE))
+		{
+			return BooleanWithReason.falseBecause(TranslatableStrings.builder()
+					.append("BPartner shall have only PHARMACIE permission but it has: ")
+					.append(pharmaCustomerPermissions.toTrlString())
+					.build());
+		}
+
+		return BooleanWithReason.TRUE; // eligible
 	}
 
-	private static boolean isEligibleProduct(final ProductId productId)
+	private static BooleanWithReason checkEligibleProduct(final ProductId productId)
 	{
 		if (productId == null)
 		{
-			return false;
+			return BooleanWithReason.falseBecause("no product");
 		}
 
 		final I_M_Product product = Services.get(IProductDAO.class).getById(productId, I_M_Product.class);
 		if (product == null || !product.isActive())
 		{
-			return false;
+			return BooleanWithReason.falseBecause("product missing or not active");
 		}
 
-		if (!I_M_Product.FAM_ZUP_FAM.equals(product.getFAM_ZUB()))
+		boolean isFAM = I_M_Product.FAM_ZUP_FAM.equals(product.getFAM_ZUB());
+		if (!isFAM)
 		{
-			return false;
+			return BooleanWithReason.falseBecause("product's FAM/ZUP attribute is not FAM");
 		}
 
-		return product.isPrescription();
+		if (!product.isPrescription())
+		{
+			return BooleanWithReason.falseBecause("product is not a prescription product");
+		}
+
+		return BooleanWithReason.TRUE;
 	}
 
 	private PriceLimit computePriceLimitOrNull()
@@ -193,15 +216,15 @@ class PharmaPriceLimitRuleInstance
 
 	private BigDecimal getPaymentTermDiscountPercent()
 	{
-		final int paymentTermId = context.getPaymentTermId();
-		if (paymentTermId <= 0)
+		final PaymentTermId paymentTermId = context.getPaymentTermId();
+		if (paymentTermId == null)
 		{
 			return BigDecimal.ZERO;
 		}
 
 		return paymentTermsRepo
-				.getPaymentTermDiscount(PaymentTermId.ofRepoId(paymentTermId))
-				.getValue();
+				.getPaymentTermDiscount(paymentTermId)
+				.toBigDecimal();
 	}
 
 	@lombok.Value
@@ -243,9 +266,14 @@ class PharmaPriceLimitRuleInstance
 			valueAsBigDecimal = value;
 		}
 
-		public String toFormulaString()
+		public ITranslatableString toFormulaString()
 		{
-			return "(" + basePrice + " + " + priceAddAmt + ") - " + discountPercentToSubtract + "% + " + paymentTermDiscountPercentToAdd + "% (precision: " + precision + ")";
+			return TranslatableStrings.builder()
+					.append("(").append(basePrice, DisplayType.CostPrice).append(" + ").append(priceAddAmt, DisplayType.CostPrice).append(")")
+					.append(" - ").append(discountPercentToSubtract, DisplayType.Number).append("%")
+					.append(" + ").append(paymentTermDiscountPercentToAdd, DisplayType.Number).append("%")
+					.append(" (precision: ").append(precision.toInt()).append(")")
+					.build();
 		}
 	}
 }
