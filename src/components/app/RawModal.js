@@ -398,18 +398,42 @@ const mapStateToProps = ({ windowHandler }) => ({
 
 /**
  * @typedef {object} Props Component props
+ * @prop {node} [children]
+ * @prop {*} [name]
+ * @prop {*} [onShowTooltip]
+ * @prop {*} [onHideTooltip]
+ * @prop {*} [onClick]
+ * @prop {*} [tabIndex]
+ */
+ModalButton.propTypes = {
+  children: PropTypes.node,
+  name: PropTypes.any,
+  onShowTooltip: PropTypes.any,
+  onHideTooltip: PropTypes.any,
+  onClick: PropTypes.any,
+  tabIndex: PropTypes.any,
+};
+
+/**
+ * @typedef {object} Props Component props
  * @prop {func} dispatch
  * @prop {func} [closeCallback]
  * @prop {node} [children]
  * @prop {array} [allowedCloseActions]
  * @prop {string} [windowType]
  * @prop {string} [viewId]
+ * @prop {string|node} [masterDocumentList]
  * @prop {string|node} [modalTitle]
  * @prop {string|node} [modalDescription]
  * @prop {bool} [modalVisible]
  * @prop {object} rawModal
  * @prop {object} requests
  * @prop {bool} success
+ * @prop {*} [name]
+ * @prop {*} [onShowTooltip]
+ * @prop {*} [onHideTooltip]
+ * @prop {*} [onClick]
+ * @prop {*} [tabIndex]
  */
 RawModal.propTypes = {
   dispatch: PropTypes.func.isRequired,
@@ -418,6 +442,7 @@ RawModal.propTypes = {
   allowedCloseActions: PropTypes.array,
   windowType: PropTypes.string,
   viewId: PropTypes.string,
+  masterDocumentList: PropTypes.any,
   modalTitle: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   modalDescription: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   modalVisible: PropTypes.bool,
