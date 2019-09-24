@@ -1,6 +1,7 @@
 import counterpart from 'counterpart';
 import Moment from 'moment';
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
 /**
  * @file Class based component.
@@ -121,5 +122,20 @@ class InboxItem extends Component {
     );
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} [close]
+ * @prop {*} [item]
+ * @prop {*} [onClick]
+ * @prop {*} [onDelete]
+ * @todo Check props. Which proptype? Required or optional?
+ */
+InboxItem.propTypes = {
+  close: PropTypes.any,
+  item: PropTypes.any,
+  onClick: PropTypes.any,
+  onDelete: PropTypes.any,
+};
 
 export default InboxItem;
