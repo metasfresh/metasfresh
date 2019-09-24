@@ -69,13 +69,13 @@
 	</dependencyManagement>
 
 	<dependencies>
-
+<!--
 		<dependency>
 			<groupId>de.metas.business</groupId>
 			<artifactId>de.metas.business.rest-api</artifactId>
 			<version>10.0.0</version>
 		</dependency>
-
+-->
 		<dependency>
 			<groupId>commons-httpclient</groupId>
 			<artifactId>commons-httpclient</artifactId>
