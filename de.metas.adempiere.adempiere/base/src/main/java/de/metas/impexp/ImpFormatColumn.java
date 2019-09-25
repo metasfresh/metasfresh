@@ -17,14 +17,15 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.lang.CoalesceUtil;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
- * Import Format Column
+ * Import Format Column Definition
  */
+@ToString(of = { "columnName", "dataType", "startNo" })
 public final class ImpFormatColumn
 {
 	private static final Logger logger = LogManager.getLogger(ImpFormatColumn.class);
@@ -44,6 +45,7 @@ public final class ImpFormatColumn
 	private final DecimalSeparator decimalSeparator;
 	@Getter
 	private final boolean divideBy100;
+	@Getter
 	private final String constantValue;
 	private final boolean constantIsString;
 	private final int maxLength;
@@ -55,7 +57,7 @@ public final class ImpFormatColumn
 			final String name,
 			@NonNull final String columnName,
 			final int startNo,
-			final int endNo,
+			final Integer endNo,
 			@NonNull final ImpFormatColumnDataType dataType,
 			final int maxLength,
 			//
@@ -70,9 +72,9 @@ public final class ImpFormatColumn
 		this.name = !Check.isEmpty(name, true) ? name : columnName;
 		this.columnName = columnName;
 		this.startNo = startNo;
-		this.endNo = endNo;
+		this.endNo = endNo != null ? endNo : startNo;
 		this.dataType = dataType;
-		this.maxLength = maxLength;
+		this.maxLength = maxLength > 0 ? maxLength : 0;
 
 		this.dataFormat = dataFormat;
 		this.decimalSeparator = CoalesceUtil.coalesce(decimalSeparator, DecimalSeparator.DOT);
@@ -132,7 +134,6 @@ public final class ImpFormatColumn
 		DateFormat dateFormat = _dateFormat;
 		if (dateFormat == null)
 		{
-
 			final String dateFormatPattern = getDataFormat();
 			if (!Check.isEmpty(dateFormatPattern, true))
 			{
@@ -165,78 +166,70 @@ public final class ImpFormatColumn
 	 * 
 	 * Field content in [] are treated as comments.
 	 * 
-	 * @param info data item
+	 * @param valueStr data item
 	 * @return parsed info, never returns <code>null</code>
 	 * @throws Exception in case there was an error while parsing
 	 */
-	String parse(final String info) throws Exception
+	public Object parseCellValue(final String valueStr) throws Exception
 	{
-		if (info == null || info.length() == 0
-				|| (isDate() && "00000000".equals(info))) // consider this an empty value for date
+		if (valueStr == null)
 		{
-			return "";
+			return null;
 		}
 
-		// Comment ?
-		if (info.startsWith("[") && info.endsWith("]"))
-		{
-			return "";
-		}
+		// // Comment ?
+		// else if (valueStr.startsWith("[") && valueStr.endsWith("]"))
+		// {
+		// return null;
+		// }
 
 		//
-		final String retValue;
-		if (isNumber())
+		else if (isNumber())
 		{
-			retValue = parseNumber(info);
+			return parseNumber(valueStr);
 		}
 		else if (isDate())
 		{
-			retValue = parseDate(info);
+			// FIXME: HARDCODED - consider this an empty value for date
+			if ("00000000".equals(valueStr))
+			{
+				return null;
+			}
+
+			return parseDate(valueStr);
 		}
 		else if (isConstant())
 		{
-			retValue = constantIsString ? parseString(constantValue) : constantValue;
+			return constantIsString ? parseString(constantValue) : constantValue;
 		}
 		else
 		{
-			retValue = parseString(info);
+			return parseString(valueStr);
 		}
-
-		//
-		// Return the value (make sure it's not null)
-		return retValue == null ? "" : retValue.trim();
-	}	// parse
+	}
 
 	/**
 	 * Return date as YYYY-MM-DD HH24:MI:SS (JDBC Timestamp format w/o miliseconds)
 	 * 
-	 * @param info data
+	 * @param valueStr data
 	 * @return date as JDBC format String
 	 */
-	private String parseDate(final String info)
+	private Timestamp parseDate(final String valueStr)
 	{
+		if (Check.isEmpty(valueStr, true))
+		{
+			return null;
+		}
+
 		try
 		{
-			Timestamp ts = null;
-
-			if (!Check.isEmpty(info, true))
-			{
-				final DateFormat dateFormat = getDateFormat();
-				final Date date = dateFormat.parse(info.trim());
-				ts = TimeUtil.asTimestamp(date);
-			}
-
-			if (ts == null)
-			{
-				ts = SystemTime.asTimestamp();
-			}
-
-			final String dateString = ts.toString();
-			return dateString.substring(0, dateString.indexOf('.'));	// cut off miliseconds
+			final DateFormat dateFormat = getDateFormat();
+			final Date date = dateFormat.parse(valueStr.trim());
+			return TimeUtil.asTimestamp(date);
 		}
-		catch (ParseException e)
+		catch (final ParseException ex)
 		{
-			throw new AdempiereException("@Invalid@ @Date@: " + info);
+			throw new AdempiereException("@Invalid@ @Date@: " + valueStr, ex);
 		}
 	}
 
@@ -278,17 +271,16 @@ public final class ImpFormatColumn
 		return out.toString();
 	}
 
-	/**
-	 * Return number with "." decimal
-	 * 
-	 * @param info data
-	 * @return converted number
-	 */
-	private String parseNumber(final String info)
+	private BigDecimal parseNumber(@Nullable final String valueStr)
 	{
+		if (valueStr == null)
+		{
+			return null;
+		}
+
 		try
 		{
-			final String numberStringNormalized = normalizeNumberString(info);
+			final String numberStringNormalized = normalizeNumberString(valueStr);
 			BigDecimal bd = new BigDecimal(numberStringNormalized);
 
 			if (divideBy100)
@@ -297,11 +289,11 @@ public final class ImpFormatColumn
 				bd = bd.divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP);
 			}
 
-			return bd.toString();
+			return bd;
 		}
-		catch (NumberFormatException e)
+		catch (final NumberFormatException ex)
 		{
-			throw new AdempiereException("@Invalid@ @Number@: " + info);
+			throw new AdempiereException("@Invalid@ @Number@: " + valueStr, ex);
 		}
 	}
 

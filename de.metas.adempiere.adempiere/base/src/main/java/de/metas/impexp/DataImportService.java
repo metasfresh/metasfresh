@@ -36,13 +36,16 @@ public class DataImportService
 	private final IImportProcessFactory importProcessFactory = Services.get(IImportProcessFactory.class);
 	private final DataImportConfigRepository dataImportConfigsRepo;
 	private final ImpFormatRepository importFormatsRepo;
+	private final DataImportRunsService dataImportRunService;
 
 	public DataImportService(
 			@NonNull final DataImportConfigRepository dataImportConfigsRepo,
-			@NonNull final ImpFormatRepository importFormatsRepo)
+			@NonNull final ImpFormatRepository importFormatsRepo,
+			@NonNull final DataImportRunsService dataImportRunService)
 	{
 		this.dataImportConfigsRepo = dataImportConfigsRepo;
 		this.importFormatsRepo = importFormatsRepo;
+		this.dataImportRunService = dataImportRunService;
 	}
 
 	public DataImportResult importData(@NonNull final DataImportRequest request)
@@ -53,6 +56,8 @@ public class DataImportService
 
 		return DataImportCommand.builder()
 				.importProcessFactory(importProcessFactory)
+				.dataImportRunService(dataImportRunService)
+				//
 				.clientId(request.getClientId())
 				.orgId(request.getOrgId())
 				.userId(request.getUserId())

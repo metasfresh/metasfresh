@@ -60,6 +60,7 @@ public class ImpFormatRepository
 		final ImportTableDescriptor importTableDescriptor = importTableDescriptorRepo.getByTableId(adTableId);
 
 		return ImpFormat.builder()
+				.id(impFormatId)
 				.name(impFormatRecord.getName())
 				.formatType(ImpFormatType.ofCode(impFormatRecord.getFormatType()))
 				.multiLine(impFormatRecord.isMultiLine())

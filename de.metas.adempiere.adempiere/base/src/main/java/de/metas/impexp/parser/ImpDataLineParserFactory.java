@@ -1,10 +1,10 @@
-package de.metas.impexp;
+package de.metas.impexp.parser;
 
-import org.compiere.model.I_C_DataImport_Run;
+import org.adempiere.exceptions.AdempiereException;
 
-import lombok.Builder;
+import de.metas.impexp.ImpFormat;
+import de.metas.impexp.ImpFormatType;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -28,23 +28,24 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class ImportTableDescriptor
+public class ImpDataLineParserFactory
 {
-	public static final String COLUMNNAME_C_DataImport_Run_ID = I_C_DataImport_Run.COLUMNNAME_C_DataImport_Run_ID;
-	public static final String COLUMNNAME_I_ErrorMsg = "I_ErrorMsg";
-
-	@NonNull
-	String tableName;
-	@NonNull
-	String keyColumnName;
-
-	String dataImportConfigIdColumnName;
-	String adIssueIdColumnName;
-
-	String importLineContentColumnName;
-	String importLineNoColumnName;
-
-	int errorMsgMaxLength;
+	public ImpDataLineParser createParser(@NonNull final ImpFormat impFormat)
+	{
+		final ImpFormatType formatType = impFormat.getFormatType();
+		if (ImpFormatType.FIXED_POSITION.equals(formatType))
+		{
+			return new FixedPositionImpDataLineParser(impFormat);
+		}
+		else if (ImpFormatType.COMMA_SEPARATED.equals(formatType)
+				|| ImpFormatType.SEMICOLON_SEPARATED.equals(formatType)
+				|| ImpFormatType.TAB_SEPARATED.equals(formatType))
+		{
+			return new FlexImpDataLineParser(impFormat);
+		}
+		else
+		{
+			throw new AdempiereException("Unsupported format type: " + formatType);
+		}
+	}
 }
