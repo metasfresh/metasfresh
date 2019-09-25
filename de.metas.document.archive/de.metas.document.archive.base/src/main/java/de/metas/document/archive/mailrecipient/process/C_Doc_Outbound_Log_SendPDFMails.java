@@ -23,7 +23,7 @@ public class C_Doc_Outbound_Log_SendPDFMails
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		if (selectionSize.isAllSelected() && selectionSize.getSize() > 500)
+		if (selectionSize.isAllSelected() || selectionSize.getSize() > 500)
 		{
 			// Checking is too expensive; just assume that some selected records have an email address
 			return ProcessPreconditionsResolution.accept();
