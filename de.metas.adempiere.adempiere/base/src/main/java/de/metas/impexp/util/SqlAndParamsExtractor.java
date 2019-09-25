@@ -1,4 +1,4 @@
-package de.metas.impexp;
+package de.metas.impexp.util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +33,7 @@ import lombok.ToString;
  */
 
 @ToString
-final class SqlAndParamsExtractor<Context>
+public final class SqlAndParamsExtractor<Context>
 {
 	@Getter
 	private final String sql;

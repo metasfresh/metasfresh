@@ -1,4 +1,4 @@
-package de.metas.impexp;
+package de.metas.impexp.format;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;

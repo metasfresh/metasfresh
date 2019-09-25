@@ -1,7 +1,7 @@
 package de.metas.impexp.parser;
 
-import static de.metas.impexp.ImpFormatColumnDataType.Number;
-import static de.metas.impexp.ImpFormatColumnDataType.String;
+import static de.metas.impexp.format.ImpFormatColumnDataType.Number;
+import static de.metas.impexp.format.ImpFormatColumnDataType.String;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -14,13 +14,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import de.metas.impexp.ImpDataCell;
-import de.metas.impexp.ImpFormat;
-import de.metas.impexp.ImpFormatColumn;
-import de.metas.impexp.ImpFormatColumnDataType;
-import de.metas.impexp.ImpFormatId;
-import de.metas.impexp.ImpFormatType;
-import de.metas.impexp.ImportTableDescriptor;
+import de.metas.impexp.format.ImpFormat;
+import de.metas.impexp.format.ImpFormatColumn;
+import de.metas.impexp.format.ImpFormatColumnDataType;
+import de.metas.impexp.format.ImpFormatId;
+import de.metas.impexp.format.ImpFormatType;
+import de.metas.impexp.format.ImportTableDescriptor;
 
 /*
  * #%L

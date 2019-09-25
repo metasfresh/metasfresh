@@ -5,10 +5,8 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.impexp.ErrorMessage;
-import de.metas.impexp.ImpDataCell;
-import de.metas.impexp.ImpFormat;
-import de.metas.impexp.ImpFormatColumn;
+import de.metas.impexp.format.ImpFormat;
+import de.metas.impexp.format.ImpFormatColumn;
 import groovy.transform.ToString;
 import lombok.NonNull;
 

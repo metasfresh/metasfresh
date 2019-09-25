@@ -1,4 +1,4 @@
-package de.metas.impexp;
+package de.metas.impexp.parser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.impexp.format.ImpFormatColumn;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;

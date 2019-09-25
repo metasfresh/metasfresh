@@ -1,10 +1,7 @@
-package de.metas.impexp;
+package de.metas.impexp.parser;
 
-import javax.annotation.Nullable;
-
-import lombok.Builder;
+import de.metas.impexp.format.ImpFormat;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -28,16 +25,18 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class DataImportConfig
+public class ImpDataParserFactory
 {
-	@NonNull
-	DataImportConfigId id;
-	
-	@Nullable
-	String internalName;
+	private final ImpDataLineParserFactory lineParserFactory = new ImpDataLineParserFactory();
 
-	@NonNull
-	ImpFormatId impFormatId;
+	public ImpDataParser createParser(@NonNull final ImpFormat impFormat)
+	{
+		final ImpDataLineParser lineParser = lineParserFactory.createParser(impFormat);
+
+		return ImpDataParser.builder()
+				.multiline(impFormat.isMultiLine())
+				.lineParser(lineParser)
+				.build();
+	}
+
 }
