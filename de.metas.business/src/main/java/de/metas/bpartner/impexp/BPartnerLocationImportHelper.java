@@ -164,7 +164,7 @@ import lombok.NonNull;
 				&& !Check.isEmpty(importRecord.getCity(), true))
 		{
 
-			final I_C_BPartner bpartner = partnerDAO.getById(BPartnerId.ofRepoId(importRecord.getC_BPartner_ID()));
+			final I_C_BPartner bpartner = partnerDAO.getByIdInTrx(BPartnerId.ofRepoId(importRecord.getC_BPartner_ID()));
 			final I_C_BPartner_Location bpartnerLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, bpartner);
 			bpartnerLocation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 			updateExistingBPartnerLocation(importRecord, bpartnerLocation);

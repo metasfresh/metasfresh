@@ -72,8 +72,11 @@ import lombok.NonNull;
 		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 		final IUserDAO userDAO = Services.get(IUserDAO.class);
 
-		final I_C_BPartner bpartner = partnerDAO.getById(BPartnerId.ofRepoId(importRecord.getC_BPartner_ID()));
-		final I_C_BPartner_Location bpartnerLocation = partnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(importRecord.getC_BPartner_ID(), importRecord.getC_BPartner_Location_ID()));
+		final I_C_BPartner bpartner = partnerDAO.getByIdInTrx(BPartnerId.ofRepoId(importRecord.getC_BPartner_ID()));
+
+		BPartnerLocationId bpLocIdOrNull = BPartnerLocationId.ofRepoIdOrNull(importRecord.getC_BPartner_ID(), importRecord.getC_BPartner_Location_ID());
+		final I_C_BPartner_Location bpartnerLocation = bpLocIdOrNull == null? null : partnerDAO.getBPartnerLocationById(bpLocIdOrNull);
+
 		final String importContactName = userBL.buildContactName(importRecord.getFirstname(), importRecord.getLastname());
 
 		final UserId userIdOrNull = UserId.ofRepoIdOrNull(importRecord.getAD_User_ID() <= 0 ? -1 : importRecord.getAD_User_ID());
