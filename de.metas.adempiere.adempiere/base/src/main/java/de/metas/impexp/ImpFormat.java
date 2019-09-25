@@ -1,8 +1,5 @@
 package de.metas.impexp;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -297,10 +294,6 @@ public final class ImpFormat
 
 		final String tableName = importTableDescriptor.getTableName();
 		final String keyColumnName = importTableDescriptor.getKeyColumnName();
-		final String tableUnique1 = importTableDescriptor.getTableUnique1();
-		final String tableUnique2 = importTableDescriptor.getTableUnique2();
-		final String tableUniqueParent = importTableDescriptor.getTableUniqueParent();
-		final String tableUniqueChild = importTableDescriptor.getTableUniqueChild();
 
 		//
 		// Re-use the same ID if we already imported this record
@@ -317,100 +310,6 @@ public final class ImpFormat
 			if (count == 1)
 			{
 				importRecordId = recordId;
-			}
-		}
-
-		//
-		// Check if the record is already there (by looking up by unique keys)
-		if (importRecordId <= 0)
-		{
-			final StringBuilder sql = new StringBuilder("SELECT COUNT(*), MAX(")
-					.append(keyColumnName).append(") FROM ").append(tableName)
-					.append(" WHERE AD_Client_ID=").append(clientId.getRepoId()).append(" AND (");
-			//
-			String where1 = null;
-			String where2 = null;
-			String whereParentChild = null;
-			for (final ImpDataCell node : nodes)
-			{
-				if (node.isEmptyOrZero())
-				{
-					continue;
-				}
-
-				final String columnName = node.getColumnName();
-				if (columnName.equals(tableUnique1))
-				{
-					where1 = node.getColumnNameEqualsValueSql();
-				}
-				else if (columnName.equals(tableUnique2))
-				{
-					where2 = node.getColumnNameEqualsValueSql();
-				}
-				else if (columnName.equals(tableUniqueParent) || columnName.equals(tableUniqueChild))
-				{
-					if (whereParentChild == null)
-					{
-						whereParentChild = node.getColumnNameEqualsValueSql();
-					}
-					else
-					{
-						whereParentChild += " AND " + node.getColumnNameEqualsValueSql();
-					}
-				}
-			}
-
-			final StringBuilder sqlFindExistingRecord = new StringBuilder();
-			if (where1 != null)
-			{
-				sqlFindExistingRecord.append(where1);
-			}
-			if (where2 != null)
-			{
-				if (sqlFindExistingRecord.length() > 0)
-				{
-					sqlFindExistingRecord.append(" OR ");
-				}
-				sqlFindExistingRecord.append(where2);
-			}
-			if (whereParentChild != null && whereParentChild.indexOf(" AND ") != -1)	// need to have both criteria
-			{
-				if (sqlFindExistingRecord.length() > 0)
-				{
-					sqlFindExistingRecord.append(" OR (").append(whereParentChild).append(")");	// may have only one
-				}
-				else
-				{
-					sqlFindExistingRecord.append(whereParentChild);
-				}
-			}
-			sql.append(sqlFindExistingRecord).append(")");
-			//
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;
-			try
-			{
-				if (sqlFindExistingRecord.length() > 0)
-				{
-					pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-					rs = pstmt.executeQuery();
-					if (rs.next())
-					{
-						final int count = rs.getInt(1);
-						if (count == 1)
-						{
-							importRecordId = rs.getInt(2);
-						}
-					}
-				}
-			}
-			catch (SQLException e)
-			{
-				throw new DBException(e, sql.toString());
-			}
-			finally
-			{
-				DB.close(rs, pstmt);
 			}
 		}
 
