@@ -50,6 +50,7 @@ import org.compiere.model.MTable;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.DocumentConstants;
@@ -303,5 +304,19 @@ public class ADTableDAO implements IADTableDAO
 		final I_AD_Table table = retrieveTable(tableName);
 		final int typeaheadMinLength = table.getACTriggerLength();
 		return typeaheadMinLength > 0 ? typeaheadMinLength : 0;
+	}
+
+	@Override
+	public List<I_AD_Table> retrieveAllImportTables()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_AD_Table.class)
+				.addOnlyActiveRecordsFilter()
+				.addStringLikeFilter(I_AD_Table.COLUMNNAME_TableName, "I_%", /* ignore case */false)
+				.orderBy(I_AD_Table.COLUMNNAME_TableName)
+				.create()
+				.stream()
+				.filter(table -> table.getTableName().startsWith("I_")) // required because "I_%" could match "IMP_blabla" too
+				.collect(ImmutableList.toImmutableList());
 	}
 }
