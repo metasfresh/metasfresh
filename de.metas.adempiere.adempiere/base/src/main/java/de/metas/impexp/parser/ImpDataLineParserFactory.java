@@ -2,8 +2,8 @@ package de.metas.impexp.parser;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.impexp.ImpFormat;
-import de.metas.impexp.ImpFormatType;
+import de.metas.impexp.format.ImpFormat;
+import de.metas.impexp.format.ImpFormatType;
 import lombok.NonNull;
 
 /*
@@ -28,7 +28,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class ImpDataLineParserFactory
+final class ImpDataLineParserFactory
 {
 	public ImpDataLineParser createParser(@NonNull final ImpFormat impFormat)
 	{

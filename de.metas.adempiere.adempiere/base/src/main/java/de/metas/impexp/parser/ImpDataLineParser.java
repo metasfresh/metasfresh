@@ -2,8 +2,6 @@ package de.metas.impexp.parser;
 
 import java.util.List;
 
-import de.metas.impexp.ImpDataCell;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base

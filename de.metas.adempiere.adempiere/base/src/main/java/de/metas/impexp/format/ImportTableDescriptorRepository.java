@@ -1,4 +1,4 @@
-package de.metas.impexp;
+package de.metas.impexp.format;
 
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;

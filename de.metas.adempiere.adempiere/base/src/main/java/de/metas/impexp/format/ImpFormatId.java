@@ -1,4 +1,4 @@
-package de.metas.impexp;
+package de.metas.impexp.format;
 
 import javax.annotation.Nullable;
 

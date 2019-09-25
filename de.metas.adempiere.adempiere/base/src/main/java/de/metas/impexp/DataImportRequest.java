@@ -4,6 +4,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.api.IParams;
 import org.springframework.core.io.Resource;
 
+import de.metas.impexp.config.DataImportConfigId;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import lombok.Builder;

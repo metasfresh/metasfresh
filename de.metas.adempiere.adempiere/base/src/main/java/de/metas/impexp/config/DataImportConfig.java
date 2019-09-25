@@ -1,6 +1,11 @@
-package de.metas.impexp;
+package de.metas.impexp.config;
 
-import lombok.Getter;
+import javax.annotation.Nullable;
+
+import de.metas.impexp.format.ImpFormatId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -24,32 +29,16 @@ import lombok.Getter;
  * #L%
  */
 
-public enum DecimalSeparator
+@Value
+@Builder
+public class DataImportConfig
 {
-	COMMA(","), //
-	DOT(".") //
-	;
+	@NonNull
+	DataImportConfigId id;
+	
+	@Nullable
+	String internalName;
 
-	@Getter
-	private final String symbol;
-
-	DecimalSeparator(final String symbol)
-	{
-		this.symbol = symbol;
-	}
-
-	public static DecimalSeparator ofNullableStringOrDot(final String symbol)
-	{
-		return ",".equals(symbol) ? COMMA : DOT;
-	}
-
-	public boolean isComma()
-	{
-		return COMMA.equals(this);
-	}
-
-	public boolean isDot()
-	{
-		return DOT.equals(this);
-	}
+	@NonNull
+	ImpFormatId impFormatId;
 }

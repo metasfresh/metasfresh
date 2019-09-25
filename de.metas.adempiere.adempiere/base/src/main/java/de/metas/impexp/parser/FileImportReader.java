@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.metas.impexp;
+package de.metas.impexp.parser;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,7 +45,7 @@ import lombok.experimental.UtilityClass;
  *
  */
 @UtilityClass
-public class FileImportReader
+final class FileImportReader
 {
 	private static final char TEXT_DELIMITER = '"';
 	private static final int MAX_LOADED_LINES = 100;
@@ -67,6 +67,7 @@ public class FileImportReader
 			return lines;
 		}
 	}
+
 	final private static class MultiLineProcessor implements LineProcessor<List<String>>
 	{
 		private boolean openQuote = false;
@@ -168,12 +169,11 @@ public class FileImportReader
 	{
 		return Files.readLines(file, charset, new SingleLineProcessor());
 	}
-	
+
 	public List<String> readRegularLines(@NonNull final byte[] data, @NonNull final Charset charset) throws IOException
 	{
 		return ByteSource.wrap(data).asCharSource(charset).readLines(new SingleLineProcessor());
 	}
-
 
 	/**
 	 * Build the preview from the loaded lines

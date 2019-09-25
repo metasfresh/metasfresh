@@ -1,10 +1,6 @@
-package de.metas.impexp;
+package de.metas.impexp.format;
 
-import org.compiere.model.I_C_DataImport_Run;
-
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import lombok.Getter;
 
 /*
  * #%L
@@ -28,23 +24,32 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class ImportTableDescriptor
+public enum DecimalSeparator
 {
-	public static final String COLUMNNAME_C_DataImport_Run_ID = I_C_DataImport_Run.COLUMNNAME_C_DataImport_Run_ID;
-	public static final String COLUMNNAME_I_ErrorMsg = "I_ErrorMsg";
+	COMMA(","), //
+	DOT(".") //
+	;
 
-	@NonNull
-	String tableName;
-	@NonNull
-	String keyColumnName;
+	@Getter
+	private final String symbol;
 
-	String dataImportConfigIdColumnName;
-	String adIssueIdColumnName;
+	DecimalSeparator(final String symbol)
+	{
+		this.symbol = symbol;
+	}
 
-	String importLineContentColumnName;
-	String importLineNoColumnName;
+	public static DecimalSeparator ofNullableStringOrDot(final String symbol)
+	{
+		return ",".equals(symbol) ? COMMA : DOT;
+	}
 
-	int errorMsgMaxLength;
+	public boolean isComma()
+	{
+		return COMMA.equals(this);
+	}
+
+	public boolean isDot()
+	{
+		return DOT.equals(this);
+	}
 }
