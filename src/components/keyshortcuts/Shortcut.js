@@ -1,7 +1,12 @@
 import PropTypes from 'prop-types';
 import { PureComponent } from 'react';
 
-export default class Shortcut extends PureComponent {
+/**
+ * @file Class based component.
+ * @module Shortcut
+ * @extends PureComponent
+ */
+class Shortcut extends PureComponent {
   static contextTypes = {
     shortcuts: PropTypes.shape({
       subscribe: PropTypes.func.isRequired,
@@ -14,6 +19,11 @@ export default class Shortcut extends PureComponent {
     handler: PropTypes.func.isRequired,
   };
 
+  /**
+   * @method UNSAFE_componentWillMount
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   UNSAFE_componentWillMount() {
     const { subscribe } = this.context.shortcuts;
     const { name, handler } = this.props;
@@ -24,6 +34,11 @@ export default class Shortcut extends PureComponent {
     subscribe(name, handler);
   }
 
+  /**
+   * @method componentWillUnmount
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   componentWillUnmount() {
     const { unsubscribe } = this.context.shortcuts;
     const { name, handler } = this;
@@ -31,7 +46,14 @@ export default class Shortcut extends PureComponent {
     unsubscribe(name, handler);
   }
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     return null;
   }
 }
+
+export default Shortcut;
