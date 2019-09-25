@@ -25,25 +25,6 @@ const initialState = {
  * @extends Component
  */
 export class QuickActions extends Component {
-  static propTypes = {
-    // from @connect
-    dispatch: PropTypes.func.isRequired,
-
-    // from <DocumentList>
-    childView: PropTypes.object.isRequired,
-    parentView: PropTypes.object.isRequired,
-    windowType: PropTypes.string.isRequired,
-    viewId: PropTypes.string,
-    viewProfileId: PropTypes.string,
-    fetchOnInit: PropTypes.bool,
-    inBackground: PropTypes.bool,
-    inModal: PropTypes.bool,
-    disabled: PropTypes.bool,
-    stopShortcutPropagation: PropTypes.bool,
-
-    processStatus: PropTypes.string,
-  };
-
   mounted = false;
 
   constructor(props) {
@@ -432,6 +413,39 @@ export class QuickActions extends Component {
     }
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {func} dispatch
+ * @prop {object} childView
+ * @prop {string} windowType
+ * @prop {string} [viewId]
+ * @prop {string} [viewProfileId]
+ * @prop {bool} [fetchOnInit]
+ * @prop {bool} [inBackground]
+ * @prop {bool} [inModal]
+ * @prop {bool} [disabled]
+ * @prop {bool} [stopShortcutPropagation]
+ * @prop {string} [processStatus]
+ * @todo Check title, buttons. Which proptype? Required or optional?
+ */
+QuickActions.propTypes = {
+  // from @connect
+  dispatch: PropTypes.func.isRequired,
+
+  // from <DocumentList>
+  childView: PropTypes.object.isRequired,
+  parentView: PropTypes.object.isRequired,
+  windowType: PropTypes.string.isRequired,
+  viewId: PropTypes.string,
+  viewProfileId: PropTypes.string,
+  fetchOnInit: PropTypes.bool,
+  inBackground: PropTypes.bool,
+  inModal: PropTypes.bool,
+  disabled: PropTypes.bool,
+  stopShortcutPropagation: PropTypes.bool,
+  processStatus: PropTypes.string,
+};
 
 export default connect(
   false,
