@@ -1,22 +1,29 @@
 package org.adempiere.ad.table.api.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.callout.api.IADColumnCalloutBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
+import org.compiere.model.MColumn;
 import org.compiere.model.M_Element;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -35,14 +42,19 @@ public class CopyColumnsProducer
 
 	//
 	// Services
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final IADColumnCalloutBL adColumnCalloutBL = Services.get(IADColumnCalloutBL.class);
 	private final IColumnBL columnBL = Services.get(IColumnBL.class);
 
+	//
+	// Parameters
 	private ILoggable _logger;
 	private I_AD_Table _targetTable;
 	private List<I_AD_Column> _sourceColumns;
 	private String _entityType = null;
+	private boolean syncDatabase;
+	private boolean dryRun;
 
 	private CopyColumnsProducer()
 	{
@@ -50,7 +62,7 @@ public class CopyColumnsProducer
 
 	private void addLog(final String message)
 	{
-		if (_logger == null)
+		if (Loggables.isNull(_logger))
 		{
 			return;
 		}
@@ -107,29 +119,60 @@ public class CopyColumnsProducer
 		}
 	}
 
-	/**
-	 * @return now many columns were created
-	 */
-	public int create()
+	public CopyColumnsProducer setSyncDatabase(final boolean syncDatabase)
 	{
-		final List<I_AD_Column> sourceColumns = getSourceColumns();
+		this.syncDatabase = syncDatabase;
+		return this;
+	}
 
-		int countCreated = 0;
+	public CopyColumnsProducer setDryRun(final boolean dryRun)
+	{
+		this.dryRun = dryRun;
+		return this;
+	}
+
+	/**
+	 * @return how many columns were created
+	 */
+	public CopyColumnsResult create()
+	{
+		trxManager.assertThreadInheritedTrxNotExists();
+
+		List<I_AD_Column> sourceColumns = getSourceColumns();
+		final List<I_AD_Column> newlyCreatedColumns = trxManager.callInNewTrx(() -> copyColumnsToTargetTableInTrx(sourceColumns));
+
+		syncToDatabaseIfNeeded(newlyCreatedColumns);
+
+		return CopyColumnsResult.builder()
+				.targetTable(getTargetTable().getTableName())
+				.newlyCreatedColumns(toColumnNamesSet(newlyCreatedColumns))
+				.syncDatabase(syncDatabase)
+				.build();
+	}
+
+	private List<I_AD_Column> copyColumnsToTargetTableInTrx(final List<I_AD_Column> sourceColumns)
+	{
+		final List<I_AD_Column> newlyCreatedColumns = new ArrayList<>();
 		for (final I_AD_Column sourceColumn : sourceColumns)
 		{
-			final I_AD_Column targetColumn = copyColumn(sourceColumn);
+			final I_AD_Column targetColumn = copyColumnToTargetTable(sourceColumn);
 			if (targetColumn == null)
 			{
 				continue;
 			}
 
-			countCreated++;
+			newlyCreatedColumns.add(targetColumn);
 		}
 
-		return countCreated;
+		if (dryRun)
+		{
+			throw new AdempiereException("Rollback because we are in test mode");
+		}
+
+		return newlyCreatedColumns;
 	}
 
-	private I_AD_Column copyColumn(final I_AD_Column sourceColumn)
+	private I_AD_Column copyColumnToTargetTable(final I_AD_Column sourceColumn)
 	{
 		final I_AD_Table targetTable = getTargetTable();
 		if (targetTable.getAD_Table_ID() == sourceColumn.getAD_Table_ID())
@@ -213,6 +256,9 @@ public class CopyColumnsProducer
 		colTarget.setIsSyncDatabase(sourceColumn.getIsSyncDatabase());
 		colTarget.setIsAlwaysUpdateable(sourceColumn.isAlwaysUpdateable());
 		colTarget.setColumnSQL(sourceColumn.getColumnSQL());
+		colTarget.setDDL_NoForeignKey(sourceColumn.isDDL_NoForeignKey());
+		colTarget.setIsAutoApplyValidationRule(sourceColumn.isAutoApplyValidationRule());
+		colTarget.setIsCalculated(sourceColumn.isCalculated());
 
 		InterfaceWrapperHelper.save(colTarget);
 		addLog("@AD_Column_ID@ " + targetTable.getTableName() + "." + colTarget.getColumnName() + ": @Created@"); // metas
@@ -223,4 +269,27 @@ public class CopyColumnsProducer
 
 		return colTarget;
 	}
+
+	private void syncToDatabaseIfNeeded(final List<I_AD_Column> columns)
+	{
+		if (!syncDatabase)
+		{
+			return;
+		}
+
+		for (final I_AD_Column column : columns)
+		{
+			final MColumn columnPO = LegacyAdapters.convertToPO(column);
+			columnPO.syncDatabase();
+
+			final String columnName = column.getColumnName();
+			addLog("Synchronized column " + columnName);
+		}
+	}
+
+	private static ImmutableSet<String> toColumnNamesSet(final List<I_AD_Column> newlyCreatedColumns)
+	{
+		return newlyCreatedColumns.stream().map(I_AD_Column::getColumnName).collect(ImmutableSet.toImmutableSet());
+	}
+
 }
