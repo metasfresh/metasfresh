@@ -125,6 +125,18 @@ SpinnerOverlay.defaultProps = {
   iconSize: 32,
 };
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} parent
+ * @prop {bool} displayCondition
+ * @prop {bool} hideCondition
+ * @prop {number} [iconSize]
+ * @prop {number} [delay]
+ * @prop {string} [spinnerDisplayed]
+ * @prop {func} [showSpinner]
+ * @prop {func} [hideSpinner]
+ * @todo Check props. Which proptype? Required or optional?
+ */
 SpinnerOverlay.propTypes = {
   parent: PropTypes.any.isRequired,
   displayCondition: PropTypes.bool.isRequired,
