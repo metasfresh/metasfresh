@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 
@@ -114,5 +115,18 @@ class QuickActionsDropdown extends Component {
     );
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} actions
+ * @prop {*} handleClick
+ * @prop {*} handleClickOutside
+ * @todo Check props. Which proptype? Required or optional?
+ */
+QuickActionsDropdown.propTypes = {
+  actions: PropTypes.any,
+  handleClick: PropTypes.any,
+  handleClickOutside: PropTypes.any,
+};
 
 export default connect()(onClickOutside(QuickActionsDropdown));
