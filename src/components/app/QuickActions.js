@@ -427,6 +427,8 @@ export class QuickActions extends Component {
  * @prop {bool} [disabled]
  * @prop {bool} [stopShortcutPropagation]
  * @prop {string} [processStatus]
+ * @prop {string} [shouldNotUpdate]
+ * @prop {string} [selected]
  * @todo Check title, buttons. Which proptype? Required or optional?
  */
 QuickActions.propTypes = {
@@ -445,6 +447,8 @@ QuickActions.propTypes = {
   disabled: PropTypes.bool,
   stopShortcutPropagation: PropTypes.bool,
   processStatus: PropTypes.string,
+  shouldNotUpdate: PropTypes.any,
+  selected: PropTypes.any,
 };
 
 export default connect(
