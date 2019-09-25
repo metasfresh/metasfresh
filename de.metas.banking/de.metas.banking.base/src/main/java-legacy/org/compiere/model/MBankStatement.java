@@ -557,7 +557,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		if (m_processMsg != null)
 			return false;
 
-		return false;
+		throw new UnsupportedOperationException();
 	}	// reverseCorrectionIt
 
 	/**
@@ -579,7 +579,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		if (m_processMsg != null)
 			return false;
 
-		return false;
+		throw new UnsupportedOperationException();
 	}	// reverseAccrualIt
 
 	/**
@@ -600,7 +600,8 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
 		if (m_processMsg != null)
 			return false;
-		return false;
+
+		throw new UnsupportedOperationException();
 	}	// reActivateIt
 
 	/*************************************************************************
