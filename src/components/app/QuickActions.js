@@ -19,6 +19,11 @@ const initialState = {
   loading: false,
 };
 
+/**
+ * @file Class based component.
+ * @module QuickActions
+ * @extends Component
+ */
 export class QuickActions extends Component {
   static propTypes = {
     // from @connect
@@ -53,6 +58,11 @@ export class QuickActions extends Component {
     });
   }
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   componentDidMount = () => {
     this.mounted = true;
 
@@ -82,10 +92,21 @@ export class QuickActions extends Component {
     }
   };
 
+  /**
+   * @method componentWillUnmount
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   componentWillUnmount = () => {
     this.mounted = false;
   };
 
+  /**
+   * @method UNSAFE_componentWillReceiveProps
+   * @summary ToDo: Describe the method
+   * @param {*} nextProps
+   * @todo Write the documentation
+   */
   UNSAFE_componentWillReceiveProps = nextProps => {
     const { selected, viewId, windowType } = this.props;
 
@@ -110,10 +131,22 @@ export class QuickActions extends Component {
     }
   };
 
+  /**
+   * @method shouldComponentUpdate
+   * @summary ToDo: Describe the method
+   * @param {*} nextProps
+   * @todo Write the documentation
+   */
   shouldComponentUpdate(nextProps) {
     return nextProps.shouldNotUpdate !== true;
   }
 
+  /**
+   * @method componentDidUpdate
+   * @summary ToDo: Describe the method
+   * @param {*} prevProps
+   * @todo Write the documentation
+   */
   componentDidUpdate = prevProps => {
     const { inBackground, inModal } = this.props;
 
@@ -132,6 +165,12 @@ export class QuickActions extends Component {
     }
   };
 
+  /**
+   * @method updateActions
+   * @summary ToDo: Describe the method
+   * @param {*} childSelection
+   * @todo Write the documentation
+   */
   updateActions = (childSelection = this.props.childView.viewSelectedIds) => {
     const {
       windowType,
@@ -156,10 +195,21 @@ export class QuickActions extends Component {
     });
   };
 
+  /**
+   * @method handleClickOPutside
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleClickOutside = () => {
     this.toggleDropdown();
   };
 
+  /**
+   * @method handleClick
+   * @summary ToDo: Describe the method
+   * @param {*} action
+   * @todo Write the documentation
+   */
   handleClick = action => {
     const { dispatch, viewId, selected, childView, parentView } = this.props;
 
@@ -193,6 +243,20 @@ export class QuickActions extends Component {
     this.toggleDropdown();
   };
 
+  /**
+   * @async
+   * @method renderCancelButton
+   * @summary ToDo: Describe the method
+   * @param {*} windowId
+   * @param {*} viewId
+   * @param {*} viewProfileId
+   * @param {*} selected
+   * @param {*} childView
+   * @param {*} parentView
+   * @param {*} resolve
+   * @param {*} reject
+   * @todo Write the documentation
+   */
   async fetchActions(
     windowId,
     viewId,
@@ -249,18 +313,36 @@ export class QuickActions extends Component {
     }
   }
 
+  /**
+   * @method toggleDropdown
+   * @summary ToDo: Describe the method
+   * @param {*} option
+   * @todo Write the documentation
+   */
   toggleDropdown = option => {
     this.setState({
       isDropdownOpen: option,
     });
   };
 
+  /**
+   * @method toggleTooltip
+   * @summary ToDo: Describe the method
+   * @param {*} type
+   * @param {*} visible
+   * @todo Write the documentation
+   */
   toggleTooltip = (type, visible) => {
     this.setState({
       [type]: visible,
     });
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     const {
       actions,
