@@ -1,14 +1,7 @@
 package de.metas.impexp;
 
-import java.sql.Timestamp;
-
 import javax.annotation.Nullable;
 
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-
-import de.metas.util.Check;
-import lombok.NonNull;
 import lombok.ToString;
 
 /**
@@ -18,54 +11,27 @@ import lombok.ToString;
 @ToString
 public class ImpDataCell
 {
-	private final ImpFormatColumn impFormatColumn;
-	private String value = "";
-	private CellErrorMessage errorMessage = null;
-
-	public ImpDataCell(@NonNull final ImpFormatColumn impFormatColumn)
+	public static ImpDataCell value(final Object value)
 	{
-		this.impFormatColumn = impFormatColumn;
+		final ErrorMessage errorMessage = null;
+		return new ImpDataCell(value, errorMessage);
 	}
 
-	public ImpDataCell()
+	public static ImpDataCell error(final ErrorMessage errorMessage)
 	{
-		this.impFormatColumn = null;
+		final Object value = null;
+		return new ImpDataCell(value, errorMessage);
 	}
 
-	public String getColumnName()
+	private final Object value;
+	private final ErrorMessage errorMessage;
+
+	private ImpDataCell(
+			@Nullable final Object value,
+			@Nullable ErrorMessage errorMessage)
 	{
-		Check.assumeNotNull(impFormatColumn, "impFormatColumn not null");
-		return impFormatColumn.getColumnName();
-	}
-
-	public boolean isEmpty()
-	{
-		return Check.isEmpty(value, false);
-	}
-
-	public boolean isEmptyOrZero()
-	{
-		if (isEmpty())
-		{
-			return true;
-		}
-
-		if (impFormatColumn != null && impFormatColumn.isNumber() && "0".equals(value))
-		{
-			return true;
-		}
-
-		if (impFormatColumn != null && impFormatColumn.isDate() && "00000000".equals(value))
-		{
-			return true;
-		}
-
-		return false;
-	}
-
-	public String getValueAsString()
-	{
-		return value;
+		this.value = value;
+		this.errorMessage = errorMessage;
 	}
 
 	/** @return true if the cell has some errors (i.e. {@link #getCellErrorMessage()} is not null) */
@@ -75,62 +41,14 @@ public class ImpDataCell
 	}
 
 	/** @return cell error message or null */
-	public CellErrorMessage getCellErrorMessage()
+	public ErrorMessage getCellErrorMessage()
 	{
 		return errorMessage;
 	}
 
-	public void setValue(@Nullable final Object value)
+	public final Object getJdbcValue()
 	{
-		String valueStr = value == null ? "" : value.toString();
-		CellErrorMessage errorMessage = null;
-
-		if (impFormatColumn != null)
-		{
-			try
-			{
-				valueStr = impFormatColumn.parse(valueStr);
-			}
-			catch (final Throwable ex)
-			{
-				errorMessage = CellErrorMessage.of(ex);
-			}
-		}
-
-		this.value = valueStr;
-		this.errorMessage = errorMessage;
+		return value;
 	}
 
-	public final String getValueAsSQL()
-	{
-		final String value = getValueAsString();
-		if (value == null)
-		{
-			return "NULL";
-		}
-
-		Check.assumeNotNull(impFormatColumn, "impFormatColumn not null");
-		if (impFormatColumn.isString())
-		{
-			return DB.TO_STRING(value);
-		}
-		else if (impFormatColumn.isDate())
-		{
-			final Timestamp ts = Env.parseTimestamp(value);
-			return DB.TO_DATE(ts, false);
-		}
-		else
-		{
-			return value;
-		}
-	}
-
-	public final String getColumnNameEqualsValueSql()
-	{
-		return new StringBuilder()
-				.append(getColumnName())
-				.append("=")
-				.append(getValueAsSQL())
-				.toString();
-	}
 }

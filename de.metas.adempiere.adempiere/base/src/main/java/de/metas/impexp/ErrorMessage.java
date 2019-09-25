@@ -1,5 +1,9 @@
 package de.metas.impexp;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,47 +17,48 @@ package de.metas.impexp;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 /**
- * {@link ImpDataCell}'s error message.
+ * Error message.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public final class CellErrorMessage
+public final class ErrorMessage
 {
-	public static final CellErrorMessage of(final String message)
+	public static ErrorMessage of(final String message)
 	{
-		return new CellErrorMessage(message);
+		final Throwable exception = null;
+		return new ErrorMessage(message, exception);
 	}
 
-	public static final CellErrorMessage of(final Throwable exception)
+	public static ErrorMessage of(final Throwable exception)
 	{
-		String message = exception.getLocalizedMessage();
-		if (message == null || message.length() < 4)
-		{
-			message = exception.toString();
-		}
-		return of(message);
+		String message = AdempiereException.extractMessage(exception);
+		return new ErrorMessage(message, exception);
 	}
 
 	private final String message;
+	private final transient Throwable exception;
 
-	private CellErrorMessage(final String message)
+	private ErrorMessage(
+			final String message,
+			@Nullable final Throwable exception)
 	{
-		super();
 		this.message = message;
+		this.exception = exception;
 	}
 
 	@Override
+	@Deprecated
 	public String toString()
 	{
 		return message == null ? "" : message;
@@ -64,4 +69,10 @@ public final class CellErrorMessage
 		return message;
 	}
 
+	public AdempiereException toException()
+	{
+		return exception != null
+				? AdempiereException.wrapIfNeeded(exception)
+				: new AdempiereException(message);
+	}
 }

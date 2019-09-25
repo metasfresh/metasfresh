@@ -222,7 +222,19 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 		{
 			throw new AdempiereException("No import records: " + selectedRecordRefs);
 		}
+
+		this.selectionId = null;
 		this.selectedRecordRefs = selectedRecordRefs;
+		return this;
+	}
+
+	@Override
+	public final ImportProcessTemplate<ImportRecordType> selectedRecords(@NonNull final PInstanceId selectionId)
+	{
+		assertNotStarted();
+
+		this.selectionId = selectionId;
+		this.selectedRecordRefs = null;
 		return this;
 	}
 
