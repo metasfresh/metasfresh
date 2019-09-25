@@ -243,7 +243,7 @@ public class KPIDataLoader
 		{
 			// elastic search transport error => nothing to do about it
 			throw new AdempiereException("" + e.getLocalizedMessage() + "."
-					+ "\nIf you want to disable the elasticsearch system then you can set `" + ESSystem.SYSCONFIG_Enabled + "` to `N`.", e);
+					+ "\nIf you want to disable the elasticsearch system then you can set `" + ESSystem.SYSCONFIG_PostKpiEvents + "` to `N`.", e);
 		}
 		catch (final Exception e)
 		{
