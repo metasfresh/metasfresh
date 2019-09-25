@@ -6,6 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.X_I_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -39,11 +40,11 @@ import lombok.experimental.UtilityClass;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -91,7 +92,8 @@ import lombok.experimental.UtilityClass;
 		}
 		else
 		{
-			product.setM_Product_Category(Services.get(IProductDAO.class).retrieveDefaultProductCategory(Env.getCtx()));
+			final I_M_Product_Category defaultProductCategoryRecord = Services.get(IProductDAO.class).retrieveDefaultProductCategory(Env.getCtx());
+			product.setM_Product_Category_ID(defaultProductCategoryRecord.getM_Product_Category_ID());
 		}
 
 		InterfaceWrapperHelper.save(product);
@@ -183,22 +185,26 @@ import lombok.experimental.UtilityClass;
 		}
 	}
 
-	@Nullable private Boolean extractIsColdChain(@NonNull final I_I_Pharma_Product record)
+	@Nullable
+	private Boolean extractIsColdChain(@NonNull final I_I_Pharma_Product record)
 	{
 		return record.getA05KKETTE() == null ? null : X_I_Pharma_Product.A05KKETTE_01.equals(record.getA05KKETTE());
 	}
 
-	@Nullable private Boolean extractIsPrescription(@NonNull final I_I_Pharma_Product importRecord)
+	@Nullable
+	private Boolean extractIsPrescription(@NonNull final I_I_Pharma_Product importRecord)
 	{
 		return importRecord.getA02VSPFL() == null ? null : (X_I_Pharma_Product.A02VSPFL_01.equals(importRecord.getA02VSPFL()) || X_I_Pharma_Product.A02VSPFL_02.equals(importRecord.getA02VSPFL()));
 	}
 
-	@Nullable private Boolean extractIsNarcotic(@NonNull final I_I_Pharma_Product importRecord)
+	@Nullable
+	private Boolean extractIsNarcotic(@NonNull final I_I_Pharma_Product importRecord)
 	{
 		return importRecord.getA02BTM() == null ? null : (X_I_Pharma_Product.A02BTM_01.equals(importRecord.getA02BTM()) || X_I_Pharma_Product.A02BTM_02.equals(importRecord.getA02BTM()));
 	}
 
-	@Nullable private Boolean extractIsTFG(@NonNull final I_I_Pharma_Product importRecord)
+	@Nullable
+	private Boolean extractIsTFG(@NonNull final I_I_Pharma_Product importRecord)
 	{
 		return importRecord.getA02TFG() == null ? null : X_I_Pharma_Product.A02TFG_01.equals(importRecord.getA02TFG());
 	}

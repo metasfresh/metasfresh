@@ -10,12 +10,12 @@ package de.metas.product.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,6 +33,7 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.tree.IPOTreeSupportFactory;
 import org.compiere.model.I_AD_TreeNode;
+import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.MClient;
 import org.compiere.model.MProductCategory;
 import org.compiere.model.MTree_Base;
@@ -44,9 +45,10 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_M_Product_Category;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.tree.spi.impl.MProductCategoryTreeSupport;
 import de.metas.util.Services;
 
@@ -152,15 +154,15 @@ public final class MProductCategoryValidator implements ModelValidator
 	}
 
 	@Override
-	public final void initialize(final ModelValidationEngine engine, final MClient client)
+	public void initialize(final ModelValidationEngine engine, final MClient client)
 	{
 		if (client != null)
 		{
 			ad_Client_ID = client.getAD_Client_ID();
 		}
-		
+
 		Services.get(IPOTreeSupportFactory.class).register(I_M_Product_Category.Table_Name, MProductCategoryTreeSupport.class);
-		
+
 		engine.addModelChange(I_M_Product_Category.Table_Name, this);
 	}
 
@@ -206,7 +208,7 @@ public final class MProductCategoryValidator implements ModelValidator
 			I_M_Product_Category pc = InterfaceWrapperHelper.create(po, I_M_Product_Category.class);
 			if (pc.getM_Product_Category_Parent_ID() > 0)
 			{
-				I_M_Product_Category parent = pc.getM_Product_Category_Parent();
+				I_M_Product_Category parent = Services.get(IProductDAO.class).getProductCategoryById(ProductCategoryId.ofRepoId(pc.getM_Product_Category_Parent_ID()));
 				if (!parent.isSummary())
 				{
 					parent.setIsSummary(true);
@@ -216,7 +218,7 @@ public final class MProductCategoryValidator implements ModelValidator
 		}
 		if (ModelValidator.TYPE_AFTER_CHANGE == type && po.is_ValueChanged(I_M_Product_Category.COLUMNNAME_M_Product_Category_Parent_ID))
 		{
-			
+
 		}
 		return null;
 	}

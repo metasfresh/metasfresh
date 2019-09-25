@@ -44,6 +44,7 @@ import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
@@ -52,7 +53,6 @@ import org.junit.Test;
 
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.adempiere.model.I_M_Product_Category;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.invoicecandidate.FlatrateDataEntryHandler;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -434,7 +434,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		// product
 		product = newInstance(I_M_Product.class);
-		product.setM_Product_Category(productCategory);
+		product.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
 		save(product);
 
 		// first conditions

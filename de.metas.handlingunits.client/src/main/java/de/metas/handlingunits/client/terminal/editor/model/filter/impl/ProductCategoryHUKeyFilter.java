@@ -8,6 +8,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.KeyNamePair;
 
 import com.google.common.collect.ImmutableList;
@@ -15,7 +16,6 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.form.terminal.ITerminalLookup;
 import de.metas.adempiere.form.terminal.lookup.SimpleTableLookup;
-import de.metas.adempiere.model.I_M_Product_Category;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
@@ -46,7 +46,7 @@ public class ProductCategoryHUKeyFilter extends AbstractHUKeyFilter
 				.stream()
 				.map(IProductStorage::getProductId)
 				.collect(ImmutableSet.toImmutableSet());
-		
+
 		return getProductCategoriesKeyNamePairs(productIds);
 	}
 
