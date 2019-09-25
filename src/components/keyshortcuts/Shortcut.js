@@ -7,18 +7,6 @@ import { PureComponent } from 'react';
  * @extends PureComponent
  */
 class Shortcut extends PureComponent {
-  static contextTypes = {
-    shortcuts: PropTypes.shape({
-      subscribe: PropTypes.func.isRequired,
-      unsubscribe: PropTypes.func.isRequired,
-    }).isRequired,
-  };
-
-  static propTypes = {
-    name: PropTypes.string.isRequired,
-    handler: PropTypes.func.isRequired,
-  };
-
   /**
    * @method UNSAFE_componentWillMount
    * @summary ToDo: Describe the method
@@ -55,5 +43,23 @@ class Shortcut extends PureComponent {
     return null;
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {string} name
+ * @prop {func} handler
+ * @todo Check props. Which proptype? Required or optional?
+ */
+Shortcut.propTypes = {
+  name: PropTypes.string.isRequired,
+  handler: PropTypes.func.isRequired,
+};
+
+Shortcut.contextTypes = {
+  shortcuts: PropTypes.shape({
+    subscribe: PropTypes.func.isRequired,
+    unsubscribe: PropTypes.func.isRequired,
+  }).isRequired,
+};
 
 export default Shortcut;
