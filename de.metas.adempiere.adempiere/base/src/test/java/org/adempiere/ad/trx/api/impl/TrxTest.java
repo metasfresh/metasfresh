@@ -1,52 +1,29 @@
 package org.adempiere.ad.trx.api.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
+import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.util.Services;
+import com.google.common.collect.ImmutableList;
 
 public class TrxTest
 {
-	private MockedTrxManager trxManager;
-
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-
-		trxManager = new MockedTrxManager();
-		Services.registerService(ITrxManager.class, trxManager);
 	}
 
 	@Test
 	public void test_rollback_NeverThrowsException()
 	{
-		final MockedTrx trx = (MockedTrx)trxManager.createTrx("TestTrx", false);
+		final MockedTrxManager trxManager = new MockedTrxManager();
+		final MockedTrx trx = trxManager.createTrx("TestTrx", false);
 
 		trx.setOnRollbackException(new RuntimeException("test - fail on commit"));
 
@@ -54,4 +31,67 @@ public class TrxTest
 		trx.rollback();
 	}
 
+	@Test
+	public void test_getPropertyAndProcessAfterCommit()
+	{
+		final PlainTrxManager trxManager = new PlainTrxManager();
+		final PlainTrx trx = trxManager.createTrx("TestTrx", false);
+
+		final List<String> expectedValues = ImmutableList.of("value1", "value2", "value3");
+
+		for (final String value : expectedValues)
+		{
+			final ValuesCollector collector = trx.getPropertyAndProcessAfterCommit(
+					"propertyName",
+					ValuesCollector::new,
+					ValuesCollector::markProcessed);
+
+			collector.collect(value);
+		}
+
+		//
+		// Check collector before processing
+		final ValuesCollector collector = trx.getProperty("propertyName");
+		{
+			assertThat(collector.getCollectedValues()).isEqualTo(expectedValues);
+			assertThat(collector.isProcessed()).isFalse();
+		}
+
+		//
+		// Simulate after commit
+		trx.getTrxListenerManager().fireAfterCommit(trx);
+
+		//
+		// Check collector after processing
+		{
+			assertThat(collector.getCollectedValues()).isEqualTo(expectedValues);
+			assertThat(collector.isProcessed()).isTrue();
+		}
+	}
+
+	private static class ValuesCollector
+	{
+		private final List<String> values = new ArrayList<>();
+		private boolean processed;
+
+		public void collect(final String value)
+		{
+			values.add(value);
+		}
+
+		public List<String> getCollectedValues()
+		{
+			return new ArrayList<>(values);
+		}
+
+		public void markProcessed()
+		{
+			this.processed = true;
+		}
+
+		public boolean isProcessed()
+		{
+			return processed;
+		}
+	}
 }

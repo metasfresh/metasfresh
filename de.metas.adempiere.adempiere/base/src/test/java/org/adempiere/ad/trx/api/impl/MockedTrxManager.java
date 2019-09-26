@@ -31,10 +31,10 @@ import org.junit.Ignore;
 @Ignore
 public class MockedTrxManager extends PlainTrxManager
 {
-	private final List<ITrx> removedTransactions = new ArrayList<ITrx>();
+	private final List<ITrx> removedTransactions = new ArrayList<>();
 
 	@Override
-	protected ITrx createTrx(String trxName, final boolean autoCommit)
+	protected MockedTrx createTrx(String trxName, final boolean autoCommit)
 	{
 		return new MockedTrx(this, trxName, autoCommit);
 	}

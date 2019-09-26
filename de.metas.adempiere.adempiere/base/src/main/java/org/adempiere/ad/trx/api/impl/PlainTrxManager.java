@@ -54,13 +54,8 @@ public class PlainTrxManager extends AbstractTrxManager
 	private boolean failRollbackIfTrxNotStarted = true;
 	private boolean debugTrxLog;
 
-	public PlainTrxManager()
-	{
-		super();
-	}
-
 	@Override
-	protected ITrx createTrx(String trxName, final boolean autoCommit)
+	protected PlainTrx createTrx(String trxName, final boolean autoCommit)
 	{
 		try
 		{
@@ -68,7 +63,7 @@ public class PlainTrxManager extends AbstractTrxManager
 		}
 		catch (Exception e)
 		{
-			throw new DBException(e.getLocalizedMessage(), e);
+			throw DBException.wrapIfNeeded(e);
 		}
 	}
 
