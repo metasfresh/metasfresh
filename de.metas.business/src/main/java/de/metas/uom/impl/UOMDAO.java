@@ -48,6 +48,8 @@ import lombok.NonNull;
 
 public class UOMDAO implements IUOMDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	
 	@Override
 	public I_C_UOM getById(final int uomId)
 	{
@@ -117,7 +119,7 @@ public class UOMDAO implements IUOMDAO
 			@NonNull final String x12de355,
 			final boolean throwExIfNull)
 	{
-		final int uomId = Services.get(IQueryBL.class)
+		final int uomId = queryBL
 				.createQueryBuilder(I_C_UOM.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyContextClientOrSystem()
 				.addOnlyActiveRecordsFilter()

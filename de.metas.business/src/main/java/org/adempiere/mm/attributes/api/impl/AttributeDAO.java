@@ -62,6 +62,8 @@ import lombok.NonNull;
 
 public class AttributeDAO implements IAttributeDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	
 	@Override
 	public void save(@NonNull final I_M_AttributeSetInstance asi)
 	{
@@ -96,7 +98,7 @@ public class AttributeDAO implements IAttributeDAO
 			return ImmutableList.of();
 		}
 
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilderOutOfTrx(I_M_AttributeUse.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_AttributeUse.COLUMN_M_AttributeSet_ID, attributeSetId)
@@ -166,7 +168,7 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public Set<AttributeId> getAttributeIdsByAttributeSetInstanceId(@NonNull final AttributeSetInstanceId attributeSetInstanceId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilderOutOfTrx(I_M_AttributeInstance.class)
 				.addEqualsFilter(I_M_AttributeInstance.COLUMN_M_AttributeSetInstance_ID, attributeSetInstanceId)
 				.create()
@@ -219,7 +221,7 @@ public class AttributeDAO implements IAttributeDAO
 	@Cached(cacheName = I_M_Attribute.Table_Name + "#by#" + I_M_Attribute.COLUMNNAME_Value)
 	public AttributeId retrieveAttributeIdByValueOrNull(final String value)
 	{
-		final int attributeId = Services.get(IQueryBL.class)
+		final int attributeId = queryBL
 				.createQueryBuilderOutOfTrx(I_M_Attribute.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Attribute.COLUMNNAME_Value, value)
@@ -232,7 +234,7 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public List<I_M_Attribute> getAllAttributes()
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilderOutOfTrx(I_M_Attribute.class)
 				.addOnlyActiveRecordsFilter()
 				// .addOnlyContextClient()
@@ -264,7 +266,7 @@ public class AttributeDAO implements IAttributeDAO
 			return ImmutableList.of();
 		}
 
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_AttributeValue.class)
 				.addInArrayFilter(I_M_AttributeValue.COLUMN_M_AttributeValue_ID, attributeValueIds)
 				.orderBy(I_M_AttributeValue.COLUMN_M_AttributeValue_ID)
@@ -296,7 +298,7 @@ public class AttributeDAO implements IAttributeDAO
 		// but better to go directly and query.
 		if (isHighVolumeValuesList(attribute))
 		{
-			final I_M_AttributeValue attributeListValueRecord = Services.get(IQueryBL.class)
+			final I_M_AttributeValue attributeListValueRecord = queryBL
 					.createQueryBuilder(I_M_AttributeValue.class, attribute)
 					.addEqualsFilter(I_M_AttributeValue.COLUMN_M_Attribute_ID, attribute.getM_Attribute_ID())
 					.addEqualsFilter(I_M_AttributeValue.COLUMN_Value, value)
@@ -333,7 +335,7 @@ public class AttributeDAO implements IAttributeDAO
 		// but better to go directly and query.
 		if (isHighVolumeValuesList(attribute))
 		{
-			final I_M_AttributeValue attributeListValueRecord = Services.get(IQueryBL.class)
+			final I_M_AttributeValue attributeListValueRecord = queryBL
 					.createQueryBuilder(I_M_AttributeValue.class, attribute)
 					.addEqualsFilter(I_M_AttributeValue.COLUMN_M_Attribute_ID, attribute.getM_Attribute_ID())
 					.addEqualsFilter(I_M_AttributeValue.COLUMN_M_AttributeValue_ID, attributeValueId)
@@ -435,7 +437,7 @@ public class AttributeDAO implements IAttributeDAO
 			return ImmutableList.of();
 		}
 
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_AttributeInstance.class, ctx, trxName)
 				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID, asiId)
 				.orderBy(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID) // at least to have a predictable order
@@ -453,7 +455,7 @@ public class AttributeDAO implements IAttributeDAO
 			return null;
 		}
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeInstance.class)
+		return queryBL.createQueryBuilder(I_M_AttributeInstance.class)
 				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID, attributeSetInstance.getM_AttributeSetInstance_ID())
 				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID, attributeId)
 				.create()
@@ -507,8 +509,7 @@ public class AttributeDAO implements IAttributeDAO
 			// * in most of the cases, when we have an validation rule filter we are dealing with a huge amount of data which needs to be filtered (see Karotten ID example from)
 			@CacheSkipIfNotNull final ValidationRuleQueryFilter<I_M_AttributeValue> validationRuleQueryFilter)
 	{
-		final IQueryBuilder<I_M_AttributeValue> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_AttributeValue.class, ctx, ITrx.TRXNAME_None);
+		final IQueryBuilder<I_M_AttributeValue> queryBuilder = queryBL.createQueryBuilder(I_M_AttributeValue.class, ctx, ITrx.TRXNAME_None);
 
 		final ICompositeQueryFilter<I_M_AttributeValue> filters = queryBuilder.getCompositeFilter();
 		if (!includeInactive)
@@ -563,7 +564,6 @@ public class AttributeDAO implements IAttributeDAO
 	@Cached(cacheName = I_M_AttributeValue_Mapping.Table_Name + "#by#" + I_M_AttributeValue_Mapping.COLUMNNAME_M_AttributeValue_To_ID + "#StringSet")
 	Set<String> retrieveAttributeValueSubstitutes(final AttributeValueId attributeValueId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final List<AttributeValueId> attributeValueSubstitutesIds = queryBL.createQueryBuilderOutOfTrx(I_M_AttributeValue_Mapping.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_AttributeValue_Mapping.COLUMNNAME_M_AttributeValue_To_ID, attributeValueId)
@@ -630,7 +630,7 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public boolean deleteAttributeValueByCode(@NonNull final AttributeId attributeId, @Nullable final String value)
 	{
-		final int deleteCount = Services.get(IQueryBL.class)
+		final int deleteCount = queryBL
 				.createQueryBuilder(I_M_AttributeValue.class)
 				.addEqualsFilter(I_M_AttributeValue.COLUMN_M_Attribute_ID, attributeId)
 				.addEqualsFilter(I_M_AttributeValue.COLUMNNAME_Value, value)
@@ -691,7 +691,7 @@ public class AttributeDAO implements IAttributeDAO
 	@Cached(cacheName = I_M_AttributeSet.Table_Name + "#ID=0")
 	public I_M_AttributeSet retrieveNoAttributeSet()
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_AttributeSet.class)
 				.addEqualsFilter(I_M_AttributeSet.COLUMNNAME_M_AttributeSet_ID, AttributeSetId.NONE)
 				.create()
@@ -702,7 +702,7 @@ public class AttributeDAO implements IAttributeDAO
 	@Cached(cacheName = I_M_AttributeSetInstance.Table_Name + "#ID=0")
 	public I_M_AttributeSetInstance retrieveNoAttributeSetInstance()
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_AttributeSetInstance.class)
 				.addEqualsFilter(I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID, AttributeSetInstanceId.NONE)
 				.create()
@@ -781,7 +781,7 @@ public class AttributeDAO implements IAttributeDAO
 		Check.assumeNotEmpty(attributeIds, "attributeIds is not empty");
 
 		final Map<AttributeSetInstanceId, List<I_M_AttributeInstance>> //
-		instancesByAsiId = Services.get(IQueryBL.class)
+		instancesByAsiId = queryBL
 				.createQueryBuilder(I_M_AttributeInstance.class)
 				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID, asiIds)
 				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID, attributeIds)

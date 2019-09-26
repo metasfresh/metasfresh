@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.compiere.model.I_M_Attribute;
@@ -89,4 +90,6 @@ public interface IAttributesBL extends ISingletonService
 	int getNumberDisplayType(I_M_Attribute attribute);
 
 	boolean isStorageRelevant(final AttributeId attributeId);
+	
+	AttributeListValue retrieveAttributeValueOrNull(AttributeId attributeId, String value);
 }
