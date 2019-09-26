@@ -19,6 +19,7 @@ import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 /*
@@ -50,8 +51,10 @@ public class ESSystem implements IESSystem
 	@VisibleForTesting
 	public static final String ESServer_Classname = "de.metas.elasticsearch.ESServer";
 
-	public static final String SYSCONFIG_Enabled = "de.metas.elasticsearch.PostKpiEvents";
-	private static final boolean SYSCONFIG_Enabled_Default = true;
+	private static final String SYSTEM_PROPERTY_elastic_enable = "elastic_enable";
+
+	public static final String SYSCONFIG_PostKpiEvents = "de.metas.elasticsearch.PostKpiEvents";
+	private static final boolean SYSCONFIG_PostKpiEvents_Default = true;
 
 	@Override
 	public boolean isEnabled()
@@ -61,9 +64,16 @@ public class ESSystem implements IESSystem
 			return false;
 		}
 
+		// Check if disabled by system property (as documented on sysconfig description)
+		if (StringUtils.toBoolean(System.getProperty(SYSTEM_PROPERTY_elastic_enable)))
+		{
+			return false;
+		}
+
 		// Check if it was disabled by sysconfig
 		{
-			final boolean enabled = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_Enabled, SYSCONFIG_Enabled_Default);
+			final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+			final boolean enabled = sysConfigBL.getBooleanValue(SYSCONFIG_PostKpiEvents, SYSCONFIG_PostKpiEvents_Default);
 			if (!enabled)
 			{
 				return false;
