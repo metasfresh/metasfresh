@@ -1,35 +1,24 @@
 package de.metas.handlingunits.material.interceptor;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.annotation.Nullable;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
-import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -83,26 +72,16 @@ public class M_HU_Attribute
 
 		final HUAttributeChange change = extractHUAttributeChange(record);
 
-		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		final HUAttributeChangesCollector changesCollector = trx != null
-				? getOrCreateCollector(trx)
-				: new HUAttributeChangesCollector(materialEventService);
-
-		changesCollector.collect(change);
-
-		if (trx == null)
-		{
-			changesCollector.createAndPostMaterialEvents();
-		}
+		getOrCreateCollector().collect(change);
 	}
 
-	private HUAttributeChangesCollector getOrCreateCollector(@NonNull final ITrx trx)
+	private HUAttributeChangesCollector getOrCreateCollector()
 	{
-		return trx.getProperty(HUAttributeChanges.class.getName(), () -> {
-			final HUAttributeChangesCollector collector = new HUAttributeChangesCollector(materialEventService);
-			trx.runAfterCommit(() -> collector.createAndPostMaterialEvents());
-			return collector;
-		});
+		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.Fail); // at this point we always run in trx
+		return trx.getPropertyAndProcessAfterCommit(
+				HUAttributeChanges.class.getName(),
+				() -> new HUAttributeChangesCollector(materialEventService),
+				HUAttributeChangesCollector::createAndPostMaterialEvents);
 	}
 
 	private static HUAttributeChange extractHUAttributeChange(final I_M_HU_Attribute record)
@@ -130,105 +109,5 @@ public class M_HU_Attribute
 		return !InterfaceWrapperHelper.isNull(record, I_M_HU_Attribute.COLUMNNAME_ValueNumber)
 				? record.getValueNumber()
 				: null;
-	}
-
-	@Value
-	@Builder(toBuilder = true)
-	private static class HUAttributeChange
-	{
-		@NonNull
-		final HuId huId;
-		@NonNull
-		final AttributeId attributeId;
-
-		final String valueString;
-		final String valueStringOld;
-
-		final BigDecimal valueNumber;
-		final BigDecimal valueNumberOld;
-
-		final Timestamp valueDate;
-		final Timestamp valueDateOld;
-
-		public HUAttributeChange mergeWithNextChange(final HUAttributeChange nextChange)
-		{
-			Check.assumeEquals(attributeId, nextChange.attributeId, "Invalid attributeId for {}. Expected: {}", nextChange, attributeId);
-
-			return toBuilder()
-					.valueString(nextChange.getValueString())
-					.valueNumber(nextChange.getValueNumber())
-					.valueDate(nextChange.getValueDate())
-					.build();
-		}
-	}
-
-	private static class HUAttributeChanges
-	{
-		private final HuId huId;
-		private final HashMap<AttributeId, HUAttributeChange> attributes = new HashMap<>();
-
-		public HUAttributeChanges(@NonNull final HuId huId)
-		{
-			this.huId = huId;
-		}
-
-		public void collect(@NonNull HUAttributeChange change)
-		{
-			Check.assumeEquals(huId, change.getHuId(), "Invalid HuId for {}. Expected: {}", change, huId);
-
-			attributes.compute(change.getAttributeId(), (attributeId, previousChange) -> mergeChange(previousChange, change));
-		}
-
-		private static HUAttributeChange mergeChange(
-				@Nullable final HUAttributeChange previousChange,
-				@NonNull final HUAttributeChange currentChange)
-		{
-			return previousChange != null
-					? previousChange.mergeWithNextChange(currentChange)
-					: currentChange;
-		}
-	}
-
-	private static class HUAttributeChangesCollector
-	{
-		private final PostMaterialEventService materialEventService;
-
-		private final AtomicBoolean disposed = new AtomicBoolean();
-		private final HashMap<HuId, HUAttributeChanges> huAttributeChanges = new HashMap<>();
-
-		public HUAttributeChangesCollector(@NonNull final PostMaterialEventService materialEventService)
-		{
-			this.materialEventService = materialEventService;
-		}
-
-		public void collect(@NonNull final HUAttributeChange change)
-		{
-			Check.assume(!disposed.get(), "Collector shall not be disposed: {}", this);
-			final HUAttributeChanges huChanges = huAttributeChanges.computeIfAbsent(change.getHuId(), HUAttributeChanges::new);
-			huChanges.collect(change);
-		}
-
-		public void createAndPostMaterialEvents()
-		{
-			if (disposed.getAndSet(true))
-			{
-				throw new AdempiereException("Collector was already disposed: " + this);
-			}
-
-			final ImmutableList<MaterialEvent> events = huAttributeChanges.values()
-					.stream()
-					.map(this::createMaterialEvent)
-					.collect(ImmutableList.toImmutableList());
-
-			this.huAttributeChanges.clear();
-
-			materialEventService.postEventsNow(events);
-		}
-
-		private MaterialEvent createMaterialEvent(final HUAttributeChanges changes)
-		{
-			// TODO: introduce and handle a new event which implements MaterialEvent
-			throw new UnsupportedOperationException();
-		}
 	}
 }
