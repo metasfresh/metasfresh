@@ -21,6 +21,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
@@ -35,6 +37,8 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.user.UserRepository;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -75,6 +79,7 @@ public class ProductsToPickRowsDataFactoryTest
 	public void beforeEachTest()
 	{
 		AdempiereTestHelper.get().init();
+
 		testHelper = new PickingV2TestHelper();
 
 		customerAndLocationId = BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(2), 3);
@@ -84,8 +89,18 @@ public class ProductsToPickRowsDataFactoryTest
 		locatorId = testHelper.createLocator(warehouseId);
 	}
 
+	private BPartnerBL createAndRegisterBPartnerBL()
+	{
+		final UserRepository userRepository = new UserRepository();
+		final BPartnerBL bpartnersService = new BPartnerBL(userRepository);
+		Services.registerService(IBPartnerBL.class, bpartnersService);
+		return bpartnersService;
+	}
+
 	private ProductsToPickRowsDataFactory createProductsToPickRowsDataFactory()
 	{
+		final IBPartnerBL bpartnersService = createAndRegisterBPartnerBL();
+
 		final HUReservationRepository huReservationRepository = new HUReservationRepository();
 		final HUReservationService huReservationService = new HUReservationService(huReservationRepository);
 
@@ -97,6 +112,7 @@ public class ProductsToPickRowsDataFactoryTest
 		final PickingCandidateService pickingCandidateService = new PickingCandidateService(pickingCandidateRepository, sourceHUsRepository);
 
 		return ProductsToPickRowsDataFactory.builder()
+				.bpartnersService(bpartnersService)
 				.huReservationService(huReservationService)
 				.pickingCandidateService(pickingCandidateService)
 				.locatorLookup(testHelper::locatorLookupById)
