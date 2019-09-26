@@ -1,5 +1,7 @@
 package de.metas.materialtracking;
 
+import java.util.Optional;
+
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.util.lang.IContextAware;
@@ -19,19 +21,20 @@ import de.metas.util.ISingletonService;
 public interface IMaterialTrackingAttributeBL extends ISingletonService
 {
 	/**
-	 * Gets attribute which is configured to store the M_Material_Tracking_ID.
-	 * 
-	 * @return attributeId; never return null
+	 * Gets attribute which is configured to store the {@code M_Material_Tracking_ID}.
+	 *
+	 * @return attributeId if the record exists and is activated; never return null.
 	 */
-	AttributeId getMaterialTrackingAttributeId();
+	Optional<AttributeId> getMaterialTrackingAttributeId();
 
+	/** @return the material tracking {@code M_Attribute} record; never return null, but fails if the record does not exist or is not active. */
 	I_M_Attribute getMaterialTrackingAttribute();
 
 	/**
 	 * Called by API when {@link I_M_Material_Tracking} record is changed.
 	 *
 	 * This method will update the corresponding {@link I_M_AttributeValue} record.
-	 * 
+	 *
 	 * When changing the implementation, please make sure that the model interceptors' <code>ifColumnsChanged</code> are in sync.
 	 *
 	 * @param materialTracking
@@ -51,7 +54,7 @@ public interface IMaterialTrackingAttributeBL extends ISingletonService
 	 * If the given documentLine already has an ASI, that asi is copied. Otherwise a new ASI is created using the given documentLine's <code>M_Product</code>.
 	 * <p>
 	 * <b>IMPORTANT:</b> the method does <b>not save</b> the given <code>documentLine</code> after having changed its ASI-ID.
-	 * 
+	 *
 	 * @param documentLine must be not <code>null</code> and convertible to {@link org.adempiere.mm.attributes.api.IAttributeSetInstanceAware IAttributeSetInstanceAware} via
 	 *            {@link org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService IAttributeSetInstanceAwareFactoryService}
 	 * @param materialTracking may be <code>null</code>, but even then, the new ASI will have an (empty) <code>M_Material_Tracking_ID</code> attribute.
@@ -72,7 +75,7 @@ public interface IMaterialTrackingAttributeBL extends ISingletonService
 
 	/**
 	 * Check if the given ASI has a material tracking attribute. Note that this attribute's value can still be <code>null</code>, even if this method returns <code>true</code>.
-	 * 
+	 *
 	 * @param asi the asi to check
 	 * @return <code>true</code> if the given asi's attribute set contains the <code>M_Attribute</code> with <code>value=M_Material_Tracking_ID.</code>
 	 */
