@@ -55,7 +55,7 @@ import de.metas.util.Services;
  * Then, if all prices are OK, uses {@link NoOpIssueSolver} to flag the {@link I_C_OLCand}s of that trx-ID as solved.
  * Finally, the process performs an update to set <code>C_OLCand.IsImportedWithIssues='N'</code> to all olcands.
  */
-public class OLCandIssueSolverProcess extends JavaProcess
+public class C_OLCand_Update_IsImportedWithIssues extends JavaProcess
 {
 
 	private int p_EXP_ReplicationTrx_ID;

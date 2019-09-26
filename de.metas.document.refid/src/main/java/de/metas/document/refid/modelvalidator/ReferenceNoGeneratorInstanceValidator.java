@@ -12,8 +12,8 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.document.refid.api.IReferenceNoBL;
 import de.metas.document.refid.api.IReferenceNoGeneratorInstance;
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 class ReferenceNoGeneratorInstanceValidator implements ModelValidator
 {
@@ -23,9 +23,8 @@ class ReferenceNoGeneratorInstanceValidator implements ModelValidator
 	private int m_AD_Client_ID = -1;
 	private ModelValidationEngine engine;
 
-	ReferenceNoGeneratorInstanceValidator(IReferenceNoGeneratorInstance instance)
+	ReferenceNoGeneratorInstanceValidator(@NonNull IReferenceNoGeneratorInstance instance)
 	{
-		Check.assume(instance != null, "instance not null");
 		this.instance = instance;
 	}
 

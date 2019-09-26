@@ -1,7 +1,4 @@
--- View: EDI_M_HU_PI_Item_Product_Lookup_UPC_v
-
 -- DROP VIEW IF EXISTS EDI_M_HU_PI_Item_Product_Lookup_UPC_v;
-
 CREATE OR REPLACE VIEW EDI_M_HU_PI_Item_Product_Lookup_UPC_v AS
 SELECT DISTINCT ON (lookup.UPC, bpl.GLN)
 	lookup.*,
