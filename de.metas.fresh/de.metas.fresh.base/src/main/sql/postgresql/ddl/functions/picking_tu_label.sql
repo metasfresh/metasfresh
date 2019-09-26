@@ -1,6 +1,6 @@
-﻿DROP FUNCTION IF EXISTS report.picking_tu_label( IN p_M_HU_ID numeric, IN p_C_BPartner_Location_ID numeric );
+﻿DROP FUNCTION IF EXISTS report.picking_tu_label( IN p_M_HU_ID numeric);
 
-CREATE FUNCTION report.picking_tu_label(IN p_M_HU_ID numeric, p_C_BPartner_Location_ID numeric)
+CREATE FUNCTION report.picking_tu_label(IN p_M_HU_ID numeric)
   RETURNS TABLE
   (
     org_name    Character Varying,
@@ -38,14 +38,7 @@ FROM m_picking_candidate pc
        bp_loc.isActive = 'Y'
   LEFT JOIN C_Location loc ON bp_loc.C_Location_ID = loc.C_Location_ID AND loc.isActive = 'Y'
 
-WHERE
-  CASE
-  WHEN p_M_HU_ID IS NOT NULL
-    THEN pc.M_HU_ID = p_M_HU_ID
-  WHEN p_C_BPartner_Location_ID IS NOT NULL
-    THEN bp_loc.C_BPartner_Location_ID = p_C_BPartner_Location_ID
-  ELSE FALSE -- shall never nappen
-  END
+WHERE pc.M_HU_ID = p_M_HU_ID
 
 $$
 LANGUAGE sql

@@ -10,55 +10,42 @@ package de.metas.banking.payment.paymentallocation.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import java.awt.Dialog.ModalExclusionType;
-import java.awt.Frame;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.compiere.apps.AEnv;
-import org.compiere.apps.form.FormFrame;
-import org.compiere.apps.form.FormPanel;
-
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.model.I_C_Payment_Request;
-import de.metas.banking.payment.IPaymentRequestBL;
-import de.metas.banking.payment.IPaymentRequestDAO;
+import de.metas.banking.process.paymentdocumentform.PaymentStringProcessService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Check;
-import de.metas.util.Services;
+import org.compiere.SpringContextHolder;
+import org.compiere.apps.AEnv;
+import org.compiere.apps.form.FormFrame;
+import org.compiere.apps.form.FormPanel;
+
+import java.awt.Dialog.ModalExclusionType;
+import java.awt.*;
 
 /**
  * Custom Form to read the payment string and create the {@link I_C_Payment_Request}.
- * 
+ * <p>
  * Usually this form is called from Gear-Eingangsrechnung window.
- * 
- * @author al
- * @task 08762
  */
 public class ReadPaymentDocumentForm implements FormPanel, IProcessPrecondition
 {
-	private static final String MSG_PREFIX = PaymentAllocationForm.MSG_PREFIX;
-
-	//
-	// Services
-	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final transient IPaymentRequestDAO paymentRequestDAO = Services.get(IPaymentRequestDAO.class);
-	private final transient IPaymentRequestBL paymentRequestBL = Services.get(IPaymentRequestBL.class);
+	private final transient PaymentStringProcessService paymentStringProcessService = SpringContextHolder.instance.getBean(PaymentStringProcessService.class);
 
 	// Parameters
 	private I_C_Invoice invoice = null;
@@ -105,10 +92,10 @@ public class ReadPaymentDocumentForm implements FormPanel, IProcessPrecondition
 	private ReadPaymentDocumentPanel createAndBindPanel(final int windowNo, final Frame frame, final int adOrgId)
 	{
 		final ReadPaymentDocumentPanel readPaymentPanel = new ReadPaymentDocumentPanel(windowNo, frame, adOrgId);
-		
+
 		// gh #781: provide the invoice's bPartner so the panel can filter matching accounts by relevance
 		readPaymentPanel.setContextBPartner_ID(invoice == null ? -1 : invoice.getC_BPartner_ID());
-		
+
 		frame.addWindowListener(new ReadPaymentDialogWindowAdapter(readPaymentPanel)
 		{
 			@Override
@@ -124,40 +111,11 @@ public class ReadPaymentDocumentForm implements FormPanel, IProcessPrecondition
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		final I_C_Invoice invoice = context.getSelectedModel(I_C_Invoice.class);
-		if (invoice == null)
-		{
-			return ProcessPreconditionsResolution.reject("no invoice selected");
-		}
-
-		// only completed invoiced
-		if (!invoiceBL.isComplete(invoice))
-		{
-			return ProcessPreconditionsResolution.reject("invoice is not completed");
-		}
-
-		return ProcessPreconditionsResolution.acceptIf(!invoice.isSOTrx()); // only PO Invoices (Eingangsrechnung)
+		return paymentStringProcessService.checkPreconditionsApplicable(context);
 	}
 
 	private void createPaymentRequest(final ReadPaymentPanelResult result)
 	{
-		//
-		// Get the payment request template
-		final I_C_Payment_Request template = result.getPaymentRequestTemplate();
-		if (template == null)
-		{
-			throw new AdempiereException("@" + MSG_PREFIX + "SelectPaymentRequestFirstException" + "@");
-		}
-
-		//
-		// Get the selected invoice
-		if (paymentRequestDAO.hasPaymentRequests(invoice))
-		{
-			throw new AdempiereException("@" + MSG_PREFIX + "PaymentRequestForInvoiceAlreadyExistsException" + "@");
-		}
-
-		//
-		// Create the payment request
-		paymentRequestBL.createPaymentRequest(invoice, template);
+		paymentStringProcessService.createPaymentRequestFromTemplate(invoice, result.getPaymentRequestTemplate());
 	}
 }

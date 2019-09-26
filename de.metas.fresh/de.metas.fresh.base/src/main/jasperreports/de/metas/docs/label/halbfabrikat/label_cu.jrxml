@@ -113,28 +113,28 @@ ORDER BY value
 				<text><![CDATA[Artikelname]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="24" y="84" width="66" height="11" uuid="ff4e1b9e-7756-4e5a-bf25-8d70c7ba4979"/>
+				<reportElement x="24" y="95" width="66" height="11" uuid="ff4e1b9e-7756-4e5a-bf25-8d70c7ba4979"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Lieferant]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement x="90" y="84" width="117" height="11" uuid="901394df-ae75-48f1-93ce-343a1b0816b6"/>
+				<reportElement x="90" y="95" width="117" height="11" uuid="901394df-ae75-48f1-93ce-343a1b0816b6"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{vendorname}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="24" y="95" width="66" height="11" uuid="7c32b3d1-6211-4cfe-aa73-f16bc60bd260"/>
+				<reportElement x="24" y="106" width="66" height="11" uuid="7c32b3d1-6211-4cfe-aa73-f16bc60bd260"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Bestellnummer]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement x="90" y="95" width="117" height="11" uuid="883b46d4-0914-413b-90ba-54d4553f0c9c"/>
+				<reportElement x="91" y="106" width="117" height="11" uuid="883b46d4-0914-413b-90ba-54d4553f0c9c"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
@@ -148,6 +148,20 @@ ORDER BY value
 $F{value} +
 "&Format=CODE_128&Width=300&Height=60" )]]></imageExpression>
 			</image>
+			<staticText>
+				<reportElement x="24" y="84" width="66" height="11" uuid="00d46fca-effa-420f-b57a-d55de552e6d9"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Seriennummer]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="90" y="84" width="117" height="11" uuid="a1a4d010-7dac-4964-9f09-e264e852f4b5"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{serialno}]]></textFieldExpression>
+			</textField>
 		</band>
 	</detail>
 </jasperReport>

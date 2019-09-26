@@ -35,11 +35,6 @@ public class ImportTableDescriptor
 	@NonNull
 	String keyColumnName;
 
-	String tableUnique1;
-	String tableUnique2;
-	String tableUniqueParent;
-	String tableUniqueChild;
-
 	String dataImportConfigIdColumnName;
 	String adIssueIdColumnName;
 }

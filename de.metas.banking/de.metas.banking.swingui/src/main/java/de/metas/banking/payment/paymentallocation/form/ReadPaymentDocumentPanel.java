@@ -22,29 +22,18 @@ package de.metas.banking.payment.paymentallocation.form;
  * #L%
  */
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.VetoableChangeListener;
-import java.math.BigDecimal;
-import java.util.Comparator;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.KeyStroke;
-import javax.swing.SwingConstants;
-
-import org.adempiere.ad.dao.IQueryBL;
+import de.metas.adempiere.form.IClientUI;
+import de.metas.banking.model.I_C_Payment_Request;
+import de.metas.banking.payment.IPaymentString;
+import de.metas.banking.payment.IPaymentStringDataProvider;
+import de.metas.banking.payment.spi.exception.PaymentStringParseException;
+import de.metas.banking.process.paymentdocumentform.PaymentStringProcessService;
+import de.metas.i18n.IMsgBL;
+import de.metas.interfaces.I_C_BP_Relation;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import net.miginfocom.swing.MigLayout;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -52,8 +41,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.SpringContextHolder;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.grid.ed.VNumber;
@@ -68,19 +56,18 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.form.IClientUI;
-import de.metas.banking.model.I_C_Payment_Request;
-import de.metas.banking.payment.IPaymentString;
-import de.metas.banking.payment.IPaymentStringBL;
-import de.metas.banking.payment.IPaymentStringDataProvider;
-import de.metas.banking.payment.spi.IPaymentStringParser;
-import de.metas.banking.payment.spi.exception.PaymentStringParseException;
-import de.metas.i18n.IMsgBL;
-import de.metas.interfaces.I_C_BP_Relation;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import net.miginfocom.swing.MigLayout;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.VetoableChangeListener;
+import java.math.BigDecimal;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
 
 class ReadPaymentDocumentPanel
 		implements ActionListener
@@ -88,15 +75,12 @@ class ReadPaymentDocumentPanel
 	// Services
 	private static final Logger logger = LogManager.getLogger(ReadPaymentDocumentDialog.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final IPaymentStringBL paymentStringBL = Services.get(IPaymentStringBL.class);
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final IClientUI clientUI = Services.get(IClientUI.class);
 
-	public static final String HEADER_READ_PAYMENT_STRING = "ReadPaymentString";
+	static final String HEADER_READ_PAYMENT_STRING = "ReadPaymentString";
 
 	private static final String MSG_CouldNotFindOrCreateBPBankAccount = "de.metas.payment.CouldNotFindOrCreateBPBankAccount";
-
-	private static final String SYSCONFIG_PaymentStringParserType = "de.metas.paymentallocation.form.ReadPaymentDocumentDialog.PaymentStringParserType";
 
 	private static final String CONSTRAINT_GROWX_PUSHX = "growx, pushx";
 	private static final String CONSTRAINT_GROWX_PUSHX_WIDTH_170_WRAP = "growx, pushx, width 170, wrap";
@@ -122,7 +106,6 @@ class ReadPaymentDocumentPanel
 	private final int windowNo;
 	private final Window _window;
 
-	private final IPaymentStringParser paymentStringParser;
 	private IPaymentString currentParsedPaymentString = null;
 	private String currentPaymentString = "";
 
@@ -146,19 +129,13 @@ class ReadPaymentDocumentPanel
 
 	private int contextBPartner_ID;
 
-	/**
-	 * @param window
-	 * @param AD_Org_ID
-	 */
+	private final PaymentStringProcessService paymentStringProcessService;
+
 	public ReadPaymentDocumentPanel(final Window window, final int AD_Org_ID)
 	{
 		this(Env.createWindowNo(window), window, AD_Org_ID);
 	}
 
-	/**
-	 * @param window
-	 * @param AD_Org_ID
-	 */
 	ReadPaymentDocumentPanel(final int WindowNo, final Window window, final int AD_Org_ID)
 	{
 		super();
@@ -172,10 +149,6 @@ class ReadPaymentDocumentPanel
 		//
 		// Initialize field(s)
 		final Properties ctx = Env.getCtx();
-
-		//
-		// Load payment string parser
-		paymentStringParser = paymentStringBL.getParserForSysConfig(SYSCONFIG_PaymentStringParserType);
 
 		//
 		// Load partner lookup column
@@ -218,6 +191,7 @@ class ReadPaymentDocumentPanel
 				DisplayType.Number, // displayType
 				msgBL.translate(ctx, I_C_Payment_Request.COLUMNNAME_Amount));
 
+		paymentStringProcessService = SpringContextHolder.instance.getBean(PaymentStringProcessService.class);
 		init();
 	}
 
@@ -225,12 +199,8 @@ class ReadPaymentDocumentPanel
 	 * Optionally set the ID of a bPartner that needs to have a relation to the payment document which we are reading.<br>
 	 * If set, and the system finds an existing {@link I_C_BP_BankAccount}, then that bank account is only used
 	 * if it belongs to the given {@code contextBPartner} or to a second bPartner who has a {@code RemitTo} {@link I_C_BP_Relation} with the given {@code contextPartner}.
-	 *
-	 * @param contextBPartner_ID
-	 *
-	 * @task https://github.com/metasfresh/metasfresh/issues/781
 	 */
-	public void setContextBPartner_ID(final int contextBPartner_ID)
+	void setContextBPartner_ID(final int contextBPartner_ID)
 	{
 		this.contextBPartner_ID = contextBPartner_ID;
 	}
@@ -240,12 +210,12 @@ class ReadPaymentDocumentPanel
 		return mainPanel;
 	}
 
-	public I_C_Payment_Request getCreatedPaymentRequest()
+	I_C_Payment_Request getCreatedPaymentRequest()
 	{
 		return paymentRequest;
 	}
 
-	private final void init()
+	private void init()
 	{
 
 		try
@@ -258,7 +228,7 @@ class ReadPaymentDocumentPanel
 		}
 	}
 
-	private final void jbInit()
+	private void jbInit()
 	{
 		AdempierePLAF.setDefaultBackground(mainPanel);
 		mainPanel.setLayout(new BorderLayout());
@@ -325,8 +295,8 @@ class ReadPaymentDocumentPanel
 			final Action parsePaymentStringAction = new AbstractAction()
 			{
 				/**
-					 *
-					 */
+				 *
+				 */
 				private static final long serialVersionUID = 6251194470048113990L;
 
 				@Override
@@ -378,10 +348,8 @@ class ReadPaymentDocumentPanel
 
 	/**
 	 * Parse payment string if it was changed and update bank account and amount if it's valid
-	 *
-	 * @param e focus event
 	 */
-	private final void parsePaymentString(final Properties ctx)
+	private void parsePaymentString(final Properties ctx)
 	{
 		updateCurrentPaymentString();
 
@@ -393,18 +361,19 @@ class ReadPaymentDocumentPanel
 		final IPaymentStringDataProvider dataProvider;
 		try
 		{
-			dataProvider = paymentStringBL.getDataProvider(ctx, paymentStringParser, currentPaymentString);
+			dataProvider = paymentStringProcessService.parsePaymentString(ctx, currentPaymentString);
 		}
 		catch (final PaymentStringParseException pspe)
 		{
 			final String adMessage = pspe.getLocalizedMessage() + " (\"" + currentPaymentString + "\")";
-			clientUI.warn(windowNo, adMessage);
-			return;
+			//			clientUI.warn(windowNo, adMessage);
+			throw new AdempiereException(adMessage);
+			//			return;
 		}
 
 		final IPaymentString paymentString = dataProvider.getPaymentString();
 
-		final I_C_BP_BankAccount bpBankAccountExisting = getAndVerifyBPartnerAccount(dataProvider);
+		final I_C_BP_BankAccount bpBankAccountExisting = paymentStringProcessService.getAndVerifyBPartnerAccountOrNull(dataProvider, contextBPartner_ID);
 		if (bpBankAccountExisting != null)
 		{
 			setC_BPartner_ID(bpBankAccountExisting.getC_BPartner_ID());
@@ -421,7 +390,7 @@ class ReadPaymentDocumentPanel
 				bpartnerField.setReadWrite(true); // set read-only to false (user can edit)
 				bpartnerField.requestFocus();
 
-				final Exception ex = new AdempiereException(MSG_CouldNotFindOrCreateBPBankAccount, new Object[] {});
+				final Exception ex = new AdempiereException(MSG_CouldNotFindOrCreateBPBankAccount, new Object[] { paymentString.getPostAccountNo() });
 				clientUI.warn(windowNo, ex);
 				return;
 			}
@@ -444,66 +413,7 @@ class ReadPaymentDocumentPanel
 		currentParsedPaymentString = paymentString;
 	}
 
-	/**
-	 * Calls {@link IPaymentStringDataProvider#getC_BP_BankAccounts()} and
-	 * <li>filters out accounts where {@link #validateAgainstContextBPartner(I_C_BP_BankAccount)} returned a {@code 3}
-	 * <li>orders by the result of {@link #validateAgainstContextBPartner(I_C_BP_BankAccount)}, i.e. prefers 1s order 2s
-	 * <li>returns the first match.
-	 *
-	 * @param dataProvider
-	 * @return
-	 */
-	private I_C_BP_BankAccount getAndVerifyBPartnerAccount(final IPaymentStringDataProvider dataProvider)
-	{
-		final Optional<I_C_BP_BankAccount> firstBankAccount = dataProvider.getC_BP_BankAccounts().stream()
-				.map(bankAccount -> ImmutablePair.of(bankAccount, validateAgainstContextBPartner(bankAccount)))
-				.filter(pair -> pair.getRight() < 3)
-				.sorted(Comparator.comparing(IPair::getRight))
-				.map(pair -> pair.getLeft())
-				.findFirst();
-
-		return firstBankAccount.orElse(null);
-	}
-
-	/**
-	 * Checks the given {@code bpBankAccount} against the partner that was set via {@link #setContextBPartner_ID(I_C_BPartner)} (if any) and returns:
-	 * <li>{@code 1} if no {@link #setContextBPartner_ID(I_C_BPartner)} was set, or if the given {@code bpBankAccount}'s bPartner is the one that was set
-	 * <li>{@code 2} else, if the given {@code bpBankAccount}'s bPartner is a {@code RemitTo} partner of the {@link #setContextBPartner_ID(I_C_BPartner)} partner
-	 * <li>{@code 3} else
-	 *
-	 * @param bpBankAccount
-	 * @return
-	 */
-	private int validateAgainstContextBPartner(final I_C_BP_BankAccount bpBankAccount)
-	{
-		if (contextBPartner_ID <= 0)
-		{
-			// we have no BPartner-Context-Info, so we can't verify the bank account.
-			return 1;
-		}
-
-		if (contextBPartner_ID == bpBankAccount.getC_BPartner_ID())
-		{
-			// the BPartner from the account we looked up is thae one from context
-			return 1;
-		}
-
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final boolean existsRelation = queryBL.createQueryBuilder(I_C_BP_Relation.class, bpBankAccount)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_IsRemitTo, true)
-				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, contextBPartner_ID)
-				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartnerRelation_ID, bpBankAccount.getC_BPartner_ID())
-				.create()
-				.match();
-		if (existsRelation)
-		{
-			return 2;
-		}
-		return 3;
-	}
-
-	public IPaymentString getParsedPaymentStringOrNull()
+	IPaymentString getParsedPaymentStringOrNull()
 	{
 		return currentParsedPaymentString;
 	}
@@ -511,10 +421,9 @@ class ReadPaymentDocumentPanel
 	/**
 	 * Sets model payment string from it's corresponding field
 	 */
-	private final void updateCurrentPaymentString()
+	private void updateCurrentPaymentString()
 	{
-		final String paymentString = (String)paymentStringField.getValue();
-		currentPaymentString = paymentString;
+		currentPaymentString = (String)paymentStringField.getValue();
 
 		//
 		// Set focus to the bank account field so that the user knows he's scanned the ESR button successfully
@@ -573,25 +482,7 @@ class ReadPaymentDocumentPanel
 	 */
 	private void onDialogOk()
 	{
-		final IContextAware contextProvider = PlainContextAware.newOutOfTrx(Env.getCtx());
-
-		//
-		// Create it, but do not save it!
-		paymentRequest = InterfaceWrapperHelper.newInstance(I_C_Payment_Request.class, contextProvider);
-		InterfaceWrapperHelper.setSaveDeleteDisabled(paymentRequest, true);
-
-		// TODO: don't enable OK, or throw an error here, if no C_BP_BankAccount was found
-		paymentRequest.setC_BP_BankAccount(getC_BP_BankAccountOrNull());
-
-		final BigDecimal amount = getAmount();
-		paymentRequest.setAmount(amount);
-
-		final IPaymentString paymentString = getParsedPaymentStringOrNull();
-		if (paymentString != null)
-		{
-			paymentRequest.setReference(paymentString.getReferenceNoComplete());
-			paymentRequest.setFullPaymentString(paymentString.getRawPaymentString());
-		}
+		paymentRequest = paymentStringProcessService.createPaymentRequestTemplate(getC_BP_BankAccountOrNull(), getAmount(), getParsedPaymentStringOrNull());
 
 		//
 		// See JavaDoc
@@ -696,12 +587,12 @@ class ReadPaymentDocumentPanel
 	 *
 	 * @param e focus event
 	 */
-	public void focusGained(final FocusEvent e)
+	void focusGained(final FocusEvent e)
 	{
 		updateCurrentPaymentString();
 	}
 
-	public void onContainerDispose()
+	void onContainerDispose()
 	{
 		if (!userPressedOK && isNewlyCreatedC_BP_BankAccount())
 		{
@@ -710,7 +601,7 @@ class ReadPaymentDocumentPanel
 		Env.clearWinContext(windowNo);
 	}
 
-	public Optional<ReadPaymentPanelResult> getResultIfValid()
+	Optional<ReadPaymentPanelResult> getResultIfValid()
 	{
 		final I_C_Payment_Request paymentRequestTemplate = getCreatedPaymentRequest();
 		if (paymentRequestTemplate == null)
