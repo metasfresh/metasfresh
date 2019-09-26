@@ -1,6 +1,5 @@
 package de.metas.adempiere.gui.search.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -23,11 +22,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-
-import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.bpartner.BPartnerId;
@@ -35,8 +33,8 @@ import de.metas.handlingunits.model.I_C_OLCand;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.product.ProductId;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Wraps an {@link I_C_OrderLine} and makes it behave like an {@link IHUPackingAware}.
@@ -53,10 +51,9 @@ public class OLCandHUPackingAware implements IHUPackingAware
 	 */
 	private final PlainHUPackingAware values = new PlainHUPackingAware();
 
-	public OLCandHUPackingAware(final de.metas.ordercandidate.model.I_C_OLCand olCand)
+	public OLCandHUPackingAware(@NonNull final de.metas.ordercandidate.model.I_C_OLCand olCand)
 	{
-		Check.assumeNotNull(olCand, "olcand not null");
-		this.olCand = InterfaceWrapperHelper.create(olCand, I_C_OLCand.class);
+		this.olCand = create(olCand, I_C_OLCand.class);
 	}
 
 	@Override
@@ -89,9 +86,9 @@ public class OLCandHUPackingAware implements IHUPackingAware
 	@Override
 	public int getM_HU_PI_Item_Product_ID()
 	{
-		final Integer valueOverrideOrValue = InterfaceWrapperHelper.getValueOverrideOrValue(olCand, I_C_OLCand.COLUMNNAME_M_HU_PI_Item_Product_ID);
+		final Integer valueOverrideOrValue = getValueOverrideOrValue(olCand, I_C_OLCand.COLUMNNAME_M_HU_PI_Item_Product_ID);
 		return valueOverrideOrValue == null ? 0 : valueOverrideOrValue;
-		}
+	}
 
 	@Override
 	public void setM_HU_PI_Item_Product_ID(final int huPiItemProductId)
