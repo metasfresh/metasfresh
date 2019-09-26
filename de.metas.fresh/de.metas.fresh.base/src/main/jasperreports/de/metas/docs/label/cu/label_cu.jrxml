@@ -19,7 +19,7 @@
 		<defaultValueExpression><![CDATA["http://mf15adit:8080/adempiereJasper/BarcodeServlet"]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT * FROM report.intermediate_product_label($P{M_HU_ID})
+		<![CDATA[SELECT * FROM report.cu_product_label($P{M_HU_ID})
 ORDER BY value
 ;]]>
 	</queryString>
@@ -28,15 +28,6 @@ ORDER BY value
 	</field>
 	<field name="value" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="value"/>
-	</field>
-	<field name="adr" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="adr"/>
-	</field>
-	<field name="attributes" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="attributes"/>
-	</field>
-	<field name="weight" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="weight"/>
 	</field>
 	<field name="serialno" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="serialno"/>

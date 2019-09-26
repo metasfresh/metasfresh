@@ -55,7 +55,7 @@ ORDER BY	T_Selection_ID
 					<subreportParameterExpression><![CDATA[$P{barcodeURL}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/label/halbfabrikat/label_cu.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/label/cu/label_cu.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>

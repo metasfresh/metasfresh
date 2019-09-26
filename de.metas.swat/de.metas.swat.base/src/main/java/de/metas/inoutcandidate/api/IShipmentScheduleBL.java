@@ -190,7 +190,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	ZonedDateTime getPreparationDate(I_M_ShipmentSchedule schedule);
 
-	Optional<ShipmentAllocationBestBeforePolicy> getBestBeforePolicy(ShipmentScheduleId id);
+	ShipmentAllocationBestBeforePolicy getBestBeforePolicy(ShipmentScheduleId id);
 
 	void applyUserChanges(ShipmentScheduleUserChangeRequestsList userChanges);
 }

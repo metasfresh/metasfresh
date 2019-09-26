@@ -1160,10 +1160,18 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public Optional<ShipmentAllocationBestBeforePolicy> getBestBeforePolicy(@NonNull final ShipmentScheduleId id)
+	public ShipmentAllocationBestBeforePolicy getBestBeforePolicy(@NonNull final ShipmentScheduleId id)
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = getById(id);
-		return ShipmentAllocationBestBeforePolicy.optionalOfNullableCode(shipmentSchedule.getShipmentAllocation_BestBefore_Policy());
+		final Optional<ShipmentAllocationBestBeforePolicy> bestBeforePolicy = ShipmentAllocationBestBeforePolicy.optionalOfNullableCode(shipmentSchedule.getShipmentAllocation_BestBefore_Policy());
+		if (bestBeforePolicy.isPresent())
+		{
+			return bestBeforePolicy.get();
+		}
+
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		final BPartnerId bpartnerId = getBPartnerId(shipmentSchedule);
+		return bpartnerBL.getBestBeforePolicy(bpartnerId);
 	}
 
 	@Override
