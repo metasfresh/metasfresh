@@ -7,9 +7,12 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -65,12 +68,13 @@ public class M_HU_Attribute
 		Check.assume(record.isActive(), "changing IsActive flag to false is not allowed: {}", record);
 
 		final AttributeId attributeId = AttributeId.ofRepoId(record.getM_Attribute_ID());
-		if (!attributesService.isStorageRelevant(attributeId))
+		final I_M_Attribute attribute = attributesService.getAttributeById(attributeId);
+		if (!attribute.isStorageRelevant())
 		{
 			return;
 		}
 
-		final HUAttributeChange change = extractHUAttributeChange(record);
+		final HUAttributeChange change = extractHUAttributeChange(record, attribute);
 
 		getOrCreateCollector().collect(change);
 	}
@@ -84,13 +88,45 @@ public class M_HU_Attribute
 				HUAttributeChangesCollector::createAndPostMaterialEvents);
 	}
 
-	private static HUAttributeChange extractHUAttributeChange(final I_M_HU_Attribute record)
+	private HUAttributeChange extractHUAttributeChange(
+			final I_M_HU_Attribute record,
+			final I_M_Attribute attribute)
 	{
 		final I_M_HU_Attribute recordBeforeChanges = InterfaceWrapperHelper.createOld(record, I_M_HU_Attribute.class);
+
+		final AttributeValueType attributeValueType = AttributeValueType.ofCode(attribute.getAttributeValueType());
+
+		final Object valueNew;
+		final Object valueOld;
+		if (AttributeValueType.STRING.equals(attributeValueType))
+		{
+			valueNew = record.getValue();
+			valueOld = recordBeforeChanges.getValue();
+		}
+		else if (AttributeValueType.NUMBER.equals(attributeValueType))
+		{
+			valueNew = record.getValueNumber();
+			valueOld = recordBeforeChanges.getValueNumber();
+		}
+		else if (AttributeValueType.DATE.equals(attributeValueType))
+		{
+			valueNew = record.getValueDate();
+			valueOld = recordBeforeChanges.getValueDate();
+		}
+		else if (AttributeValueType.LIST.equals(attributeValueType))
+		{
+			// valueNew = record.getValue();
+			// valueOld = recordBeforeChanges.getValue();
+		}
+		else
+		{
+			throw new AdempiereException("Unknown attribute value type: " + attributeValueType);
+		}
 
 		return HUAttributeChange.builder()
 				.huId(HuId.ofRepoId(record.getM_HU_ID()))
 				.attributeId(AttributeId.ofRepoId(record.getM_Attribute_ID()))
+				.attributeValueType(attributeValueType)
 				//
 				.valueString(record.getValue())
 				.valueStringOld(recordBeforeChanges.getValue())

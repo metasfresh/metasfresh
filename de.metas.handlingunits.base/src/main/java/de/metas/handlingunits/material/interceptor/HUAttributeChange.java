@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeValueType;
 
 import de.metas.handlingunits.HuId;
 import de.metas.util.Check;
@@ -41,6 +42,8 @@ final class HUAttributeChange
 	final HuId huId;
 	@NonNull
 	final AttributeId attributeId;
+	@NonNull
+	final AttributeValueType attributeValueType;
 
 	final String valueString;
 	final String valueStringOld;
@@ -53,7 +56,9 @@ final class HUAttributeChange
 
 	public HUAttributeChange mergeWithNextChange(final HUAttributeChange nextChange)
 	{
+		Check.assumeEquals(huId, nextChange.huId, "Invalid huId for {}. Expected: {}", nextChange, huId);
 		Check.assumeEquals(attributeId, nextChange.attributeId, "Invalid attributeId for {}. Expected: {}", nextChange, attributeId);
+		Check.assumeEquals(attributeValueType, nextChange.attributeValueType, "Invalid attributeValueType for {}. Expected: {}", nextChange, attributeValueType);
 
 		return toBuilder()
 				.valueString(nextChange.getValueString())
