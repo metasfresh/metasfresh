@@ -26,8 +26,8 @@ package org.adempiere.mm.attributes.api;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.fresh.model.I_C_BPartner;
 import de.metas.util.ISingletonService;
@@ -56,7 +56,7 @@ public interface IADRAttributeDAO extends ISingletonService
 	 * @param isSOTrx will return different values for sales and purchase transactions
 	 * @return the value of ADR attribute (if exists) or null
 	 */
-	I_M_AttributeValue retrieveADRAttributeValue(Properties ctx, I_C_BPartner partner, boolean isSOTrx);
+	AttributeListValue retrieveADRAttributeValue(Properties ctx, I_C_BPartner partner, boolean isSOTrx);
 
 
 }

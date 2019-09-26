@@ -33,6 +33,8 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.util.TimeUtil;
 
+import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -135,7 +137,8 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 		}
 
 		// ----------------
-		ic.setM_PricingSystem_ID(materialTracking.getC_Flatrate_Term().getM_PricingSystem_ID());
+		final I_C_Flatrate_Term flatrateTerm = Services.get(IFlatrateDAO.class).getById(materialTracking.getC_Flatrate_Term_ID());
+		ic.setM_PricingSystem_ID(flatrateTerm.getM_PricingSystem_ID());
 
 		if (!InterfaceWrapperHelper.isInstanceOf(referencedObject, I_M_InOutLine.class))
 		{

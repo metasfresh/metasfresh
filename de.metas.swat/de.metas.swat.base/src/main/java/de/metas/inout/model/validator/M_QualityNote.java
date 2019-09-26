@@ -2,9 +2,8 @@ package de.metas.inout.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_AttributeValue;
+import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.model.ModelValidator;
 
 import de.metas.inout.api.IQualityNoteDAO;
@@ -53,27 +52,14 @@ public class M_QualityNote
 	public void createOnNew(final I_M_QualityNote qualityNote)
 	{
 		final IQualityNoteDAO qualityNoteDAO = Services.get(IQualityNoteDAO.class);
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 
-		// create a new attribute value for the qualityNote
-
-		final I_M_AttributeValue attributeValue = InterfaceWrapperHelper.newInstance(I_M_AttributeValue.class);
-
-		// set attribute
-		final AttributeId qualityNoteAttributeId = qualityNoteDAO.getQualityNoteAttributeId();
-		attributeValue.setM_Attribute_ID(AttributeId.toRepoId(qualityNoteAttributeId));
-
-		// set value
-		attributeValue.setValue(qualityNote.getValue());
-
-		// set name
-		attributeValue.setName(qualityNote.getName());
-
-		// set IsActive
-		attributeValue.setIsActive(qualityNote.isActive());
-
-		// save attribute value
-		InterfaceWrapperHelper.save(attributeValue);
-
+		attributesRepo.createAttributeValue(AttributeListValueCreateRequest.builder()
+				.attributeId(qualityNoteDAO.getQualityNoteAttributeId())
+				.value(qualityNote.getValue())
+				.name(qualityNote.getName())
+				.active(qualityNote.isActive())
+				.build());
 	}
 
 	/**

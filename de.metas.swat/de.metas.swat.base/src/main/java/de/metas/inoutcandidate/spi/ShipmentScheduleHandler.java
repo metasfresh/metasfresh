@@ -35,6 +35,8 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
@@ -222,9 +224,20 @@ public abstract class ShipmentScheduleHandler
 			return false;
 		}
 
-		final boolean referencedRecordAsiHasValue = attributeInstance.getM_AttributeValue_ID() > 0
-						&& !attributeInstance.getM_AttributeValue().isNullFieldValue();
-		return referencedRecordAsiHasValue;
+		return hasNonNullAttributeListValue(attributeInstance);
+	}
+	
+	private boolean hasNonNullAttributeListValue(final I_M_AttributeInstance attributeInstance)
+	{
+		final AttributeValueId attributeValueId = AttributeValueId.ofRepoIdOrNull(attributeInstance.getM_AttributeValue_ID());
+		if(attributeValueId == null)
+		{
+			return false;
+		}
+
+		final AttributeId attributeId = AttributeId.ofRepoId(attributeInstance.getM_Attribute_ID());
+		final AttributeListValue attributeValue = Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(attributeId, attributeValueId);
+		return attributeValue != null && !attributeValue.isNullFieldValue();
 	}
 
 	@VisibleForTesting

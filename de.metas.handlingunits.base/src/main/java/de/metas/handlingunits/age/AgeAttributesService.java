@@ -1,5 +1,14 @@
 package de.metas.handlingunits.age;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.compiere.model.I_M_Attribute;
+import org.springframework.stereotype.Service;
+
 /*
  * #%L
  * metasfresh-pharma
@@ -23,26 +32,19 @@ package de.metas.handlingunits.age;
  */
 
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.cache.CCache;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class AgeAttributesService
 {
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 
-	private final CCache<Integer, AgeValues> cache = CCache.<Integer, AgeValues>builder()
-			.tableName(I_M_AttributeValue.Table_Name)
+	private final CCache<Integer, AgeValues> cache = CCache.<Integer, AgeValues> builder()
+			.tableName(IAttributeDAO.CACHEKEY_ATTRIBUTE_VALUE)
 			.build();
 
 	public AgeValues getAgeValues()
@@ -54,10 +56,10 @@ public class AgeAttributesService
 	@NonNull
 	private AgeValues retrieveAgeValues()
 	{
-		final List<I_M_AttributeValue> allAgeValues = getAllAgeValues();
+		final List<AttributeListValue> allAgeValues = getAllAgeValues();
 		final ImmutableSet<Integer> agesInMonths = allAgeValues
 				.stream()
-				.map(it -> Integer.valueOf(it.getValue()))
+				.map(AttributeListValue::getValueAsInt)
 				.sorted()
 				.collect(ImmutableSet.toImmutableSet());
 
@@ -67,10 +69,10 @@ public class AgeAttributesService
 	@SuppressWarnings("OptionalIsPresent")
 	public int computeDefaultAge()
 	{
-		final List<I_M_AttributeValue> allAgeValues = getAllAgeValues();
+		final List<AttributeListValue> allAgeValues = getAllAgeValues();
 
-		final Optional<I_M_AttributeValue> nullFieldValueOpt = allAgeValues.stream()
-				.filter(I_M_AttributeValue::isNullFieldValue)
+		final Optional<AttributeListValue> nullFieldValueOpt = allAgeValues.stream()
+				.filter(AttributeListValue::isNullFieldValue)
 				.findFirst();
 
 		final int defaultAge;
@@ -85,7 +87,7 @@ public class AgeAttributesService
 		return defaultAge;
 	}
 
-	private List<I_M_AttributeValue> getAllAgeValues()
+	private List<AttributeListValue> getAllAgeValues()
 	{
 		final AttributeId ageId = attributesRepo.retrieveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_Age);
 		final I_M_Attribute age = attributesRepo.getAttributeById(ageId);

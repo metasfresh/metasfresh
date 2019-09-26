@@ -1,14 +1,14 @@
 package org.adempiere.mm.attributes.api;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_M_AttributeValue;
 
 /**
  * Implementations are responsible for:
  * <ul>
  * <li>suggesting an M_Attribute_ID to be used, based on {@link IBPartnerAware}
- * <li>suggesting an {@link I_M_AttributeValue} to be used, based on {@link IBPartnerAware}
+ * <li>suggesting an attribute value to be used, based on {@link IBPartnerAware}
  * </ul>
  * 
  * @author tsa
@@ -25,12 +25,12 @@ public interface IBPartnerAwareAttributeService
 	AttributeId getAttributeId(IBPartnerAware bpartnerAware);
 
 	/**
-	 * Gets/creates the coresponsing {@link I_M_AttributeValue} for given {@link IBPartnerAware}.
+	 * Gets/creates the corresponding attribute value for given {@link IBPartnerAware}.
 	 * 
 	 * @param context
 	 * @param bpartnerAware
 	 * @return
 	 */
-	I_M_AttributeValue getCreateAttributeValue(final IContextAware context, final IBPartnerAware bpartnerAware);
+	AttributeListValue getCreateAttributeValue(final IContextAware context, final IBPartnerAware bpartnerAware);
 
 }

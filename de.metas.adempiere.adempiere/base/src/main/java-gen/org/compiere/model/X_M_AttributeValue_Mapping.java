@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -30,7 +14,7 @@ public class X_M_AttributeValue_Mapping extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2084544175L;
+	private static final long serialVersionUID = -145253119L;
 
     /** Standard Constructor */
     public X_M_AttributeValue_Mapping (Properties ctx, int M_AttributeValue_Mapping_ID, String trxName)
@@ -59,14 +43,6 @@ public class X_M_AttributeValue_Mapping extends org.compiere.model.PO implements
       return poi;
     }
 
-    @Override
-    public String toString()
-    {
-      StringBuilder sb = new StringBuilder ("X_M_AttributeValue_Mapping[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
 	/** Set Beschreibung.
 		@param Description Beschreibung	  */
 	@Override
@@ -81,18 +57,6 @@ public class X_M_AttributeValue_Mapping extends org.compiere.model.PO implements
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
-	}
-
-	@Override
-	public org.compiere.model.I_M_AttributeValue getM_AttributeValue() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_AttributeValue_ID, org.compiere.model.I_M_AttributeValue.class);
-	}
-
-	@Override
-	public void setM_AttributeValue(org.compiere.model.I_M_AttributeValue M_AttributeValue)
-	{
-		set_ValueFromPO(COLUMNNAME_M_AttributeValue_ID, org.compiere.model.I_M_AttributeValue.class, M_AttributeValue);
 	}
 
 	/** Set Merkmals-Wert.
@@ -140,18 +104,6 @@ public class X_M_AttributeValue_Mapping extends org.compiere.model.PO implements
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_AttributeValue getM_AttributeValue_To() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_AttributeValue_To_ID, org.compiere.model.I_M_AttributeValue.class);
-	}
-
-	@Override
-	public void setM_AttributeValue_To(org.compiere.model.I_M_AttributeValue M_AttributeValue_To)
-	{
-		set_ValueFromPO(COLUMNNAME_M_AttributeValue_To_ID, org.compiere.model.I_M_AttributeValue.class, M_AttributeValue_To);
 	}
 
 	/** Set Merkmals-Wert Nach.

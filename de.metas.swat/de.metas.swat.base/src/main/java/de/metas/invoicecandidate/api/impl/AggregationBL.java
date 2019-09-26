@@ -200,13 +200,15 @@ public class AggregationBL implements IAggregationBL
 			return Collections.emptyList();
 		}
 
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		
 		final I_M_AttributeSetInstance attributeSetInstance = inOutLine.getM_AttributeSetInstance();
-		final List<I_M_AttributeInstance> attributeInstances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(attributeSetInstance);
+		final List<I_M_AttributeInstance> attributeInstances = attributesRepo.retrieveAttributeInstances(attributeSetInstance);
 
 		final List<IInvoiceLineAttribute> invoiceLineAttributes = new ArrayList<>(attributeInstances.size());
 		for (final I_M_AttributeInstance attributeInstance : attributeInstances)
 		{
-			final I_M_Attribute attribute = InterfaceWrapperHelper.create(attributeInstance.getM_Attribute(), I_M_Attribute.class);
+			final I_M_Attribute attribute = attributesRepo.getAttributeById(attributeInstance.getM_Attribute_ID());
 			if (!attribute.isAttrDocumentRelevant())
 			{
 				continue;

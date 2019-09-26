@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.IADRAttributeBL;
 import org.adempiere.mm.attributes.api.IADRAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -34,7 +35,6 @@ import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.ISubProducerAttributeBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.fresh.model.I_C_BPartner;
@@ -100,7 +100,7 @@ public class SubProducerAttributeBL implements ISubProducerAttributeBL
 		// isSoTrx = false because we only need it in Wareneingang POS
 		// TODO: Check if this will be needed somewhere else and fix accordingly
 		final boolean isSOTrx = false;
-		final I_M_AttributeValue markeADR = Services.get(IADRAttributeBL.class).getCreateAttributeValue(ctx, partner, isSOTrx, ITrx.TRXNAME_None);
+		final AttributeListValue markeADR = Services.get(IADRAttributeBL.class).getCreateAttributeValue(ctx, partner, isSOTrx, ITrx.TRXNAME_None);
 		final String markeADRValue = markeADR == null ? null : markeADR.getValue();
 
 		attributeStorage.setValue(attr_MarkeADR, markeADRValue);

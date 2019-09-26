@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_AttributeInstance
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_M_AttributeInstance extends org.compiere.model.PO implements I_M_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 793401846L;
+	private static final long serialVersionUID = -1734582988L;
 
     /** Standard Constructor */
     public X_M_AttributeInstance (Properties ctx, int M_AttributeInstance_ID, String trxName)
@@ -41,6 +24,7 @@ public class X_M_AttributeInstance extends org.compiere.model.PO implements I_M_
       /** if (M_AttributeInstance_ID == 0)
         {
 			setM_Attribute_ID (0);
+			setM_AttributeInstance_ID (0);
 			setM_AttributeSetInstance_ID (0);
         } */
     }
@@ -59,18 +43,6 @@ public class X_M_AttributeInstance extends org.compiere.model.PO implements I_M_
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_M_Attribute getM_Attribute() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class);
-	}
-
-	@Override
-	public void setM_Attribute(org.compiere.model.I_M_Attribute M_Attribute)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class, M_Attribute);
-	}
 
 	/** Set Merkmal.
 		@param M_Attribute_ID 
@@ -97,8 +69,30 @@ public class X_M_AttributeInstance extends org.compiere.model.PO implements I_M_
 		return ii.intValue();
 	}
 
+	/** Set M_AttributeInstance.
+		@param M_AttributeInstance_ID M_AttributeInstance	  */
 	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	public void setM_AttributeInstance_ID (int M_AttributeInstance_ID)
+	{
+		if (M_AttributeInstance_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_AttributeInstance_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_AttributeInstance_ID, Integer.valueOf(M_AttributeInstance_ID));
+	}
+
+	/** Get M_AttributeInstance.
+		@return M_AttributeInstance	  */
+	@Override
+	public int getM_AttributeInstance_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeInstance_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
 	}
@@ -109,9 +103,9 @@ public class X_M_AttributeInstance extends org.compiere.model.PO implements I_M_
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Ausprägung Merkmals-Satz.
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Product Attribute Set Instance
+		Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
@@ -122,8 +116,8 @@ public class X_M_AttributeInstance extends org.compiere.model.PO implements I_M_
 			set_ValueNoCheck (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Ausprägung Merkmals-Satz.
-		@return Product Attribute Set Instance
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public int getM_AttributeSetInstance_ID () 
@@ -132,18 +126,6 @@ public class X_M_AttributeInstance extends org.compiere.model.PO implements I_M_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_AttributeValue getM_AttributeValue() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_AttributeValue_ID, org.compiere.model.I_M_AttributeValue.class);
-	}
-
-	@Override
-	public void setM_AttributeValue(org.compiere.model.I_M_AttributeValue M_AttributeValue)
-	{
-		set_ValueFromPO(COLUMNNAME_M_AttributeValue_ID, org.compiere.model.I_M_AttributeValue.class, M_AttributeValue);
 	}
 
 	/** Set Merkmals-Wert.
@@ -224,7 +206,7 @@ public class X_M_AttributeInstance extends org.compiere.model.PO implements I_M_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ValueNumber);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

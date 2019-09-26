@@ -25,7 +25,7 @@ package org.adempiere.mm.attributes.api;
 
 import java.util.Properties;
 
-import org.compiere.model.I_M_AttributeValue;
+import org.adempiere.mm.attributes.AttributeListValue;
 
 import de.metas.fresh.model.I_C_BPartner;
 import de.metas.util.ISingletonService;
@@ -41,7 +41,7 @@ public interface IADRAttributeBL extends ISingletonService, IBPartnerAwareAttrib
 	 * @param trxName
 	 * @return the attribute value (existing or created)
 	 */
-	public I_M_AttributeValue getCreateAttributeValue(Properties ctx, I_C_BPartner partner, boolean isSOTrx, String trxName);
+	AttributeListValue getCreateAttributeValue(Properties ctx, I_C_BPartner partner, boolean isSOTrx, String trxName);
 
 	/**
 	 * We need this because we can have different ADR for a BPartner to use in sales and purchase transactions.

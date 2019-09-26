@@ -11,6 +11,7 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -20,7 +21,6 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
 
 import de.metas.i18n.ITranslatableString;
@@ -239,10 +239,10 @@ final class ASIDescriptionBuilderCommand
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
 		{
 			final AttributeValueId attributeValueId = AttributeValueId.ofRepoIdOrNull(ai.getM_AttributeValue_ID());
-			final I_M_AttributeValue attributeValue = attributeValueId != null ? attributesRepo.retrieveAttributeValueOrNull(attribute, attributeValueId) : null;
+			final AttributeListValue attributeValue = attributeValueId != null ? attributesRepo.retrieveAttributeValueOrNull(attribute, attributeValueId) : null;
 			if (attributeValue != null)
 			{
-				return extractAttributeValueName(attributeValue);
+				return attributeValue.getNameTrl();
 			}
 			else
 			{
@@ -292,12 +292,6 @@ final class ASIDescriptionBuilderCommand
 		return valueDate != null
 				? TranslatableStrings.date(valueDate)
 				: TranslatableStrings.anyLanguage("-");
-	}
-
-	static ITranslatableString extractAttributeValueName(@NonNull final I_M_AttributeValue attributeValue)
-	{
-		return InterfaceWrapperHelper.getModelTranslationMap(attributeValue)
-				.getColumnTrl(I_M_AttributeValue.COLUMNNAME_Name, attributeValue.getName());
 	}
 
 	private void appendSeparator(final TranslatableStringBuilder description)

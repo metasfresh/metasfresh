@@ -138,14 +138,17 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 	private void doIt0()
 	{
 		final I_M_Material_Tracking materialTracking = InterfaceWrapperHelper.create(getCtx(), p_Material_Tracking_ID, I_M_Material_Tracking.class, getTrxName());
-		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-		if (materialTracking.getM_Product_ID() != productId.getRepoId())
+		final ProductId orderLineProductId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final ProductId materialTrackingProductId = ProductId.ofRepoId(materialTracking.getM_Product_ID());
+		if (!ProductId.equals(materialTrackingProductId, orderLineProductId))
 		{
-			final String productName = Services.get(IProductBL.class).getProductValueAndName(productId);
-
-			final String msg = "@C_OrderLine_ID@ @M_Product_ID@ (" + productName + ") "
+			final IProductBL productBL = Services.get(IProductBL.class);
+			final String orderLineOroductName = productBL.getProductValueAndName(orderLineProductId);
+			final String materialTrackingProductName = productBL.getProductValueAndName(materialTrackingProductId);
+			
+			final String msg = "@C_OrderLine_ID@ @M_Product_ID@ (" + orderLineOroductName + ") "
 					+ "<> "
-					+ "@M_Material_Tracking@ @M_Product_ID@ (" + materialTracking.getM_Product().getValue() + ")";
+					+ "@M_Material_Tracking@ @M_Product_ID@ (" + materialTrackingProductName + ")";
 			final String msgTrl = msgBL.parseTranslation(getCtx(), msg);
 			throw new AdempiereException(msgTrl);
 		}

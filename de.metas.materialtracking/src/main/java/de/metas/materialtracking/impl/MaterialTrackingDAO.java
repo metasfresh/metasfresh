@@ -35,12 +35,12 @@ import org.adempiere.ad.dao.IQueryOrderByBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Period;
-import org.compiere.model.I_M_AttributeValue;
 import org.eevolution.model.I_PP_Order;
 
 import com.google.common.collect.ImmutableList;
@@ -58,6 +58,7 @@ import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_Ve
 import de.metas.materialtracking.model.IMaterialTrackingAware;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -191,8 +192,8 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 		final IQueryBuilder<I_M_Material_Tracking_Ref> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Material_Tracking_Ref.class, materialTracking)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Material_Tracking_Ref.COLUMN_M_Material_Tracking_ID, materialTracking.getM_Material_Tracking_ID())
-				.addEqualsFilter(I_M_Material_Tracking_Ref.COLUMN_AD_Table_ID, adTableId);
+				.addEqualsFilter(I_M_Material_Tracking_Ref.COLUMNNAME_M_Material_Tracking_ID, materialTracking.getM_Material_Tracking_ID())
+				.addEqualsFilter(I_M_Material_Tracking_Ref.COLUMNNAME_AD_Table_ID, adTableId);
 
 		setDefaultOrderBy(queryBuilder.orderBy());
 
@@ -214,16 +215,16 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 
 	@Override
 	public List<de.metas.materialtracking.model.I_M_Material_Tracking> retrieveMaterialTrackingsForModel(@NonNull final Object model)
-		{
+	{
 		final IMaterialTrackingAware materialTrackingAwareOrNull = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(model, IMaterialTrackingAware.class);
 		if (materialTrackingAwareOrNull != null)
 		{
 			if (materialTrackingAwareOrNull.getM_Material_Tracking_ID() > 0)
 			{
 				return ImmutableList.of(materialTrackingAwareOrNull.getM_Material_Tracking());
-		}
+			}
 			return ImmutableList.of();
-	}
+		}
 
 		final List<I_M_Material_Tracking_Ref> refs = retrieveMaterialTrackingRefsForModel(model);
 		return refs.stream()
@@ -248,24 +249,19 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 	}
 
 	@Override
-	public I_M_Material_Tracking retrieveMaterialTrackingByAttributeValue(final I_M_AttributeValue attributeValue)
+	public I_M_Material_Tracking retrieveMaterialTrackingByAttributeValue(@NonNull final AttributeValueId attributeValueId)
 	{
-		if (attributeValue == null || attributeValue.getM_AttributeValue_ID() <= 0)
-		{
-			return null;
-		}
-
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final I_M_Material_Tracking materialTracking = queryBL.createQueryBuilder(I_M_Material_Tracking.class, attributeValue)
+		final I_M_Material_Tracking materialTracking = queryBL.createQueryBuilder(I_M_Material_Tracking.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Material_Tracking.COLUMNNAME_M_AttributeValue_ID, attributeValue.getM_AttributeValue_ID())
+				.addEqualsFilter(I_M_Material_Tracking.COLUMNNAME_M_AttributeValue_ID, attributeValueId)
 				.create()
 				.firstOnly(I_M_Material_Tracking.class);
 
 		if (materialTracking == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_MaterialTracking_ID@"
-					+ "\n @M_AttributeValue_ID@: " + attributeValue);
+					+ "\n @M_AttributeValue_ID@: " + attributeValueId);
 		}
 
 		return materialTracking;
@@ -395,7 +391,7 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 				.addOnlyActiveRecordsFilter()
 				.addCompareFilter(I_M_Material_Tracking.COLUMN_ValidFrom, Operator.LESS_OR_EQUAL, periodEndDate)
 				.addCompareFilter(I_M_Material_Tracking.COLUMN_ValidTo, Operator.GREATER_OR_EQUAL, periodEndDate)
-				.addInArrayOrAllFilter(I_M_Material_Tracking.COLUMN_AD_Org_ID, 0, org.getAD_Org_ID())
+				.addInArrayOrAllFilter(I_M_Material_Tracking.COLUMNNAME_AD_Org_ID, OrgId.ANY.getRepoId(), org.getAD_Org_ID())
 				.create()
 				.list(I_M_Material_Tracking.class);
 	}

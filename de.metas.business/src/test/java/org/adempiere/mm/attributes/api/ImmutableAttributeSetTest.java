@@ -9,12 +9,12 @@ import java.time.LocalTime;
 import java.time.Month;
 import java.time.ZoneId;
 
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -62,10 +62,10 @@ public class ImmutableAttributeSetTest
 	{
 
 		final I_M_Attribute attrStringWithValue = attributesTestHelper.createM_Attribute("AttrStringWithValue", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
-		final I_M_AttributeValue attributeStringValue = attributesTestHelper.createM_AttributeValue(attrStringWithValue, "testValue1");
+		final AttributeListValue attributeStringValue = attributesTestHelper.createM_AttributeValue(attrStringWithValue, "testValue1");
 
 		final I_M_Attribute attributeStringNull = attributesTestHelper.createM_Attribute("AttrStringNullValue", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
-		final I_M_AttributeValue attributeStringNullValue = attributesTestHelper.createM_AttributeValue(attributeStringNull, null);
+		final AttributeListValue attributeStringNullValue = attributesTestHelper.createM_AttributeValue(attributeStringNull, null);
 
 		final I_M_AttributeSetInstance asi = newInstance(I_M_AttributeSetInstance.class);
 		save(asi);
@@ -91,14 +91,14 @@ public class ImmutableAttributeSetTest
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
 		final I_M_Attribute attrStringWithValue1 = attributesTestHelper.createM_Attribute("AttrStringWithValue", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
-		final I_M_AttributeValue attributeStringValue1 = attributesTestHelper.createM_AttributeValue(attrStringWithValue1, "testValue1");
+		final AttributeListValue attributeStringValue1 = attributesTestHelper.createM_AttributeValue(attrStringWithValue1, "testValue1");
 
 		final I_M_AttributeSetInstance asi1 = newInstance(I_M_AttributeSetInstance.class);
 		save(asi1);
 
 		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attributeStringValue1);
 
-		final I_M_AttributeValue attributeStringValue2 = attributesTestHelper.createM_AttributeValue(attrStringWithValue1, "testValue1");
+		final AttributeListValue attributeStringValue2 = attributesTestHelper.createM_AttributeValue(attrStringWithValue1, "testValue1");
 
 		final I_M_AttributeSetInstance asi2 = newInstance(I_M_AttributeSetInstance.class);
 		save(asi2);
@@ -122,14 +122,14 @@ public class ImmutableAttributeSetTest
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
 		final I_M_Attribute attrStringWithValue1 = attributesTestHelper.createM_Attribute("AttrStringWithValue", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
-		final I_M_AttributeValue attributeStringValue1 = attributesTestHelper.createM_AttributeValue(attrStringWithValue1, "testValue1");
+		final AttributeListValue attributeStringValue1 = attributesTestHelper.createM_AttributeValue(attrStringWithValue1, "testValue1");
 
 		final I_M_AttributeSetInstance asi1 = newInstance(I_M_AttributeSetInstance.class);
 		save(asi1);
 
 		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attributeStringValue1);
 
-		final I_M_AttributeValue attributeStringValue2 = attributesTestHelper.createM_AttributeValue(attrStringWithValue1, "testValue2");
+		final AttributeListValue attributeStringValue2 = attributesTestHelper.createM_AttributeValue(attrStringWithValue1, "testValue2");
 
 		final I_M_AttributeSetInstance asi2 = newInstance(I_M_AttributeSetInstance.class);
 		save(asi2);
@@ -153,7 +153,7 @@ public class ImmutableAttributeSetTest
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
 		final I_M_Attribute attrStringWithValue1 = attributesTestHelper.createM_Attribute("AttrStringWithValue", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
-		final I_M_AttributeValue attributeStringValue1 = attributesTestHelper.createM_AttributeValue(attrStringWithValue1, "testValue1");
+		final AttributeListValue attributeStringValue1 = attributesTestHelper.createM_AttributeValue(attrStringWithValue1, "testValue1");
 
 		final I_M_AttributeSetInstance asi1 = newInstance(I_M_AttributeSetInstance.class);
 		save(asi1);
@@ -161,7 +161,7 @@ public class ImmutableAttributeSetTest
 		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attributeStringValue1);
 
 		final I_M_Attribute attrStringWithValue2 = attributesTestHelper.createM_Attribute("AttrStringWithValue2", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
-		final I_M_AttributeValue attributeStringValue2 = attributesTestHelper.createM_AttributeValue(attrStringWithValue2, "testValue1");
+		final AttributeListValue attributeStringValue2 = attributesTestHelper.createM_AttributeValue(attrStringWithValue2, "testValue1");
 
 		final I_M_AttributeSetInstance asi2 = newInstance(I_M_AttributeSetInstance.class);
 		save(asi2);
@@ -193,10 +193,10 @@ public class ImmutableAttributeSetTest
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
 		final I_M_Attribute attrStringWithValue1 = attributesTestHelper.createM_Attribute("AttrStringWithValue", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
-		final I_M_AttributeValue attributeStringValue1 = attributesTestHelper.createM_AttributeValue(attrStringWithValue1, "testValue1");
+		final AttributeListValue attributeStringValue1 = attributesTestHelper.createM_AttributeValue(attrStringWithValue1, "testValue1");
 
 		final I_M_Attribute attrStringWithValue2 = attributesTestHelper.createM_Attribute("AttrStringWithValue2", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
-		final I_M_AttributeValue attributeStringValue2 = attributesTestHelper.createM_AttributeValue(attrStringWithValue2, "testValue2");
+		final AttributeListValue attributeStringValue2 = attributesTestHelper.createM_AttributeValue(attrStringWithValue2, "testValue2");
 
 		final I_M_AttributeSetInstance asi1 = newInstance(I_M_AttributeSetInstance.class);
 		save(asi1);

@@ -25,6 +25,7 @@ package de.metas.invoicecandidate.api.impl;
 
 import java.math.BigDecimal;
 
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
@@ -38,6 +39,8 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 @VisibleForTesting
 public final class InvoiceLineAttribute implements IInvoiceLineAttribute
@@ -50,16 +53,13 @@ public final class InvoiceLineAttribute implements IInvoiceLineAttribute
 	/**
 	 * @param attributeInstance attribute instance used to extract the informations from
 	 */
-	public InvoiceLineAttribute(final I_M_AttributeInstance attributeInstance)
+	public InvoiceLineAttribute(@NonNull final I_M_AttributeInstance attributeInstance)
 	{
-		super();
-
-		Check.assumeNotNull(attributeInstance, "attributeInstance not null");
-
-		//
+			//
 		// Build aggregation key
 		{
-			final I_M_Attribute attribute = attributeInstance.getM_Attribute();
+			final int attributeId = attributeInstance.getM_Attribute_ID();
+			final I_M_Attribute attribute = Services.get(IAttributeDAO.class).getAttributeById(attributeId);
 			final StringBuilder aggregationKey = new StringBuilder();
 			aggregationKey.append(attribute.getName());
 			aggregationKey.append("=");

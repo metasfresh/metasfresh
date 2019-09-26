@@ -6,11 +6,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -43,7 +44,7 @@ public class ASIBuilder
 		return new ASIBuilder();
 	}
 
-	private final Map<Integer, Object> attributeValues = new LinkedHashMap<>();
+	private final Map<AttributeId, Object> attributeValues = new LinkedHashMap<>();
 	private boolean skipNullAttributeValues = false;
 
 	public I_M_AttributeSetInstance build()
@@ -59,11 +60,11 @@ public class ASIBuilder
 		return asi;
 	}
 
-	private final void createAttributeInstance(final I_M_AttributeSetInstance asi, final int attributeId, final Object value)
+	private final void createAttributeInstance(final I_M_AttributeSetInstance asi, final AttributeId attributeId, final Object value)
 	{
 		final I_M_AttributeInstance ai = InterfaceWrapperHelper.newInstance(I_M_AttributeInstance.class, asi);
 		ai.setM_AttributeSetInstance(asi);
-		ai.setM_Attribute_ID(attributeId);
+		ai.setM_Attribute_ID(attributeId.getRepoId());
 
 		if (value == null)
 		{
@@ -76,7 +77,7 @@ public class ASIBuilder
 				ai.setValue(null);
 				ai.setValueNumber(null);
 				ai.setValueDate(null);
-				ai.setM_AttributeValue(null);
+				ai.setM_AttributeValue_ID(-1);
 			}
 		}
 		else if (value instanceof String)
@@ -92,11 +93,11 @@ public class ASIBuilder
 			final Timestamp valueDate = TimeUtil.asTimestamp((java.util.Date)value);
 			ai.setValueDate(valueDate);
 		}
-		else if (value instanceof I_M_AttributeValue)
+		else if (value instanceof AttributeListValue)
 		{
-			final I_M_AttributeValue av = (I_M_AttributeValue)value;
+			final AttributeListValue av = (AttributeListValue)value;
 			ai.setValue(av.getValue());
-			ai.setM_AttributeValue(av);
+			ai.setM_AttributeValue_ID(av.getId().getRepoId());
 		}
 		else
 		{
@@ -108,32 +109,31 @@ public class ASIBuilder
 
 	public ASIBuilder setAttribute(final I_M_Attribute attribute, final String value)
 	{
-		attributeValues.put(attribute.getM_Attribute_ID(), value);
+		attributeValues.put(AttributeId.ofRepoId(attribute.getM_Attribute_ID()), value);
 		return this;
 	}
 
 	public ASIBuilder setAttribute(final I_M_Attribute attribute, final BigDecimal value)
 	{
-		attributeValues.put(attribute.getM_Attribute_ID(), value);
+		attributeValues.put(AttributeId.ofRepoId(attribute.getM_Attribute_ID()), value);
 		return this;
 	}
 
 	public ASIBuilder setAttribute(final I_M_Attribute attribute, final java.util.Date value)
 	{
-		attributeValues.put(attribute.getM_Attribute_ID(), value);
+		attributeValues.put(AttributeId.ofRepoId(attribute.getM_Attribute_ID()), value);
 		return this;
 	}
 
-	public ASIBuilder setAttribute(final I_M_AttributeValue value)
+	public ASIBuilder setAttribute(final AttributeListValue value)
 	{
-		final I_M_Attribute attribute = value.getM_Attribute();
-		setAttribute(attribute, value);
+		attributeValues.put(value.getAttributeId(), value);
 		return this;
 	}
 
-	public ASIBuilder setAttribute(final I_M_Attribute attribute, final I_M_AttributeValue value)
+	public ASIBuilder setAttribute(final I_M_Attribute attribute, final AttributeListValue value)
 	{
-		attributeValues.put(attribute.getM_Attribute_ID(), value);
+		attributeValues.put(AttributeId.ofRepoId(attribute.getM_Attribute_ID()), value);
 		return this;
 	}
 

@@ -6,12 +6,12 @@ import java.time.LocalDate;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
 
 import de.metas.i18n.ITranslatableString;
@@ -151,12 +151,12 @@ public class AttributeSetDescriptionBuilderCommand
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
 		{
 			final AttributeValueId attributeValueId = attributeSet.getAttributeValueIdOrNull(attributeKey);
-			final I_M_AttributeValue attributeValue = attributeValueId != null
+			final AttributeListValue attributeValue = attributeValueId != null
 					? attributesRepo.retrieveAttributeValueOrNull(attribute, attributeValueId)
 					: null;
 			if (attributeValue != null)
 			{
-				return ASIDescriptionBuilderCommand.extractAttributeValueName(attributeValue);
+				return attributeValue.getNameTrl();
 			}
 			else
 			{

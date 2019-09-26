@@ -15,6 +15,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.CurrentAttributeValueContextProvider;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
@@ -22,7 +23,6 @@ import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.util.NamePair;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -497,7 +497,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		//
 		// Do not allow the M_AttributeValue to be null in this case. We're assuming that there are database entries for predefined values already.
 		// If you're writing automatic tests, you'll have to make some entries.
-		final I_M_AttributeValue attributeValue = attributeDAO.retrieveAttributeValueOrNull(attribute, valueStr);
+		final AttributeListValue attributeValue = attributeDAO.retrieveAttributeValueOrNull(attribute, valueStr);
 		Check.assumeNotNull(attributeValue, "M_AttributeValue was found for M_Attribute={}, M_Attribute.Value={}", attribute, valueStr);
 
 		return attributeValue.getName();

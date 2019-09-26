@@ -26,13 +26,13 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Properties;
 
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -261,7 +261,7 @@ import de.metas.util.Services;
 	}
 
 	@Override
-	public final I_M_AttributeValue generateAttributeValue(final Properties ctx, final int tableId, final int recordId, final boolean isSOTrx, final String trxName)
+	public final AttributeListValue generateAttributeValue(final Properties ctx, final int tableId, final int recordId, final boolean isSOTrx, final String trxName)
 	{
 		throw new UnsupportedOperationException("Not supported");
 	}

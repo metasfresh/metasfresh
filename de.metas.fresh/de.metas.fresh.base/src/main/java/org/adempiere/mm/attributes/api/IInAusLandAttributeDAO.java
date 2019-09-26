@@ -26,8 +26,8 @@ package org.adempiere.mm.attributes.api;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.util.ISingletonService;
 
@@ -50,7 +50,7 @@ public interface IInAusLandAttributeDAO extends ISingletonService
 	 * @param inAusLand
 	 * @return the value of In/Ausland attribute (if exists)
 	 */
-	I_M_AttributeValue retrieveInAusLandAttributeValue(Properties ctx, String inAusLand);
+	AttributeListValue retrieveInAusLandAttributeValue(Properties ctx, String inAusLand);
 
 	I_M_Attribute retrieveInAusLandAttribute(Properties ctx);
 

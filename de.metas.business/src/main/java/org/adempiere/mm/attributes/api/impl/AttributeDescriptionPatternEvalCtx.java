@@ -5,12 +5,12 @@ import java.util.Date;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Evaluatee2;
 import org.compiere.util.TimeUtil;
@@ -178,7 +178,7 @@ final class AttributeDescriptionPatternEvalCtx implements Evaluatee2
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
 		{
-			final I_M_AttributeValue attributeValue = attributeValueId != null ? attributesRepo.retrieveAttributeValueOrNull(attribute, attributeValueId) : null;
+			final AttributeListValue attributeValue = attributeValueId != null ? attributesRepo.retrieveAttributeValueOrNull(attribute, attributeValueId) : null;
 			if (attributeValue != null)
 			{
 				return ASIDescriptionBuilderCommand.formatStringValue(attributeValue.getName());

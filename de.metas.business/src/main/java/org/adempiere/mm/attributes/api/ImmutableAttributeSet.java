@@ -16,11 +16,11 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.NullAttributeValueCallout;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -526,19 +526,19 @@ public final class ImmutableAttributeSet implements IAttributeSet
 			return this;
 		}
 
-		public Builder attributeValue(@NonNull final I_M_AttributeValue attributeValue)
+		public Builder attributeValue(@NonNull final AttributeListValue attributeValue)
 		{
-			final I_M_Attribute attribute = attributesRepo().getAttributeById(attributeValue.getM_Attribute_ID());
+			final I_M_Attribute attribute = attributesRepo().getAttributeById(attributeValue.getAttributeId());
 			final String value = attributeValue.getValue();
-			final AttributeValueId attributeValueId = AttributeValueId.ofRepoId(attributeValue.getM_AttributeValue_ID());
+			final AttributeValueId attributeValueId = attributeValue.getId();
 
 			attributeValue(attribute, value, attributeValueId);
 			return this;
 		}
 
-		public Builder attributeValues(@NonNull final I_M_AttributeValue... attributeValues)
+		public Builder attributeValues(@NonNull final AttributeListValue... attributeValues)
 		{
-			for (I_M_AttributeValue attributeValue : attributeValues)
+			for (AttributeListValue attributeValue : attributeValues)
 			{
 				attributeValue(attributeValue);
 			}

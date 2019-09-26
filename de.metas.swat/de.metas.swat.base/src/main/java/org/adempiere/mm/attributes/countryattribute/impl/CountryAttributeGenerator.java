@@ -25,13 +25,15 @@ package org.adempiere.mm.attributes.countryattribute.impl;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.countryattribute.ICountryAttributeDAO;
 import org.adempiere.mm.attributes.spi.AbstractAttributeValueGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 
@@ -57,18 +59,17 @@ public class CountryAttributeGenerator extends AbstractAttributeValueGenerator
 	}
 
 	@Override
-	public I_M_AttributeValue generateAttributeValue(Properties ctx, int tableId, int recordId, boolean isSOTrx, String trxName)
+	public AttributeListValue generateAttributeValue(Properties ctx, int tableId, int recordId, boolean isSOTrx, String trxName)
 	{
 		Check.assume(I_C_Country.Table_ID == tableId, "Wrong table.");
 		final I_C_Country country = InterfaceWrapperHelper.create(ctx, recordId, I_C_Country.class, trxName);
-		final I_M_AttributeValue countryValue = InterfaceWrapperHelper.create(ctx, I_M_AttributeValue.class, trxName);
 
 		final AttributeId attributeId = Services.get(ICountryAttributeDAO.class).retrieveCountryAttributeId(Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
-		countryValue.setM_Attribute_ID(AttributeId.toRepoId(attributeId));
-		countryValue.setName(country.getName());
-		countryValue.setValue(country.getCountryCode());
-		InterfaceWrapperHelper.save(countryValue);
 
-		return countryValue;
+		return Services.get(IAttributeDAO.class).createAttributeValue(AttributeListValueCreateRequest.builder()
+				.attributeId(attributeId)
+				.value(country.getCountryCode())
+				.name(country.getName())
+				.build());
 	}
 }

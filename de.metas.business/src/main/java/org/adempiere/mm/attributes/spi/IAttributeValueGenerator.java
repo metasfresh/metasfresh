@@ -27,9 +27,9 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Properties;
 
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 
 /**
  * If possible, instead of implementing this interface, please consider extending the {@link AbstractAttributeValueGenerator}.
@@ -111,5 +111,5 @@ public interface IAttributeValueGenerator extends IAttributeValueHandler
 	 * @return
 	 * @throws UnsupportedOperationException if value cannot be generated
 	 */
-	I_M_AttributeValue generateAttributeValue(Properties ctx, int tableId, int recordId, boolean isSOTrx, String trxName);
+	AttributeListValue generateAttributeValue(Properties ctx, int tableId, int recordId, boolean isSOTrx, String trxName);
 }

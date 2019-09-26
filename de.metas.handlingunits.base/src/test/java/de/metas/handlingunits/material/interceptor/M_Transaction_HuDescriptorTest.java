@@ -9,8 +9,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Transaction;
@@ -115,11 +115,10 @@ public class M_Transaction_HuDescriptorTest
 		attributeStorage.saveChangesIfNeeded();
 
 		// retrieve our countryMadeIn attribute-value and make sure that the AttributeKeys tool will be able to work with it
-		final I_M_AttributeValue attributeValue = attributesRepo.retrieveAttributeValueOrNull(
+		final AttributeListValue attributeValue = attributesRepo.retrieveAttributeValueOrNull(
 				helper.attr_CountryMadeIn,
 				HUTestHelper.COUNTRYMADEIN_RO);
 		assertThat(attributeValue).isNotNull();
-		assertThat(attributeValue.getM_AttributeValue_ID()).isGreaterThan(0);
 
 		//
 		// invoke the method under test
@@ -137,7 +136,7 @@ public class M_Transaction_HuDescriptorTest
 
 		assertThat(productDescriptor.getProductId()).isEqualTo(helper.pTomato.getM_Product_ID());
 		assertThat(productDescriptor.getStorageAttributesKey()).isNotEqualTo(AttributesKey.NONE);
-		assertThat(productDescriptor.getStorageAttributesKey().getParts()).containsOnly(AttributesKeyPart.ofInteger(attributeValue.getM_AttributeValue_ID()));
+		assertThat(productDescriptor.getStorageAttributesKey().getParts()).containsOnly(AttributesKeyPart.ofAttributeValueId(attributeValue.getId()));
 	}
 
 	private I_M_InOutLine createInOutLine()

@@ -133,7 +133,7 @@ public class CommonInvoiceLineAttributeAggregatorTest
 	private IInvoiceLineAttribute createInvoiceLineAttribute(final I_M_Attribute attribute, final String value)
 	{
 		final I_M_AttributeInstance ai = InterfaceWrapperHelper.create(ctx, I_M_AttributeInstance.class, ITrx.TRXNAME_None);
-		ai.setM_Attribute(attribute);
+		ai.setM_Attribute_ID(attribute.getM_Attribute_ID());
 		ai.setValue(value);
 
 		return new InvoiceLineAttribute(ai);

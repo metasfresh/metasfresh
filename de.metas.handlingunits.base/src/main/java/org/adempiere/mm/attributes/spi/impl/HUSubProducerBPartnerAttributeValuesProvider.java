@@ -6,13 +6,14 @@ import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.ISubProducerAttributeDAO;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
@@ -63,7 +64,7 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 {
 	static final String ATTRIBUTEVALUETYPE = X_M_Attribute.ATTRIBUTEVALUETYPE_Number;
 
-	private static final String CACHE_PREFIX = I_M_AttributeValue.Table_Name;
+	private static final String CACHE_PREFIX = IAttributeDAO.CACHEKEY_ATTRIBUTE_VALUE;
 
 	/**
 	 * Cache: C_BPartner_ID to list of sub-producer partners (as KeyNamePair)
@@ -249,9 +250,9 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 	}
 
 	@Override
-	public int getM_AttributeValue_ID(final Object valueKey)
+	public AttributeValueId getAttributeValueIdOrNull(final Object valueKey)
 	{
-		return -1;
+		return null;
 	}
 
 	/**

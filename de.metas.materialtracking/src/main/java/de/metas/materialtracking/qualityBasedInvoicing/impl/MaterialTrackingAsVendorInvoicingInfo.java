@@ -3,12 +3,14 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
 import org.compiere.model.I_M_PriceList_Version;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.materialtracking.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 import de.metas.pricing.PricingSystemId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Wraps an {@link I_C_Invoice_Candidate} and make it behave like {@link IVendorInvoicingInfo}.
@@ -92,7 +94,7 @@ import de.metas.util.Check;
 	{
 		if (_flatrateTerm == null)
 		{
-			_flatrateTerm = materialTracking.getC_Flatrate_Term();
+			_flatrateTerm = Services.get(IFlatrateDAO.class).getById(materialTracking.getC_Flatrate_Term_ID());
 
 			// shouldn't be null because we prevent even material-tracking purchase orders without a flatrate term.
 			Check.errorIf(_flatrateTerm == null, "M_Material_Tracking {} has no flatrate term", materialTracking);

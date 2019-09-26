@@ -7,10 +7,9 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.api.AttributeListValueChangeRequest;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.inout.QualityNoteId;
 import de.metas.inout.api.IQualityNoteDAO;
@@ -68,46 +67,37 @@ public class QualityNoteDAO implements IQualityNoteDAO
 	}
 
 	@Override
-	public I_M_AttributeValue retrieveAttribueValueForQualityNote(final I_M_QualityNote qualityNote)
-	{
-
-		return createQueryForQualityNote(qualityNote).firstOnly(I_M_AttributeValue.class);
-	}
-
-	private IQuery<I_M_AttributeValue> createQueryForQualityNote(final I_M_QualityNote qualityNote)
+	public AttributeListValue retrieveAttribueValueForQualityNote(final I_M_QualityNote qualityNote)
 	{
 		final AttributeId attributeId = getQualityNoteAttributeId();
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeValue.class, qualityNote)
-				.addEqualsFilter(I_M_AttributeValue.COLUMNNAME_M_Attribute_ID, attributeId)
-				.addEqualsFilter(I_M_AttributeValue.COLUMNNAME_Value, qualityNote.getValue())
-				// we want so sync QualityNote with AttributeValue completely, even for inactive records so the OnlyActive clause is not used
-				.create();
+		return Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(attributeId, qualityNote.getValue());
 	}
 
 	@Override
 	public void deleteAttribueValueForQualityNote(final I_M_QualityNote qualityNote)
 	{
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 
-		createQueryForQualityNote(qualityNote).delete();
+		final AttributeId attributeId = getQualityNoteAttributeId();
+		attributesRepo.deleteAttributeValueByCode(attributeId, qualityNote.getValue());
 	}
 
 	@Override
 	public void modifyAttributeValueName(final I_M_QualityNote qualityNote)
 	{
-		final I_M_AttributeValue attribueValueForQualityNote = retrieveAttribueValueForQualityNote(qualityNote);
-
-		if (attribueValueForQualityNote == null)
+		final AttributeListValue attributeValueForQualityNote = retrieveAttribueValueForQualityNote(qualityNote);
+		if (attributeValueForQualityNote == null)
 		{
 			// shall not happen. All M_QualityNote entries shall have a similar M_AttributeValue
 			return;
 		}
 
-		final String noteName = qualityNote.getName();
-
-		attribueValueForQualityNote.setName(noteName);
-		attribueValueForQualityNote.setIsActive(qualityNote.isActive());
-
-		InterfaceWrapperHelper.save(attribueValueForQualityNote);
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		attributesRepo.changeAttributeValue(AttributeListValueChangeRequest.builder()
+				.id(attributeValueForQualityNote.getId())
+				.name(qualityNote.getName())
+				.active(qualityNote.isActive())
+				.build());
 	}
 
 }

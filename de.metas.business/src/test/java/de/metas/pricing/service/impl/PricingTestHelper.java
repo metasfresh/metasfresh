@@ -6,6 +6,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.model.I_C_PricingRule;
@@ -14,7 +18,6 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -75,12 +78,12 @@ public class PricingTestHelper
 	private I_C_UOM defaultUOM;
 
 	public I_M_Attribute attr_Country;
-	public I_M_AttributeValue attr_Country_DE;
-	public I_M_AttributeValue attr_Country_CH;
+	public AttributeListValue attr_Country_DE;
+	public AttributeListValue attr_Country_CH;
 
 	public I_M_Attribute attr_Label;
-	public I_M_AttributeValue attr_Label_Bio;
-	public final I_M_AttributeValue attr_Label_NULL = null;
+	public AttributeListValue attr_Label_Bio;
+	public final AttributeListValue attr_Label_NULL = null;
 
 	private final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoId(1);
 
@@ -196,14 +199,13 @@ public class PricingTestHelper
 		return attribute;
 	}
 
-	public final I_M_AttributeValue createM_AttributeValue(final I_M_Attribute attribute, final String value)
+	public final AttributeListValue createM_AttributeValue(final I_M_Attribute attribute, final String value)
 	{
-		final I_M_AttributeValue av = InterfaceWrapperHelper.newInstance(I_M_AttributeValue.class, attribute);
-		av.setM_Attribute(attribute);
-		av.setValue(value);
-		av.setName(value);
-		InterfaceWrapperHelper.save(av);
-		return av;
+		return Services.get(IAttributeDAO.class).createAttributeValue(AttributeListValueCreateRequest.builder()
+				.attributeId(AttributeId.ofRepoId(attribute.getM_Attribute_ID()))
+				.value(value)
+				.name(value)
+				.build());
 	}
 
 	public final IAttributeSetInstanceAware asiAware(final I_M_AttributeSetInstance asi)

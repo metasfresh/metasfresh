@@ -51,7 +51,10 @@ import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.adempiere.mm.attributes.spi.impl.WeightGrossAttributeValueCallout;
@@ -68,7 +71,6 @@ import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Transaction;
@@ -1214,11 +1216,12 @@ public class HUTestHelper
 
 	public void createAttributeListValue(final org.compiere.model.I_M_Attribute attribute, final String value, final String name)
 	{
-		final I_M_AttributeValue alv = InterfaceWrapperHelper.newInstance(I_M_AttributeValue.class, attribute);
-		alv.setM_Attribute_ID(attribute.getM_Attribute_ID());
-		alv.setValue(value);
-		alv.setName(name);
-		InterfaceWrapperHelper.save(alv);
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		attributesRepo.createAttributeValue(AttributeListValueCreateRequest.builder()
+				.attributeId(AttributeId.ofRepoId(attribute.getM_Attribute_ID()))
+				.value(value)
+				.name(name)
+				.build());
 	}
 
 	public IAttributeValue createAttributeValue(final org.compiere.model.I_M_Attribute attribute, final Object value)

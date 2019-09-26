@@ -1,5 +1,7 @@
 package org.adempiere.mm.attributes;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -60,5 +62,10 @@ public class AttributeValueId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static boolean equals(final AttributeValueId id1, final AttributeValueId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

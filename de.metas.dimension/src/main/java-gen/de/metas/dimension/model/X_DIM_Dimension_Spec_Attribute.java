@@ -14,7 +14,7 @@ public class X_DIM_Dimension_Spec_Attribute extends org.compiere.model.PO implem
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1849412027L;
+	private static final long serialVersionUID = -1213825403L;
 
     /** Standard Constructor */
     public X_DIM_Dimension_Spec_Attribute (Properties ctx, int DIM_Dimension_Spec_Attribute_ID, String trxName)
@@ -24,10 +24,8 @@ public class X_DIM_Dimension_Spec_Attribute extends org.compiere.model.PO implem
         {
 			setDIM_Dimension_Spec_Attribute_ID (0);
 			setDIM_Dimension_Spec_ID (0);
-			setIsIncludeAllAttributeValues (true);
-// Y
-			setIsValueAggregate (false);
-// N
+			setIsIncludeAllAttributeValues (true); // Y
+			setIsValueAggregate (false); // N
 			setM_Attribute_ID (0);
         } */
     }
@@ -60,7 +58,7 @@ public class X_DIM_Dimension_Spec_Attribute extends org.compiere.model.PO implem
 	public static final String ATTRIBUTEVALUETYPE_List = "L";
 	/** Date = D */
 	public static final String ATTRIBUTEVALUETYPE_Date = "D";
-	/** Set Attribute Value Type.
+	/** Set Merkmals Wert Typ.
 		@param AttributeValueType 
 		Type of Attribute Value
 	  */
@@ -71,7 +69,7 @@ public class X_DIM_Dimension_Spec_Attribute extends org.compiere.model.PO implem
 		set_Value (COLUMNNAME_AttributeValueType, AttributeValueType);
 	}
 
-	/** Get Attribute Value Type.
+	/** Get Merkmals Wert Typ.
 		@return Type of Attribute Value
 	  */
 	@Override
@@ -103,7 +101,7 @@ public class X_DIM_Dimension_Spec_Attribute extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public de.metas.dimension.model.I_DIM_Dimension_Spec getDIM_Dimension_Spec() throws RuntimeException
+	public de.metas.dimension.model.I_DIM_Dimension_Spec getDIM_Dimension_Spec()
 	{
 		return get_ValueAsPO(COLUMNNAME_DIM_Dimension_Spec_ID, de.metas.dimension.model.I_DIM_Dimension_Spec.class);
 	}
@@ -180,18 +178,6 @@ public class X_DIM_Dimension_Spec_Attribute extends org.compiere.model.PO implem
 			return "Y".equals(oo);
 		}
 		return false;
-	}
-
-	@Override
-	public org.compiere.model.I_M_Attribute getM_Attribute() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class);
-	}
-
-	@Override
-	public void setM_Attribute(org.compiere.model.I_M_Attribute M_Attribute)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class, M_Attribute);
 	}
 
 	/** Set Merkmal.

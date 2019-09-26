@@ -25,10 +25,10 @@ package org.adempiere.mm.attributes.api.impl;
 
 import java.util.Set;
 
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,11 +56,11 @@ public class AttributeDAOTest
 	public void test_retrieveAttributeValueSubstitutes()
 	{
 		final I_M_Attribute attribute = helper.createM_Attribute_TypeList("attribute");
-		final I_M_AttributeValue av_A_B = helper.createM_AttributeValue(attribute, "A&B");
-		final I_M_AttributeValue av_A_C = helper.createM_AttributeValue(attribute, "A&C");
-		final I_M_AttributeValue av_A = helper.createM_AttributeValue(attribute, "A");
-		final I_M_AttributeValue av_B = helper.createM_AttributeValue(attribute, "B");
-		final I_M_AttributeValue av_C = helper.createM_AttributeValue(attribute, "C");
+		final AttributeListValue av_A_B = helper.createM_AttributeValue(attribute, "A&B");
+		final AttributeListValue av_A_C = helper.createM_AttributeValue(attribute, "A&C");
+		final AttributeListValue av_A = helper.createM_AttributeValue(attribute, "A");
+		final AttributeListValue av_B = helper.createM_AttributeValue(attribute, "B");
+		final AttributeListValue av_C = helper.createM_AttributeValue(attribute, "C");
 		helper.createM_AttributeValue(attribute, "D");
 		helper.createM_AttributeValue(attribute, "E");
 		helper.createM_AttributeValue(attribute, "F");

@@ -9,13 +9,13 @@ import java.util.function.Predicate;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.TimeUtil;
 
@@ -228,7 +228,7 @@ public final class AttributesKeys
 				}
 			}
 
-			for (final I_M_AttributeValue attributeValueRecord : attributesRepo().retrieveAttributeValuesByIds(attributeValueIds))
+			for (final AttributeListValue attributeValueRecord : attributesRepo().retrieveAttributeValuesByIds(attributeValueIds))
 			{
 				builder.attributeValue(attributeValueRecord);
 			}

@@ -25,9 +25,9 @@ package org.adempiere.mm.attributes.countryattribute;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.util.ISingletonService;
 
@@ -51,7 +51,7 @@ public interface ICountryAttributeDAO extends ISingletonService
 	 * de.metas.swat.CountryAttributeAction.
 	 * 
 	 */
-	I_M_AttributeValue retrieveAttributeValue(Properties ctx, I_C_Country country, boolean includeInactive);
+	AttributeListValue retrieveAttributeValue(Properties ctx, I_C_Country country, boolean includeInactive);
 
 	I_M_Attribute retrieveCountryAttribute(Properties ctx);
 

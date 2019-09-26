@@ -25,6 +25,8 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
@@ -70,11 +72,11 @@ public class MAttribute extends X_M_Attribute
 	 * @param soTrx may be null; if set, then only return values with <code>AvailableTrx = SO</code> (for <code>true</code>) or <code>AvailableTrx = PO</code> (for <code>false</code>).
 	 * @return Values or null if not list
 	 */
-	public I_M_AttributeValue[] getMAttributeValues(final SOTrx soTrx)
+	public AttributeListValue[] getMAttributeValues(final SOTrx soTrx)
 	{
 		if (ATTRIBUTEVALUETYPE_List.equals(getAttributeValueType()))
 		{
-			final List<I_M_AttributeValue> list = new ArrayList<>();
+			final List<AttributeListValue> list = new ArrayList<>();
 			if (!isMandatory())
 			{
 				list.add(null);
@@ -82,7 +84,7 @@ public class MAttribute extends X_M_Attribute
 			//
 			list.addAll(Services.get(IAttributeDAO.class).retrieveFilteredAttributeValues(this, soTrx));
 
-			return list.toArray(new I_M_AttributeValue[list.size()]);
+			return list.toArray(new AttributeListValue[list.size()]);
 		}
 		else
 		{
@@ -127,9 +129,9 @@ public class MAttribute extends X_M_Attribute
 	 * The method makes sure that there is an Attribute Instance for the given <code>M_AttributeSetInstance_ID</code> and that it has the given <code>value</code> value.
 	 *
 	 * @param M_AttributeSetInstance_ID id
-	 * @param attributeValue the value to use. <b>We are using {@link I_M_AttributeValue#getValue()}, not <code>getName</code></b> (task 06907)
+	 * @param attributeValue the value to use. <b>We are using {@link AttributeListValue#getValue()}, not <code>getName</code></b> (task 06907)
 	 */
-	public void setMAttributeInstance(final int M_AttributeSetInstance_ID, final I_M_AttributeValue attributeValue)
+	public void setMAttributeInstance(final int M_AttributeSetInstance_ID, final AttributeListValue attributeValue)
 	{
 		// task 07948
 		// note: in fact there is an asi with ID = null (created in 2000), but we want to ignore it;
@@ -138,16 +140,16 @@ public class MAttribute extends X_M_Attribute
 
 		//
 		// Extract M_AttributeValue_ID and Value
-		final int attributeValueId;
+		final AttributeValueId attributeValueId;
 		final String value;
 		if (attributeValue != null)
 		{
-			attributeValueId = attributeValue.getM_AttributeValue_ID();
+			attributeValueId = attributeValue.getId();
 			value = attributeValue.getValue(); // 06907: store the value, not the name!
 		}
 		else
 		{
-			attributeValueId = 0;
+			attributeValueId = null;
 			value = null;
 		}
 
@@ -156,16 +158,18 @@ public class MAttribute extends X_M_Attribute
 		MAttributeInstance instance = getMAttributeInstance(M_AttributeSetInstance_ID);
 		if (instance == null)
 		{
-			instance = new MAttributeInstance(getCtx(), getM_Attribute_ID(),
+			instance = new MAttributeInstance(
+					getCtx(),
+					getM_Attribute_ID(),
 					M_AttributeSetInstance_ID,
-					attributeValueId,
+					AttributeValueId.toRepoId(attributeValueId),
 					value,
 					ITrx.TRXNAME_ThreadInherited);
 		}
 
 		//
 		// Update the attribute instance & save
-		instance.setM_AttributeValue(attributeValue);
+		instance.setM_AttributeValue_ID(AttributeValueId.toRepoId(attributeValueId));
 		instance.setValue(value);
 		InterfaceWrapperHelper.save(instance);
 	}
@@ -252,7 +256,7 @@ public class MAttribute extends X_M_Attribute
 		if (instance == null)
 		{
 			instance = new MAttributeInstance(getCtx(), 0, ITrx.TRXNAME_ThreadInherited);
-			instance.setM_Attribute(this);
+			instance.setM_Attribute_ID(getM_Attribute_ID());
 			instance.setM_AttributeSetInstance_ID(M_AttributeSetInstance_ID);
 		}
 

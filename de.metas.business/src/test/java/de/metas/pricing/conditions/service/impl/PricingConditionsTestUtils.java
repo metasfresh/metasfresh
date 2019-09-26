@@ -5,9 +5,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_DiscountSchemaLine;
@@ -18,6 +21,7 @@ import org.junit.Ignore;
 
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -97,7 +101,7 @@ class PricingConditionsTestUtils
 				.build();
 	}
 
-	public static PricingConditionsBreakQuery createQueryForQtyAndAttributeValues(final I_M_Product product, final int qty, final I_M_AttributeValue... attributeValues)
+	public static PricingConditionsBreakQuery createQueryForQtyAndAttributeValues(final I_M_Product product, final int qty, final AttributeListValue... attributeValues)
 	{
 		return PricingConditionsBreakQuery.builder()
 				.product(extractProductAndCategoryId(product))
@@ -114,13 +118,13 @@ class PricingConditionsTestUtils
 		return ProductAndCategoryAndManufacturerId.of(product.getM_Product_ID(), product.getM_Product_Category_ID(), product.getManufacturer_ID());
 	}
 
-	public static I_M_AttributeValue createAttrValue(final I_M_Attribute attr, final String attrValueName)
+	public static AttributeListValue createAttrValue(final I_M_Attribute attr, final String attrValueName)
 	{
-		final I_M_AttributeValue attrValue = newInstance(I_M_AttributeValue.class);
-		attrValue.setM_Attribute(attr);
-		attrValue.setName(attrValueName);
-		save(attrValue);
-		return attrValue;
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		return attributesRepo.createAttributeValue(AttributeListValueCreateRequest.builder()
+				.attributeId(AttributeId.ofRepoId(attr.getM_Attribute_ID()))
+				.name(attrValueName)
+				.build());
 	}
 
 	public static I_M_Attribute createAttr(final String attrName)

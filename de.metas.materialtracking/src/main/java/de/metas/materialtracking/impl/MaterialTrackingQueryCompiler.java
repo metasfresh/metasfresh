@@ -1,7 +1,5 @@
 package de.metas.materialtracking.impl;
 
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.materialtracking
@@ -46,6 +44,7 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Helper class used to compile {@link IMaterialTrackingQuery} to actual {@link IQuery} or {@link IQueryBuilder}.
@@ -105,14 +104,14 @@ import de.metas.util.Services;
 		// M_Product_ID
 		if (productId > 0)
 		{
-			queryBuilder.addEqualsFilter(I_M_Material_Tracking.COLUMN_M_Product_ID, productId);
+			queryBuilder.addEqualsFilter(I_M_Material_Tracking.COLUMNNAME_M_Product_ID, productId);
 		}
 
 		//
 		// C_BPartner_ID
 		final int bpartnerId = queryVO.getC_BPartner_ID();
-		queryBuilder.addInArrayOrAllFilter(I_M_Material_Tracking.COLUMN_C_BPartner_ID, null, bpartnerId);
-		orderBy.addColumn(I_M_Material_Tracking.COLUMN_C_BPartner_ID, Direction.Descending, Nulls.Last);
+		queryBuilder.addInArrayOrAllFilter(I_M_Material_Tracking.COLUMNNAME_C_BPartner_ID, null, bpartnerId);
+		orderBy.addColumn(I_M_Material_Tracking.COLUMNNAME_C_BPartner_ID, Direction.Descending, Nulls.Last);
 
 		// TODO: ValidFrom, ValidTo
 
@@ -198,8 +197,8 @@ import de.metas.util.Services;
 			final int recordId = InterfaceWrapperHelper.getId(model);
 			final ICompositeQueryFilter<I_M_Material_Tracking_Ref> filter = queryBL
 					.createCompositeQueryFilter(I_M_Material_Tracking_Ref.class)
-					.addEqualsFilter(I_M_Material_Tracking_Ref.COLUMN_AD_Table_ID, adTableId)
-					.addEqualsFilter(I_M_Material_Tracking_Ref.COLUMN_Record_ID, recordId);
+					.addEqualsFilter(I_M_Material_Tracking_Ref.COLUMNNAME_AD_Table_ID, adTableId)
+					.addEqualsFilter(I_M_Material_Tracking_Ref.COLUMNNAME_Record_ID, recordId);
 
 			modelFilters.addFilter(filter);
 		}
@@ -231,7 +230,7 @@ import de.metas.util.Services;
 		// Create M_Material_Tracking_Ref query
 		final IQueryBuilder<I_M_Material_Tracking_Ref> materialTrackingRefQueryBuilder = queryBL
 				.createQueryBuilder(I_M_Material_Tracking_Ref.class, getCtx(), getTrxName())
-				.addEqualsFilter(I_M_Material_Tracking_Ref.COLUMN_AD_Table_ID, modelTableId)
+				.addEqualsFilter(I_M_Material_Tracking_Ref.COLUMNNAME_AD_Table_ID, modelTableId)
 				.addInSubQueryFilter(I_M_Material_Tracking_Ref.COLUMNNAME_Record_ID, modelKeyColumnName, modelsQuery.create());
 
 		return materialTrackingRefQueryBuilder;

@@ -13,31 +13,32 @@ package org.adempiere.mm.attributes.spi.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
 import org.adempiere.mm.attributes.api.IADRAttributeBL;
 import org.adempiere.mm.attributes.api.IADRAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.AbstractAttributeValueGenerator;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
 
 import de.metas.fresh.model.I_C_BPartner;
@@ -66,7 +67,7 @@ public class ADRAttributeGenerator extends AbstractAttributeValueGenerator
 	 * Creates an ADR attribute value for the C_BPartner which is specified by <code>tableId</code> and <code>recordId</code>.
 	 */
 	@Override
-	public I_M_AttributeValue generateAttributeValue(final Properties ctx, final int tableId, final int recordId, boolean isSOTrx, final String trxName)
+	public AttributeListValue generateAttributeValue(final Properties ctx, final int tableId, final int recordId, boolean isSOTrx, final String trxName)
 	{
 		final IContextAware context = new PlainContextAware(ctx, trxName);
 		final ITableRecordReference record = new TableRecordReference(tableId, recordId);
@@ -93,12 +94,10 @@ public class ADRAttributeGenerator extends AbstractAttributeValueGenerator
 
 		final String adrRegionName = adRefList.getName().getDefaultValue();
 
-		final I_M_AttributeValue adrAttributeValue = InterfaceWrapperHelper.create(ctx, I_M_AttributeValue.class, trxName);
-		adrAttributeValue.setM_Attribute(adrAttribute);
-		adrAttributeValue.setValue(adrRegionValue);
-		adrAttributeValue.setName(adrRegionName);
-		InterfaceWrapperHelper.save(adrAttributeValue);
-
-		return adrAttributeValue;
+		return Services.get(IAttributeDAO.class).createAttributeValue(AttributeListValueCreateRequest.builder()
+				.attributeId(AttributeId.ofRepoId(adrAttribute.getM_Attribute_ID()))
+				.value(adrRegionValue)
+				.name(adrRegionName)
+				.build());
 	}
 }

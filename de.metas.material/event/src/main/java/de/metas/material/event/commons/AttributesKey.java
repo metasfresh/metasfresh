@@ -3,8 +3,10 @@ package de.metas.material.event.commons;
 import java.util.Collection;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeValueId;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -92,6 +94,20 @@ public final class AttributesKey
 
 		return ofParts(IntStream.of(attributeValueIds)
 				.mapToObj(AttributesKeyPart::ofInteger)
+				.collect(ImmutableSet.toImmutableSet()));
+	}
+
+	@VisibleForTesting
+	@Deprecated
+	public static AttributesKey ofAttributeValueIds(final AttributeValueId... attributeValueIds)
+	{
+		if (attributeValueIds == null || attributeValueIds.length == 0)
+		{
+			return NONE;
+		}
+
+		return ofParts(Stream.of(attributeValueIds)
+				.map(AttributesKeyPart::ofAttributeValueId)
 				.collect(ImmutableSet.toImmutableSet()));
 	}
 

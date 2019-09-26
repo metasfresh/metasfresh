@@ -41,13 +41,13 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.ALayout;
 import org.compiere.apps.ALayoutConstraint;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.grid.ed.VComboBox;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MAttribute;
@@ -110,8 +110,10 @@ public class VAttributeGrid extends CPanel
 		m_attributes = retrieveAttributes(Env.getCtx(), true, true);
 		Vector<KeyNamePair> vector = new Vector<>();
 		vector.add(new KeyNamePair(0, "", null/* help */));
-		for (int i = 0; i < m_attributes.length; i++)
-			vector.add(toKeyNamePair(m_attributes[i]));
+		for (MAttribute m_attribute : m_attributes)
+		{
+			vector.add(toKeyNamePair(m_attribute));
+		}
 		attributeCombo1 = new CComboBox(vector);
 		selectPanel.add(attributeCombo1, null);
 		selectPanel.add(attributeLabel2, new ALayoutConstraint(1, 0));
@@ -191,7 +193,9 @@ public class VAttributeGrid extends CPanel
 	public void dispose()
 	{
 		if (m_frame != null)
+		{
 			m_frame.dispose();
+		}
 		m_frame = null;
 	}	// dispose
 
@@ -260,9 +264,13 @@ public class VAttributeGrid extends CPanel
 	public void stateChanged(ChangeEvent e)
 	{
 		if (e.getSource() != tabbedPane)
+		{
 			return;
+		}
 		if (tabbedPane.getSelectedIndex() == 1)
+		{
 			createGrid();
+		}
 	}	// stateChanged
 
 	/**
@@ -275,16 +283,24 @@ public class VAttributeGrid extends CPanel
 	{
 		// log.debug(e.toString());
 		if (e.getSource() == modeCombo)
+		{
 			createGrid();
+		}
 		else if (e.getActionCommand().equals(ConfirmPanel.A_OK))
 		{
 			if (tabbedPane.getSelectedIndex() == 0)
+			{
 				createGrid();
+			}
 			else
+			{
 				gridOK();
+			}
 		}
 		else if (e.getActionCommand().equals(ConfirmPanel.A_CANCEL))
+		{
 			m_frame.dispose();
+		}
 	}	// actionPerformed
 
 	private void gridOK()
@@ -305,7 +321,9 @@ public class VAttributeGrid extends CPanel
 			return;
 		}
 		else if (mode == MODE_VIEW)
-			;
+		{
+			
+		}
 		m_frame.dispose();
 	}	// gridOK
 
@@ -325,7 +343,9 @@ public class VAttributeGrid extends CPanel
 	private void createGrid()
 	{
 		if (attributeCombo1 == null || m_setting)
+		 {
 			return;		// init
+		}
 		int indexAttr1 = attributeCombo1.getSelectedIndex();
 		int indexAttr2 = attributeCombo2.getSelectedIndex();
 		if (indexAttr1 == indexAttr2)
@@ -338,17 +358,23 @@ public class VAttributeGrid extends CPanel
 		m_M_PriceList_Version_ID = 0;
 		KeyNamePair pl = (KeyNamePair)pickPriceList.getSelectedItem();
 		if (pl != null)
+		{
 			m_M_PriceList_Version_ID = pl.getKey();
+		}
 		m_M_Warehouse_ID = 0;
 		KeyNamePair wh = (KeyNamePair)pickWarehouse.getSelectedItem();
 		if (wh != null)
+		{
 			m_M_Warehouse_ID = wh.getKey();
+		}
 
 		// x dimension
 		int cols = 2;
-		I_M_AttributeValue[] xValues = null;
+		AttributeListValue[] xValues = null;
 		if (indexAttr1 > 0)
+		{
 			xValues = m_attributes[indexAttr1 - 1].getMAttributeValues(null);
+		}
 		if (xValues != null)
 		{
 			cols = xValues.length;
@@ -357,9 +383,11 @@ public class VAttributeGrid extends CPanel
 
 		// y dimension
 		int rows = 2;
-		I_M_AttributeValue[] yValues = null;
+		AttributeListValue[] yValues = null;
 		if (indexAttr2 > 0)
+		{
 			yValues = m_attributes[indexAttr2 - 1].getMAttributeValues(null);
+		}
 		if (yValues != null)
 		{
 			rows = yValues.length;
@@ -377,21 +405,29 @@ public class VAttributeGrid extends CPanel
 		{
 			for (int col = 0; col < cols; col++)
 			{
-				I_M_AttributeValue xValue = null;
+				AttributeListValue xValue = null;
 				if (xValues != null)
+				{
 					xValue = xValues[col];
-				I_M_AttributeValue yValue = null;
+				}
+				AttributeListValue yValue = null;
 				if (yValues != null)
+				{
 					yValue = yValues[row];
+				}
 				// log.debug("Row=" + row + " - Col=" + col);
 				//
 				if (row == 0 && col == 0)
 				{
 					CPanel descr = new CPanel(new GridLayout(2, 1, 0, 0));
 					if (xValues != null)
+					{
 						descr.add(new JLabel(m_attributes[indexAttr1 - 1].getName(), JLabel.TRAILING));
+					}
 					if (yValues != null)
+					{
 						descr.add(new JLabel(m_attributes[indexAttr2 - 1].getName()));
+					}
 					grid.add(descr);
 				}
 				else if (row == 0)	// column labels
@@ -401,14 +437,20 @@ public class VAttributeGrid extends CPanel
 						grid.add(new JLabel(xValue.getName(), JLabel.TRAILING));
 					}
 					else
+					{
 						grid.add(new JLabel());
+					}
 				}
 				else if (col == 0)	// row labels
 				{
 					if (yValue != null)
+					{
 						grid.add(new JLabel(yValue.getName()));
+					}
 					else
+					{
 						grid.add(new JLabel());
+					}
 				}
 				else
 				{
@@ -429,7 +471,7 @@ public class VAttributeGrid extends CPanel
 	 * @param yValue Y value
 	 * @return Panel with Info
 	 */
-	private CPanel getGridElement(I_M_AttributeValue xValue, I_M_AttributeValue yValue)
+	private CPanel getGridElement(AttributeListValue xValue, AttributeListValue yValue)
 	{
 		CPanel element = new CPanel();
 		element.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
@@ -438,17 +480,21 @@ public class VAttributeGrid extends CPanel
 		String sql = "SELECT * FROM M_Product WHERE IsActive='Y'";
 		// Product Attributes
 		if (xValue != null)
+		{
 			sql += " AND M_AttributeSetInstance_ID IN "
 					+ "(SELECT M_AttributeSetInstance_ID "
 					+ "FROM M_AttributeInstance "
-					+ "WHERE M_Attribute_ID=" + xValue.getM_Attribute_ID()
-					+ " AND M_AttributeValue_ID=" + xValue.getM_AttributeValue_ID() + ")";
+					+ "WHERE M_Attribute_ID=" + xValue.getAttributeId().getRepoId()
+					+ " AND M_AttributeValue_ID=" + xValue.getId().getRepoId()+ ")";
+		}
 		if (yValue != null)
+		{
 			sql += " AND M_AttributeSetInstance_ID IN "
 					+ "(SELECT M_AttributeSetInstance_ID "
 					+ "FROM M_AttributeInstance "
-					+ "WHERE M_Attribute_ID=" + yValue.getM_Attribute_ID()
-					+ " AND M_AttributeValue_ID=" + yValue.getM_AttributeValue_ID() + ")";
+					+ "WHERE M_Attribute_ID=" + yValue.getAttributeId().getRepoId()
+					+ " AND M_AttributeValue_ID=" + yValue.getId().getRepoId() + ")";
+		}
 		sql = Env.getUserRolePermissions().addAccessSQL(sql, "M_Product",
 				IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);
 		PreparedStatement pstmt = null;
@@ -474,7 +520,9 @@ public class VAttributeGrid extends CPanel
 		try
 		{
 			if (pstmt != null)
+			{
 				pstmt.close();
+			}
 			pstmt = null;
 		}
 		catch (Exception e)
@@ -547,9 +595,13 @@ public class VAttributeGrid extends CPanel
 		{
 			BigDecimal qty = MStorage.getQtyAvailable(m_M_Warehouse_ID, M_Product_ID.getRepoId(), 0, null);
 			if (qty == null)
+			{
 				formatted = "-";
+			}
 			else
+			{
 				formatted = m_qty.format(qty);
+			}
 		}
 		pe.add(new JLabel(formatted, JLabel.RIGHT), new GridBagConstraints(1, 1, 1, 1, .5, 0,
 				GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, ii, 0, 0));
@@ -572,9 +624,13 @@ public class VAttributeGrid extends CPanel
 		String sql = "SELECT * FROM M_Attribute "
 				+ "WHERE AD_Client_ID=? AND IsActive='Y'";
 		if (onlyProductAttributes)
+		{
 			sql += " AND IsInstanceAttribute='N'";
+		}
 		if (onlyListAttributes)
+		{
 			sql += " AND AttributeValueType='L'";
+		}
 		sql += " ORDER BY Name";
 		PreparedStatement pstmt = null;
 		try
@@ -583,7 +639,9 @@ public class VAttributeGrid extends CPanel
 			pstmt.setInt(1, AD_Client_ID);
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next())
+			{
 				list.add(new MAttribute(ctx, rs, null));
+			}
 			rs.close();
 			pstmt.close();
 			pstmt = null;
@@ -595,7 +653,9 @@ public class VAttributeGrid extends CPanel
 		try
 		{
 			if (pstmt != null)
+			{
 				pstmt.close();
+			}
 			pstmt = null;
 		}
 		catch (Exception e)

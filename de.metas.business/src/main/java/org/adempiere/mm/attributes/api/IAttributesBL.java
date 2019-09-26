@@ -30,7 +30,6 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.product.ProductId;
@@ -69,8 +68,6 @@ public interface IAttributesBL extends ISingletonService
 	 * @return {@link I_M_Attribute} or null
 	 */
 	I_M_Attribute getAttributeOrNull(ProductId productId, AttributeId attributeId);
-
-	boolean isSameTrx(I_M_AttributeValue attributeValue, boolean isSOTrx);
 
 	/**
 	 * @param attribute

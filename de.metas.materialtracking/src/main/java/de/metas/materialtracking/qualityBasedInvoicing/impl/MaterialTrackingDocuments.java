@@ -26,7 +26,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,6 +36,8 @@ import org.compiere.model.I_M_PricingSystem;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.engine.IDocument;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
@@ -145,7 +146,7 @@ import lombok.NonNull;
 		final I_M_Material_Tracking materialTracking = getM_Material_Tracking();
 
 		// note that at this point we also retrieve those PP_Orders that already have invoice candidates
-		final ArrayList<IQualityInspectionOrder> qualityInspectionOrders = new ArrayList<IQualityInspectionOrder>();
+		final ArrayList<IQualityInspectionOrder> qualityInspectionOrders = new ArrayList<>();
 		for (final I_PP_Order ppOrder : materialTrackingDAO.retrieveReferences(materialTracking, I_PP_Order.class))
 		{
 			if (!IDocument.STATUS_Closed.equals(ppOrder.getDocStatus())
@@ -166,16 +167,11 @@ import lombok.NonNull;
 
 		// task 08848: we need to order the QualityInspections by their production dates.
 		// Just ordering them by M_Material_Tracking_Ref_ID is not OK because some of data records in might have been created late.
-		Collections.sort(qualityInspectionOrders, new Comparator<IQualityInspectionOrder>()
-		{
-			@Override
-			public int compare(IQualityInspectionOrder o1, IQualityInspectionOrder o2)
-			{
-				final Timestamp date1 = materialTrackingPPOrderBL.getDateOfProduction(o1.getPP_Order());
-				final Timestamp date2 = materialTrackingPPOrderBL.getDateOfProduction(o2.getPP_Order());
+		Collections.sort(qualityInspectionOrders, (o1, o2) -> {
+			final Timestamp date1 = materialTrackingPPOrderBL.getDateOfProduction(o1.getPP_Order());
+			final Timestamp date2 = materialTrackingPPOrderBL.getDateOfProduction(o2.getPP_Order());
 
-				return date1.compareTo(date2);
-			}
+			return date1.compareTo(date2);
 		});
 		return qualityInspectionOrders;
 	}
@@ -243,14 +239,15 @@ import lombok.NonNull;
 	{
 		if (pricingInfo == null)
 		{
-			final I_M_PricingSystem pricingSystem = getM_Material_Tracking()
-					.getC_Flatrate_Term()
+			final I_M_Material_Tracking materialTracking = getM_Material_Tracking();
+			final I_C_Flatrate_Term flatrateTerm = Services.get(IFlatrateDAO.class).getById(materialTracking.getC_Flatrate_Term_ID());
+			final I_M_PricingSystem pricingSystem = flatrateTerm
 					.getC_Flatrate_Conditions()
 					.getM_PricingSystem();
 
 			pricingInfo = MaterialTrackingDocumentsPricingInfo
 					.builder()
-					.setM_Material_Tracking(getM_Material_Tracking())
+					.setM_Material_Tracking(materialTracking)
 
 			// note that we give to the builder also those that were already processed into invoice candidates,
 			// because it needs that information to distinguish InOutLines that were not yet issued

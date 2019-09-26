@@ -43,10 +43,8 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Attribute;
-import org.compiere.model.X_M_AttributeValue;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -186,32 +184,6 @@ public class AttributesBL implements IAttributesBL
 		}
 
 		return InterfaceWrapperHelper.create(attribute, I_M_Attribute.class);
-	}
-
-	@Override
-	public boolean isSameTrx(final I_M_AttributeValue attributeValue, final boolean isSOTrx)
-	{
-		final boolean attributeSOTrx;
-		final String attributeTrx = attributeValue.getAvailableTrx();
-		if (attributeTrx == null)
-		{
-			// always accept, return right away
-			return true;
-		}
-		else if (X_M_AttributeValue.AVAILABLETRX_SO.equals(attributeTrx))
-		{
-			attributeSOTrx = true;
-		}
-		else if (X_M_AttributeValue.AVAILABLETRX_PO.equals(attributeTrx))
-		{
-			attributeSOTrx = false;
-		}
-		else
-		{
-			throw new AdempiereException("@NotSupported@ @AvailableTrx@: " + attributeTrx);
-		}
-
-		return attributeSOTrx == isSOTrx;
 	}
 
 	@Override
