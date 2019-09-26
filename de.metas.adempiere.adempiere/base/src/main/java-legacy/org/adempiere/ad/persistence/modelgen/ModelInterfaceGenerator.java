@@ -141,6 +141,7 @@ public class ModelInterfaceGenerator
 			//
 			.add("org.compiere.model.I_C_DocType")
 			.add("org.compiere.model.I_M_Attribute")
+			.add("org.compiere.model.I_M_AttributeValue")
 			//
 			.add("de.metas.handlingunits.model.I_M_HU_PI_Attribute")
 			.add("de.metas.handlingunits.model.I_M_HU_PI_Item_Product")
@@ -274,6 +275,7 @@ public class ModelInterfaceGenerator
 
 		//
 		// Add: COLUMN_ColumnName = new ModelColumn...
+		if(!SKIP_ModelGettersAndSettersForReferencedClassNames.contains(referenceClassName))
 		{
 			// e.g. ModelColumn<I_C_Invoice, I_C_BPartner>
 			final StringBuilder modelColumnClassname = new StringBuilder()
@@ -295,7 +297,6 @@ public class ModelInterfaceGenerator
 					.append(", \"").append(columnName).append("\"")
 					.append(", ").append(referenceClassName == null ? "null" : referenceClassName + ".class")
 					.append(");");
-
 		}
 
 		//
