@@ -1,7 +1,6 @@
 package de.metas.bpartner.service;
 
 import java.util.Comparator;
-import java.util.Optional;
 
 /*
  * #%L
@@ -216,5 +215,5 @@ public interface IBPartnerBL extends ISingletonService
 
 	DeliveryViaRule getDeliveryViaRuleOrNull(BPartnerId bpartnerId, SOTrx soTrx);
 
-	Optional<ShipmentAllocationBestBeforePolicy> getBestBeforePolicy(BPartnerId bpartnerId);
+	ShipmentAllocationBestBeforePolicy getBestBeforePolicy(BPartnerId bpartnerId);
 }
