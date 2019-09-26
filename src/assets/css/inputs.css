@@ -725,10 +725,6 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     justify-content: space-between;
 }
 
-.input-secondary .lookup-widget-wrapper {
-    padding: .1rem .50rem;
-}
-
 .lookup-wrapper {
     display: flex;
     padding: 0;
@@ -783,6 +779,10 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     .input-dropdown-container  {
         width: 100%;
         min-width: 0;
+        padding: .3rem .5rem;
+    }
+
+    > .input-dropdown {
         padding: .3rem .5rem;
     }
 
