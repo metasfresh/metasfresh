@@ -14,7 +14,7 @@ import Tooltips from '../tooltips/Tooltips.js';
 import RawWidget from '../widget/RawWidget';
 import { openFilterBox, closeFilterBox } from '../../actions/WindowActions';
 import { parseDateWithCurrentTimezone } from '../../utils/documentListHelper';
-import { DATE_FIELDS } from '../../constants/Constants';
+import { DATE_FIELDS, DATE_FIELD_FORMATS } from '../../constants/Constants';
 class FiltersItem extends Component {
   constructor(props) {
     super(props);
@@ -370,6 +370,7 @@ class FiltersItem extends Component {
               <div className="col-sm-12">
                 {filter.parameters &&
                   filter.parameters.map((item, index) => {
+                    const { widgetType } = item;
                     item.field = item.parameterName;
 
                     return (
@@ -388,7 +389,11 @@ class FiltersItem extends Component {
                           )
                         }
                         handleChange={(property, value, id, valueTo) => {
-                          if (Moment.isMoment(value)) {
+                          if (
+                            (DATE_FIELD_FORMATS[widgetType] &&
+                              Moment.isMoment(value)) ||
+                            !DATE_FIELD_FORMATS[widgetType]
+                          ) {
                             this.setValue(
                               property,
                               value,
