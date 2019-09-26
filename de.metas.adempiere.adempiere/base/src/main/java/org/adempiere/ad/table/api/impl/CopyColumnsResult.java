@@ -1,6 +1,11 @@
-package de.metas.impexp;
+package org.adempiere.ad.table.api.impl;
+
+import java.util.Set;
+
+import com.google.common.collect.ImmutableSet;
 
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -28,13 +33,14 @@ import lombok.Value;
 
 @Value
 @Builder
-public class ImportTableDescriptor
+public class CopyColumnsResult
 {
 	@NonNull
-	String tableName;
-	@NonNull
-	String keyColumnName;
+	String targetTable;
 
-	String dataImportConfigIdColumnName;
-	String adIssueIdColumnName;
+	@NonNull
+	@Default
+	Set<String> newlyCreatedColumns = ImmutableSet.of();
+
+	boolean syncDatabase;
 }

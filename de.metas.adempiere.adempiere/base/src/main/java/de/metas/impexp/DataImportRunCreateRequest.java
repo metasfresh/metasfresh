@@ -1,5 +1,9 @@
 package de.metas.impexp;
 
+import javax.annotation.Nullable;
+
+import de.metas.organization.OrgId;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -28,13 +32,19 @@ import lombok.Value;
 
 @Value
 @Builder
-public class ImportTableDescriptor
+public class DataImportRunCreateRequest
 {
 	@NonNull
-	String tableName;
-	@NonNull
-	String keyColumnName;
+	final OrgId orgId;
 
-	String dataImportConfigIdColumnName;
-	String adIssueIdColumnName;
+	@NonNull
+	final UserId userId;
+
+	final boolean completeDocuments;
+
+	@NonNull
+	final ImpFormatId importFormatId;
+
+	@Nullable
+	final DataImportConfigId dataImportConfigId;
 }
