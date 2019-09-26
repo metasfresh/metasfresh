@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for C_BankStatement
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1037466959L;
+	private static final long serialVersionUID = 1754782029L;
 
     /** Standard Constructor */
     public X_C_BankStatement (Properties ctx, int C_BankStatement_ID, String trxName)
@@ -42,22 +25,16 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
         {
 			setC_BankStatement_ID (0);
 			setC_BP_BankAccount_ID (0);
-			setDocAction (null);
-// CO
-			setDocStatus (null);
-// DR
-			setEndingBalance (Env.ZERO);
-			setIsApproved (false);
-// N
-			setIsManual (true);
-// Y
-			setName (null);
-// @#Date@
-			setPosted (false);
-// N
+			setDocAction (null); // CO
+			setDocStatus (null); // DR
+			setDocumentNo (null);
+			setEndingBalance (BigDecimal.ZERO);
+			setIsApproved (false); // N
+			setIsManual (true); // Y
+			setName (null); // @#Date@
+			setPosted (false); // N
 			setProcessed (false);
-			setStatementDate (new Timestamp( System.currentTimeMillis() ));
-// @Date@
+			setStatementDate (new Timestamp( System.currentTimeMillis() )); // @Date@
         } */
     }
 
@@ -67,29 +44,13 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 3 - Client - Org 
-      */
-    @Override
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
     @Override
     protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuilder sb = new StringBuilder ("X_C_BankStatement[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	/** Set Anfangssaldo.
@@ -110,7 +71,7 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_BeginningBalance);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -140,7 +101,7 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 	}
 
 	@Override
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount() throws RuntimeException
+	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class);
 	}
@@ -171,6 +132,31 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 	public int getC_BP_BankAccount_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_BankAccount_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Belegart.
+		@param C_DocType_ID 
+		Belegart oder Verarbeitungsvorgaben
+	  */
+	@Override
+	public void setC_DocType_ID (int C_DocType_ID)
+	{
+		if (C_DocType_ID < 0) 
+			set_Value (COLUMNNAME_C_DocType_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
+	}
+
+	/** Get Belegart.
+		@return Belegart oder Verarbeitungsvorgaben
+	  */
+	@Override
+	public int getC_DocType_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -244,6 +230,8 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 	public static final String DOCACTION_Unlock = "XL";
 	/** WaitComplete = WC */
 	public static final String DOCACTION_WaitComplete = "WC";
+	/** UnClose = UC */
+	public static final String DOCACTION_UnClose = "UC";
 	/** Set Belegverarbeitung.
 		@param DocAction 
 		The targeted status of the document
@@ -273,10 +261,10 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 	public static final String DOCSTATUS_Drafted = "DR";
 	/** Completed = CO */
 	public static final String DOCSTATUS_Completed = "CO";
-	/** Genehmigt = AP */
-	public static final String DOCSTATUS_Genehmigt = "AP";
-	/** Nicht genehmigt = NA */
-	public static final String DOCSTATUS_NichtGenehmigt = "NA";
+	/** Approved = AP */
+	public static final String DOCSTATUS_Approved = "AP";
+	/** NotApproved = NA */
+	public static final String DOCSTATUS_NotApproved = "NA";
 	/** Voided = VO */
 	public static final String DOCSTATUS_Voided = "VO";
 	/** Invalid = IN */
@@ -285,14 +273,14 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 	public static final String DOCSTATUS_Reversed = "RE";
 	/** Closed = CL */
 	public static final String DOCSTATUS_Closed = "CL";
-	/** Unbekannt = ?? */
-	public static final String DOCSTATUS_Unbekannt = "??";
+	/** Unknown = ?? */
+	public static final String DOCSTATUS_Unknown = "??";
 	/** InProgress = IP */
 	public static final String DOCSTATUS_InProgress = "IP";
-	/** Warten auf Zahlung = WP */
-	public static final String DOCSTATUS_WartenAufZahlung = "WP";
-	/** Warten auf Bestätigung = WC */
-	public static final String DOCSTATUS_WartenAufBestaetigung = "WC";
+	/** WaitingPayment = WP */
+	public static final String DOCSTATUS_WaitingPayment = "WP";
+	/** WaitingConfirmation = WC */
+	public static final String DOCSTATUS_WaitingConfirmation = "WC";
 	/** Set Belegstatus.
 		@param DocStatus 
 		The current status of the document
@@ -313,7 +301,7 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
-	/** Set Document No.
+	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
@@ -323,7 +311,7 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Document No.
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
 	@Override
@@ -388,7 +376,7 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_EndingBalance);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -461,9 +449,7 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -471,21 +457,12 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
-
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public org.compiere.util.KeyNamePair getKeyNamePair() 
-    {
-        return new org.compiere.util.KeyNamePair(get_ID(), getName());
-    }
 
 	/** Set Verbucht.
 		@param Posted 
@@ -599,7 +576,7 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_StatementDifference);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

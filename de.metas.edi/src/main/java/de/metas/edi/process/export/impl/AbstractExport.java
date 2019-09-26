@@ -10,24 +10,24 @@ package de.metas.edi.process.export.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.process.rpl.exp.ExportHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.MEXPFormat;
 import org.compiere.model.MReplicationStrategy;
 import org.compiere.model.PO;
@@ -38,40 +38,37 @@ import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.process.export.IExport;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
- * 
+ *
  * Abstract base class to do the exporting. subclass this one to export data that is compatible with {@link I_EDI_Document} (such as {@link I_EDI_Desadv}).
  *
  * @param <T> type of the I_EDI_Document that shall be exported.
  */
-public abstract class AbstractExport<T extends I_EDI_Document> implements IExport<I_EDI_Document>
+public abstract class AbstractExport<T extends I_EDI_Document>
+		implements IExport<I_EDI_Document>
 {
 	private final T document;
 	private final String tableIdentifier;
-	private final int expClientId;
+	private final ClientId expClientId;
 
-	public AbstractExport(final T document, final String tableIdentifier, final int expClientId)
+	public AbstractExport(
+			@NonNull final T document,
+			@NonNull final String tableIdentifier,
+			@NonNull final ClientId expClientId)
 	{
-		super();
-
-		Check.assumeNotNull(document, "Document found");
 		this.document = document;
 
-		Check.assumeNotEmpty(tableIdentifier, "tableIdentifier not empty");
+		Check.assumeNotEmpty(tableIdentifier, "Parameter 'tableIdentifier' may not be empty");
 		this.tableIdentifier = tableIdentifier;
 
-		Check.assume(expClientId > 0, "Export AD_Client exists");
+		Check.assume(expClientId.isRegular(), "Parameter 'expClientId' needs to be non-System (AD_Client_ID>0); expClientId={}", expClientId);
 		this.expClientId = expClientId;
 	}
 
 	/**
 	 * Sends given document to ESB/EDI bus
-	 *
-	 * @param documentType
-	 * @param exportFormatName
-	 * @param tableName
-	 * @param columnName
 	 *
 	 * @throws Exception on any error
 	 */
@@ -86,26 +83,26 @@ public abstract class AbstractExport<T extends I_EDI_Document> implements IExpor
 				.setParameters(recordId)
 				.firstOnly(documentType);
 		final PO viewToExportPO = InterfaceWrapperHelper.getPO(viewToExport);
-		Check.errorIf(viewToExportPO == null, "Views {} has no record for document {}", tableName, document);
+		Check.errorIf(viewToExportPO == null, "View {} has no record for document {}", tableName, document);
 
 		final MEXPFormat exportFormat = fetchExportFormat(ctx, exportFormatName, trxName);
 		final ExportHelper exportHelper = new ExportHelper(ctx, expClientId);
 
-		Check.errorIf(exportHelper.getAD_ReplicationStrategy() == null, "Client {} has no AD_ReplicationStrategy");
+		Check.errorIf(exportHelper.getAD_ReplicationStrategy() == null, "Client {} has no AD_ReplicationStrategy", expClientId);
 
 		exportHelper.exportRecord(viewToExportPO,
 				exportFormat,
 				MReplicationStrategy.REPLICATION_DOCUMENT,
 				X_AD_ReplicationTable.REPLICATIONTYPE_Merge,
 				0 // ReplicationEvent = no event
-				);
+		);
 	}
 
 	private MEXPFormat fetchExportFormat(final Properties ctx, final String exportFormatName, final String trxName)
 	{
 		MEXPFormat expFormat = MEXPFormat.getFormatByValueAD_Client_IDAndVersion(ctx,
 				exportFormatName,
-				expClientId,
+				expClientId.getRepoId(),
 				"*", // version
 				trxName);
 
