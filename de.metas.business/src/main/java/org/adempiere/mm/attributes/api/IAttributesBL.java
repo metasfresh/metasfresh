@@ -38,6 +38,8 @@ import de.metas.util.ISingletonService;
 
 public interface IAttributesBL extends ISingletonService
 {
+	I_M_Attribute getAttributeById(AttributeId attributeId);
+
 	AttributeAction getAttributeAction(Properties ctx);
 
 	IAttributeValueGenerator getAttributeValueGenerator(org.compiere.model.I_M_Attribute attributeParam);

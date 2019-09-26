@@ -73,6 +73,12 @@ public class AttributesBL implements IAttributesBL
 	private static final MathContext DEFAULT_MATHCONTEXT = new MathContext(2, RoundingMode.HALF_UP);
 
 	@Override
+	public I_M_Attribute getAttributeById(@NonNull final AttributeId attributeId)
+	{
+		return Services.get(IAttributeDAO.class).getAttributeById(attributeId);
+	}
+
+	@Override
 	public AttributeAction getAttributeAction(final Properties ctx)
 	{
 		final String attributeActionCode = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_AttributeAction, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
@@ -268,8 +274,7 @@ public class AttributesBL implements IAttributesBL
 	@Override
 	public boolean isStorageRelevant(@NonNull final AttributeId attributeId)
 	{
-		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-		final I_M_Attribute attribute = attributesRepo.getAttributeById(attributeId);
+		final I_M_Attribute attribute = getAttributeById(attributeId);
 		return attribute.isStorageRelevant();
 	}
 }
