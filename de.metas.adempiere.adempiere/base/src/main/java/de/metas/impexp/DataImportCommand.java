@@ -117,7 +117,11 @@ final class DataImportCommand
 
 		final PInstanceId importRecordsSelectionId = createSelectionIdFromDataImportConfigId();
 		final ImportProcessResult validateResult = validateImportRecords(importRecordsSelectionId);
-		scheduleToImportAsync(importRecordsSelectionId);
+
+		if (!importFormat.isManualImport())
+		{
+			scheduleToImportAsync(importRecordsSelectionId);
+		}
 
 		return DataImportResult.builder()
 				.dataImportConfigId(dataImportConfigId)
