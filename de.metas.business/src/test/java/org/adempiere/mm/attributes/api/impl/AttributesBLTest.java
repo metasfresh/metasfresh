@@ -26,6 +26,7 @@ package org.adempiere.mm.attributes.api.impl;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.spi.AbstractAttributeValueGenerator;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.test.AdempiereTestHelper;
@@ -37,6 +38,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.metas.javaclasses.model.I_AD_JavaClass;
+import de.metas.util.Services;
 
 public class AttributesBLTest
 {
@@ -81,7 +83,7 @@ public class AttributesBLTest
 		AdempiereTestHelper.get().init();
 
 		helper = new AttributesTestHelper();
-		attributesBL = new AttributesBL();
+		attributesBL = (AttributesBL)Services.get(IAttributesBL.class);
 
 		attributeGenerator = helper.createAD_JavaClass(MockedAttributeValueGenerator.class.getName());
 	}
