@@ -45,6 +45,7 @@ final class OrderLineQuickInputCallout
 	}
 
 	private final IHUOrderBL huOrderBL = Services.get(IHUOrderBL.class);
+	private final IBPartnerBL bpartnersService = Services.get(IBPartnerBL.class);
 
 	private OrderLineQuickInputCallout()
 	{
@@ -97,12 +98,9 @@ final class OrderLineQuickInputCallout
 			return;
 		}
 
-		final ShipmentAllocationBestBeforePolicy bestBeforePolicy = Services.get(IBPartnerBL.class).getBestBeforePolicy(bpartnerId).orElse(null);
-		if (bestBeforePolicy != null)
-		{
-			final IOrderLineQuickInput quickInputModel = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
-			quickInputModel.setShipmentAllocation_BestBefore_Policy(bestBeforePolicy.getCode());
-		}
+		final ShipmentAllocationBestBeforePolicy bestBeforePolicy = bpartnersService.getBestBeforePolicy(bpartnerId);
+		final IOrderLineQuickInput quickInputModel = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
+		quickInputModel.setShipmentAllocation_BestBefore_Policy(bestBeforePolicy.getCode());
 	}
 
 }
