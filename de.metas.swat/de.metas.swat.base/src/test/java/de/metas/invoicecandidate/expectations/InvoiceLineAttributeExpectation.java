@@ -85,7 +85,7 @@ public class InvoiceLineAttributeExpectation<ParentExpectationType> extends Abst
 		//
 		// Attribute
 		final I_M_Attribute attributeExpected = this.attribute;
-		assertModelEquals(messageToUse.expect("attribute"), attributeExpected.getM_Attribute_ID(), attributeActualId);
+		assertEquals(messageToUse.expect("attribute"), attributeExpected.getM_Attribute_ID(), attributeActualId);
 
 		//
 		// Validates values
