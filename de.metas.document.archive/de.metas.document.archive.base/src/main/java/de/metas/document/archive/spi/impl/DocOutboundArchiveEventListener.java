@@ -230,10 +230,6 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry = Adempiere.getBean(DocOutboundLogMailRecipientRegistry.class);
 
 		final Optional<DocOutBoundRecipient> mailRecipient = docOutboundLogMailRecipientRegistry.invokeProvider(docOutboundLogRecord);
-		if (!mailRecipient.isPresent())
-		{
-			return;
-		}
 
 		mailRecipient.ifPresent(recipient -> updateRecordWithRecipient(docOutboundLogRecord, recipient));
 	}
