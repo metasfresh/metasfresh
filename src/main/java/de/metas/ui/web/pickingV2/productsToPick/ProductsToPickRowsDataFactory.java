@@ -90,7 +90,7 @@ class ProductsToPickRowsDataFactory
 	// services
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IBPartnerBL bpartnersService = Services.get(IBPartnerBL.class);
+	private final IBPartnerBL bpartnersService;
 	private final HUReservationService huReservationService;
 	private final PickingCandidateService pickingCandidateService;
 
@@ -111,11 +111,13 @@ class ProductsToPickRowsDataFactory
 
 	@Builder
 	private ProductsToPickRowsDataFactory(
+			@NonNull final IBPartnerBL bpartnersService,
 			@NonNull final HUReservationService huReservationService,
 			@NonNull final PickingCandidateService pickingCandidateService,
 			//
 			@NonNull final LookupValueByIdSupplier locatorLookup)
 	{
+		this.bpartnersService = bpartnersService;
 		this.huReservationService = huReservationService;
 		this.pickingCandidateService = pickingCandidateService;
 
