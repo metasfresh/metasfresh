@@ -61,7 +61,7 @@ public class PaymentStringProcessService
 	private static final transient Logger log = LogManager.getLogger(PaymentStringProcessService.class);
 	private static final String MSG_INVOICE_IS_NOT_COMPLETED = "de.metas.banking.process.paymentdocumentform.AlmightyKeeperOfEverything.InvoiceIsNotCompleted";
 	private static final String MSG_NO_INVOICE_SELECTED = "de.metas.banking.process.paymentdocumentform.AlmightyKeeperOfEverything.NoInvoiceSelected";
-	private static final String MSG_PAYMENT_REQUEST_FOR_INVOICE_ALREADY_EXISTS_EXCEPTION = "@PaymentRequestForInvoiceAlreadyExistsException@";
+	private static final String MSG_PAYMENT_REQUEST_FOR_INVOICE_ALREADY_EXISTS_EXCEPTION = "PaymentRequestForInvoiceAlreadyExistsException";
 	private static final String MSG_COULD_NOT_CREATE_PAYMENT_REQUEST = "de.metas.banking.process.paymentdocumentform.AlmightyKeeperOfEverything.CouldNotCreatePaymentRequest";
 
 	private final IPaymentStringBL paymentStringBL = Services.get(IPaymentStringBL.class);
