@@ -12,7 +12,7 @@ import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndAttributes;
-import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -39,16 +39,16 @@ import lombok.NonNull;
 
 final class OrderLineQuickInputCallout
 {
-	public static OrderLineQuickInputCallout newInstance()
-	{
-		return new OrderLineQuickInputCallout();
-	}
+	private final IHUOrderBL huOrderBL;
+	private final IBPartnerBL bpartnersService;
 
-	private final IHUOrderBL huOrderBL = Services.get(IHUOrderBL.class);
-	private final IBPartnerBL bpartnersService = Services.get(IBPartnerBL.class);
-
-	private OrderLineQuickInputCallout()
+	@Builder
+	private OrderLineQuickInputCallout(
+			@NonNull final IBPartnerBL bpartnersService,
+			@NonNull final IHUOrderBL huOrderBL)
 	{
+		this.bpartnersService = bpartnersService;
+		this.huOrderBL = huOrderBL;
 	}
 
 	public void onProductChanged(final ICalloutField calloutField)
