@@ -260,7 +260,8 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public I_M_AttributeValue retrieveAttributeValueOrNull(@NonNull final I_M_Attribute attribute, final String value)
 	{
-		return retrieveAttributeValueOrNull(attribute, value, false);
+		final boolean includeInactive = false;
+		return retrieveAttributeValueOrNull(attribute, value, includeInactive);
 	}
 
 	@Override
