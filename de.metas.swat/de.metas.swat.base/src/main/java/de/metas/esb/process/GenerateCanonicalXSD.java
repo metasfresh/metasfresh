@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.esb.process;
 
@@ -13,12 +13,12 @@ package de.metas.esb.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -63,21 +63,21 @@ import ch.qos.logback.classic.Level;
 import de.metas.esb.interfaces.I_EXP_Format;
 import de.metas.esb.util.CanonicalXSDGenerator;
 import de.metas.logging.LogManager;
+import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.process.JavaProcess;
 
 /**
  * @author tsa
- * 
+ *
  */
 public class GenerateCanonicalXSD extends JavaProcess
 {
 	private static final String PARAM_Target_Directory = "Target_Directory";
 	private String p_Target_Directory = null;
-	
+
 	private static final String PARAM_EntityType = "EntityType";
 	private String p_EntityType = null;
 	private boolean p_FilterBy_AD_Client_ID = true;
@@ -164,7 +164,7 @@ public class GenerateCanonicalXSD extends JavaProcess
 		final File directory = getTestModelDirectory();
 		final File file = new File(directory, getTestModelFileName(exportFormat));
 
-		final ExportHelper expHelper = new ExportHelper(getCtx(), getAD_Client_ID());
+		final ExportHelper expHelper = new ExportHelper(getCtx(), getClientID());
 		final IReplicationAccessContext racCtx = new ReplicationAccessContext(10, false); // TODO hardcoded
 
 		final Document doc = expHelper.exportRecord(
@@ -177,7 +177,7 @@ public class GenerateCanonicalXSD extends JavaProcess
 		if (doc == null)
 		{
 			addLog("Not creating test XML for format '"
-					+ exportFormat.getName() + "', because with AD_Client_ID=" + getAD_Client_ID() + "the system can't access any '"
+					+ exportFormat.getName() + "', because with AD_Client_ID=" + getClientID() + "the system can't access any '"
 					+ exportFormat.getAD_Table().getName() + "'-record");
 			return;
 		}
