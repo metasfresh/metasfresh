@@ -7,11 +7,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -23,6 +25,7 @@ import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group;
 import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group.Type;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.util.Services;
 import lombok.Value;
 
 /*
@@ -78,14 +81,13 @@ public class ProductLookupDescriptorTest
 		return AttributeId.ofRepoId(attribute.getM_Attribute_ID());
 	}
 
-	private I_M_AttributeValue createAttributeValue(final AttributeId attributeId, final String attributeValue)
+	private AttributeListValue createAttributeValue(final AttributeId attributeId, final String attributeValue)
 	{
-		final I_M_AttributeValue av = newInstanceOutOfTrx(I_M_AttributeValue.class);
-		av.setM_Attribute_ID(attributeId.getRepoId());
-		av.setName(attributeValue);
-		av.setValue(attributeValue);
-		saveRecord(av);
-		return av;
+		return Services.get(IAttributeDAO.class).createAttributeValue(AttributeListValueCreateRequest.builder()
+				.attributeId(attributeId)
+				.value(attributeValue)
+				.name(attributeValue)
+				.build());
 	}
 
 	private static List<IdAndDisplayName> toIdAndDisplayNamesList(final LookupValuesList list)
@@ -96,7 +98,7 @@ public class ProductLookupDescriptorTest
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public static ImmutableAttributeSet toAttributeSet(final I_M_AttributeValue attributeValue)
+	public static ImmutableAttributeSet toAttributeSet(final AttributeListValue attributeValue)
 	{
 		return ImmutableAttributeSet.builder()
 				.attributeValues(attributeValue)
@@ -107,7 +109,7 @@ public class ProductLookupDescriptorTest
 	public void explodeLookupValuesByAvailableStockGroups_standardScenario()
 	{
 		final AttributeId attributeId = createAttribute("attribute");
-		final I_M_AttributeValue attributeValue1 = createAttributeValue(attributeId, "attributeValue1");
+		final AttributeListValue attributeValue1 = createAttributeValue(attributeId, "attributeValue1");
 
 		final LookupValuesList initialLookupValues = LookupValuesList.fromCollection(ImmutableList.of(
 				IntegerLookupValue.of(1, "Product1"),
@@ -180,9 +182,9 @@ public class ProductLookupDescriptorTest
 	public void explodeLookupValuesByAvailableStockGroups_multipleNegativeATPsForSameProduct()
 	{
 		final AttributeId attributeId = createAttribute("attribute");
-		final I_M_AttributeValue attributeValue1 = createAttributeValue(attributeId, "attributeValue1");
-		final I_M_AttributeValue attributeValue2 = createAttributeValue(attributeId, "attributeValue2");
-		final I_M_AttributeValue attributeValue3 = createAttributeValue(attributeId, "attributeValue3");
+		final AttributeListValue attributeValue1 = createAttributeValue(attributeId, "attributeValue1");
+		final AttributeListValue attributeValue2 = createAttributeValue(attributeId, "attributeValue2");
+		final AttributeListValue attributeValue3 = createAttributeValue(attributeId, "attributeValue3");
 
 		final LookupValuesList initialLookupValues = LookupValuesList.fromCollection(ImmutableList.of(
 				IntegerLookupValue.of(1, "Product1")));

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.compiere.model.I_M_Attribute;
@@ -149,7 +150,8 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 		}
 
 		final String valueKey = lookupValue.getIdAsString();
-		return attributeValuesProvider.getM_AttributeValue_ID(valueKey);
+		final AttributeValueId attributeValueId = attributeValuesProvider.getAttributeValueIdOrNull(valueKey);
+		return AttributeValueId.toRepoId(attributeValueId);
 	}
 
 	@Override
