@@ -9,6 +9,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -105,8 +106,8 @@ public class M_HU_Attribute
 		}
 		else if (AttributeValueType.NUMBER.equals(attributeValueType))
 		{
-			valueNew = record.getValueNumber();
-			valueOld = recordBeforeChanges.getValueNumber();
+			valueNew = extractValueNumberOrNull(record);
+			valueOld = extractValueNumberOrNull(recordBeforeChanges);
 		}
 		else if (AttributeValueType.DATE.equals(attributeValueType))
 		{
@@ -115,8 +116,13 @@ public class M_HU_Attribute
 		}
 		else if (AttributeValueType.LIST.equals(attributeValueType))
 		{
-			// valueNew = record.getValue();
-			// valueOld = recordBeforeChanges.getValue();
+			final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
+
+			final AttributeListValue attributeListValueNew = attributesService.retrieveAttributeValueOrNull(attributeId, record.getValue());
+			valueNew = attributeListValueNew != null ? attributeListValueNew.getId() : null;
+
+			final AttributeListValue attributeListValueOld = attributesService.retrieveAttributeValueOrNull(attributeId, recordBeforeChanges.getValue());
+			valueOld = attributeListValueOld != null ? attributeListValueOld.getId() : null;
 		}
 		else
 		{
@@ -127,16 +133,8 @@ public class M_HU_Attribute
 				.huId(HuId.ofRepoId(record.getM_HU_ID()))
 				.attributeId(AttributeId.ofRepoId(record.getM_Attribute_ID()))
 				.attributeValueType(attributeValueType)
-				//
-				.valueString(record.getValue())
-				.valueStringOld(recordBeforeChanges.getValue())
-				//
-				.valueNumber(extractValueNumberOrNull(record))
-				.valueNumberOld(extractValueNumberOrNull(recordBeforeChanges))
-				//
-				.valueDate(record.getValueDate())
-				.valueDateOld(recordBeforeChanges.getValueDate())
-				//
+				.valueNew(valueNew)
+				.valueOld(valueOld)
 				.build();
 	}
 

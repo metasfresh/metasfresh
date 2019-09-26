@@ -1,8 +1,5 @@
 package de.metas.handlingunits.material.interceptor;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueType;
 
@@ -45,14 +42,8 @@ final class HUAttributeChange
 	@NonNull
 	final AttributeValueType attributeValueType;
 
-	final String valueString;
-	final String valueStringOld;
-
-	final BigDecimal valueNumber;
-	final BigDecimal valueNumberOld;
-
-	final Timestamp valueDate;
-	final Timestamp valueDateOld;
+	final Object valueNew;
+	final Object valueOld;
 
 	public HUAttributeChange mergeWithNextChange(final HUAttributeChange nextChange)
 	{
@@ -61,9 +52,7 @@ final class HUAttributeChange
 		Check.assumeEquals(attributeValueType, nextChange.attributeValueType, "Invalid attributeValueType for {}. Expected: {}", nextChange, attributeValueType);
 
 		return toBuilder()
-				.valueString(nextChange.getValueString())
-				.valueNumber(nextChange.getValueNumber())
-				.valueDate(nextChange.getValueDate())
+				.valueNew(nextChange.getValueNew())
 				.build();
 	}
 }
