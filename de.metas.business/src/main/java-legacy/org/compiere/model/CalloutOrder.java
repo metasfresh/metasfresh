@@ -164,7 +164,7 @@ public class CalloutOrder extends CalloutEngine
 				|| MOrder.DocSubType_Prepay.equals(docSubType))  // not
 		{
 			// for POS/PrePay
-			;
+
 		}
 		else
 		{
@@ -618,21 +618,13 @@ public class CalloutOrder extends CalloutEngine
 				+ "p.M_PriceList_ID,p.PaymentRule,p.POReference,"
 				+ "p.SO_Description,p.IsDiscountPrinted,"
 				+ "p.InvoiceRule,p.DeliveryRule,p.FreightCostRule,DeliveryViaRule,"
-				+ ", stats."
-				+ I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed
-				+ ", "
+				+ "stats." + I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed + ","
 				+ "c.AD_User_ID,"
 				+ "p.PO_PriceList_ID, p.PaymentRulePO, p.PO_PaymentTerm_ID,"
 				+ "lbill.C_BPartner_Location_ID AS Bill_Location_ID "
 				+ "FROM C_BPartner p"
-
 				+ " INNER JOIN "
-				+ I_C_BPartner_Stats.Table_Name
-				+ " stats ON (p."
-				+ I_C_BPartner.COLUMNNAME_C_BPartner_ID
-				+ " = stats."
-				+ I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID
-				+ ")"
+				+ I_C_BPartner_Stats.Table_Name + " stats ON (p." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + " = stats." + I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID + ")"
 				+ " LEFT OUTER JOIN C_BPartner_Location lbill ON (p.C_BPartner_ID=lbill.C_BPartner_ID AND lbill.IsBillTo='Y' AND lbill.IsActive='Y')"
 				+ " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) "
 				// #928
@@ -1503,17 +1495,17 @@ public class CalloutOrder extends CalloutEngine
 		Services.get(IOrderLineBL.class).updatePrices(orderLine);
 	}
 
-	private static interface DropShipPartnerAware
+	private interface DropShipPartnerAware
 	{
-		public int getDropShip_BPartner_ID();
+		int getDropShip_BPartner_ID();
 
-		public void setDropShip_Location_ID(int DropShip_Location_ID);
+		void setDropShip_Location_ID(int DropShip_Location_ID);
 
-		public void setDropShip_Location(org.compiere.model.I_C_BPartner_Location DropShip_Location);
+		void setDropShip_Location(org.compiere.model.I_C_BPartner_Location DropShip_Location);
 
-		public void setDropShip_User_ID(int DropShip_User_ID);
+		void setDropShip_User_ID(int DropShip_User_ID);
 
-		public void setDropShip_User(org.compiere.model.I_AD_User DropShip_User);
+		void setDropShip_User(org.compiere.model.I_AD_User DropShip_User);
 	}
 
 	public String deliveryToBPartnerID(final ICalloutField calloutField)
