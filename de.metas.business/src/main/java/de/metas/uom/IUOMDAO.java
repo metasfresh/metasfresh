@@ -1,6 +1,8 @@
 package de.metas.uom;
 
 import java.time.temporal.TemporalUnit;
+import java.util.Collection;
+import java.util.List;
 
 /*
  * #%L
@@ -41,6 +43,8 @@ public interface IUOMDAO extends ISingletonService
 	I_C_UOM getByIdOrNull(int uomId);
 
 	I_C_UOM getById(UomId uomId);
+
+	List<I_C_UOM> getByIds(Collection<UomId> uomIds);
 
 	UomId getUomIdByX12DE355(String x12de355);
 

@@ -106,6 +106,7 @@ public class UOMConversionDAO implements IUOMConversionDAO
 				.toUomId(UomId.ofRepoId(record.getC_UOM_To_ID()))
 				.fromToMultiplier(fromToMultiplier)
 				.toFromMultiplier(toFromMultiplier)
+				.catchUOMForProduct(record.isCatchUOMForProduct())
 				.build();
 	}
 
@@ -122,5 +123,4 @@ public class UOMConversionDAO implements IUOMConversionDAO
 
 		saveRecord(record);
 	}
-
 }

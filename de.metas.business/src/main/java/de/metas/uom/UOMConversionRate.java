@@ -38,12 +38,15 @@ public class UOMConversionRate
 	BigDecimal fromToMultiplier;
 	BigDecimal toFromMultiplier;
 
+	boolean catchUOMForProduct;
+
 	@Builder
 	private UOMConversionRate(
 			@NonNull final UomId fromUomId,
 			@NonNull final UomId toUomId,
 			@NonNull final BigDecimal fromToMultiplier,
-			@NonNull final BigDecimal toFromMultiplier)
+			@NonNull final BigDecimal toFromMultiplier,
+			final boolean catchUOMForProduct)
 	{
 		Check.assume(fromToMultiplier.signum() != 0, "invalid fromToMultiplier: {}", fromToMultiplier);
 		Check.assume(toFromMultiplier.signum() != 0, "invalid toFromMultiplier: {}", toFromMultiplier);
@@ -52,6 +55,7 @@ public class UOMConversionRate
 		this.toUomId = toUomId;
 		this.fromToMultiplier = fromToMultiplier;
 		this.toFromMultiplier = toFromMultiplier;
+		this.catchUOMForProduct = catchUOMForProduct;
 	}
 
 	public static UOMConversionRate one(@NonNull final UomId uomId)
