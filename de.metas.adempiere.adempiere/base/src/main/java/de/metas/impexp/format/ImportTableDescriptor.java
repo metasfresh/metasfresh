@@ -1,13 +1,14 @@
-package de.metas.impexp;
+package de.metas.impexp.format;
 
-import de.metas.impexp.config.DataImportConfigId;
+import org.compiere.model.I_C_DataImport_Run;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -29,25 +30,21 @@ import lombok.Value;
 
 @Value
 @Builder
-public class DataImportResult
+public class ImportTableDescriptor
 {
-	@NonNull
-	DataImportConfigId dataImportConfigId;
+	public static final String COLUMNNAME_C_DataImport_Run_ID = I_C_DataImport_Run.COLUMNNAME_C_DataImport_Run_ID;
+	public static final String COLUMNNAME_I_ErrorMsg = "I_ErrorMsg";
 
 	@NonNull
-	String importFormatName;
+	String tableName;
+	@NonNull
+	String keyColumnName;
 
-	//
-	// Source file
-	int countSourceFileValidLines;
-	int countSourceFileErrorLines;
+	String dataImportConfigIdColumnName;
+	String adIssueIdColumnName;
 
-	//
-	// Import table
-	String importTableName;
-	int countImportRecordsWithErrors;
+	String importLineContentColumnName;
+	String importLineNoColumnName;
 
-	//
-	// Target table
-	String targetTableName;
+	int errorMsgMaxLength;
 }

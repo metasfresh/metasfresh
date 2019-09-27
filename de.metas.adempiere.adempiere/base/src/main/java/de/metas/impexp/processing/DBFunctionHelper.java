@@ -9,7 +9,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
-import de.metas.impexp.DataImportConfigId;
+import de.metas.impexp.config.DataImportConfigId;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;

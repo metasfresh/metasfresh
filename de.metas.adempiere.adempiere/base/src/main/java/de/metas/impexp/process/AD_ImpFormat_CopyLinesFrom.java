@@ -13,7 +13,7 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_ImpFormat;
 import org.compiere.model.I_AD_ImpFormat_Row;
 
-import de.metas.impexp.ImpFormatId;
+import de.metas.impexp.format.ImpFormatId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Check;

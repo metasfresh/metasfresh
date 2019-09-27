@@ -1,16 +1,10 @@
-package de.metas.impexp;
+package de.metas.impexp.parser;
 
-import org.adempiere.service.ClientId;
-import org.adempiere.util.api.IParams;
-import org.springframework.core.io.Resource;
+import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.impexp.config.DataImportConfigId;
-import de.metas.organization.OrgId;
-import de.metas.user.UserId;
-import lombok.Builder;
-import lombok.Builder.Default;
+import de.metas.impexp.format.ImpFormat;
+import de.metas.impexp.format.ImpFormatType;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -34,28 +28,24 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class DataImportRequest
+final class ImpDataLineParserFactory
 {
-	@NonNull
-	Resource data;
-
-	@NonNull
-	DataImportConfigId dataImportConfigId;
-
-	@NonNull
-	ClientId clientId;
-
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	UserId userId;
-
-	boolean completeDocuments;
-
-	@NonNull
-	@Default
-	IParams additionalParameters = IParams.NULL;
+	public ImpDataLineParser createParser(@NonNull final ImpFormat impFormat)
+	{
+		final ImpFormatType formatType = impFormat.getFormatType();
+		if (ImpFormatType.FIXED_POSITION.equals(formatType))
+		{
+			return new FixedPositionImpDataLineParser(impFormat);
+		}
+		else if (ImpFormatType.COMMA_SEPARATED.equals(formatType)
+				|| ImpFormatType.SEMICOLON_SEPARATED.equals(formatType)
+				|| ImpFormatType.TAB_SEPARATED.equals(formatType))
+		{
+			return new FlexImpDataLineParser(impFormat);
+		}
+		else
+		{
+			throw new AdempiereException("Unsupported format type: " + formatType);
+		}
+	}
 }

@@ -1,7 +1,8 @@
-package de.metas.impexp;
+package de.metas.impexp.config;
 
 import javax.annotation.Nullable;
 
+import de.metas.impexp.format.ImpFormatId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
