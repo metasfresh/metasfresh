@@ -547,9 +547,8 @@ public class StepComXMLInvoicBean
 		despatchAdvRef.setDOCUMENTID(headerXrech.getDOCUMENTID());
 		despatchAdvRef.setREFERENCEQUAL(ReferenceQual.DADV.name());
 		despatchAdvRef.setREFERENCE(invoice.getShipmentDocumentno());
-		despatchAdvRef.setREFERENCE(invoice.getShipmentDocumentno());
+		despatchAdvRef.setREFERENCEDATE1(toFormattedStringDate(toDate(invoice.getMovementDate()), dateFormat));
 		headerXrech.getHREFE1().add(despatchAdvRef);
-
 	}
 
 	private void mapDates(
