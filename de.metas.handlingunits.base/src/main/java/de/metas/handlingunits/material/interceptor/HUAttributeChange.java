@@ -1,10 +1,19 @@
 package de.metas.handlingunits.material.interceptor;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.AttributeValueType;
+import org.compiere.util.TimeUtil;
 
 import de.metas.handlingunits.HuId;
+import de.metas.material.event.commons.AttributesKeyPart;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -45,6 +54,9 @@ final class HUAttributeChange
 	final Object valueNew;
 	final Object valueOld;
 
+	@NonNull
+	private Instant date;
+
 	public HUAttributeChange mergeWithNextChange(final HUAttributeChange nextChange)
 	{
 		Check.assumeEquals(huId, nextChange.huId, "Invalid huId for {}. Expected: {}", nextChange, huId);
@@ -53,6 +65,47 @@ final class HUAttributeChange
 
 		return toBuilder()
 				.valueNew(nextChange.getValueNew())
+				.date(nextChange.getDate())
 				.build();
+	}
+
+	public AttributesKeyPart getNewAttributeKeyPartOrNull()
+	{
+		return toAttributeKeyPartOrNull(valueNew);
+	}
+
+	public AttributesKeyPart getOldAttributeKeyPartOrNull()
+	{
+		return toAttributeKeyPartOrNull(valueOld);
+	}
+
+	private AttributesKeyPart toAttributeKeyPartOrNull(final Object value)
+	{
+		if (AttributeValueType.STRING.equals(attributeValueType))
+		{
+			final String valueStr = value != null ? value.toString() : null;
+			return AttributesKeyPart.ofStringAttribute(attributeId, valueStr);
+		}
+		else if (AttributeValueType.NUMBER.equals(attributeValueType))
+		{
+			final BigDecimal valueBD = NumberUtils.asBigDecimal(value);
+			return AttributesKeyPart.ofNumberAttribute(attributeId, valueBD);
+		}
+		else if (AttributeValueType.DATE.equals(attributeValueType))
+		{
+			final LocalDate valueDate = TimeUtil.asLocalDate(value);
+			return AttributesKeyPart.ofDateAttribute(attributeId, valueDate);
+		}
+		else if (AttributeValueType.LIST.equals(attributeValueType))
+		{
+			final AttributeValueId attributeValueId = (AttributeValueId)value;
+			return attributeValueId != null
+					? AttributesKeyPart.ofAttributeValueId(attributeValueId)
+					: null;
+		}
+		else
+		{
+			throw new AdempiereException("Unknown attribute value type: " + attributeValueType);
+		}
 	}
 }

@@ -15,6 +15,7 @@ import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import de.metas.handlingunits.HuId;
@@ -135,6 +136,7 @@ public class M_HU_Attribute
 				.attributeValueType(attributeValueType)
 				.valueNew(valueNew)
 				.valueOld(valueOld)
+				.date(TimeUtil.asInstant(record.getUpdated()))
 				.build();
 	}
 

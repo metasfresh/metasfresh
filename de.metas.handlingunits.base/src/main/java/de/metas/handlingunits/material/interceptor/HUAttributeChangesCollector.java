@@ -1,16 +1,31 @@
 package de.metas.handlingunits.material.interceptor;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HuId;
-import de.metas.material.event.MaterialEvent;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.attributes.AttributesChangedEvent;
+import de.metas.material.event.attributes.AttributesKeyWithASI;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.EventDescriptor;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -37,10 +52,15 @@ import lombok.NonNull;
 
 final class HUAttributeChangesCollector
 {
+	// services
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final PostMaterialEventService materialEventService;
 
+	// state
 	private final AtomicBoolean disposed = new AtomicBoolean();
-	private final HashMap<HuId, HUAttributeChanges> huAttributeChanges = new HashMap<>();
+	private final HashMap<HuId, HUAttributeChanges> huAttributeChangesMap = new HashMap<>();
 
 	public HUAttributeChangesCollector(@NonNull final PostMaterialEventService materialEventService)
 	{
@@ -50,7 +70,7 @@ final class HUAttributeChangesCollector
 	public void collect(@NonNull final HUAttributeChange change)
 	{
 		Check.assume(!disposed.get(), "Collector shall not be disposed: {}", this);
-		final HUAttributeChanges huChanges = huAttributeChanges.computeIfAbsent(change.getHuId(), HUAttributeChanges::new);
+		final HUAttributeChanges huChanges = huAttributeChangesMap.computeIfAbsent(change.getHuId(), HUAttributeChanges::new);
 		huChanges.collect(change);
 	}
 
@@ -61,19 +81,57 @@ final class HUAttributeChangesCollector
 			throw new AdempiereException("Collector was already disposed: " + this);
 		}
 
-		final ImmutableList<MaterialEvent> events = huAttributeChanges.values()
-				.stream()
-				.map(this::createMaterialEvent)
-				.collect(ImmutableList.toImmutableList());
-
-		this.huAttributeChanges.clear();
+		final List<AttributesChangedEvent> events = new ArrayList<>();
+		for (final HUAttributeChanges huAttributeChanges : huAttributeChangesMap.values())
+		{
+			events.addAll(createMaterialEvent(huAttributeChanges));
+		}
 
 		materialEventService.postEventsNow(events);
 	}
 
-	private MaterialEvent createMaterialEvent(final HUAttributeChanges changes)
+	private List<AttributesChangedEvent> createMaterialEvent(final HUAttributeChanges changes)
 	{
-		// TODO: introduce and handle a new event which implements MaterialEvent
-		throw new UnsupportedOperationException();
+		if (changes.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final HuId huId = changes.getHuId();
+		final I_M_HU hu = handlingUnitsDAO.getById(huId);
+
+		final EventDescriptor eventDescriptor = EventDescriptor.ofClientAndOrg(hu.getAD_Client_ID(), hu.getAD_Org_ID());
+		final Instant date = changes.getLastChangeDate();
+		final WarehouseId warehouseId = warehousesRepo.getWarehouseIdByLocatorRepoId(hu.getM_Locator_ID());
+
+		final AttributesKeyWithASI oldStorageAttributes = createAttributesKeyWithASI(changes.getOldAttributesKey());
+		final AttributesKeyWithASI newStorageAttributes = createAttributesKeyWithASI(changes.getNewAttributesKey());
+
+		final List<IHUProductStorage> productStorages = handlingUnitsBL.getStorageFactory()
+				.getStorage(hu)
+				.getProductStorages();
+
+		final List<AttributesChangedEvent> events = new ArrayList<>();
+		for (IHUProductStorage productStorage : productStorages)
+		{
+			events.add(AttributesChangedEvent.builder()
+					.eventDescriptor(eventDescriptor)
+					.warehouseId(warehouseId)
+					.date(date)
+					.productId(productStorage.getProductId().getRepoId())
+					.qty(productStorage.getQtyInStockingUOM().toBigDecimal())
+					.oldStorageAttributes(oldStorageAttributes)
+					.newStorageAttributes(newStorageAttributes)
+					.huId(productStorage.getHuId().getRepoId())
+					.build());
+		}
+
+		return events;
+	}
+
+	private AttributesKeyWithASI createAttributesKeyWithASI(final AttributesKey attributesKey)
+	{
+		final AttributeSetInstanceId asiId = AttributesKeys.createAttributeSetInstanceFromAttributesKey(attributesKey);
+		return AttributesKeyWithASI.of(attributesKey, asiId);
 	}
 }
