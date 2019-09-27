@@ -71,7 +71,7 @@ public class PostMaterialEventService
 		logger.info("Posted MaterialEvent={}", event);
 	}
 	
-	public void postEventsNow(@NonNull final Collection<MaterialEvent> events)
+	public void postEventsNow(@NonNull final Collection<? extends MaterialEvent> events)
 	{
 		events.forEach(this::postEventNow);
 	}
