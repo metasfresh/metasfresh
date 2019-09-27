@@ -207,12 +207,19 @@ public class StepComXMLDesadvBean
 
 		if (StringUtils.isNotEmpty(ediExpDesadvLineType.getUPC()))
 		{
-			final DPRIN1 prodInfo = DESADV_objectFactory.createDPRIN1();
-			prodInfo.setDOCUMENTID(documentId);
-			prodInfo.setPRODUCTQUAL(ProductQual.GTIN.name());
-			prodInfo.setLINENUMBER(lineNumber);
-			prodInfo.setPRODUCTID(ediExpDesadvLineType.getUPC());
-			detail.getDPRIN1().add(prodInfo);
+			final DPRIN1 gtinProdInfo = DESADV_objectFactory.createDPRIN1();
+			gtinProdInfo.setDOCUMENTID(documentId);
+			gtinProdInfo.setPRODUCTQUAL(ProductQual.GTIN.name());
+			gtinProdInfo.setLINENUMBER(lineNumber);
+			gtinProdInfo.setPRODUCTID(ediExpDesadvLineType.getUPC());
+			detail.getDPRIN1().add(gtinProdInfo);
+
+			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
+			eancProdInfo.setDOCUMENTID(documentId);
+			eancProdInfo.setPRODUCTQUAL(ProductQual.EANC.name());
+			eancProdInfo.setLINENUMBER(lineNumber);
+			eancProdInfo.setPRODUCTID(ediExpDesadvLineType.getUPC());
+			detail.getDPRIN1().add(eancProdInfo);
 		}
 
 		if (StringUtils.isNotEmpty(ediExpDesadvLineType.getProductNo()))
@@ -322,27 +329,21 @@ public class StepComXMLDesadvBean
 
 	private void mapReferences(final EDIExpDesadvType xmlDesadv, final String dateFormat, final HEADERXlief header)
 	{
+		final String buyerReference = xmlDesadv.getPOReference();
+
 		final HREFE1 orderReference = DESADV_objectFactory.createHREFE1();
 		orderReference.setDOCUMENTID(header.getDOCUMENTID());
 		orderReference.setREFERENCEQUAL(ReferenceQual.ORBU.name());
-		String reference;
-		if (StringUtils.isNotEmpty(xmlDesadv.getPOReference()))
-		{
-			reference = xmlDesadv.getPOReference();
-		}
-		else
-		{
-			reference = xmlDesadv.getDocumentNo();
-		}
-		orderReference.setREFERENCE(reference);
+		orderReference.setREFERENCE(buyerReference);
 		orderReference.setREFERENCEDATE1(toFormattedStringDate(toDate(xmlDesadv.getDateOrdered()), dateFormat));
+		header.getHREFE1().add(orderReference);
+
 		// ORIG same as ORBU for now
 		final HREFE1 origReference = DESADV_objectFactory.createHREFE1();
 		origReference.setDOCUMENTID(header.getDOCUMENTID());
 		origReference.setREFERENCEQUAL(ReferenceQual.ORIG.name());
-		origReference.setREFERENCE(reference);
+		origReference.setREFERENCE(buyerReference);
 		origReference.setREFERENCEDATE1(toFormattedStringDate(toDate(xmlDesadv.getDateOrdered()), dateFormat));
-		header.getHREFE1().add(orderReference);
 		header.getHREFE1().add(origReference);
 	}
 

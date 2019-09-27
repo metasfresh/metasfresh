@@ -71,8 +71,6 @@ public class CompuDataInvoicBean
 	 * <li>IN: {@link EDICctopInvoicVType}</li>
 	 * <li>OUT: {@link CctopInvoice}</li>
 	 * </ul>
-	 *
-	 * @param exchange
 	 */
 	public void createEDIData(final Exchange exchange)
 	{

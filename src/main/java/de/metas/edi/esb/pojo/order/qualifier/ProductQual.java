@@ -25,5 +25,9 @@ package de.metas.edi.esb.pojo.order.qualifier;
 
 public enum ProductQual
 {
-	GTIN, BUYR, GRPC, SUPL, ISBN, MANF, EANT, EANC, UPCT, UPCC
+	/** The ID could be EAN or UPC, either CU or TU*/
+	GTIN,
+
+
+	BUYR, GRPC, SUPL, ISBN, MANF, EANT, EANC, UPCT, UPCC
 }

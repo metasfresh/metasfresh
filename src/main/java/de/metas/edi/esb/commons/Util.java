@@ -28,6 +28,8 @@ import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.component.properties.PropertiesComponent;
 import org.apache.camel.impl.DefaultMessage;
 
+
+
 /*
  * #%L
  * de.metas.edi.esb
@@ -103,7 +105,7 @@ public final class Util
 		return null;
 	}
 
-	public static String toFormattedStringDate(final Date date, final String datePattern)
+	public static String toFormattedStringDate(final Date date, @NonNull final String datePattern)
 	{
 		if (date == null)
 		{

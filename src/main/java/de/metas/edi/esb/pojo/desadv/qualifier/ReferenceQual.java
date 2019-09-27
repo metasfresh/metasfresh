@@ -25,5 +25,14 @@ package de.metas.edi.esb.pojo.desadv.qualifier;
 
 public enum ReferenceQual
 {
-	ORIG, ORBU, ORSE, DADV, ORSP, PUCO, APAI, LIRN
+	/** Originator's reference */
+	ORIG,
+
+	/** Order number (buyer) */
+	ORBU,
+
+	/** Order number (seller) */
+	ORSE,
+
+	DADV, ORSP, PUCO, APAI, LIRN
 }

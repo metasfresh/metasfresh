@@ -151,7 +151,7 @@ public class StepComXMLInvoicBean
 		final String dateFormat = (String)exchange.getProperty(AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern);
 		mapDates(invoice, headerXrech, dateFormat);
 
-		mapReferences(invoice, headerXrech);
+		mapReferences(invoice, headerXrech, dateFormat);
 
 		mapAddresses(invoice, headerXrech);
 
@@ -524,30 +524,45 @@ public class StepComXMLInvoicBean
 		return addressQual;
 	}
 
-	private void mapReferences(final EDICctopInvoicVType invoice, final HEADERXrech headerXrech)
+	private void mapReferences(
+			@NonNull final EDICctopInvoicVType invoice,
+			@NonNull final HEADERXrech headerXrech,
+			@NonNull final String dateFormat)
 	{
-		final HREFE1 orderRef = INVOIC_objectFactory.createHREFE1();
-		orderRef.setDOCUMENTID(headerXrech.getDOCUMENTID());
-		orderRef.setREFERENCEQUAL(ReferenceQual.ORBU.name());
-		orderRef.setREFERENCE(invoice.getPOReference());
+		final HREFE1 buyerOrderRef = INVOIC_objectFactory.createHREFE1();
+		buyerOrderRef.setDOCUMENTID(headerXrech.getDOCUMENTID());
+		buyerOrderRef.setREFERENCEQUAL(ReferenceQual.ORBU.name());
+		buyerOrderRef.setREFERENCE(invoice.getPOReference());
+		buyerOrderRef.setREFERENCEDATE1(toFormattedStringDate(toDate(invoice.getDateOrdered()), dateFormat));
+		headerXrech.getHREFE1().add(buyerOrderRef);
+
+		final HREFE1 sellerOrderRef = INVOIC_objectFactory.createHREFE1();
+		sellerOrderRef.setDOCUMENTID(headerXrech.getDOCUMENTID());
+		sellerOrderRef.setREFERENCEQUAL(ReferenceQual.ORSE.name());
+		sellerOrderRef.setREFERENCE(invoice.getEDICctop111V().getCOrderID().toString());
+		sellerOrderRef.setREFERENCEDATE1(toFormattedStringDate(toDate(invoice.getDateOrdered()), dateFormat));
+		headerXrech.getHREFE1().add(sellerOrderRef);
 
 		final HREFE1 despatchAdvRef = INVOIC_objectFactory.createHREFE1();
 		despatchAdvRef.setDOCUMENTID(headerXrech.getDOCUMENTID());
 		despatchAdvRef.setREFERENCEQUAL(ReferenceQual.DADV.name());
 		despatchAdvRef.setREFERENCE(invoice.getShipmentDocumentno());
-
-		headerXrech.getHREFE1().add(orderRef);
+		despatchAdvRef.setREFERENCE(invoice.getShipmentDocumentno());
 		headerXrech.getHREFE1().add(despatchAdvRef);
 
 	}
 
-	private void mapDates(final EDICctopInvoicVType invoice, final HEADERXrech headerXrech, final String dateFormat)
+	private void mapDates(
+			@NonNull final EDICctopInvoicVType invoice,
+			@NonNull final HEADERXrech headerXrech,
+			@NonNull final String dateFormat)
 	{
 		final HDATE1 documentDate = INVOIC_objectFactory.createHDATE1();
 		documentDate.setDOCUMENTID(headerXrech.getDOCUMENTID());
 		documentDate.setDATEQUAL(DateQual.CREA.name());
 		documentDate.setDATEFROM(toFormattedStringDate(toDate(invoice.getDateInvoiced()), dateFormat));
 		final HDATE1 deliveryDate = INVOIC_objectFactory.createHDATE1();
+
 		deliveryDate.setDOCUMENTID(headerXrech.getDOCUMENTID());
 		deliveryDate.setDATEQUAL(DateQual.DELV.name());
 		deliveryDate.setDATEFROM(toFormattedStringDate(toDate(invoice.getMovementDate()), dateFormat));

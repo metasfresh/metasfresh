@@ -25,5 +25,11 @@ package de.metas.edi.esb.pojo.desadv.qualifier;
 
 public enum ProductQual
 {
-	GTIN, BUYR
+	/** The ID could be EAN or UPC, either CU or TU*/
+	GTIN,
+
+	BUYR,
+
+	/** EAN article consumer unit */
+	EANC
 }
