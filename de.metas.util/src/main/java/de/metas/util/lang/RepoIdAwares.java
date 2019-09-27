@@ -44,6 +44,11 @@ public class RepoIdAwares
 {
 	public static ImmutableList<Integer> asRepoIds(@NonNull final Collection<? extends RepoIdAware> ids)
 	{
+		if (ids.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		return ids
 				.stream()
 				.map(RepoIdAware::getRepoId)
@@ -52,6 +57,11 @@ public class RepoIdAwares
 
 	public static ImmutableSet<Integer> asRepoIdsSet(@NonNull final Collection<? extends RepoIdAware> ids)
 	{
+		if (ids.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
 		return ids
 				.stream()
 				.map(RepoIdAware::getRepoId)
