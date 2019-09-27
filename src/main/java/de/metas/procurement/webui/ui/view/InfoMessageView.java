@@ -3,6 +3,7 @@ package de.metas.procurement.webui.ui.view;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.spring.i18n.I18N;
 
+import com.google.gwt.thirdparty.guava.common.annotations.VisibleForTesting;
 import com.google.gwt.thirdparty.guava.common.base.Optional;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.CssLayout;
@@ -24,11 +25,11 @@ import de.metas.procurement.webui.service.ISettingsService;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -94,13 +95,26 @@ public class InfoMessageView extends MFProcurementNavigationView
 			String infoMessageText = settingsService.getInfoMessage();
 			if (infoMessageText != null)
 			{
-				infoMessageText = infoMessageText.trim();
+				infoMessageText = replaceNewLineWithHtmlBreak(infoMessageText.trim());
 			}
 
 			infoMessage = Optional.fromNullable(infoMessageText);
 		}
 
 		return infoMessage.orNull();
+	}
+
+	@VisibleForTesting
+	static String replaceNewLineWithHtmlBreak(final String text)
+	{
+		if (text == null || text.isEmpty())
+		{
+			return text;
+		}
+
+		return text
+				.replace("\r\n", "\n")
+				.replace("\n", "<br/>");
 	}
 
 	public boolean isDisplayable()
