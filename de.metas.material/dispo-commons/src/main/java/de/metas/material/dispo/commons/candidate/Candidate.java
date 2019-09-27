@@ -94,92 +94,6 @@ public class Candidate
 
 	List<TransactionDetail> transactionDetails;
 
-	/**
-	 * @param addedQuantity may also be negative, in case of subtraction
-	 */
-	public Candidate withAddedQuantity(@NonNull final BigDecimal addedQuantity)
-	{
-		return withQuantity(getQuantity().add(addedQuantity));
-	}
-
-	public Candidate withNegatedQuantity()
-	{
-		return withQuantity(getQuantity().negate());
-	}
-
-	public BigDecimal getQuantity()
-	{
-		return materialDescriptor.getQuantity();
-	}
-
-	public Candidate withQuantity(@NonNull final BigDecimal quantity)
-	{
-		return withMaterialDescriptor(materialDescriptor.withQuantity(quantity));
-	}
-
-	public Candidate withDate(@NonNull final Instant date)
-	{
-		return withMaterialDescriptor(materialDescriptor.withDate(date));
-	}
-
-	public Candidate withWarehouseId(final WarehouseId warehouseId)
-	{
-		return withMaterialDescriptor(materialDescriptor.withWarehouseId(warehouseId));
-	}
-
-	public MaterialDispoGroupId getEffectiveGroupId()
-	{
-		if (type == CandidateType.STOCK)
-		{
-			return null;
-		}
-		else if (groupId != null)
-		{
-			return groupId;
-		}
-		else
-		{
-			return MaterialDispoGroupId.ofIdOrNull(id);
-		}
-	}
-
-	public Instant getDate()
-	{
-		return materialDescriptor.getDate();
-	}
-
-	public int getProductId()
-	{
-		return materialDescriptor.getProductId();
-	}
-
-	public WarehouseId getWarehouseId()
-	{
-		return materialDescriptor.getWarehouseId();
-	}
-
-	public BigDecimal computeActualQty()
-	{
-		return getTransactionDetails()
-				.stream()
-				.map(TransactionDetail::getQuantity)
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
-	}
-
-	public DemandDetail getDemandDetail()
-	{
-		return CoalesceUtil.coalesce(DemandDetail.castOrNull(businessCaseDetail), additionalDemandDetail);
-	}
-
-	public BigDecimal getDetailQty()
-	{
-		if (businessCaseDetail == null)
-		{
-			return BigDecimal.ZERO;
-		}
-		return businessCaseDetail.getQty();
-	}
-
 	@Builder(toBuilder = true)
 	private Candidate(
 			@NonNull final ClientAndOrgId clientAndOrgId,
@@ -264,5 +178,91 @@ public class Candidate
 	public OrgId getOrgId()
 	{
 		return getClientAndOrgId().getOrgId();
+	}
+	
+	/**
+	 * @param addedQuantity may also be negative, in case of subtraction
+	 */
+	public Candidate withAddedQuantity(@NonNull final BigDecimal addedQuantity)
+	{
+		return withQuantity(getQuantity().add(addedQuantity));
+	}
+
+	public Candidate withNegatedQuantity()
+	{
+		return withQuantity(getQuantity().negate());
+	}
+
+	public BigDecimal getQuantity()
+	{
+		return materialDescriptor.getQuantity();
+	}
+
+	public Candidate withQuantity(@NonNull final BigDecimal quantity)
+	{
+		return withMaterialDescriptor(materialDescriptor.withQuantity(quantity));
+	}
+
+	public Candidate withDate(@NonNull final Instant date)
+	{
+		return withMaterialDescriptor(materialDescriptor.withDate(date));
+	}
+
+	public Candidate withWarehouseId(final WarehouseId warehouseId)
+	{
+		return withMaterialDescriptor(materialDescriptor.withWarehouseId(warehouseId));
+	}
+
+	public MaterialDispoGroupId getEffectiveGroupId()
+	{
+		if (type == CandidateType.STOCK)
+		{
+			return null;
+		}
+		else if (groupId != null)
+		{
+			return groupId;
+		}
+		else
+		{
+			return MaterialDispoGroupId.ofIdOrNull(id);
+		}
+	}
+
+	public Instant getDate()
+	{
+		return materialDescriptor.getDate();
+	}
+
+	public int getProductId()
+	{
+		return materialDescriptor.getProductId();
+	}
+
+	public WarehouseId getWarehouseId()
+	{
+		return materialDescriptor.getWarehouseId();
+	}
+
+	public BigDecimal computeActualQty()
+	{
+		return getTransactionDetails()
+				.stream()
+				.map(TransactionDetail::getQuantity)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
+
+	public DemandDetail getDemandDetail()
+	{
+		return CoalesceUtil.coalesce(DemandDetail.castOrNull(businessCaseDetail), additionalDemandDetail);
+	}
+
+	public BigDecimal getDetailQty()
+	{
+		if (businessCaseDetail == null)
+		{
+			return BigDecimal.ZERO;
+		}
+		return businessCaseDetail.getQty();
 	}
 }
