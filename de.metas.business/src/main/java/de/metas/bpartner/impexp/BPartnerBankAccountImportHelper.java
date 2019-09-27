@@ -9,6 +9,8 @@ import org.compiere.model.I_C_Bank;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.ModelValidationEngine;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.ICurrencyBL;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.util.Check;
@@ -58,7 +60,9 @@ import de.metas.util.Services;
 
 	public I_C_BP_BankAccount importRecord(final I_I_BPartner importRecord)
 	{
-		final I_C_BPartner bpartner = importRecord.getC_BPartner();
+		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
+		final I_C_BPartner bpartner = partnerDAO.getById(BPartnerId.ofRepoId(importRecord.getC_BPartner_ID()));
 
 		I_C_BP_BankAccount bankAccount = importRecord.getC_BP_BankAccount();
 		if (bankAccount != null)

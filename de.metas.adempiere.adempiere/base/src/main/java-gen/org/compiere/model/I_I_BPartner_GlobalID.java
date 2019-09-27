@@ -32,8 +32,6 @@ public interface I_I_BPartner_GlobalID
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_I_BPartner_GlobalID, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_I_BPartner_GlobalID, org.compiere.model.I_AD_Client>(I_I_BPartner_GlobalID.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -43,7 +41,7 @@ public interface I_I_BPartner_GlobalID
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -53,15 +51,11 @@ public interface I_I_BPartner_GlobalID
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_I_BPartner_GlobalID, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_I_BPartner_GlobalID, org.compiere.model.I_AD_Org>(I_I_BPartner_GlobalID.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
@@ -87,10 +81,6 @@ public interface I_I_BPartner_GlobalID
 	 * <br>Virtual Column: false
 	 */
 	public int getC_BPartner_ID();
-
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
 
     /** Column definition for C_BPartner_ID */
     public static final org.adempiere.model.ModelColumn<I_I_BPartner_GlobalID, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_I_BPartner_GlobalID, org.compiere.model.I_C_BPartner>(I_I_BPartner_GlobalID.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
@@ -131,24 +121,24 @@ public interface I_I_BPartner_GlobalID
 	 * Set Global ID.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setglobalid (java.lang.String globalid);
+	public void setGlobalId (java.lang.String GlobalId);
 
 	/**
 	 * Get Global ID.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getglobalid();
+	public java.lang.String getGlobalId();
 
-    /** Column definition for globalid */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner_GlobalID, Object> COLUMN_globalid = new org.adempiere.model.ModelColumn<I_I_BPartner_GlobalID, Object>(I_I_BPartner_GlobalID.class, "globalid", null);
-    /** Column name globalid */
-    public static final String COLUMNNAME_globalid = "globalid";
+    /** Column definition for GlobalId */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner_GlobalID, Object> COLUMN_GlobalId = new org.adempiere.model.ModelColumn<I_I_BPartner_GlobalID, Object>(I_I_BPartner_GlobalID.class, "GlobalId", null);
+    /** Column name GlobalId */
+    public static final String COLUMNNAME_GlobalId = "GlobalId";
 
 	/**
 	 * Set Import BPartnerr Global ID.
@@ -328,7 +318,7 @@ public interface I_I_BPartner_GlobalID
 
 	/**
 	 * Set URL3.
-	 * Full URL address - e.g. http://www.adempiere.org
+	 * Vollständige Web-Addresse, z.B. https://metasfresh.com/
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -338,7 +328,7 @@ public interface I_I_BPartner_GlobalID
 
 	/**
 	 * Get URL3.
-	 * Full URL address - e.g. http://www.adempiere.org
+	 * Vollständige Web-Addresse, z.B. https://metasfresh.com/
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

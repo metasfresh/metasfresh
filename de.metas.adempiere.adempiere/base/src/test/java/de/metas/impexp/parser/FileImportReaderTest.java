@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.metas.impexp;
+package de.metas.impexp.parser;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,7 +41,7 @@ import org.junit.Test;
  */
 public class FileImportReaderTest
 {
-	private static final String packagePath = "/de/metas/impexp";
+	private static final String packagePath = "/de/metas/impexp/parser";
 
 	@Test
 	public void testMultipleLinesFieldFile() throws IOException

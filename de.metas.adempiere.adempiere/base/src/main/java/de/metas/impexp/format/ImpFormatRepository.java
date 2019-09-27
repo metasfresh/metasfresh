@@ -1,4 +1,4 @@
-package de.metas.impexp;
+package de.metas.impexp.format;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.AdTableId;
@@ -60,6 +60,7 @@ public class ImpFormatRepository
 		final ImportTableDescriptor importTableDescriptor = importTableDescriptorRepo.getByTableId(adTableId);
 
 		return ImpFormat.builder()
+				.id(impFormatId)
 				.name(impFormatRecord.getName())
 				.formatType(ImpFormatType.ofCode(impFormatRecord.getFormatType()))
 				.multiLine(impFormatRecord.isMultiLine())

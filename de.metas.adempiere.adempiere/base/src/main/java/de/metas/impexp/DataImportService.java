@@ -4,6 +4,11 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import de.metas.impexp.config.DataImportConfig;
+import de.metas.impexp.config.DataImportConfigId;
+import de.metas.impexp.config.DataImportConfigRepository;
+import de.metas.impexp.format.ImpFormat;
+import de.metas.impexp.format.ImpFormatRepository;
 import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -36,13 +41,16 @@ public class DataImportService
 	private final IImportProcessFactory importProcessFactory = Services.get(IImportProcessFactory.class);
 	private final DataImportConfigRepository dataImportConfigsRepo;
 	private final ImpFormatRepository importFormatsRepo;
+	private final DataImportRunsService dataImportRunService;
 
 	public DataImportService(
 			@NonNull final DataImportConfigRepository dataImportConfigsRepo,
-			@NonNull final ImpFormatRepository importFormatsRepo)
+			@NonNull final ImpFormatRepository importFormatsRepo,
+			@NonNull final DataImportRunsService dataImportRunService)
 	{
 		this.dataImportConfigsRepo = dataImportConfigsRepo;
 		this.importFormatsRepo = importFormatsRepo;
+		this.dataImportRunService = dataImportRunService;
 	}
 
 	public DataImportResult importData(@NonNull final DataImportRequest request)
@@ -53,6 +61,8 @@ public class DataImportService
 
 		return DataImportCommand.builder()
 				.importProcessFactory(importProcessFactory)
+				.dataImportRunService(dataImportRunService)
+				//
 				.clientId(request.getClientId())
 				.orgId(request.getOrgId())
 				.userId(request.getUserId())

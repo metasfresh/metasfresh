@@ -1,4 +1,4 @@
-package de.metas.impexp;
+package de.metas.impexp.format;
 
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -40,6 +40,13 @@ import lombok.NonNull;
 @Repository
 public class ImportTableDescriptorRepository
 {
+	private final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
+
+	private static final String COLUMNNAME_C_DataImport_ID = I_C_DataImport.COLUMNNAME_C_DataImport_ID;
+	private static final String COLUMNNAME_AD_Issue_ID = I_AD_Issue.COLUMNNAME_AD_Issue_ID;
+	private static final String COLUMNNAME_I_LineContent = "I_LineContent";
+	private static final String COLUMNNAME_I_LineNo = "I_LineNo";
+
 	private final CCache<AdTableId, ImportTableDescriptor> //
 	importTableDescriptors = CCache.<AdTableId, ImportTableDescriptor> builder()
 			.additionalTableNameToResetFor(I_AD_Table.Table_Name)
@@ -53,7 +60,6 @@ public class ImportTableDescriptorRepository
 
 	public ImportTableDescriptor getByTableName(@NonNull final String tableName)
 	{
-		final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
 		final AdTableId adTableId = AdTableId.ofRepoId(adTablesRepo.retrieveTableId(tableName));
 
 		return getByTableId(adTableId);
@@ -72,22 +78,34 @@ public class ImportTableDescriptorRepository
 			throw new AdempiereException("Table " + tableName + " has not primary key");
 		}
 
-		final String dataImportConfigIdColumnName = poInfo.hasColumnName(I_C_DataImport.COLUMNNAME_C_DataImport_ID)
-				? I_C_DataImport.COLUMNNAME_C_DataImport_ID
-				: null;
-
-		final String adIssueIdColumnName = poInfo.hasColumnName(I_AD_Issue.COLUMNNAME_AD_Issue_ID)
-				? I_AD_Issue.COLUMNNAME_AD_Issue_ID
-				: null;
+		assertColumnNameExists(ImportTableDescriptor.COLUMNNAME_C_DataImport_Run_ID, poInfo);
+		assertColumnNameExists(ImportTableDescriptor.COLUMNNAME_I_ErrorMsg, poInfo);
 
 		return ImportTableDescriptor.builder()
 				.tableName(tableName)
 				.keyColumnName(keyColumnName)
 				//
-				.dataImportConfigIdColumnName(dataImportConfigIdColumnName)
-				.adIssueIdColumnName(adIssueIdColumnName)
+				.dataImportConfigIdColumnName(columnNameIfExists(COLUMNNAME_C_DataImport_ID, poInfo))
+				.adIssueIdColumnName(columnNameIfExists(COLUMNNAME_AD_Issue_ID, poInfo))
+				.importLineContentColumnName(columnNameIfExists(COLUMNNAME_I_LineContent, poInfo))
+				.importLineNoColumnName(columnNameIfExists(COLUMNNAME_I_LineNo, poInfo))
+				.errorMsgMaxLength(poInfo.getFieldLength(ImportTableDescriptor.COLUMNNAME_I_ErrorMsg))
 				//
 				.build();
+	}
+
+	private static void assertColumnNameExists(@NonNull final String columnName, @NonNull final POInfo poInfo)
+	{
+		if (!poInfo.hasColumnName(columnName))
+		{
+			throw new AdempiereException("No " + poInfo.getTableName() + "." + columnName + " defined");
+		}
+	}
+
+	private static String columnNameIfExists(@NonNull final String columnName, @NonNull final POInfo poInfo)
+	{
+		return poInfo.hasColumnName(columnName) ? columnName : null;
+
 	}
 
 }

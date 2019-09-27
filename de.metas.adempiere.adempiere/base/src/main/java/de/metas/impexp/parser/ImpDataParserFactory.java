@@ -1,8 +1,7 @@
-package de.metas.impexp;
+package de.metas.impexp.parser;
 
-import lombok.Builder;
+import de.metas.impexp.format.ImpFormat;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -26,15 +25,18 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class ImportTableDescriptor
+public class ImpDataParserFactory
 {
-	@NonNull
-	String tableName;
-	@NonNull
-	String keyColumnName;
+	private final ImpDataLineParserFactory lineParserFactory = new ImpDataLineParserFactory();
 
-	String dataImportConfigIdColumnName;
-	String adIssueIdColumnName;
+	public ImpDataParser createParser(@NonNull final ImpFormat impFormat)
+	{
+		final ImpDataLineParser lineParser = lineParserFactory.createParser(impFormat);
+
+		return ImpDataParser.builder()
+				.multiline(impFormat.isMultiLine())
+				.lineParser(lineParser)
+				.build();
+	}
+
 }

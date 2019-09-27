@@ -11,9 +11,11 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_BPartner_GlobalID;
 import org.compiere.model.X_I_BPartner_GlobalID;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
-import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult;
 import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -67,7 +69,7 @@ public class BPartnerGlobalIDImportProcess extends SimpleImportProcessTemplate<I
 	@Override
 	protected String getImportOrderBySql()
 	{
-		return I_I_BPartner_GlobalID.COLUMNNAME_globalid;
+		return I_I_BPartner_GlobalID.COLUMNNAME_GlobalId;
 	}
 
 	@Override
@@ -84,9 +86,11 @@ public class BPartnerGlobalIDImportProcess extends SimpleImportProcessTemplate<I
 			I_I_BPartner_GlobalID importRecord,
 			final boolean isInsertOnly)
 	{
+		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
 		if (importRecord.getC_BPartner_ID() > 0 && !Check.isEmpty(importRecord.getURL3(), true))
 		{
-			final I_C_BPartner bpartner = importRecord.getC_BPartner();
+			final I_C_BPartner bpartner = partnerDAO.getById(BPartnerId.ofRepoId(importRecord.getC_BPartner_ID()));
 			bpartner.setURL3(importRecord.getURL3());
 			InterfaceWrapperHelper.save(bpartner);
 			return ImportRecordResult.Updated;
