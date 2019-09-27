@@ -62,6 +62,8 @@ final class HUAttributeChangesCollector
 	private final AtomicBoolean disposed = new AtomicBoolean();
 	private final HashMap<HuId, HUAttributeChanges> huAttributeChangesMap = new HashMap<>();
 
+	private final HashMap<AttributesKey, AttributesKeyWithASI> attributesKeyWithASIsCache = new HashMap<>();
+
 	public HUAttributeChangesCollector(@NonNull final PostMaterialEventService materialEventService)
 	{
 		this.materialEventService = materialEventService;
@@ -104,8 +106,8 @@ final class HUAttributeChangesCollector
 		final Instant date = changes.getLastChangeDate();
 		final WarehouseId warehouseId = warehousesRepo.getWarehouseIdByLocatorRepoId(hu.getM_Locator_ID());
 
-		final AttributesKeyWithASI oldStorageAttributes = createAttributesKeyWithASI(changes.getOldAttributesKey());
-		final AttributesKeyWithASI newStorageAttributes = createAttributesKeyWithASI(changes.getNewAttributesKey());
+		final AttributesKeyWithASI oldStorageAttributes = toAttributesKeyWithASI(changes.getOldAttributesKey());
+		final AttributesKeyWithASI newStorageAttributes = toAttributesKeyWithASI(changes.getNewAttributesKey());
 
 		final List<IHUProductStorage> productStorages = handlingUnitsBL.getStorageFactory()
 				.getStorage(hu)
@@ -127,6 +129,11 @@ final class HUAttributeChangesCollector
 		}
 
 		return events;
+	}
+
+	private AttributesKeyWithASI toAttributesKeyWithASI(final AttributesKey attributesKey)
+	{
+		return attributesKeyWithASIsCache.computeIfAbsent(attributesKey, this::createAttributesKeyWithASI);
 	}
 
 	private AttributesKeyWithASI createAttributesKeyWithASI(final AttributesKey attributesKey)
