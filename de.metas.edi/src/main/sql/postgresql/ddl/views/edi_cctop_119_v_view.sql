@@ -70,9 +70,9 @@ FROM
 			, 0::INTEGER AS M_InOut_ID
 			, p_cust.ReferenceNo AS Vendor_ReferenceNo
 		FROM C_Invoice i
-			JOIN C_BPartner p_vend ON p_vend.AD_OrgBP_ID = i.AD_Org_ID
 			JOIN C_BPartner p_cust ON p_cust.C_BPartner_ID = i.C_BPartner_ID
-					JOIN C_BPartner_Location pl_vend ON pl_vend.C_BPartner_ID = p_vend.C_BPartner_ID AND pl_vend.isremitto = 'Y'::BPChar
+			JOIN C_BPartner p_vend ON p_vend.AD_OrgBP_ID = i.AD_Org_ID
+				JOIN C_BPartner_Location pl_vend ON pl_vend.C_BPartner_ID = p_vend.C_BPartner_ID AND pl_vend.isremitto = 'Y'
 		--
 		UNION
 		--
@@ -146,65 +146,6 @@ FROM
 							-- fallback and try to join from C_OrderLine if (and only if) it's missing in C_InvoiceLine
 							OR (sl.C_OrderLine_ID = il.C_OrderLine_ID AND (il.M_InOutLine_ID IS NULL OR il.M_InOutLine_ID = 0))
 							LEFT JOIN M_InOut s ON s.M_InOut_ID = sl.M_InOut_ID
-
-		/*
-		 *	M_InOut UNIONs are not needed anymore (at least for now).
-		 */
-		/*
-		--
-		UNION
-		--
-		SELECT DISTINCT
-			3::INTEGER
-			, 'ship'::TEXT AS TEXT
-			, s.C_BPartner_Location_ID
-			, 0::INTEGER
-			, s.M_InOut_ID
-			, NULL::TEXT
-		FROM M_InOut s
-		--
-		UNION
-		--
-		SELECT
-			4::INTEGER
-			, 'bill'
-			, o.bill_location_ID
-			, 0::INTEGER
-			, s.M_InOut_ID
-			, NULL::UNKNOWN
-		FROM M_InOut s
-		JOIN M_InOutline sl ON s.M_InOut_ID = sl.M_InOut_ID
-		JOIN C_OrderLine ol ON ol.C_OrderLine_ID = sl.C_OrderLine_ID
-		JOIN C_Order o ON o.C_Order_ID = ol.C_Order_ID
-		--
-		UNION
-		--
-		SELECT
-			1::INTEGER
-			, 'cust'
-			, o.C_BPartner_Location_ID
-			, 0::INTEGER
-			, s.M_InOut_ID
-			, NULL::UNKNOWN
-		FROM M_InOut s
-		JOIN M_InOutline sl ON s.M_InOut_ID = sl.M_InOut_ID
-		JOIN C_OrderLine ol ON ol.C_OrderLine_ID = sl.C_OrderLine_ID
-		JOIN C_Order o ON o.C_Order_ID = ol.C_Order_ID
-		--
-		UNION
-		--
-		SELECT
-			2::INTEGER
-			, 'vend'
-			, pl_vend.C_BPartner_Location_ID
-			, 0::INTEGER
-			, s.M_InOut_ID
-			, p_cust.ReferenceNo
-		FROM M_InOut s
-		JOIN C_BPartner p_vend ON p_vend.AD_OrgBP_ID = s.AD_Org_ID
-		JOIN C_BPartner p_cust ON p_cust.C_BPartner_ID = s.C_BPartner_ID
-		JOIN C_BPartner_Location pl_vend ON pl_vend.C_BPartner_ID = p_vend.C_BPartner_ID AND pl_vend.isremitto = 'Y'::BPChar
-		*/
 	) union_lookup
 	ORDER BY union_lookup.SeqNo, union_lookup.Type_V, union_lookup.C_BPartner_Location_ID, C_Invoice_ID, M_InOut_ID
 ) lookup
@@ -212,7 +153,9 @@ LEFT JOIN C_BPartner_Location pl ON pl.C_BPartner_Location_ID = lookup.C_BPartne
 LEFT JOIN C_BPartner p ON p.C_BPartner_ID = pl.C_BPartner_ID
 LEFT JOIN C_Location l ON l.C_Location_ID = pl.C_Location_ID
 LEFT JOIN C_Country c ON c.C_Country_ID = l.C_Country_ID
-WHERE p.VATaxID IS NOT NULL AND (l.Address1 IS NOT NULL OR l.Address2 IS NOT NULL)
+WHERE true
+	ADN p.VATaxID IS NOT NULL 
+	AND (l.Address1 IS NOT NULL OR l.Address2 IS NOT NULL)
 ORDER BY (
 	lookup.C_Invoice_ID,
 	CASE lookup.Type_V
