@@ -192,9 +192,51 @@ class OverlayField extends Component {
   }
 }
 
+/**
+ * @typedef {object} OverlayField
+ * @prop {func} onChange
+ * @prop {func} closeOverlay
+ * @prop {any} data
+ * @prop {any} layout
+ * @prop {any} type
+ * @prop {any} filter
+ * @prop {any} scanning
+ * @prop {any} scannerElement
+ * @prop {any} windowType
+ * @prop {any} viewId
+ * @prop {any} onShow
+ * @prop {any} onHide
+ * @prop {any} handlePatch
+ * @prop {any} handleChange
+ * @prop {any} captionValue
+ * @prop {any} codeSelected
+ * @prop {any} disabled
+ * @prop {any} onScanBarcode
+ * @prop {any} onSelectBarcode
+ * @prop {any} handleSubmit
+ * @todo Check props. Which proptype? Required or optional?
+ */
 OverlayField.propTypes = {
   onChange: PropTypes.func,
   closeOverlay: PropTypes.func,
+  data: PropTypes.any,
+  layout: PropTypes.any,
+  type: PropTypes.any,
+  filter: PropTypes.any,
+  scanning: PropTypes.any,
+  scannerElement: PropTypes.any,
+  windowType: PropTypes.any,
+  viewId: PropTypes.any,
+  onShow: PropTypes.any,
+  onHide: PropTypes.any,
+  handlePatch: PropTypes.any,
+  handleChange: PropTypes.any,
+  captionValue: PropTypes.any,
+  codeSelected: PropTypes.any,
+  disabled: PropTypes.any,
+  onScanBarcode: PropTypes.any,
+  onSelectBarcode: PropTypes.any,
+  handleSubmit: PropTypes.any,
 };
 
 export default BarcodeScanner(onClickOutside(OverlayField));
