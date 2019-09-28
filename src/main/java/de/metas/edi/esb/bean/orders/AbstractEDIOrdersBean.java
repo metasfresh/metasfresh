@@ -189,9 +189,9 @@ public abstract class AbstractEDIOrdersBean
 
 		final BigDecimal priceEntered = new BigDecimal(trimString(p100.getBuyerPrice()));
 		olcand.setPriceEntered(priceEntered);
-		// Note that this price shall not be propagated to the order line, so C_OLCand.
-		// IsManual shall not be set to Y.
-		// We only need this price in ADempiere so we can detect discrepancies
+
+		// Note that this price shall not be propagated to the order line, so C_OLCand.IsManual shall not be set to Y.
+		// We only need this price in metsfresh so we can detect discrepancies
 		olcand.setIsManualPrice("N");
 
 		//

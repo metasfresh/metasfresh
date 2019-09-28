@@ -38,7 +38,7 @@ import de.metas.edi.esb.route.AbstractEDIRoute;
 @Component
 public class EDIExportCommonRoute extends AbstractEDIRoute
 {
-	public static final String EDI_INVOICE_IS_STEPCOM_XML = "edi.props.invoice.isStepComXML";
+	public static final String EDI_INVOICE_IS_STEPCOM_XML = "edi.props.invoic.isStepComXML";
 
 	public static final String EDI_DESADV_IS_STEPCOM_XML = "edi.props.desadv.isStepComXML";
 

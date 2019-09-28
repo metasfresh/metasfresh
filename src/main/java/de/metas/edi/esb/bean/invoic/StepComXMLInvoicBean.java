@@ -121,7 +121,7 @@ public class StepComXMLInvoicBean
 	private Document createDocument(final Exchange exchange, final EDICctopInvoicVType invoice)
 	{
 		final DecimalFormat decimalFormat = exchange.getProperty(Constants.DECIMAL_FORMAT, DecimalFormat.class);
-		final String isTest = exchange.getProperty(StepComXMLInvoicRoute.EDI_XML_INVOICE_IS_TEST, String.class);
+		final String isTest = exchange.getProperty(StepComXMLInvoicRoute.EDI_XML_INVOIC_IS_TEST, String.class);
 		final String ownerId = exchange.getProperty(StepComXMLInvoicRoute.EDI_XML_OWNER_ID, String.class);
 		final String applicationRef = exchange.getProperty(StepComXMLInvoicRoute.EDI_XML_APPLICATION_REF, String.class);
 

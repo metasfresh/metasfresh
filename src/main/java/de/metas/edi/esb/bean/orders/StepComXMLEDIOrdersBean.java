@@ -23,7 +23,11 @@
 
 package de.metas.edi.esb.bean.orders;
 
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.ZERO;
+
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +37,7 @@ import org.springframework.util.CollectionUtils;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.jaxb.stepcom.order.DETAILXbest;
 import de.metas.edi.esb.jaxb.stepcom.order.DPRDE1;
+import de.metas.edi.esb.jaxb.stepcom.order.DPRIC1;
 import de.metas.edi.esb.jaxb.stepcom.order.DPRIN1;
 import de.metas.edi.esb.jaxb.stepcom.order.DQUAN1;
 import de.metas.edi.esb.jaxb.stepcom.order.Document;
@@ -85,8 +90,8 @@ public class StepComXMLEDIOrdersBean extends AbstractEDIOrdersBean
 		final P100 p100 = new P100();
 		p100.setPositionNo(detail.getLINENUMBER());
 
-		BigDecimal cutuQty = BigDecimal.ZERO;
-		BigDecimal orderQty = BigDecimal.ZERO;
+		BigDecimal cutuQty = ZERO;
+		BigDecimal orderQty = ZERO;
 		String orderUnit = StringUtils.EMPTY;
 
 		// iterate the current line's quantity details
@@ -114,19 +119,27 @@ public class StepComXMLEDIOrdersBean extends AbstractEDIOrdersBean
 				}
 			}
 		}
-		if (cutuQty.compareTo(BigDecimal.ZERO) == 0)
+		if (cutuQty.compareTo(ZERO) == 0)
 		{
-			cutuQty = BigDecimal.ONE;
+			cutuQty = ONE;
 		}
 		p100.setCuperTU(cutuQty.toString());
 		p100.setOrderQty(orderQty.toString());
 		p100.setOrderUnit(orderUnit);
 
 		// using only first price
-		BigDecimal price = BigDecimal.ZERO;
+		BigDecimal price = ZERO;
 		if (!CollectionUtils.isEmpty(detail.getDPRIC1()))
 		{
-			price = new BigDecimal(detail.getDPRIC1().get(0).getPRICE());
+			final DPRIC1 dpric1 = detail.getDPRIC1().get(0);
+			BigDecimal divisor = ONE;
+			if (!Util.isEmpty(dpric1.getPRICEBASIS()))
+			{
+				divisor = new BigDecimal(dpric1.getPRICEBASIS());
+			}
+			price = new BigDecimal(dpric1.getPRICE())
+					.setScale(3)
+					.divide(divisor, RoundingMode.HALF_UP);
 		}
 		p100.setBuyerPrice(price.toString());
 

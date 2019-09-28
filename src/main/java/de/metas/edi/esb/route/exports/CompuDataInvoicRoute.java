@@ -29,8 +29,8 @@ public class CompuDataInvoicRoute extends AbstractEDIRoute
 
 	public static final String EP_EDI_COMPUDATA_INVOICE_CONSUMER = "direct:edi.invoice.consumer";
 
-	public static final String EDI_INVOICE_SENDER_GLN = "edi.props.000.sender.gln";
-	public static final String EDI_INVOICE_IS_TEST = "edi.props.invoice.isTest";
+	public static final String EDI_INVOIC_SENDER_GLN = "edi.props.000.sender.gln";
+	public static final String EDI_INVOIC_IS_TEST = "edi.compudata.invoic.isTest";
 
 	public final static QName EDIInvoiceFeedback_QNAME = Constants.JAXB_ObjectFactory.createEDIInvoiceFeedback(null).getName();
 	public static final String METHOD_setCInvoiceID = "setCInvoiceID";
@@ -51,15 +51,15 @@ public class CompuDataInvoicRoute extends AbstractEDIRoute
 
 		final String invoiceFilenamePattern = Util.resolvePropertyPlaceholders(getContext(), CompuDataInvoicRoute.EDI_INVOICE_FILENAME_PATTERN);
 
-		final String senderGln = Util.resolvePropertyPlaceholders(getContext(), CompuDataInvoicRoute.EDI_INVOICE_SENDER_GLN);
-		final String isTest = Util.resolvePropertyPlaceholders(getContext(), CompuDataInvoicRoute.EDI_INVOICE_IS_TEST);
+		final String senderGln = Util.resolvePropertyPlaceholders(getContext(), CompuDataInvoicRoute.EDI_INVOIC_SENDER_GLN);
+		final String isTest = Util.resolvePropertyPlaceholders(getContext(), CompuDataInvoicRoute.EDI_INVOIC_IS_TEST);
 
 		from(CompuDataInvoicRoute.EP_EDI_COMPUDATA_INVOICE_CONSUMER)
 				.routeId(ROUTE_ID)
 
 		.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
-				.setProperty(CompuDataInvoicRoute.EDI_INVOICE_SENDER_GLN).constant(senderGln)
-				.setProperty(CompuDataInvoicRoute.EDI_INVOICE_IS_TEST).constant(isTest)
+				.setProperty(CompuDataInvoicRoute.EDI_INVOIC_SENDER_GLN).constant(senderGln)
+				.setProperty(CompuDataInvoicRoute.EDI_INVOIC_IS_TEST).constant(isTest)
 
 		.log(LoggingLevel.INFO, "EDI: Setting EDI feedback headers...")
 				.process(new Processor()

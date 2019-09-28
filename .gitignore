@@ -35,3 +35,4 @@ de.metas.endcustomer.mf15/metasfresh.properties
 #Ignore IDEA files
 *.iml
 **/.idea
+secrect_dont_commit

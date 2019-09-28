@@ -45,7 +45,7 @@ public class StepComXMLOrderRoute
 {
 	public static final String ROUTE_NAME = "XML-Order-To-XML-OLCand";
 
-	private static final String XML_INPUT_ORDERS = "{{xml.edi.input.orders}}";
+	private static final String XML_INPUT_ORDERS = "{{edi.input.orders.stepcom-xml.filename}}";
 
 	private static final String JAXB_ORDER_CONTEXTPATH = ObjectFactory.class.getPackage().getName();
 

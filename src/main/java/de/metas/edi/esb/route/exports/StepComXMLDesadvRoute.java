@@ -52,7 +52,7 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 
 	public static final String EP_EDI_STEPCOM_XML_DESADV_CONSUMER = "direct:edi.xml.desadv.consumer";
 
-	public static final String EDI_XML_DESADV_IS_TEST = "edi.xml.props.desadv.isTest";
+	public static final String EDI_XML_DESADV_IS_TEST = "edi.props.desadv.stepcom-xml.isTest";
 
 	public static final String EDI_XML_OWNER_ID = "edi.props.stepcom.owner.id";
 	public static final String EDI_XML_APPLICATION_REF = "edi.props.stepcom.application.ref";

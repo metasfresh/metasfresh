@@ -194,14 +194,14 @@ public class CompuDataInvoicBean
 		}
 		cctop000V.setInterchangeReferenceNo(sequenceNoAttr.toString());
 
-		final Object senderGln = exchange.getProperty(CompuDataInvoicRoute.EDI_INVOICE_SENDER_GLN);
+		final Object senderGln = exchange.getProperty(CompuDataInvoicRoute.EDI_INVOIC_SENDER_GLN);
 		if (senderGln == null)
 		{
 			throw new RuntimeCamelException("senderGln property cannot be null for!");
 		}
 		cctop000V.setSenderGln(senderGln.toString());
 
-		final Object isTest = exchange.getProperty(CompuDataInvoicRoute.EDI_INVOICE_IS_TEST);
+		final Object isTest = exchange.getProperty(CompuDataInvoicRoute.EDI_INVOIC_IS_TEST);
 		if (isTest == null)
 		{
 			throw new RuntimeCamelException("isTest property cannot be null for!");
