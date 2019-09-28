@@ -258,6 +258,12 @@ class Attachments extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {string} windowType
+ * @prop {string} docId
+ * @todo Check props. Which proptype? Required or optional?
+ */
 Attachments.propTypes = {
   windowType: PropTypes.string.isRequired,
   docId: PropTypes.string.isRequired,
