@@ -10,6 +10,11 @@ import {
 import Loader from '../app/Loader';
 import AttachUrl from './AttachUrl';
 
+/**
+ * @file Class based component.
+ * @module Attachments
+ * @extends Component
+ */
 class Attachments extends Component {
   state = {
     data: null,
@@ -17,10 +22,20 @@ class Attachments extends Component {
     isAttachUrlOpen: false,
   };
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   componentDidMount = () => {
     this.fetchAttachments();
   };
 
+  /**
+   * @method fetchAttachments
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   fetchAttachments = () => {
     const { windowType, docId } = this.props;
 
@@ -33,26 +48,56 @@ class Attachments extends Component {
     });
   };
 
+  /**
+   * @method toggleAttachmentDelete
+   * @summary ToDo: Describe the method
+   * @param {*} value
+   * @todo Write the documentation
+   */
   toggleAttachmentDelete = value => {
     this.setState({
       attachmentHovered: value,
     });
   };
 
+  /**
+   * @method handleClickAttachUrl
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleClickAttachUrl = () => {
     this.setState({ isAttachUrlOpen: true });
   };
 
+  /**
+   * @method handleCloseAttachUrl
+   * @summary ToDo: Describe the method
+   * @param {*} event
+   * @todo Write the documentation
+   */
   handleCloseAttachUrl = event => {
     event.stopPropagation();
     this.setState({ isAttachUrlOpen: false });
   };
 
+  /**
+   * @method handleClickAttachment
+   * @summary ToDo: Describe the method
+   * @param {*} id
+   * @todo Write the documentation
+   */
   handleClickAttachment = id => {
     const { windowType, docId } = this.props;
     openFile('window', windowType, docId, 'attachments', id);
   };
 
+  /**
+   * @method handleDeleteAttachment
+   * @summary ToDo: Describe the method
+   * @param {*} event
+   * @param {*} id
+   * @todo Write the documentation
+   */
   handleDeleteAttachment = (e, id) => {
     const { windowType, docId } = this.props;
     e.stopPropagation();
@@ -73,6 +118,12 @@ class Attachments extends Component {
     }
   };
 
+  /**
+   * @method handleKeyDown
+   * @summary ToDo: Describe the method
+   * @param {*} event
+   * @todo Write the documentation
+   */
   handleKeyDown = e => {
     const active = document.activeElement;
 
@@ -100,6 +151,11 @@ class Attachments extends Component {
     }
   };
 
+  /**
+   * @method renderActions
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   renderActions = () => {
     const { windowType, docId } = this.props;
     const { isAttachUrlOpen } = this.state;
@@ -120,6 +176,11 @@ class Attachments extends Component {
     );
   };
 
+  /**
+   * @method renderData
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   renderData = () => {
     const { data, attachmentHovered } = this.state;
 
@@ -155,12 +216,22 @@ class Attachments extends Component {
     ));
   };
 
+  /**
+   * @method renderEmpty
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   renderEmpty = () => (
     <div className="subheader-item subheader-item-disabled">
       {counterpart.translate('window.sideList.attachments.empty')}
     </div>
   );
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     const { data } = this.state;
     let actions, content;
@@ -187,6 +258,12 @@ class Attachments extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {string} windowType
+ * @prop {string} docId
+ * @todo Check props. Which proptype? Required or optional?
+ */
 Attachments.propTypes = {
   windowType: PropTypes.string.isRequired,
   docId: PropTypes.string.isRequired,

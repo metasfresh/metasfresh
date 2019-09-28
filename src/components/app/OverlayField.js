@@ -7,6 +7,11 @@ import MasterWidget from '../widget/MasterWidget';
 import RawWidget from '../widget/RawWidget';
 import BarcodeScanner from '../widget/BarcodeScanner/BarcodeScannerWidget';
 
+/**
+ * @file Class based component.
+ * @module OverlayField
+ * @extends Component
+ */
 class OverlayField extends Component {
   handleClickOutside = () => {
     const { closeOverlay } = this.props;
@@ -14,6 +19,12 @@ class OverlayField extends Component {
     closeOverlay();
   };
 
+  /**
+   * @method handleKeyDown
+   * @summary ToDo: Describe the method
+   * @param {*} event
+   * @todo Write the documentation
+   */
   handleKeyDown = e => {
     const { handleSubmit, closeOverlay, onSelectBarcode } = this.props;
 
@@ -30,6 +41,11 @@ class OverlayField extends Component {
     }
   };
 
+  /**
+   * @method renderBarcodeScanButton
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   renderBarcodeScanButton = () => {
     const { onScanBarcode } = this.props;
 
@@ -43,6 +59,14 @@ class OverlayField extends Component {
     );
   };
 
+  /**
+   * @method renderElements
+   * @summary ToDo: Describe the method
+   * @param {*} layout
+   * @param {*} data
+   * @param {*} type
+   * @todo Write the documentation
+   */
   renderElements = (layout, data, type) => {
     const { disabled, codeSelected, onChange } = this.props;
     const elements = layout.elements;
@@ -74,6 +98,12 @@ class OverlayField extends Component {
     });
   };
 
+  /**
+   * @method renderParameters
+   * @summary ToDo: Describe the method
+   * @param {*} layout
+   * @todo Write the documentation
+   */
   renderParameters = layout => {
     const {
       windowType,
@@ -129,6 +159,11 @@ class OverlayField extends Component {
     });
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     const { data, layout, type, filter, scanning, scannerElement } = this.props;
     let renderedContent = null;
@@ -157,9 +192,51 @@ class OverlayField extends Component {
   }
 }
 
+/**
+ * @typedef {object} OverlayField
+ * @prop {func} onChange
+ * @prop {func} closeOverlay
+ * @prop {any} data
+ * @prop {any} layout
+ * @prop {any} type
+ * @prop {any} filter
+ * @prop {any} scanning
+ * @prop {any} scannerElement
+ * @prop {any} windowType
+ * @prop {any} viewId
+ * @prop {any} onShow
+ * @prop {any} onHide
+ * @prop {any} handlePatch
+ * @prop {any} handleChange
+ * @prop {any} captionValue
+ * @prop {any} codeSelected
+ * @prop {any} disabled
+ * @prop {any} onScanBarcode
+ * @prop {any} onSelectBarcode
+ * @prop {any} handleSubmit
+ * @todo Check props. Which proptype? Required or optional?
+ */
 OverlayField.propTypes = {
   onChange: PropTypes.func,
   closeOverlay: PropTypes.func,
+  data: PropTypes.any,
+  layout: PropTypes.any,
+  type: PropTypes.any,
+  filter: PropTypes.any,
+  scanning: PropTypes.any,
+  scannerElement: PropTypes.any,
+  windowType: PropTypes.any,
+  viewId: PropTypes.any,
+  onShow: PropTypes.any,
+  onHide: PropTypes.any,
+  handlePatch: PropTypes.any,
+  handleChange: PropTypes.any,
+  captionValue: PropTypes.any,
+  codeSelected: PropTypes.any,
+  disabled: PropTypes.any,
+  onScanBarcode: PropTypes.any,
+  onSelectBarcode: PropTypes.any,
+  handleSubmit: PropTypes.any,
 };
 
 export default BarcodeScanner(onClickOutside(OverlayField));
