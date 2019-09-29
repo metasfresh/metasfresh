@@ -521,7 +521,6 @@ input:checked + .input-slider:before {
     cursor: pointer;
     min-width: 200px;
     padding: .125rem .5rem;
-    border-radius: 3px;
 
     &:focus {
         outline-width: 0;
