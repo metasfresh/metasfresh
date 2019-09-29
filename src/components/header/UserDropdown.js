@@ -1,6 +1,7 @@
 import counterpart from 'counterpart';
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
+import PropTypes from 'prop-types';
 
 import Avatar from '../app/Avatar';
 import Tooltips from '../tooltips/Tooltips';
@@ -198,5 +199,28 @@ class UserDropdown extends Component {
     );
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} open
+ * @prop {*} handleUDOpen
+ * @prop {*} redirect
+ * @prop {*} shortcut
+ * @prop {*} toggleTooltip
+ * @prop {*} tooltipOpen
+ * @prop {*} me
+ * @prop {*} plugins
+ * @todo Check props. Which proptype? Required or optional?
+ */
+UserDropdown.propTypes = {
+  open: PropTypes.any,
+  handleUDOpen: PropTypes.any,
+  redirect: PropTypes.any,
+  shortcut: PropTypes.any,
+  toggleTooltip: PropTypes.any,
+  tooltipOpen: PropTypes.any,
+  me: PropTypes.any,
+  plugins: PropTypes.any,
+};
 
 export default onClickOutside(UserDropdown);
