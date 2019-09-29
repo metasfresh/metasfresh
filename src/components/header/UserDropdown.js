@@ -1,17 +1,34 @@
 import counterpart from 'counterpart';
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
+import PropTypes from 'prop-types';
 
 import Avatar from '../app/Avatar';
 import Tooltips from '../tooltips/Tooltips';
 
+/**
+ * @file Class based component.
+ * @module UserDropdown
+ * @extends Component
+ */
 class UserDropdown extends Component {
   constructor(props) {
     super(props);
   }
 
+  /**
+   * @method handleClickOutside
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleClickOutside = () => this.props.handleUDOpen(false);
 
+  /**
+   * @method handleKeyDown
+   * @summary ToDo: Describe the method
+   * @param {object} event
+   * @todo Write the documentation
+   */
   handleKeyDown = e => {
     switch (e.key) {
       case 'ArrowDown': {
@@ -49,6 +66,11 @@ class UserDropdown extends Component {
     }
   };
 
+  /**
+   * @method renderPlugins
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   renderPlugins = () => {
     const { handleUDOpen, redirect, toggleTooltip, plugins } = this.props;
     const ret = { pluginsMenu: null, pluginsMenuLength: 0 };
@@ -84,6 +106,11 @@ class UserDropdown extends Component {
     return ret;
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     const {
       open,
@@ -172,5 +199,28 @@ class UserDropdown extends Component {
     );
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} open
+ * @prop {*} handleUDOpen
+ * @prop {*} redirect
+ * @prop {*} shortcut
+ * @prop {*} toggleTooltip
+ * @prop {*} tooltipOpen
+ * @prop {*} me
+ * @prop {*} plugins
+ * @todo Check props. Which proptype? Required or optional?
+ */
+UserDropdown.propTypes = {
+  open: PropTypes.any,
+  handleUDOpen: PropTypes.any,
+  redirect: PropTypes.any,
+  shortcut: PropTypes.any,
+  toggleTooltip: PropTypes.any,
+  tooltipOpen: PropTypes.any,
+  me: PropTypes.any,
+  plugins: PropTypes.any,
+};
 
 export default onClickOutside(UserDropdown);
