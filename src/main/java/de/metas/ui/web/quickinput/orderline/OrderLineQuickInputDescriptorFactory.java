@@ -12,6 +12,8 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
@@ -62,12 +64,20 @@ import lombok.NonNull;
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final AvailableToPromiseAdapter availableToPromiseAdapter;
 
-	private final OrderLineQuickInputCallout callout = OrderLineQuickInputCallout.newInstance();
+	private final OrderLineQuickInputCallout callout;
 
 	public OrderLineQuickInputDescriptorFactory(
+			@NonNull final IBPartnerBL bpartnersService,
 			@NonNull final AvailableToPromiseAdapter availableToPromiseAdapter)
 	{
 		this.availableToPromiseAdapter = availableToPromiseAdapter;
+
+		final IHUOrderBL huOrderBL = Services.get(IHUOrderBL.class);
+
+		callout = OrderLineQuickInputCallout.builder()
+				.bpartnersService(bpartnersService)
+				.huOrderBL(huOrderBL)
+				.build();
 	}
 
 	@Override

@@ -92,7 +92,7 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 			@NonNull final PickingSlotRowId pickingSlotRowId,
 			@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		final ShipmentAllocationBestBeforePolicy bestBeforePolicy = shipmentScheduleBL.getBestBeforePolicy(shipmentScheduleId).orElse(ShipmentAllocationBestBeforePolicy.Expiring_First);
+		final ShipmentAllocationBestBeforePolicy bestBeforePolicy = shipmentScheduleBL.getBestBeforePolicy(shipmentScheduleId);
 
 		final Packageable packageable = packagingDAO.getByShipmentScheduleId(shipmentScheduleId);
 		final DocumentFilter stickyFilter = huReservationDocumentFilterService.createDocumentFilterIgnoreAttributes(packageable);

@@ -3,6 +3,7 @@ package de.metas.ui.web.pickingV2.productsToPick;
 import org.compiere.model.I_M_Locator;
 import org.springframework.stereotype.Repository;
 
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
@@ -34,13 +35,16 @@ import lombok.NonNull;
 @Repository
 public class ProductsToPickRowsRepository
 {
+	private final IBPartnerBL bpartnersService;
 	private final HUReservationService huReservationService;
 	private final PickingCandidateService pickingCandidateService;
 
 	public ProductsToPickRowsRepository(
+			@NonNull final IBPartnerBL bpartnersService,
 			@NonNull final HUReservationService huReservationService,
 			@NonNull final PickingCandidateService pickingCandidateService)
 	{
+		this.bpartnersService = bpartnersService;
 		this.huReservationService = huReservationService;
 		this.pickingCandidateService = pickingCandidateService;
 	}
@@ -54,6 +58,7 @@ public class ProductsToPickRowsRepository
 	private ProductsToPickRowsDataFactory newProductsToPickRowsFactory()
 	{
 		return ProductsToPickRowsDataFactory.builder()
+				.bpartnersService(bpartnersService)
 				.huReservationService(huReservationService)
 				.pickingCandidateService(pickingCandidateService)
 				.locatorLookup(LookupDataSourceFactory.instance.searchInTableLookup(I_M_Locator.Table_Name))

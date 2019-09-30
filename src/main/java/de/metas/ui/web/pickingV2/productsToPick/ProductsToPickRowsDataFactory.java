@@ -27,7 +27,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -88,6 +90,7 @@ class ProductsToPickRowsDataFactory
 	// services
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IBPartnerBL bpartnersService;
 	private final HUReservationService huReservationService;
 	private final PickingCandidateService pickingCandidateService;
 
@@ -108,11 +111,13 @@ class ProductsToPickRowsDataFactory
 
 	@Builder
 	private ProductsToPickRowsDataFactory(
+			@NonNull final IBPartnerBL bpartnersService,
 			@NonNull final HUReservationService huReservationService,
 			@NonNull final PickingCandidateService pickingCandidateService,
 			//
 			@NonNull final LookupValueByIdSupplier locatorLookup)
 	{
+		this.bpartnersService = bpartnersService;
 		this.huReservationService = huReservationService;
 		this.pickingCandidateService = pickingCandidateService;
 
@@ -200,7 +205,7 @@ class ProductsToPickRowsDataFactory
 				.map(huId -> createZeroQtyRowFromHU(packageable, huId))
 				.collect(ImmutableList.toImmutableList());
 
-		final ShipmentAllocationBestBeforePolicy bestBeforePolicy = packageable.getBestBeforePolicy().orElse(ShipmentAllocationBestBeforePolicy.Expiring_First);
+		final ShipmentAllocationBestBeforePolicy bestBeforePolicy = getBestBeforePolicy(packageable);
 
 		return rows.stream()
 				.sorted(Comparator
@@ -209,6 +214,18 @@ class ProductsToPickRowsDataFactory
 				.map(row -> allocateRowFromHU(row, packageable))
 				.filter(Predicates.notNull())
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	private ShipmentAllocationBestBeforePolicy getBestBeforePolicy(final AllocablePackageable packageable)
+	{
+		Optional<ShipmentAllocationBestBeforePolicy> bestBeforePolicy = packageable.getBestBeforePolicy();
+		if (bestBeforePolicy.isPresent())
+		{
+			return bestBeforePolicy.get();
+		}
+
+		final BPartnerId bpartnerId = packageable.getCustomerId();
+		return bpartnersService.getBestBeforePolicy(bpartnerId);
 	}
 
 	private Set<HuId> getHuIdsReservedForSalesOrderLine(final AllocablePackageable packageable)
@@ -463,6 +480,8 @@ class ProductsToPickRowsDataFactory
 		}
 
 		@Getter
+		private BPartnerId customerId;
+		@Getter
 		private final ProductId productId;
 		@Getter
 		private final ShipmentScheduleId shipmentScheduleId;
@@ -479,6 +498,7 @@ class ProductsToPickRowsDataFactory
 
 		private AllocablePackageable(@NonNull final Packageable packageable)
 		{
+			this.customerId = packageable.getCustomerId();
 			this.productId = packageable.getProductId();
 			this.shipmentScheduleId = packageable.getShipmentScheduleId();
 			this.bestBeforePolicy = packageable.getBestBeforePolicy();
