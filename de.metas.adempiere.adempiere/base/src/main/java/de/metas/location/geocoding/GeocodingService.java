@@ -1,15 +1,13 @@
 package de.metas.location.geocoding;
 
-import java.util.List;
-import java.util.Optional;
-
+import de.metas.location.geocoding.provider.GeoCoordinatesProviderFactory;
+import de.metas.logging.LogManager;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.logging.LogManager;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 /*
  * #%L
@@ -34,29 +32,23 @@ import lombok.NonNull;
  */
 
 @Service
-public class GeoCoordinatesService
+public class GeocodingService
 {
-	private static final Logger logger = LogManager.getLogger(GeoCoordinatesService.class);
+	private static final Logger logger = LogManager.getLogger(GeocodingService.class);
 
-	private final ImmutableList<GeoCoordinatesProvider> providers;
-
-	public GeoCoordinatesService(final Optional<List<GeoCoordinatesProvider>> providers)
+	public GeocodingService()
 	{
-		this.providers = providers
-				.map(ImmutableList::copyOf)
-				.orElseGet(ImmutableList::of);
-
-		logger.info("Providers: {}", this.providers);
 	}
 
-	private GeoCoordinatesProvider getProviderOrNull()
+	@Nullable
+	private GeocodingProvider getProviderOrNull()
 	{
-		return providers != null ? providers.get(0) : null;
+		return GeoCoordinatesProviderFactory.buildActiveGeocodingProviderOrNull();
 	}
 
 	public Optional<GeographicalCoordinates> findBestCoordinates(@NonNull final GeoCoordinatesRequest request)
 	{
-		final GeoCoordinatesProvider provider = getProviderOrNull();
+		final GeocodingProvider provider = getProviderOrNull();
 		if (provider == null)
 		{
 			return Optional.empty();

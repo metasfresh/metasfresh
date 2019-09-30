@@ -28,7 +28,7 @@ import com.google.maps.GeocodingApi;
 import com.google.maps.model.GeocodingResult;
 import com.google.maps.model.LatLng;
 import de.metas.cache.CCache;
-import de.metas.location.geocoding.GeoCoordinatesProvider;
+import de.metas.location.geocoding.GeocodingProvider;
 import de.metas.location.geocoding.GeoCoordinatesRequest;
 import de.metas.location.geocoding.GeographicalCoordinates;
 import de.metas.logging.LogManager;
@@ -42,9 +42,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-public class GoogleMapsGeoCoordinatesProviderImpl implements GeoCoordinatesProvider
+public class GoogleMapsGeocodingProviderImpl implements GeocodingProvider
 {
-	private static final Logger logger = LogManager.getLogger(GoogleMapsGeoCoordinatesProviderImpl.class);
+	private static final Logger logger = LogManager.getLogger(GoogleMapsGeocodingProviderImpl.class);
 
 	private final CCache<GeoCoordinatesRequest, ImmutableList<GeographicalCoordinates>> coordinatesCache;
 
@@ -96,7 +96,7 @@ public class GoogleMapsGeoCoordinatesProviderImpl implements GeoCoordinatesProvi
 		logger.trace("Geocoding response from google: {}", results);
 
 		return Arrays.stream(results)
-				.map(GoogleMapsGeoCoordinatesProviderImpl::toGeographicalCoordinates)
+				.map(GoogleMapsGeocodingProviderImpl::toGeographicalCoordinates)
 				.collect(GuavaCollectors.toImmutableList());
 	}
 

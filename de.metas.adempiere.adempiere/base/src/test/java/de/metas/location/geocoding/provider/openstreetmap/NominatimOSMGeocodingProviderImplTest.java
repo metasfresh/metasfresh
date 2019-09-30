@@ -39,15 +39,15 @@ import de.metas.location.geocoding.GeoCoordinatesRequest;
 import de.metas.location.geocoding.GeographicalCoordinates;
 
 @Disabled("It makes real queries which can't be mocked so don't run it automatically.")
-class NominatimOSMGeoCoordinatesProviderImplTest
+class NominatimOSMGeocodingProviderImplTest
 {
 	private static final long MILLIS_BETWEEN_REQUESTS = TimeUnit.SECONDS.toMillis(20);
-	private NominatimOSMGeoCoordinatesProviderImpl coordinatesProvider;
+	private NominatimOSMGeocodingProviderImpl coordinatesProvider;
 
 	@BeforeEach
 	void beforeEach()
 	{
-		coordinatesProvider = new NominatimOSMGeoCoordinatesProviderImpl("", MILLIS_BETWEEN_REQUESTS, 0);
+		coordinatesProvider = new NominatimOSMGeocodingProviderImpl("", MILLIS_BETWEEN_REQUESTS, 0);
 	}
 
 	private static GeographicalCoordinates toGeographicalCoordinates(final String latitudeStr, final String longitudeStr)
@@ -158,7 +158,7 @@ class NominatimOSMGeoCoordinatesProviderImplTest
 	@DisplayName("2 different requests at the same time should be rate limited")
 	void expect2DifferentRequestsAtTheSameTimeShouldBeRateLimited()
 	{
-		coordinatesProvider = new NominatimOSMGeoCoordinatesProviderImpl("", MILLIS_BETWEEN_REQUESTS, 5);
+		coordinatesProvider = new NominatimOSMGeocodingProviderImpl("", MILLIS_BETWEEN_REQUESTS, 5);
 
 		final Instant start = Instant.now();
 		coordinatesProvider.findBestCoordinates(
@@ -182,7 +182,7 @@ class NominatimOSMGeoCoordinatesProviderImplTest
 	@DisplayName("expect cache hit for duplicate requests")
 	void expectCacheHitForDuplicateRequests()
 	{
-		coordinatesProvider = new NominatimOSMGeoCoordinatesProviderImpl("", MILLIS_BETWEEN_REQUESTS, 5);
+		coordinatesProvider = new NominatimOSMGeocodingProviderImpl("", MILLIS_BETWEEN_REQUESTS, 5);
 		final GeoCoordinatesRequest req = GeoCoordinatesRequest.builder()
 				.postal("5081")
 				.countryCode2("AT")

@@ -24,7 +24,7 @@ package de.metas.location.geocoding;
 
 import java.util.Optional;
 
-public interface GeoCoordinatesProvider
+public interface GeocodingProvider
 {
 	Optional<GeographicalCoordinates> findBestCoordinates(GeoCoordinatesRequest request);
 }

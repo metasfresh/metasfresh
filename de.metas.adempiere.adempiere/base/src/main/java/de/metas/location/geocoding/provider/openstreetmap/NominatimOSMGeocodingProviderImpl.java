@@ -25,7 +25,7 @@ package de.metas.location.geocoding.provider.openstreetmap;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
-import de.metas.location.geocoding.GeoCoordinatesProvider;
+import de.metas.location.geocoding.GeocodingProvider;
 import de.metas.location.geocoding.GeoCoordinatesRequest;
 import de.metas.location.geocoding.GeographicalCoordinates;
 import de.metas.logging.LogManager;
@@ -53,10 +53,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-@Component
-public class NominatimOSMGeoCoordinatesProviderImpl implements GeoCoordinatesProvider
+public class NominatimOSMGeocodingProviderImpl implements GeocodingProvider
 {
-	private static final Logger logger = LogManager.getLogger(NominatimOSMGeoCoordinatesProviderImpl.class);
+	private static final Logger logger = LogManager.getLogger(NominatimOSMGeocodingProviderImpl.class);
 
 	private final static String DEFAULT_BASE_URL = "https://nominatim.openstreetmap.org/search";
 	@SuppressWarnings("SpellCheckingInspection")
@@ -161,7 +160,7 @@ public class NominatimOSMGeoCoordinatesProviderImpl implements GeoCoordinatesPro
 		lastRequestTime = Instant.now();
 
 		final ImmutableList<GeographicalCoordinates> result = coords.stream()
-				.map(NominatimOSMGeoCoordinatesProviderImpl::toGeographicalCoordinates)
+				.map(NominatimOSMGeocodingProviderImpl::toGeographicalCoordinates)
 				.collect(GuavaCollectors.toImmutableList());
 
 		logger.debug("Got result for {}: {}", request, result);
