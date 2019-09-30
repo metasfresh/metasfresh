@@ -119,7 +119,6 @@
 	</xsd:attribute>
 	<xsd:element name="EDI_Exp_C_BPartner_Product_v" type="EDI_Exp_C_BPartner_Product_vType" />
 	<xsd:element name="EDI_Imp_AD_InputDataSource_Lookup_IN" type="EDI_Imp_AD_InputDataSource_Lookup_INType" />
-	<xsd:element name="EDI_M_InOut_Overdelivery_C_OrderLine_v" type="EDI_M_InOut_Overdelivery_C_OrderLine_vType" />
 	<xsd:simpleType name="C_CreditMemo_ReasonEnum">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="CMF">
@@ -272,15 +271,12 @@
 	<xsd:element name="EDI_Imp_C_OLCand" type="EDI_Imp_C_OLCandType" />
 	<xsd:element name="EDI_Imp_C_BPartner_Location_Lookup_GLN" type="EDI_Imp_C_BPartner_Location_Lookup_GLNType" />
 	<xsd:element name="EDI_Imp_C_UOM_Lookup_UOMSymbol" type="EDI_Imp_C_UOM_Lookup_UOMSymbolType" />
-	<xsd:element name="EDI_Exp_M_InOut" type="EDI_Exp_M_InOutType" />
-	<xsd:element name="EDI_Exp_M_InOutLine" type="EDI_Exp_M_InOutLineType" />
 	<xsd:element name="EDI_Exp_C_BPartner" type="EDI_Exp_C_BPartnerType" />
 	<xsd:element name="EDI_Exp_M_Product" type="EDI_Exp_M_ProductType" />
 	<xsd:element name="EDI_Exp_C_Order" type="EDI_Exp_C_OrderType" />
 	<xsd:element name="EDI_Exp_C_OrderLine" type="EDI_Exp_C_OrderLineType" />
 	<xsd:element name="EDI_Exp_C_Currency" type="EDI_Exp_C_CurrencyType" />
 	<xsd:element name="EDI_Exp_C_UOM" type="EDI_Exp_C_UOMType" />
-	<xsd:element name="EDI_InOut_Feedback" type="EDI_InOut_FeedbackType" />
 	<xsd:element name="EDI_Imp_C_BPartner_Lookup_RecipientGLN" type="EDI_Imp_C_BPartner_Lookup_RecipientGLNType" />
 	<xsd:element name="EDI_Imp_C_Currency_Lookup_ISOCode" type="EDI_Imp_C_Currency_Lookup_ISOCodeType" />
 	<xsd:element name="EDI_Exp_C_BPartner_Location" type="EDI_Exp_C_BPartner_LocationType" />
