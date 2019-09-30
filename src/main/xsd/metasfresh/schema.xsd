@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" jaxb:version="2.0">
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:xsd="http://www.w3.org/2001/XMLSchema" jaxb:version="2.0">
 	<xsd:attribute name="AD_Client_Value" type="xsd:string">
 		<xsd:annotation>
 			<xsd:appinfo>
@@ -62,17 +62,17 @@
 	</xsd:attribute>
 	<xsd:simpleType name="ReplicationModeEnum">
 		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="1">
-				<xsd:annotation>
-					<xsd:appinfo>
-						<jaxb:typesafeEnumMember name="Document" />
-					</xsd:appinfo>
-				</xsd:annotation>
-			</xsd:enumeration>
 			<xsd:enumeration value="0">
 				<xsd:annotation>
 					<xsd:appinfo>
 						<jaxb:typesafeEnumMember name="Table" />
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="1">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<jaxb:typesafeEnumMember name="Document" />
 					</xsd:appinfo>
 				</xsd:annotation>
 			</xsd:enumeration>
@@ -121,17 +121,17 @@
 	<xsd:element name="EDI_Imp_AD_InputDataSource_Lookup_IN" type="EDI_Imp_AD_InputDataSource_Lookup_INType" />
 	<xsd:simpleType name="C_CreditMemo_ReasonEnum">
 		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="CMD">
-				<xsd:annotation>
-					<xsd:appinfo>
-						<jaxb:typesafeEnumMember name="Doppellieferung" />
-					</xsd:appinfo>
-				</xsd:annotation>
-			</xsd:enumeration>
 			<xsd:enumeration value="CMF">
 				<xsd:annotation>
 					<xsd:appinfo>
 						<jaxb:typesafeEnumMember name="Falschlieferung" />
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="CMD">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<jaxb:typesafeEnumMember name="Doppellieferung" />
 					</xsd:appinfo>
 				</xsd:annotation>
 			</xsd:enumeration>
@@ -152,41 +152,6 @@
 	<xsd:element name="EDI_cctop_901_991_v" type="EDI_cctop_901_991_vType" />
 	<xsd:simpleType name="EDI_ExportStatusEnum">
 		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="D">
-				<xsd:annotation>
-					<xsd:appinfo>
-						<jaxb:typesafeEnumMember name="SendingStarted" />
-					</xsd:appinfo>
-				</xsd:annotation>
-			</xsd:enumeration>
-			<xsd:enumeration value="U">
-				<xsd:annotation>
-					<xsd:appinfo>
-						<jaxb:typesafeEnumMember name="Enqueued" />
-					</xsd:appinfo>
-				</xsd:annotation>
-			</xsd:enumeration>
-			<xsd:enumeration value="E">
-				<xsd:annotation>
-					<xsd:appinfo>
-						<jaxb:typesafeEnumMember name="Error" />
-					</xsd:appinfo>
-				</xsd:annotation>
-			</xsd:enumeration>
-			<xsd:enumeration value="N">
-				<xsd:annotation>
-					<xsd:appinfo>
-						<jaxb:typesafeEnumMember name="DontSend" />
-					</xsd:appinfo>
-				</xsd:annotation>
-			</xsd:enumeration>
-			<xsd:enumeration value="I">
-				<xsd:annotation>
-					<xsd:appinfo>
-						<jaxb:typesafeEnumMember name="Invalid" />
-					</xsd:appinfo>
-				</xsd:annotation>
-			</xsd:enumeration>
 			<xsd:enumeration value="P">
 				<xsd:annotation>
 					<xsd:appinfo>
@@ -201,11 +166,60 @@
 					</xsd:appinfo>
 				</xsd:annotation>
 			</xsd:enumeration>
+			<xsd:enumeration value="D">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<jaxb:typesafeEnumMember name="SendingStarted" />
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="E">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<jaxb:typesafeEnumMember name="Error" />
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="U">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<jaxb:typesafeEnumMember name="Enqueued" />
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="I">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<jaxb:typesafeEnumMember name="Invalid" />
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="N">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<jaxb:typesafeEnumMember name="DontSend" />
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:enumeration>
 		</xsd:restriction>
 	</xsd:simpleType>
 	<xsd:element name="EDI_Invoice_Feedback" type="EDI_Invoice_FeedbackType" />
 	<xsd:simpleType name="C_Order_DeliveryRuleEnum">
 		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="A">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<jaxb:typesafeEnumMember name="Availability" />
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="S">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<jaxb:typesafeEnumMember name="MitNaechsterAbolieferung" />
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:enumeration>
 			<xsd:enumeration value="L">
 				<xsd:annotation>
 					<xsd:appinfo>
@@ -234,35 +248,21 @@
 					</xsd:appinfo>
 				</xsd:annotation>
 			</xsd:enumeration>
-			<xsd:enumeration value="A">
-				<xsd:annotation>
-					<xsd:appinfo>
-						<jaxb:typesafeEnumMember name="Availability" />
-					</xsd:appinfo>
-				</xsd:annotation>
-			</xsd:enumeration>
-			<xsd:enumeration value="S">
-				<xsd:annotation>
-					<xsd:appinfo>
-						<jaxb:typesafeEnumMember name="Mit_nchster_Abolieferung" />
-					</xsd:appinfo>
-				</xsd:annotation>
-			</xsd:enumeration>
 		</xsd:restriction>
 	</xsd:simpleType>
 	<xsd:simpleType name="C_Order_DeliveryViaRuleEnum">
 		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="S">
-				<xsd:annotation>
-					<xsd:appinfo>
-						<jaxb:typesafeEnumMember name="Shipper" />
-					</xsd:appinfo>
-				</xsd:annotation>
-			</xsd:enumeration>
 			<xsd:enumeration value="P">
 				<xsd:annotation>
 					<xsd:appinfo>
 						<jaxb:typesafeEnumMember name="Pickup" />
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="S">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<jaxb:typesafeEnumMember name="Shipper" />
 					</xsd:appinfo>
 				</xsd:annotation>
 			</xsd:enumeration>
@@ -354,7 +354,7 @@
 			<xsd:element maxOccurs="1" minOccurs="1" name="QtyOrdered" type="xsd:decimal" />
 			<xsd:element maxOccurs="unbounded" minOccurs="0" name="EDI_Exp_C_BPartner_Product_v" type="EDI_Exp_C_BPartner_Product_vType" />
 		</xsd:sequence>
-	</xsd:complexType>
+	</xsd:complexType>
 	<xsd:complexType name="EDI_cctop_000_vType">
 		<xsd:sequence>
 			<xsd:element maxOccurs="1" minOccurs="0" name="C_BPartner_Location_ID" type="xsd:integer" />
@@ -643,7 +643,7 @@
 		<xsd:sequence>
 			<xsd:element maxOccurs="1" minOccurs="0" name="Value" type="xsd:string" />
 		</xsd:sequence>
-	</xsd:complexType>
+	</xsd:complexType>
 	<xsd:complexType name="EDI_Imp_C_BPartner_Lookup_RecipientGLNType">
 		<xsd:sequence>
 			<xsd:element maxOccurs="1" minOccurs="1" name="EdiRecipientGLN" type="xsd:string" />
@@ -677,6 +677,10 @@
 			<xsd:element maxOccurs="1" minOccurs="1" name="IsSubsequentDeliveryPlanned" type="YES-NO" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="QtyDeliveredInUOM" type="xsd:decimal" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="QtyItemCapacity" type="xsd:decimal" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="EAN_CU" type="xsd:string" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="EAN_TU" type="xsd:string" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="GTIN" type="xsd:string" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="UPC_TU" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="EDI_Exp_DesadvType">

@@ -59,8 +59,6 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 
 	public static final String EDI_XML_SUPPLIER_GLN = "edi.props.desadv.stepcom.supplier.gln";
 
-	public static final String EDI_XML_SUPPLIER_ADDITIONAL_ID = "edi.props.desadv.stepcom.supplier.additional.id";
-
 	private final static QName EDIDesadvFeedback_QNAME = Constants.JAXB_ObjectFactory.createEDIDesadvFeedback(null).getName();
 
 	private static final String METHOD_setEDIDesadvID = "setEDIDesadvID";
@@ -88,7 +86,7 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 		final String ownerId = Util.resolvePropertyPlaceholders(getContext(), StepComXMLDesadvRoute.EDI_XML_OWNER_ID);
 		final String applicationRef = Util.resolvePropertyPlaceholders(getContext(), StepComXMLDesadvRoute.EDI_XML_APPLICATION_REF);
 		final String supplierGln = Util.resolvePropertyPlaceholders(getContext(), StepComXMLDesadvRoute.EDI_XML_SUPPLIER_GLN);
-		final String supplierAdditionalId = Util.resolvePropertyPlaceholders(getContext(), StepComXMLDesadvRoute.EDI_XML_SUPPLIER_ADDITIONAL_ID);
+
 		final String defaultEDIMessageDatePattern = Util.resolvePropertyPlaceholders(getContext(), StepComXMLDesadvRoute.EDI_ORDER_EDIMessageDatePattern);
 		final String feedbackMessageRoutingKey = Util.resolvePropertyPlaceholders(getContext(), Constants.EP_AMQP_TO_AD_DURABLE_ROUTING_KEY);
 
@@ -100,7 +98,6 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 				.setProperty(StepComXMLDesadvRoute.EDI_XML_OWNER_ID).constant(ownerId)
 				.setProperty(StepComXMLDesadvRoute.EDI_XML_APPLICATION_REF).constant(applicationRef)
 				.setProperty(StepComXMLDesadvRoute.EDI_XML_SUPPLIER_GLN).constant(supplierGln)
-				.setProperty(StepComXMLDesadvRoute.EDI_XML_SUPPLIER_ADDITIONAL_ID).constant(supplierAdditionalId)
 				.setProperty(StepComXMLDesadvRoute.EDI_ORDER_EDIMessageDatePattern).constant(defaultEDIMessageDatePattern)
 
 				.log(LoggingLevel.INFO, "EDI: Setting EDI feedback headers...")
