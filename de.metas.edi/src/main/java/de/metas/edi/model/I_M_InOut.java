@@ -10,12 +10,12 @@ package de.metas.edi.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,12 +29,12 @@ public interface I_M_InOut extends de.metas.inout.model.I_M_InOut, I_EDI_Documen
 {
 	// @formatter:off
 	String COLUMNNAME_EDI_Desadv_ID = "EDI_Desadv_ID";
-	
+
 	void setEDI_Desadv_ID (int EDI_Desadv_ID);
 	int getEDI_Desadv_ID();
-	
+
 	void setEDI_Desadv (I_EDI_Desadv EDI_Desadv);
 	I_EDI_Desadv getEDI_Desadv();
 	// @formatter:on
-	
+
 }

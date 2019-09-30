@@ -41,9 +41,9 @@ import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
-import de.metas.impexp.DataImportConfigId;
-import de.metas.impexp.ImportTableDescriptor;
-import de.metas.impexp.ImportTableDescriptorRepository;
+import de.metas.impexp.config.DataImportConfigId;
+import de.metas.impexp.format.ImportTableDescriptor;
+import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.ImportProcessResult.ImportProcessResultCollector;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
@@ -222,7 +222,19 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 		{
 			throw new AdempiereException("No import records: " + selectedRecordRefs);
 		}
+
+		this.selectionId = null;
 		this.selectedRecordRefs = selectedRecordRefs;
+		return this;
+	}
+
+	@Override
+	public final ImportProcessTemplate<ImportRecordType> selectedRecords(@NonNull final PInstanceId selectionId)
+	{
+		assertNotStarted();
+
+		this.selectionId = selectionId;
+		this.selectedRecordRefs = null;
 		return this;
 	}
 

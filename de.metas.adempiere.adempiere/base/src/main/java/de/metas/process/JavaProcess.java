@@ -960,8 +960,9 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	}
 
 	/**
-	 * @return AD_Client_ID of Process owner
+	 * @deprecated please use {@link #getClientID()}.
 	 */
+	@Deprecated
 	protected final int getAD_Client_ID()
 	{
 		return getProcessInfo().getAD_Client_ID();
@@ -970,6 +971,14 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	protected final OrgId getOrgId()
 	{
 		return getProcessInfo().getOrgId();
+	}
+
+	/**
+	 * @return AD_Client_ID of Process owner
+	 */
+	protected final ClientId getClientID()
+	{
+		return getProcessInfo().getClientId();
 	}
 
 	/**

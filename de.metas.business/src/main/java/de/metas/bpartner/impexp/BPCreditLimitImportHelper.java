@@ -9,7 +9,10 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_I_BPartner;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -51,7 +54,9 @@ import lombok.NonNull;
 
 	public final void importRecord(final I_I_BPartner importRecord)
 	{
-		final I_C_BPartner bpartner = importRecord.getC_BPartner();
+		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
+		final I_C_BPartner bpartner = partnerDAO.getById(BPartnerId.ofRepoId(importRecord.getC_BPartner_ID()));
 		if (importRecord.getCreditLimit().signum() > 0)
 		{
 			createUpdateBPCreditLimit(bpartner.getC_BPartner_ID(), importRecord.getCreditLimit(), Insurance_C_CreditLimit_Type_ID);

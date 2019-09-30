@@ -16,8 +16,12 @@ import org.compiere.model.ModelValidationEngine;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -90,7 +94,11 @@ import lombok.NonNull;
 	private I_C_BPartner_Location fetchAndUpdateExistingBPLocation(@NonNull final I_I_BPartner importRecord,
 			@NonNull final List<I_I_BPartner> previousImportRecordsForSameBPartner)
 	{
-		I_C_BPartner_Location bpartnerLocation = importRecord.getC_BPartner_Location();
+		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
+		final BPartnerLocationId bpLocationIdOrNull = BPartnerLocationId.ofRepoIdOrNull(importRecord.getC_BPartner_ID(), importRecord.getC_BPartner_Location_ID());
+
+		I_C_BPartner_Location bpartnerLocation = bpLocationIdOrNull == null ? null : partnerDAO.getBPartnerLocationById(bpLocationIdOrNull);
 
 		final List<I_I_BPartner> importRecordsWithEqualAddresses = getImportRecordsWithEqualAddresses(importRecord, previousImportRecordsForSameBPartner);
 
@@ -100,7 +108,11 @@ import lombok.NonNull;
 		{
 			if (previousImportRecordsHaveAnEqualAddress)
 			{
-				bpartnerLocation = importRecordsWithEqualAddresses.get(0).getC_BPartner_Location();
+				final BPartnerLocationId recordWithEqAddressLocationIdOrNull = BPartnerLocationId.ofRepoIdOrNull(
+						importRecordsWithEqualAddresses.get(0).getC_BPartner_ID(),
+						importRecordsWithEqualAddresses.get(0).getC_BPartner_Location_ID());
+
+				bpartnerLocation = recordWithEqAddressLocationIdOrNull == null ? null : partnerDAO.getBPartnerLocationById(recordWithEqAddressLocationIdOrNull);
 			}
 
 			updateExistingBPartnerLocation(importRecord, bpartnerLocation);
@@ -146,12 +158,15 @@ import lombok.NonNull;
 	 */
 	private I_C_BPartner_Location createNewBPartnerLocation(@NonNull final I_I_BPartner importRecord)
 	{
+		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
 		if (importRecord.getC_Country_ID() > 0
 				&& !Check.isEmpty(importRecord.getCity(), true))
 		{
-			final I_C_BPartner bpartner = importRecord.getC_BPartner();
+
+			final I_C_BPartner bpartner = partnerDAO.getByIdInTrx(BPartnerId.ofRepoId(importRecord.getC_BPartner_ID()));
 			final I_C_BPartner_Location bpartnerLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, bpartner);
-			bpartnerLocation.setC_BPartner(bpartner);
+			bpartnerLocation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 			updateExistingBPartnerLocation(importRecord, bpartnerLocation);
 			return bpartnerLocation;
 		}
@@ -174,7 +189,7 @@ import lombok.NonNull;
 
 		fireImportValidatorAndSaveBPartnerLocation(importRecord, bpartnerLocation);
 
-		importRecord.setC_BPartner_Location(bpartnerLocation);
+		importRecord.setC_BPartner_Location_ID(bpartnerLocation.getC_BPartner_Location_ID());
 	}
 
 	private void updateLocation(

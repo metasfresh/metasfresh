@@ -1,5 +1,6 @@
 package de.metas.impexp;
 
+import de.metas.impexp.config.DataImportConfigId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

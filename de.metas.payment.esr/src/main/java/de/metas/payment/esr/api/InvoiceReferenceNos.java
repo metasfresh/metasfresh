@@ -1,5 +1,6 @@
 package de.metas.payment.esr.api;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
@@ -141,9 +142,20 @@ public class InvoiceReferenceNos
 		sb.append(bPartner);
 		sb.append(invoice);
 
-		final IESRImportBL esrImportBL = Services.get(IESRImportBL.class);
-		final int checkDigit = esrImportBL.calculateESRCheckDigit(sb.toString());
-
-		return checkDigit;
+		try
+		{
+			final IESRImportBL esrImportBL = Services.get(IESRImportBL.class);
+			final int checkDigit = esrImportBL.calculateESRCheckDigit(sb.toString());
+			return checkDigit;
+		}
+		catch (final Exception e)
+		{
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("bankAccount", bankAccount)
+					.setParameter("org", org)
+					.setParameter("bPartner", bPartner)
+					.setParameter("invoice", invoice);
+		}
 	}
 }

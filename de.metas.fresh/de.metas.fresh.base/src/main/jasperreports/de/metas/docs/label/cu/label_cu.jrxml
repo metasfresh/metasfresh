@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="226" pageHeight="136" columnWidth="226" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="3.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[".\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="M_HU_ID" class="java.math.BigDecimal"/>
+	<parameter name="barcodeURL" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["http://mf15adit:8080/adempiereJasper/BarcodeServlet"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT * FROM report.cu_product_label($P{M_HU_ID})
+ORDER BY value
+;]]>
+	</queryString>
+	<field name="created" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.label" value="created"/>
+	</field>
+	<field name="value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="value"/>
+	</field>
+	<field name="serialno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="serialno"/>
+	</field>
+	<field name="name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="name"/>
+	</field>
+	<field name="prod_value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="prod_value"/>
+	</field>
+	<field name="vendorname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="vendorname"/>
+	</field>
+	<field name="purchaseorderno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="purchaseorderno"/>
+	</field>
+	<detail>
+		<band height="124">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<staticText>
+				<reportElement x="23" y="7" width="92" height="11" uuid="0ed57ae5-5609-48ed-bcb5-00f7552cb3c9"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Wareneingangsdatum]]></text>
+			</staticText>
+			<textField pattern="dd.MM.yyyy">
+				<reportElement x="114" y="7" width="93" height="11" uuid="aa2f9d6c-354d-460b-8b09-0cbf84de7142"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{created}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="23" y="17" width="38" height="11" uuid="9eb8213e-7bb7-42c5-878f-4b3576baaf3c"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[HU-Nr.]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="57" y="47" width="150" height="15" uuid="40678aa3-48b0-4931-85a7-ad01df324e6c"/>
+				<textElement textAlignment="Center" verticalAlignment="Top" markup="none">
+					<font fontName="Arial" size="11" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="24" y="62" width="66" height="11" uuid="9eb8213e-7bb7-42c5-878f-4b3576baaf3c"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Artikelnummer]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="90" y="62" width="117" height="11" uuid="161366fe-7402-440e-aa7e-167586bc37e1"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{prod_value}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="90" y="73" width="117" height="11" uuid="bffd078e-9054-4b11-8deb-c738df080432"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="24" y="73" width="66" height="11" uuid="9eb8213e-7bb7-42c5-878f-4b3576baaf3c"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Artikelname]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="24" y="95" width="66" height="11" uuid="ff4e1b9e-7756-4e5a-bf25-8d70c7ba4979"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Lieferant]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="90" y="95" width="117" height="11" uuid="901394df-ae75-48f1-93ce-343a1b0816b6"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{vendorname}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="24" y="106" width="66" height="11" uuid="7c32b3d1-6211-4cfe-aa73-f16bc60bd260"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Bestellnummer]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="91" y="106" width="117" height="11" uuid="883b46d4-0914-413b-90ba-54d4553f0c9c"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{purchaseorderno}]]></textFieldExpression>
+			</textField>
+			<image scaleImage="FillFrame" hAlign="Center">
+				<reportElement x="57" y="18" width="150" height="30" uuid="d3ce6e08-1b60-46f8-a9e4-350b72b00687">
+					<printWhenExpression><![CDATA[new Boolean($F{value} != null)]]></printWhenExpression>
+				</reportElement>
+				<imageExpression><![CDATA[new java.net.URL( $P{barcodeURL} + "?Content=" +
+$F{value} +
+"&Format=CODE_128&Width=300&Height=60" )]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="24" y="84" width="66" height="11" uuid="00d46fca-effa-420f-b57a-d55de552e6d9"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Seriennummer]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="90" y="84" width="117" height="11" uuid="a1a4d010-7dac-4964-9f09-e264e852f4b5"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{serialno}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

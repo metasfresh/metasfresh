@@ -10,12 +10,12 @@ package de.metas.edi.async.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,6 +32,7 @@ import java.util.Set;
 import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -80,11 +81,16 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 
 			final int documentTableId = documentTableRecordIdPair.getTableId();
 			final int documentRecordId = documentTableRecordIdPair.getRecordId();
-			final IExport<? extends I_EDI_Document> export = ediDocumentBL.createExport(ctx, workpackage.getAD_Client_ID(), documentTableId, documentRecordId, localTrxName);
+			final IExport<? extends I_EDI_Document> export = ediDocumentBL.createExport(
+					ctx,
+					ClientId.ofRepoId(workpackage.getAD_Client_ID()),
+					documentTableId,
+					documentRecordId,
+					localTrxName);
 
 			//
 			// Export & enlist feedback
-			final List<Exception> exportFeedback = export.createExport();
+			final List<Exception> exportFeedback = export.doExport();
 			feedback.addAll(exportFeedback);
 		}
 

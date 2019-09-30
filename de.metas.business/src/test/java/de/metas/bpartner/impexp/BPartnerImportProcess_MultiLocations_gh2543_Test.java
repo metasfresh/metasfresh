@@ -23,10 +23,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.impexp.ImportTableDescriptorRepository;
+import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctionsRepository;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
@@ -90,11 +91,12 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 		ibpartners.forEach(importRecord -> importProcess.importRecord(state, importRecord, false /* isInsertOnly */));
 
 		assertMultipleBpartnerImported(ibpartners);
-
 	}
 
 	private void assertMultipleBpartnerImported(final List<I_I_BPartner> ibpartners)
 	{
+		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
 		ibpartners.forEach(BPartnerImportTestHelper::assertImported);
 
 		// check first partner imported
@@ -107,8 +109,9 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 			assertSecondImportedBpartner(ibpartners);
 
 			// check location - is similar with the one from first partner, but should have different id
-			final I_C_BPartner firstBpartner = ibpartners.get(0).getC_BPartner();
-			final I_C_BPartner secondBPartner = ibpartners.get(2).getC_BPartner();
+			final I_C_BPartner firstBpartner = partnerDAO.getById(BPartnerId.ofRepoId(ibpartners.get(0).getC_BPartner_ID()));
+			final I_C_BPartner secondBPartner = partnerDAO.getById(BPartnerId.ofRepoId(ibpartners.get(2).getC_BPartner_ID()));
+
 			final List<org.compiere.model.I_C_BPartner_Location> fbplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(firstBpartner);
 			final List<org.compiere.model.I_C_BPartner_Location> sbplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(secondBPartner);
 			assertThat(fbplocations.get(0).getC_Location_ID()).isNotEqualTo(sbplocations.get(0).getC_Location_ID());
@@ -123,8 +126,10 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 
 	private void assertFirstImportedBpartner(final List<I_I_BPartner> ibpartners)
 	{
+		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
 		Assert.assertTrue(ibpartners.get(0).getC_BPartner_ID() == ibpartners.get(1).getC_BPartner_ID());
-		final I_C_BPartner firstBPartner = ibpartners.get(0).getC_BPartner();
+		final I_C_BPartner firstBPartner = partnerDAO.getById(BPartnerId.ofRepoIdOrNull(ibpartners.get(0).getC_BPartner_ID()));
 		//
 		// check user
 		final List<I_AD_User> fusers = Services.get(IBPartnerDAO.class).retrieveContacts(firstBPartner);
@@ -150,7 +155,9 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 
 	private void assertSecondImportedBpartner(final List<I_I_BPartner> ibpartners)
 	{
-		final I_C_BPartner secondBPartner = ibpartners.get(2).getC_BPartner();
+		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
+		final I_C_BPartner secondBPartner = partnerDAO.getById(BPartnerId.ofRepoIdOrNull(ibpartners.get(2).getC_BPartner_ID()));
 		//
 		// check user
 		final List<I_AD_User> users = Services.get(IBPartnerDAO.class).retrieveContacts(secondBPartner);
@@ -176,7 +183,9 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 
 	private void assertThirdImportedBpartner(final List<I_I_BPartner> ibpartners)
 	{
-		final I_C_BPartner thirdBPartner = ibpartners.get(3).getC_BPartner();
+		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
+		final I_C_BPartner thirdBPartner = partnerDAO.getById(BPartnerId.ofRepoIdOrNull(ibpartners.get(3).getC_BPartner_ID()));
 		//
 		// check user
 		final List<I_AD_User> users = Services.get(IBPartnerDAO.class).retrieveContacts(thirdBPartner);
