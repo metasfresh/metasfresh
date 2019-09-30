@@ -13,7 +13,7 @@ import org.compiere.model.I_C_Location;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.geocoding.GeoCoordinatesRequest;
-import de.metas.location.geocoding.GeoCoordinatesService;
+import de.metas.location.geocoding.GeocodingService;
 import de.metas.location.geocoding.GeographicalCoordinates;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.provider.locationAreaSearch.LocationAreaSearchDescriptor.LocationColumnNameType;
@@ -181,8 +181,8 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 			return Optional.empty();
 		}
 
-		final GeoCoordinatesService geoCoordinatesService = Adempiere.getBean(GeoCoordinatesService.class);
-		return geoCoordinatesService.findBestCoordinates(request);
+		final GeocodingService geocodingService = Adempiere.getBean(GeocodingService.class);
+		return geocodingService.findBestCoordinates(request);
 	}
 
 	private static Optional<GeoCoordinatesRequest> createGeoCoordinatesRequest(final DocumentFilter filter)
