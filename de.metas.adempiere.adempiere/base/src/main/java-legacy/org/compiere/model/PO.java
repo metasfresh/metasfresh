@@ -1798,7 +1798,7 @@ public abstract class PO
 						return load0(trxName, true); // this is the retry, so isRetry=true this time
 					}
 				}
-				log.error("NO Data found for " + get_WhereClause(true) + ", trxName=" + m_trxName, new Exception());
+				log.error("NO Data found for " + get_WhereClause(true) + ", trxName=" + m_trxName, new Exception("trace"));
 				m_IDs = new Object[] { I_ZERO };
 				success = false;
 				// throw new DBException("NO Data found for " + get_WhereClause(true));
