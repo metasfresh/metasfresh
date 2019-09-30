@@ -7,8 +7,11 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.ModelValidationEngine;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -102,7 +105,7 @@ import de.metas.util.Check;
 
 		ModelValidationEngine.get().fireImportValidate(process, importRecord, bpartner, IImportInterceptor.TIMING_AFTER_IMPORT);
 		save(bpartner);
-		importRecord.setC_BPartner(bpartner);
+		importRecord.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 
 		return bpartner;
 	}
@@ -144,7 +147,7 @@ import de.metas.util.Check;
 		bpartner.setPO_PricingSystem_ID(importRecord.getPO_PricingSystem_ID());
 		bpartner.setMemo_Delivery(importRecord.getMemo_Delivery());
 		bpartner.setMemo_Invoicing(importRecord.getMemo_Invoicing());
-		bpartner.setglobalid(importRecord.getGlobalID());
+		bpartner.setGlobalId(importRecord.getGlobalId());
 
 		return bpartner;
 	}
@@ -173,8 +176,9 @@ import de.metas.util.Check;
 
 	private I_C_BPartner updateExistingBPartner(final I_I_BPartner importRecord)
 	{
-		final I_C_BPartner bpartner;
-		bpartner = importRecord.getC_BPartner();
+		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
+		final I_C_BPartner bpartner = partnerDAO.getById(BPartnerId.ofRepoId(importRecord.getC_BPartner_ID()));
 
 		final String partnerExternalId = importRecord.getC_BPartner_ExternalId();
 		if (partnerExternalId != null)
@@ -294,10 +298,10 @@ import de.metas.util.Check;
 			bpartner.setMemo_Delivery(memoDelivery);
 		}
 
-		final String globalId = importRecord.getGlobalID();
+		final String globalId = importRecord.getGlobalId();
 		if (!Check.isEmpty(globalId))
 		{
-			bpartner.setglobalid(globalId);
+			bpartner.setGlobalId(globalId);
 		}
 
 		return bpartner;

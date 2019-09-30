@@ -1,13 +1,13 @@
 package de.metas.impexp;
 
-import de.metas.impexp.config.DataImportConfigId;
+import java.time.Duration;
+
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -29,25 +29,12 @@ import lombok.Value;
 
 @Value
 @Builder
-public class DataImportResult
+final class ImportTableAppendResult
 {
-	@NonNull
-	DataImportConfigId dataImportConfigId;
-
-	@NonNull
-	String importFormatName;
-
-	//
-	// Source file
-	int countSourceFileValidLines;
-	int countSourceFileErrorLines;
-
-	//
-	// Import table
 	String importTableName;
-	int countImportRecordsWithErrors;
+	Duration duration;
 
-	//
-	// Target table
-	String targetTableName;
+	int countTotalRows;
+	int countValidRows;
+	int countRowsWithError;
 }

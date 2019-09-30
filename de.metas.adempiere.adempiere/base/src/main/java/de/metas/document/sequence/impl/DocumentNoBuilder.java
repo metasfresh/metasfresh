@@ -1,29 +1,5 @@
 package de.metas.document.sequence.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +19,6 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
-import org.compiere.util.ISqlUpdateReturnProcessor;
 import org.slf4j.Logger;
 
 import com.google.common.base.Suppliers;
@@ -295,14 +270,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 				sqlParams.toArray(),
 				trxName,
 				QUERY_TIME_OUT,
-				new ISqlUpdateReturnProcessor()
-				{
-					@Override
-					public void process(final ResultSet rs) throws SQLException
-					{
-						currentSeq.setValue(rs.getInt(1));
-					}
-				});
+				rs -> currentSeq.setValue(rs.getInt(1)));
 
 		return currentSeq.getValue();
 	}
@@ -461,7 +429,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		else
 		{
 			final DocTypeSequenceMap docTypeSequenceMap = documentSequenceDAO.retrieveDocTypeSequenceMap(docType);
-			docSequenceId = DocSequenceId.ofRepoIdOrNull(docTypeSequenceMap.getDocNoSequence_ID(getClientId().getRepoId(), getOrgId().getRepoId()));
+			docSequenceId = docTypeSequenceMap.getDocNoSequenceId(getClientId(), getOrgId());
 			if (docSequenceId == null)
 			{
 				throw new DocumentNoBuilderException("No Sequence for DocType - " + docType);

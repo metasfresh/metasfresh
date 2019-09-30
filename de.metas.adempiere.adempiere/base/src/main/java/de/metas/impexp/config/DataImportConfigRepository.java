@@ -1,4 +1,4 @@
-package de.metas.impexp;
+package de.metas.impexp.config;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import de.metas.cache.CCache;
+import de.metas.impexp.format.ImpFormatId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;

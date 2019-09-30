@@ -14,7 +14,7 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1094111719L;
+	private static final long serialVersionUID = -887514263L;
 
     /** Standard Constructor */
     public X_I_User (Properties ctx, int I_User_ID, String trxName)
@@ -46,7 +46,7 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
     }
 
 	@Override
-	public org.compiere.model.I_AD_Role getAD_Role() throws RuntimeException
+	public org.compiere.model.I_AD_Role getAD_Role()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Role_ID, org.compiere.model.I_AD_Role.class);
 	}
@@ -80,18 +80,6 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setAD_User(org.compiere.model.I_AD_User AD_User)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class, AD_User);
 	}
 
 	/** Set Ansprechpartner.
@@ -138,18 +126,6 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 		return (java.lang.String)get_Value(COLUMNNAME_BPValue);
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
 		Bezeichnet einen Geschäftspartner
@@ -176,7 +152,7 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 	}
 
 	@Override
-	public org.compiere.model.I_C_DataImport getC_DataImport() throws RuntimeException
+	public org.compiere.model.I_C_DataImport getC_DataImport()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_DataImport_ID, org.compiere.model.I_C_DataImport.class);
 	}
@@ -187,8 +163,8 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 		set_ValueFromPO(COLUMNNAME_C_DataImport_ID, org.compiere.model.I_C_DataImport.class, C_DataImport);
 	}
 
-	/** Set Data import.
-		@param C_DataImport_ID Data import	  */
+	/** Set Daten Import.
+		@param C_DataImport_ID Daten Import	  */
 	@Override
 	public void setC_DataImport_ID (int C_DataImport_ID)
 	{
@@ -198,8 +174,8 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 			set_Value (COLUMNNAME_C_DataImport_ID, Integer.valueOf(C_DataImport_ID));
 	}
 
-	/** Get Data import.
-		@return Data import	  */
+	/** Get Daten Import.
+		@return Daten Import	  */
 	@Override
 	public int getC_DataImport_ID () 
 	{
@@ -267,19 +243,19 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 	}
 
 	/** Set Global ID.
-		@param GlobalID Global ID	  */
+		@param GlobalId Global ID	  */
 	@Override
-	public void setGlobalID (java.lang.String GlobalID)
+	public void setGlobalId (java.lang.String GlobalId)
 	{
-		set_Value (COLUMNNAME_GlobalID, GlobalID);
+		set_Value (COLUMNNAME_GlobalId, GlobalId);
 	}
 
 	/** Get Global ID.
 		@return Global ID	  */
 	@Override
-	public java.lang.String getGlobalID () 
+	public java.lang.String getGlobalId () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_GlobalID);
+		return (java.lang.String)get_Value(COLUMNNAME_GlobalId);
 	}
 
 	/** Set Import-Fehlermeldung.
