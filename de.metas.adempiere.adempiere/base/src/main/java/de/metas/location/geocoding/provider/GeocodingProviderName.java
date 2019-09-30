@@ -36,6 +36,7 @@ public enum GeocodingProviderName
 
 	private final String providerName;
 
+	@SuppressWarnings("UnstableApiUsage")
 	private static final Map<String, GeocodingProviderName> map = Stream.of(values()).collect(ImmutableMap.toImmutableMap(m -> m.providerName, Function.identity()));
 
 	GeocodingProviderName(final String providerName)
