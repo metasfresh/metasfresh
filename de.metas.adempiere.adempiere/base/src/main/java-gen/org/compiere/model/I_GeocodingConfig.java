@@ -139,27 +139,27 @@ public interface I_GeocodingConfig
     public static final String COLUMNNAME_GeocodingConfig_ID = "GeocodingConfig_ID";
 
 	/**
-	 * Set Geocoding Dienste Providers.
+	 * Set Geocoding Dienst Provider.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setGeocodingProviders (java.lang.String GeocodingProviders);
+	public void setGeocodingProvider (java.lang.String GeocodingProvider);
 
 	/**
-	 * Get Geocoding Dienste Providers.
+	 * Get Geocoding Dienst Provider.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getGeocodingProviders();
+	public java.lang.String getGeocodingProvider();
 
-    /** Column definition for GeocodingProviders */
-    public static final org.adempiere.model.ModelColumn<I_GeocodingConfig, Object> COLUMN_GeocodingProviders = new org.adempiere.model.ModelColumn<I_GeocodingConfig, Object>(I_GeocodingConfig.class, "GeocodingProviders", null);
-    /** Column name GeocodingProviders */
-    public static final String COLUMNNAME_GeocodingProviders = "GeocodingProviders";
+    /** Column definition for GeocodingProvider */
+    public static final org.adempiere.model.ModelColumn<I_GeocodingConfig, Object> COLUMN_GeocodingProvider = new org.adempiere.model.ModelColumn<I_GeocodingConfig, Object>(I_GeocodingConfig.class, "GeocodingProvider", null);
+    /** Column name GeocodingProvider */
+    public static final String COLUMNNAME_GeocodingProvider = "GeocodingProvider";
 
 	/**
 	 * Set Google Maps - API-Schlüssel.

@@ -14,7 +14,7 @@ public class X_GeocodingConfig extends org.compiere.model.PO implements I_Geocod
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 270133176L;
+	private static final long serialVersionUID = -1471304629L;
 
     /** Standard Constructor */
     public X_GeocodingConfig (Properties ctx, int GeocodingConfig_ID, String trxName)
@@ -85,29 +85,29 @@ public class X_GeocodingConfig extends org.compiere.model.PO implements I_Geocod
 	}
 
 	/** 
-	 * GeocodingProviders AD_Reference_ID=541051
+	 * GeocodingProvider AD_Reference_ID=541051
 	 * Reference name: Geocoding Providers
 	 */
-	public static final int GEOCODINGPROVIDERS_AD_Reference_ID=541051;
+	public static final int GEOCODINGPROVIDER_AD_Reference_ID=541051;
 	/** GoogleMaps = GoogleMaps */
-	public static final String GEOCODINGPROVIDERS_GoogleMaps = "GoogleMaps";
+	public static final String GEOCODINGPROVIDER_GoogleMaps = "GoogleMaps";
 	/** OpenStreetMaps = OpenStreetMaps */
-	public static final String GEOCODINGPROVIDERS_OpenStreetMaps = "OpenStreetMaps";
-	/** Set Geocoding Dienste Providers.
-		@param GeocodingProviders Geocoding Dienste Providers	  */
+	public static final String GEOCODINGPROVIDER_OpenStreetMaps = "OpenStreetMaps";
+	/** Set Geocoding Dienst Provider.
+		@param GeocodingProvider Geocoding Dienst Provider	  */
 	@Override
-	public void setGeocodingProviders (java.lang.String GeocodingProviders)
+	public void setGeocodingProvider (java.lang.String GeocodingProvider)
 	{
 
-		set_Value (COLUMNNAME_GeocodingProviders, GeocodingProviders);
+		set_Value (COLUMNNAME_GeocodingProvider, GeocodingProvider);
 	}
 
-	/** Get Geocoding Dienste Providers.
-		@return Geocoding Dienste Providers	  */
+	/** Get Geocoding Dienst Provider.
+		@return Geocoding Dienst Provider	  */
 	@Override
-	public java.lang.String getGeocodingProviders () 
+	public java.lang.String getGeocodingProvider () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_GeocodingProviders);
+		return (java.lang.String)get_Value(COLUMNNAME_GeocodingProvider);
 	}
 
 	/** Set Google Maps - API-Schlüssel.
