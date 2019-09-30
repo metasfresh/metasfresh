@@ -245,6 +245,11 @@ import de.metas.util.lang.CoalesceUtil;
 			{
 				return OrgId.ofRepoId(adOrgId);
 			}
+			else
+			{
+				// return Org=* to cover the user case when user clears (temporary) the Org field.
+				return OrgId.ANY;
+			}
 		}
 
 		// shall not happen
