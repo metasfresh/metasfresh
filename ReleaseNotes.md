@@ -11,6 +11,12 @@ Additional notes:
 Here come the actual release notes:
 
 # metasfresh 5.122
+## Features
+* metasfresh
+  * [#2518](https://github.com/metasfresh/metasfresh/issues/2518) Add Zahlung einlesen in Action menu for purchase invoice
+  * [#5569](https://github.com/metasfresh/metasfresh/issues/5569) Mandatory Field in Purchase Order: Warehouse ID
+  * [#5587](https://github.com/metasfresh/metasfresh/issues/5587) New Window for Packvorschrift (CU-TU) Standalone
+
 ## Fixes
 * metasfresh-webui-frontend
   * [#2364](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2364) Organisation and client field misalligned
