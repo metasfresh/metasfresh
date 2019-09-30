@@ -28,6 +28,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.table.api.impl.CopyColumnsProducer;
+import org.adempiere.ad.table.api.impl.CopyColumnsResult;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Column;
@@ -35,6 +36,7 @@ import org.compiere.model.I_AD_Table;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
 
 /**
@@ -75,22 +77,19 @@ public class AD_Column_CopySelectedToTable extends JavaProcess
 	}
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt()
 	{
-		final int countCreated = CopyColumnsProducer.newInstance()
+		final CopyColumnsResult result = CopyColumnsProducer.newInstance()
 				.setLogger(this)
 				.setTargetTable(getTargetTable())
 				.setSourceColumns(getSourceColumns())
 				.setEntityType(p_EntityType)
+				.setDryRun(p_IsTest)
 				.create();
 
-		if (p_IsTest)
-		{
-			throw new AdempiereException("Rollback because we are in test mode");
-		}
-
 		//
-		return "@Created@ #" + countCreated;
+		return "" + result;
 	}
 
 	protected I_AD_Table getTargetTable()

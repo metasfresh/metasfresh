@@ -10,12 +10,12 @@ package de.metas.edi.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,10 +26,11 @@ package de.metas.edi.api;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.service.ClientId;
+
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
-import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.process.export.IExport;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.util.ISingletonService;
@@ -49,10 +50,8 @@ public interface IEDIDocumentBL extends ISingletonService
 
 	List<Exception> isValidInvoice(I_C_Invoice invoice);
 
-	List<Exception> isValidInOut(I_M_InOut inOut);
-
 	List<Exception> isValidDesAdv(I_EDI_Desadv desadv);
-	
+
 	List<Exception> isValidPartner(org.compiere.model.I_C_BPartner partner);
 
 	/**
@@ -66,17 +65,10 @@ public interface IEDIDocumentBL extends ISingletonService
 	 */
 	ValidationState updateInvalid(I_EDI_Document document, String EDI_ExportStatus, List<Exception> feedback, boolean saveLocally);
 
-//	ValidationState updateInvalid(I_EDI_Desadv document, String EDI_ExportStatus, List<Exception> feedback, boolean saveLocally);
-	
 	/**
-	 * @param ctx
-	 * @param clientId
-	 * @param tableId
-	 * @param recordId
-	 * @param trxName
 	 * @return EDI export processor
 	 */
-	IExport<? extends I_EDI_Document> createExport(Properties ctx, int clientId, int tableId, int recordId, String trxName);
+	IExport<? extends I_EDI_Document> createExport(Properties ctx, ClientId clientId, int tableId, int recordId, String trxName);
 
 	/**
 	 * @param feedback

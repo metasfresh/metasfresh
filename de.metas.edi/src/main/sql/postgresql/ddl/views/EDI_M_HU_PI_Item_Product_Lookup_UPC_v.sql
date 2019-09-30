@@ -16,7 +16,7 @@ FROM
 	FROM M_HU_PI_Item_Product piip
 	UNION 
 	SELECT
-		100 AS M_HU_PI_Item_Product_ID, -- use Default No-HU
+		101 AS M_HU_PI_Item_Product_ID, -- fallback to "No Packing Item"
 		bpp.C_BPartner_ID,
 		bpp.UPC,
 		bpp.IsActive

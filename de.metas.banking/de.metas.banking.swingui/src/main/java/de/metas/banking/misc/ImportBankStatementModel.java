@@ -255,7 +255,6 @@ public class ImportBankStatementModel {
 
 		@Override
 		public void setValueAt(Object aValue, int row, int column) {
-			// TODO Auto-generated method stub
 			super.setValueAt(aValue, row, column);
 		}
 

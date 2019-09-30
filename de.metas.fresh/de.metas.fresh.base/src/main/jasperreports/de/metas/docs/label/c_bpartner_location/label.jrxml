@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="label" pageWidth="294" pageHeight="198" columnWidth="294" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="7f6f4715-2c9f-4a69-8fdd-c5a5d8b66d53">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="erptest.xml"/>
+	<property name="com.jaspersoft.studio.unit." value="mm"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="mm"/>
+	<style name="BarcodeStyle" fill="Solid" hTextAlign="Center" hImageAlign="Center" fontName="Arial" fontSize="6"/>
+	<parameter name="C_BPartner_Location_ID" class="java.math.BigDecimal"/>
+	<parameter name="Copies" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[new BigDecimal(1)]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT * FROM report.C_BPartner_Location_Label($P{C_BPartner_Location_ID},$P{Copies});]]>
+	</queryString>
+	<field name="org_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="org_name"/>
+	</field>
+	<field name="bp_gln" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bp_gln"/>
+	</field>
+	<field name="bp_gln_9_12" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bp_gln_9_12"/>
+	</field>
+	<field name="addr_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="addr_name"/>
+	</field>
+	<field name="address" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="address"/>
+	</field>
+	<field name="barcode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="barcode"/>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<detail>
+		<band height="198" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+			<textField isBlankWhenNull="true">
+				<reportElement x="10" y="10" width="272" height="12" uuid="f48ef71f-b642-4fe7-a981-b19690ad27ce">
+					<property name="com.jaspersoft.studio.unit.width" value="mm"/>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{org_name}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="10" y="24" width="272" height="1" uuid="a9629495-d83a-4a0a-b384-21b64864a636"/>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement x="25" y="27" width="258" height="10" uuid="6d529c23-ecb4-4d98-a8a6-21e77ab5a9de"/>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{bp_gln}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="25" y="40" width="50" height="15" uuid="f57f4587-5a39-4194-8275-279f829378d9"/>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{bp_gln_9_12}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="75" y="40" width="208" height="15" uuid="b7b57625-4066-464c-9479-ffe42cd02281">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{addr_name}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement positionType="Float" x="10" y="58" width="272" height="1" uuid="a05af06f-1a60-4fa8-8846-898238083451">
+					<property name="com.jaspersoft.studio.unit.width" value="mm"/>
+				</reportElement>
+			</line>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="10" y="63" width="272" height="9" uuid="462a6ed1-deaa-4d35-96ea-ef516af0ec8c">
+					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{address}]]></textFieldExpression>
+			</textField>
+			<componentElement>
+				<reportElement style="BarcodeStyle" positionType="Float" x="10" y="77" width="272" height="64" uuid="469f87e0-5013-4875-aad2-9f34cdfb86bb"/>
+				<jr:EAN128 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<jr:codeExpression><![CDATA[$F{barcode}]]></jr:codeExpression>
+				</jr:EAN128>
+			</componentElement>
+		</band>
+	</detail>
+</jasperReport>

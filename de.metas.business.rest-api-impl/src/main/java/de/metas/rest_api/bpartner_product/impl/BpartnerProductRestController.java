@@ -18,6 +18,8 @@ import de.metas.product.ProductId;
 import de.metas.rest_api.utils.RestApiUtils;
 import de.metas.util.Services;
 import de.metas.util.rest.MetasfreshRestAPIConstants;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 /*
  * #%L
@@ -52,9 +54,14 @@ public class BpartnerProductRestController
 	private final IBPartnerProductDAO bpartnerProductsRepo = Services.get(IBPartnerProductDAO.class);
 	private final IProductBL productsService = Services.get(IProductBL.class);
 
+	@ApiOperation("For a BPartner's name and that partner's specific product-number or product-name, this operation returns the product's metasfresh search-key (i.e. `M_Product.Value`).<br>"
+			+ "Note that the respective `C_BPartner_Product` record needs to be flagged with `UsedForCustomer='Y'` to be found by this operation.")
 	@GetMapping("/query")
 	public ResponseEntity<JsonBPartnerProductResult> getByCustomerProductNo(
+			@ApiParam("`C_BPartner.Name` of the bpartner in question.")
 			@RequestParam("customerName") final String customerName,
+
+			@ApiParam("`C_BPartner_Product.ProductNo` or `.ProductName`.")
 			@RequestParam("customerProduct") final String customerProductSearchString)
 	{
 		final BPartnerId customerId = findCustomerId(customerName).orElse(null);

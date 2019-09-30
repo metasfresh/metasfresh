@@ -75,6 +75,7 @@ import org.adempiere.server.rpl.trx.api.IReplicationTrxBL;
 import org.adempiere.server.rpl.trx.api.IReplicationTrxDAO;
 import org.adempiere.server.rpl.trx.api.impl.POReplicationTrxLineDraft;
 import org.adempiere.server.rpl.trx.spi.IReplicationIssueAware;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
@@ -240,12 +241,17 @@ public class ImportHelper implements IImportHelper
 			EXP_Format_Value = rootElement.getNodeName();
 			log.debug("EXP_Format_Value = {}", EXP_Format_Value);
 
-			final int adClientId = Env.getAD_Client_ID(ctx);
+			final ClientId adClientId = Env.getClientId(ctx);
 			MEXPFormat expFormatPO = null;
 			try
 			{
 				// Note: calling the method with trxName==NONE because we want to get the cached version
-				expFormatPO = MEXPFormat.getFormatByValueAD_Client_IDAndVersion(ctx, EXP_Format_Value, adClientId, version, ITrx.TRXNAME_None);
+				expFormatPO = MEXPFormat.getFormatByValueAD_Client_IDAndVersion(
+						ctx,
+						EXP_Format_Value,
+						adClientId.getRepoId(),
+						version,
+						ITrx.TRXNAME_None);
 			}
 			catch (final AdempiereException e)
 			{
@@ -331,7 +337,9 @@ public class ImportHelper implements IImportHelper
 		}
 	}
 
-	private void handleTableReplication(final String ReplicationType, final int ReplicationEvent, final int adClientId, final PO po)
+	private void handleTableReplication(final String ReplicationType, final int ReplicationEvent,
+			@NonNull final ClientId adClientId,
+			final PO po)
 	{
 		//
 		// Here must invoke other method else we get cycle...
@@ -1473,7 +1481,8 @@ public class ImportHelper implements IImportHelper
 		// ONLY get a single item or null
 		if (defaultValue == null)
 		{
-			throw new ReplicationException(MSG_EXPFormatLineNoDefaultFallbackObject);
+			throw new ReplicationException(MSG_EXPFormatLineNoDefaultFallbackObject)
+					.setParameter("Possible default values", availableValues);
 		}
 		return defaultValue;
 	}

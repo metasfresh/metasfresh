@@ -181,4 +181,6 @@ public interface IADTableDAO extends ISingletonService
 	Set<String> getTableNamesWithRemoteCacheInvalidation();
 
 	int getTypeaheadMinLength(String tableName);
+
+	List<I_AD_Table> retrieveAllImportTables();
 }

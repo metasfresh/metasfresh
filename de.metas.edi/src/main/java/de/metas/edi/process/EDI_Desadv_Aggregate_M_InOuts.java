@@ -42,15 +42,12 @@ import de.metas.edi.model.I_C_BPartner;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.esb.edi.model.I_EDI_Desadv;
+import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfo;
 import de.metas.util.Services;
-import de.metas.process.JavaProcess;
 
 /**
  * Aggregates edi-enabled inOuts into desadv records.
- *
- * @author ts
- *
  */
 public class EDI_Desadv_Aggregate_M_InOuts extends JavaProcess
 {
@@ -95,7 +92,6 @@ public class EDI_Desadv_Aggregate_M_InOuts extends JavaProcess
 		.addNotEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_POReference, null)
 
 		// task 08926: make sure the inout has EdiEnabled
-
 		.addEqualsFilter(I_M_InOut.COLUMNNAME_IsEdiEnabled, true)
 
 		.addInSubQueryFilter(org.compiere.model.I_M_InOut.COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID, ediRecipient)

@@ -559,7 +559,7 @@ public class HUs2DDOrderProducer
 			//
 			// Fetch relevant attributes
 			final IAttributeStorage huAttributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
-			final IQualityInspectionSchedulable qualityInspectionSchedulable = huMaterialTrackingId.asQualityInspectionSchedulable(huContext, huAttributeStorage).orNull();
+			final IQualityInspectionSchedulable qualityInspectionSchedulable = huMaterialTrackingId.asQualityInspectionSchedulable(huContext, huAttributeStorage).orElse(null);
 			if (qualityInspectionSchedulable != null)
 			{
 				attributes = qualityInspectionSchedulable.getAttributesAsMap();

@@ -210,7 +210,7 @@ public final class TableModelLoader
 	 *
 	 * @return PO or null
 	 */
-	private final PO createOrLoadPO(final Properties ctx, final String tableName, final int recordId, final String trxName)
+	private PO createOrLoadPO(final Properties ctx, final String tableName, final int recordId, final String trxName)
 	{
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
 		if (recordId > 0 && !poInfo.isSingleKeyColumnName())
@@ -282,12 +282,12 @@ public final class TableModelLoader
 	 * @param trxName
 	 * @return loaded model; never return null
 	 */
-	private final PO retrievePO(final Properties ctx, final String tableName, final ResultSet rs, final String trxName)
+	private PO retrievePO(final Properties ctx, final String tableName, final ResultSet rs, final String trxName)
 	{
 		final Class<?> clazz = tableModelClassLoader.getClass(tableName);
 		if (clazz == null)
 		{
-			log.info("Using GenericPO for {}", tableName);
+			log.debug("Using GenericPO for {}", tableName);
 			final GenericPO po = new GenericPO(tableName, ctx, rs, trxName);
 			return po;
 		}
@@ -340,7 +340,7 @@ public final class TableModelLoader
 		return po;
 	}
 
-	private final PO retrievePO(final Properties ctx, final String tableName, final String whereClause, final Object[] params, final String trxName)
+	private PO retrievePO(final Properties ctx, final String tableName, final String whereClause, final Object[] params, final String trxName)
 	{
 		if (whereClause == null || whereClause.length() == 0)
 		{
@@ -385,7 +385,7 @@ public final class TableModelLoader
 		return po;
 	}
 
-	public final <ModelType> ModelType retrieveModel(final Properties ctx, final String tableName, final Class<?> modelClass, final ResultSet rs, final String trxName)
+	public <ModelType> ModelType retrieveModel(final Properties ctx, final String tableName, final Class<?> modelClass, final ResultSet rs, final String trxName)
 	{
 		final PO po = getPO(ctx, tableName, rs, trxName);
 
