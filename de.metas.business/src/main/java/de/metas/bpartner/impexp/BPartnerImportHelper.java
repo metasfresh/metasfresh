@@ -42,6 +42,7 @@ import de.metas.util.Services;
 		return new BPartnerImportHelper();
 	}
 
+	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 	private BPartnerImportProcess process;
 
 	private BPartnerImportHelper()
@@ -98,7 +99,7 @@ import de.metas.util.Services;
 
 		final String url3 = importRecord.getURL3();
 
-		if(!Check.isEmpty(url3))
+		if (!Check.isEmpty(url3))
 		{
 			bpartner.setURL3(url3);
 		}
@@ -176,8 +177,6 @@ import de.metas.util.Services;
 
 	private I_C_BPartner updateExistingBPartner(final I_I_BPartner importRecord)
 	{
-		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
-
 		final I_C_BPartner bpartner = partnerDAO.getById(BPartnerId.ofRepoId(importRecord.getC_BPartner_ID()));
 
 		final String partnerExternalId = importRecord.getC_BPartner_ExternalId();

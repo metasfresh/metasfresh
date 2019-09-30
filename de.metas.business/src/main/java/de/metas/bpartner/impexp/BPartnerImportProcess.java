@@ -31,7 +31,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bank.BankRepository;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.SpringContextHolder;
@@ -46,6 +49,7 @@ import org.compiere.model.X_I_BPartner;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPPrintFormat;
 import de.metas.bpartner.service.BPPrintFormatQuery;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerPrintFormatRepository;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -62,6 +66,8 @@ import lombok.NonNull;
  */
 public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPartner>
 {
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
 	private final BPartnerImportHelper bpartnerImporter;
 	private final BPartnerLocationImportHelper bpartnerLocationImporter;
 	private final BPartnerContactImportHelper bpartnerContactImporter;
@@ -70,11 +76,29 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 
 	public BPartnerImportProcess()
 	{
+		this(
+				(BPartnerCreditLimitRepository)null,
+				(BankRepository)null);
+	}
+
+	public BPartnerImportProcess(
+			@Nullable BPartnerCreditLimitRepository creditLimitRepo,
+			@Nullable BankRepository bankRepository)
+	{
 		bpartnerImporter = BPartnerImportHelper.newInstance().setProcess(this);
 		bpartnerLocationImporter = BPartnerLocationImportHelper.newInstance().setProcess(this);
 		bpartnerContactImporter = BPartnerContactImportHelper.newInstance().setProcess(this);
-		bpartnerBankAccountImportHelper = BPartnerBankAccountImportHelper.newInstance().setProcess(this);
-		bpartnerCreditLimitImportHelper = BPCreditLimitImportHelper.newInstance();
+
+		final BankRepository bankRepositoryEffective = bankRepository != null ? bankRepository : new BankRepository();
+		bpartnerBankAccountImportHelper = BPartnerBankAccountImportHelper.builder()
+				.bankRepository(bankRepositoryEffective)
+				.build();
+		bpartnerBankAccountImportHelper.setProcess(this);
+
+		final BPartnerCreditLimitRepository creditLimitRepoEffective = creditLimitRepo != null ? creditLimitRepo : new BPartnerCreditLimitRepository();
+		bpartnerCreditLimitImportHelper = BPCreditLimitImportHelper.builder()
+				.creditLimitRepo(creditLimitRepoEffective)
+				.build();
 	}
 
 	@Override
@@ -138,12 +162,8 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 	{
 		//
 		// Get previous values
-		BPartnerImportContext context = (BPartnerImportContext)state.getValue();
-		if (context == null)
-		{
-			context = new BPartnerImportContext();
-			state.setValue(context);
-		}
+		final BPartnerImportContext context = (BPartnerImportContext)state.computeIfNull(BPartnerImportContext::new);
+		
 		final I_I_BPartner previousImportRecord = context.getPreviousImportRecord();
 		final int previousBPartnerId = context.getPreviousC_BPartner_ID();
 		final String previousBPValue = context.getPreviousBPValue();
@@ -185,8 +205,18 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 
 		bpartnerLocationImporter.importRecord(importRecord, context.getPreviousImportRecordsForSameBP());
 		bpartnerContactImporter.importRecord(importRecord);
-		bpartnerBankAccountImportHelper.importRecord(importRecord);
-		bpartnerCreditLimitImportHelper.importRecord(importRecord);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(importRecord.getC_BPartner_ID());
+		if (bpartnerId != null)
+		{
+			bpartnerBankAccountImportHelper.importRecord(importRecord);
+
+			bpartnerCreditLimitImportHelper.importRecord(BPCreditLimitImportRequest.builder()
+					.insuranceCreditLimit(importRecord.getCreditLimit())
+					.managementCreditLimit(importRecord.getCreditLimit2())
+					.build());
+		}
+
 		createUpdateInterestArea(importRecord);
 		createBPPrintFormatIfNeeded(importRecord);
 
@@ -258,8 +288,6 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 		{
 			return;
 		}
-
-		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 		final int printFormatId = importRecord.getAD_PrintFormat_ID();
 		final int adTableId;

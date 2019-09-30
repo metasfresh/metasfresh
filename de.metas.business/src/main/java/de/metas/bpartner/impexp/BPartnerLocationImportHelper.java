@@ -53,6 +53,7 @@ import lombok.NonNull;
 		return new BPartnerLocationImportHelper();
 	}
 
+	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 	private BPartnerImportProcess process;
 
 	private BPartnerLocationImportHelper()
@@ -91,11 +92,10 @@ import lombok.NonNull;
 	 * @param previousImportRecordsForSameBPartner
 	 * @return
 	 */
-	private I_C_BPartner_Location fetchAndUpdateExistingBPLocation(@NonNull final I_I_BPartner importRecord,
+	private I_C_BPartner_Location fetchAndUpdateExistingBPLocation(
+			@NonNull final I_I_BPartner importRecord,
 			@NonNull final List<I_I_BPartner> previousImportRecordsForSameBPartner)
 	{
-		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
-
 		final BPartnerLocationId bpLocationIdOrNull = BPartnerLocationId.ofRepoIdOrNull(importRecord.getC_BPartner_ID(), importRecord.getC_BPartner_Location_ID());
 
 		I_C_BPartner_Location bpartnerLocation = bpLocationIdOrNull == null ? null : partnerDAO.getBPartnerLocationById(bpLocationIdOrNull);
@@ -104,7 +104,7 @@ import lombok.NonNull;
 
 		final boolean previousImportRecordsHaveAnEqualAddress = !importRecordsWithEqualAddresses.isEmpty();
 		if (previousImportRecordsHaveAnEqualAddress
-				|| bpartnerLocation != null && bpartnerLocation.getC_BPartner_Location_ID() > 0)// Update Location
+				|| (bpartnerLocation != null && bpartnerLocation.getC_BPartner_Location_ID() > 0))// Update Location
 		{
 			if (previousImportRecordsHaveAnEqualAddress)
 			{
@@ -121,7 +121,7 @@ import lombok.NonNull;
 		return bpartnerLocation;
 	}
 
-	private List<I_I_BPartner> getImportRecordsWithEqualAddresses(
+	private static List<I_I_BPartner> getImportRecordsWithEqualAddresses(
 			@NonNull final I_I_BPartner importRecord,
 			@NonNull final List<I_I_BPartner> previousImportRecordsForSameBPartner)
 	{
@@ -158,8 +158,6 @@ import lombok.NonNull;
 	 */
 	private I_C_BPartner_Location createNewBPartnerLocation(@NonNull final I_I_BPartner importRecord)
 	{
-		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
-
 		if (importRecord.getC_Country_ID() > 0
 				&& !Check.isEmpty(importRecord.getCity(), true))
 		{

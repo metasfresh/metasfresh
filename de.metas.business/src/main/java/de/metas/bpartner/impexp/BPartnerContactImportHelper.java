@@ -53,8 +53,10 @@ import lombok.NonNull;
 
 	// services
 	private static final Logger logger = LogManager.getLogger(BPartnerContactImportHelper.class);
-	private final transient IUserBL userBL = Services.get(IUserBL.class);
-
+	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+	private final IUserBL userBL = Services.get(IUserBL.class);
+	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private BPartnerImportProcess process;
 
 	private BPartnerContactImportHelper()
@@ -69,13 +71,10 @@ import lombok.NonNull;
 
 	public I_AD_User importRecord(final I_I_BPartner importRecord)
 	{
-		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
-		final IUserDAO userDAO = Services.get(IUserDAO.class);
-
 		final I_C_BPartner bpartner = partnerDAO.getByIdInTrx(BPartnerId.ofRepoId(importRecord.getC_BPartner_ID()));
 
 		BPartnerLocationId bpLocIdOrNull = BPartnerLocationId.ofRepoIdOrNull(importRecord.getC_BPartner_ID(), importRecord.getC_BPartner_Location_ID());
-		final I_C_BPartner_Location bpartnerLocation = bpLocIdOrNull == null? null : partnerDAO.getBPartnerLocationById(bpLocIdOrNull);
+		final I_C_BPartner_Location bpartnerLocation = bpLocIdOrNull == null ? null : partnerDAO.getBPartnerLocationById(bpLocIdOrNull);
 
 		final String importContactName = userBL.buildContactName(importRecord.getFirstname(), importRecord.getLastname());
 
@@ -115,7 +114,7 @@ import lombok.NonNull;
 		if (!Check.isEmpty(importContactName, true)
 				|| !Check.isEmpty(importRecord.getEMail(), true))
 		{
-			user = Services.get(IBPartnerBL.class).createDraftContact(bpartner);
+			user = bpartnerBL.createDraftContact(bpartner);
 			if (importRecord.getC_Greeting_ID() > 0)
 			{
 				user.setC_Greeting_ID(importRecord.getC_Greeting_ID());
