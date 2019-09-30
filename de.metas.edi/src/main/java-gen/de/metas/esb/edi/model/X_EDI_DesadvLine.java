@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.esb.edi.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for EDI_DesadvLine
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2078886566L;
+	private static final long serialVersionUID = 268508805L;
 
     /** Standard Constructor */
     public X_EDI_DesadvLine (Properties ctx, int EDI_DesadvLine_ID, String trxName)
@@ -43,8 +26,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 			setC_UOM_ID (0);
 			setEDI_Desadv_ID (0);
 			setEDI_DesadvLine_ID (0);
-			setIsManual_IPA_SSCC18 (false);
-// N
+			setIsManual_IPA_SSCC18 (false); // N
 			setIsSubsequentDeliveryPlanned (false);
 			setM_Product_ID (0);
         } */
@@ -64,18 +46,6 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
-	}
 
 	/** Set Maßeinheit.
 		@param C_UOM_ID 
@@ -102,8 +72,40 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 		return ii.intValue();
 	}
 
+	/** Set CU-EAN.
+		@param EAN_CU CU-EAN	  */
 	@Override
-	public de.metas.esb.edi.model.I_EDI_Desadv getEDI_Desadv() throws RuntimeException
+	public void setEAN_CU (java.lang.String EAN_CU)
+	{
+		set_Value (COLUMNNAME_EAN_CU, EAN_CU);
+	}
+
+	/** Get CU-EAN.
+		@return CU-EAN	  */
+	@Override
+	public java.lang.String getEAN_CU () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EAN_CU);
+	}
+
+	/** Set TU-EAN.
+		@param EAN_TU TU-EAN	  */
+	@Override
+	public void setEAN_TU (java.lang.String EAN_TU)
+	{
+		set_Value (COLUMNNAME_EAN_TU, EAN_TU);
+	}
+
+	/** Get TU-EAN.
+		@return TU-EAN	  */
+	@Override
+	public java.lang.String getEAN_TU () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EAN_TU);
+	}
+
+	@Override
+	public de.metas.esb.edi.model.I_EDI_Desadv getEDI_Desadv()
 	{
 		return get_ValueAsPO(COLUMNNAME_EDI_Desadv_ID, de.metas.esb.edi.model.I_EDI_Desadv.class);
 	}
@@ -156,6 +158,22 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set GTIN.
+		@param GTIN GTIN	  */
+	@Override
+	public void setGTIN (java.lang.String GTIN)
+	{
+		set_Value (COLUMNNAME_GTIN, GTIN);
+	}
+
+	/** Get GTIN.
+		@return GTIN	  */
+	@Override
+	public java.lang.String getGTIN () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_GTIN);
 	}
 
 	/** Set SSCC18.
@@ -248,20 +266,8 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 		return ii.intValue();
 	}
 
-	@Override
-	public de.metas.handlingunits.model.I_M_HU getM_HU() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
-	}
-
-	@Override
-	public void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU)
-	{
-		set_ValueFromPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_HU);
-	}
-
-	/** Set Handling Units.
-		@param M_HU_ID Handling Units	  */
+	/** Set Handling Unit.
+		@param M_HU_ID Handling Unit	  */
 	@Override
 	public void setM_HU_ID (int M_HU_ID)
 	{
@@ -271,8 +277,8 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 			set_Value (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
 	}
 
-	/** Get Handling Units.
-		@return Handling Units	  */
+	/** Get Handling Unit.
+		@return Handling Unit	  */
 	@Override
 	public int getM_HU_ID () 
 	{
@@ -300,20 +306,8 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_MovementQty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.
@@ -394,7 +388,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDeliveredInUOM);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -416,7 +410,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyEntered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -435,26 +429,39 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyItemCapacity);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set UPC/EAN.
-		@param UPC 
-		Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
-	  */
+	/** Set CU-UPC.
+		@param UPC_CU CU-UPC	  */
 	@Override
-	public void setUPC (java.lang.String UPC)
+	public void setUPC_CU (java.lang.String UPC_CU)
 	{
-		set_Value (COLUMNNAME_UPC, UPC);
+		set_Value (COLUMNNAME_UPC_CU, UPC_CU);
 	}
 
-	/** Get UPC/EAN.
-		@return Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
-	  */
+	/** Get CU-UPC.
+		@return CU-UPC	  */
 	@Override
-	public java.lang.String getUPC () 
+	public java.lang.String getUPC_CU () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_UPC);
+		return (java.lang.String)get_Value(COLUMNNAME_UPC_CU);
+	}
+
+	/** Set TU-UPC.
+		@param UPC_TU TU-UPC	  */
+	@Override
+	public void setUPC_TU (java.lang.String UPC_TU)
+	{
+		set_Value (COLUMNNAME_UPC_TU, UPC_TU);
+	}
+
+	/** Get TU-UPC.
+		@return TU-UPC	  */
+	@Override
+	public java.lang.String getUPC_TU () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_UPC_TU);
 	}
 }

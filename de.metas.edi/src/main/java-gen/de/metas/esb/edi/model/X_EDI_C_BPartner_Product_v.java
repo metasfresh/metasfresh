@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.esb.edi.model;
 
@@ -30,7 +14,7 @@ public class X_EDI_C_BPartner_Product_v extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -794752356L;
+	private static final long serialVersionUID = 1245521856L;
 
     /** Standard Constructor */
     public X_EDI_C_BPartner_Product_v (Properties ctx, int EDI_C_BPartner_Product_v_ID, String trxName)
@@ -56,18 +40,6 @@ public class X_EDI_C_BPartner_Product_v extends org.compiere.model.PO implements
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
 		Bezeichnet einen Geschäftspartner
@@ -91,6 +63,18 @@ public class X_EDI_C_BPartner_Product_v extends org.compiere.model.PO implements
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_OrderLine getC_OrderLine()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class);
+	}
+
+	@Override
+	public void setC_OrderLine(org.compiere.model.I_C_OrderLine C_OrderLine)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLine);
 	}
 
 	/** Set Auftragsposition.
@@ -118,6 +102,18 @@ public class X_EDI_C_BPartner_Product_v extends org.compiere.model.PO implements
 		return ii.intValue();
 	}
 
+	@Override
+	public org.compiere.model.I_M_InOutLine getM_InOutLine()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class);
+	}
+
+	@Override
+	public void setM_InOutLine(org.compiere.model.I_M_InOutLine M_InOutLine)
+	{
+		set_ValueFromPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class, M_InOutLine);
+	}
+
 	/** Set Versand-/Wareneingangsposition.
 		@param M_InOutLine_ID 
 		Position auf Versand- oder Wareneingangsbeleg
@@ -141,18 +137,6 @@ public class X_EDI_C_BPartner_Product_v extends org.compiere.model.PO implements
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.
@@ -197,9 +181,7 @@ public class X_EDI_C_BPartner_Product_v extends org.compiere.model.PO implements
 	}
 
 	/** Set UPC/EAN.
-		@param UPC 
-		Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
-	  */
+		@param UPC UPC/EAN	  */
 	@Override
 	public void setUPC (java.lang.String UPC)
 	{
@@ -207,8 +189,7 @@ public class X_EDI_C_BPartner_Product_v extends org.compiere.model.PO implements
 	}
 
 	/** Get UPC/EAN.
-		@return Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
-	  */
+		@return UPC/EAN	  */
 	@Override
 	public java.lang.String getUPC () 
 	{
