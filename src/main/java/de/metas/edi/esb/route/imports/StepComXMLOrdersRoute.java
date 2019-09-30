@@ -40,10 +40,10 @@ import de.metas.edi.esb.jaxb.stepcom.order.ObjectFactory;
 import de.metas.edi.esb.route.AbstractEDIRoute;
 
 @Component
-public class StepComXMLOrderRoute
+public class StepComXMLOrdersRoute
 		extends RouteBuilder
 {
-	public static final String ROUTE_NAME = "XML-Order-To-XML-OLCand";
+	public static final String ROUTE_NAME = "STEPCOM-XML-Orders-To-XML-OLCand";
 
 	private static final String XML_INPUT_ORDERS = "{{edi.input.orders.stepcom-xml.filename}}";
 
@@ -58,7 +58,7 @@ public class StepComXMLOrderRoute
 		final JaxbDataFormat dataFormat = new JaxbDataFormat(JAXB_ORDER_CONTEXTPATH);
 		dataFormat.setCamelContext(getContext());
 
-		ProcessorDefinition<?> ediToXMLOrdersRoute = from(StepComXMLOrderRoute.XML_INPUT_ORDERS)
+		ProcessorDefinition<?> ediToXMLOrdersRoute = from(StepComXMLOrdersRoute.XML_INPUT_ORDERS)
 				.routeId(ROUTE_NAME)
 
 				.log(LoggingLevel.INFO, "EDI: Storing CamelFileName header as property for future use...")

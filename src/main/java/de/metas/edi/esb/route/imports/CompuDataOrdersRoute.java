@@ -25,21 +25,21 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 @Component
-public class EDIOrderRoute extends AbstractEDIRoute
+public class CompuDataOrdersRoute extends AbstractEDIRoute
 {
 	public static final String EDI_INPUT_ORDERS = "{{edi.input.orders.computdata.filename}}";
 
 	private static final Set<Class<?>> pojoTypes = new HashSet<Class<?>>();
 	static
 	{
-		EDIOrderRoute.pojoTypes.add(de.metas.edi.esb.pojo.order.compudata.H000.class);
-		EDIOrderRoute.pojoTypes.add(de.metas.edi.esb.pojo.order.compudata.H100.class);
-		EDIOrderRoute.pojoTypes.add(de.metas.edi.esb.pojo.order.compudata.H110.class);
-		EDIOrderRoute.pojoTypes.add(de.metas.edi.esb.pojo.order.compudata.H120.class);
-		EDIOrderRoute.pojoTypes.add(de.metas.edi.esb.pojo.order.compudata.H130.class);
-		EDIOrderRoute.pojoTypes.add(de.metas.edi.esb.pojo.order.compudata.P100.class);
-		EDIOrderRoute.pojoTypes.add(de.metas.edi.esb.pojo.order.compudata.P110.class);
-		EDIOrderRoute.pojoTypes.add(de.metas.edi.esb.pojo.order.compudata.T100.class);
+		CompuDataOrdersRoute.pojoTypes.add(de.metas.edi.esb.pojo.order.compudata.H000.class);
+		CompuDataOrdersRoute.pojoTypes.add(de.metas.edi.esb.pojo.order.compudata.H100.class);
+		CompuDataOrdersRoute.pojoTypes.add(de.metas.edi.esb.pojo.order.compudata.H110.class);
+		CompuDataOrdersRoute.pojoTypes.add(de.metas.edi.esb.pojo.order.compudata.H120.class);
+		CompuDataOrdersRoute.pojoTypes.add(de.metas.edi.esb.pojo.order.compudata.H130.class);
+		CompuDataOrdersRoute.pojoTypes.add(de.metas.edi.esb.pojo.order.compudata.P100.class);
+		CompuDataOrdersRoute.pojoTypes.add(de.metas.edi.esb.pojo.order.compudata.P110.class);
+		CompuDataOrdersRoute.pojoTypes.add(de.metas.edi.esb.pojo.order.compudata.T100.class);
 	}
 
 	@Override
@@ -51,18 +51,18 @@ public class EDIOrderRoute extends AbstractEDIRoute
 		//
 		// Used for readability of route
 		final Map<Predicate, SmooksDataFormat> predicateAndSDFMap = new HashMap<Predicate, SmooksDataFormat>();
-		for (final Class<?> pojoType : EDIOrderRoute.pojoTypes)
+		for (final Class<?> pojoType : CompuDataOrdersRoute.pojoTypes)
 		{
 			predicateAndSDFMap.put(body().startsWith(pojoType.getSimpleName()), getSDFForConfiguration("edi.smooks.config.xml.orders." + pojoType.getSimpleName()));
 		}
 
 		// route configuration around split/aggregate when identifying EDI records
 		final ValueBuilder splitBodyByEndline = bodyAs(String.class).tokenize("\n");
-		final AggregationStrategy validTypeAggregationStrategy = new ValidTypeAggregationStrategy(EDIOrderRoute.pojoTypes);
+		final AggregationStrategy validTypeAggregationStrategy = new ValidTypeAggregationStrategy(CompuDataOrdersRoute.pojoTypes);
 
 		// create route and split it
-		ProcessorDefinition<?> ediToXMLOrdersRoute = from(EDIOrderRoute.EDI_INPUT_ORDERS)
-				.routeId("EDI-Order-To-XML-OLCand")
+		ProcessorDefinition<?> ediToXMLOrdersRoute = from(CompuDataOrdersRoute.EDI_INPUT_ORDERS)
+				.routeId("COMPUDATA-Order-To-XML-OLCand")
 
 				.log(LoggingLevel.INFO, "EDI: Storing CamelFileName header as property for future use...")
 				.setProperty(Exchange.FILE_NAME, header(Exchange.FILE_NAME))
@@ -93,26 +93,26 @@ public class EDIOrderRoute extends AbstractEDIRoute
 		// end splitter route (aggregation strategy execute automatically)
 		ediToXMLOrdersRoute = ediToXMLOrdersRoute.end();
 
-		final String defaultEDIMessageDatePattern = Util.resolvePropertyPlaceholders(getContext(), EDIOrderRoute.EDI_ORDER_EDIMessageDatePattern);
-		final String defaultADClientValue = Util.resolvePropertyPlaceholders(getContext(), EDIOrderRoute.EDI_ORDER_ADClientValue);
-		final BigInteger defaultADOrgID = new BigInteger(Util.resolvePropertyPlaceholders(getContext(), EDIOrderRoute.EDI_ORDER_ADOrgID));
-		final String defaultADInputDataDestinationInternalName = Util.resolvePropertyPlaceholders(getContext(), EDIOrderRoute.EDI_ORDER_ADInputDataDestination_InternalName);
-		final BigInteger defaultADInputDataSourceID = new BigInteger(Util.resolvePropertyPlaceholders(getContext(), EDIOrderRoute.EDI_ORDER_ADInputDataSourceID));
-		final BigInteger defaultADUserEnteredByID = new BigInteger(Util.resolvePropertyPlaceholders(getContext(), EDIOrderRoute.EDI_ORDER_ADUserEnteredByID));
-		final String defaultDeliveryRule = Util.resolvePropertyPlaceholders(getContext(), EDIOrderRoute.EDI_ORDER_DELIVERY_RULE);
-		final String defaultDeliveryViaRule = Util.resolvePropertyPlaceholders(getContext(), EDIOrderRoute.EDI_ORDER_DELIVERY_VIA_RULE);
+		final String defaultEDIMessageDatePattern = Util.resolvePropertyPlaceholders(getContext(), CompuDataOrdersRoute.EDI_ORDER_EDIMessageDatePattern);
+		final String defaultADClientValue = Util.resolvePropertyPlaceholders(getContext(), CompuDataOrdersRoute.EDI_ORDER_ADClientValue);
+		final BigInteger defaultADOrgID = new BigInteger(Util.resolvePropertyPlaceholders(getContext(), CompuDataOrdersRoute.EDI_ORDER_ADOrgID));
+		final String defaultADInputDataDestinationInternalName = Util.resolvePropertyPlaceholders(getContext(), CompuDataOrdersRoute.EDI_ORDER_ADInputDataDestination_InternalName);
+		final BigInteger defaultADInputDataSourceID = new BigInteger(Util.resolvePropertyPlaceholders(getContext(), CompuDataOrdersRoute.EDI_ORDER_ADInputDataSourceID));
+		final BigInteger defaultADUserEnteredByID = new BigInteger(Util.resolvePropertyPlaceholders(getContext(), CompuDataOrdersRoute.EDI_ORDER_ADUserEnteredByID));
+		final String defaultDeliveryRule = Util.resolvePropertyPlaceholders(getContext(), CompuDataOrdersRoute.EDI_ORDER_DELIVERY_RULE);
+		final String defaultDeliveryViaRule = Util.resolvePropertyPlaceholders(getContext(), CompuDataOrdersRoute.EDI_ORDER_DELIVERY_VIA_RULE);
 
 		ediToXMLOrdersRoute = ediToXMLOrdersRoute
 				.log(LoggingLevel.INFO, "EDI: Setting EDI ORDER defaults as properties...")
 
-				.setProperty(EDIOrderRoute.EDI_ORDER_EDIMessageDatePattern).constant(defaultEDIMessageDatePattern)
-				.setProperty(EDIOrderRoute.EDI_ORDER_ADClientValue).constant(defaultADClientValue)
-				.setProperty(EDIOrderRoute.EDI_ORDER_ADOrgID).constant(defaultADOrgID)
-				.setProperty(EDIOrderRoute.EDI_ORDER_ADInputDataDestination_InternalName).constant(defaultADInputDataDestinationInternalName)
-				.setProperty(EDIOrderRoute.EDI_ORDER_ADInputDataSourceID).constant(defaultADInputDataSourceID)
-				.setProperty(EDIOrderRoute.EDI_ORDER_ADUserEnteredByID).constant(defaultADUserEnteredByID)
-				.setProperty(EDIOrderRoute.EDI_ORDER_DELIVERY_RULE).constant(defaultDeliveryRule)
-				.setProperty(EDIOrderRoute.EDI_ORDER_DELIVERY_VIA_RULE).constant(defaultDeliveryViaRule);
+				.setProperty(CompuDataOrdersRoute.EDI_ORDER_EDIMessageDatePattern).constant(defaultEDIMessageDatePattern)
+				.setProperty(CompuDataOrdersRoute.EDI_ORDER_ADClientValue).constant(defaultADClientValue)
+				.setProperty(CompuDataOrdersRoute.EDI_ORDER_ADOrgID).constant(defaultADOrgID)
+				.setProperty(CompuDataOrdersRoute.EDI_ORDER_ADInputDataDestination_InternalName).constant(defaultADInputDataDestinationInternalName)
+				.setProperty(CompuDataOrdersRoute.EDI_ORDER_ADInputDataSourceID).constant(defaultADInputDataSourceID)
+				.setProperty(CompuDataOrdersRoute.EDI_ORDER_ADUserEnteredByID).constant(defaultADUserEnteredByID)
+				.setProperty(CompuDataOrdersRoute.EDI_ORDER_DELIVERY_RULE).constant(defaultDeliveryRule)
+				.setProperty(CompuDataOrdersRoute.EDI_ORDER_DELIVERY_VIA_RULE).constant(defaultDeliveryViaRule);
 
 		// process the unmarshalled output
 		// @formatter:off

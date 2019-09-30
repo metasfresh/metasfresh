@@ -40,7 +40,7 @@ import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.route.exports.CompuDataDesadvRoute;
 import de.metas.edi.esb.route.exports.CompuDataInvoicRoute;
-import de.metas.edi.esb.route.imports.EDIOrderRoute;
+import de.metas.edi.esb.route.imports.CompuDataOrdersRoute;
 
 public abstract class AbstractEDIRouteTest extends AbstractEDITest
 {
@@ -53,7 +53,7 @@ public abstract class AbstractEDIRouteTest extends AbstractEDITest
 	@EndpointInject(uri = CompuDataDesadvRoute.EP_EDI_FILE_DESADV)
 	protected BrowsableEndpoint outEDIDesadvFILE;
 
-	@Produce(uri = EDIOrderRoute.EDI_INPUT_ORDERS)
+	@Produce(uri = CompuDataOrdersRoute.EDI_INPUT_ORDERS)
 	private ProducerTemplate inputEDIOrder;
 
 	@Before
