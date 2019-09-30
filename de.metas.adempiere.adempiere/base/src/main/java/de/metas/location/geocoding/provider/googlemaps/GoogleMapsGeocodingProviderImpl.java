@@ -28,14 +28,14 @@ import com.google.maps.GeocodingApi;
 import com.google.maps.model.GeocodingResult;
 import com.google.maps.model.LatLng;
 import de.metas.cache.CCache;
-import de.metas.location.geocoding.GeocodingProvider;
 import de.metas.location.geocoding.GeoCoordinatesRequest;
+import de.metas.location.geocoding.GeocodingProvider;
 import de.metas.location.geocoding.GeographicalCoordinates;
 import de.metas.logging.LogManager;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -47,11 +47,14 @@ public class GoogleMapsGeocodingProviderImpl implements GeocodingProvider
 	private static final Logger logger = LogManager.getLogger(GoogleMapsGeocodingProviderImpl.class);
 
 	private final CCache<GeoCoordinatesRequest, ImmutableList<GeographicalCoordinates>> coordinatesCache;
+	private final GeoApiContext context;
 
-	public GoogleMapsGeoCoordinatesProviderImpl(@Value("${de.metas.location.geocoding.provider.googlemaps.cacheCapacity:200}") final int cacheCapacity)
+	public GoogleMapsGeocodingProviderImpl(final GeoApiContext context, final int cacheCapacity)
 	{
+		logger.info("context={}; cacheCapacity={}", context, cacheCapacity);
 
-		logger.info("cacheCapacity={}", cacheCapacity);
+		this.context = context;
+
 		coordinatesCache = CCache.<GeoCoordinatesRequest, ImmutableList<GeographicalCoordinates>>builder()
 				.cacheMapType(CCache.CacheMapType.LRU)
 				.initialCapacity(cacheCapacity)
@@ -85,9 +88,14 @@ public class GoogleMapsGeocodingProviderImpl implements GeocodingProvider
 	@NonNull
 	private ImmutableList<GeographicalCoordinates> queryAllCoordinates(@NonNull final GeoCoordinatesRequest request)
 	{
-		final String formattedAddress = String.format("%s, %s %s, %s", request.getAddress(), request.getPostal(), request.getCity(), request.getCountryCode2());
+		final String formattedAddress = String.format("%s, %s %s, %s",
+				CoalesceUtil.coalesce(request.getAddress(), ""),
+				CoalesceUtil.coalesce(request.getPostal(), ""),
+				CoalesceUtil.coalesce(request.getCity(), ""),
+				CoalesceUtil.coalesce(request.getCountryCode2(), ""));
 
-		final GeoApiContext context = GoogleMapsGeoApiContext.getInstance();
+		logger.trace("Formatted address: {}", formattedAddress);
+
 		final GeocodingResult[] results = GeocodingApi
 				.geocode(context, formattedAddress)
 				.awaitIgnoreError();

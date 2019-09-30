@@ -22,9 +22,12 @@
 
 package de.metas.location.geocoding;
 
+import de.metas.location.geocoding.provider.GeocodingProviderName;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_GeocodingConfig;
+
+import javax.annotation.Nullable;
 
 public class GeocodingConfigRepository
 {
@@ -36,4 +39,15 @@ public class GeocodingConfigRepository
 				.first();
 	}
 
+	@Nullable
+	public static GeocodingProviderName getActiveGeocodingProviderNameOrNull()
+	{
+		final I_GeocodingConfig geocodingConfig = Services.get(IQueryBL.class).createQueryBuilder(I_GeocodingConfig.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.first();
+
+		final String geocodingProviderStr = geocodingConfig.getGeocodingProvider();
+		return GeocodingProviderName.ofProviderName(geocodingProviderStr);
+	}
 }

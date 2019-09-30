@@ -20,37 +20,32 @@
  * #L%
  */
 
-package de.metas.location.geocoding.provider.googlemaps;
+package de.metas.location.geocoding.provider;
 
-import com.google.maps.GeoApiContext;
-import de.metas.location.geocoding.GeocodingConfigRepository;
+import com.google.common.collect.ImmutableMap;
 
-public class GoogleMapsGeoApiContext
+import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
+public enum GeocodingProviderName
 {
-	private static volatile GeoApiContext instance;
+	GOOGLE_MAPS("GoogleMaps"),
+	OPEN_STREET_MAPS("OpenStreetMaps");
 
-	private GoogleMapsGeoApiContext()
+	private final String providerName;
+
+	private static final Map<String, GeocodingProviderName> map = Stream.of(values()).collect(ImmutableMap.toImmutableMap(m -> m.providerName, Function.identity()));
+
+	GeocodingProviderName(final String providerName)
 	{
+		this.providerName = providerName;
 	}
 
-	public static GeoApiContext getInstance()
+	@Nullable
+	public static GeocodingProviderName ofProviderName(final String providerName)
 	{
-		if (instance != null)
-		{
-			return instance;
-		}
-
-		synchronized (GoogleMapsGeoApiContext.class)
-		{
-			if (instance == null)
-			{
-				final String apiKey = GeocodingConfigRepository.readGeocodingConfig().getgmaps_ApiKey();
-				instance = new GeoApiContext.Builder()
-						.apiKey(apiKey)
-						.build();
-			}
-		}
-
-		return instance;
+		return map.get(providerName);
 	}
 }

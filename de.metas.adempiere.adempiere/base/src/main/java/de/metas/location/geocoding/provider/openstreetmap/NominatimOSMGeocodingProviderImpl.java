@@ -34,14 +34,12 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
@@ -70,10 +68,10 @@ public class NominatimOSMGeocodingProviderImpl implements GeocodingProvider
 	private final long millisBetweenRequests;
 	private Instant lastRequestTime;
 
-	NominatimOSMGeoCoordinatesProviderImpl(
-			@Value("${de.metas.location.geocoding.openstreetmap.baseUrl:}") final String baseUrl,
-			@Value("${de.metas.location.geocoding.openstreetmap.millisBetweenRequests:2000}") final long millisBetweenRequests,
-			@Value("${de.metas.location.geocoding.openstreetmap.cacheCapacity:200}") final int cacheCapacity)
+	public NominatimOSMGeocodingProviderImpl(
+			final String baseUrl,
+			final long millisBetweenRequests,
+			final int cacheCapacity)
 	{
 		if (!Check.isEmpty(baseUrl, true))
 		{

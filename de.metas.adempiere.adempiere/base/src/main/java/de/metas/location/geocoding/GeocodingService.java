@@ -1,6 +1,6 @@
 package de.metas.location.geocoding;
 
-import de.metas.location.geocoding.provider.GeoCoordinatesProviderFactory;
+import de.metas.location.geocoding.provider.GeocodingProviderFactory;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import org.slf4j.Logger;
@@ -43,7 +43,7 @@ public class GeocodingService
 	@Nullable
 	private GeocodingProvider getProviderOrNull()
 	{
-		return GeoCoordinatesProviderFactory.buildActiveGeocodingProviderOrNull();
+		return GeocodingProviderFactory.buildActiveGeocodingProviderOrNull();
 	}
 
 	public Optional<GeographicalCoordinates> findBestCoordinates(@NonNull final GeoCoordinatesRequest request)
