@@ -1,9 +1,9 @@
 package de.metas.bpartner.impexp;
 
+import org.adempiere.bank.BankId;
 import org.adempiere.bank.BankRepository;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_Bank;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.ModelValidationEngine;
 
@@ -74,10 +74,10 @@ import lombok.NonNull;
 			bankAccount.setIBAN(importRecord.getIBAN());
 			bankAccount.setA_Name(importRecord.getSwiftCode());
 			bankAccount.setC_Currency_ID(currencyBL.getBaseCurrency(process.getCtx()).getId().getRepoId());
-			final I_C_Bank bank = bankRepository.findBankBySwiftCode(importRecord.getSwiftCode());
-			if (bank != null)
+			final BankId bankId = bankRepository.getBankIdBySwiftCode(importRecord.getSwiftCode()).orElse(null);
+			if (bankId != null)
 			{
-				bankAccount.setC_Bank(bank);
+				bankAccount.setC_Bank_ID(bankId.getRepoId());
 			}
 
 			ModelValidationEngine.get().fireImportValidate(process, importRecord, bankAccount, IImportInterceptor.TIMING_AFTER_IMPORT);
