@@ -24,6 +24,7 @@ import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -35,12 +36,12 @@ import de.metas.util.Services;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -121,19 +122,19 @@ public class BPartnerProductDAOTest
 	}
 
 	private I_C_BPartner_Product createBPProduct(
-			final I_C_BPartner partner,
-			final I_M_Product product,
-			final OrgId orgId)
+			@NonNull final I_C_BPartner partner,
+			@NonNull final I_M_Product product,
+			@NonNull final OrgId orgId)
 	{
 		final I_C_BPartner_Product bpProduct = newInstance(I_C_BPartner_Product.class);
 
-		bpProduct.setC_BPartner(partner);
-		bpProduct.setM_Product(product);
+		bpProduct.setC_BPartner_ID(partner.getC_BPartner_ID());
+		bpProduct.setM_Product_ID(product.getM_Product_ID());
 		bpProduct.setAD_Org_ID(orgId.getRepoId());
 		bpProduct.setUsedForVendor(true);
 
 		bpProduct.setUsedForCustomer(true);
-		bpProduct.setC_BPartner_Vendor(partner);
+		bpProduct.setC_BPartner_Vendor_ID(partner.getC_BPartner_ID());
 
 		saveRecord(bpProduct);
 
