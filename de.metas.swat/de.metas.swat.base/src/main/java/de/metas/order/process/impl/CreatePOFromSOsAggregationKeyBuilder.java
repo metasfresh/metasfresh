@@ -1,5 +1,8 @@
 package de.metas.order.process.impl;
 
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
@@ -32,11 +35,11 @@ import de.metas.util.Services;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -86,7 +89,7 @@ public class CreatePOFromSOsAggregationKeyBuilder extends AbstractOrderLineAggre
 		final I_C_BPartner soPartner = Services.get(IBPartnerDAO.class).getById(salesOrderLine.getC_BPartner_ID());
 		final I_M_Product product = Services.get(IProductDAO.class).getById(salesOrderLine.getM_Product_ID());
 
-		//FRESH-334 the bp product should be of the products' organization or of the org 0
+		// FRESH-334 the bp product should be of the products' organization or of the org 0
 		final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
 
 		final I_C_BPartner_Product bpProduct = bpProductDAO.retrieveBPProductForCustomer(soPartner, product, orgId);
@@ -119,27 +122,21 @@ public class CreatePOFromSOsAggregationKeyBuilder extends AbstractOrderLineAggre
 				throw new AdempiereException(msg); // note that msg is != null at this point
 			}
 		}
-		final I_C_BPartner poPartner;
-		if (bpProduct.getC_BPartner_Vendor() != null)
-		{
-			poPartner = bpProduct.getC_BPartner_Vendor();
-		}
-		else
-		{
-			poPartner = bpProduct.getC_BPartner();
-		}
+
+		final int poPartnerRepoId = firstGreaterThanZero(bpProduct.getC_BPartner_Vendor_ID(), bpProduct.getC_BPartner_ID());
+		final I_C_BPartner poBPartnerRecord = loadOutOfTrx(poPartnerRepoId, I_C_BPartner.class);
+
 		// extra validation for the vendor
-		if (p_Vendor_ID > 0 && poPartner.getC_BPartner_ID() != p_Vendor_ID)
+		if (p_Vendor_ID > 0 && poPartnerRepoId != p_Vendor_ID)
 		{
 			final String msg = msgBL.getMsg(context.getCtx(),
 					MSG_VENDOR_MISMATCH,
-					new Object[] { salesOrder.getDocumentNo(), salesOrderLine.getLine(), poPartner.getValue(), poPartner.getName() });
+					new Object[] { salesOrder.getDocumentNo(), salesOrderLine.getLine(), poBPartnerRecord.getValue(), poBPartnerRecord.getName() });
 
 			loggable.addLog(msg);
 			return KEY_SKIP;
 		}
-
-		return poPartner.getValue();
+		return poBPartnerRecord.getValue();
 	}
 
 	@Override

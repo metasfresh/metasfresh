@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.esb.edi.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for EDI_DesadvLine_SSCC
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_EDI_DesadvLine_SSCC extends org.compiere.model.PO implements I_ED
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1715309174L;
+	private static final long serialVersionUID = -358581391L;
 
     /** Standard Constructor */
     public X_EDI_DesadvLine_SSCC (Properties ctx, int EDI_DesadvLine_SSCC_ID, String trxName)
@@ -62,7 +45,7 @@ public class X_EDI_DesadvLine_SSCC extends org.compiere.model.PO implements I_ED
     }
 
 	@Override
-	public de.metas.esb.edi.model.I_EDI_DesadvLine getEDI_DesadvLine() throws RuntimeException
+	public de.metas.esb.edi.model.I_EDI_DesadvLine getEDI_DesadvLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_EDI_DesadvLine_ID, de.metas.esb.edi.model.I_EDI_DesadvLine.class);
 	}
@@ -148,7 +131,7 @@ public class X_EDI_DesadvLine_SSCC extends org.compiere.model.PO implements I_ED
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyCU);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -167,20 +150,20 @@ public class X_EDI_DesadvLine_SSCC extends org.compiere.model.PO implements I_ED
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyCUsPerLU);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Menge TU.
-		@param QtyTU Menge TU	  */
+	/** Set TU Anzahl.
+		@param QtyTU TU Anzahl	  */
 	@Override
 	public void setQtyTU (int QtyTU)
 	{
 		set_Value (COLUMNNAME_QtyTU, Integer.valueOf(QtyTU));
 	}
 
-	/** Get Menge TU.
-		@return Menge TU	  */
+	/** Get TU Anzahl.
+		@return TU Anzahl	  */
 	@Override
 	public int getQtyTU () 
 	{

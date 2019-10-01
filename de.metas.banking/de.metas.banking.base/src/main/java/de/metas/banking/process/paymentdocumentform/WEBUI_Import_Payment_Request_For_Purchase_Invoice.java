@@ -85,18 +85,6 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 	// trl
 	private static final String MSG_CouldNotFindOrCreateBPBankAccount = "de.metas.payment.CouldNotFindOrCreateBPBankAccount";
 
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-
 	@Override protected String doIt() throws Exception
 	{
 		final IPaymentStringDataProvider dataProvider = getDataProvider();
