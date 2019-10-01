@@ -3,12 +3,19 @@ package de.metas.document;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.compiere.util.Env;
+import javax.annotation.Nullable;
+
+import org.adempiere.service.ClientId;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
+
+import de.metas.document.sequence.DocSequenceId;
+import de.metas.organization.OrgId;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -40,7 +47,7 @@ import com.google.common.collect.ImmutableMap;
  */
 public final class DocTypeSequenceMap
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -48,12 +55,12 @@ public final class DocTypeSequenceMap
 	public static final DocTypeSequenceMap EMPTY = builder().build();
 
 	private final Map<ArrayKey, DocTypeSequence> docTypeSequences;
-	private final int defaultDocNoSequence_ID;
+	private final DocSequenceId defaultDocNoSequenceId;
 
 	private DocTypeSequenceMap(final Builder builder)
 	{
 		docTypeSequences = ImmutableMap.copyOf(builder.docTypeSequences);
-		defaultDocNoSequence_ID = builder.defaultDocNoSequence_ID;
+		defaultDocNoSequenceId = builder.defaultDocNoSequenceId;
 	}
 
 	@Override
@@ -61,11 +68,11 @@ public final class DocTypeSequenceMap
 	{
 		return MoreObjects.toStringHelper(this)
 				.add("docTypeSequences", docTypeSequences)
-				.add("defaultDocNoSequence_ID", defaultDocNoSequence_ID)
+				.add("defaultDocNoSequence_ID", defaultDocNoSequenceId)
 				.toString();
 	}
 
-	public int getDocNoSequence_ID(final int adClientId, final int adOrgId)
+	public DocSequenceId getDocNoSequenceId(final ClientId adClientId, final OrgId adOrgId)
 	{
 		if (!docTypeSequences.isEmpty())
 		{
@@ -73,14 +80,14 @@ public final class DocTypeSequenceMap
 			final DocTypeSequence docTypeSequence = docTypeSequences.get(key);
 			if (docTypeSequence != null)
 			{
-				return docTypeSequence.getDocNoSequence_ID();
+				return docTypeSequence.getDocSequenceId();
 			}
 		}
 
-		return defaultDocNoSequence_ID;
+		return defaultDocNoSequenceId;
 	}
 
-	private static final ArrayKey mkKey(final int adClientId, final int adOrgId)
+	private static ArrayKey mkKey(@NonNull final ClientId adClientId, @NonNull final OrgId adOrgId)
 	{
 		return Util.mkKey(adClientId, adOrgId);
 	}
@@ -88,7 +95,7 @@ public final class DocTypeSequenceMap
 	public static final class Builder
 	{
 		private final Map<ArrayKey, DocTypeSequence> docTypeSequences = new HashMap<>();
-		private int defaultDocNoSequence_ID = -1;
+		private DocSequenceId defaultDocNoSequenceId = null;
 
 		private Builder()
 		{
@@ -99,66 +106,36 @@ public final class DocTypeSequenceMap
 			return new DocTypeSequenceMap(this);
 		}
 
-		public void addDocSequenceId(final int adClientId, final int adOrgId, final int docSequenceId)
+		public void addDocSequenceId(final ClientId adClientId, final OrgId adOrgId, final DocSequenceId docSequenceId)
 		{
-			final DocTypeSequence docTypeSequence = DocTypeSequence.of(adClientId, adOrgId, docSequenceId);
-			final ArrayKey key = mkKey(docTypeSequence.getAD_Client_ID(), docTypeSequence.getAD_Org_ID());
+			final DocTypeSequence docTypeSequence = new DocTypeSequence(adClientId, adOrgId, docSequenceId);
+			final ArrayKey key = mkKey(docTypeSequence.getAdClientId(), docTypeSequence.getAdOrgId());
 
 			docTypeSequences.put(key, docTypeSequence);
 		}
 
-		public Builder setDefaultDocNoSequence_ID(final int defaultDocNoSequence_ID)
+		public Builder defaultDocNoSequenceId(final DocSequenceId defaultDocNoSequenceId)
 		{
-			this.defaultDocNoSequence_ID = defaultDocNoSequence_ID;
+			this.defaultDocNoSequenceId = defaultDocNoSequenceId;
 			return this;
 		}
 	}
 
+	@Value
 	private static final class DocTypeSequence
 	{
-		public static final DocTypeSequence of(final int adClientId, final int adOrgId, final int docSequenceId)
-		{
-			return new DocTypeSequence(adClientId, adOrgId, docSequenceId);
-		}
+		private final ClientId adClientId;
+		private final OrgId adOrgId;
+		private final DocSequenceId docSequenceId;
 
-		private final int adClientId;
-		private final int adOrgId;
-		private final int docSequenceId;
-
-		private DocTypeSequence(final int adClientId, final int adOrgId, final int docSequenceId)
+		private DocTypeSequence(
+				@Nullable final ClientId adClientId,
+				@Nullable final OrgId adOrgId,
+				@NonNull final DocSequenceId docSequenceId)
 		{
-			this.adClientId = adClientId <= 0 ? Env.CTXVALUE_AD_Client_ID_System : adClientId;
-			this.adOrgId = adOrgId <= 0 ? Env.CTXVALUE_AD_Org_ID_Any : adOrgId;
-			if (docSequenceId <= 0)
-			{
-				throw new IllegalArgumentException("docSequenceId <= 0");
-			}
+			this.adClientId = adClientId != null ? adClientId : ClientId.SYSTEM;
+			this.adOrgId = adOrgId != null ? adOrgId : OrgId.ANY;
 			this.docSequenceId = docSequenceId;
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this)
-					.add("AD_Client_ID", adClientId)
-					.add("AD_Org_ID", adOrgId)
-					.add("DocSequence_ID", docSequenceId)
-					.toString();
-		}
-
-		public int getAD_Client_ID()
-		{
-			return adClientId;
-		}
-
-		public int getAD_Org_ID()
-		{
-			return adOrgId;
-		}
-
-		public int getDocNoSequence_ID()
-		{
-			return docSequenceId;
 		}
 	}
 }

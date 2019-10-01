@@ -1,5 +1,6 @@
 package de.metas.document.sequence;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -63,5 +64,10 @@ public class DocSequenceId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static boolean equals(final DocSequenceId id1, final DocSequenceId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

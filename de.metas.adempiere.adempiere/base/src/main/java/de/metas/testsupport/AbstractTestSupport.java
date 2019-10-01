@@ -53,6 +53,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.currency.impl.PlainCurrencyBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class AbstractTestSupport
 {
@@ -274,14 +275,17 @@ public class AbstractTestSupport
 		return bpartner;
 	}
 
-	public I_C_BPartner_Product bpartnerProduct(final I_C_BPartner bpartner, final I_M_Product product, final I_AD_Org org)
+	public I_C_BPartner_Product bpartnerProduct(
+			@NonNull final I_C_BPartner bpartner,
+			@NonNull final I_M_Product product,
+			@NonNull final I_AD_Org org)
 	{
 
 		final I_C_BPartner_Product bpProduct = InterfaceWrapperHelper.newInstance(I_C_BPartner_Product.class);
 
-		bpProduct.setC_BPartner(bpartner);
-		bpProduct.setM_Product(product);
-		bpProduct.setAD_Org(org);
+		bpProduct.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		bpProduct.setM_Product_ID(product.getM_Product_ID());
+		bpProduct.setAD_Org_ID(org.getAD_Org_ID());
 
 		InterfaceWrapperHelper.save(bpProduct);
 

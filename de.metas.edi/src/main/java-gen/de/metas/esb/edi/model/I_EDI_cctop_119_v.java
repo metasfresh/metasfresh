@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.esb.edi.model;
 
 
@@ -32,7 +16,7 @@ public interface I_EDI_cctop_119_v
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
@@ -47,8 +31,6 @@ public interface I_EDI_cctop_119_v
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Client_ID();
-
-	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_EDI_cctop_119_v, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_EDI_cctop_119_v, org.compiere.model.I_AD_Client>(I_EDI_cctop_119_v.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
@@ -109,7 +91,7 @@ public interface I_EDI_cctop_119_v
 	 * Set Organisation.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -119,15 +101,11 @@ public interface I_EDI_cctop_119_v
 	 * Get Organisation.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_EDI_cctop_119_v, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_EDI_cctop_119_v, org.compiere.model.I_AD_Org>(I_EDI_cctop_119_v.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
@@ -153,10 +131,6 @@ public interface I_EDI_cctop_119_v
 	 * <br>Virtual Column: false
 	 */
 	public int getC_BPartner_Location_ID();
-
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location();
-
-	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location);
 
     /** Column definition for C_BPartner_Location_ID */
     public static final org.adempiere.model.ModelColumn<I_EDI_cctop_119_v, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<I_EDI_cctop_119_v, org.compiere.model.I_C_BPartner_Location>(I_EDI_cctop_119_v.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
@@ -449,7 +423,6 @@ public interface I_EDI_cctop_119_v
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -459,7 +432,6 @@ public interface I_EDI_cctop_119_v
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -473,7 +445,7 @@ public interface I_EDI_cctop_119_v
     public static final String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Name 2.
+	 * Set Name Zusatz.
 	 * Zusätzliche Bezeichnung
 	 *
 	 * <br>Type: String
@@ -483,7 +455,7 @@ public interface I_EDI_cctop_119_v
 	public void setName2 (java.lang.String Name2);
 
 	/**
-	 * Get Name 2.
+	 * Get Name Zusatz.
 	 * Zusätzliche Bezeichnung
 	 *
 	 * <br>Type: String
@@ -498,8 +470,8 @@ public interface I_EDI_cctop_119_v
     public static final String COLUMNNAME_Name2 = "Name2";
 
 	/**
-	 * Set Phone.
-	 * Identifies a telephone number
+	 * Set Telefon.
+	 * Beschreibt eine Telefon Nummer
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -508,8 +480,8 @@ public interface I_EDI_cctop_119_v
 	public void setPhone (java.lang.String Phone);
 
 	/**
-	 * Get Phone.
-	 * Identifies a telephone number
+	 * Get Telefon.
+	 * Beschreibt eine Telefon Nummer
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -628,7 +600,7 @@ public interface I_EDI_cctop_119_v
     public static final String COLUMNNAME_Value = "Value";
 
 	/**
-	 * Set Umsatzsteuer-ID.
+	 * Set Umsatzsteuer ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -637,7 +609,7 @@ public interface I_EDI_cctop_119_v
 	public void setVATaxID (java.lang.String VATaxID);
 
 	/**
-	 * Get Umsatzsteuer-ID.
+	 * Get Umsatzsteuer ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
