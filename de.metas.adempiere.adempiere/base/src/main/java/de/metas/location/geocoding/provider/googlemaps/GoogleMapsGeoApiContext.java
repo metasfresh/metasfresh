@@ -27,6 +27,7 @@ import de.metas.location.geocoding.GeocodingConfigRepository;
 
 public class GoogleMapsGeoApiContext
 {
+	// this should be a singleton as per he docs https://github.com/googlemaps/google-maps-services-java#usage
 	private static volatile GeoApiContext instance;
 
 	private GoogleMapsGeoApiContext()
