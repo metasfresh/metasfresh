@@ -4429,27 +4429,11 @@ public abstract class PO
 		{
 			sb.append(" AND ").append(whereClause);
 		}
-		sb.append(" AND NOT EXISTS (SELECT * FROM ").append(acctTable)
+		sb.append(" AND NOT EXISTS (SELECT 1 FROM ").append(acctTable)
 				.append(" e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.")
 				.append(get_TableName()).append("_ID=").append(get_ID()).append(")");
 		//
-		final int no = DB.executeUpdate(sb.toString(), get_TrxName());
-		if (no > 0)
-		{
-			log.debug("Inserted {} accounting records for {}", no, this);
-		}
-		else
-		{
-			final AdempiereException ex = new AdempiereException("No accouting records were inserted."
-					+ "\n Acct Table: " + acctTable
-					+ "\n Base Table: " + acctBaseTable
-					+ "\n SQL: " + sb
-					+ "\n PO: " + this
-					+ "\n TrxName: " + get_TrxName()
-					+ "\n Ctx: " + getCtx()
-					+ "\n return count: " + no);
-			log.warn(ex.getLocalizedMessage(), ex);
-		}
+		final int no = DB.executeUpdateEx(sb.toString(), get_TrxName());
 		return no > 0;
 	}	// insert_Accounting
 
