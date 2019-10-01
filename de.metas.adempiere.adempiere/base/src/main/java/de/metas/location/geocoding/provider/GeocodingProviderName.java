@@ -23,6 +23,7 @@
 package de.metas.location.geocoding.provider;
 
 import com.google.common.collect.ImmutableMap;
+import org.compiere.model.X_GeocodingConfig;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -31,8 +32,8 @@ import java.util.stream.Stream;
 
 public enum GeocodingProviderName
 {
-	GOOGLE_MAPS("GoogleMaps"),
-	OPEN_STREET_MAPS("OpenStreetMaps");
+	GOOGLE_MAPS(X_GeocodingConfig.GEOCODINGPROVIDER_GoogleMaps),
+	OPEN_STREET_MAPS(X_GeocodingConfig.GEOCODINGPROVIDER_OpenStreetMaps);
 
 	private final String providerName;
 
