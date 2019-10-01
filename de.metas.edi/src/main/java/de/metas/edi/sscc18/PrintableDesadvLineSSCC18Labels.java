@@ -2,6 +2,8 @@ package de.metas.edi.sscc18;
 
 
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.edi
@@ -38,6 +40,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
+import de.metas.adempiere.model.I_M_Product;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_SSCC;
@@ -185,7 +188,8 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 
 		String getProductValue()
 		{
-			return _desadvLine.getM_Product().getValue();
+			final I_M_Product productRecord = loadOutOfTrx(_desadvLine.getM_Product_ID(), I_M_Product.class);
+			return productRecord.getValue();
 		}
 
 		String getProductName()

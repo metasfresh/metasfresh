@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.esb.edi.model;
 
@@ -30,7 +14,7 @@ public class X_EDI_M_InOutLine_HU_IPA_SSCC18_v extends org.compiere.model.PO imp
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 849958434L;
+	private static final long serialVersionUID = 1414950600L;
 
     /** Standard Constructor */
     public X_EDI_M_InOutLine_HU_IPA_SSCC18_v (Properties ctx, int EDI_M_InOutLine_HU_IPA_SSCC18_v_ID, String trxName)
@@ -75,20 +59,8 @@ public class X_EDI_M_InOutLine_HU_IPA_SSCC18_v extends org.compiere.model.PO imp
 		return (java.lang.String)get_Value(COLUMNNAME_AttributeName);
 	}
 
-	@Override
-	public de.metas.handlingunits.model.I_M_HU getM_HU() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
-	}
-
-	@Override
-	public void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU)
-	{
-		set_ValueFromPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_HU);
-	}
-
-	/** Set Handling Units.
-		@param M_HU_ID Handling Units	  */
+	/** Set Handling Unit.
+		@param M_HU_ID Handling Unit	  */
 	@Override
 	public void setM_HU_ID (int M_HU_ID)
 	{
@@ -98,8 +70,8 @@ public class X_EDI_M_InOutLine_HU_IPA_SSCC18_v extends org.compiere.model.PO imp
 			set_ValueNoCheck (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
 	}
 
-	/** Get Handling Units.
-		@return Handling Units	  */
+	/** Get Handling Unit.
+		@return Handling Unit	  */
 	@Override
 	public int getM_HU_ID () 
 	{
