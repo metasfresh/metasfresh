@@ -75,8 +75,11 @@ public class LocationDAO implements ILocationDAO
 		locationRecord.setAddress3(request.getAddress3());
 		locationRecord.setAddress4(request.getAddress4());
 		locationRecord.setPostal(request.getPostal());
+		locationRecord.setPostal_Add(request.getPostalAdd());
 		locationRecord.setCity(request.getCity());
+		locationRecord.setC_Region_ID(request.getRegionId());
 		locationRecord.setC_Country_ID(request.getCountryId().getRepoId());
+		locationRecord.setPOBox(request.getPoBox());
 
 		save(locationRecord);
 

@@ -36,9 +36,14 @@ public class LocationCreateRequest
 	String address4;
 
 	String postal;
+	String postalAdd;
 
 	String city;
 
+	int regionId;
+
 	@NonNull
 	CountryId countryId;
+
+	String poBox;
 }
