@@ -23,11 +23,12 @@ import org.compiere.model.MJournalLine;
 import org.compiere.model.X_I_GLJournal;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
-import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult;
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -58,6 +59,8 @@ import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult
  */
 public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJournal>
 {
+	private static final Logger log = LogManager.getLogger(GLJournalImportProcess.class);
+
 	private int m_AD_Client_ID = -1;
 	private int m_AD_Org_ID = -1;
 	private int m_C_AcctSchema_ID = -1;

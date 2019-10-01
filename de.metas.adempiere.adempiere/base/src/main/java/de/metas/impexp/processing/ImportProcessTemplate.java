@@ -27,13 +27,13 @@ import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_DataImport;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.ISqlUpdateReturnProcessor;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import ch.qos.logback.classic.Level;
@@ -65,14 +65,8 @@ import lombok.NonNull;
  */
 public abstract class ImportProcessTemplate<ImportRecordType> implements IImportProcess<ImportRecordType>
 {
-	public static final String COLUMNNAME_I_IsImported = "I_IsImported";
-	public static final String COLUMNNAME_I_ErrorMsg = "I_ErrorMsg";
-	public static final String COLUMNNAME_Processed = "Processed";
-	public static final String COLUMNNAME_Processing = "Processing";
-	public static final String COLUMNNAME_C_DataImport_ID = I_C_DataImport.COLUMNNAME_C_DataImport_ID;
-
 	// services
-	protected final transient Logger log = LogManager.getLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(getClass());
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	private final DBFunctionsRepository dbFunctionsRepo = SpringContextHolder.instance.getBean(DBFunctionsRepository.class);
@@ -85,7 +79,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 	private Boolean validateOnly;
 	private boolean completeDocuments;
 	private IParams _parameters = IParams.NULL;
-	private ILoggable loggable = Loggables.getLoggableOrLogger(log, Level.INFO);
+	private ILoggable loggable = Loggables.getLoggableOrLogger(logger, Level.INFO);
 	private TableRecordReferenceSet selectedRecordRefs;
 
 	private ImportProcessResultCollector resultCollector;
@@ -288,7 +282,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 		if (whereClause == null)
 		{
 			whereClause = this.whereClause = buildWhereClause();
-			log.debug("Using where clause: {}", whereClause);
+			logger.debug("Using where clause: {}", whereClause);
 		}
 		return whereClause;
 	}
@@ -396,7 +390,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 		else if (ImportDataDeleteMode.ONLY_IMPORTED.equals(mode))
 		{
 			appendViewSqlWhereClause = true;
-			sql.append("\n /* only imported */ AND ").append(COLUMNNAME_I_IsImported).append("='Y'");
+			sql.append("\n /* only imported */ AND ").append(ImportTableDescriptor.COLUMNNAME_I_IsImported).append("='Y'");
 		}
 		else
 		{
@@ -438,8 +432,8 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 						+ " CreatedBy = COALESCE (CreatedBy, 0),"
 						+ " Updated = COALESCE (Updated, now()),"
 						+ " UpdatedBy = COALESCE (UpdatedBy, 0),"
-						+ COLUMNNAME_I_ErrorMsg + " = ' ',"
-						+ COLUMNNAME_I_IsImported + "= 'N' ");
+						+ ImportTableDescriptor.COLUMNNAME_I_ErrorMsg + " = ' ',"
+						+ ImportTableDescriptor.COLUMNNAME_I_IsImported + "= 'N' ");
 		final List<Object> sqlParams = new ArrayList<>();
 
 		for (final Map.Entry<String, Object> defaultValueEntry : getImportTableDefaultValues().entrySet())
@@ -451,11 +445,11 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 			sqlParams.add(value);
 		}
 
-		sql.append("\n WHERE (" + COLUMNNAME_I_IsImported + "<>'Y' OR " + COLUMNNAME_I_IsImported + " IS NULL) " + getWhereClause());
+		sql.append("\n WHERE (" + ImportTableDescriptor.COLUMNNAME_I_IsImported + "<>'Y' OR " + ImportTableDescriptor.COLUMNNAME_I_IsImported + " IS NULL) " + getWhereClause());
 		final int no = DB.executeUpdateEx(sql.toString(),
 				sqlParams.toArray(),
 				ITrx.TRXNAME_ThreadInherited);
-		log.debug("Reset={}", no);
+		logger.debug("Reset={}", no);
 
 	}
 
@@ -565,21 +559,25 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 		// shall not happen
 		if (importGroup.isEmpty())
 		{
-			log.warn("Skip importing empty group: {}", importGroup);
+			logger.warn("Skip importing empty group: {}", importGroup);
 			return;
 		}
 
+		final ImportProcessResultCollector overallResultCollector = getResultCollector();
 		try
 		{
-			final ImportGroupResult importGroupResult = importRecords(importGroup.getImportRecords(), stateHolder);
+			final ImmutableList<ImportRecordType> importRecordsList = importGroup.getImportRecords();
+			overallResultCollector.addCountImportRecordsConsidered(importRecordsList.size());
+			
+			
+			final ImportGroupResult importGroupResult = importRecords(importRecordsList, stateHolder);
 
-			for (final ImportRecordType importRecord : importGroup.getImportRecords())
+			for (final ImportRecordType importRecord : importRecordsList)
 			{
 				markImported(importRecord);
 				runSQLAfterRowImport(importRecord); // run after markImported because we need the recordId saved
 			}
 
-			final ImportProcessResultCollector overallResultCollector = getResultCollector();
 			overallResultCollector.addInsertsIntoTargetTable(importGroupResult.getCountInserted());
 			overallResultCollector.addUpdatesIntoTargetTable(importGroupResult.getCountUpdated());
 		}
@@ -592,7 +590,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 	private String buildSqlSelectRecordsToImport()
 	{
 		final String whereClause = getWhereClause();
-		final StringBuilder sql = new StringBuilder("SELECT * FROM " + getImportTableName() + " WHERE " + COLUMNNAME_I_IsImported + "='N' ").append(whereClause);
+		final StringBuilder sql = new StringBuilder("SELECT * FROM " + getImportTableName() + " WHERE " + ImportTableDescriptor.COLUMNNAME_I_IsImported + "='N' ").append(whereClause);
 
 		// ORDER BY
 		sql.append(" ORDER BY ");
@@ -630,14 +628,14 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 		final StringBuilder sql = new StringBuilder("UPDATE " + importTableName + " SET ");
 
 		// I_IsImported
-		sql.append(COLUMNNAME_I_IsImported + "=?");
+		sql.append(ImportTableDescriptor.COLUMNNAME_I_IsImported + "=?");
 		sqlParams.add("E");
 
 		// I_ErrorMsg
 		{
 			final String errorMsg = AdempiereException.extractMessage(exception);
 
-			sql.append(", " + COLUMNNAME_I_ErrorMsg + "=I_ErrorMsg || ?");
+			sql.append(", " + ImportTableDescriptor.COLUMNNAME_I_ErrorMsg + "=I_ErrorMsg || ?");
 			sqlParams.add(Check.isEmpty(errorMsg, true) ? "" : errorMsg + ", ");
 		}
 
@@ -674,8 +672,8 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 	protected final int markNotImportedAllWithErrors()
 	{
 		final String sql = "UPDATE " + getImportTableName()
-				+ " SET " + COLUMNNAME_I_IsImported + "='N', Updated=now() "
-				+ " WHERE " + COLUMNNAME_I_IsImported + "<>'Y' "
+				+ " SET " + ImportTableDescriptor.COLUMNNAME_I_IsImported + "='N', Updated=now() "
+				+ " WHERE " + ImportTableDescriptor.COLUMNNAME_I_IsImported + "<>'Y' "
 				+ " " + getWhereClause();
 		final int countNotImported = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
 		return countNotImported >= 0 ? countNotImported : 0;
@@ -683,9 +681,9 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 
 	protected void markImported(final ImportRecordType importRecord)
 	{
-		InterfaceWrapperHelper.setValue(importRecord, COLUMNNAME_I_IsImported, true);
-		InterfaceWrapperHelper.setValue(importRecord, COLUMNNAME_Processed, true);
-		InterfaceWrapperHelper.setValue(importRecord, COLUMNNAME_Processing, false);
+		InterfaceWrapperHelper.setValue(importRecord, ImportTableDescriptor.COLUMNNAME_I_IsImported, true);
+		InterfaceWrapperHelper.setValue(importRecord, ImportTableDescriptor.COLUMNNAME_Processed, true);
+		InterfaceWrapperHelper.setValue(importRecord, ImportTableDescriptor.COLUMNNAME_Processing, false);
 		InterfaceWrapperHelper.save(importRecord);
 	}
 
@@ -709,7 +707,13 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 
 	private DataImportConfigId extractDataImportConfigIdOrNull(@NonNull final ImportRecordType importRecord)
 	{
-		final Optional<Integer> value = InterfaceWrapperHelper.getValue(importRecord, COLUMNNAME_C_DataImport_ID);
+		final ImportTableDescriptor importTableDescriptor = getImportTableDescriptor();
+		if (importTableDescriptor.getDataImportConfigIdColumnName() == null)
+		{
+			return null;
+		}
+
+		final Optional<Integer> value = InterfaceWrapperHelper.getValue(importRecord, importTableDescriptor.getDataImportConfigIdColumnName());
 		return value.map(DataImportConfigId::ofRepoIdOrNull).orElse(null);
 	}
 }

@@ -14,8 +14,8 @@ import org.compiere.util.DB;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.model.X_I_Flatrate_Term;
+import de.metas.impexp.format.ImportTableDescriptor;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
-import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult;
 
 /*
  * #%L
@@ -75,7 +75,7 @@ public class FlatrateTermImportProcess extends SimpleImportProcessTemplate<I_I_F
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
-		final String sqlImportWhereClause = COLUMNNAME_I_IsImported + "<>" + DB.TO_BOOLEAN(true)
+		final String sqlImportWhereClause = ImportTableDescriptor.COLUMNNAME_I_IsImported + "<>" + DB.TO_BOOLEAN(true)
 				+ "\n " + getWhereClause();
 		FlatrateTermImportTableSqlUpdater.updateFlatrateTermImportTable(sqlImportWhereClause);
 	}

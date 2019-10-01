@@ -1,7 +1,7 @@
 package de.metas.replenishment.impexp;
 
-import static de.metas.impexp.processing.ImportProcessTemplate.COLUMNNAME_I_ErrorMsg;
-import static de.metas.impexp.processing.ImportProcessTemplate.COLUMNNAME_I_IsImported;
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_C_Period;

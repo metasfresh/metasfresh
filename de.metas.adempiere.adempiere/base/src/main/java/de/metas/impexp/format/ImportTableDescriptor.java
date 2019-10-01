@@ -34,6 +34,9 @@ public class ImportTableDescriptor
 {
 	public static final String COLUMNNAME_C_DataImport_Run_ID = I_C_DataImport_Run.COLUMNNAME_C_DataImport_Run_ID;
 	public static final String COLUMNNAME_I_ErrorMsg = "I_ErrorMsg";
+	public static final String COLUMNNAME_I_IsImported = "I_IsImported";
+	public static final String COLUMNNAME_Processed = "Processed";
+	public static final String COLUMNNAME_Processing = "Processing";
 
 	@NonNull
 	String tableName;

@@ -131,6 +131,7 @@ final class DataImportCommand
 				.importTableName(validateResult.getImportTableName())
 				.countImportRecordsWithErrors(validateResult.getCountImportRecordsWithErrors().orElse(-1))
 				.targetTableName(validateResult.getTargetTableName())
+				.duration(validateResult.getDuration())
 				.build();
 	}
 

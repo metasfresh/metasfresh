@@ -21,6 +21,8 @@ package de.metas.impexp.processing.request;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -40,8 +42,10 @@ import org.compiere.model.PO;
 import org.compiere.model.X_I_Request;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.logging.LogManager;
 
 /**
  * Imports {@link I_I_Request} records to {@link I_R_Request}.
@@ -51,6 +55,8 @@ import de.metas.impexp.processing.SimpleImportProcessTemplate;
  */
 public class RequestImportProcess extends SimpleImportProcessTemplate<I_I_Request>
 {
+	private static final Logger log = LogManager.getLogger(RequestImportProcess.class);
+
 
 	@Override
 	public Class<I_I_Request> getImportModelClass()
