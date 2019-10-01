@@ -30,6 +30,7 @@ import de.metas.banking.payment.IPaymentString;
 import de.metas.banking.payment.IPaymentStringBL;
 import de.metas.banking.payment.IPaymentStringDataProvider;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_BP_Relation;
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessPreconditionsContext;
@@ -61,7 +62,7 @@ public class PaymentStringProcessService
 	private static final transient Logger log = LogManager.getLogger(PaymentStringProcessService.class);
 	private static final String MSG_INVOICE_IS_NOT_COMPLETED = "de.metas.banking.process.paymentdocumentform.AlmightyKeeperOfEverything.InvoiceIsNotCompleted";
 	private static final String MSG_NO_INVOICE_SELECTED = "de.metas.banking.process.paymentdocumentform.AlmightyKeeperOfEverything.NoInvoiceSelected";
-	private static final String MSG_PAYMENT_REQUEST_FOR_INVOICE_ALREADY_EXISTS_EXCEPTION = "@PaymentRequestForInvoiceAlreadyExistsException@";
+	private static final String MSG_PAYMENT_REQUEST_FOR_INVOICE_ALREADY_EXISTS_EXCEPTION = "PaymentAllocationForm.PaymentRequestForInvoiceAlreadyExistsException";
 	private static final String MSG_COULD_NOT_CREATE_PAYMENT_REQUEST = "de.metas.banking.process.paymentdocumentform.AlmightyKeeperOfEverything.CouldNotCreatePaymentRequest";
 
 	private final IPaymentStringBL paymentStringBL = Services.get(IPaymentStringBL.class);
@@ -153,14 +154,16 @@ public class PaymentStringProcessService
 	{
 		if (template == null)
 		{
-			throw new AdempiereException(MSG_COULD_NOT_CREATE_PAYMENT_REQUEST);
+			final ITranslatableString msg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_COULD_NOT_CREATE_PAYMENT_REQUEST);
+			throw new AdempiereException(msg).markAsUserValidationError();
 		}
 
 		//
 		// Get the selected invoice
 		if (paymentRequestDAO.hasPaymentRequests(invoice))
 		{
-			throw new AdempiereException(MSG_PAYMENT_REQUEST_FOR_INVOICE_ALREADY_EXISTS_EXCEPTION);
+			final ITranslatableString msg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_PAYMENT_REQUEST_FOR_INVOICE_ALREADY_EXISTS_EXCEPTION);
+			throw new AdempiereException(msg).markAsUserValidationError();
 		}
 
 		paymentRequestBL.createPaymentRequest(invoice, template);
