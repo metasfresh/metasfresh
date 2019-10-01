@@ -22,85 +22,86 @@
 
 package de.metas.location.geocoding.provider;
 
+import java.util.Optional;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.springframework.stereotype.Service;
+
 import com.google.maps.GeoApiContext;
+
+import de.metas.cache.CCache;
+import de.metas.cache.CCache.CacheMapType;
+import de.metas.location.geocoding.GeocodingConfig;
+import de.metas.location.geocoding.GeocodingConfig.GoogleMapsConfig;
+import de.metas.location.geocoding.GeocodingConfig.OpenStreetMapsConfig;
 import de.metas.location.geocoding.GeocodingConfigRepository;
 import de.metas.location.geocoding.GeocodingProvider;
-import de.metas.location.geocoding.provider.googlemaps.GoogleMapsGeoApiContext;
 import de.metas.location.geocoding.provider.googlemaps.GoogleMapsGeocodingProviderImpl;
 import de.metas.location.geocoding.provider.openstreetmap.NominatimOSMGeocodingProviderImpl;
-import de.metas.logging.LogManager;
-import org.compiere.model.I_GeocodingConfig;
-import org.slf4j.Logger;
+import lombok.NonNull;
 
-import javax.annotation.Nullable;
-
+@Service
 public class GeocodingProviderFactory
 {
-	private static final Logger logger = LogManager.getLogger(GeocodingProviderFactory.class);
+	private final GeocodingConfigRepository configRepository;
 
-	private static volatile GeocodingProvider instance;
+	private final CCache<GeocodingConfig, GeocodingProvider> providers = CCache.<GeocodingConfig, GeocodingProvider> builder()
+			.cacheMapType(CacheMapType.LRU)
+			.initialCapacity(10)
+			.build();
 
-	/**
-	 * fixme: this is broken because no live changing of the provider is possible
-	 */
-	@Nullable
-	public static GeocodingProvider buildActiveGeocodingProviderOrNull()
+	public GeocodingProviderFactory(
+			@NonNull final GeocodingConfigRepository configRepository)
 	{
-		if (instance != null)
-		{
-			return instance;
-		}
-
-		synchronized (GeocodingProviderFactory.class)
-		{
-			if (instance != null)
-			{
-				return instance;
-			}
-
-			logger.debug("Creating a new instance of GeoCoordinatesProvider");
-
-			final GeocodingProviderName providerName = GeocodingConfigRepository.getActiveGeocodingProviderNameOrNull();
-			if (providerName == null)
-			{
-				logger.debug("No GeoCoordinatesProvider is set in settings! Returning null.");
-				return null;
-			}
-
-			if (GeocodingProviderName.GOOGLE_MAPS.equals(providerName))
-			{
-				createGoogleMapsProvider();
-			}
-
-			if (GeocodingProviderName.OPEN_STREET_MAPS.equals(providerName))
-			{
-				createOSMProvider();
-			}
-		}
-		return instance;
+		this.configRepository = configRepository;
 	}
 
-	private static void createOSMProvider()
+	public Optional<GeocodingProvider> getProvider()
 	{
-		logger.debug("Creating a new instance of NominatimOSMGeocodingProviderImpl");
+		final GeocodingConfig config = configRepository.getGeocodingConfig().orElse(null);
+		if (config == null)
+		{
+			return Optional.empty();
+		}
 
-		final I_GeocodingConfig geocodingConfig = GeocodingConfigRepository.readGeocodingConfig();
-		final int cacheCapacity = geocodingConfig.getcacheCapacity();
-		final String baseURL = geocodingConfig.getosm_baseURL();
-		final long millisBetweenRequests = geocodingConfig.getosm_millisBetweenRequests();
-
-		instance = new NominatimOSMGeocodingProviderImpl(baseURL, millisBetweenRequests, cacheCapacity);
+		final GeocodingProvider provider = providers.getOrLoad(config, this::createProvider);
+		return Optional.of(provider);
 	}
 
-	private static void createGoogleMapsProvider()
+	private GeocodingProvider createProvider(@NonNull final GeocodingConfig config)
 	{
-		logger.debug("Creating a new instance of GoogleMapsGeocodingProviderImpl");
+		final GeocodingProviderName providerName = config.getProviderName();
+		if (GeocodingProviderName.GOOGLE_MAPS.equals(providerName))
+		{
+			return createGoogleMapsProvider(config.getGoogleMapsConfig());
+		}
+		else if (GeocodingProviderName.OPEN_STREET_MAPS.equals(providerName))
+		{
+			return createOSMProvider(config.getOpenStreetMapsConfig());
+		}
+		else
+		{
+			throw new AdempiereException("Unknown provider: " + providerName);
+		}
+	}
 
-		final I_GeocodingConfig geocodingConfig = GeocodingConfigRepository.readGeocodingConfig();
-		final int cacheCapacity = geocodingConfig.getcacheCapacity();
+	private GoogleMapsGeocodingProviderImpl createGoogleMapsProvider(final GoogleMapsConfig config)
+	{
+		final String apiKey = config.getApiKey();
+		final int cacheCapacity = config.getCacheCapacity();
 
-		final GeoApiContext context = GoogleMapsGeoApiContext.getInstance();
+		final GeoApiContext context = new GeoApiContext.Builder()
+				.apiKey(apiKey)
+				.build();
 
-		instance = new GoogleMapsGeocodingProviderImpl(context, cacheCapacity);
+		return new GoogleMapsGeocodingProviderImpl(context, cacheCapacity);
+	}
+
+	private NominatimOSMGeocodingProviderImpl createOSMProvider(final OpenStreetMapsConfig config)
+	{
+		final String baseURL = config.getBaseURL();
+		final int cacheCapacity = config.getCacheCapacity();
+		final long millisBetweenRequests = config.getMillisBetweenRequests();
+		return new NominatimOSMGeocodingProviderImpl(baseURL, millisBetweenRequests, cacheCapacity);
 	}
 }

@@ -22,32 +22,45 @@
 
 package de.metas.location.geocoding.provider;
 
-import com.google.common.collect.ImmutableMap;
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_GeocodingConfig;
 
-import javax.annotation.Nullable;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Stream;
+import com.google.common.collect.ImmutableMap;
 
-public enum GeocodingProviderName
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
+import lombok.Getter;
+import lombok.NonNull;
+
+public enum GeocodingProviderName implements ReferenceListAwareEnum
 {
-	GOOGLE_MAPS(X_GeocodingConfig.GEOCODINGPROVIDER_GoogleMaps),
-	OPEN_STREET_MAPS(X_GeocodingConfig.GEOCODINGPROVIDER_OpenStreetMaps);
+	GOOGLE_MAPS(X_GeocodingConfig.GEOCODINGPROVIDER_GoogleMaps), OPEN_STREET_MAPS(X_GeocodingConfig.GEOCODINGPROVIDER_OpenStreetMaps);
 
-	private final String providerName;
-
-	@SuppressWarnings("UnstableApiUsage")
-	private static final Map<String, GeocodingProviderName> map = Stream.of(values()).collect(ImmutableMap.toImmutableMap(m -> m.providerName, Function.identity()));
+	@Getter
+	private final String code;
 
 	GeocodingProviderName(final String providerName)
 	{
-		this.providerName = providerName;
+		this.code = providerName;
+	}
+
+	public static GeocodingProviderName ofCode(@NonNull final String code)
+	{
+		final GeocodingProviderName type = typesByCode.get(code);
+		if (type == null)
+		{
+			throw new AdempiereException("No " + GeocodingProviderName.class + " found for code: " + code);
+		}
+		return type;
 	}
 
 	@Nullable
-	public static GeocodingProviderName ofProviderName(final String providerName)
+	public static GeocodingProviderName ofNullableCode(@Nullable final String code)
 	{
-		return map.get(providerName);
+		return code != null ? ofCode(code) : null;
 	}
+
+	private static final ImmutableMap<String, GeocodingProviderName> typesByCode = ReferenceListAwareEnums.indexByCode(values());
 }

@@ -1,13 +1,13 @@
 package de.metas.location.geocoding;
 
-import de.metas.location.geocoding.provider.GeocodingProviderFactory;
-import de.metas.logging.LogManager;
-import lombok.NonNull;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
+import de.metas.location.geocoding.provider.GeocodingProviderFactory;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -34,16 +34,12 @@ import java.util.Optional;
 @Service
 public class GeocodingService
 {
-	private static final Logger logger = LogManager.getLogger(GeocodingService.class);
+	private final GeocodingProviderFactory providersFactory;
 
-	public GeocodingService()
+	public GeocodingService(
+			@NonNull final GeocodingProviderFactory providersFactory)
 	{
-	}
-
-	@Nullable
-	private GeocodingProvider getProviderOrNull()
-	{
-		return GeocodingProviderFactory.buildActiveGeocodingProviderOrNull();
+		this.providersFactory = providersFactory;
 	}
 
 	public Optional<GeographicalCoordinates> findBestCoordinates(@NonNull final GeoCoordinatesRequest request)
@@ -57,4 +53,9 @@ public class GeocodingService
 		return provider.findBestCoordinates(request);
 	}
 
+	@Nullable
+	private GeocodingProvider getProviderOrNull()
+	{
+		return providersFactory.getProvider().orElse(null);
+	}
 }
