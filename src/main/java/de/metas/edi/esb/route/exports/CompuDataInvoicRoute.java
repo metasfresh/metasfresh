@@ -23,7 +23,7 @@ import de.metas.edi.esb.route.AbstractEDIRoute;
 @Component
 public class CompuDataInvoicRoute extends AbstractEDIRoute
 {
-	public static final String ROUTE_ID = "XML-Invoice-To-EDI-Invoic";
+	public static final String ROUTE_ID = "XML-Invoic-To-EDI-Invoic";
 
 	private static final String EDI_INVOICE_FILENAME_PATTERN = "edi.file.invoice.compudata.filename";
 

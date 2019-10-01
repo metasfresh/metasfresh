@@ -46,7 +46,7 @@ import de.metas.edi.esb.route.AbstractEDIRoute;
 @Component
 public class CompuDataDesadvRoute extends AbstractEDIRoute
 {
-	public static final String ROUTE_ID_AGGREGATE = "XML-InOut-To-EDI-DESADV-Aggregate";
+	public static final String ROUTE_ID_AGGREGATE = "XML-Desadv-To-EDI-DESADV-Aggregate";
 
 	private static final String EDI_DESADV_FILENAME_PATTERN = "edi.file.desadv.compudata.filename";
 
