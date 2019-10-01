@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.X_C_Location;
 import org.springframework.context.annotation.Profile;
@@ -72,7 +73,9 @@ class LocationGeocodeEventHandler
 				.subscribeOn(LocationGeocodeEventRequest.class, this::handleEvent);
 	}
 
-	private void handleEvent(@NonNull final LocationGeocodeEventRequest request)
+	@SuppressWarnings("WeakerAccess")
+	@VisibleForTesting
+	void handleEvent(@NonNull final LocationGeocodeEventRequest request)
 	{
 		final I_C_Location locationRecord = locationsRepo.getById(request.getLocationId());
 		final GeoCoordinatesRequest coordinatesRequest = createGeoCoordinatesRequest(locationRecord);
@@ -108,7 +111,7 @@ class LocationGeocodeEventHandler
 		}
 	}
 
-	private GeoCoordinatesRequest createGeoCoordinatesRequest(final I_C_Location locationRecord)
+	private GeoCoordinatesRequest createGeoCoordinatesRequest(@NonNull final I_C_Location locationRecord)
 	{
 		final String countryCode2 = countryDAO.retrieveCountryCode2ByCountryId(CountryId.ofRepoId(locationRecord.getC_Country_ID()));
 
@@ -120,12 +123,11 @@ class LocationGeocodeEventHandler
 
 		final String city = locationRecord.getCity();
 
-		final GeoCoordinatesRequest coordinatesRequest = GeoCoordinatesRequest.builder()
+		return GeoCoordinatesRequest.builder()
 				.countryCode2(countryCode2)
 				.address(address)
 				.postal(postal)
 				.city(city)
 				.build();
-		return coordinatesRequest;
 	}
 }
