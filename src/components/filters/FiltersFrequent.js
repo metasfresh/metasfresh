@@ -215,12 +215,39 @@ class FiltersFrequent extends PureComponent {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {bool} allowOutsideClick
+ * @prop {bool} modalVisible
+ * @prop {array} [active]
+ * @prop {*} [filtersWrapper]
+ * @prop {object} [activeFiltersCaptions]
+ * @prop {*} data
+ * @prop {*} windowType
+ * @prop {*} notValidFields
+ * @prop {*} viewId
+ * @prop {*} handleShow
+ * @prop {*} applyFilters
+ * @prop {*} clearFilters
+ * @prop {*} widgetShown
+ * @prop {*} dropdownToggled
+ * @todo Check props. Which proptype? Required or optional?
+ */
 FiltersFrequent.propTypes = {
   allowOutsideClick: PropTypes.bool.isRequired,
   modalVisible: PropTypes.bool.isRequired,
   active: PropTypes.array,
   filtersWrapper: PropTypes.any,
   activeFiltersCaptions: PropTypes.object,
+  data: PropTypes.any,
+  windowType: PropTypes.any,
+  notValidFields: PropTypes.any,
+  viewId: PropTypes.any,
+  handleShow: PropTypes.any,
+  applyFilters: PropTypes.any,
+  clearFilters: PropTypes.any,
+  widgetShown: PropTypes.any,
+  dropdownToggled: PropTypes.any,
 };
 
 /**
