@@ -1,9 +1,10 @@
-package de.metas.impexp;
+package de.metas.bpartner.impexp;
 
-import java.time.Duration;
+import java.math.BigDecimal;
 
-import de.metas.impexp.config.DataImportConfigId;
+import de.metas.bpartner.BPartnerId;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -31,27 +32,16 @@ import lombok.Value;
 
 @Value
 @Builder
-public class DataImportResult
+public class BPCreditLimitImportRequest
 {
 	@NonNull
-	DataImportConfigId dataImportConfigId;
+	BPartnerId bpartnerId;
 
 	@NonNull
-	String importFormatName;
+	@Default
+	BigDecimal insuranceCreditLimit = BigDecimal.ZERO;
 
-	//
-	// Source file
-	int countSourceFileValidLines;
-	int countSourceFileErrorLines;
-
-	//
-	// Import table
-	String importTableName;
-	int countImportRecordsWithErrors;
-
-	//
-	// Target table
-	String targetTableName;
-
-	Duration duration;
+	@NonNull
+	@Default
+	BigDecimal managementCreditLimit = BigDecimal.ZERO;
 }
