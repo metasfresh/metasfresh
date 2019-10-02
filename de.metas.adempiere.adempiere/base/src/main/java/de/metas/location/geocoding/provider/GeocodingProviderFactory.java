@@ -45,7 +45,7 @@ public class GeocodingProviderFactory
 {
 	private final GeocodingConfigRepository configRepository;
 
-	private final CCache<GeocodingConfig, GeocodingProvider> providers = CCache.<GeocodingConfig, GeocodingProvider> builder()
+	private final CCache<GeocodingConfig, GeocodingProvider> providers = CCache.<GeocodingConfig, GeocodingProvider>builder()
 			.cacheMapType(CacheMapType.LRU)
 			.initialCapacity(10)
 			.build();
@@ -85,7 +85,7 @@ public class GeocodingProviderFactory
 		}
 	}
 
-	private GoogleMapsGeocodingProviderImpl createGoogleMapsProvider(final GoogleMapsConfig config)
+	@NonNull private GoogleMapsGeocodingProviderImpl createGoogleMapsProvider(@NonNull final GoogleMapsConfig config)
 	{
 		final String apiKey = config.getApiKey();
 		final int cacheCapacity = config.getCacheCapacity();
@@ -97,7 +97,7 @@ public class GeocodingProviderFactory
 		return new GoogleMapsGeocodingProviderImpl(context, cacheCapacity);
 	}
 
-	private NominatimOSMGeocodingProviderImpl createOSMProvider(final OpenStreetMapsConfig config)
+	@NonNull private NominatimOSMGeocodingProviderImpl createOSMProvider(@NonNull final OpenStreetMapsConfig config)
 	{
 		final String baseURL = config.getBaseURL();
 		final int cacheCapacity = config.getCacheCapacity();

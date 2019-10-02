@@ -46,7 +46,7 @@ public enum GeocodingProviderName implements ReferenceListAwareEnum
 		this.code = providerName;
 	}
 
-	public static GeocodingProviderName ofCode(@NonNull final String code)
+	@NonNull public static GeocodingProviderName ofCode(@NonNull final String code)
 	{
 		final GeocodingProviderName type = typesByCode.get(code);
 		if (type == null)

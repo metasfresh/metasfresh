@@ -24,6 +24,7 @@ package de.metas.location.geocoding;
 
 import java.util.Optional;
 
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_GeocodingConfig;
@@ -61,7 +62,7 @@ public class GeocodingConfigRepository
 				: Optional.empty();
 	}
 
-	private static GeocodingConfig toGeocodingConfig(final I_GeocodingConfig record)
+	private static GeocodingConfig toGeocodingConfig(@NonNull final I_GeocodingConfig record)
 	{
 		final GeocodingProviderName providerName = GeocodingProviderName.ofCode(record.getGeocodingProvider());
 
