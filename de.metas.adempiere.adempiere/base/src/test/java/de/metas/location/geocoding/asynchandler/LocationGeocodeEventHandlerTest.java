@@ -35,7 +35,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.X_C_Location;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -58,15 +58,14 @@ public class LocationGeocodeEventHandlerTest
 	@Tested
 	private LocationGeocodeEventHandler eventHandler;
 
-	@BeforeClass
-	public static void init()
+	@Before
+	public void init()
 	{
 		AdempiereTestHelper.get().init();
 	}
 
-	//	@DisplayName("Update GeoCoordinates and set Geocoding Status successfully")
 	@Test
-	public void handleEvent()
+	public void locationIsFound()
 	{
 		final BigDecimal latitude = BigDecimal.valueOf(50.6583491);
 		final BigDecimal longitude = BigDecimal.valueOf(7.16960605354244);
@@ -114,4 +113,50 @@ public class LocationGeocodeEventHandlerTest
 				.extracting(I_C_Location::getLatitude, I_C_Location::getLongitude, I_C_Location::getGeocodingStatus, I_C_Location::getGeocoding_Issue)
 				.containsExactly(latitude, longitude, X_C_Location.GEOCODINGSTATUS_Resolved, null);
 	}
+
+	@Test
+	public void locationIsNotFound()
+	{
+		final String address1 = "this";
+		final String address2 = "location";
+		final String postal = "doesn't ";
+		final String city = "exist";
+
+		// create location
+		final I_C_Country countryDE = InterfaceWrapperHelper.newInstance(I_C_Country.class);
+		countryDE.setCountryCode("DE");
+		InterfaceWrapperHelper.saveRecord(countryDE);
+
+		final I_C_Location location = InterfaceWrapperHelper.newInstance(I_C_Location.class);
+		location.setAddress1(address1);
+		location.setAddress2(address2);
+		location.setPostal(postal);
+		location.setCity(city);
+		location.setC_Country_ID(countryDE.getC_Country_ID());
+		InterfaceWrapperHelper.saveRecord(location);
+
+		// create request
+		final LocationGeocodeEventRequest locationGeocodeEventRequest = LocationGeocodeEventRequest.of(LocationId.ofRepoId(location.getC_Location_ID()));
+
+		new Expectations()
+		{{
+			final GeoCoordinatesRequest expectedRequest = GeoCoordinatesRequest.builder()
+					.countryCode2("DE")
+					.address(address1 + " " + address2)
+					.postal(postal)
+					.city(city)
+					.build();
+			geocodingService.findBestCoordinates(expectedRequest);
+			result = Optional.empty();
+		}};
+
+		eventHandler.handleEvent(locationGeocodeEventRequest);
+
+		InterfaceWrapperHelper.refresh(location);
+
+		assertThat(location)
+				.extracting(I_C_Location::getLatitude, I_C_Location::getLongitude, I_C_Location::getGeocodingStatus, I_C_Location::getGeocoding_Issue)
+				.containsExactly(BigDecimal.ZERO, BigDecimal.ZERO, X_C_Location.GEOCODINGSTATUS_NotResolved, null);
+	}
+
 }
