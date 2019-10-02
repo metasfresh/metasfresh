@@ -1,16 +1,7 @@
 package de.metas.bpartner.impexp;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Location;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.ModelValidationEngine;
 
@@ -18,8 +9,12 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.impexp.BPartnersCache.BPartner;
 import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.location.CountryId;
+import de.metas.location.ILocationDAO;
+import de.metas.location.LocationCreateRequest;
+import de.metas.location.LocationId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -53,6 +48,7 @@ import lombok.NonNull;
 		return new BPartnerLocationImportHelper();
 	}
 
+	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 	private BPartnerImportProcess process;
 
 	private BPartnerLocationImportHelper()
@@ -65,83 +61,56 @@ import lombok.NonNull;
 		return this;
 	}
 
-	private Properties getCtx()
-	{
-		return process.getCtx();
-	}
-
-	public I_C_BPartner_Location importRecord(
-			@NonNull final I_I_BPartner importRecord,
-			@NonNull final List<I_I_BPartner> previousImportRecordsForSameBPartner)
+	public void importRecord(@NonNull final BPartnerImportContext context)
 	{
 		// first, try to find an existent one
-		I_C_BPartner_Location bpartnerLocation = fetchAndUpdateExistingBPLocation(importRecord, previousImportRecordsForSameBPartner);
-		// if null, create a new one
-		if (bpartnerLocation == null)
+		I_C_BPartner_Location bpLocation = fetchAndUpdateExistingBPLocation(context);
+		if (bpLocation == null)
 		{
-			bpartnerLocation = createNewBPartnerLocation(importRecord);
+			bpLocation = createNewBPartnerLocation(context);
 		}
-		return bpartnerLocation;
+
+		if (bpLocation != null)
+		{
+			final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
+			context.setCurrentBPartnerLocationId(bpLocationId);
+		}
+
 	}
 
 	/**
 	 * retrieve existent BPartner location and call method for updating the fields
 	 *
 	 * @param importRecord
-	 * @param previousImportRecordsForSameBPartner
+	 * @param importRecordsForSameBPartner
 	 * @return
 	 */
-	private I_C_BPartner_Location fetchAndUpdateExistingBPLocation(@NonNull final I_I_BPartner importRecord,
-			@NonNull final List<I_I_BPartner> previousImportRecordsForSameBPartner)
+	private I_C_BPartner_Location fetchAndUpdateExistingBPLocation(@NonNull final BPartnerImportContext context)
 	{
-		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+		final BPartnersCache cache = context.getBpartnersCache();
 
-		final BPartnerLocationId bpLocationIdOrNull = BPartnerLocationId.ofRepoIdOrNull(importRecord.getC_BPartner_ID(), importRecord.getC_BPartner_Location_ID());
+		final I_I_BPartner importRecord = context.getCurrentImportRecord();
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(importRecord.getC_BPartner_ID());
+		final BPartner bpartner = cache.getBPartnerById(bpartnerId);
 
-		I_C_BPartner_Location bpartnerLocation = bpLocationIdOrNull == null ? null : partnerDAO.getBPartnerLocationById(bpLocationIdOrNull);
+		final BPartnerLocationId bpLocationIdOrNull = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, importRecord.getC_BPartner_Location_ID());
 
-		final List<I_I_BPartner> importRecordsWithEqualAddresses = getImportRecordsWithEqualAddresses(importRecord, previousImportRecordsForSameBPartner);
+		I_C_BPartner_Location bpartnerLocation = bpLocationIdOrNull != null
+				? bpartner.getBPLocationById(bpLocationIdOrNull).orElse(null)
+				: null;
 
-		final boolean previousImportRecordsHaveAnEqualAddress = !importRecordsWithEqualAddresses.isEmpty();
-		if (previousImportRecordsHaveAnEqualAddress
-				|| bpartnerLocation != null && bpartnerLocation.getC_BPartner_Location_ID() > 0)// Update Location
+		if (bpartnerLocation == null)
 		{
-			if (previousImportRecordsHaveAnEqualAddress)
-			{
-				final BPartnerLocationId recordWithEqAddressLocationIdOrNull = BPartnerLocationId.ofRepoIdOrNull(
-						importRecordsWithEqualAddresses.get(0).getC_BPartner_ID(),
-						importRecordsWithEqualAddresses.get(0).getC_BPartner_Location_ID());
+			final BPartnerLocationMatchingKey bpLocationMatchingKey = BPartnerLocationMatchingKey.of(importRecord);
+			bpartnerLocation = bpartner.getFirstBPLocationMatching(bpLocationMatchingKey).orElse(null);
+		}
 
-				bpartnerLocation = recordWithEqAddressLocationIdOrNull == null ? null : partnerDAO.getBPartnerLocationById(recordWithEqAddressLocationIdOrNull);
-			}
-
-			updateExistingBPartnerLocation(importRecord, bpartnerLocation);
+		if (bpartnerLocation != null)
+		{
+			updateExistingBPartnerLocation(bpartner, bpartnerLocation, importRecord);
 		}
 
 		return bpartnerLocation;
-	}
-
-	private List<I_I_BPartner> getImportRecordsWithEqualAddresses(
-			@NonNull final I_I_BPartner importRecord,
-			@NonNull final List<I_I_BPartner> previousImportRecordsForSameBPartner)
-	{
-		final List<I_I_BPartner> alreadyImportedBPAddresses = previousImportRecordsForSameBPartner.stream()
-				.filter(createEqualAddressFilter(importRecord))
-				.collect(Collectors.toList());
-
-		return alreadyImportedBPAddresses;
-	}
-
-	private static Predicate<I_I_BPartner> createEqualAddressFilter(@NonNull final I_I_BPartner importRecord)
-	{
-		return p -> p.getC_BPartner_Location_ID() > 0
-				&& importRecord.getC_Country_ID() == p.getC_Country_ID()
-				&& importRecord.getC_Region_ID() == p.getC_Region_ID()
-				&& Objects.equals(importRecord.getCity(), p.getCity())
-				&& Objects.equals(importRecord.getAddress1(), p.getAddress1())
-				&& Objects.equals(importRecord.getAddress2(), p.getAddress2())
-				&& Objects.equals(importRecord.getPostal(), p.getPostal())
-				&& Objects.equals(importRecord.getPostal_Add(), p.getPostal_Add());
 	}
 
 	/**
@@ -156,73 +125,68 @@ import lombok.NonNull;
 	 * @param importRecord
 	 * @return
 	 */
-	private I_C_BPartner_Location createNewBPartnerLocation(@NonNull final I_I_BPartner importRecord)
+	private I_C_BPartner_Location createNewBPartnerLocation(@NonNull final BPartnerImportContext context)
 	{
-		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+		final I_I_BPartner importRecord = context.getCurrentImportRecord();
 
 		if (importRecord.getC_Country_ID() > 0
 				&& !Check.isEmpty(importRecord.getCity(), true))
 		{
+			final BPartner bpartner = context.getCurrentBPartner();
 
-			final I_C_BPartner bpartner = partnerDAO.getByIdInTrx(BPartnerId.ofRepoId(importRecord.getC_BPartner_ID()));
-			final I_C_BPartner_Location bpartnerLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, bpartner);
-			bpartnerLocation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
-			updateExistingBPartnerLocation(importRecord, bpartnerLocation);
+			final I_C_BPartner_Location bpartnerLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
+			bpartnerLocation.setAD_Org_ID(bpartner.getOrgId());
+			bpartnerLocation.setC_BPartner_ID(bpartner.getIdOrNull().getRepoId());
+
+			updateExistingBPartnerLocation(bpartner, bpartnerLocation, importRecord);
+
 			return bpartnerLocation;
 		}
-
-		return null;
+		else
+		{
+			return null;
+		}
 	}
 
 	private void updateExistingBPartnerLocation(
-			@NonNull final I_I_BPartner importRecord,
-			@NonNull final I_C_BPartner_Location bpartnerLocation)
+			@NonNull final BPartner bpartner,
+			@NonNull final I_C_BPartner_Location bpartnerLocation,
+			@NonNull final I_I_BPartner from)
 	{
-		updateLocation(importRecord, bpartnerLocation);
+		updateLocation(from, bpartnerLocation);
 
-		updateBillToAndShipToFlags(importRecord, bpartnerLocation);
+		updateBillToAndShipToFlags(from, bpartnerLocation);
 
-		updatePhoneAndFax(importRecord, bpartnerLocation);
+		updatePhoneAndFax(from, bpartnerLocation);
 
-		bpartnerLocation.setExternalId(importRecord.getC_BPartner_Location_ExternalId());
-		bpartnerLocation.setGLN(importRecord.getGLN());
+		bpartnerLocation.setExternalId(from.getC_BPartner_Location_ExternalId());
+		bpartnerLocation.setGLN(from.getGLN());
 
-		fireImportValidatorAndSaveBPartnerLocation(importRecord, bpartnerLocation);
-
-		importRecord.setC_BPartner_Location_ID(bpartnerLocation.getC_BPartner_Location_ID());
+		fireImportValidator(from, bpartnerLocation);
+		bpartner.addAndSaveLocation(bpartnerLocation);
 	}
 
 	private void updateLocation(
 			@NonNull final I_I_BPartner importRecord,
 			@NonNull final I_C_BPartner_Location bpartnerLocation)
 	{
-		I_C_Location location = bpartnerLocation.getC_Location();
-		if (location == null)
-		{
-			location = InterfaceWrapperHelper.create(getCtx(), I_C_Location.class, ITrx.TRXNAME_ThreadInherited);
-		}
-		updateExistingLocation(importRecord, location);
-		bpartnerLocation.setC_Location(location);
+		final LocationId locationId = locationDAO.createLocation(LocationCreateRequest.builder()
+				.address1(importRecord.getAddress1())
+				.address2(importRecord.getAddress2())
+				.address3(importRecord.getAddress3())
+				.address4(importRecord.getAddress4())
+				.postal(importRecord.getPostal())
+				.postalAdd(importRecord.getPostal_Add())
+				.city(importRecord.getCity())
+				.regionId(importRecord.getC_Region_ID())
+				.countryId(CountryId.ofRepoId(importRecord.getC_Country_ID()))
+				.poBox(importRecord.getPOBox())
+				.build());
+
+		bpartnerLocation.setC_Location_ID(locationId.getRepoId());
 	}
 
-	private static void updateExistingLocation(
-			@NonNull final I_I_BPartner importRecord,
-			@NonNull final I_C_Location location)
-	{
-		location.setAddress1(importRecord.getAddress1());
-		location.setAddress2(importRecord.getAddress2());
-		location.setAddress3(importRecord.getAddress3());
-		location.setAddress4(importRecord.getAddress4());
-		location.setPostal(importRecord.getPostal());
-		location.setPostal_Add(importRecord.getPostal_Add());
-		location.setCity(importRecord.getCity());
-		location.setC_Region_ID(importRecord.getC_Region_ID());
-		location.setC_Country_ID(importRecord.getC_Country_ID());
-		location.setPOBox(importRecord.getPOBox());
-		InterfaceWrapperHelper.save(location);
-	}
-
-	private void updateBillToAndShipToFlags(
+	private static void updateBillToAndShipToFlags(
 			@NonNull final I_I_BPartner importRecord,
 			@NonNull final I_C_BPartner_Location bpartnerLocation)
 	{
@@ -232,7 +196,7 @@ import lombok.NonNull;
 		bpartnerLocation.setIsBillTo(extractIsBillTo(importRecord));
 	}
 
-	private void updatePhoneAndFax(
+	private static void updatePhoneAndFax(
 			@NonNull final I_I_BPartner importRecord,
 			@NonNull final I_C_BPartner_Location bpartnerLocation)
 	{
@@ -250,12 +214,11 @@ import lombok.NonNull;
 		}
 	}
 
-	private void fireImportValidatorAndSaveBPartnerLocation(
+	private void fireImportValidator(
 			@NonNull final I_I_BPartner importRecord,
 			@NonNull final I_C_BPartner_Location bpartnerLocation)
 	{
 		ModelValidationEngine.get().fireImportValidate(process, importRecord, bpartnerLocation, IImportInterceptor.TIMING_AFTER_IMPORT);
-		InterfaceWrapperHelper.save(bpartnerLocation);
 	}
 
 	@VisibleForTesting
