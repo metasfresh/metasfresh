@@ -537,6 +537,7 @@ input:checked + .input-slider:before {
 
         &.input-mandatory {
             border: 2px solid $brand-mandatory-color;
+            border-radius: 3px;
         }
 
         &.focused {
