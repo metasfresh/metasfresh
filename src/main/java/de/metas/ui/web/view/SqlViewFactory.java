@@ -1,26 +1,16 @@
 package de.metas.ui.web.view;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.expression.api.NullStringExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 
-import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilter.Builder;
@@ -29,29 +19,22 @@ import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.DocumentFiltersList;
-import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
-import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding;
-import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoader;
+import de.metas.ui.web.view.descriptor.SqlViewBindingFactory;
+import de.metas.ui.web.view.descriptor.SqlViewCustomizerMap;
 import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.descriptor.ViewLayoutFactory;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
-import de.metas.ui.web.window.descriptor.sql.DocumentFieldValueLoader;
-import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
-import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.model.DocumentReference;
 import de.metas.ui.web.window.model.DocumentReferencesService;
-import de.metas.util.Check;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -86,154 +69,58 @@ import lombok.Value;
 public class SqlViewFactory implements IViewFactory
 {
 	private static final Logger logger = LogManager.getLogger(SqlViewFactory.class);
-
-	private final DocumentDescriptorFactory documentDescriptorFactory;
 	private final DocumentReferencesService documentReferencesService;
-
-	private final ImmutableMap<WindowId, SqlDocumentFilterConverterDecorator> windowId2SqlDocumentFilterConverterDecorator;
-	private final ImmutableMap<WindowId, IViewInvalidationAdvisor> viewInvalidationAdvisorsByWindowId;
-
-	@Value
-	private static final class SqlViewBindingKey
-	{
-		@NonNull
-		private final WindowId windowId;
-		@Nullable
-		private final Characteristic requiredFieldCharacteristic;
-		@Nullable
-		private final ViewProfileId profileId;
-	}
-
-	private final transient CCache<SqlViewBindingKey, ViewLayout> viewLayouts = CCache.newCache("SqlViewLayouts", 20, 0);
-	private final transient CCache<SqlViewBindingKey, SqlViewBinding> viewBindings = CCache.newCache("SqlViewBindings", 20, 0);
-
-	private final ImmutableListMultimap<WindowId, ViewProfile> viewProfiles;
-	private final ImmutableMap<WindowId, ImmutableMap<ViewProfileId, SqlViewCustomizer>> viewCustomizers;
+	private final ViewLayoutFactory viewLayouts;
 	private final CompositeDefaultViewProfileIdProvider defaultProfileIdProvider;
 
 	public SqlViewFactory(
 			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
 			@NonNull final DocumentReferencesService documentReferencesService,
-			@NonNull final List<SqlViewCustomizer> viewCustomizers,
+			@NonNull final List<SqlViewCustomizer> viewCustomizersList,
 			@NonNull final List<DefaultViewProfileIdProvider> defaultViewProfileIdProviders,
 			@NonNull final List<SqlDocumentFilterConverterDecorator> converterDecorators,
 			@NonNull final List<IViewInvalidationAdvisor> viewInvalidationAdvisors)
 	{
-		this.documentDescriptorFactory = documentDescriptorFactory;
 		this.documentReferencesService = documentReferencesService;
 
-		this.windowId2SqlDocumentFilterConverterDecorator = makeDecoratorsMapAndHandleDuplicates(converterDecorators);
-		logger.info("Filter converter decorators: {}", windowId2SqlDocumentFilterConverterDecorator);
-
-		this.viewProfiles = makeViewProfilesMap(viewCustomizers);
-		logger.info("View profiles: {}", this.viewProfiles);
-
-		this.viewCustomizers = makeViewCustomizersMap(viewCustomizers);
-		logger.info("View customizers: {}", this.viewCustomizers);
+		final SqlViewCustomizerMap viewCustomizers = SqlViewCustomizerMap.ofCollection(viewCustomizersList);
+		logger.info("View customizers: {}", viewCustomizers);
 
 		this.defaultProfileIdProvider = makeDefaultProfileIdProvider(defaultViewProfileIdProviders, viewCustomizers);
 		logger.info("Default ProfileId providers: {}", this.defaultProfileIdProvider);
 
-		this.viewInvalidationAdvisorsByWindowId = makeViewInvalidationAdvisorsMap(viewInvalidationAdvisors);
-		logger.info("view invalidation advisors: {}", this.viewInvalidationAdvisorsByWindowId);
-	}
+		final SqlViewBindingFactory viewBindingsFactory = SqlViewBindingFactory.builder()
+				.documentDescriptorFactory(documentDescriptorFactory)
+				.viewCustomizers(viewCustomizers)
+				.converterDecorators(converterDecorators)
+				.viewInvalidationAdvisors(viewInvalidationAdvisors)
+				.build();
 
-	private static ImmutableListMultimap<WindowId, ViewProfile> makeViewProfilesMap(Collection<SqlViewCustomizer> viewCustomizers)
-	{
-		return viewCustomizers
-				.stream()
-				.collect(ImmutableListMultimap.toImmutableListMultimap(viewCustomizer -> viewCustomizer.getWindowId(), viewCustomizer -> viewCustomizer.getProfile()));
-	}
-
-	private static ImmutableMap<WindowId, ImmutableMap<ViewProfileId, SqlViewCustomizer>> makeViewCustomizersMap(Collection<SqlViewCustomizer> viewCustomizers)
-	{
-		final Map<WindowId, ImmutableMap<ViewProfileId, SqlViewCustomizer>> map = viewCustomizers
-				.stream()
-				.sorted(SqlViewCustomizerUtils.ORDERED_COMPARATOR)
-				.collect(Collectors.groupingBy(
-						SqlViewCustomizer::getWindowId,
-						ImmutableMap.toImmutableMap(viewCustomizer -> viewCustomizer.getProfile().getProfileId(), viewCustomizer -> viewCustomizer)));
-		return ImmutableMap.copyOf(map);
+		this.viewLayouts = ViewLayoutFactory.builder()
+				.documentDescriptorFactory(documentDescriptorFactory)
+				.viewBindingsFactory(viewBindingsFactory)
+				.viewCustomizers(viewCustomizers)
+				.build();
 	}
 
 	private static CompositeDefaultViewProfileIdProvider makeDefaultProfileIdProvider(
 			final List<DefaultViewProfileIdProvider> providers,
-			final List<SqlViewCustomizer> viewCustomizersToExtractFallbacks)
+			final SqlViewCustomizerMap viewCustomizersToExtractFallbacks)
 	{
 		final CompositeDefaultViewProfileIdProvider result = CompositeDefaultViewProfileIdProvider.of(providers);
-
-		viewCustomizersToExtractFallbacks.stream()
-				.sorted(SqlViewCustomizerUtils.ORDERED_COMPARATOR)
-				.forEach(viewCustomizer -> result.setDefaultProfileIdFallbackIfAbsent(viewCustomizer.getWindowId(), viewCustomizer.getProfile().getProfileId()));
-
+		viewCustomizersToExtractFallbacks.forEachWindowIdAndProfileId(result::setDefaultProfileIdFallbackIfAbsent);
 		return result;
-	}
-
-	private static ImmutableMap<WindowId, SqlDocumentFilterConverterDecorator> makeDecoratorsMapAndHandleDuplicates(
-			@NonNull final Collection<SqlDocumentFilterConverterDecorator> providers)
-	{
-		try
-		{
-			return Maps.uniqueIndex(providers, SqlDocumentFilterConverterDecorator::getWindowId);
-		}
-		catch (IllegalArgumentException e)
-		{
-			final String message = "The given collection of SqlDocumentFilterConverterDecoratorProvider implementors contains more than one element with the same window-id";
-			throw new AdempiereException(message, e)
-					.setParameter("sqlDocumentFilterConverterDecoratorProviders", providers)
-					.appendParametersToMessage();
-		}
-	}
-
-	private static ImmutableMap<WindowId, IViewInvalidationAdvisor> makeViewInvalidationAdvisorsMap(final List<IViewInvalidationAdvisor> viewInvalidationAdvisors)
-	{
-		try
-		{
-			return Maps.uniqueIndex(viewInvalidationAdvisors, advisor -> {
-				final WindowId windowId = advisor.getWindowId();
-				Check.assumeNotNull(windowId, "windowId shall not be null for {}", advisor);
-				return windowId;
-			});
-		}
-		catch (IllegalArgumentException e)
-		{
-			final String message = "The given collection of " + IViewInvalidationAdvisor.class + " implementors contains more than one element with the same window-id";
-			throw new AdempiereException(message, e)
-					.setParameter("viewInvalidationAdvisors", viewInvalidationAdvisors)
-					.appendParametersToMessage();
-		}
 	}
 
 	@Override
 	public List<ViewProfile> getAvailableProfiles(final WindowId windowId)
 	{
-		return viewProfiles.get(windowId);
-	}
-
-	private ViewProfileId getDefaultProfileIdByWindowId(final WindowId windowId)
-	{
-		return defaultProfileIdProvider.getDefaultProfileIdByWindowId(windowId);
+		return viewLayouts.getAvailableProfiles(windowId);
 	}
 
 	public void setDefaultProfileId(@NonNull final WindowId windowId, final ViewProfileId profileId)
 	{
 		defaultProfileIdProvider.setDefaultProfileIdOverride(windowId, profileId);
-	}
-
-	private SqlViewCustomizer getSqlViewCustomizer(@NonNull final WindowId windowId, final ViewProfileId profileId)
-	{
-		if (ViewProfileId.isNull(profileId))
-		{
-			return null;
-		}
-
-		final ImmutableMap<ViewProfileId, SqlViewCustomizer> viewCustomizersByProfileId = viewCustomizers.get(windowId);
-		if (viewCustomizersByProfileId == null)
-		{
-			return null;
-		}
-
-		return viewCustomizersByProfileId.get(profileId);
 	}
 
 	@Override
@@ -242,44 +129,18 @@ public class SqlViewFactory implements IViewFactory
 			@NonNull final JSONViewDataType viewDataType,
 			@Nullable final ViewProfileId profileId)
 	{
-		final ViewProfileId profileIdEffective = !ViewProfileId.isNull(profileId) ? profileId : getDefaultProfileIdByWindowId(windowId);
-		final SqlViewBindingKey sqlViewBindingKey = new SqlViewBindingKey(windowId, viewDataType.getRequiredFieldCharacteristic(), profileIdEffective);
-		return viewLayouts.getOrLoad(sqlViewBindingKey, () -> createViewLayout(sqlViewBindingKey, viewDataType));
-	}
-
-	private ViewLayout createViewLayout(final SqlViewBindingKey sqlViewBindingKey, final JSONViewDataType viewDataType)
-	{
-		final ViewLayout viewLayoutOrig = documentDescriptorFactory.getDocumentDescriptor(sqlViewBindingKey.getWindowId())
-				.getViewLayout(viewDataType);
-
-		final SqlViewBinding sqlViewBinding = getViewBinding(sqlViewBindingKey);
-		final Collection<DocumentFilterDescriptor> filters = sqlViewBinding.getViewFilterDescriptors().getAll();
-		final boolean hasTreeSupport = sqlViewBinding.hasGroupingFields();
-
-		final ViewLayout.ChangeBuilder viewLayoutBuilder = viewLayoutOrig.toBuilder()
-				.profileId(sqlViewBindingKey.getProfileId())
-				.filters(filters)
-				.treeSupport(hasTreeSupport, true/* treeCollapsible */, ViewLayout.TreeExpandedDepth_AllCollapsed);
-
-		final SqlViewCustomizer sqlViewCustomizer = getSqlViewCustomizer(sqlViewBindingKey.getWindowId(), sqlViewBindingKey.getProfileId());
-		if (sqlViewCustomizer != null)
-		{
-			sqlViewCustomizer.customizeViewLayout(viewLayoutBuilder);
-		}
-
-		return viewLayoutBuilder.build();
+		final ViewProfileId profileIdEffective = !ViewProfileId.isNull(profileId) ? profileId : defaultProfileIdProvider.getDefaultProfileIdByWindowId(windowId);
+		return viewLayouts.getViewLayout(windowId, viewDataType, profileIdEffective);
 	}
 
 	@Override
-	public IView createView(final CreateViewRequest request)
+	public DefaultView createView(final CreateViewRequest request)
 	{
 		final WindowId windowId = request.getViewId().getWindowId();
 
 		final JSONViewDataType viewType = request.getViewType();
-		final ViewProfileId profileId = !ViewProfileId.isNull(request.getProfileId()) ? request.getProfileId() : getDefaultProfileIdByWindowId(windowId);
-		final SqlViewBindingKey sqlViewBindingKey = new SqlViewBindingKey(windowId, viewType.getRequiredFieldCharacteristic(), profileId);
-
-		final SqlViewBinding sqlViewBinding = getViewBinding(sqlViewBindingKey);
+		final ViewProfileId profileId = !ViewProfileId.isNull(request.getProfileId()) ? request.getProfileId() : defaultProfileIdProvider.getDefaultProfileIdByWindowId(windowId);
+		final SqlViewBinding sqlViewBinding = viewLayouts.getViewBinding(windowId, viewType.getRequiredFieldCharacteristic(), profileId);
 		final IViewDataRepository viewDataRepository = new SqlViewDataRepository(sqlViewBinding);
 
 		final DefaultView.Builder viewBuilder = DefaultView.builder(viewDataRepository)
@@ -307,7 +168,7 @@ public class SqlViewFactory implements IViewFactory
 
 		if (request.isUseAutoFilters())
 		{
-			final List<DocumentFilter> autoFilters = createAutoFilters(sqlViewBindingKey);
+			final List<DocumentFilter> autoFilters = createAutoFilters(sqlViewBinding);
 			viewBuilder.addFiltersIfAbsent(autoFilters);
 		}
 
@@ -338,9 +199,8 @@ public class SqlViewFactory implements IViewFactory
 		}
 	}
 
-	private List<DocumentFilter> createAutoFilters(final SqlViewBindingKey sqlViewBindingKey)
+	private static List<DocumentFilter> createAutoFilters(final SqlViewBinding sqlViewBinding)
 	{
-		final SqlViewBinding sqlViewBinding = getViewBinding(sqlViewBindingKey);
 		final Collection<DocumentFilterDescriptor> filters = sqlViewBinding.getViewFilterDescriptors().getAll();
 
 		return filters
@@ -394,118 +254,5 @@ public class SqlViewFactory implements IViewFactory
 				.setOperator(Operator.EQUAL)
 				.setValue(value)
 				.build();
-	}
-
-	private SqlViewBinding getViewBinding(@NonNull final SqlViewBindingKey key)
-	{
-		return viewBindings.getOrLoad(key, () -> createViewBinding(key));
-	}
-
-	private SqlViewBinding createViewBinding(@NonNull final SqlViewBindingKey key)
-	{
-		final WindowId windowId = key.getWindowId();
-		final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(windowId);
-		final Set<String> displayFieldNames = entityDescriptor.getFieldNamesWithCharacteristic(key.getRequiredFieldCharacteristic());
-		final SqlDocumentEntityDataBindingDescriptor entityBinding = SqlDocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());
-		final DocumentFilterDescriptorsProvider filterDescriptors = entityDescriptor.getFilterDescriptors();
-
-		final SqlViewBinding.Builder builder = createBuilderForEntityBindingAndFieldNames(entityBinding, displayFieldNames)
-				.filterDescriptors(filterDescriptors)
-				.refreshViewOnChangeEvents(entityDescriptor.isRefreshViewOnChangeEvents())
-				.viewInvalidationAdvisor(getViewInvalidationAdvisor(windowId));
-
-		if (windowId2SqlDocumentFilterConverterDecorator.containsKey(windowId))
-		{
-			builder.filterConverterDecorator(windowId2SqlDocumentFilterConverterDecorator.get(windowId));
-		}
-
-		final SqlViewCustomizer sqlViewCustomizer = getSqlViewCustomizer(windowId, key.getProfileId());
-		if (sqlViewCustomizer != null)
-		{
-			final ViewRowCustomizer rowCustomizer = sqlViewCustomizer;
-			builder.rowCustomizer(rowCustomizer);
-
-			sqlViewCustomizer.customizeSqlViewBinding(builder);
-		}
-
-		return builder.build();
-	}
-
-	private SqlViewBinding.Builder createBuilderForEntityBindingAndFieldNames(
-			@NonNull final SqlDocumentEntityDataBindingDescriptor entityBinding,
-			@NonNull final Set<String> displayFieldNames)
-	{
-		final SqlViewBinding.Builder builder = prepareSqlViewBinding(entityBinding);
-
-		entityBinding.getFields()
-				.stream()
-				.map(documentField -> createViewFieldBinding(documentField, displayFieldNames))
-				.forEach(builder::field);
-		builder.displayFieldNames(displayFieldNames);
-		return builder;
-	}
-
-	private static SqlViewBinding.Builder prepareSqlViewBinding(@NonNull final SqlDocumentEntityDataBindingDescriptor entityBinding)
-	{
-		return SqlViewBinding.builder()
-				.tableName(entityBinding.getTableName())
-				.tableAlias(entityBinding.getTableAlias())
-				.sqlWhereClause(entityBinding.getSqlWhereClause())
-				.defaultOrderBys(entityBinding.getDefaultOrderBys());
-	}
-
-	private static final SqlViewRowFieldBinding createViewFieldBinding(final SqlDocumentFieldDataBindingDescriptor documentField, final Collection<String> availableDisplayColumnNames)
-	{
-		return createViewFieldBindingBuilder(documentField, availableDisplayColumnNames).build();
-	}
-
-	public static final SqlViewRowFieldBinding.SqlViewRowFieldBindingBuilder createViewFieldBindingBuilder(
-			@NonNull final SqlDocumentFieldDataBindingDescriptor documentField,
-			@NonNull final Collection<String> availableDisplayColumnNames)
-	{
-		final String fieldName = documentField.getFieldName();
-		final boolean isDisplayColumnAvailable = documentField.isUsingDisplayColumn() && availableDisplayColumnNames.contains(fieldName);
-
-		return SqlViewRowFieldBinding.builder()
-				.fieldName(fieldName)
-				.columnName(documentField.getColumnName())
-				.columnSql(documentField.getColumnSql())
-				.keyColumn(documentField.isKeyColumn())
-				.widgetType(documentField.getWidgetType())
-				.virtualColumn(documentField.isVirtualColumn())
-				//
-				.sqlValueClass(documentField.getSqlValueClass())
-				.sqlSelectValue(documentField.getSqlSelectValue())
-				.usingDisplayColumn(isDisplayColumnAvailable)
-				.sqlSelectDisplayValue(isDisplayColumnAvailable ? documentField.getSqlSelectDisplayValue() : NullStringExpression.instance)
-				//
-				.sqlOrderBy(documentField.getSqlOrderBy())
-				//
-				.fieldLoader(new DocumentFieldValueLoaderAsSqlViewRowFieldLoader(documentField.getDocumentFieldValueLoader(), isDisplayColumnAvailable))
-		//
-		;
-	}
-
-	private IViewInvalidationAdvisor getViewInvalidationAdvisor(final WindowId windowId)
-	{
-		return viewInvalidationAdvisorsByWindowId.getOrDefault(windowId, DefaultViewInvalidationAdvisor.instance);
-	}
-
-	@Value
-	private static final class DocumentFieldValueLoaderAsSqlViewRowFieldLoader implements SqlViewRowFieldLoader
-	{
-		private final @NonNull DocumentFieldValueLoader fieldValueLoader;
-		private final boolean isDisplayColumnAvailable;
-
-		@Override
-		public Object retrieveValue(@NonNull final ResultSet rs, final String adLanguage) throws SQLException
-		{
-			return fieldValueLoader.retrieveFieldValue(
-					rs,
-					isDisplayColumnAvailable,
-					adLanguage,
-					(LookupDescriptor)null);
-		}
-
 	}
 }
