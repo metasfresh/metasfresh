@@ -137,7 +137,7 @@ public class C_Payment
 		Services.get(ICashStatementBL.class).createCashStatementLine(payment);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Payment.COLUMNNAME_DateTrx })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Payment.COLUMNNAME_DateTrx })
 	public void onDateChange(final I_C_Payment payment)
 	{
 		final I_C_Invoice invoice = payment.getC_Invoice();

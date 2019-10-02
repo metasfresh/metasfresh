@@ -322,8 +322,6 @@ public class PaymentBL implements IPaymentBL
 
 			WriteOffAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt).subtract(OverUnderAmt);
 			payment.setWriteOffAmt(WriteOffAmt);
-			payment.setDiscountAmt(DiscountAmt);
-			payment.setPayAmt(PayAmt);
 		}
 
 	}
