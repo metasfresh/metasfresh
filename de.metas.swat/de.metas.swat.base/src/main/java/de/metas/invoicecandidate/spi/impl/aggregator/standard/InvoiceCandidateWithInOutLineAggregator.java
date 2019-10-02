@@ -1,7 +1,5 @@
 package de.metas.invoicecandidate.spi.impl.aggregator.standard;
 
-
-
 /*
  * #%L
  * de.metas.swat.base
@@ -245,12 +243,12 @@ import lombok.ToString;
 				if (positiveQty)
 				{
 					// e.g. qtyShippedButNotInvoiced = 50 and qtyLeft = 40 => maxQtyToInvoicePerLine = 40
-					maxQtyToInvoicePerLine = StockQtyAndUOMQtys.minUomQty(qtyShippedButNotInvoiced,qtyLeftToInvoice);
+					maxQtyToInvoicePerLine = StockQtyAndUOMQtys.minUomQty(qtyShippedButNotInvoiced, qtyLeftToInvoice);
 				}
 				else
 				{
 					// e.g. qtyShippedButNotInvoiced = -50 and qtyLeft = -40 => maxQtyToInvoicePerLine = -40
-					maxQtyToInvoicePerLine = StockQtyAndUOMQtys.maxUomQty(qtyShippedButNotInvoiced,qtyLeftToInvoice);
+					maxQtyToInvoicePerLine = StockQtyAndUOMQtys.maxUomQty(qtyShippedButNotInvoiced, qtyLeftToInvoice);
 				}
 			}
 		}
@@ -270,11 +268,11 @@ import lombok.ToString;
 			// We don't want to invoice more than shipped
 			if (positiveQty)
 			{
-				candQtyToInvoiceUnchecked =StockQtyAndUOMQtys.minUomQty(qtyLeftToInvoice,qtyAlreadyShippedPerCurrentICS);
+				candQtyToInvoiceUnchecked = StockQtyAndUOMQtys.minUomQty(qtyLeftToInvoice, qtyAlreadyShippedPerCurrentICS);
 			}
 			else
 			{
-				candQtyToInvoiceUnchecked = StockQtyAndUOMQtys.maxUomQty(qtyLeftToInvoice,qtyAlreadyShippedPerCurrentICS);
+				candQtyToInvoiceUnchecked = StockQtyAndUOMQtys.maxUomQty(qtyLeftToInvoice, qtyAlreadyShippedPerCurrentICS);
 			}
 		}
 		else
@@ -607,7 +605,7 @@ import lombok.ToString;
 		if (iciol != null && !forcedAdditionalQty)
 		{
 			final StockQtyAndUOMQty qtyAlreadyInvoiced = fromICS.getQtysAlreadyInvoiced();
-			final StockQtyAndUOMQty qtyAlreadyInvoicedNew = qtyAlreadyInvoiced.add(candQtyToInvoice);
+			final StockQtyAndUOMQty qtyAlreadyInvoicedNew = StockQtyAndUOMQtys.add(qtyAlreadyInvoiced, candQtyToInvoice);
 			// // task 07988: *don't* store/persist anything in here..just add, so it will be persisted later when the actual invoice was created
 			final InvoiceCandidateInOutLineToUpdate invoiceCandidateInOutLineToUpdate = new InvoiceCandidateInOutLineToUpdate(iciol, qtyAlreadyInvoicedNew);
 			_iciolsToUpdate.add(invoiceCandidateInOutLineToUpdate);
@@ -615,7 +613,7 @@ import lombok.ToString;
 
 		//
 		// Increase QtyToInvoice
-		_qtysToInvoice = _qtysToInvoice.add(candQtyToInvoice);
+		_qtysToInvoice = StockQtyAndUOMQtys.add(_qtysToInvoice, candQtyToInvoice);
 
 		//
 		// Update IC-QtyInvoiceable map (i.e. decrease invoiceable quantity)
@@ -629,7 +627,7 @@ import lombok.ToString;
 			@NonNull final StockQtyAndUOMQty qtyInvoiced)
 	{
 		final StockQtyAndUOMQty qtyInvoiceable = _ic2QtyInvoiceable.get(invoiceCandidateId);
-		final StockQtyAndUOMQty qtyInvoiceableNew = qtyInvoiceable.subtract(qtyInvoiced);
+		final StockQtyAndUOMQty qtyInvoiceableNew = StockQtyAndUOMQtys.subtract(qtyInvoiceable, qtyInvoiced);
 
 		_ic2QtyInvoiceable.put(invoiceCandidateId, qtyInvoiceableNew);
 	}
