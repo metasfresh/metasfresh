@@ -3,6 +3,11 @@
  */
 package de.metas.banking.payment.modelvalidator;
 
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 
 /*
@@ -18,26 +23,30 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.DB;
 
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.ICashStatementBL;
@@ -65,22 +74,19 @@ public class C_Payment
 		super();
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }
-			, ifColumnsChanged = { I_C_Payment.COLUMNNAME_C_Currency_ID, I_C_Payment.COLUMNNAME_C_ConversionType_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Payment.COLUMNNAME_C_Currency_ID, I_C_Payment.COLUMNNAME_C_ConversionType_ID })
 	public void onCurrencyChange(final I_C_Payment payment)
 	{
 		Services.get(IPaymentBL.class).onCurrencyChange(payment);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }
-			, ifColumnsChanged = I_C_Payment.COLUMNNAME_IsOverUnderPayment)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_C_Payment.COLUMNNAME_IsOverUnderPayment)
 	public void onIsOverUnderPaymentChange(final I_C_Payment payment)
 	{
 		Services.get(IPaymentBL.class).onIsOverUnderPaymentChange(payment, true);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }
-			, ifColumnsChanged = I_C_Payment.COLUMNNAME_PayAmt)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_C_Payment.COLUMNNAME_PayAmt)
 	public void onPayAmtChange(final I_C_Payment payment)
 	{
 		Services.get(IPaymentBL.class).onPayAmtChange(payment, true);
@@ -129,6 +135,77 @@ public class C_Payment
 		}
 
 		Services.get(ICashStatementBL.class).createCashStatementLine(payment);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Payment.COLUMNNAME_DateTrx })
+	public void onDateChange(final I_C_Payment payment)
+	{
+		final I_C_Invoice invoice = payment.getC_Invoice();
+		if(invoice ==null) {
+			return;
+		}else {
+			String sql = "SELECT C_BPartner_ID,C_Currency_ID," // 1..2
+					+ " invoiceOpen(C_Invoice_ID, ?)," // 3 #1
+					+ " invoiceDiscount(C_Invoice_ID,?,?), IsSOTrx " // 4..5 #2/3
+					+ "FROM C_Invoice WHERE C_Invoice_ID=?"; // #4
+				PreparedStatement pstmt = null;
+				ResultSet rs = null;
+				try
+				{
+					pstmt = DB.prepareStatement (sql, null);
+					pstmt.setInt (1, invoice.getC_Invoice_ID());
+					pstmt.setTimestamp (2, payment.getDateTrx());
+					pstmt.setInt (3, invoice.getC_Invoice_ID());
+					pstmt.setInt (4, invoice.getC_Invoice_ID());
+					rs = pstmt.executeQuery ();
+					if (rs.next ())
+					{
+						final int bpartnerId = rs.getInt (1);
+						payment.setC_BPartner_ID(bpartnerId);
+						
+						// Set Invoice Currency
+						final int C_Currency_ID = rs.getInt (2);
+						payment.setC_Currency_ID(C_Currency_ID);
+						
+						//
+						BigDecimal InvoiceOpen = rs.getBigDecimal (3); // Set Invoice
+						// OPen Amount
+						if (InvoiceOpen == null)
+						{
+							InvoiceOpen = BigDecimal.ZERO;
+						}
+						BigDecimal DiscountAmt = rs.getBigDecimal (4); // Set Discount
+						// Amt
+						if (DiscountAmt == null)
+						{
+							DiscountAmt = BigDecimal.ZERO;
+						}
+
+						BigDecimal payAmt = InvoiceOpen.subtract(DiscountAmt);
+						final I_C_DocType invoiceDocType = invoice.getC_DocType();
+						if (X_C_DocType.DOCBASETYPE_APCreditMemo.equals(invoiceDocType.getDocBaseType())
+								|| X_C_DocType.DOCBASETYPE_ARCreditMemo.equals(invoiceDocType.getDocBaseType()))
+						{
+							if (payAmt.signum() < 0)
+							{
+								payAmt = payAmt.abs();
+							}
+						}
+
+						//
+						payment.setPayAmt(payAmt);
+						payment.setDiscountAmt(DiscountAmt);
+					}
+				}
+				catch (SQLException e)
+				{
+					throw new DBException(e, sql);
+				}
+				finally
+				{
+					DB.close (rs, pstmt);
+				}
+		}
 	}
 
 }
