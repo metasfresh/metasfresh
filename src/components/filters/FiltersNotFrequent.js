@@ -180,12 +180,41 @@ class FiltersNotFrequent extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {bool} allowOutsideClick
+ * @prop {func} resetInitialValues
+ * @prop {bool} modalVisible
+ * @prop {*} [filtersWrapper]
+ * @prop {object} [activeFiltersCaptions]
+ * @prop {*} data
+ * @prop {*} windowType
+ * @prop {*} notValidFields
+ * @prop {*} viewId
+ * @prop {*} handleShow
+ * @prop {*} applyFilters
+ * @prop {*} clearFilters
+ * @prop {*} active
+ * @prop {*} widgetShown
+ * @prop {*} dropdownToggled
+ * @todo Check title, buttons. Which proptype? Required or optional?
+ */
 FiltersNotFrequent.propTypes = {
   allowOutsideClick: PropTypes.bool.isRequired,
   resetInitialValues: PropTypes.func.isRequired,
   modalVisible: PropTypes.bool.isRequired,
   filtersWrapper: PropTypes.any,
   activeFiltersCaptions: PropTypes.object,
+  data: PropTypes.any,
+  windowType: PropTypes.any,
+  notValidFields: PropTypes.any,
+  viewId: PropTypes.any,
+  handleShow: PropTypes.any,
+  applyFilters: PropTypes.any,
+  clearFilters: PropTypes.any,
+  active: PropTypes.any,
+  widgetShown: PropTypes.any,
+  dropdownToggled: PropTypes.any,
 };
 
 /**
