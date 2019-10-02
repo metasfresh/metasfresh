@@ -1,10 +1,8 @@
-package de.metas.location.geocoding;
-
 /*
  * #%L
- * metasfresh-pharma
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,9 +20,39 @@ package de.metas.location.geocoding;
  * #L%
  */
 
-import java.util.Optional;
+package de.metas.location.geocoding;
 
-public interface GeoCoordinatesProvider
+import de.metas.location.geocoding.provider.GeocodingProviderName;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+@Value
+@Builder
+public class GeocodingConfig
 {
-	Optional<GeographicalCoordinates> findBestCoordinates(GeoCoordinatesRequest request);
+	@NonNull
+	GeocodingProviderName providerName;
+
+	OpenStreetMapsConfig openStreetMapsConfig;
+	GoogleMapsConfig googleMapsConfig;
+
+	@Value
+	@Builder
+	public static class OpenStreetMapsConfig
+	{
+		@NonNull final String baseURL;
+		int cacheCapacity;
+		long millisBetweenRequests;
+	}
+
+	@Value
+	@Builder
+	public static class GoogleMapsConfig
+	{
+		@NonNull
+		String apiKey;
+		int cacheCapacity;
+	}
+
 }
