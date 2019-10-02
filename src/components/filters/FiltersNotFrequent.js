@@ -8,6 +8,11 @@ import { connect } from 'react-redux';
 import { getItemsByProperty } from '../../utils';
 import FiltersItem from './FiltersItem';
 
+/**
+ * @file Class based component.
+ * @module FiltersNotFrequent
+ * @extends Component
+ */
 class FiltersNotFrequent extends Component {
   constructor(props) {
     super(props);
@@ -18,6 +23,12 @@ class FiltersNotFrequent extends Component {
     };
   }
 
+  /**
+   * @method handleClickOutside
+   * @summary ToDo: Describe the method
+   * @param {*} target
+   * @todo Write the documentation
+   */
   handleClickOutside = ({ target }) => {
     const { widgetShown, dropdownToggled, allowOutsideClick } = this.props;
 
@@ -32,18 +43,35 @@ class FiltersNotFrequent extends Component {
     }
   };
 
+  /**
+   * @method toggleDropdown
+   * @summary ToDo: Describe the method
+   * @param {*} value
+   * @todo Write the documentation
+   */
   toggleDropdown = value => {
     this.setState({
       isOpenDropdown: value,
     });
   };
 
+  /**
+   * @method toggleFilter
+   * @summary ToDo: Describe the method
+   * @param {*} index
+   * @todo Write the documentation
+   */
   toggleFilter = index => {
     this.setState({
       openFilterId: index,
     });
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     const {
       data,
@@ -160,6 +188,12 @@ FiltersNotFrequent.propTypes = {
   activeFiltersCaptions: PropTypes.object,
 };
 
+/**
+ * @method mapStateToProps
+ * @summary ToDo: Describe the method
+ * @param {*} windowHandler
+ * @todo Write the documentation
+ */
 const mapStateToProps = ({ windowHandler }) => {
   const { allowOutsideClick, modal } = windowHandler;
 
