@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.archive.spi.IArchiveEventListener;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -73,7 +75,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	public void onEmailSent(
 			@NonNull final I_AD_Archive archive,
 			final String action,
-			final UserEMailConfig user,
+			@Nullable final UserEMailConfig userMailConfig,
 			final EMailAddress from,
 			final EMailAddress to,
 			final EMailAddress cc,
@@ -92,8 +94,10 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docExchangeLine.setEMail_Cc(EMailAddress.toStringOrNull(cc));
 		docExchangeLine.setEMail_Bcc(EMailAddress.toStringOrNull(bcc));
 		docExchangeLine.setStatus(status);
-		docExchangeLine.setAD_User_ID(UserId.toRepoId(user.getUserId()));
-
+		if(userMailConfig != null)
+		{
+			docExchangeLine.setAD_User_ID(UserId.toRepoId(userMailConfig.getUserId()));
+		}
 		save(docExchangeLine);
 
 		final I_C_Doc_Outbound_Log log = docExchangeLine.getC_Doc_Outbound_Log();
