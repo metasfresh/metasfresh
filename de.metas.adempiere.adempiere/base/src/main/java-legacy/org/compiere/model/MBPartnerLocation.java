@@ -117,9 +117,6 @@ public class MBPartnerLocation extends X_C_BPartner_Location
 				.createQueryBuilder(I_C_BPartner_Location.class)
 				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.addNotEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, bpartnerLocationIdToExclude)
-				.orderByDescending(I_C_BPartner_Location.COLUMNNAME_IsActive)
-				.orderByDescending(I_C_BPartner_Location.COLUMNNAME_IsShipTo) // metas: task 03537 cg: shipTo has priority
-				.orderByDescending(I_C_BPartner_Location.COLUMNNAME_IsBillTo)
 				.create()
 				.listDistinct(I_C_BPartner_Location.COLUMNNAME_Name, String.class);
 	}
