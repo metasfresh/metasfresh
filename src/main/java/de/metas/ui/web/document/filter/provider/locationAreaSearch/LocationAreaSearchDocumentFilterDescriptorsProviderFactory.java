@@ -52,7 +52,7 @@ public class LocationAreaSearchDocumentFilterDescriptorsProviderFactory
 	{
 	}
 
-	public DocumentFilterDescriptorsProvider createFiltersProvider(
+	@Nullable public DocumentFilterDescriptorsProvider createFiltersProvider(
 			@Nullable final AdTabId adTabId,
 			@Nullable final String tableName,
 			final Collection<DocumentFieldDescriptor> fields)
@@ -79,6 +79,7 @@ public class LocationAreaSearchDocumentFilterDescriptorsProviderFactory
 			@NonNull final String tableName,
 			@NonNull final Collection<DocumentFieldDescriptor> fields)
 	{
+		//noinspection ConstantConditions
 		final Map<String, DocumentFieldDescriptor> fieldsByName = Maps.uniqueIndex(fields, DocumentFieldDescriptor::getFieldName);
 
 		if (fieldsByName.containsKey(FIELDNAME_C_Location_ID))
