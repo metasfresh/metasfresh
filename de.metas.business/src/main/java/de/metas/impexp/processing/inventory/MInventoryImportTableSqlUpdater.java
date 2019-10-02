@@ -210,7 +210,7 @@ final class MInventoryImportTableSqlUpdater
 		dbUpdateProducts(
 				sqlImportTableWhereClause,
 				"i.ProductValue LIKE 'ext-%'",
-				"p.Value = substr(i.ProductValue, 5)" /* use substr to get ProductValue without the "ext-" */);
+				"p.ExternalId = substr(i.ProductValue, 5)" /* use substr to get ProductValue without the "ext-" */);
 
 		// Match by M_Product_ID
 		dbUpdateProducts(
