@@ -1,5 +1,9 @@
 package de.metas.product;
 
+import static de.metas.util.Check.assume;
+import static de.metas.util.Check.isEmpty;
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -29,13 +33,14 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
-import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -80,20 +85,37 @@ public interface IProductDAO extends ISingletonService
 	ProductId retrieveProductIdBy(ProductQuery query);
 
 	@Value
-	@Builder
 	public static class ProductQuery
 	{
-		@NonNull
+		/** Applied if not empty. {@code AND}ed with {@code externalId} if given. At least one of {@code value} or {@code externalId} needs to be given. */
 		String value;
 
-		@NonNull
+		/** Applied if not empty. {@code AND}ed with {@code value} if given. At least one of {@code value} or {@code externalId} needs to be given. */
+		String externalId;
+
 		OrgId orgId;
 
-		@Default
-		boolean includeAnyOrg = false;
+		boolean includeAnyOrg;
+		boolean outOfTrx;
 
-		@Default
-		boolean outOfTrx = false;
+		@Builder
+		private ProductQuery(
+				@Nullable final String value,
+				@Nullable final String externalId,
+				@NonNull final OrgId orgId,
+				@Nullable final Boolean includeAnyOrg,
+				@Nullable final Boolean outOfTrx)
+		{
+			final boolean valueIsSet = isEmpty(value, true);
+			final boolean externalIdIsSet = isEmpty(externalId, true);
+			assume(valueIsSet || externalIdIsSet, "At least one of value or externalId need to be specified");
+
+			this.value = value;
+			this.externalId = externalId;
+			this.orgId = orgId;
+			this.includeAnyOrg = coalesce(includeAnyOrg, false);
+			this.outOfTrx = coalesce(outOfTrx, false);
+		}
 	}
 
 	Stream<I_M_Product> streamAllProducts();
@@ -114,7 +136,7 @@ public interface IProductDAO extends ISingletonService
 	<T extends I_M_Product_Category> T getProductCategoryById(ProductCategoryId id, Class<T> modelClass);
 
 	Stream<I_M_Product_Category> streamAllProductCategories();
-	
+
 	String getProductCategoryNameById(ProductCategoryId id);
 
 	ProductId getProductIdByResourceId(ResourceId resourceId);

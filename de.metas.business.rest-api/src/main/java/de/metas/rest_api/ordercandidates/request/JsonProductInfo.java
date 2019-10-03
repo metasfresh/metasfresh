@@ -48,9 +48,15 @@ public class JsonProductInfo
 
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
-			value = "Mandatory - This translates to `M_Product.Value`.")
+			value = "This translates to `M_Product.Value`. At least one of `code` or `externalId` is mandatory")
 	@JsonInclude(Include.NON_NULL)
 	private String code;
+
+	@ApiModelProperty( //
+			allowEmptyValue = false, //
+			value = "This translates to `M_Product.ExternalId`. At least one of `code` or `externalId` is mandatory")
+	@JsonInclude(Include.NON_NULL)
+	private String externalId;
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
@@ -87,6 +93,7 @@ public class JsonProductInfo
 	@JsonCreator
 	private JsonProductInfo(
 			@JsonProperty("code") @Nullable final String code,
+			@JsonProperty("externalId") @Nullable final String externalId,
 			@JsonProperty("name") @Nullable final String name,
 			@JsonProperty("type") @Nullable final Type type,
 			@JsonProperty("uomCode") @Nullable final String uomCode,
@@ -94,6 +101,7 @@ public class JsonProductInfo
 			@JsonProperty("syncAdvise") @Nullable final SyncAdvise syncAdvise)
 	{
 		this.code = code;
+		this.externalId = externalId;
 		this.name = name;
 		this.type = type;
 		this.uomCode = uomCode;
