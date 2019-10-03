@@ -550,6 +550,29 @@ class FiltersItem extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {func} dispatch
+ * @prop {func} applyFilters
+ * @prop {func} [resetInitialValues]
+ * @prop {func} [clearFilters]
+ * @prop {*} [filterWrapper]
+ * @prop {string} [panelCaption]
+ * @prop {array} [active]
+ * @prop {*} data
+ * @prop {*} notValidFields
+ * @prop {*} isActive
+ * @prop {*} windowType
+ * @prop {*} onShow
+ * @prop {*} onHide
+ * @prop {*} viewId
+ * @prop {*} outsideClick
+ * @prop {*} closeFilterMenu
+ * @prop {*} captionValue
+ * @prop {*} openedFilter
+ * @prop {*} returnBackToDropdown
+ * @todo Check props. Which proptype? Required or optional?
+ */
 FiltersItem.propTypes = {
   dispatch: PropTypes.func.isRequired,
   applyFilters: PropTypes.func.isRequired,
@@ -558,6 +581,18 @@ FiltersItem.propTypes = {
   filtersWrapper: PropTypes.any,
   panelCaption: PropTypes.string,
   active: PropTypes.array,
+  data: PropTypes.any,
+  notValidFields: PropTypes.any,
+  isActive: PropTypes.any,
+  windowType: PropTypes.any,
+  onShow: PropTypes.any,
+  onHide: PropTypes.any,
+  viewId: PropTypes.any,
+  outsideClick: PropTypes.any,
+  closeFilterMenu: PropTypes.any,
+  captionValue: PropTypes.any,
+  openedFilter: PropTypes.any,
+  returnBackToDropdown: PropTypes.any,
 };
 
 export default connect()(FiltersItem);
