@@ -273,6 +273,11 @@ public final class ViewResult
 		return getPage().stream().map(IViewRow::getId).collect(ImmutableList.toImmutableList());
 	}
 
+	public boolean isEmpty()
+	{
+		return getPage().isEmpty();
+	}
+
 	/**
 	 * @return loaded page
 	 * @throws IllegalStateException if the page is not loaded, see {@link #isPageLoaded()}

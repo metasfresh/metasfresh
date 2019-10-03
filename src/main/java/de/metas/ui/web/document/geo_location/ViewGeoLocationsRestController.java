@@ -1,22 +1,9 @@
 package de.metas.ui.web.document.geo_location;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Location;
-import org.compiere.model.X_C_Location;
-import org.compiere.util.DB;
 import org.slf4j.Logger;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,6 +16,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.GeographicalCoordinatesWithBPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.location.GeographicalCoordinatesWithLocationId;
+import de.metas.location.ILocationDAO;
+import de.metas.location.LocationId;
+import de.metas.location.geocoding.GeographicalCoordinates;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.geo_location.GeoLocationDocumentDescriptor.LocationColumnNameType;
 import de.metas.ui.web.document.geo_location.json.JsonViewGeoLocationsResult;
@@ -45,10 +39,8 @@ import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
-import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -80,8 +72,11 @@ public class ViewGeoLocationsRestController
 	private static final String PARAM_ViewId = "viewId";
 	static final String ENDPOINT = ViewRestController.ENDPOINT + "/{" + PARAM_ViewId + "}/geoLocations";
 
+	private static final int DEFAULT_LIMIT = 500;
+
 	private static final Logger logger = LogManager.getLogger(ViewGeoLocationsRestController.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ILocationDAO locationsRepo = Services.get(ILocationDAO.class);
+	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final UserSession userSession;
 	private final GeoLocationDocumentService geoLocationDocumentService;
 	private final IViewsRepository viewsRepo;
@@ -110,7 +105,7 @@ public class ViewGeoLocationsRestController
 		userSession.assertLoggedIn();
 
 		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
-		final int limitEffective = limit > 0 ? limit : 500;
+		final int limitEffective = limit > 0 ? limit : DEFAULT_LIMIT;
 
 		final IView view = viewsRepo.getView(viewId);
 		final ImmutableSet<String> viewFieldNames = getViewFieldNames(view);
@@ -118,13 +113,8 @@ public class ViewGeoLocationsRestController
 
 		final ViewRowsOrderBy orderBy = ViewRowsOrderBy.of(view.getDefaultOrderBys(), newJsonOpts());
 		final ViewResult rows = view.getPage(0, limitEffective, orderBy);
-		final ImmutableList<RowIdAndLocationRelatedId> rowIdAndLocationRelatedIds = rows.getPage()
-				.stream()
-				.map(row -> extractRowIdAndLocationRelatedId(row, geoLocationDescriptor))
-				.filter(Predicates.notNull())
-				.collect(ImmutableList.toImmutableList());
 
-		final List<JsonViewRowGeoLocation> geoLocations = retrieveGeoLocations(rowIdAndLocationRelatedIds, geoLocationDescriptor);
+		final List<JsonViewRowGeoLocation> geoLocations = retrieveGeoLocations(rows, geoLocationDescriptor);
 
 		return JsonViewGeoLocationsResult.builder()
 				.locations(geoLocations)
@@ -141,36 +131,30 @@ public class ViewGeoLocationsRestController
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private static RowIdAndLocationRelatedId extractRowIdAndLocationRelatedId(final IViewRow row, final GeoLocationDocumentDescriptor descriptor)
-	{
-		final String locationColumnName = descriptor.getLocationColumnName();
-		final int locationRelatedId = row.getFieldValueAsInt(locationColumnName, -1);
-		return locationRelatedId > 0
-				? new RowIdAndLocationRelatedId(row.getId(), locationRelatedId)
-				: null;
-	}
-
 	private List<JsonViewRowGeoLocation> retrieveGeoLocations(
-			final ImmutableList<RowIdAndLocationRelatedId> locationRelatedIds,
-			final GeoLocationDocumentDescriptor geoLocationDescriptor)
+			final ViewResult rows,
+			final GeoLocationDocumentDescriptor descriptor)
 	{
-		if (locationRelatedIds.isEmpty())
+		if (rows.isEmpty())
 		{
 			return ImmutableList.of();
 		}
 
-		final LocationColumnNameType type = geoLocationDescriptor.getType();
+		final LocationColumnNameType type = descriptor.getType();
 		if (LocationColumnNameType.LocationId.equals(type))
 		{
-			return retrieveGeoLocationsForLocationId(locationRelatedIds);
+			final ImmutableSet<LocationId> locationIds = extractLocationIds(rows, descriptor);
+			return retrieveGeoLocationsForLocationId(locationIds);
 		}
 		else if (LocationColumnNameType.BPartnerLocationId.equals(type))
 		{
-			return retrieveGeoLocationsForBPartnerLocationId(locationRelatedIds);
+			final ImmutableSetMultimap<Integer, DocumentId> rowIdsByBPartnerLocationRepoId = extractBPartnerLocationRepoIds(rows, descriptor);
+			return retrieveGeoLocationsForBPartnerLocationId(rowIdsByBPartnerLocationRepoId);
 		}
 		else if (LocationColumnNameType.BPartnerId.equals(type))
 		{
-			return retrieveGeoLocationsForBPartnerId(locationRelatedIds);
+			final ImmutableSetMultimap<BPartnerId, DocumentId> rowIdsByBPartnerId = extractBPartnerIds(rows, descriptor);
+			return retrieveGeoLocationsForBPartnerId(rowIdsByBPartnerId);
 		}
 		else
 		{
@@ -178,196 +162,144 @@ public class ViewGeoLocationsRestController
 		}
 	}
 
-	private List<JsonViewRowGeoLocation> retrieveGeoLocationsForLocationId(final ImmutableList<RowIdAndLocationRelatedId> locationRelatedIds)
+	private static ImmutableSet<LocationId> extractLocationIds(final ViewResult rows, final GeoLocationDocumentDescriptor descriptor)
 	{
-		final ImmutableSet<Integer> locationRepoIds = locationRelatedIds
-				.stream()
-				.map(RowIdAndLocationRelatedId::getLocationRelatedId)
-				.collect(ImmutableSet.toImmutableSet());
+		final String locationColumnName = descriptor.getLocationColumnName();
 
-		return queryBL.createQueryBuilder(I_C_Location.class)
-				.addInArrayFilter(I_C_Location.COLUMNNAME_C_Location_ID, locationRepoIds)
-				.addEqualsFilter(I_C_Location.COLUMNNAME_GeocodingStatus, X_C_Location.GEOCODINGSTATUS_Resolved)
-				.create()
-				.listColumns(I_C_Location.COLUMNNAME_C_Location_ID, I_C_Location.COLUMNNAME_Latitude, I_C_Location.COLUMNNAME_Longitude)
+		return rows.getPage()
 				.stream()
-				.map(row -> toJsonViewRowGeoLocationFromLocationRecord(row))
+				.map(row -> LocationId.ofRepoIdOrNull(row.getFieldValueAsInt(locationColumnName, -1)))
 				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private List<JsonViewRowGeoLocation> retrieveGeoLocationsForLocationId(final ImmutableSet<LocationId> locationIds)
+	{
+		return locationsRepo.streamGeoCoordinatesByIds(locationIds)
+				.map(geoCoordinatesAndLocationId -> toJsonViewRowGeoLocation(geoCoordinatesAndLocationId))
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static JsonViewRowGeoLocation toJsonViewRowGeoLocationFromLocationRecord(final Map<String, Object> row)
+	private static JsonViewRowGeoLocation toJsonViewRowGeoLocation(final GeographicalCoordinatesWithLocationId geoCoordinatesAndLocationId)
 	{
-		try
-		{
-			final DocumentId rowId = DocumentId.of(NumberUtils.asInt(row.get(I_C_Location.COLUMNNAME_C_Location_ID), -1));
-			final BigDecimal latitude = NumberUtils.asBigDecimal(row.get(I_C_Location.COLUMNNAME_Latitude), null);
-			final BigDecimal longitude = NumberUtils.asBigDecimal(row.get(I_C_Location.COLUMNNAME_Longitude), null);
-			return JsonViewRowGeoLocation.builder()
-					.rowId(rowId)
-					.latitude(latitude)
-					.longitude(longitude)
-					.build();
-		}
-		catch (final Exception ex)
-		{
-			logger.warn("Failed converting {} to {}", row, JsonViewRowGeoLocation.class, ex);
-			return null;
-		}
+		return JsonViewRowGeoLocation.builder()
+				.rowId(DocumentId.of(geoCoordinatesAndLocationId.getLocationId()))
+				.latitude(geoCoordinatesAndLocationId.getCoordinate().getLatitude())
+				.longitude(geoCoordinatesAndLocationId.getCoordinate().getLongitude())
+				.build();
 	}
 
-	private List<JsonViewRowGeoLocation> retrieveGeoLocationsForBPartnerLocationId(final ImmutableList<RowIdAndLocationRelatedId> locationRelatedIds)
+	private static ImmutableSetMultimap<Integer, DocumentId> extractBPartnerLocationRepoIds(final ViewResult rows, final GeoLocationDocumentDescriptor descriptor)
 	{
-		final ImmutableSetMultimap<Integer, DocumentId> rowIdsByBPLocationId = locationRelatedIds
-				.stream()
-				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
-						RowIdAndLocationRelatedId::getLocationRelatedId,
-						RowIdAndLocationRelatedId::getRowId));
+		final String locationColumnName = descriptor.getLocationColumnName();
 
-		final ImmutableSet<Integer> bpLocationRepoIds = rowIdsByBPLocationId.keySet();
-
-		final List<Object> sqlParams = new ArrayList<>();
-		final String sql = "SELECT "
-				+ " bpl." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID
-				+ ", l." + I_C_Location.COLUMNNAME_Latitude
-				+ ", l." + I_C_Location.COLUMNNAME_Longitude
-				+ " FROM " + I_C_BPartner_Location.Table_Name + " bpl "
-				+ " INNER JOIN " + I_C_Location.Table_Name + " l on l.C_Location_ID=bpl.C_Location_ID"
-				+ " WHERE " + DB.buildSqlList("bpl." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, bpLocationRepoIds, sqlParams)
-				+ " AND l." + I_C_Location.COLUMNNAME_GeocodingStatus + "=?";
-		sqlParams.add(X_C_Location.GEOCODINGSTATUS_Resolved);
-
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
+		final ImmutableSetMultimap.Builder<Integer, DocumentId> rowIdsByBPartnerLocationRepoId = ImmutableSetMultimap.builder();
+		for (final IViewRow row : rows.getPage())
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			DB.setParameters(pstmt, sqlParams);
-			rs = pstmt.executeQuery();
-
-			final List<JsonViewRowGeoLocation> geoLocations = new ArrayList<>();
-			while (rs.next())
+			final int bpartnerLocationRepoId = row.getFieldValueAsInt(locationColumnName, -1);
+			if (bpartnerLocationRepoId <= 0)
 			{
-				final int bpLocationRepoId = rs.getInt(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
-				final BigDecimal latitude = rs.getBigDecimal(I_C_Location.COLUMNNAME_Latitude);
-				final BigDecimal longitude = rs.getBigDecimal(I_C_Location.COLUMNNAME_Longitude);
-				if (latitude == null || longitude == null)
-				{
-					// shall not happen
-					logger.warn("Ignored location for bpartnerLocationId={} because the coordonate is not valid: lat={}, long={}", bpLocationRepoId, latitude, longitude);
-					continue;
-				}
-
-				final ImmutableSet<DocumentId> rowIds = rowIdsByBPLocationId.get(bpLocationRepoId);
-				if (rowIds.isEmpty())
-				{
-					// shall not happen
-					logger.warn("Ignored unexpected bpartnerLocationId={}. We have no rows for it.", bpLocationRepoId);
-					continue;
-				}
-
-				for (final DocumentId rowId : rowIds)
-				{
-					geoLocations.add(JsonViewRowGeoLocation.builder()
-							.rowId(rowId)
-							.latitude(latitude)
-							.longitude(longitude)
-							.build());
-				}
+				continue;
 			}
 
-			return geoLocations;
+			final DocumentId rowId = row.getId();
+
+			rowIdsByBPartnerLocationRepoId.put(bpartnerLocationRepoId, rowId);
 		}
-		catch (final SQLException ex)
-		{
-			throw new DBException(ex, sql, sqlParams);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
+
+		return rowIdsByBPartnerLocationRepoId.build();
 	}
 
-	private List<JsonViewRowGeoLocation> retrieveGeoLocationsForBPartnerId(final ImmutableList<RowIdAndLocationRelatedId> locationRelatedIds)
+	private List<JsonViewRowGeoLocation> retrieveGeoLocationsForBPartnerLocationId(final ImmutableSetMultimap<Integer, DocumentId> rowIdsByBPartnerLocationRepoId)
 	{
-		final ImmutableSetMultimap<Integer, DocumentId> rowIdsByBPartnerId = locationRelatedIds
-				.stream()
-				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
-						RowIdAndLocationRelatedId::getLocationRelatedId,
-						RowIdAndLocationRelatedId::getRowId));
-
-		final ImmutableSet<Integer> bpartnerRepoIds = rowIdsByBPartnerId.keySet();
-
-		final List<Object> sqlParams = new ArrayList<>();
-		final String sql = "SELECT "
-				+ " bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID
-				+ ", l." + I_C_Location.COLUMNNAME_Latitude
-				+ ", l." + I_C_Location.COLUMNNAME_Longitude
-				+ " FROM " + I_C_BPartner.Table_Name + " bp "
-				+ " INNER JOIN " + I_C_BPartner_Location.Table_Name + " bpl ON (bpl.C_BPartner_ID=bp.C_BPartner_ID)"
-				+ " INNER JOIN " + I_C_Location.Table_Name + " l on (l.C_Location_ID=bpl.C_Location_ID)"
-				+ " WHERE " + DB.buildSqlList("bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID, bpartnerRepoIds, sqlParams)
-				+ " AND bpl.IsActive='Y' "
-				+ " AND l." + I_C_Location.COLUMNNAME_GeocodingStatus + "=?";
-		sqlParams.add(X_C_Location.GEOCODINGSTATUS_Resolved);
-
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
+		if (rowIdsByBPartnerLocationRepoId.isEmpty())
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			DB.setParameters(pstmt, sqlParams);
-			rs = pstmt.executeQuery();
+			return ImmutableList.of();
+		}
 
-			final List<JsonViewRowGeoLocation> geoLocations = new ArrayList<>();
-			while (rs.next())
+		final List<JsonViewRowGeoLocation> result = new ArrayList<>();
+
+		final ImmutableSet<Integer> bpartnerLocationRepoIds = rowIdsByBPartnerLocationRepoId.keySet();
+		for (final GeographicalCoordinatesWithBPartnerLocationId bplCoordinates : bpartnersRepo.getGeoCoordinatesByBPartnerLocationIds(bpartnerLocationRepoIds))
+		{
+			final int bpartnerLocationRepoId = bplCoordinates.getBpartnerLocationId().getRepoId();
+			final ImmutableSet<DocumentId> rowIds = rowIdsByBPartnerLocationRepoId.get(bpartnerLocationRepoId);
+			if (rowIds.isEmpty())
 			{
-				final int bpartnerRepoId = rs.getInt(I_C_BPartner.COLUMNNAME_C_BPartner_ID);
-				final BigDecimal latitude = rs.getBigDecimal(I_C_Location.COLUMNNAME_Latitude);
-				final BigDecimal longitude = rs.getBigDecimal(I_C_Location.COLUMNNAME_Longitude);
-				if (latitude == null || longitude == null)
-				{
-					// shall not happen
-					logger.warn("Ignored location for bpartnerId={} because the coordonate is not valid: lat={}, long={}", bpartnerRepoId, latitude, longitude);
-					continue;
-				}
-
-				final ImmutableSet<DocumentId> rowIds = rowIdsByBPartnerId.get(bpartnerRepoId);
-				if (rowIds.isEmpty())
-				{
-					// shall not happen
-					logger.warn("Ignored unexpected bpartnerId={}. We have no rows for it.", bpartnerRepoId);
-					continue;
-				}
-
-				for (final DocumentId rowId : rowIds)
-				{
-					geoLocations.add(JsonViewRowGeoLocation.builder()
-							.rowId(rowId)
-							.latitude(latitude)
-							.longitude(longitude)
-							.build());
-				}
+				// shall not happen
+				logger.warn("Ignored unexpected bpartnerLocationId={}. We have no rows for it.", bpartnerLocationRepoId);
+				continue;
 			}
 
-			return geoLocations;
+			final GeographicalCoordinates coordinate = bplCoordinates.getCoordinate();
+
+			for (final DocumentId rowId : rowIds)
+			{
+				result.add(JsonViewRowGeoLocation.builder()
+						.rowId(rowId)
+						.latitude(coordinate.getLatitude())
+						.longitude(coordinate.getLongitude())
+						.build());
+			}
 		}
-		catch (final SQLException ex)
-		{
-			throw new DBException(ex, sql, sqlParams);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
+
+		return result;
 	}
 
-	@Value
-	private static class RowIdAndLocationRelatedId
+	private static final ImmutableSetMultimap<BPartnerId, DocumentId> extractBPartnerIds(final ViewResult rows, final GeoLocationDocumentDescriptor descriptor)
 	{
-		@NonNull
-		DocumentId rowId;
+		final String locationColumnName = descriptor.getLocationColumnName();
 
-		int locationRelatedId;
+		final ImmutableSetMultimap.Builder<BPartnerId, DocumentId> rowIdsByBPartnerRepoId = ImmutableSetMultimap.builder();
+		for (final IViewRow row : rows.getPage())
+		{
+			final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(row.getFieldValueAsInt(locationColumnName, -1));
+			if (bpartnerId == null)
+			{
+				continue;
+			}
+
+			final DocumentId rowId = row.getId();
+
+			rowIdsByBPartnerRepoId.put(bpartnerId, rowId);
+		}
+
+		return rowIdsByBPartnerRepoId.build();
+	}
+
+	private List<JsonViewRowGeoLocation> retrieveGeoLocationsForBPartnerId(final ImmutableSetMultimap<BPartnerId, DocumentId> rowIdsByBPartnerId)
+	{
+		if (rowIdsByBPartnerId.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final List<JsonViewRowGeoLocation> result = new ArrayList<>();
+
+		final ImmutableSet<BPartnerId> bpartnerIds = rowIdsByBPartnerId.keySet();
+		for (final GeographicalCoordinatesWithBPartnerLocationId bplCoordinates : bpartnersRepo.getGeoCoordinatesByBPartnerIds(bpartnerIds))
+		{
+			final BPartnerId bpartnerId = bplCoordinates.getBPartnerId();
+			final ImmutableSet<DocumentId> rowIds = rowIdsByBPartnerId.get(bpartnerId);
+			if (rowIds.isEmpty())
+			{
+				// shall not happen
+				logger.warn("Ignored unexpected bpartnerId={}. We have no rows for it.", bpartnerId);
+				continue;
+			}
+
+			final GeographicalCoordinates coordinate = bplCoordinates.getCoordinate();
+
+			for (final DocumentId rowId : rowIds)
+			{
+				result.add(JsonViewRowGeoLocation.builder()
+						.rowId(rowId)
+						.latitude(coordinate.getLatitude())
+						.longitude(coordinate.getLongitude())
+						.build());
+			}
+		}
+
+		return result;
 	}
 }
