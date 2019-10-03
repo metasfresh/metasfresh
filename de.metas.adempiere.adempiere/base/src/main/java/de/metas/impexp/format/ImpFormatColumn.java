@@ -163,9 +163,9 @@ public final class ImpFormatColumn
 
 	/**
 	 * Parse value.
-	 * 
+	 *
 	 * Field content in [] are treated as comments.
-	 * 
+	 *
 	 * @param valueStr data item
 	 * @return parsed info, never returns <code>null</code>
 	 * @throws Exception in case there was an error while parsing
@@ -210,7 +210,7 @@ public final class ImpFormatColumn
 
 	/**
 	 * Return date as YYYY-MM-DD HH24:MI:SS (JDBC Timestamp format w/o miliseconds)
-	 * 
+	 *
 	 * @param valueStr data
 	 * @return date as JDBC format String
 	 */
@@ -235,7 +235,7 @@ public final class ImpFormatColumn
 
 	/**
 	 * Return String. - clean ' and backslash - check max length
-	 * 
+	 *
 	 * @param info data
 	 * @return info with in SQL format
 	 */
@@ -273,7 +273,7 @@ public final class ImpFormatColumn
 
 	private BigDecimal parseNumber(@Nullable final String valueStr)
 	{
-		if (valueStr == null)
+		if (valueStr == null || valueStr.isEmpty())
 		{
 			return null;
 		}
