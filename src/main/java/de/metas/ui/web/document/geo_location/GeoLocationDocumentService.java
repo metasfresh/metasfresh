@@ -1,13 +1,20 @@
 package de.metas.ui.web.document.geo_location;
 
 import java.util.Collection;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Location;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -18,6 +25,7 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvide
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.geo_location.GeoLocationDocumentDescriptor.LocationColumnNameType;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -54,6 +62,19 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 
 	private static final String MSG_FILTER_CAPTION = "LocationAreaSearch";
 
+	private static final GeoLocationDocumentDescriptor DESCRIPTOR_FOR_LocationId = GeoLocationDocumentDescriptor.builder()
+			.type(LocationColumnNameType.LocationId)
+			.locationColumnName(I_C_Location.COLUMNNAME_C_Location_ID)
+			.build();
+	private static final GeoLocationDocumentDescriptor DESCRIPTOR_FOR_BPartnerLocationId = GeoLocationDocumentDescriptor.builder()
+			.type(LocationColumnNameType.BPartnerLocationId)
+			.locationColumnName(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID)
+			.build();
+	private static final GeoLocationDocumentDescriptor DESCRIPTOR_FOR_BPartnerId = GeoLocationDocumentDescriptor.builder()
+			.type(LocationColumnNameType.BPartnerId)
+			.locationColumnName(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
+			.build();
+
 	public GeoLocationDocumentService()
 	{
 	}
@@ -74,13 +95,47 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 			return null;
 		}
 
-		final GeoLocationDocumentDescriptor descriptor = GeoLocationDocumentDescriptors.getGeoLocationDocumentDescriptorOrNull(tableName, fields);
+		final ImmutableSet<String> fieldNames = extractFieldNames(fields);
+		final GeoLocationDocumentDescriptor descriptor = getGeoLocationDocumentDescriptorOrNull(tableName, fieldNames);
 		if (descriptor == null)
 		{
 			return NullDocumentFilterDescriptorsProvider.instance;
 		}
 
 		return ImmutableDocumentFilterDescriptorsProvider.of(createDocumentFilterDescriptor(descriptor));
+	}
+
+	@Nullable
+	private static GeoLocationDocumentDescriptor getGeoLocationDocumentDescriptorOrNull(
+			@NonNull final String tableName,
+			@NonNull final Set<String> fieldNames)
+	{
+		if (fieldNames.contains(DESCRIPTOR_FOR_LocationId.getLocationColumnName()))
+		{
+			return DESCRIPTOR_FOR_LocationId;
+		}
+		else if (fieldNames.contains(DESCRIPTOR_FOR_BPartnerLocationId.getLocationColumnName()))
+		{
+			return DESCRIPTOR_FOR_BPartnerLocationId;
+		}
+		else if (fieldNames.contains(DESCRIPTOR_FOR_BPartnerId.getLocationColumnName()))
+		{
+			return DESCRIPTOR_FOR_BPartnerId;
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	private static ImmutableSet<String> extractFieldNames(final Collection<DocumentFieldDescriptor> fields)
+	{
+		if (fields.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return fields.stream().map(DocumentFieldDescriptor::getFieldName).collect(ImmutableSet.toImmutableSet());
 	}
 
 	private DocumentFilterDescriptor createDocumentFilterDescriptor(final GeoLocationDocumentDescriptor descriptor)
@@ -123,11 +178,17 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 	}
 
 	@NonNull
-	public DocumentFilter createDocumentFilter(@NonNull final DocumentEntityDescriptor entityDescriptor, @NonNull final GeoLocationQuery query)
+	public DocumentFilter createDocumentFilter(@NonNull final DocumentEntityDescriptor entityDescriptor, @NonNull final GeoLocationDocumentQuery query)
 	{
-		final GeoLocationDocumentDescriptor descriptor = GeoLocationDocumentDescriptors.getGeoLocationDocumentDescriptor(
-				entityDescriptor.getTableName(),
-				entityDescriptor.getFields());
+		final String tableName = entityDescriptor.getTableName();
+		final ImmutableSet<String> fieldNames = extractFieldNames(entityDescriptor.getFields());
+		final GeoLocationDocumentDescriptor descriptor = getGeoLocationDocumentDescriptorOrNull(tableName, fieldNames);
+		if (descriptor == null)
+		{
+			throw new AdempiereException("Table " + tableName + " does not have geo-location support")
+					.appendParametersToMessage()
+					.setParameter("fields", fieldNames);
+		}
 
 		return DocumentFilter.builder()
 				.setFilterId(GeoLocationFilterConverter.FILTER_ID)

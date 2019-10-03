@@ -47,7 +47,7 @@ import de.metas.process.Param;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.geo_location.GeoLocationDocumentService;
-import de.metas.ui.web.document.geo_location.GeoLocationQuery;
+import de.metas.ui.web.document.geo_location.GeoLocationDocumentQuery;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
@@ -111,16 +111,16 @@ public class C_BPartner_Window_AreaSearchProcess extends JavaProcess
 	{
 		final DocumentEntityDescriptor entityDescriptor = documentCollection.getDocumentEntityDescriptor(getWindowId());
 
-		final GeoLocationQuery query = createGeoLocationQuery(location);
+		final GeoLocationDocumentQuery query = createGeoLocationQuery(location);
 		return geoLocationDocumentService.createDocumentFilter(entityDescriptor, query);
 	}
 
-	private GeoLocationQuery createGeoLocationQuery(final I_C_Location location)
+	private GeoLocationDocumentQuery createGeoLocationQuery(final I_C_Location location)
 	{
 		final CountryId countryId = CountryId.ofRepoId(location.getC_Country_ID());
 		final ITranslatableString countryName = countriesRepo.getCountryNameById(countryId);
 
-		return GeoLocationQuery.builder()
+		return GeoLocationDocumentQuery.builder()
 				.country(IntegerLookupValue.of(countryId, countryName))
 				.address1(location.getAddress1())
 				.city(location.getCity())

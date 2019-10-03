@@ -31,7 +31,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class GeoLocationQuery
+public class GeoLocationDocumentQuery
 {
 	@NonNull
 	IntegerLookupValue country;
