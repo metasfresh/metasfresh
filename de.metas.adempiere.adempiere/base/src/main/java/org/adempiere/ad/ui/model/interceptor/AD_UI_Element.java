@@ -2,9 +2,11 @@ package org.adempiere.ad.ui.model.interceptor;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.IADElementDAO;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_AD_Column;
@@ -45,6 +47,13 @@ import lombok.NonNull;
 @Component
 public class AD_UI_Element
 {
+
+	@Init
+	public void init()
+	{
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+	}
+
 	@ModelChange(timings =  ModelValidator.TYPE_BEFORE_DELETE )
 	public void onBeforeElementDelete(@NonNull final I_AD_UI_Element uiElement)
 	{
@@ -59,7 +68,10 @@ public class AD_UI_Element
 	@CalloutMethod(columnNames = I_AD_UI_Element.COLUMNNAME_AD_Field_ID)
 	public void calloutOnFieldIdChanged(@NonNull final I_AD_UI_Element uiElement)
 	{
-		updateNameFromElement(uiElement);
+		if (uiElement.getAD_Field_ID() > 0)
+		{
+			updateNameFromElement(uiElement);
+		}
 	}
 
 	private void updateNameFromElement(@NonNull final I_AD_UI_Element uiElement)
