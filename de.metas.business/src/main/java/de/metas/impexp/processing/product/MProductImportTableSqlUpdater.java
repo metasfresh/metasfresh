@@ -111,6 +111,7 @@ public class MProductImportTableSqlUpdater
 		valueColumnName = valueName;
 
 		dbUpdateProductsByValue(whereClause);
+		dbUpdateProductsByExternalId(whereClause);
 		dbUpdateProductCategoryForIFAProduct(whereClause);
 
 		dbUpdatePackageUOM(whereClause);
@@ -158,8 +159,6 @@ public class MProductImportTableSqlUpdater
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
-
-
 	private void dbUpdateManufacturersIFA(@NonNull final String whereClause)
 	{
 		final StringBuilder sql = new StringBuilder("UPDATE ")
@@ -173,18 +172,18 @@ public class MProductImportTableSqlUpdater
 
 	private void dbUpdateProducts(@NonNull final String whereClause)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE ")
+		final StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET M_Product_ID=(SELECT M_Product_ID FROM M_Product p")
 				.append(" WHERE i.UPC=p.UPC AND i.AD_Client_ID=p.AD_Client_ID) ")
 				.append("WHERE M_Product_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Product Existing UPC={}", no);
 
 		dbUpdateProductsByValue(whereClause);
+
+		dbUpdateProductsByExternalId(whereClause);
 	}
 
 	private void dbUpdateProductsByValue(@NonNull final String whereClause)
@@ -192,13 +191,23 @@ public class MProductImportTableSqlUpdater
 		final StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET M_Product_ID=(SELECT M_Product_ID FROM M_Product p")
-				.append(" WHERE i.")
-				.append(valueColumnName)
-				.append("=p.Value AND i.AD_Client_ID=p.AD_Client_ID) ")
+				.append(" WHERE i.").append(valueColumnName).append("=p.Value AND i.AD_Client_ID=p.AD_Client_ID) ")
 				.append("WHERE M_Product_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
 		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Product Existing Value={}", no);
+	}
+
+	private void dbUpdateProductsByExternalId(@NonNull final String whereClause)
+	{
+		final StringBuilder sql = new StringBuilder("UPDATE ")
+				.append(targetTableName + " i ")
+				.append(" SET M_Product_ID=(SELECT M_Product_ID FROM M_Product p")
+				.append(" WHERE i." + I_I_Product.COLUMNNAME_ExternalId + "=p.ExternalId AND i.AD_Client_ID=p.AD_Client_ID) ")
+				.append("WHERE M_Product_ID IS NULL")
+				.append(" AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
+		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.info("Product Existing ExternalId={}", no);
 	}
 
 	private void dbUpdateProductCategories(@NonNull final String whereClause, @NonNull final Properties ctx)
@@ -224,7 +233,7 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE ProductCategory_Value IS NOT NULL AND M_Product_Category_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.info("Set Category={}",no);
+		logger.info("Set Category={}", no);
 	}
 
 	private void dbUpdateIProductFromProduct(@NonNull final String whereClause)
@@ -425,7 +434,6 @@ public class MProductImportTableSqlUpdater
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
-
 	private void dbUpdatePharmaProductCategory(@NonNull final String whereClause)
 	{
 
@@ -452,7 +460,6 @@ public class MProductImportTableSqlUpdater
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
-
 	private void dbUpdateIndication(@NonNull final String whereClause)
 	{
 		final StringBuilder sql = new StringBuilder("UPDATE ")
@@ -477,7 +484,7 @@ public class MProductImportTableSqlUpdater
 				.append(" where true")
 				.append(" and " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(whereClause);
-		final Object[] params = new Object[]{nameToMatch, adClientId};
+		final Object[] params = new Object[] { nameToMatch, adClientId };
 		DB.executeUpdateEx(sql.toString(), params, ITrx.TRXNAME_ThreadInherited);
 	}
 
@@ -576,7 +583,7 @@ public class MProductImportTableSqlUpdater
 		StringBuilder sql;
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
-				.append(" SET " + columnname +" = 'Y' ")
+				.append(" SET " + columnname + " = 'Y' ")
 				.append(" WHERE 1=1 AND ")
 				.append(whereClause);
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
