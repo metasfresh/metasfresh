@@ -55,13 +55,13 @@ public class GeoLocationFilterConverter implements SqlDocumentFilterConverter
 
 	public static final String FILTER_ID = "location-area-search";
 
-	public static final String PARAM_LocationAreaSearchDescriptor = "LocationAreaSearchDescriptor";
-	public static final String PARAM_Address1 = "Address1";
-	public static final String PARAM_City = "City";
-	public static final String PARAM_Postal = "Postal";
-	public static final String PARAM_CountryId = "C_Country_ID";
-	public static final String PARAM_Distance = "Distance";
-	public static final String PARAM_VisitorsAddress = "VisitorsAddress";
+	static final String PARAM_LocationAreaSearchDescriptor = "LocationAreaSearchDescriptor";
+	static final String PARAM_Address1 = "Address1";
+	static final String PARAM_City = "City";
+	static final String PARAM_Postal = "Postal";
+	static final String PARAM_CountryId = "C_Country_ID";
+	static final String PARAM_Distance = "Distance";
+	static final String PARAM_VisitorsAddress = "VisitorsAddress";
 
 	private final static Logger logger = LogManager.getLogger(GeoLocationFilterConverter.class);
 

@@ -10,16 +10,20 @@ import org.springframework.stereotype.Component;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -115,6 +119,25 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 				//
 				.addInternalParameter(GeoLocationFilterConverter.PARAM_LocationAreaSearchDescriptor, descriptor)
 				//
+				.build();
+	}
+
+	@NonNull
+	public DocumentFilter createDocumentFilter(final DocumentEntityDescriptor entityDescriptor, final GeoLocationQuery query)
+	{
+		final GeoLocationDocumentDescriptor descriptor = GeoLocationDocumentDescriptors.getGeoLocationDocumentDescriptor(
+				entityDescriptor.getTableName(),
+				entityDescriptor.getFields());
+
+		return DocumentFilter.builder()
+				.setFilterId(GeoLocationFilterConverter.FILTER_ID)
+				.addInternalParameter(DocumentFilterParam.ofNameEqualsValue(GeoLocationFilterConverter.PARAM_LocationAreaSearchDescriptor, descriptor))
+				.addParameter(DocumentFilterParam.ofNameEqualsValue(GeoLocationFilterConverter.PARAM_Address1, query.getAddress1()))
+				.addParameter(DocumentFilterParam.ofNameEqualsValue(GeoLocationFilterConverter.PARAM_City, query.getCity()))
+				.addParameter(DocumentFilterParam.ofNameEqualsValue(GeoLocationFilterConverter.PARAM_Postal, query.getPostal()))
+				.addParameter(DocumentFilterParam.ofNameEqualsValue(GeoLocationFilterConverter.PARAM_CountryId, query.getCountry()))
+				.addParameter(DocumentFilterParam.ofNameEqualsValue(GeoLocationFilterConverter.PARAM_Distance, query.getDistanceInKm()))
+				.addParameter(DocumentFilterParam.ofNameEqualsValue(GeoLocationFilterConverter.PARAM_VisitorsAddress, query.isVisitorsAddress()))
 				.build();
 	}
 

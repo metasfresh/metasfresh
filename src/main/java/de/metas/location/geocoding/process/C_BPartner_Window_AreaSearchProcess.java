@@ -2,7 +2,6 @@ package de.metas.location.geocoding.process;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -47,14 +46,12 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.document.filter.DocumentFilterParam;
-import de.metas.ui.web.document.geo_location.GeoLocationDocumentDescriptor;
-import de.metas.ui.web.document.geo_location.GeoLocationDocumentDescriptors;
-import de.metas.ui.web.document.geo_location.GeoLocationFilterConverter;
+import de.metas.ui.web.document.geo_location.GeoLocationDocumentService;
+import de.metas.ui.web.document.geo_location.GeoLocationQuery;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
-import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -66,12 +63,13 @@ public class C_BPartner_Window_AreaSearchProcess extends JavaProcess
 	private final IViewsRepository viewsRepo = SpringContextHolder.instance.getBean(IViewsRepository.class);
 	private final DocumentCollection documentCollection = SpringContextHolder.instance.getBean(DocumentCollection.class);
 	private final BPartnerLocationInfoRepository bpartnerLocationInfoRepo = SpringContextHolder.instance.getBean(BPartnerLocationInfoRepository.class);
+	private final GeoLocationDocumentService geoLocationDocumentService = SpringContextHolder.instance.getBean(GeoLocationDocumentService.class);
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final ICountryDAO countriesRepo = Services.get(ICountryDAO.class);
 	private final ILocationDAO locationsRepo = Services.get(ILocationDAO.class);
 
 	@Param(parameterName = "Distance", mandatory = true)
-	private BigDecimal distance;
+	private BigDecimal distanceInKm;
 
 	@Param(parameterName = "VisitorsAddress")
 	private boolean visitorsAddress;
@@ -111,23 +109,24 @@ public class C_BPartner_Window_AreaSearchProcess extends JavaProcess
 	@NonNull
 	private DocumentFilter createAreaSearchFilter(final I_C_Location location)
 	{
-		final ITranslatableString countryName = countriesRepo.getCountryNameById(CountryId.ofRepoId(location.getC_Country_ID()));
+		final DocumentEntityDescriptor entityDescriptor = documentCollection.getDocumentEntityDescriptor(getWindowId());
 
-		// this descriptor applies the filter when the view is opened instead of needing to press the search button 1 time
-		final DocumentEntityDescriptor bpartnerEntityDescriptor = documentCollection.getDocumentEntityDescriptor(getWindowId());
-		final GeoLocationDocumentDescriptor descriptor = GeoLocationDocumentDescriptors.getGeoLocationDocumentDescriptorOrNull(
-				bpartnerEntityDescriptor.getTableName(),
-				bpartnerEntityDescriptor.getFields());
+		final GeoLocationQuery query = createGeoLocationQuery(location);
+		return geoLocationDocumentService.createDocumentFilter(entityDescriptor, query);
+	}
 
-		return DocumentFilter.builder()
-				.setFilterId(GeoLocationFilterConverter.FILTER_ID)
-				.addInternalParameter(DocumentFilterParam.ofNameEqualsValue(GeoLocationFilterConverter.PARAM_LocationAreaSearchDescriptor, Objects.requireNonNull(descriptor)))
-				.addParameter(DocumentFilterParam.ofNameEqualsValue(GeoLocationFilterConverter.PARAM_Address1, location.getAddress1()))
-				.addParameter(DocumentFilterParam.ofNameEqualsValue(GeoLocationFilterConverter.PARAM_City, location.getCity()))
-				.addParameter(DocumentFilterParam.ofNameEqualsValue(GeoLocationFilterConverter.PARAM_Postal, location.getPostal()))
-				.addParameter(DocumentFilterParam.ofNameEqualsValue(GeoLocationFilterConverter.PARAM_CountryId, LookupValue.IntegerLookupValue.of(location.getC_Country_ID(), countryName, null)))
-				.addParameter(DocumentFilterParam.ofNameEqualsValue(GeoLocationFilterConverter.PARAM_Distance, distance))
-				.addParameter(DocumentFilterParam.ofNameEqualsValue(GeoLocationFilterConverter.PARAM_VisitorsAddress, visitorsAddress))
+	private GeoLocationQuery createGeoLocationQuery(final I_C_Location location)
+	{
+		final CountryId countryId = CountryId.ofRepoId(location.getC_Country_ID());
+		final ITranslatableString countryName = countriesRepo.getCountryNameById(countryId);
+
+		return GeoLocationQuery.builder()
+				.country(IntegerLookupValue.of(countryId, countryName))
+				.address1(location.getAddress1())
+				.city(location.getCity())
+				.postal(location.getPostal())
+				.distanceInKm(distanceInKm)
+				.visitorsAddress(visitorsAddress)
 				.build();
 	}
 

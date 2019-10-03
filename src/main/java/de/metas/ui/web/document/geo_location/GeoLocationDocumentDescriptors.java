@@ -1,14 +1,15 @@
 package de.metas.ui.web.document.geo_location;
 
 import java.util.Collection;
-import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 
-import com.google.common.collect.Maps;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.ui.web.document.geo_location.GeoLocationDocumentDescriptor.LocationColumnNameType;
@@ -58,22 +59,45 @@ public class GeoLocationDocumentDescriptors
 			.locationColumnName(FIELDNAME_C_BPartner_ID)
 			.build();
 
+	public static GeoLocationDocumentDescriptor getGeoLocationDocumentDescriptor(
+			@NonNull final String tableName,
+			@NonNull final Collection<DocumentFieldDescriptor> fields)
+	{
+		final ImmutableSet<String> fieldNames = extractFieldNames(fields);
+		final GeoLocationDocumentDescriptor descriptor = getGeoLocationDocumentDescriptorOrNull(tableName, fieldNames);
+		if (descriptor == null)
+		{
+			throw new AdempiereException("Table " + tableName + " does not have geo-location support")
+					.appendParametersToMessage()
+					.setParameter("fields", fieldNames);
+		}
+
+		return descriptor;
+	}
+
 	@Nullable
 	public static GeoLocationDocumentDescriptor getGeoLocationDocumentDescriptorOrNull(
 			@NonNull final String tableName,
 			@NonNull final Collection<DocumentFieldDescriptor> fields)
 	{
-		final Map<String, DocumentFieldDescriptor> fieldsByName = Maps.uniqueIndex(fields, DocumentFieldDescriptor::getFieldName);
+		final ImmutableSet<String> fieldNames = extractFieldNames(fields);
+		return getGeoLocationDocumentDescriptorOrNull(tableName, fieldNames);
+	}
 
-		if (fieldsByName.containsKey(FIELDNAME_C_Location_ID))
+	@Nullable
+	private static GeoLocationDocumentDescriptor getGeoLocationDocumentDescriptorOrNull(
+			@NonNull final String tableName,
+			@NonNull final Set<String> fieldNames)
+	{
+		if (fieldNames.contains(FIELDNAME_C_Location_ID))
 		{
 			return DESCRIPTOR_FOR_LocationId;
 		}
-		else if (fieldsByName.containsKey(FIELDNAME_C_BPartner_Location_ID))
+		else if (fieldNames.contains(FIELDNAME_C_BPartner_Location_ID))
 		{
 			return DESCRIPTOR_FOR_BPartnerLocationId;
 		}
-		else if (fieldsByName.containsKey(FIELDNAME_C_BPartner_ID))
+		else if (fieldNames.contains(FIELDNAME_C_BPartner_ID))
 		{
 			return DESCRIPTOR_FOR_BPartnerId;
 		}
@@ -81,6 +105,16 @@ public class GeoLocationDocumentDescriptors
 		{
 			return null;
 		}
+	}
+
+	private static ImmutableSet<String> extractFieldNames(final Collection<DocumentFieldDescriptor> fields)
+	{
+		if (fields.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return fields.stream().map(DocumentFieldDescriptor::getFieldName).collect(ImmutableSet.toImmutableSet());
 	}
 
 }
