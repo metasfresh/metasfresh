@@ -117,6 +117,7 @@ public class ViewGeoLocationsRestController
 		final List<JsonViewRowGeoLocation> geoLocations = retrieveGeoLocations(rows, geoLocationDescriptor);
 
 		return JsonViewGeoLocationsResult.builder()
+				.viewId(viewId.toJson())
 				.locations(geoLocations)
 				.build();
 	}
