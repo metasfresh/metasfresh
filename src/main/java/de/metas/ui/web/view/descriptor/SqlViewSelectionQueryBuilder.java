@@ -250,7 +250,6 @@ public final class SqlViewSelectionQueryBuilder
 			final IStringExpression sqlSeqNo = IStringExpression.composer()
 					.append("row_number() OVER (ORDER BY ").append(sqlOrderBy).append(")")
 					.build();
-			// final IStringExpression sqlRecordId = ConstantStringExpression.of(keyColumnName); // TODO cleanup
 
 			sqlBuilder.append(
 					IStringExpression.composer()
