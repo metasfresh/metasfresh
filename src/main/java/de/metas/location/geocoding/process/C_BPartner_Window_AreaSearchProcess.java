@@ -1,5 +1,15 @@
 package de.metas.location.geocoding.process;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
+
 /*
  * #%L
  * metasfresh-pharma
@@ -50,20 +60,15 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.Adempiere;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Location;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 
 public class C_BPartner_Window_AreaSearchProcess extends JavaProcess
 {
-	private final IViewsRepository viewsRepo = Adempiere.getBean(IViewsRepository.class);
-	private final DocumentCollection documentCollection = Adempiere.getBean(DocumentCollection.class);
+	private final IViewsRepository viewsRepo = SpringContextHolder.instance.getBean(IViewsRepository.class);
+	private final DocumentCollection documentCollection = SpringContextHolder.instance.getBean(DocumentCollection.class);
+	private final BPartnerLocationInfoRepository bpartnerLocationInfoRepo = SpringContextHolder.instance.getBean(BPartnerLocationInfoRepository.class);
+	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+	private final ICountryDAO countriesRepo = Services.get(ICountryDAO.class);
+	private final ILocationDAO locationsRepo = Services.get(ILocationDAO.class);
 
 	@Param(parameterName = "Distance", mandatory = true)
 	private BigDecimal distance;
@@ -71,7 +76,8 @@ public class C_BPartner_Window_AreaSearchProcess extends JavaProcess
 	@Param(parameterName = "VisitorsAddress")
 	private boolean visitorsAddress;
 
-	@Override protected String doIt()
+	@Override
+	protected String doIt()
 	{
 		final I_C_Location location = getSelectedLocationOrFirstAvailable();
 
@@ -105,11 +111,11 @@ public class C_BPartner_Window_AreaSearchProcess extends JavaProcess
 	@NonNull
 	private DocumentFilter createAreaSearchFilter(final I_C_Location location)
 	{
-		final ITranslatableString countryName = Services.get(ICountryDAO.class).getCountryNameById(CountryId.ofRepoId(location.getC_Country_ID()));
+		final ITranslatableString countryName = countriesRepo.getCountryNameById(CountryId.ofRepoId(location.getC_Country_ID()));
 
 		// this descriptor applies the filter when the view is opened instead of needing to press the search button 1 time
 		final DocumentEntityDescriptor bpartnerEntityDescriptor = documentCollection.getDocumentEntityDescriptor(getWindowId());
-		final GeoLocationAwareDescriptor descriptor = LocationAreaSearchDocumentFilterDescriptorsProviderFactory.getLocationAreaSearchDescriptor(
+		final GeoLocationAwareDescriptor descriptor = LocationAreaSearchDocumentFilterDescriptorsProviderFactory.createGeoLocationAwareDescriptorOrNull(
 				bpartnerEntityDescriptor.getTableName(),
 				bpartnerEntityDescriptor.getFields());
 
@@ -131,16 +137,16 @@ public class C_BPartner_Window_AreaSearchProcess extends JavaProcess
 		if (!bpLocationIds.isEmpty())
 		{
 			// retrieve the selected location
-			final LocationId locationId = Adempiere.getBean(BPartnerLocationInfoRepository.class).getByBPartnerLocationId(BPartnerLocationId.ofRepoId(getRecord_ID(), bpLocationIds.iterator().next())).getLocationId();
-			return Services.get(ILocationDAO.class).getById(LocationId.ofRepoId(locationId.getRepoId()));
+			final LocationId locationId = bpartnerLocationInfoRepo.getByBPartnerLocationId(BPartnerLocationId.ofRepoId(getRecord_ID(), bpLocationIds.iterator().next())).getLocationId();
+			return locationsRepo.getById(LocationId.ofRepoId(locationId.getRepoId()));
 		}
 		else
 		{
 			// retrieve the first bpartner location available
-			final List<I_C_BPartner_Location> partnerLocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(BPartnerId.ofRepoId(getRecord_ID()));
+			final List<I_C_BPartner_Location> partnerLocations = bpartnersRepo.retrieveBPartnerLocations(BPartnerId.ofRepoId(getRecord_ID()));
 			if (!partnerLocations.isEmpty())
 			{
-				return Services.get(ILocationDAO.class).getById(LocationId.ofRepoId(partnerLocations.get(0).getC_Location_ID()));
+				return locationsRepo.getById(LocationId.ofRepoId(partnerLocations.get(0).getC_Location_ID()));
 			}
 		}
 
