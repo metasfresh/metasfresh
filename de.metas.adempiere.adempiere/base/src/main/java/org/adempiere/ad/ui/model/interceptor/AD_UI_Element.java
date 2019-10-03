@@ -10,7 +10,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Field;
-import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Element;
 import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.ModelValidator;
@@ -42,7 +41,7 @@ import lombok.NonNull;
  */
 
 @Interceptor(I_AD_UI_Element.class)
-@Callout(I_AD_Tab.class)
+@Callout(I_AD_UI_Element.class)
 @Component
 public class AD_UI_Element
 {
