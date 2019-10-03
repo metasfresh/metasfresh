@@ -96,7 +96,7 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 		}
 
 		final ImmutableSet<String> fieldNames = extractFieldNames(fields);
-		final GeoLocationDocumentDescriptor descriptor = getGeoLocationDocumentDescriptorOrNull(tableName, fieldNames);
+		final GeoLocationDocumentDescriptor descriptor = getGeoLocationDocumentDescriptorOrNull(fieldNames);
 		if (descriptor == null)
 		{
 			return NullDocumentFilterDescriptorsProvider.instance;
@@ -106,9 +106,23 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 	}
 
 	@Nullable
-	private static GeoLocationDocumentDescriptor getGeoLocationDocumentDescriptorOrNull(
-			@NonNull final String tableName,
-			@NonNull final Set<String> fieldNames)
+	public GeoLocationDocumentDescriptor getGeoLocationDocumentDescriptor(@NonNull final Set<String> fieldNames)
+	{
+		final GeoLocationDocumentDescriptor descriptor = getGeoLocationDocumentDescriptorOrNull(fieldNames);
+		if (descriptor == null)
+		{
+			throw new AdempiereException("No geo-location support for " + fieldNames);
+		}
+		return descriptor;
+	}
+
+	public boolean hasGeoLocationSupport(@NonNull final Set<String> fieldNames)
+	{
+		return getGeoLocationDocumentDescriptorOrNull(fieldNames) != null;
+	}
+
+	@Nullable
+	private static GeoLocationDocumentDescriptor getGeoLocationDocumentDescriptorOrNull(@NonNull final Set<String> fieldNames)
 	{
 		if (fieldNames.contains(DESCRIPTOR_FOR_LocationId.getLocationColumnName()))
 		{
@@ -180,15 +194,8 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 	@NonNull
 	public DocumentFilter createDocumentFilter(@NonNull final DocumentEntityDescriptor entityDescriptor, @NonNull final GeoLocationDocumentQuery query)
 	{
-		final String tableName = entityDescriptor.getTableName();
 		final ImmutableSet<String> fieldNames = extractFieldNames(entityDescriptor.getFields());
-		final GeoLocationDocumentDescriptor descriptor = getGeoLocationDocumentDescriptorOrNull(tableName, fieldNames);
-		if (descriptor == null)
-		{
-			throw new AdempiereException("Table " + tableName + " does not have geo-location support")
-					.appendParametersToMessage()
-					.setParameter("fields", fieldNames);
-		}
+		final GeoLocationDocumentDescriptor descriptor = getGeoLocationDocumentDescriptor(fieldNames);
 
 		return DocumentFilter.builder()
 				.setFilterId(GeoLocationFilterConverter.FILTER_ID)

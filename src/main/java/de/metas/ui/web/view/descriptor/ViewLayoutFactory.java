@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 
 import de.metas.cache.CCache;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.geo_location.GeoLocationDocumentService;
 import de.metas.ui.web.view.SqlViewCustomizer;
 import de.metas.ui.web.view.ViewProfile;
 import de.metas.ui.web.view.ViewProfileId;
@@ -45,6 +46,7 @@ public class ViewLayoutFactory
 	private final DocumentDescriptorFactory documentDescriptorFactory;
 	private final SqlViewBindingFactory viewBindingsFactory;
 	private final SqlViewCustomizerMap viewCustomizers;
+	private final GeoLocationDocumentService geoLocationDocumentService;
 
 	private final transient CCache<ViewLayoutKey, ViewLayout> cache = CCache.newCache("SqlViewLayouts", 20, 0);
 
@@ -52,11 +54,13 @@ public class ViewLayoutFactory
 	private ViewLayoutFactory(
 			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
 			@NonNull final SqlViewBindingFactory viewBindingsFactory,
-			@NonNull final SqlViewCustomizerMap viewCustomizers)
+			@NonNull final SqlViewCustomizerMap viewCustomizers,
+			@NonNull final GeoLocationDocumentService geoLocationDocumentService)
 	{
 		this.documentDescriptorFactory = documentDescriptorFactory;
 		this.viewBindingsFactory = viewBindingsFactory;
 		this.viewCustomizers = viewCustomizers;
+		this.geoLocationDocumentService = geoLocationDocumentService;
 	}
 
 	public ViewLayout getViewLayout(
@@ -83,7 +87,8 @@ public class ViewLayoutFactory
 		final ViewLayout.ChangeBuilder viewLayoutBuilder = viewLayoutOrig.toBuilder()
 				.profileId(viewLayoutKey.getProfileId())
 				.filters(filters)
-				.treeSupport(hasTreeSupport, true/* treeCollapsible */, ViewLayout.TreeExpandedDepth_AllCollapsed);
+				.treeSupport(hasTreeSupport, true/* treeCollapsible */, ViewLayout.TreeExpandedDepth_AllCollapsed)
+				.geoLocationSupport(geoLocationDocumentService.hasGeoLocationSupport(viewLayoutOrig.getFieldNames()));
 
 		//
 		// Customize the view layout

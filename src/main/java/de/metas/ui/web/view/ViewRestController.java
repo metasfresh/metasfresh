@@ -84,10 +84,10 @@ import lombok.NonNull;
 @RequestMapping(value = ViewRestController.ENDPOINT)
 public class ViewRestController
 {
-	static final String PARAM_WindowId = "windowId";
+	public static final String PARAM_WindowId = "windowId";
 
 	// FIXME: change "documentView" to "view"
-	/* package */static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/documentView/{" + PARAM_WindowId + "}";
+	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/documentView/{" + PARAM_WindowId + "}";
 
 	private static final String PARAM_ViewId = "viewId";
 	private static final String PARAM_ViewDataType = "viewType";

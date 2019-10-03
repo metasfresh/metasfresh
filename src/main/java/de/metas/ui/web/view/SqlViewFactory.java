@@ -20,6 +20,7 @@ import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
+import de.metas.ui.web.document.geo_location.GeoLocationDocumentService;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewBindingFactory;
 import de.metas.ui.web.view.descriptor.SqlViewCustomizerMap;
@@ -79,7 +80,8 @@ public class SqlViewFactory implements IViewFactory
 			@NonNull final List<SqlViewCustomizer> viewCustomizersList,
 			@NonNull final List<DefaultViewProfileIdProvider> defaultViewProfileIdProviders,
 			@NonNull final List<SqlDocumentFilterConverterDecorator> converterDecorators,
-			@NonNull final List<IViewInvalidationAdvisor> viewInvalidationAdvisors)
+			@NonNull final List<IViewInvalidationAdvisor> viewInvalidationAdvisors,
+			@NonNull final GeoLocationDocumentService geoLocationDocumentService)
 	{
 		this.documentReferencesService = documentReferencesService;
 
@@ -100,6 +102,7 @@ public class SqlViewFactory implements IViewFactory
 				.documentDescriptorFactory(documentDescriptorFactory)
 				.viewBindingsFactory(viewBindingsFactory)
 				.viewCustomizers(viewCustomizers)
+				.geoLocationDocumentService(geoLocationDocumentService)
 				.build();
 	}
 
