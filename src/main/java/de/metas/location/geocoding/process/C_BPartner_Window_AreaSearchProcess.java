@@ -38,9 +38,9 @@ import de.metas.process.Param;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
-import de.metas.ui.web.document.filter.provider.locationAreaSearch.LocationAreaSearchDescriptor;
-import de.metas.ui.web.document.filter.provider.locationAreaSearch.LocationAreaSearchDocumentFilterConverter;
-import de.metas.ui.web.document.filter.provider.locationAreaSearch.LocationAreaSearchDocumentFilterDescriptorsProviderFactory;
+import de.metas.ui.web.document.geo_location.GeoLocationAwareDescriptor;
+import de.metas.ui.web.document.geo_location.LocationAreaSearchDocumentFilterConverter;
+import de.metas.ui.web.document.geo_location.LocationAreaSearchDocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
@@ -109,7 +109,7 @@ public class C_BPartner_Window_AreaSearchProcess extends JavaProcess
 
 		// this descriptor applies the filter when the view is opened instead of needing to press the search button 1 time
 		final DocumentEntityDescriptor bpartnerEntityDescriptor = documentCollection.getDocumentEntityDescriptor(getWindowId());
-		final LocationAreaSearchDescriptor descriptor = LocationAreaSearchDocumentFilterDescriptorsProviderFactory.getLocationAreaSearchDescriptor(
+		final GeoLocationAwareDescriptor descriptor = LocationAreaSearchDocumentFilterDescriptorsProviderFactory.getLocationAreaSearchDescriptor(
 				bpartnerEntityDescriptor.getTableName(),
 				bpartnerEntityDescriptor.getFields());
 

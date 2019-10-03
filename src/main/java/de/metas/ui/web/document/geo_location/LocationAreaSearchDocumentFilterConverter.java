@@ -1,19 +1,7 @@
-package de.metas.ui.web.document.filter.provider.locationAreaSearch;
+package de.metas.ui.web.document.geo_location;
 
-import de.metas.location.CountryId;
-import de.metas.location.ICountryDAO;
-import de.metas.location.geocoding.GeoCoordinatesRequest;
-import de.metas.location.geocoding.GeocodingService;
-import de.metas.location.geocoding.GeographicalCoordinates;
-import de.metas.logging.LogManager;
-import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.document.filter.provider.locationAreaSearch.LocationAreaSearchDescriptor.LocationColumnNameType;
-import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
-import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
-import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
-import de.metas.ui.web.window.model.sql.SqlOptions;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.Optional;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.SpringContextHolder;
@@ -22,7 +10,20 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.slf4j.Logger;
 
-import java.util.Optional;
+import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
+import de.metas.location.geocoding.GeoCoordinatesRequest;
+import de.metas.location.geocoding.GeocodingService;
+import de.metas.location.geocoding.GeographicalCoordinates;
+import de.metas.logging.LogManager;
+import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
+import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
+import de.metas.ui.web.document.geo_location.GeoLocationAwareDescriptor.LocationColumnNameType;
+import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -75,7 +76,7 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 			@NonNull final SqlOptions sqlOpts,
 			final SqlDocumentFilterConverterContext context_NOTUSED)
 	{
-		final LocationAreaSearchDescriptor descriptor = filter.getParameterValueAs(PARAM_LocationAreaSearchDescriptor);
+		final GeoLocationAwareDescriptor descriptor = filter.getParameterValueAs(PARAM_LocationAreaSearchDescriptor);
 		if (descriptor == null)
 		{
 			// shall not happen

@@ -1,4 +1,4 @@
-package de.metas.ui.web.document.filter.provider.locationAreaSearch;
+package de.metas.ui.web.document.geo_location;
 
 import java.util.Collection;
 import java.util.Map;
@@ -14,7 +14,7 @@ import com.google.common.collect.Maps;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
-import de.metas.ui.web.document.filter.provider.locationAreaSearch.LocationAreaSearchDescriptor.LocationColumnNameType;
+import de.metas.ui.web.document.geo_location.GeoLocationAwareDescriptor.LocationColumnNameType;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import lombok.NonNull;
 
@@ -66,7 +66,7 @@ public class LocationAreaSearchDocumentFilterDescriptorsProviderFactory
 			return null;
 		}
 
-		final LocationAreaSearchDescriptor descriptor = getLocationAreaSearchDescriptor(tableName, fields);
+		final GeoLocationAwareDescriptor descriptor = getLocationAreaSearchDescriptor(tableName, fields);
 		if (descriptor == null)
 		{
 			return NullDocumentFilterDescriptorsProvider.instance;
@@ -75,7 +75,7 @@ public class LocationAreaSearchDocumentFilterDescriptorsProviderFactory
 		return new LocationAreaSearchDocumentFilterDescriptorsProvider(descriptor);
 	}
 
-	@Nullable public static LocationAreaSearchDescriptor getLocationAreaSearchDescriptor(
+	@Nullable public static GeoLocationAwareDescriptor getLocationAreaSearchDescriptor(
 			@NonNull final String tableName,
 			@NonNull final Collection<DocumentFieldDescriptor> fields)
 	{
@@ -84,21 +84,21 @@ public class LocationAreaSearchDocumentFilterDescriptorsProviderFactory
 
 		if (fieldsByName.containsKey(FIELDNAME_C_Location_ID))
 		{
-			return LocationAreaSearchDescriptor.builder()
+			return GeoLocationAwareDescriptor.builder()
 					.type(LocationColumnNameType.LocationId)
 					.locationColumnName(FIELDNAME_C_Location_ID)
 					.build();
 		}
 		else if (fieldsByName.containsKey(FIELDNAME_C_BPartner_Location_ID))
 		{
-			return LocationAreaSearchDescriptor.builder()
+			return GeoLocationAwareDescriptor.builder()
 					.type(LocationColumnNameType.BPartnerLocationId)
 					.locationColumnName(FIELDNAME_C_BPartner_Location_ID)
 					.build();
 		}
 		else if (fieldsByName.containsKey(FIELDNAME_C_BPartner_ID))
 		{
-			return LocationAreaSearchDescriptor.builder()
+			return GeoLocationAwareDescriptor.builder()
 					.type(LocationColumnNameType.BPartnerId)
 					.locationColumnName(FIELDNAME_C_BPartner_ID)
 					.build();

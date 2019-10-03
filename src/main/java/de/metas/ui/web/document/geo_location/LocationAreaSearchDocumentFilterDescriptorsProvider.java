@@ -1,4 +1,4 @@
-package de.metas.ui.web.document.filter.provider.locationAreaSearch;
+package de.metas.ui.web.document.geo_location;
 
 import java.util.Collection;
 
@@ -45,11 +45,11 @@ class LocationAreaSearchDocumentFilterDescriptorsProvider implements DocumentFil
 	// services
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	private final LocationAreaSearchDescriptor descriptor;
+	private final GeoLocationAwareDescriptor descriptor;
 
 	private DocumentFilterDescriptor filterDescriptor;
 
-	LocationAreaSearchDocumentFilterDescriptorsProvider(@NonNull final LocationAreaSearchDescriptor descriptor)
+	LocationAreaSearchDocumentFilterDescriptorsProvider(@NonNull final GeoLocationAwareDescriptor descriptor)
 	{
 		this.descriptor = descriptor;
 	}

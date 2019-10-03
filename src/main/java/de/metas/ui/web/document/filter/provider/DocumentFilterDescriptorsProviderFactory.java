@@ -7,9 +7,9 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.element.api.AdTabId;
 
 import de.metas.ui.web.document.filter.provider.fullTextSearch.FullTextSearchDocumentFilterDescriptorsProviderFactory;
-import de.metas.ui.web.document.filter.provider.locationAreaSearch.LocationAreaSearchDocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.standard.StandardDocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.userQuery.UserQueryDocumentFilterDescriptorsProviderFactory;
+import de.metas.ui.web.document.geo_location.LocationAreaSearchDocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 
 /*
