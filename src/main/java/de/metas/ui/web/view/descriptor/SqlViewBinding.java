@@ -27,7 +27,7 @@ import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConvertersList;
-import de.metas.ui.web.document.geo_location.LocationAreaSearchDocumentFilterConverter;
+import de.metas.ui.web.document.geo_location.GeoLocationFilterConverter;
 import de.metas.ui.web.view.DefaultViewInvalidationAdvisor;
 import de.metas.ui.web.view.IViewInvalidationAdvisor;
 import de.metas.ui.web.view.ViewEvaluationCtx;
@@ -382,7 +382,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		private Builder()
 		{
 			filterConverter(FullTextSearchSqlDocumentFilterConverter.FILTER_ID, FullTextSearchSqlDocumentFilterConverter.instance);
-			filterConverter(LocationAreaSearchDocumentFilterConverter.FILTER_ID, LocationAreaSearchDocumentFilterConverter.instance);
+			filterConverter(GeoLocationFilterConverter.FILTER_ID, GeoLocationFilterConverter.instance);
 		}
 
 		@Override

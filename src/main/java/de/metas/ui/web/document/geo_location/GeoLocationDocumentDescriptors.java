@@ -11,7 +11,7 @@ import org.compiere.model.I_C_Location;
 import com.google.common.collect.Maps;
 
 import de.metas.document.archive.model.I_C_BPartner;
-import de.metas.ui.web.document.geo_location.GeoLocationAwareDescriptor.LocationColumnNameType;
+import de.metas.ui.web.document.geo_location.GeoLocationDocumentDescriptor.LocationColumnNameType;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -39,27 +39,27 @@ import lombok.experimental.UtilityClass;
  */
 
 @UtilityClass
-public class GeoLocationAwareDescriptors
+public class GeoLocationDocumentDescriptors
 {
 	private static final String FIELDNAME_C_Location_ID = I_C_Location.COLUMNNAME_C_Location_ID;
 	private static final String FIELDNAME_C_BPartner_ID = I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 	private static final String FIELDNAME_C_BPartner_Location_ID = I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 
-	private static final GeoLocationAwareDescriptor DESCRIPTOR_FOR_LocationId = GeoLocationAwareDescriptor.builder()
+	private static final GeoLocationDocumentDescriptor DESCRIPTOR_FOR_LocationId = GeoLocationDocumentDescriptor.builder()
 			.type(LocationColumnNameType.LocationId)
 			.locationColumnName(FIELDNAME_C_Location_ID)
 			.build();
-	private static final GeoLocationAwareDescriptor DESCRIPTOR_FOR_BPartnerLocationId = GeoLocationAwareDescriptor.builder()
+	private static final GeoLocationDocumentDescriptor DESCRIPTOR_FOR_BPartnerLocationId = GeoLocationDocumentDescriptor.builder()
 			.type(LocationColumnNameType.BPartnerLocationId)
 			.locationColumnName(FIELDNAME_C_BPartner_Location_ID)
 			.build();
-	private static final GeoLocationAwareDescriptor DESCRIPTOR_FOR_BPartnerId = GeoLocationAwareDescriptor.builder()
+	private static final GeoLocationDocumentDescriptor DESCRIPTOR_FOR_BPartnerId = GeoLocationDocumentDescriptor.builder()
 			.type(LocationColumnNameType.BPartnerId)
 			.locationColumnName(FIELDNAME_C_BPartner_ID)
 			.build();
 
 	@Nullable
-	public static GeoLocationAwareDescriptor getGeoLocationAwareDescriptorOrNull(
+	public static GeoLocationDocumentDescriptor getGeoLocationDocumentDescriptorOrNull(
 			@NonNull final String tableName,
 			@NonNull final Collection<DocumentFieldDescriptor> fields)
 	{

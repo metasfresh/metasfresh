@@ -20,7 +20,7 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
-import de.metas.ui.web.document.geo_location.GeoLocationAwareDescriptor.LocationColumnNameType;
+import de.metas.ui.web.document.geo_location.GeoLocationDocumentDescriptor.LocationColumnNameType;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -47,11 +47,11 @@ import lombok.NonNull;
  * #L%
  */
 
-public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFilterConverter
+public class GeoLocationFilterConverter implements SqlDocumentFilterConverter
 {
-	public static final transient LocationAreaSearchDocumentFilterConverter instance = new LocationAreaSearchDocumentFilterConverter();
+	public static final transient GeoLocationFilterConverter instance = new GeoLocationFilterConverter();
 
-	private static final String MSG_NoCoordinatesFoundForTheGivenLocation= "de.metas.ui.web.document.filter.provider.locationAreaSearch.LocationAreaSearchDocumentFilterConverter.NoCoordinatesFoundForTheGivenLocation";
+	private static final String MSG_NoCoordinatesFoundForTheGivenLocation = "de.metas.ui.web.document.filter.provider.locationAreaSearch.LocationAreaSearchDocumentFilterConverter.NoCoordinatesFoundForTheGivenLocation";
 
 	public static final String FILTER_ID = "location-area-search";
 
@@ -63,9 +63,9 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 	public static final String PARAM_Distance = "Distance";
 	public static final String PARAM_VisitorsAddress = "VisitorsAddress";
 
-	private final static Logger logger = LogManager.getLogger(LocationAreaSearchDocumentFilterConverter.class);
+	private final static Logger logger = LogManager.getLogger(GeoLocationFilterConverter.class);
 
-	private LocationAreaSearchDocumentFilterConverter()
+	private GeoLocationFilterConverter()
 	{
 	}
 
@@ -76,7 +76,7 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 			@NonNull final SqlOptions sqlOpts,
 			final SqlDocumentFilterConverterContext context_NOTUSED)
 	{
-		final GeoLocationAwareDescriptor descriptor = filter.getParameterValueAs(PARAM_LocationAreaSearchDescriptor);
+		final GeoLocationDocumentDescriptor descriptor = filter.getParameterValueAs(PARAM_LocationAreaSearchDescriptor);
 		if (descriptor == null)
 		{
 			// shall not happen
@@ -154,7 +154,9 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 		return visitorAddressQuery;
 	}
 
-	@NonNull @SuppressWarnings("SameParameterValue") private static String sqlGeographicalDistance(
+	@NonNull
+	@SuppressWarnings("SameParameterValue")
+	private static String sqlGeographicalDistance(
 			@NonNull final SqlParamsCollector sqlParamsOut,
 			@NonNull final String locationTableAlias,
 			@NonNull final GeographicalCoordinates addressCoordinates,
@@ -169,8 +171,8 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 				+ "," + sqlParamsOut.placeholder(addressCoordinates.getLongitude())
 				//
 				+ ") <= " + sqlParamsOut.placeholder(distanceInKm)
-				//
-				;
+		//
+		;
 	}
 
 	private Optional<GeographicalCoordinates> getAddressCoordinates(final DocumentFilter filter)
@@ -209,7 +211,7 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 		if (countryId == null)
 		{
 			throw new FillMandatoryException(PARAM_CountryId);
-			//return null;
+			// return null;
 		}
 
 		return Services.get(ICountryDAO.class).retrieveCountryCode2ByCountryId(countryId);

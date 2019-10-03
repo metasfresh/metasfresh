@@ -28,7 +28,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public final class GeoLocationAwareDescriptor
+public final class GeoLocationDocumentDescriptor
 {
 	@NonNull
 	LocationColumnNameType type;

@@ -48,9 +48,9 @@ import de.metas.process.Param;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
-import de.metas.ui.web.document.geo_location.GeoLocationAwareDescriptor;
-import de.metas.ui.web.document.geo_location.GeoLocationAwareDescriptors;
-import de.metas.ui.web.document.geo_location.LocationAreaSearchDocumentFilterConverter;
+import de.metas.ui.web.document.geo_location.GeoLocationDocumentDescriptor;
+import de.metas.ui.web.document.geo_location.GeoLocationDocumentDescriptors;
+import de.metas.ui.web.document.geo_location.GeoLocationFilterConverter;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
@@ -115,19 +115,19 @@ public class C_BPartner_Window_AreaSearchProcess extends JavaProcess
 
 		// this descriptor applies the filter when the view is opened instead of needing to press the search button 1 time
 		final DocumentEntityDescriptor bpartnerEntityDescriptor = documentCollection.getDocumentEntityDescriptor(getWindowId());
-		final GeoLocationAwareDescriptor descriptor = GeoLocationAwareDescriptors.getGeoLocationAwareDescriptorOrNull(
+		final GeoLocationDocumentDescriptor descriptor = GeoLocationDocumentDescriptors.getGeoLocationDocumentDescriptorOrNull(
 				bpartnerEntityDescriptor.getTableName(),
 				bpartnerEntityDescriptor.getFields());
 
 		return DocumentFilter.builder()
-				.setFilterId(LocationAreaSearchDocumentFilterConverter.FILTER_ID)
-				.addInternalParameter(DocumentFilterParam.ofNameEqualsValue(LocationAreaSearchDocumentFilterConverter.PARAM_LocationAreaSearchDescriptor, Objects.requireNonNull(descriptor)))
-				.addParameter(DocumentFilterParam.ofNameEqualsValue(LocationAreaSearchDocumentFilterConverter.PARAM_Address1, location.getAddress1()))
-				.addParameter(DocumentFilterParam.ofNameEqualsValue(LocationAreaSearchDocumentFilterConverter.PARAM_City, location.getCity()))
-				.addParameter(DocumentFilterParam.ofNameEqualsValue(LocationAreaSearchDocumentFilterConverter.PARAM_Postal, location.getPostal()))
-				.addParameter(DocumentFilterParam.ofNameEqualsValue(LocationAreaSearchDocumentFilterConverter.PARAM_CountryId, LookupValue.IntegerLookupValue.of(location.getC_Country_ID(), countryName, null)))
-				.addParameter(DocumentFilterParam.ofNameEqualsValue(LocationAreaSearchDocumentFilterConverter.PARAM_Distance, distance))
-				.addParameter(DocumentFilterParam.ofNameEqualsValue(LocationAreaSearchDocumentFilterConverter.PARAM_VisitorsAddress, visitorsAddress))
+				.setFilterId(GeoLocationFilterConverter.FILTER_ID)
+				.addInternalParameter(DocumentFilterParam.ofNameEqualsValue(GeoLocationFilterConverter.PARAM_LocationAreaSearchDescriptor, Objects.requireNonNull(descriptor)))
+				.addParameter(DocumentFilterParam.ofNameEqualsValue(GeoLocationFilterConverter.PARAM_Address1, location.getAddress1()))
+				.addParameter(DocumentFilterParam.ofNameEqualsValue(GeoLocationFilterConverter.PARAM_City, location.getCity()))
+				.addParameter(DocumentFilterParam.ofNameEqualsValue(GeoLocationFilterConverter.PARAM_Postal, location.getPostal()))
+				.addParameter(DocumentFilterParam.ofNameEqualsValue(GeoLocationFilterConverter.PARAM_CountryId, LookupValue.IntegerLookupValue.of(location.getC_Country_ID(), countryName, null)))
+				.addParameter(DocumentFilterParam.ofNameEqualsValue(GeoLocationFilterConverter.PARAM_Distance, distance))
+				.addParameter(DocumentFilterParam.ofNameEqualsValue(GeoLocationFilterConverter.PARAM_VisitorsAddress, visitorsAddress))
 				.build();
 	}
 
