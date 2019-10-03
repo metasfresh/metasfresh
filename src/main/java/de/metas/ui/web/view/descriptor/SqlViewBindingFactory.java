@@ -124,7 +124,7 @@ public class SqlViewBindingFactory
 		}
 	}
 
-	public SqlViewBinding getViewBinding(
+	SqlViewBinding getViewBinding(
 			@NonNull final WindowId windowId,
 			@Nullable final Characteristic requiredFieldCharacteristic,
 			@Nullable final ViewProfileId profileId)
