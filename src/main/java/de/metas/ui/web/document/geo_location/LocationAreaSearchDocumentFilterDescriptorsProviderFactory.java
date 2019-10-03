@@ -1,19 +1,13 @@
 package de.metas.ui.web.document.geo_location;
 
 import java.util.Collection;
-import java.util.Map;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.element.api.AdTabId;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_Location;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.Maps;
-
-import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
@@ -22,12 +16,10 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvide
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
-import de.metas.ui.web.document.geo_location.GeoLocationAwareDescriptor.LocationColumnNameType;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -57,9 +49,6 @@ public class LocationAreaSearchDocumentFilterDescriptorsProviderFactory implemen
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private static final String MSG_FILTER_CAPTION = "LocationAreaSearch";
-	private static final String FIELDNAME_C_Location_ID = I_C_Location.COLUMNNAME_C_Location_ID;
-	private static final String FIELDNAME_C_BPartner_ID = I_C_BPartner.COLUMNNAME_C_BPartner_ID;
-	private static final String FIELDNAME_C_BPartner_Location_ID = I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 
 	public LocationAreaSearchDocumentFilterDescriptorsProviderFactory()
 	{
@@ -81,48 +70,13 @@ public class LocationAreaSearchDocumentFilterDescriptorsProviderFactory implemen
 			return null;
 		}
 
-		final GeoLocationAwareDescriptor descriptor = createGeoLocationAwareDescriptorOrNull(tableName, fields);
+		final GeoLocationAwareDescriptor descriptor = GeoLocationAwareDescriptors.getGeoLocationAwareDescriptorOrNull(tableName, fields);
 		if (descriptor == null)
 		{
 			return NullDocumentFilterDescriptorsProvider.instance;
 		}
 
 		return ImmutableDocumentFilterDescriptorsProvider.of(createDocumentFilterDescriptor(descriptor));
-	}
-
-	@Nullable
-	public static GeoLocationAwareDescriptor createGeoLocationAwareDescriptorOrNull(
-			@NonNull final String tableName,
-			@NonNull final Collection<DocumentFieldDescriptor> fields)
-	{
-		// noinspection ConstantConditions
-		final Map<String, DocumentFieldDescriptor> fieldsByName = Maps.uniqueIndex(fields, DocumentFieldDescriptor::getFieldName);
-
-		if (fieldsByName.containsKey(FIELDNAME_C_Location_ID))
-		{
-			return GeoLocationAwareDescriptor.builder()
-					.type(LocationColumnNameType.LocationId)
-					.locationColumnName(FIELDNAME_C_Location_ID)
-					.build();
-		}
-		else if (fieldsByName.containsKey(FIELDNAME_C_BPartner_Location_ID))
-		{
-			return GeoLocationAwareDescriptor.builder()
-					.type(LocationColumnNameType.BPartnerLocationId)
-					.locationColumnName(FIELDNAME_C_BPartner_Location_ID)
-					.build();
-		}
-		else if (fieldsByName.containsKey(FIELDNAME_C_BPartner_ID))
-		{
-			return GeoLocationAwareDescriptor.builder()
-					.type(LocationColumnNameType.BPartnerId)
-					.locationColumnName(FIELDNAME_C_BPartner_ID)
-					.build();
-		}
-		else
-		{
-			return null;
-		}
 	}
 
 	private DocumentFilterDescriptor createDocumentFilterDescriptor(final GeoLocationAwareDescriptor descriptor)

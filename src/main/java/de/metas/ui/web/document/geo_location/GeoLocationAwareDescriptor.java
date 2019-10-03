@@ -32,6 +32,7 @@ public final class GeoLocationAwareDescriptor
 {
 	@NonNull
 	LocationColumnNameType type;
+
 	@NonNull
 	String locationColumnName;
 

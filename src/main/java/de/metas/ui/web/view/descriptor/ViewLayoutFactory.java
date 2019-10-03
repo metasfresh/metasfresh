@@ -64,16 +64,19 @@ public class ViewLayoutFactory
 			@NonNull final JSONViewDataType viewDataType,
 			@Nullable final ViewProfileId profileId)
 	{
-		final ViewLayoutKey viewLayoutKey = new ViewLayoutKey(windowId, viewDataType.getRequiredFieldCharacteristic(), profileId);
-		return cache.getOrLoad(viewLayoutKey, () -> createViewLayout(viewLayoutKey, viewDataType));
+		final ViewLayoutKey viewLayoutKey = new ViewLayoutKey(windowId, viewDataType, profileId);
+		return cache.getOrLoad(viewLayoutKey, this::createViewLayout);
 	}
 
-	private ViewLayout createViewLayout(final ViewLayoutKey viewLayoutKey, final JSONViewDataType viewDataType)
+	private ViewLayout createViewLayout(final ViewLayoutKey viewLayoutKey)
 	{
 		final ViewLayout viewLayoutOrig = documentDescriptorFactory.getDocumentDescriptor(viewLayoutKey.getWindowId())
-				.getViewLayout(viewDataType);
+				.getViewLayout(viewLayoutKey.getViewDataType());
 
-		final SqlViewBinding sqlViewBinding = getViewBinding(viewLayoutKey.getWindowId(), viewLayoutKey.getRequiredFieldCharacteristic(), viewLayoutKey.getProfileId());
+		final SqlViewBinding sqlViewBinding = getViewBinding(
+				viewLayoutKey.getWindowId(),
+				viewLayoutKey.getViewDataType().getRequiredFieldCharacteristic(),
+				viewLayoutKey.getProfileId());
 		final Collection<DocumentFilterDescriptor> filters = sqlViewBinding.getViewFilterDescriptors().getAll();
 		final boolean hasTreeSupport = sqlViewBinding.hasGroupingFields();
 
@@ -108,11 +111,13 @@ public class ViewLayoutFactory
 	private static final class ViewLayoutKey
 	{
 		@NonNull
-		private final WindowId windowId;
+		final WindowId windowId;
+
+		@NonNull
+		final JSONViewDataType viewDataType;
+
 		@Nullable
-		private final Characteristic requiredFieldCharacteristic;
-		@Nullable
-		private final ViewProfileId profileId;
+		final ViewProfileId profileId;
 	}
 
 }
