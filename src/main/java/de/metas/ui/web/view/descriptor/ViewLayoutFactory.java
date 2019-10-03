@@ -85,6 +85,9 @@ public class ViewLayoutFactory
 				.filters(filters)
 				.treeSupport(hasTreeSupport, true/* treeCollapsible */, ViewLayout.TreeExpandedDepth_AllCollapsed);
 
+		//
+		// Customize the view layout
+		// NOTE to developer: keep it last, right before build().
 		final SqlViewCustomizer sqlViewCustomizer = viewCustomizers.getOrNull(viewLayoutKey.getWindowId(), viewLayoutKey.getProfileId());
 		if (sqlViewCustomizer != null)
 		{
