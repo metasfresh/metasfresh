@@ -82,7 +82,7 @@ public final class SqlViewSelectionQueryBuilder
 	private boolean applySecurityRestrictions = true;
 	private SqlDocumentFilterConverter _sqlDocumentFieldConverter; // lazy
 
-	public static final SqlViewSelectionQueryBuilder newInstance(final SqlViewBinding viewBinding)
+	public static SqlViewSelectionQueryBuilder newInstance(final SqlViewBinding viewBinding)
 	{
 		return new SqlViewSelectionQueryBuilder(viewBinding);
 	}
@@ -250,7 +250,6 @@ public final class SqlViewSelectionQueryBuilder
 			final IStringExpression sqlSeqNo = IStringExpression.composer()
 					.append("row_number() OVER (ORDER BY ").append(sqlOrderBy).append(")")
 					.build();
-			// final IStringExpression sqlRecordId = ConstantStringExpression.of(keyColumnName);
 
 			sqlBuilder.append(
 					IStringExpression.composer()
@@ -452,7 +451,7 @@ public final class SqlViewSelectionQueryBuilder
 		return SqlAndParams.of(sqlCreateSelectionFromLines, sqlCreateSelectionFromLinesParams);
 	}
 
-	private final IStringExpression buildSqlWhereClause(final SqlParamsCollector sqlParams,
+	private IStringExpression buildSqlWhereClause(final SqlParamsCollector sqlParams,
 			@Nullable final List<DocumentFilter> filters,
 			final SqlOptions sqlOpts,
 			final SqlDocumentFilterConverterContext context)
