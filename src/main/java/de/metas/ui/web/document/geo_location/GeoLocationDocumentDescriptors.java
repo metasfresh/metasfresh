@@ -40,7 +40,7 @@ import lombok.experimental.UtilityClass;
  */
 
 @UtilityClass
-public class GeoLocationDocumentDescriptors
+final class GeoLocationDocumentDescriptors
 {
 	private static final String FIELDNAME_C_Location_ID = I_C_Location.COLUMNNAME_C_Location_ID;
 	private static final String FIELDNAME_C_BPartner_ID = I_C_BPartner.COLUMNNAME_C_BPartner_ID;

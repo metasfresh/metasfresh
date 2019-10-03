@@ -123,7 +123,7 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 	}
 
 	@NonNull
-	public DocumentFilter createDocumentFilter(final DocumentEntityDescriptor entityDescriptor, final GeoLocationQuery query)
+	public DocumentFilter createDocumentFilter(@NonNull final DocumentEntityDescriptor entityDescriptor, @NonNull final GeoLocationQuery query)
 	{
 		final GeoLocationDocumentDescriptor descriptor = GeoLocationDocumentDescriptors.getGeoLocationDocumentDescriptor(
 				entityDescriptor.getTableName(),
