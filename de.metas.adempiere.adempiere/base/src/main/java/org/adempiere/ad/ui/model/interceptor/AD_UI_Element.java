@@ -59,10 +59,10 @@ public class AD_UI_Element
 	@CalloutMethod(columnNames = I_AD_UI_Element.COLUMNNAME_AD_Field_ID)
 	public void calloutOnFieldIdChanged(@NonNull final I_AD_UI_Element uiElement)
 	{
-		updatenNameFromElement(uiElement);
+		updateNameFromElement(uiElement);
 	}
 
-	private void updatenNameFromElement(@NonNull final I_AD_UI_Element uiElement)
+	private void updateNameFromElement(@NonNull final I_AD_UI_Element uiElement)
 	{
 		final I_AD_Field field = uiElement.getAD_Field();
 		final AdElementId fieldElementId = getFieldElementId(field);
