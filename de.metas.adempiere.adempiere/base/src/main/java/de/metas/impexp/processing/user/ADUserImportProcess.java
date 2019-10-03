@@ -22,6 +22,9 @@ package de.metas.impexp.processing.user;
  * #L%
  */
 
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -38,9 +41,11 @@ import org.compiere.model.I_I_User;
 import org.compiere.model.PO;
 import org.compiere.model.X_I_User;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_Role;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.logging.LogManager;
 import de.metas.security.IRoleDAO;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
@@ -56,6 +61,7 @@ import lombok.NonNull;
  */
 public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 {
+	private static final Logger log = LogManager.getLogger(ADUserImportProcess.class);
 
 	@Override
 	public Class<I_I_User> getImportModelClass()

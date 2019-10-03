@@ -81,7 +81,8 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 		deleteAttachmentEntry();
 
 		return "@IsImportScheduled@ #" + result.getCountSourceFileValidLines()
-				+ ", @IsError@ #" + result.getCountSourceFileErrorLines();
+				+ ", @IsError@ #" + result.getCountSourceFileErrorLines()
+				+ " (took " + result.getDuration() + ")";
 	}
 
 	private AttachmentEntryId getAttachmentEntryId()

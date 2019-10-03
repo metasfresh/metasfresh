@@ -42,12 +42,14 @@ import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_Product;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.logging.LogManager;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.IProductPlanningSchemaBL;
 import de.metas.product.ProductId;
@@ -62,6 +64,8 @@ import lombok.NonNull;
  */
 public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Product>
 {
+	private static final Logger log = LogManager.getLogger(ProductImportProcess.class);
+
 	private static final String PARAM_M_PriceList_Version_ID = "M_PriceList_Version_ID";
 
 	@Override
