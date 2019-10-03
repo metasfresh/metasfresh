@@ -428,6 +428,7 @@ public class DocumentEntityDescriptor
 	public static final class Builder
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentEntityDescriptor.Builder.class);
+		private DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService;
 
 		private boolean _built = false;
 
@@ -1055,13 +1056,21 @@ public class DocumentEntityDescriptor
 
 		private DocumentFilterDescriptorsProvider createFilterDescriptors()
 		{
-			final DocumentFilterDescriptorsProvidersService providersService = SpringContextHolder.instance.getBean(DocumentFilterDescriptorsProvidersService.class);
+			final DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService = this.filterDescriptorsProvidersService != null
+					? this.filterDescriptorsProvidersService
+					: SpringContextHolder.instance.getBean(DocumentFilterDescriptorsProvidersService.class);
 
 			final String tableName = getTableName().orElse(null);
 			final AdTabId adTabId = getAdTabId().orElse(null);
 			final Collection<DocumentFieldDescriptor> fields = getFields().values();
 
-			return providersService.createFiltersProvider(adTabId, tableName, fields);
+			return filterDescriptorsProvidersService.createFiltersProvider(adTabId, tableName, fields);
+		}
+
+		public Builder setFilterDescriptorsProvidersService(final DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService)
+		{
+			this.filterDescriptorsProvidersService = filterDescriptorsProvidersService;
+			return this;
 		}
 
 		public Builder setRefreshViewOnChangeEvents(final boolean refreshViewOnChangeEvents)

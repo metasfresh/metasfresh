@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.exceptions.AdempiereException;
@@ -25,6 +27,7 @@ import de.metas.dataentry.layout.DataEntryTab.DocumentLinkColumnName;
 import de.metas.dataentry.model.I_DataEntry_SubTab;
 import de.metas.dataentry.model.I_DataEntry_Tab;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvidersService;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -75,6 +78,8 @@ import lombok.Value;
 @Value
 public class DataEntryTabLoader
 {
+	private final DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService;
+
 	AdWindowId adWindowId;
 	WindowId windowId;
 	DataEntrySubTabBindingDescriptorBuilder dataEntrySubTabBindingDescriptorBuilder;
@@ -82,10 +87,14 @@ public class DataEntryTabLoader
 
 	@Builder
 	private DataEntryTabLoader(
+			@Nullable final DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService,
+			//
 			@NonNull final AdWindowId adWindowId,
 			@NonNull final WindowId windowId,
 			@NonNull final DataEntrySubTabBindingDescriptorBuilder dataEntrySubTabBindingDescriptorBuilder)
 	{
+		this.filterDescriptorsProvidersService = filterDescriptorsProvidersService;
+
 		this.adWindowId = adWindowId;
 		this.windowId = windowId;
 		this.dataEntrySubTabBindingDescriptorBuilder = dataEntrySubTabBindingDescriptorBuilder;
@@ -322,8 +331,7 @@ public class DataEntryTabLoader
 
 		final DataEntryTabBindingDescriptorBuilder dataEntryDocumentBinding = new DataEntryTabBindingDescriptorBuilder();
 
-		final DocumentEntityDescriptor documentEntityDescriptor = DocumentEntityDescriptor
-				.builder()
+		final DocumentEntityDescriptor documentEntityDescriptor = DocumentEntityDescriptor.builder()
 				.setDocumentType(getAdWindowId())
 				.setDetailId(createDetailIdFor(dataEntryTab))
 				.setInternalName(dataEntryTab.getInternalName())
@@ -341,6 +349,8 @@ public class DataEntryTabLoader
 				.addAllIncludedEntities(subGroupEntityDescriptors.build())
 
 				.setDataBinding(dataEntryDocumentBinding)
+
+				.setFilterDescriptorsProvidersService(filterDescriptorsProvidersService)
 				.build();
 
 		return ImmutableList.of(documentEntityDescriptor);
@@ -350,8 +360,7 @@ public class DataEntryTabLoader
 			@NonNull final DataEntrySubTab dataEntrySubTab,
 			@NonNull final DocumentLinkColumnName documentLinkColumnName)
 	{
-		final DocumentEntityDescriptor.Builder documentEntityDescriptor = DocumentEntityDescriptor
-				.builder()
+		final DocumentEntityDescriptor.Builder documentEntityDescriptor = DocumentEntityDescriptor.builder()
 				.setSingleRowDetail(true)
 				.setDocumentType(getAdWindowId())
 				.setDetailId(createDetailIdFor(dataEntrySubTab))
@@ -367,10 +376,12 @@ public class DataEntryTabLoader
 
 				.setDataBinding(dataEntrySubTabBindingDescriptorBuilder);
 
+		//
+		documentEntityDescriptor.setFilterDescriptorsProvidersService(filterDescriptorsProvidersService);
+
+		//
 		documentEntityDescriptor.addField(createIDField());
-
 		documentEntityDescriptor.addField(createParentLinkField(documentLinkColumnName));
-
 		for (final DataEntrySection dataEntrySection : dataEntrySubTab.getSections())
 		{
 			for (final DataEntryLine dataEntryLine : dataEntrySection.getLines())
