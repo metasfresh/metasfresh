@@ -1,20 +1,11 @@
 package de.metas.ui.web.document.filter.provider.locationAreaSearch;
 
-import java.util.Optional;
-
-import de.metas.logging.LogManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.Adempiere;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Location;
-
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.geocoding.GeoCoordinatesRequest;
-import de.metas.location.geocoding.GeoCoordinatesService;
+import de.metas.location.geocoding.GeocodingService;
 import de.metas.location.geocoding.GeographicalCoordinates;
+import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.provider.locationAreaSearch.LocationAreaSearchDescriptor.LocationColumnNameType;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
@@ -23,7 +14,15 @@ import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
 import org.slf4j.Logger;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -181,8 +180,8 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 			return Optional.empty();
 		}
 
-		final GeoCoordinatesService geoCoordinatesService = Adempiere.getBean(GeoCoordinatesService.class);
-		return geoCoordinatesService.findBestCoordinates(request);
+		final GeocodingService geocodingService = SpringContextHolder.instance.getBean(GeocodingService.class);
+		return geocodingService.findBestCoordinates(request);
 	}
 
 	private static Optional<GeoCoordinatesRequest> createGeoCoordinatesRequest(final DocumentFilter filter)
@@ -218,6 +217,6 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 	private static int extractDistanceInKm(final DocumentFilter filter)
 	{
 		final int distanceInKm = filter.getParameterValueAsInt(PARAM_Distance, -1);
-		return distanceInKm > 0 ? distanceInKm : 0;
+		return Math.max(distanceInKm, 0);
 	}
 }
