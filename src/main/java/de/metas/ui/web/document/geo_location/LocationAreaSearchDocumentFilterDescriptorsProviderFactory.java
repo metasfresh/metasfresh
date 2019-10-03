@@ -7,17 +7,26 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.element.api.AdTabId;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Maps;
 
 import de.metas.document.archive.model.I_C_BPartner;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
+import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.geo_location.GeoLocationAwareDescriptor.LocationColumnNameType;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -45,6 +54,9 @@ import lombok.NonNull;
 @Component
 public class LocationAreaSearchDocumentFilterDescriptorsProviderFactory implements DocumentFilterDescriptorsProviderFactory
 {
+	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
+
+	private static final String MSG_FILTER_CAPTION = "LocationAreaSearch";
 	private static final String FIELDNAME_C_Location_ID = I_C_Location.COLUMNNAME_C_Location_ID;
 	private static final String FIELDNAME_C_BPartner_ID = I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 	private static final String FIELDNAME_C_BPartner_Location_ID = I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
@@ -75,7 +87,7 @@ public class LocationAreaSearchDocumentFilterDescriptorsProviderFactory implemen
 			return NullDocumentFilterDescriptorsProvider.instance;
 		}
 
-		return new LocationAreaSearchDocumentFilterDescriptorsProvider(descriptor);
+		return ImmutableDocumentFilterDescriptorsProvider.of(createDocumentFilterDescriptor(descriptor));
 	}
 
 	@Nullable
@@ -112,4 +124,44 @@ public class LocationAreaSearchDocumentFilterDescriptorsProviderFactory implemen
 			return null;
 		}
 	}
+
+	private DocumentFilterDescriptor createDocumentFilterDescriptor(final GeoLocationAwareDescriptor descriptor)
+	{
+		final ITranslatableString caption = msgBL.getTranslatableMsgText(MSG_FILTER_CAPTION);
+
+		return DocumentFilterDescriptor.builder()
+				.setFilterId(LocationAreaSearchDocumentFilterConverter.FILTER_ID)
+				.setDisplayName(caption)
+				//
+				.addParameter(DocumentFilterParamDescriptor.builder()
+						.setFieldName(LocationAreaSearchDocumentFilterConverter.PARAM_Address1)
+						.setDisplayName(msgBL.translatable(LocationAreaSearchDocumentFilterConverter.PARAM_Address1))
+						.setWidgetType(DocumentFieldWidgetType.Text))
+				.addParameter(DocumentFilterParamDescriptor.builder()
+						.setFieldName(LocationAreaSearchDocumentFilterConverter.PARAM_Postal)
+						.setDisplayName(msgBL.translatable(LocationAreaSearchDocumentFilterConverter.PARAM_Postal))
+						.setWidgetType(DocumentFieldWidgetType.Text))
+				.addParameter(DocumentFilterParamDescriptor.builder()
+						.setFieldName(LocationAreaSearchDocumentFilterConverter.PARAM_City)
+						.setDisplayName(msgBL.translatable(LocationAreaSearchDocumentFilterConverter.PARAM_City))
+						.setWidgetType(DocumentFieldWidgetType.Text))
+				.addParameter(DocumentFilterParamDescriptor.builder()
+						.setFieldName(LocationAreaSearchDocumentFilterConverter.PARAM_CountryId)
+						.setDisplayName(msgBL.translatable(LocationAreaSearchDocumentFilterConverter.PARAM_CountryId))
+						.setWidgetType(DocumentFieldWidgetType.Lookup)
+						.setLookupDescriptor(SqlLookupDescriptor.searchInTable(I_C_Country.Table_Name).provideForFilter()))
+				.addParameter(DocumentFilterParamDescriptor.builder()
+						.setFieldName(LocationAreaSearchDocumentFilterConverter.PARAM_Distance)
+						.setDisplayName(msgBL.translatable(LocationAreaSearchDocumentFilterConverter.PARAM_Distance))
+						.setWidgetType(DocumentFieldWidgetType.Integer))
+				.addParameter(DocumentFilterParamDescriptor.builder()
+						.setFieldName(LocationAreaSearchDocumentFilterConverter.PARAM_VisitorsAddress)
+						.setDisplayName(msgBL.translatable(LocationAreaSearchDocumentFilterConverter.PARAM_VisitorsAddress))
+						.setWidgetType(DocumentFieldWidgetType.YesNo))
+				//
+				.addInternalParameter(LocationAreaSearchDocumentFilterConverter.PARAM_LocationAreaSearchDescriptor, descriptor)
+				//
+				.build();
+	}
+
 }
