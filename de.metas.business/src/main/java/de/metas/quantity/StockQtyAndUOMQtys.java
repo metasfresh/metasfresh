@@ -76,7 +76,8 @@ public class StockQtyAndUOMQtys
 			@NonNull final BigDecimal qtyInStockUOM,
 			@NonNull final ProductId productId,
 			@Nullable final BigDecimal qtyInUOM,
-			@Nullable final UomId uomId)
+			@Nullable final UomId uomId
+			)
 	{
 		final Quantity stockQty = Quantitys.create(qtyInStockUOM, productId);
 
@@ -94,6 +95,11 @@ public class StockQtyAndUOMQtys
 			final Quantity uomQty = Quantity.of(qtyInUOM, uomRecord);
 			result.uomQty(uomQty);
 		}
+		else
+		{
+			Check.assume(qtyInUOM == null || qtyInUOM.signum() == 0, "qtyInUOM={} shall be ZERO when uomId is null", qtyInUOM);
+		}
+		
 		return validate(result.build());
 	}
 
