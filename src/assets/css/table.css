@@ -398,6 +398,32 @@
     }
 }
 
+/* Quick inputs */
+
+.quick-input-container {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    flex:1;
+
+     > * {
+        margin:0;
+        /*flex:2;*/
+    }
+
+     .hint {
+        /*flex:1;*/
+    }
+
+     > *:first-of-type {
+        /*flex:8;*/
+    }
+
+    .form-group {
+        display: flex;
+    }
+}
+
 
 /* Pagination */
 

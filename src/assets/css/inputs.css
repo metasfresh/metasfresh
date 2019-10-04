@@ -57,6 +57,16 @@ input {
     &.instruction-sent {
         white-space: normal;
     }
+
+    &.input-zoom {
+        display: flex;
+        align-items: center;
+        margin: 0 15px;
+    }
+    .zoom-into:hover {
+        text-decoration: underline;
+        cursor: pointer;
+    }
 }
 
 .form-group {
@@ -103,9 +113,9 @@ input {
     flex:1;
 }
 
-.form-flex-align > *:not(:last-child){
+/*.form-flex-align > *:not(:last-child){
     margin-right: .5rem;
-}
+}*/
 
 .form-flex-align input {
     flex: 2 1 auto;
@@ -786,7 +796,7 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     }
 
     .input-field {
-        padding-top: 2px;
+        /*padding-top: 2px;*/
         padding-bottom: 0;
     }
 }
@@ -851,26 +861,6 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     z-index: 50;
     margin-top:5px;
     width: 450px;
-}
-
-.quick-input-container {
-    display: flex;
-    align-items: center;
-    flex-direction: row;
-    flex:1;
-
-     > * {
-        margin:0;
-        flex:2;
-    }
-
-     .hint {
-        flex:1;
-    }
-
-     > *:first-of-type {
-        flex:8;
-    }
 }
 
 /* Others */
