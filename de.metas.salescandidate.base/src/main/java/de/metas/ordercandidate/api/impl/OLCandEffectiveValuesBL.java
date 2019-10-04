@@ -16,7 +16,10 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
@@ -190,11 +193,23 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
-	public int getC_UOM_Effective_ID(@NonNull final I_C_OLCand olCand)
+	public int getC_UOM_Effective_ID(@NonNull final I_C_OLCand olCandRecord)
 	{
-		return olCand.isManualPrice()
-				? olCand.getC_UOM_ID()
-				: olCand.getC_UOM_Internal_ID();
+		return olCandRecord.isManualPrice()
+				? getRecordOrStockUOMId(olCandRecord).getRepoId()
+				: olCandRecord.getC_UOM_Internal_ID();
+	}
+
+	@Override
+	public UomId getRecordOrStockUOMId(@NonNull final I_C_OLCand olCandRecord)
+	{
+		if (olCandRecord.getC_UOM_ID() > 0)
+		{
+			return UomId.ofRepoId(olCandRecord.getC_UOM_ID());
+		}
+		final IProductBL productBL = Services.get(IProductBL.class);
+		final UomId stockUOMId = productBL.getStockUOMId(ProductId.ofRepoId(olCandRecord.getM_Product_ID()));
+		return stockUOMId;
 	}
 
 	@Override
