@@ -1,5 +1,61 @@
 import PropTypes from 'prop-types';
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {func} dispatch
+ * @prop {bool} inProgress
+ * @prop {bool} autoFocus
+ * @prop {bool} textSelected
+ * @prop {bool} listenOnKeys
+ * @prop {func} listenOnKeysFalse
+ * @prop {func} listenOnKeysTrue
+ * @prop {array} widgetData
+ * @prop {func} handleFocus
+ * @prop {func} handlePatch
+ * @prop {func} handleBlur
+ * @prop {func} handleProcess
+ * @prop {func} handleChange
+ * @prop {func} hanndleBackdropLock
+ * @prop {func} handleZoomInto
+ * @prop {string} tabId
+ * @prop {string} viewId
+ * @prop {string} rowId
+ * @prop {string|number} dataId
+ * @prop {string} windowType
+ * @prop {string} caption
+ * @prop {string} gridAlign
+ * @prop {string} type
+ * @prop {bool} updated
+ * @prop {bool} isModal
+ * @prop {bool} modalVisible
+ * @prop {bool} filterWidget
+ * @prop {string} filterId
+ * @prop {number} id
+ * @prop {bool} range
+ * @prop {func} onShow
+ * @prop {func} onHide
+ * @prop {string} subentity
+ * @prop {string} subentityId
+ * @prop {number} tabIndex
+ * @prop {func} dropdownOpenCallback
+ * @prop {bool} fullScreen
+ * @prop {string} widgetType
+ * @prop {array} fields
+ * @prop {string} icon
+ * @prop {string} entity
+ * @prop {*} data
+ * @prop {func} closeTableField
+ * @prop {bool} attribute
+ * @prop {bool} allowShowPassword
+ * @prop {string} buttonProcessId
+ * @prop {func} onBlurWidget
+ * @prop {string|array} defaultValue
+ * @prop {bool} noLabel
+ * @prop {bool} isOpenDatePicker
+ * @prop {number} forceHeight
+ * @prop {bool} dataEntry
+ * @prop {bool} lastFormField
+ */
 export const RawWidgetPropTypes = {
   dispatch: PropTypes.func.isRequired,
   inProgress: PropTypes.bool,
