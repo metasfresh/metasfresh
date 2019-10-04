@@ -129,7 +129,7 @@ public class ViewGeoLocationsRestController
 				.map(DocumentLayoutElementFieldDescriptor::getField)
 				.collect(ImmutableSet.toImmutableSet());
 
-		// todo @teo is adding the IdFieldName a dirty hack? it is needed for bpartner window, where c_bpartner_id is not present in the list of fields. Should we add it there, or is this enough?
+		// bpartner window doesn't have a field for "c_bpartner_id", so i'm adding it like this
 		return ImmutableSet.<String>builder()
 				.addAll(fieldNames)
 				.add(viewLayout.getIdFieldName())
