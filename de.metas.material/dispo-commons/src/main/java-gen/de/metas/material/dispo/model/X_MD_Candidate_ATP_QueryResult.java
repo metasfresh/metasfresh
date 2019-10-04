@@ -15,7 +15,7 @@ public class X_MD_Candidate_ATP_QueryResult extends org.compiere.model.PO implem
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -940530131L;
+	private static final long serialVersionUID = -24794103L;
 
     /** Standard Constructor */
     public X_MD_Candidate_ATP_QueryResult (Properties ctx, int MD_Candidate_ATP_QueryResult_ID, String trxName)
@@ -40,18 +40,6 @@ public class X_MD_Candidate_ATP_QueryResult extends org.compiere.model.PO implem
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner_Customer() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_Customer_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner_Customer(org.compiere.model.I_C_BPartner C_BPartner_Customer)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_Customer_ID, org.compiere.model.I_C_BPartner.class, C_BPartner_Customer);
-	}
 
 	/** Set Kunde.
 		@param C_BPartner_Customer_ID Kunde	  */

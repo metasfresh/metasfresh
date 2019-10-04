@@ -15,7 +15,7 @@ public class X_MD_Candidate_Demand_Detail extends org.compiere.model.PO implemen
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2094397327L;
+	private static final long serialVersionUID = 1965428137L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Demand_Detail (Properties ctx, int MD_Candidate_Demand_Detail_ID, String trxName)
@@ -63,7 +63,7 @@ public class X_MD_Candidate_Demand_Detail extends org.compiere.model.PO implemen
 	}
 
 	@Override
-	public org.compiere.model.I_C_OrderLine getC_OrderLine() throws RuntimeException
+	public org.compiere.model.I_C_OrderLine getC_OrderLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class);
 	}
@@ -121,64 +121,8 @@ public class X_MD_Candidate_Demand_Detail extends org.compiere.model.PO implemen
 		return ii.intValue();
 	}
 
-	/** Set Dispo-Bedarfsdetail.
-		@param MD_Candidate_Demand_Detail_ID Dispo-Bedarfsdetail	  */
 	@Override
-	public void setMD_Candidate_Demand_Detail_ID (int MD_Candidate_Demand_Detail_ID)
-	{
-		if (MD_Candidate_Demand_Detail_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_MD_Candidate_Demand_Detail_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_MD_Candidate_Demand_Detail_ID, Integer.valueOf(MD_Candidate_Demand_Detail_ID));
-	}
-
-	/** Get Dispo-Bedarfsdetail.
-		@return Dispo-Bedarfsdetail	  */
-	@Override
-	public int getMD_Candidate_Demand_Detail_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_MD_Candidate_Demand_Detail_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_MD_Candidate_ID, de.metas.material.dispo.model.I_MD_Candidate.class);
-	}
-
-	@Override
-	public void setMD_Candidate(de.metas.material.dispo.model.I_MD_Candidate MD_Candidate)
-	{
-		set_ValueFromPO(COLUMNNAME_MD_Candidate_ID, de.metas.material.dispo.model.I_MD_Candidate.class, MD_Candidate);
-	}
-
-	/** Set Dispositionskandidat.
-		@param MD_Candidate_ID Dispositionskandidat	  */
-	@Override
-	public void setMD_Candidate_ID (int MD_Candidate_ID)
-	{
-		if (MD_Candidate_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_MD_Candidate_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_MD_Candidate_ID, Integer.valueOf(MD_Candidate_ID));
-	}
-
-	/** Get Dispositionskandidat.
-		@return Dispositionskandidat	  */
-	@Override
-	public int getMD_Candidate_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_MD_Candidate_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_ForecastLine getM_ForecastLine() throws RuntimeException
+	public org.compiere.model.I_M_ForecastLine getM_ForecastLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_ForecastLine_ID, org.compiere.model.I_M_ForecastLine.class);
 	}
@@ -231,6 +175,62 @@ public class X_MD_Candidate_Demand_Detail extends org.compiere.model.PO implemen
 	public int getM_ShipmentSchedule_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_ShipmentSchedule_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Dispo-Bedarfsdetail.
+		@param MD_Candidate_Demand_Detail_ID Dispo-Bedarfsdetail	  */
+	@Override
+	public void setMD_Candidate_Demand_Detail_ID (int MD_Candidate_Demand_Detail_ID)
+	{
+		if (MD_Candidate_Demand_Detail_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_MD_Candidate_Demand_Detail_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_MD_Candidate_Demand_Detail_ID, Integer.valueOf(MD_Candidate_Demand_Detail_ID));
+	}
+
+	/** Get Dispo-Bedarfsdetail.
+		@return Dispo-Bedarfsdetail	  */
+	@Override
+	public int getMD_Candidate_Demand_Detail_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_MD_Candidate_Demand_Detail_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate()
+	{
+		return get_ValueAsPO(COLUMNNAME_MD_Candidate_ID, de.metas.material.dispo.model.I_MD_Candidate.class);
+	}
+
+	@Override
+	public void setMD_Candidate(de.metas.material.dispo.model.I_MD_Candidate MD_Candidate)
+	{
+		set_ValueFromPO(COLUMNNAME_MD_Candidate_ID, de.metas.material.dispo.model.I_MD_Candidate.class, MD_Candidate);
+	}
+
+	/** Set Dispositionskandidat.
+		@param MD_Candidate_ID Dispositionskandidat	  */
+	@Override
+	public void setMD_Candidate_ID (int MD_Candidate_ID)
+	{
+		if (MD_Candidate_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_MD_Candidate_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_MD_Candidate_ID, Integer.valueOf(MD_Candidate_ID));
+	}
+
+	/** Get Dispositionskandidat.
+		@return Dispositionskandidat	  */
+	@Override
+	public int getMD_Candidate_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_MD_Candidate_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

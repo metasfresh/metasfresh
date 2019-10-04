@@ -202,7 +202,7 @@ public class CandidateRepositoryRetrieval
 				.id(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID()))
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(candidateRecord.getAD_Client_ID(), candidateRecord.getAD_Org_ID()))
 				.seqNo(candidateRecord.getSeqNo())
-				.type(CandidateType.valueOf(md_candidate_type))
+				.type(CandidateType.ofCode(md_candidate_type))
 
 				// if the record has a group id, then set it.
 				.groupId(MaterialDispoGroupId.ofIntOrNull(candidateRecord.getMD_Candidate_GroupId()))

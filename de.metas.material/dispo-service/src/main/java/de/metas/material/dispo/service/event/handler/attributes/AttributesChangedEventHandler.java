@@ -2,8 +2,8 @@ package de.metas.material.dispo.service.event.handler.attributes;
 
 import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -11,12 +11,15 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.attributes.AttributesChangedEvent;
 import de.metas.material.event.attributes.AttributesKeyWithASI;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*
@@ -43,11 +46,11 @@ import lombok.NonNull;
 
 @Service
 @Profile(Profiles.PROFILE_MaterialDispo)
-public class AttributesChangedHandler implements MaterialEventHandler<AttributesChangedEvent>
+public class AttributesChangedEventHandler implements MaterialEventHandler<AttributesChangedEvent>
 {
 	private final CandidateChangeService candidateChangeHandler;
 
-	public AttributesChangedHandler(
+	public AttributesChangedEventHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler)
 	{
 		this.candidateChangeHandler = candidateChangeHandler;
@@ -62,37 +65,38 @@ public class AttributesChangedHandler implements MaterialEventHandler<Attributes
 	@Override
 	public void handleEvent(final AttributesChangedEvent event)
 	{
-		final List<Candidate> candidates = createCandidates(event);
-		for (final Candidate candidate : candidates)
-		{
-			candidateChangeHandler.onCandidateNewOrChange(candidate);
-		}
+		final Candidate fromCandidate = createCandidate(event, CandidateType.ATTRIBUTES_CHANGED_FROM);
+
+		final Candidate fromCandidatePersistedWithGroupId = candidateChangeHandler.onCandidateNewOrChange(fromCandidate);
+		final MaterialDispoGroupId groupId = fromCandidatePersistedWithGroupId.getEffectiveGroupId();
+		Check.assumeNotNull(groupId, "Parameter groupId is not null");
+
+		final Candidate toCandidate = createCandidate(event, CandidateType.ATTRIBUTES_CHANGED_TO)
+				.withGroupId(groupId);
+		candidateChangeHandler.onCandidateNewOrChange(toCandidate);
 	}
 
-	private List<Candidate> createCandidates(final AttributesChangedEvent event)
-	{
-		return ImmutableList.of(
-				createCandidate(event, false),
-				createCandidate(event, true));
-	}
-
-	private Candidate createCandidate(final AttributesChangedEvent event, final boolean fromTrx)
+	private Candidate createCandidate(final AttributesChangedEvent event, final CandidateType type)
 	{
 		final BigDecimal qty;
 		final AttributesKeyWithASI attributes;
-		if (fromTrx)
+		if (CandidateType.ATTRIBUTES_CHANGED_FROM.equals(type))
 		{
 			qty = event.getQty().negate();
 			attributes = event.getOldStorageAttributes();
 		}
-		else
+		else if (CandidateType.ATTRIBUTES_CHANGED_TO.equals(type))
 		{
 			qty = event.getQty();
 			attributes = event.getNewStorageAttributes();
 		}
+		else
+		{
+			throw new AdempiereException("Invalid type: " + type); // really shall not happen
+		}
 
 		return Candidate.builderForEventDescr(event.getEventDescriptor())
-				.type(null) // TODO: ATTRIBUTES_CHANGED?
+				.type(type)
 				.materialDescriptor(MaterialDescriptor.builder()
 						.warehouseId(event.getWarehouseId())
 						.quantity(qty)

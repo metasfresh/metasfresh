@@ -142,14 +142,18 @@ public class Candidate
 						"If type={}, then the given businessCaseDetail may not be null; this={}",
 						type, this);
 				break;
-			case UNRELATED_INCREASE:
-			case UNRELATED_DECREASE:
 			case INVENTORY_UP:
 			case INVENTORY_DOWN:
+				break;
+			case UNRELATED_INCREASE:
+			case UNRELATED_DECREASE:
 				Check.errorIf(
 						transactionDetails == null || transactionDetails.isEmpty(),
 						"If type={}, then the given transactionDetails may not be null or empty; this={}",
 						type, this);
+				break;
+			case ATTRIBUTES_CHANGED_FROM:
+			case ATTRIBUTES_CHANGED_TO:
 				break;
 			default:
 				Check.errorIf(true, "Unexpected candidateType={}; this={}", type, this);
@@ -179,7 +183,7 @@ public class Candidate
 	{
 		return getClientAndOrgId().getOrgId();
 	}
-	
+
 	/**
 	 * @param addedQuantity may also be negative, in case of subtraction
 	 */

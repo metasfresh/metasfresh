@@ -160,12 +160,12 @@ public class RepositoryCommons
 
 		if (materialDescriptorQuery.getWarehouseId() != null)
 		{
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, materialDescriptorQuery.getWarehouseId());
+			builder.addEqualsFilter(I_MD_Candidate.COLUMNNAME_M_Warehouse_ID, materialDescriptorQuery.getWarehouseId());
 			atLeastOneFilterAdded = true;
 		}
 		if (materialDescriptorQuery.getProductId() > 0)
 		{
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, materialDescriptorQuery.getProductId());
+			builder.addEqualsFilter(I_MD_Candidate.COLUMNNAME_M_Product_ID, materialDescriptorQuery.getProductId());
 			atLeastOneFilterAdded = true;
 		}
 
@@ -175,17 +175,17 @@ public class RepositoryCommons
 			final CustomerIdOperator customerIdOperator = materialDescriptorQuery.getCustomerIdOperator();
 			if (CustomerIdOperator.GIVEN_ID_ONLY.equals(customerIdOperator))
 			{
-				builder.addEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_Customer_ID, customer.getBpartnerId());
+				builder.addEqualsFilter(I_MD_Candidate.COLUMNNAME_C_BPartner_Customer_ID, customer.getBpartnerId());
 			}
 			else if (CustomerIdOperator.GIVEN_ID_OR_NULL.equals(customerIdOperator))
 			{
-				builder.addInArrayFilter(I_MD_Candidate.COLUMN_C_BPartner_Customer_ID, customer.getBpartnerId(), null);
+				builder.addInArrayFilter(I_MD_Candidate.COLUMNNAME_C_BPartner_Customer_ID, customer.getBpartnerId(), null);
 			}
 			atLeastOneFilterAdded = true;
 		}
 		else if (customer.isNone())
 		{
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_Customer_ID, null);
+			builder.addEqualsFilter(I_MD_Candidate.COLUMNNAME_C_BPartner_Customer_ID, null);
 			atLeastOneFilterAdded = true;
 		}
 

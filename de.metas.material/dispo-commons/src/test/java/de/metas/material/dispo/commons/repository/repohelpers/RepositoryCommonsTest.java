@@ -92,7 +92,7 @@ public class RepositoryCommonsTest
 		final ICompositeQueryFilter<I_MD_Candidate> compositeFilter = queryBuilder.getCompositeFilter();
 
 		assertThat(compositeFilter).hasActiveRecordQueryFilter();
-		assertThat(compositeFilter).hasEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, PRODUCT_ID);
+		assertThat(compositeFilter).hasEqualsFilter(I_MD_Candidate.COLUMNNAME_M_Product_ID, PRODUCT_ID);
 		assertThat(compositeFilter).hasCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.EQUAL, TimeUtil.asTimestamp(NOW));
 	}
 
@@ -100,21 +100,21 @@ public class RepositoryCommonsTest
 	public void mkQueryBuilder_with_bpartner_id()
 	{
 		final ICompositeQueryFilter<I_MD_Candidate> compositeFilter = setupAndInvokeWithBPartnerId(BPartnerClassifier.specific(BPARTNER_ID));
-		assertThat(compositeFilter).hasEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_Customer_ID, BPARTNER_ID);
+		assertThat(compositeFilter).hasEqualsFilter(I_MD_Candidate.COLUMNNAME_C_BPartner_Customer_ID, BPARTNER_ID);
 	}
 
 	@Test
 	public void mkQueryBuilder_with_any_bpartner_id()
 	{
 		final ICompositeQueryFilter<I_MD_Candidate> compositeFilter = setupAndInvokeWithBPartnerId(BPartnerClassifier.any());
-		assertThat(compositeFilter).hasNoFilterRegarding(I_MD_Candidate.COLUMN_C_BPartner_Customer_ID);
+		assertThat(compositeFilter).hasNoFilterRegarding(I_MD_Candidate.COLUMNNAME_C_BPartner_Customer_ID);
 	}
 
 	@Test
 	public void mkQueryBuilder_with_none_bpartner_id()
 	{
 		final ICompositeQueryFilter<I_MD_Candidate> compositeFilter = setupAndInvokeWithBPartnerId(BPartnerClassifier.none());
-		assertThat(compositeFilter).hasEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_Customer_ID, null);
+		assertThat(compositeFilter).hasEqualsFilter(I_MD_Candidate.COLUMNNAME_C_BPartner_Customer_ID, null);
 	}
 
 	private ICompositeQueryFilter<I_MD_Candidate> setupAndInvokeWithBPartnerId(final BPartnerClassifier customer)
@@ -149,7 +149,7 @@ public class RepositoryCommonsTest
 		final ICompositeQueryFilter<I_MD_Candidate> compositeFilter = queryBuilder.getCompositeFilter();
 
 		assertThat(compositeFilter).hasActiveRecordQueryFilter();
-		assertThat(compositeFilter).hasEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, PRODUCT_ID);
+		assertThat(compositeFilter).hasEqualsFilter(I_MD_Candidate.COLUMNNAME_M_Product_ID, PRODUCT_ID);
 		assertThat(compositeFilter).hasCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.EQUAL, TimeUtil.asTimestamp(NOW));
 
 		assertThat(compositeFilter).hasEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, 30);

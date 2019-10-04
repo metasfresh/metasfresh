@@ -103,11 +103,11 @@ import lombok.experimental.UtilityClass;
 		}
 		else if (bpartner.isNone())
 		{
-			queryBuilder.addEqualsFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_C_BPartner_Customer_ID, null);
+			queryBuilder.addEqualsFilter(I_MD_Candidate_ATP_QueryResult.COLUMNNAME_C_BPartner_Customer_ID, null);
 		}
 		else // specific
 		{
-			queryBuilder.addInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_C_BPartner_Customer_ID, bpartner.getBpartnerId(), null);
+			queryBuilder.addInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMNNAME_C_BPartner_Customer_ID, bpartner.getBpartnerId(), null);
 		}
 
 		//
