@@ -107,7 +107,7 @@ public class MaterialCockpitRowFactoryTest
 		product.setName("productName");
 		product.setIsStocked(true);
 		product.setC_UOM_ID(uom.getC_UOM_ID());
-		product.setM_Product_Category(productCategory);
+		product.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
 		save(product);
 
 		attr1 = attributesTestHelper.createM_Attribute("test1", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
