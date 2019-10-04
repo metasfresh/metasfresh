@@ -1,9 +1,8 @@
 import PropTypes from 'prop-types';
 import { push } from 'react-router-redux';
 import { Map } from 'immutable';
-import Moment from 'moment';
-import { DateTime } from 'luxon';
-// import { isLuxonObject } from './index';
+import Moment from 'moment-timezone';
+
 import { getItemsByProperty, nullToEmptyStrings } from './index';
 import { getSelection, getSelectionInstant } from '../reducers/windowHandler';
 
@@ -250,41 +249,29 @@ export function parseToDisplay(fieldsByName) {
   return parseDateToReadable(nullToEmptyStrings(fieldsByName));
 }
 
-// i.e 2018-01-27T17:00:00.000-06:00
-export function parseDateWithCurrenTimezone(value) {
+// This doesn't set the TZ anymore, as we're handling this globally/in datepicker
+export function parseDateWithCurrentTimezone(value) {
   if (value) {
-    let luxonOffset = 0;
-
-    if (!Moment.isMoment(value)) {
-      if (value instanceof Date) {
-        luxonOffset = DateTime.fromISO(value.toISOString()).offset;
-      } else {
-        luxonOffset = DateTime.fromISO(value).offset;
-      }
-
-      value = Moment(value);
-    } else {
-      luxonOffset = DateTime.fromISO(value.toISOString()).offset;
+    if (Moment.isMoment(value)) {
+      return value;
     }
-
-    value.utcOffset(luxonOffset);
-
-    return value;
+    return Moment(value);
   }
   return '';
 }
 
 function parseDateToReadable(fieldsByName) {
-  const dateParse = ['Date', 'DateTime', 'Time'];
+  const dateParse = ['Date', 'ZonedDateTime', 'Time', 'Timestamp'];
 
   return Object.keys(fieldsByName).reduce((acc, fieldName) => {
     const field = fieldsByName[fieldName];
     const isDateField = dateParse.indexOf(field.widgetType) > -1;
+
     acc[fieldName] =
       isDateField && field.value
         ? {
             ...field,
-            value: parseDateWithCurrenTimezone(field.value),
+            value: parseDateWithCurrentTimezone(field.value),
           }
         : field;
     return acc;

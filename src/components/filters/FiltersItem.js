@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import TetherComponent from 'react-tether';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
+import Moment from 'moment-timezone';
 
 import keymap from '../../shortcuts/keymap';
 import OverlayField from '../app/OverlayField';
@@ -12,8 +13,8 @@ import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
 import RawWidget from '../widget/RawWidget';
 import { openFilterBox, closeFilterBox } from '../../actions/WindowActions';
-import { parseDateWithCurrenTimezone } from '../../utils/documentListHelper';
-import { DATE_FIELDS } from '../../constants/Constants';
+import { parseDateWithCurrentTimezone } from '../../utils/documentListHelper';
+import { DATE_FIELDS, DATE_FIELD_FORMATS } from '../../constants/Constants';
 class FiltersItem extends Component {
   constructor(props) {
     super(props);
@@ -155,12 +156,9 @@ class FiltersItem extends Component {
     }
   };
 
-  // TODO: Fix the timezone issue
-  // Right now, it's ignoring the returning timezone from back-end
-  // and use the browser's default timezone
   parseDateToReadable = (widgetType, value) => {
     if (DATE_FIELDS.indexOf(widgetType) > -1) {
-      return parseDateWithCurrenTimezone(value);
+      return parseDateWithCurrentTimezone(value, widgetType);
     }
     return value;
   };
@@ -372,7 +370,7 @@ class FiltersItem extends Component {
               <div className="col-sm-12">
                 {filter.parameters &&
                   filter.parameters.map((item, index) => {
-                    // item.field = data.filterId;
+                    const { widgetType } = item;
                     item.field = item.parameterName;
 
                     return (
@@ -390,16 +388,22 @@ class FiltersItem extends Component {
                             item.defaultValue
                           )
                         }
-                        handleChange={(property, value, id, valueTo) =>
-                          this.setValue(
-                            property,
-                            value,
-                            id,
-                            valueTo,
-                            filter.filterId,
-                            item.defaultValue
-                          )
-                        }
+                        handleChange={(property, value, id, valueTo) => {
+                          if (
+                            (DATE_FIELD_FORMATS[widgetType] &&
+                              Moment.isMoment(value)) ||
+                            !DATE_FIELD_FORMATS[widgetType]
+                          ) {
+                            this.setValue(
+                              property,
+                              value,
+                              id,
+                              valueTo,
+                              filter.filterId,
+                              item.defaultValue
+                            );
+                          }
+                        }}
                         widgetType={item.widgetType}
                         fields={[item]}
                         type={item.type}

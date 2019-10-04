@@ -4,22 +4,42 @@ import React, { Component } from 'react';
 import { Map } from 'immutable';
 import _ from 'lodash';
 
+import { DATE_FIELDS } from '../../constants/Constants';
+import {
+  generateMomentObj,
+  getFormatForDateField,
+} from '../widget/RawWidgetHelpers';
+
 import TableCell from '../table/TableCell';
 import FiltersFrequent from './FiltersFrequent';
 import FiltersNotFrequent from './FiltersNotFrequent';
 
+/**
+ * @file Class based component.
+ * @module Filters
+ * @extends Component
+ */
 class Filters extends Component {
   state = {
     activeFilter: null,
     activeFiltersCaptions: null,
+    flatFiltersMap: null,
     notValidFields: null,
     widgetShown: false,
   };
 
+  /**
+   * @method UNSAFE_componentWillReceiveProps
+   * @summary ToDo: Describe the method
+   */
   UNSAFE_componentWillReceiveProps() {
     this.parseActiveFilters();
   }
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method
+   */
   componentDidMount() {
     this.parseActiveFilters();
   }
@@ -27,7 +47,9 @@ class Filters extends Component {
   // PARSING FILTERS ---------------------------------------------------------
 
   /*
-   * parseActiveFilters - this function does two things:
+   * parseActiveFilters - this function does three things:
+   *  - creates a flat map of existing filter fields to store the widgetType for
+        further processing
    *  - creates a local copy of active filters object including filters that
    *    only have defaultValues set. `defaultVal` flag tells us, that this
    *    filter has only defaultValues, and no values set by the user. We need
@@ -46,10 +68,15 @@ class Filters extends Component {
    *  - otherwise add parameter and filter to local active filters and set
    *    the `defaultVal` to true as apparently there are no values set
    */
+  /**
+   * @method parseActiveFilters
+   * @summary ToDo: Describe the method
+   */
   parseActiveFilters = () => {
     let { filtersActive, filterData, initialValuesNulled } = this.props;
     let activeFilters = _.cloneDeep(filtersActive);
     let filtersData = Map(filterData);
+    const flatFiltersMap = {};
     const activeFiltersCaptions = {};
 
     // find any filters with default values first and extend
@@ -59,8 +86,12 @@ class Filters extends Component {
         let paramsArray = [];
 
         outerParameters: for (let parameter of filter.parameters) {
-          const { defaultValue, parameterName } = parameter;
+          const { defaultValue, parameterName, widgetType } = parameter;
           const nulledFilter = initialValuesNulled.get(filterId);
+
+          flatFiltersMap[`${filterId}-${parameterName}`] = {
+            widgetType,
+          };
 
           if (defaultValue && (!activeFilters || !activeFilters.size)) {
             activeFilters = Map({
@@ -205,15 +236,22 @@ class Filters extends Component {
       this.setState({
         activeFilter: activeFilters.toIndexedSeq().toArray(),
         activeFiltersCaptions,
+        flatFiltersMap,
       });
     } else {
       this.setState({
         activeFilter: null,
         activeFiltersCaptions: null,
+        flatFiltersMap,
       });
     }
   };
 
+  /**
+   * @method sortFilters
+   * @summary ToDo: Describe the method
+   * @param {array} data
+   */
   sortFilters = data => {
     return {
       frequentFilters: this.annotateFilters(
@@ -234,6 +272,11 @@ class Filters extends Component {
     };
   };
 
+  /**
+   * @method isFilterValid
+   * @summary ToDo: Describe the method
+   * @param {*} filters
+   */
   isFilterValid = filters => {
     if (filters.parameters) {
       return !filters.parameters.filter(item => item.mandatory && !item.value)
@@ -243,6 +286,11 @@ class Filters extends Component {
     return true;
   };
 
+  /**
+   * @method isFilterActive
+   * @summary ToDo: Describe the method
+   * @param {*} filterId
+   */
   isFilterActive = filterId => {
     const { activeFilter } = this.state;
 
@@ -258,6 +306,11 @@ class Filters extends Component {
     return false;
   };
 
+  /**
+   * @method parseToPatch
+   * @summary ToDo: Describe the method
+   * @param {*} params
+   */
   parseToPatch = params => {
     return params.reduce((acc, param) => {
       if (
@@ -276,9 +329,13 @@ class Filters extends Component {
   };
 
   // SETTING FILTERS  --------------------------------------------------------
-
-  /*
-   * This method should update docList
+  /**
+   * @method applyFilters
+   * @summary This method should update docList
+   * @param {*} isActive
+   * @param {*} captionValue
+   * @param {object} filter
+   * @param {*} cb
    */
   // eslint-disable-next-line no-unused-vars
   applyFilters = ({ isActive, captionValue, ...filter }, cb) => {
@@ -305,10 +362,17 @@ class Filters extends Component {
     );
   };
 
+  /**
+   * @method setFilterActive
+   * @summary This function merges new filters that are to be activated with the existing
+   *  active filters. Additionally we format date fields accordingly so that the backend
+   *  accepts them.
+   * @param {object} filterToAdd
+   */
   setFilterActive = filterToAdd => {
     const { updateDocList } = this.props;
-
     let { filtersActive } = this.props;
+    const { flatFiltersMap } = this.state;
     let activeFilters = Map(filtersActive);
 
     activeFilters = activeFilters.filter(
@@ -316,12 +380,40 @@ class Filters extends Component {
     );
     activeFilters = activeFilters.set(filterToAdd.filterId, filterToAdd);
 
+    if (flatFiltersMap) {
+      activeFilters = activeFilters.map((filter, filterId) => {
+        filter.parameters &&
+          filter.parameters.forEach(parameter => {
+            const { value, valueTo, parameterName } = parameter;
+            const singleFilter = flatFiltersMap[`${filterId}-${parameterName}`];
+
+            if (
+              singleFilter &&
+              DATE_FIELDS.indexOf(singleFilter.widgetType) > -1
+            ) {
+              const format = getFormatForDateField(singleFilter.widgetType);
+
+              if (value) {
+                parameter.value = generateMomentObj(value, format);
+              }
+              if (valueTo) {
+                parameter.valueTo = generateMomentObj(valueTo, format);
+              }
+            }
+          });
+
+        return filter;
+      });
+    }
+
     updateDocList(activeFilters);
   };
 
-  /*
-   *  Method to lock backdrop, to do not close on click onClickOutside
+  /**
+   * @method handleShow
+   * @summary Method to lock backdrop, to do not close on click onClickOutside
    *  widgets that are bigger than filter wrapper
+   * @param {*} value
    */
   handleShow = value => {
     this.setState({
@@ -329,6 +421,11 @@ class Filters extends Component {
     });
   };
 
+  /**
+   * @method clearFilters
+   * @summary ToDo: Describe the method
+   * @param {*} filterToClear
+   */
   clearFilters = filterToClear => {
     const { updateDocList } = this.props;
 
@@ -343,12 +440,21 @@ class Filters extends Component {
     }
   };
 
+  /**
+   * @method dropdownToggled
+   * @summary ToDo: Describe the method
+   */
   dropdownToggled = () => {
     this.setState({
       notValidFields: false,
     });
   };
 
+  /**
+   * @method annotateFilters
+   * @summary ToDo: Describe the method
+   * @param {*} unannotatedFilters
+   */
   annotateFilters = unannotatedFilters => {
     const { activeFilter } = this.state;
 
@@ -380,7 +486,10 @@ class Filters extends Component {
   };
 
   // RENDERING FILTERS -------------------------------------------------------
-
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   */
   render() {
     const { filterData, windowType, viewId, resetInitialValues } = this.props;
     const { frequentFilters, notFrequentFilters } = this.sortFilters(
@@ -445,10 +554,21 @@ class Filters extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {string} windowType
+ * @prop {func} resetInitialValues
+ * @prop {string} [viewId]
+ * @prop {*} [filtersActive]
+ * @prop {*} [filterData]
+ * @prop {*} [initialValuesNulled]
+ * @prop {*} [updateDocList]
+ */
 Filters.propTypes = {
   windowType: PropTypes.string.isRequired,
   resetInitialValues: PropTypes.func.isRequired,
   viewId: PropTypes.string,
+  updateDocList: PropTypes.any,
 
   // this should be an immutable Map
   filtersActive: PropTypes.any,

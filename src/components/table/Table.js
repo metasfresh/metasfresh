@@ -7,6 +7,7 @@ import { connect } from 'react-redux';
 import classnames from 'classnames';
 import currentDevice from 'current-device';
 import counterpart from 'counterpart';
+import hash from 'object-hash';
 
 import { deleteRequest } from '../../actions/GenericActions';
 import {
@@ -998,7 +999,8 @@ class Table extends Component {
           viewId,
           supportOpenRecord,
         }}
-        key={`${i}-${docId}`}
+        dataKey={hash(item.fieldsByName)}
+        key={`${i}-${viewId}`}
         collapsed={
           collapsedParentsRows &&
           collapsedParentsRows.indexOf(item[keyProperty]) > -1

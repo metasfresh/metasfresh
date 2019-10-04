@@ -4,7 +4,7 @@
 import React, { Component } from 'react';
 
 import RawWidget from '../widget/RawWidget';
-import { parseDateWithCurrenTimezone } from '../../utils/documentListHelper';
+import { parseDateWithCurrentTimezone } from '../../utils/documentListHelper';
 import { DATE_FIELDS } from '../../constants/Constants';
 
 class InlineFilterItem extends Component {
@@ -73,12 +73,9 @@ class InlineFilterItem extends Component {
     }
   };
 
-  // TODO: Fix the timezone issue
-  // Right now, it's ignoring the returning timezone from back-end
-  // and use the browser's default timezone
   parseDateToReadable = (widgetType, value) => {
     if (DATE_FIELDS.indexOf(widgetType) > -1) {
-      return parseDateWithCurrenTimezone(value);
+      return parseDateWithCurrentTimezone(value);
     }
     return value;
   };

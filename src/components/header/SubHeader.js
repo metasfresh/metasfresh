@@ -15,12 +15,21 @@ import BookmarkButton from './BookmarkButton';
 
 const simplifyName = name => name.toLowerCase().replace(/\s/g, '');
 
+/**
+ * @file Class based component.
+ * @module SubHeader
+ * @extends Component
+ */
 class SubHeader extends Component {
   state = {
     pdfSrc: null,
     elementPath: '',
   };
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method.
+   */
   componentDidMount() {
     document.getElementsByClassName('js-subheader-column')[0].focus();
 
@@ -35,6 +44,11 @@ class SubHeader extends Component {
     }
   }
 
+  /**
+   * @method handleKeyDown
+   * @summary ToDo: Describe the method.
+   * @param {*} e
+   */
   handleKeyDown = e => {
     const { closeSubheader } = this.props;
 
@@ -93,6 +107,11 @@ class SubHeader extends Component {
     }
   };
 
+  /**
+   * @method handleClickOutside
+   * @summary ToDo: Describe the method.
+   * @param {*} e
+   */
   handleClickOutside = event => {
     const { closeSubheader } = this.props;
     const { target } = event;
@@ -105,10 +124,19 @@ class SubHeader extends Component {
     }
   };
 
+  /**
+   * @method toggleAttachmentDelete
+   * @summary ToDo: Describe the method.
+   * @param {*} value
+   */
   toggleAttachmentDelete = value => {
     this.setState({ attachmentHovered: value });
   };
 
+  /**
+   * @method getColumnActiveElem
+   * @summary ToDo: Describe the method.
+   */
   getColumnActiveElem = () => {
     const active = document.activeElement;
     if (active.classList.contains('js-subheader-item')) {
@@ -118,6 +146,10 @@ class SubHeader extends Component {
     }
   };
 
+  /**
+   * @method getItemActiveElem
+   * @summary ToDo: Describe the method.
+   */
   getItemActiveElem = () => {
     const active = document.activeElement;
 
@@ -128,17 +160,31 @@ class SubHeader extends Component {
     }
   };
 
+  /**
+   * @method handleUpdateBreadcrumb
+   * @summary ToDo: Describe the method.
+   * @param {*} nodes
+   */
   handleUpdateBreadcrumb = nodes => {
     const { dispatch } = this.props;
     nodes.map(node => dispatch(updateBreadcrumb(node)));
   };
 
+  /**
+   * @method handleDownloadSelected
+   * @summary ToDo: Describe the method.
+   * @param {*} event
+   */
   handleDownloadSelected = event => {
     if (this.props.selected.length === 0) {
       event.preventDefault();
     }
   };
 
+  /**
+   * @method handleAboutButton
+   * @summary ToDo: Describe the method.
+   */
   handleAboutButton = () => {
     const {
       selected,
@@ -171,6 +217,15 @@ class SubHeader extends Component {
     }
   };
 
+  /**
+   * @method renderDocLink
+   * @summary ToDo: Describe the method.
+   * @param {*} action
+   * @param {*} handler
+   * @param {*} icon
+   * @param {*} caption
+   * @param {*} hotkey
+   */
   renderDocLink = ({ action, handler, icon, caption, hotkey }) => {
     const { closeSubheader } = this.props;
 
@@ -194,6 +249,10 @@ class SubHeader extends Component {
     );
   };
 
+  /**
+   * @method renderDocLinks
+   * @summary ToDo: Describe the method.
+   */
   renderDocLinks = () => {
     const {
       dataId,
@@ -276,6 +335,10 @@ class SubHeader extends Component {
     return docLinks;
   };
 
+  /**
+   * @method renderNavColumn
+   * @summary ToDo: Describe the method.
+   */
   renderNavColumn = () => {
     const {
       closeSubheader,
@@ -401,6 +464,10 @@ class SubHeader extends Component {
     );
   };
 
+  /**
+   * @method renderActionsColumn
+   * @summary ToDo: Describe the method.
+   */
   renderActionsColumn = () => {
     const {
       windowId,
@@ -434,6 +501,10 @@ class SubHeader extends Component {
     );
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     return (
       <div
@@ -455,15 +526,63 @@ class SubHeader extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {func} activeTab
+ * @prop {*} closeSubheader
+ * @prop {*} dataId
+ * @prop {string} dispatch
+ * @prop {*} docNo
+ * @prop {*} editmode
+ * @prop {*} entity
+ * @prop {*} handleClone
+ * @prop {*} handleDelete
+ * @prop {*} handleEmail
+ * @prop {*} handleLetter
+ * @prop {*} handleEditModeToggle
+ * @prop {*} handlePrint
+ * @prop {*} notfound
+ * @prop {func} openModal
+ * @prop {func} openModalRow
+ * @prop {*} query
+ * @prop {*} redirect
+ * @prop {*} selected
+ * @prop {*} siteName
+ * @prop {*} standardActions
+ * @prop {string} viewId
+ * @prop {string} windowId
+ */
 SubHeader.propTypes = {
-  dispatch: PropTypes.func.isRequired,
   activeTab: PropTypes.string,
-  windowId: PropTypes.string.isRequired,
-  viewId: PropTypes.string,
-  openModalRow: PropTypes.func,
+  closeSubheader: PropTypes.any,
+  dataId: PropTypes.any,
+  dispatch: PropTypes.func.isRequired,
+  docNo: PropTypes.any,
+  editmode: PropTypes.any,
+  entity: PropTypes.any,
+  handleClone: PropTypes.any,
+  handleDelete: PropTypes.any,
+  handleEmail: PropTypes.any,
+  handleLetter: PropTypes.any,
+  handleEditModeToggle: PropTypes.any,
+  handlePrint: PropTypes.any,
+  notfound: PropTypes.any,
   openModal: PropTypes.func,
+  openModalRow: PropTypes.func,
+  query: PropTypes.any,
+  redirect: PropTypes.any,
+  selected: PropTypes.any,
+  siteName: PropTypes.any,
+  standardActions: PropTypes.any,
+  viewId: PropTypes.string,
+  windowId: PropTypes.string.isRequired,
 };
 
+/**
+ * @method mapStateToProps
+ * @summary ToDo: Describe the method.
+ * @param {object} state
+ */
 const mapStateToProps = (state, props) => ({
   standardActions: state.windowHandler.master.standardActions,
   selected: getSelectionInstant(

@@ -3,6 +3,11 @@ import PropTypes from 'prop-types';
 
 import { Shortcut } from '../keyshortcuts';
 
+/**
+ * @file Class based component.
+ * @module QuickActionsContextShortcuts
+ * @extends Component
+ */
 export default class QuickActionsContextShortcuts extends Component {
   handlers = {
     QUICK_ACTION_POS: event => {
@@ -27,6 +32,11 @@ export default class QuickActionsContextShortcuts extends Component {
     },
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     return [
       <Shortcut
@@ -43,6 +53,12 @@ export default class QuickActionsContextShortcuts extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {func} handleClick
+ * @prop {func} onClick
+ * @prop {bool} [stopPropagation]
+ */
 QuickActionsContextShortcuts.propTypes = {
   handleClick: PropTypes.func.isRequired,
   onClick: PropTypes.func.isRequired,

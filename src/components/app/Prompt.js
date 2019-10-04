@@ -4,11 +4,21 @@ import { connect } from 'react-redux';
 
 import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 
+/**
+ * @file Class based component.
+ * @module Prompt
+ * @extends Component
+ */
 class Prompt extends Component {
   constructor(props) {
     super(props);
   }
 
+  /**
+   * @method renderCancelButton
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   renderCancelButton = () => {
     const { buttons } = this.props;
     return (
@@ -21,6 +31,11 @@ class Prompt extends Component {
     );
   };
 
+  /**
+   * @method renderSubmitButton
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   renderSubmitButton = () => {
     const { buttons } = this.props;
     return (
@@ -33,6 +48,11 @@ class Prompt extends Component {
     );
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     const { onCancelClick, title, buttons } = this.props;
     const { cancel, submit } = buttons;
@@ -64,11 +84,23 @@ class Prompt extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {func} dispatch
+ * @prop {string} text
+ * @prop {func} [onCancelClick]
+ * @prop {func} [onSubmitClick]
+ * @prop {*} [title]
+ * @prop {*} [buttons]
+ * @todo Check title, buttons. Which proptype? Required or optional?
+ */
 Prompt.propTypes = {
   dispatch: PropTypes.func.isRequired,
   text: PropTypes.string.isRequired,
   onCancelClick: PropTypes.func,
   onSubmitClick: PropTypes.func,
+  title: PropTypes.any,
+  buttons: PropTypes.any,
 };
 
 export default connect()(Prompt);

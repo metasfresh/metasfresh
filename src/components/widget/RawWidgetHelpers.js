@@ -1,12 +1,40 @@
-import Moment from 'moment';
+import Moment from 'moment-timezone';
 
-import { DATE_FORMAT } from '../../constants/Constants';
+import {
+  DATE_FORMAT,
+  TIME_FORMAT,
+  DATE_TIMEZONE_FORMAT,
+} from '../../constants/Constants';
 
-export function generateMomentObj(value) {
-  if (Moment.isMoment(value)) {
-    return value;
+/*
+ * Helper function returning proper date field formatting depending on the
+ * given widget type
+ *
+ * @param {string} widgetType
+ * @return {string} format
+ */
+export function getFormatForDateField(widgetType) {
+  let fmt = DATE_TIMEZONE_FORMAT;
+  if (widgetType === `Date`) {
+    fmt = DATE_FORMAT;
+  } else if (widgetType === `Time`) {
+    fmt = TIME_FORMAT;
   }
-  return value ? Moment(value).format(DATE_FORMAT) : null;
+
+  return fmt;
+}
+
+/*
+ * Helper function to turn date value into a Moment object and optionally format it.
+ *
+ * @param {object} value
+ * @param {string} [FORMAT]
+ */
+export function generateMomentObj(value, FORMAT) {
+  if (Moment.isMoment(value)) {
+    return value.format(FORMAT);
+  }
+  return value ? Moment(value).format(FORMAT) : null;
 }
 
 // TODO: No idea why somebody decided to reimplement classnames instead

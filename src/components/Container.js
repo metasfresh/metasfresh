@@ -8,7 +8,16 @@ import Modal from './app/Modal';
 import RawModal from './app/RawModal';
 import Header from './header/Header';
 
+/**
+ * @file Class based component.
+ * @module Container
+ * @extends Component
+ */
 class Container extends Component {
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const {
       docActionElem,
@@ -214,12 +223,98 @@ class Container extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} actions
+ * @prop {*} activeTab
+ * @prop {*} attachments
+ * @prop {*} breadcrumb
+ * @prop {*} children
+ * @prop {bool} connectionError
+ * @prop {*} closeModalCallback
+ * @prop {string} dataId
+ * @prop {*} docActionElem
+ * @prop {*} docStatusData
+ * @prop {*} docNoData
+ * @prop {string} docId
+ * @prop {*} docSummaryData
+ * @prop {*} dropzoneFocused
+ * @prop {*} editmode
+ * @prop {*} entity
+ * @prop {*} handleDeletedStatus
+ * @prop {*} handleEditModeToggle
+ * @prop {*} hideHeader
+ * @prop {*} includedView
+ * @prop {string} indicator
+ * @prop {bool} isDocumentNotSaved
+ * @prop {*} masterDocumentList
+ * @prop {*} modal
+ * @prop {*} modalDescription
+ * @prop {*} modalTitle
+ * @prop {*} notfound
+ * @prop {*} noMargin
+ * @prop {*} pluginComponents
+ * @prop {object} pluginModal
+ * @prop {*} pluginComponents
+ * @prop {*} processStatus
+ * @prop {*} query
+ * @prop {*} rawModal
+ * @prop {*} references
+ * @prop {*} showIndicator
+ * @prop {*} showSidelist
+ * @prop {*} setModalDescription
+ * @prop {*} setModalTitle
+ * @prop {*} siteName
+ * @prop {*} windowType
+ */
 Container.propTypes = {
+  actions: PropTypes.any,
+  activeTab: PropTypes.any,
+  attachments: PropTypes.any,
+  breadcrumb: PropTypes.any,
+  children: PropTypes.any,
+  closeModalCallback: PropTypes.any,
   connectionError: PropTypes.bool,
+  dataId: PropTypes.any,
+  docActionElem: PropTypes.any,
+  docId: PropTypes.any,
+  docNoData: PropTypes.any,
+  docSummaryData: PropTypes.any,
+  docStatusData: PropTypes.any,
+  dropzoneFocused: PropTypes.any,
+  editmode: PropTypes.any,
+  entity: PropTypes.any,
+  hideHeader: PropTypes.any,
+  handleDeletedStatus: PropTypes.any,
+  handleEditModeToggle: PropTypes.any,
+  indicator: PropTypes.any,
+  includedView: PropTypes.any,
+  isDocumentNotSaved: PropTypes.any,
+  masterDocumentList: PropTypes.any,
+  modal: PropTypes.any,
+  modalDescription: PropTypes.any,
+  modalTitle: PropTypes.any,
+  noMargin: PropTypes.any,
+  notfound: PropTypes.any,
   pluginModal: PropTypes.object,
   pluginComponents: PropTypes.any,
+  processStatus: PropTypes.any,
+  query: PropTypes.any,
+  rawModal: PropTypes.any,
+  references: PropTypes.any,
+  showIndicator: PropTypes.any,
+  showSidelist: PropTypes.any,
+  siteName: PropTypes.any,
+  setModalDescription: PropTypes.any,
+  setModalTitle: PropTypes.any,
+  windowType: PropTypes.any,
 };
 
+/**
+ * @method mapStateToProps
+ * @summary ToDo: Describe the method.
+ * @param {object} state
+ */
 const mapStateToProps = state => ({
   connectionError: state.windowHandler.connectionError || false,
   pluginComponents: state.pluginsHandler.components,

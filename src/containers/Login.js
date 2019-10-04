@@ -8,11 +8,19 @@ import LoginForm from '../components/app/LoginForm';
 
 const BROWSER = detect();
 
+/**
+ * @file Class based component.
+ * @module Login
+ * @extends Component
+ */
 class Login extends Component {
   constructor(props) {
     super(props);
   }
-
+  /**
+   * @method UNSAFE_componentWillMount
+   * @summary ToDo: Describe the method.
+   */
   UNSAFE_componentWillMount() {
     const { logged, dispatch } = this.props;
     if (logged) {
@@ -20,6 +28,10 @@ class Login extends Component {
     }
   }
 
+  /**
+   * @method browserSupport
+   * @summary ToDo: Describe the method.
+   */
   browserSupport = (...supportedBrowsers) => {
     const userBrowser = BROWSER.name;
     let isSupported = false;
@@ -32,6 +44,10 @@ class Login extends Component {
     return isSupported;
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const { redirect, auth, splat, token } = this.props;
     const isYourBrowserSupported = this.browserSupport('chrome');
@@ -53,6 +69,14 @@ class Login extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {func} dispatch
+ * @prop {bool} logged
+ * @prop {string} redirect
+ * @prop {string} splat
+ * @prop {string} token
+ */
 Login.propTypes = {
   dispatch: PropTypes.func.isRequired,
   logged: PropTypes.bool,

@@ -14,6 +14,11 @@ import { DATE_FIELD_TYPES, TIME_FIELD_TYPES } from '../../constants/Constants';
 const classes = `btn btn-filter
 btn-meta-outline-secondary btn-sm toggle-filters`;
 
+/**
+ * @file Class based component.
+ * @module FiltersFrequent
+ * @extends PureComponent
+ */
 class FiltersFrequent extends PureComponent {
   state = { openFilterId: null };
   deviceType = null;
@@ -24,22 +29,44 @@ class FiltersFrequent extends PureComponent {
     this.deviceType = currentDevice.type;
   }
 
+  /**
+   * @method toggleFilter
+   * @summary ToDo: Describe the method
+   * @param {*} index
+   * @todo Write the documentation
+   */
   toggleFilter = index => {
     this.setState({
       openFilterId: index,
     });
   };
 
+  /**
+   * @method findActiveFilter
+   * @summary ToDo: Describe the method
+   * @param {*} id
+   * @todo Write the documentation
+   */
   findActiveFilter = id => {
     const { active } = this.props;
 
     return active ? active.find(item => item.filterId === id) : null;
   };
 
+  /**
+   * @method handleClickOutside
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleClickOutside = () => {
     this.outsideClick();
   };
 
+  /**
+   * @method outsideClick
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   outsideClick = () => {
     const { widgetShown, dropdownToggled, allowOutsideClick } = this.props;
     if (allowOutsideClick) {
@@ -48,6 +75,11 @@ class FiltersFrequent extends PureComponent {
     }
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     const {
       data,
@@ -183,14 +215,47 @@ class FiltersFrequent extends PureComponent {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {bool} allowOutsideClick
+ * @prop {bool} modalVisible
+ * @prop {array} [active]
+ * @prop {*} [filtersWrapper]
+ * @prop {object} [activeFiltersCaptions]
+ * @prop {*} data
+ * @prop {*} windowType
+ * @prop {*} notValidFields
+ * @prop {*} viewId
+ * @prop {*} handleShow
+ * @prop {*} applyFilters
+ * @prop {*} clearFilters
+ * @prop {*} widgetShown
+ * @prop {*} dropdownToggled
+ * @todo Check props. Which proptype? Required or optional?
+ */
 FiltersFrequent.propTypes = {
   allowOutsideClick: PropTypes.bool.isRequired,
   modalVisible: PropTypes.bool.isRequired,
   active: PropTypes.array,
   filtersWrapper: PropTypes.any,
   activeFiltersCaptions: PropTypes.object,
+  data: PropTypes.any,
+  windowType: PropTypes.any,
+  notValidFields: PropTypes.any,
+  viewId: PropTypes.any,
+  handleShow: PropTypes.any,
+  applyFilters: PropTypes.any,
+  clearFilters: PropTypes.any,
+  widgetShown: PropTypes.any,
+  dropdownToggled: PropTypes.any,
 };
 
+/**
+ * @method mapStateToProps
+ * @summary ToDo: Describe the method
+ * @param {object} state
+ * @todo Write the documentation
+ */
 const mapStateToProps = state => {
   const { allowOutsideClick, modal } = state.windowHandler;
 

@@ -6,9 +6,15 @@ import { Manager, Reference, Popper } from 'react-popper';
 import iconHelp from '../../assets/images/tooltip-help.png';
 import iconText from '../../assets/images/tooltip-text.png';
 
+/**
+ * @file Class based component.
+ * @module WidgetTooltip
+ * @extends Component
+ */
 class WidgetTooltip extends PureComponent {
-  /*
-   * Alternative method to open dropdown, in case of disabled opening
+  /**
+   * @method widgetTooltipToggle
+   * @summary Alternative method to open dropdown, in case of disabled opening
    * on focus.
    */
   handleClick = () => {
@@ -17,6 +23,11 @@ class WidgetTooltip extends PureComponent {
     onToggle(fieldName);
   };
 
+  /**
+   * @method handleClickOutside
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleClickOutside() {
     const { fieldName, onToggle, isToggled } = this.props;
 
@@ -25,6 +36,10 @@ class WidgetTooltip extends PureComponent {
     }
   }
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   */
   render() {
     const { isToggled, widget, data } = this.props;
     const modifiers = {
@@ -76,6 +91,15 @@ class WidgetTooltip extends PureComponent {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} widget
+ * @prop {*} data
+ * @prop {string} [fieldName]
+ * @prop {bool} isToggled
+ * @prop {func} [onToggle]
+ * @todo Check props. Which proptype? Required or optional?
+ */
 WidgetTooltip.propTypes = {
   widget: PropTypes.any.isRequired,
   data: PropTypes.any.isRequired,

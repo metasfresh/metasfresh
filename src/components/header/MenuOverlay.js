@@ -18,6 +18,11 @@ import { clearMasterData, closeModal } from '../../actions/WindowActions';
 import MenuOverlayContainer from './MenuOverlayContainer';
 import MenuOverlayItem from './MenuOverlayItem';
 
+/**
+ * @file Class based component.
+ * @module MenuOverlay
+ * @extends Component
+ */
 class MenuOverlay extends Component {
   state = {
     queriedResults: [],
@@ -27,6 +32,10 @@ class MenuOverlay extends Component {
     data: {},
   };
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method.
+   */
   componentDidMount = () => {
     const { nodeId } = this.props;
 
@@ -51,8 +60,18 @@ class MenuOverlay extends Component {
     }
   };
 
+  /**
+   * @method handleClickOutside
+   * @summary ToDo: Describe the method.
+   * @param {object} event
+   */
   handleClickOutside = e => this.props.onClickOutside(e);
 
+  /**
+   * @method handleQuery
+   * @summary ToDo: Describe the method.
+   * @param {object} event
+   */
   handleQuery = e => {
     e.preventDefault();
 
@@ -86,6 +105,11 @@ class MenuOverlay extends Component {
     }
   };
 
+  /**
+   * @method handleClear
+   * @summary ToDo: Describe the method.
+   * @param {object} event
+   */
   handleClear = e => {
     e.preventDefault();
     this.setState(
@@ -99,6 +123,13 @@ class MenuOverlay extends Component {
     );
   };
 
+  /**
+   * @method mapStateToProps
+   * @summary ToDo: Describe the method.
+   * @param {*} elementId
+   * @param {*} isNew
+   * @param {*} entity
+   */
   handleRedirect = (elementId, isNew, entity) => {
     const { dispatch } = this.props;
 
@@ -118,8 +149,18 @@ class MenuOverlay extends Component {
     );
   };
 
+  /**
+   * @method handleNewRedirect
+   * @summary ToDo: Describe the method.
+   * @param {*} elementId
+   */
   handleNewRedirect = elementId => this.handleRedirect(elementId, true);
 
+  /**
+   * @method handlePath
+   * @summary ToDo: Describe the method.
+   * @param {*} nodeId
+   */
   handlePath = nodeId => {
     pathRequest(nodeId).then(response => {
       let pathArray = [];
@@ -142,6 +183,11 @@ class MenuOverlay extends Component {
     });
   };
 
+  /**
+   * @method renderPath
+   * @summary ToDo: Describe the method.
+   * @param {*} path
+   */
   renderPath = path => {
     return (
       <span>
@@ -157,6 +203,11 @@ class MenuOverlay extends Component {
     );
   };
 
+  /**
+   * @method renderNavigation
+   * @summary ToDo: Describe the method.
+   * @param {*} node
+   */
   renderNavigation = node => {
     const { handleMenuOverlay, openModal, dispatch, siteName } = this.props;
     return (
@@ -230,6 +281,11 @@ class MenuOverlay extends Component {
     );
   };
 
+  /**
+   * @method renderSubnavigation
+   * @summary ToDo: Describe the method.
+   * @param {*} nodeData
+   */
   renderSubnavigation = nodeData => {
     const { handleMenuOverlay, openModal } = this.props;
     return (
@@ -254,6 +310,11 @@ class MenuOverlay extends Component {
     );
   };
 
+  /**
+   * @method linkClick
+   * @summary ToDo: Describe the method.
+   * @param {*} item
+   */
   linkClick = item => {
     const { dispatch } = this.props;
     if (item.elementId && item.type == 'newRecord') {
@@ -264,6 +325,11 @@ class MenuOverlay extends Component {
     }
   };
 
+  /**
+   * @method handleKeyDown
+   * @summary ToDo: Describe the method.
+   * @param {object} event
+   */
   handleKeyDown = e => {
     const { handleMenuOverlay } = this.props;
     const input = this.searchInputQuery;
@@ -358,6 +424,10 @@ class MenuOverlay extends Component {
     }
   };
 
+  /**
+   * @method handleArrowUp
+   * @summary ToDo: Describe the method.
+   */
   handleArrowUp() {
     let prevSiblings = document.activeElement.previousSibling;
 
@@ -373,6 +443,10 @@ class MenuOverlay extends Component {
     }
   }
 
+  /**
+   * @method findPreviousGroup
+   * @summary ToDo: Describe the method.
+   */
   findPreviousGroup() {
     let elem = document.activeElement.parentElement;
     let i = 0;
@@ -393,6 +467,11 @@ class MenuOverlay extends Component {
     return elem.previousSibling;
   }
 
+  /**
+   * @method selectLastItem
+   * @summary ToDo: Describe the method.
+   * @param {*} previousGroup
+   */
   selectLastItem(previousGroup) {
     const listChildren = previousGroup.childNodes;
     const lastChildren = listChildren[listChildren.length - 1];
@@ -422,6 +501,10 @@ class MenuOverlay extends Component {
     }
   }
 
+  /**
+   * @method handleGroupUp
+   * @summary ToDo: Describe the method.
+   */
   handleGroupUp() {
     const previousMainGroup = this.findPreviousGroup();
     const previousGroup = document.activeElement.parentElement.previousSibling;
@@ -439,6 +522,10 @@ class MenuOverlay extends Component {
     }
   }
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const { queriedResults, deepSubNode, query, data } = this.state;
     const { nodeId, node, handleMenuOverlay, openModal } = this.props;
@@ -517,8 +604,24 @@ class MenuOverlay extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {func} dispatch
+ * @prop {*} [nodeId]
+ * @prop {*} [node]
+ * @prop {*} [handleMenuOverlay]
+ * @prop {*} [openModal]
+ * @prop {*} [siteName]
+ * @prop {func} [onClickOutside]
+ */
 MenuOverlay.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  nodeId: PropTypes.any,
+  node: PropTypes.any,
+  handleMenuOverlay: PropTypes.any,
+  openModal: PropTypes.any,
+  siteName: PropTypes.any,
+  onClickOutside: PropTypes.func,
 };
 
 export default connect()(onClickOutside(MenuOverlay));

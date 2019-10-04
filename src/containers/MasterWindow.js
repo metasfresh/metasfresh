@@ -23,6 +23,11 @@ import Window from '../components/Window';
 import Overlay from '../components/app/Overlay';
 import { introHints, introSteps } from '../components/intro/intro';
 
+/**
+ * @file Class based component.
+ * @module MasterWindow
+ * @extends Component
+ */
 class MasterWindow extends Component {
   state = {
     newRow: false,
@@ -39,19 +44,10 @@ class MasterWindow extends Component {
     router: PropTypes.object.isRequired,
   };
 
-  static propTypes = {
-    modal: PropTypes.object.isRequired,
-    master: PropTypes.object.isRequired,
-    breadcrumb: PropTypes.array.isRequired,
-    dispatch: PropTypes.func.isRequired,
-    rawModal: PropTypes.object.isRequired,
-    indicator: PropTypes.string.isRequired,
-    me: PropTypes.object.isRequired,
-    pluginModal: PropTypes.object,
-    overlay: PropTypes.object,
-    allowShortcut: PropTypes.bool,
-  };
-
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method.
+   */
   componentDidMount() {
     const { master } = this.props;
     const isDocumentNotSaved = !master.saveStatus.saved;
@@ -61,6 +57,10 @@ class MasterWindow extends Component {
     }
   }
 
+  /**
+   * @method componentDidUpdate
+   * @summary ToDo: Describe the method.
+   */
   componentDidUpdate(prevProps) {
     const { master, modal, params, dispatch, me } = this.props;
     const isDocumentNotSaved = !master.saveStatus.saved;
@@ -189,6 +189,10 @@ class MasterWindow extends Component {
     }
   }
 
+  /**
+   * @method componentWillUnmount
+   * @summary ToDo: Describe the method.
+   */
   componentWillUnmount() {
     const {
       master,
@@ -216,10 +220,18 @@ class MasterWindow extends Component {
     disconnectWS.call(this);
   }
 
+  /**
+   * @method confirm
+   * @summary ToDo: Describe the method.
+   */
   confirm = e => {
     e.returnValue = '';
   };
 
+  /**
+   * @method initEventListeners
+   * @summary ToDo: Describe the method.
+   */
   initEventListeners = () => {
     if (!navigator.userAgent.includes('Cypress')) {
       // try workaround https://github.com/cypress-io/cypress/issues/1235#issuecomment-411839157 for our "hanging" problem
@@ -227,10 +239,18 @@ class MasterWindow extends Component {
     }
   };
 
+  /**
+   * @method removeEventListeners
+   * @summary ToDo: Describe the method.
+   */
   removeEventListeners = () => {
     window.removeEventListener('beforeunload', this.confirm);
   };
 
+  /**
+   * @method closeModalCallback
+   * @summary ToDo: Describe the method.
+   */
   closeModalCallback = ({
     isNew,
     windowType,
@@ -243,6 +263,10 @@ class MasterWindow extends Component {
     }
   };
 
+  /**
+   * @method handleDropFile
+   * @summary ToDo: Describe the method.
+   */
   handleDropFile = files => {
     const file = files instanceof Array ? files[0] : files;
 
@@ -265,6 +289,10 @@ class MasterWindow extends Component {
     return dispatch(attachFileAction(type, dataId, fd));
   };
 
+  /**
+   * @method handleDragStart
+   * @summary ToDo: Describe the method.
+   */
   handleDragStart = () => {
     this.setState(
       {
@@ -278,6 +306,10 @@ class MasterWindow extends Component {
     );
   };
 
+  /**
+   * @method handleRejectDropped
+   * @summary ToDo: Describe the method.
+   */
   handleRejectDropped = droppedFiles => {
     const { dispatch } = this.props;
 
@@ -294,14 +326,26 @@ class MasterWindow extends Component {
     );
   };
 
+  /**
+   * @method setModalTitle
+   * @summary ToDo: Describe the method.
+   */
   setModalTitle = title => {
     this.setState({ modalTitle: title });
   };
 
+  /**
+   * @method handleDeletedStatus
+   * @summary ToDo: Describe the method.
+   */
   handleDeletedStatus = param => {
     this.setState({ isDeleted: param });
   };
 
+  /**
+   * @method sort
+   * @summary ToDo: Describe the method.
+   */
   sort = (asc, field, startPage, page, tabId) => {
     const {
       dispatch,
@@ -317,10 +361,18 @@ class MasterWindow extends Component {
     });
   };
 
+  /**
+   * @method handleIntroExit
+   * @summary ToDo: Describe the method.
+   */
   handleIntroExit = () => {
     this.setState({ introEnabled: false });
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const {
       master,
@@ -439,6 +491,47 @@ class MasterWindow extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {object} modal
+ * @prop {object} master
+ * @prop {array} breadcrumb
+ * @prop {func} dispatch
+ * @prop {object} rawModal
+ * @prop {string} indicator
+ * @prop {object} me
+ * @prop {object} [pluginModal]
+ * @prop {object} [overlay]
+ * @prop {bool} [allowShortcut]
+ * @prop {*} [params]
+ * @prop {*} [includedView]
+ * @prop {*} [processStatus]
+ * @prop {*} [enableTutorial]
+ * @prop {*} [location]
+ */
+MasterWindow.propTypes = {
+  modal: PropTypes.object.isRequired,
+  master: PropTypes.object.isRequired,
+  breadcrumb: PropTypes.array.isRequired,
+  dispatch: PropTypes.func.isRequired,
+  rawModal: PropTypes.object.isRequired,
+  indicator: PropTypes.string.isRequired,
+  me: PropTypes.object.isRequired,
+  pluginModal: PropTypes.object,
+  overlay: PropTypes.object,
+  allowShortcut: PropTypes.bool,
+  params: PropTypes.any,
+  includedView: PropTypes.any,
+  processStatus: PropTypes.any,
+  enableTutorial: PropTypes.any,
+  location: PropTypes.any,
+};
+
+/**
+ * @method mapStateToProps
+ * @summary ToDo: Describe the method.
+ * @param {object} state
+ */
 const mapStateToProps = state => ({
   master: state.windowHandler.master,
   modal: state.windowHandler.modal,

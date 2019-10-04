@@ -1,7 +1,13 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
 import { patchRequest } from '../../actions/GenericActions';
 
+/**
+ * @file Class based component.
+ * @module BookmarkButton
+ * @extends Component
+ */
 export default class BookmarkButton extends Component {
   constructor(props) {
     super(props);
@@ -12,12 +18,21 @@ export default class BookmarkButton extends Component {
     };
   }
 
+  /**
+   * @method UNSAFE_componentWillReceiveProps
+   * @summary ToDo: Describe the method.
+   * @param {object} nextProps
+   */
   UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.isBookmark !== this.props.isBookmark) {
       this.setState({ isBookmark: nextProps.isBookmark });
     }
   }
 
+  /**
+   * @method handleButtonEnter
+   * @summary ToDo: Describe the method.
+   */
   handleButtonEnter = () => {
     this.setState({ isBookmarkButtonShowed: true });
   };
@@ -26,6 +41,10 @@ export default class BookmarkButton extends Component {
     this.setState({ isBookmarkButtonShowed: false });
   };
 
+  /**
+   * @method handleClick
+   * @summary ToDo: Describe the method.
+   */
   handleClick = () => {
     const { nodeId, updateData } = this.props;
     const { isBookmark } = this.state;
@@ -45,6 +64,10 @@ export default class BookmarkButton extends Component {
     });
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const { children, alwaysShowed, transparentBookmarks } = this.props;
     const { isBookmarkButtonShowed, isBookmark } = this.state;
@@ -74,3 +97,21 @@ export default class BookmarkButton extends Component {
     );
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} [children]
+ * @prop {*} [alwaysShowed]
+ * @prop {*} [transparentBookmarks]
+ * @prop {*} [nodeId]
+ * @prop {*} [updateData]
+ * @prop {*} [isBookmark]
+ */
+BookmarkButton.propTypes = {
+  children: PropTypes.any,
+  alwaysShowed: PropTypes.any,
+  transparentBookmarks: PropTypes.any,
+  nodeId: PropTypes.any,
+  updateData: PropTypes.any,
+  isBookmark: PropTypes.any,
+};

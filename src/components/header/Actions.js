@@ -10,25 +10,22 @@ import {
 import Loader from '../app/Loader';
 import { getSelectionInstant } from '../../reducers/windowHandler';
 
+/**
+ * @file Class based component.
+ * @module Actions
+ * @extends Component
+ */
 class Actions extends Component {
-  static propTypes = {
-    // from <SubHeader>
-    windowType: PropTypes.string,
-    viewId: PropTypes.string,
-
-    // from @connect
-    childViewId: PropTypes.string,
-    childViewSelectedIds: PropTypes.array,
-    dispatch: PropTypes.func.isRequired,
-    selected: PropTypes.array.isRequired,
-    plugins: PropTypes.any,
-  };
-
   state = {
     actions: null,
     rowActions: null,
   };
 
+  /**
+   * @async
+   * @method componentDidMount
+   * @summary ToDo: Describe the method.
+   */
   async componentDidMount() {
     const {
       windowType,
@@ -68,6 +65,11 @@ class Actions extends Component {
     });
   }
 
+  /**
+   * @async
+   * @method requestActions
+   * @summary ToDo: Describe the method.
+   */
   requestActions = async () => {
     const {
       windowType,
@@ -111,6 +113,11 @@ class Actions extends Component {
     }
   };
 
+  /**
+   * @async
+   * @method requestRowActions
+   * @summary ToDo: Describe the method.
+   */
   requestRowActions = async () => {
     const { windowType, docId, activeTab, activeTabSelected } = this.props;
 
@@ -144,6 +151,10 @@ class Actions extends Component {
     }
   };
 
+  /**
+   * @method getPluginsActions
+   * @summary ToDo: Describe the method.
+   */
   getPluginsActions = () => {
     const { plugins } = this.props;
     const actions = [];
@@ -159,6 +170,11 @@ class Actions extends Component {
     return actions;
   };
 
+  /**
+   * @method renderAction
+   * @summary ToDo: Describe the method.
+   * @param {*} identifier
+   */
   renderAction = identifier => (item, key) => {
     const {
       closeSubheader,
@@ -224,6 +240,11 @@ class Actions extends Component {
     );
   };
 
+  /**
+   * @method renderPluginAction
+   * @summary ToDo: Describe the method.
+   * @param {*} identifier
+   */
   renderPluginAction = identifier => (item, key) => {
     const { closeSubheader, dispatch } = this.props;
     let handleClick = null;
@@ -260,6 +281,10 @@ class Actions extends Component {
     );
   };
 
+  /**
+   * @method renderData
+   * @summary ToDo: Describe the method.
+   */
   renderData = () => {
     const { renderAction, renderPluginAction, getPluginsActions } = this;
     const { actions, rowActions } = this.state;
@@ -300,6 +325,10 @@ class Actions extends Component {
     );
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const { actions } = this.state;
 
@@ -315,6 +344,35 @@ class Actions extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {string} [windowType]
+ * @prop {string} [viewId]
+ * @prop {string} [childViewId]
+ * @prop {array} [childViewSelectedIds]
+ * @prop {func} dispatch
+ * @prop {array} selected
+ * @prop {*} [plugins]
+ */
+Actions.propTypes = {
+  // from <SubHeader>
+  windowType: PropTypes.string,
+  viewId: PropTypes.string,
+
+  // from @connect
+  childViewId: PropTypes.string,
+  childViewSelectedIds: PropTypes.array,
+  dispatch: PropTypes.func.isRequired,
+  selected: PropTypes.array.isRequired,
+  plugins: PropTypes.any,
+};
+
+/**
+ * @method mapStateToProps
+ * @summary ToDo: Describe the method.
+ * @param {object} state
+ * @param {object} props
+ */
 const mapStateToProps = (state, props) => {
   const includedView = state.listHandler.includedView;
 

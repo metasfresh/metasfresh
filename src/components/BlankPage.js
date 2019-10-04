@@ -1,10 +1,21 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
+/**
+ * @file Class based component.
+ * @module BlankPage
+ * @extends Component
+ */
 class BlankPage extends Component {
   constructor(props) {
     super(props);
   }
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   * @todo Write the documentation
+   */
   render() {
     const { what } = this.props;
 
@@ -16,5 +27,13 @@ class BlankPage extends Component {
     );
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {string} what
+ */
+BlankPage.propTypes = {
+  what: PropTypes.any,
+};
 
 export default BlankPage;

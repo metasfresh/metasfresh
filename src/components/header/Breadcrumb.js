@@ -8,6 +8,11 @@ import keymap from '../../shortcuts/keymap';
 import Tooltips from '../tooltips/Tooltips';
 import MenuOverlay from './MenuOverlay';
 
+/**
+ * @file Class based component.
+ * @module Breadcrumb
+ * @extends Component
+ */
 class Breadcrumb extends Component {
   constructor(props) {
     super(props);
@@ -18,22 +23,43 @@ class Breadcrumb extends Component {
     };
   }
 
+  /**
+   * @method linkToPage
+   * @summary ToDo: Describe the method.
+   * @param {*} page
+   */
   linkToPage = page => {
     const { dispatch } = this.props;
     dispatch(push('/window/' + page));
   };
 
+  /**
+   * @method linkToEntityPage
+   * @summary ToDo: Describe the method.
+   * @param {*} entity
+   * @param {*} page
+   */
   linkToEntityPage = (entity, page) => {
     const { dispatch } = this.props;
     dispatch(push(`/${entity}/${page}`));
   };
 
+  /**
+   * @method toggleTooltip
+   * @summary ToDo: Describe the method.
+   * @param {*} tooltip
+   */
   toggleTooltip = tooltip => {
     this.setState({
       tooltipOpen: tooltip,
     });
   };
 
+  /**
+   * @method toggleTooltipOnFirstLevel
+   * @summary ToDo: Describe the method.
+   * @param {*} showTooltip
+   */
   toggleTooltipOnFirstLevel = showTooltip => {
     const breadcrumbWrapper = document.getElementsByClassName(
       'header-breadcrumb-wrapper'
@@ -53,6 +79,10 @@ class Breadcrumb extends Component {
     });
   };
 
+  /**
+   * @method closeTooltips
+   * @summary ToDo: Describe the method.
+   */
   closeTooltips = () => {
     this.setState({
       tooltipOpen: false,
@@ -60,6 +90,12 @@ class Breadcrumb extends Component {
     });
   };
 
+  /**
+   * @method handleClick
+   * @summary ToDo: Describe the method.
+   * @param {*} e
+   * @param {*} menu
+   */
   handleClick = (e, menu) => {
     const { handleMenuOverlay, windowType } = this.props;
 
@@ -84,6 +120,12 @@ class Breadcrumb extends Component {
     this.toggleTooltip(false);
   };
 
+  /**
+   * @method renderBtn
+   * @summary ToDo: Describe the method.
+   * @param {*} menu
+   * @param {*} index
+   */
   renderBtn = (menu, index) => {
     const {
       handleMenuOverlay,
@@ -147,6 +189,11 @@ class Breadcrumb extends Component {
     );
   };
 
+  /**
+   * @method renderSummaryBreadcrumb
+   * @summary ToDo: Describe the method.
+   * @param {*} text
+   */
   renderSummaryBreadcrumb(text) {
     return [
       <div key="summary-1" className="divider">
@@ -160,6 +207,10 @@ class Breadcrumb extends Component {
     ];
   }
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const { breadcrumb, docSummaryData, siteName } = this.props;
 
@@ -211,8 +262,28 @@ class Breadcrumb extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} breadcrumb
+ * @prop {func} dispatch
+ * @prop {*} docId
+ * @prop {*} docSummaryData
+ * @prop {*} handleMenuOverlay
+ * @prop {*} menuOverlay
+ * @prop {*} openModal
+ * @prop {*} siteName
+ * @prop {*} windowType
+ */
 Breadcrumb.propTypes = {
+  breadcrumb: PropTypes.any,
   dispatch: PropTypes.func.isRequired,
+  docId: PropTypes.any,
+  docSummaryData: PropTypes.any,
+  handleMenuOverlay: PropTypes.any,
+  menuOverlay: PropTypes.any,
+  openModal: PropTypes.any,
+  siteName: PropTypes.any,
+  windowType: PropTypes.any,
 };
 
 export default connect()(Breadcrumb);

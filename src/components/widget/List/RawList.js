@@ -50,6 +50,11 @@ const setSelectedValue = function(dropdownList, selected, defaultValue) {
   return changedValues;
 };
 
+/**
+ * @file Class based component.
+ * @module RawList
+ * @extends Component
+ */
 export class RawList extends PureComponent {
   constructor(props) {
     super(props);
@@ -63,14 +68,27 @@ export class RawList extends PureComponent {
     this.handleSelect = this.handleSelect.bind(this);
   }
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method.
+   */
   componentDidMount() {
     window.addEventListener('keydown', this.handleTab);
   }
 
+  /**
+   * @method componentWillUnmount
+   * @summary ToDo: Describe the method.
+   */
   componentWillUnmount() {
     window.removeEventListener('keydown', this.handleTab);
   }
 
+  /**
+   * @method componentDidUpdate
+   * @summary ToDo: Describe the method.
+   * @param {object} prevProps
+   */
   componentDidUpdate(prevProps) {
     const {
       list,
@@ -142,6 +160,10 @@ export class RawList extends PureComponent {
    * Alternative method to open dropdown, in case of disabled opening
    * on focus.
    */
+  /**
+   * @method handleClick
+   * @summary ToDo: Describe the method.
+   */
   handleClick = () => {
     const { onOpenDropdown, isToggled, onCloseDropdown } = this.props;
 
@@ -153,6 +175,11 @@ export class RawList extends PureComponent {
     }
   };
 
+  /**
+   * @method handleClickOutside
+   * @summary ToDo: Describe the method.
+   * @param {object} event
+   */
   handleClickOutside(e) {
     const { isFocused, onCloseDropdown, onBlur, selected } = this.props;
     const { target } = e;
@@ -179,6 +206,11 @@ export class RawList extends PureComponent {
     }
   }
 
+  /**
+   * @method handleSelect
+   * @summary ToDo: Describe the method.
+   * @param {*} selected
+   */
   handleSelect(selected) {
     const { onSelect, onCloseDropdown } = this.props;
     const { dropdownList } = this.state;
@@ -200,18 +232,32 @@ export class RawList extends PureComponent {
     });
   }
 
+  /**
+   * @method handleClear
+   * @summary ToDo: Describe the method.
+   * @param {object} event
+   */
   handleClear = event => {
     event.stopPropagation();
 
     this.props.onSelect(null);
   };
 
+  /**
+   * @method handleTemporarySelection
+   * @summary ToDo: Describe the method.
+   * @param {*} selected
+   */
   handleTemporarySelection = selected => {
     this.setState({
       selected,
     });
   };
 
+  /**
+   * @method handleCancel
+   * @summary ToDo: Describe the method.
+   */
   handleCancel = () => {
     const { disableAutofocus, onCloseDropdown } = this.props;
     disableAutofocus && disableAutofocus();
@@ -219,6 +265,11 @@ export class RawList extends PureComponent {
     onCloseDropdown && onCloseDropdown();
   };
 
+  /**
+   * @method handleKeyDown
+   * @summary ToDo: Describe the method.
+   * @param {object} event
+   */
   handleKeyDown = e => {
     const {
       onSelect,
@@ -242,6 +293,11 @@ export class RawList extends PureComponent {
     }
   };
 
+  /**
+   * @method handleTab
+   * @summary ToDo: Describe the method.
+   * @param {object} event
+   */
   handleTab = e => {
     const { isToggled, isFocused, onCloseDropdown } = this.props;
 
@@ -255,6 +311,10 @@ export class RawList extends PureComponent {
     }
   };
 
+  /**
+   * @method handleBlur
+   * @summary ToDo: Describe the method.
+   */
   handleBlur = () => {
     const { onBlur } = this.props;
 
@@ -262,10 +322,18 @@ export class RawList extends PureComponent {
     onBlur();
   };
 
+  /**
+   * @method focusDropdown
+   * @summary ToDo: Describe the method.
+   */
   focusDropdown() {
     this.props.onFocus();
   }
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const {
       rank,
@@ -397,6 +465,40 @@ export class RawList extends PureComponent {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {object} filter
+ * @prop {bool} readonly,
+ * @prop {bool} clearable,
+ * @prop {object} list,
+ * @prop {string} listHash
+ * @prop {*} rank
+ * @prop {*} defaultValue
+ * @prop {*} selected
+ * @prop {*} align
+ * @prop {string} emptyText
+ * @prop {*} lastProperty
+ * @prop {bool} updated
+ * @prop {bool} loading
+ * @prop {*} rowId
+ * @prop {bool} isModal
+ * @prop {number} tabIndex
+ * @prop {bool} disabled
+ * @prop {bool} mandatory
+ * @prop {*} validStatus
+ * @prop {*} lookupList
+ * @prop {*} initialFocus
+ * @prop {bool} doNotOpenOnFocus
+ * @prop {bool} isFocused
+ * @prop {bool} isToggled
+ * @prop {bool} autoFocus
+ * @prop {func} disableAutofocus
+ * @prop {func} onFocus
+ * @prop {func} onBlur
+ * @prop {func} onSelect
+ * @prop {func} onOpenDropdown
+ * @prop {func} onCloseDropdown
+ */
 RawList.propTypes = {
   filter: PropTypes.object,
   readonly: PropTypes.bool,

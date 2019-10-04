@@ -3,6 +3,11 @@ import PropTypes from 'prop-types';
 
 import { Shortcut } from '../keyshortcuts';
 
+/**
+ * @file Class based component.
+ * @module ModalContextShortcuts
+ * @extends Component
+ */
 class ModalContextShortcuts extends Component {
   handlers = {
     DONE: event => {
@@ -27,6 +32,11 @@ class ModalContextShortcuts extends Component {
     },
   };
 
+  /**
+   * @method blurActiveElement
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   blurActiveElement = () => {
     const activeElement = document.activeElement;
 
@@ -35,6 +45,11 @@ class ModalContextShortcuts extends Component {
     }
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     return [
       <Shortcut key="DONE" name="DONE" handler={this.handlers.DONE} />,
@@ -43,6 +58,13 @@ class ModalContextShortcuts extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {func} [visibleFilter]
+ * @prop {string} [done]
+ * @prop {func} [cancel]
+ * @todo Check props. Which proptype? Required or optional?
+ */
 ModalContextShortcuts.propTypes = {
   visibleFilter: PropTypes.bool,
   done: PropTypes.func,

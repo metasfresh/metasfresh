@@ -199,6 +199,7 @@
 .modal-top-description {
     font-size: 14px;
     padding-top: 10px;
+    white-space: pre-wrap;
 }
 
 .panel-inline>* {

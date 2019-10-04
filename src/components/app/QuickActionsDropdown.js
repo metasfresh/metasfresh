@@ -1,22 +1,45 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 
+/**
+ * @file Class based component.
+ * @module QuickActionsDropdown
+ * @extends Component
+ */
 class QuickActionsDropdown extends Component {
   constructor(props) {
     super(props);
   }
 
+  /**
+   * @method handleClickOutside
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleClickOutside = () => {
     const { handleClickOutside } = this.props;
 
     handleClickOutside();
   };
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   componentDidMount() {
     document.getElementsByClassName('quick-actions-item')[0].focus();
   }
 
+  /**
+   * @method handleKeyDown
+   * @summary ToDo: Describe the method
+   * @param {*} event
+   * @param {*} action
+   * @todo Write the documentation
+   */
   handleKeyDown = (e, action) => {
     const { handleClick } = this.props;
     e.preventDefault();
@@ -44,10 +67,21 @@ class QuickActionsDropdown extends Component {
     }
   };
 
+  /**
+   * @method handleItem
+   * @summary ToDo: Describe the method
+   * @param {*} item
+   * @todo Write the documentation
+   */
   handleItem = item => {
     document.getElementsByClassName('quick-actions-item')[item].focus();
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     const { actions, handleClick } = this.props;
 
@@ -81,5 +115,18 @@ class QuickActionsDropdown extends Component {
     );
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} actions
+ * @prop {*} handleClick
+ * @prop {*} handleClickOutside
+ * @todo Check props. Which proptype? Required or optional?
+ */
+QuickActionsDropdown.propTypes = {
+  actions: PropTypes.any,
+  handleClick: PropTypes.any,
+  handleClickOutside: PropTypes.any,
+};
 
 export default connect()(onClickOutside(QuickActionsDropdown));

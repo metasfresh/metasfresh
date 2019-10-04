@@ -7,7 +7,12 @@ import classnames from 'classnames';
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { getClassNames, generateMomentObj } from './RawWidgetHelpers';
 import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
-import { DATE_FORMAT } from '../../constants/Constants';
+import {
+  DATE_FORMAT,
+  TIME_FORMAT,
+  DATE_TIMEZONE_FORMAT,
+  DATE_FIELD_FORMATS,
+} from '../../constants/Constants';
 import ActionButton from './ActionButton';
 import Attributes from './Attributes/Attributes';
 import Checkbox from './Checkbox';
@@ -21,6 +26,11 @@ import Link from './Link';
 import List from './List/List';
 import Lookup from './Lookup/Lookup';
 
+/**
+ * @file Class based component.
+ * @module RawWidget
+ * @extends Component
+ */
 export class RawWidget extends Component {
   constructor(props) {
     super(props);
@@ -37,6 +47,10 @@ export class RawWidget extends Component {
     this.generateMomentObj = generateMomentObj.bind(this);
   }
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method.
+   */
   componentDidMount() {
     const { autoFocus, textSelected } = this.props;
     const { rawWidget } = this;
@@ -51,7 +65,8 @@ export class RawWidget extends Component {
   }
 
   /**
-   * Function used specifically for list widgets. It blocks outside clicks, which are
+   * @method focus
+   * @summary Function used specifically for list widgets. It blocks outside clicks, which are
    * then enabled again in handleBlur. This is to avoid closing the list as it's a separate
    * DOM element outside of it's parent's tree.
    */
@@ -67,6 +82,11 @@ export class RawWidget extends Component {
     handleFocus && handleFocus();
   };
 
+  /**
+   * @method handleFocus
+   * @summary ToDo: Describe the method.
+   * @param {*} e
+   */
   handleFocus = e => {
     const { dispatch, handleFocus, listenOnKeysFalse } = this.props;
     const el = e.target;
@@ -87,6 +107,13 @@ export class RawWidget extends Component {
     }, 0);
   };
 
+  /**
+   * @method handleBlurBlur
+   * @summary ToDo: Describe the method.
+   * @param {*} widgetField
+   * @param {*} value
+   * @param {*} id
+   */
   handleBlur = (widgetField, value, id) => {
     const {
       dispatch,
@@ -113,6 +140,13 @@ export class RawWidget extends Component {
     );
   };
 
+  /**
+   * @method handleKeyDown
+   * @summary ToDo: Describe the method.
+   * @param {*} e
+   * @param {*} property
+   * @param {*} value
+   */
   handleKeyDown = (e, property, value) => {
     const { lastFormField } = this.props;
 
@@ -127,13 +161,26 @@ export class RawWidget extends Component {
   // isForce will be used for Datepicker
   // Datepicker is checking the cached value in datepicker component itself
   // and send a patch request only if date is changed
+  /**
+   * @method handlePatch
+   * @summary ToDo: Describe the method.
+   * @param {*} property
+   * @param {*} value
+   * @param {*} id
+   * @param {*} valueTo
+   * @param {*} isForce
+   */
   handlePatch = (property, value, id, valueTo, isForce) => {
-    const { handlePatch, inProgress } = this.props;
+    const { handlePatch, inProgress, widgetType } = this.props;
     const willPatch = this.willPatch(property, value, valueTo);
 
     // Do patch only when value is not equal state
     // or cache is set and it is not equal value
     if ((isForce || willPatch) && handlePatch && !inProgress) {
+      if (widgetType === 'ZonedDateTime' && Moment.isMoment(value)) {
+        value = Moment(value).format(DATE_TIMEZONE_FORMAT);
+      }
+
       this.setState({
         cachedValue: value,
         clearedFieldWarning: false,
@@ -145,6 +192,10 @@ export class RawWidget extends Component {
     return Promise.resolve(null);
   };
 
+  /**
+   * @method handleProcess
+   * @summary ToDo: Describe the method.
+   */
   handleProcess = () => {
     const {
       handleProcess,
@@ -160,12 +211,24 @@ export class RawWidget extends Component {
       handleProcess(caption, buttonProcessId, tabId, rowId, dataId, windowType);
   };
 
+  /**
+   * @method handleErrorPopup
+   * @summary ToDo: Describe the method.
+   * @param {*} value
+   */
   handleErrorPopup = value => {
     this.setState({
       errorPopup: value,
     });
   };
 
+  /**
+   * @method willPatch
+   * @summary ToDo: Describe the method.
+   * @param {*} property
+   * @param {*} value
+   * @param {*} valueTo
+   */
   willPatch = (property, value, valueTo) => {
     const { widgetData } = this.props;
     const { cachedValue } = this.state;
@@ -189,6 +252,11 @@ export class RawWidget extends Component {
     return allowPatching;
   };
 
+  /**
+   * @method clearFieldWarning
+   * @summary ToDo: Describe the method.
+   * @param {*} warning
+   */
   clearFieldWarning = warning => {
     if (warning) {
       this.setState({
@@ -197,18 +265,32 @@ export class RawWidget extends Component {
     }
   };
 
+  /**
+   * @method toggleTooltip
+   * @summary ToDo: Describe the method.
+   * @param {*} show
+   */
   toggleTooltip = show => {
     this.setState({
       tooltipToggled: show,
     });
   };
 
+  /**
+   * @method renderErrorPopup
+   * @summary ToDo: Describe the method.
+   * @param {*} reason
+   */
   renderErrorPopup = reason => {
     return (
       <div className="input-error-popup">{reason ? reason : 'Input error'}</div>
     );
   };
 
+  /**
+   * @method renderWidget
+   * @summary ToDo: Describe the method.
+   */
   renderWidget = () => {
     const {
       handleChange,
@@ -222,11 +304,11 @@ export class RawWidget extends Component {
       onHide,
       handleBackdropLock,
       subentity,
+      widgetType,
       subentityId,
       dropdownOpenCallback,
       autoFocus,
       fullScreen,
-      widgetType,
       fields,
       windowType,
       dataId,
@@ -252,6 +334,7 @@ export class RawWidget extends Component {
       isOpenDatePicker,
       dateFormat,
       initialFocus,
+      timeZone,
     } = this.props;
 
     let widgetValue = data != null ? data : widgetData[0].value;
@@ -274,8 +357,9 @@ export class RawWidget extends Component {
 
     const widgetProperties = {
       ref: c => (this.rawWidget = c),
-      // Chrome hack for autofills - Kuba
-      autoComplete: 'new-password',
+      //autocomplete=new-password did not work in chrome for non password fields anymore,
+      //switched to autocomplete=off instead
+      autoComplete: 'off',
       className: 'input-field js-input-field',
       value: widgetValue,
       defaultValue,
@@ -307,13 +391,17 @@ export class RawWidget extends Component {
                   valueTo ? Moment(valueTo).format(DATE_FORMAT) : null
                 )
               }
+              field={widgetField}
               mandatory={widgetData[0].mandatory}
               validStatus={widgetData[0].validStatus}
-              onShow={onShow}
-              onHide={onHide}
               value={widgetData[0].value}
               valueTo={widgetData[0].valueTo}
-              tabIndex={tabIndex}
+              {...{
+                tabIndex,
+                onShow,
+                onHide,
+                timeZone,
+              }}
             />
           );
         } else {
@@ -321,115 +409,75 @@ export class RawWidget extends Component {
             <div className={this.getClassNames({ icon: true })}>
               <DatePicker
                 key={1}
-                field={fields[0].field}
+                field={widgetField}
                 timeFormat={false}
                 dateFormat={dateFormat || true}
-                isOpenDatePicker={isOpenDatePicker}
                 inputProps={{
                   placeholder: fields[0].emptyText,
                   disabled: readonly,
                   tabIndex: tabIndex,
                 }}
                 value={widgetValue || widgetData[0].value}
-                onChange={date => {
-                  const finalDate = date.utc ? date.utc(true) : date;
-                  return handleChange(widgetField, finalDate);
-                }}
-                patch={date =>
-                  this.handlePatch(
-                    widgetField,
-                    this.generateMomentObj(date),
-                    null,
-                    null,
-                    true
-                  )
-                }
-                {...{
-                  handleBackdropLock,
-                }}
-              />
-            </div>
-          );
-        }
-      case 'DateTime':
-        if (range) {
-          // Watch out! The datetimerange widget as exception,
-          // is non-controlled input! For further usage, needs
-          // upgrade.
-          return (
-            <DatetimeRange
-              onChange={(value, valueTo) =>
-                this.handlePatch(
-                  widgetField,
-                  value ? Moment(value).format(DATE_FORMAT) : null,
-                  null,
-                  valueTo ? Moment(valueTo).format(DATE_FORMAT) : null
-                )
-              }
-              mandatory={widgetData[0].mandatory}
-              validStatus={widgetData[0].validStatus}
-              onShow={onShow}
-              onHide={onHide}
-              value={widgetData[0].value}
-              valueTo={widgetData[0].valueTo}
-              tabIndex={tabIndex}
-              timePicker={true}
-            />
-          );
-        } else {
-          return (
-            <div className={this.getClassNames({ icon: true })}>
-              <DatePicker
-                field={fields[0].field}
-                timeFormat={dateFormat ? false : true}
-                dateFormat={dateFormat || true}
-                inputProps={{
-                  placeholder: fields[0].emptyText,
-                  disabled: readonly,
-                  tabIndex: tabIndex,
-                }}
-                value={widgetValue}
                 onChange={date => handleChange(widgetField, date)}
                 patch={date =>
                   this.handlePatch(
                     widgetField,
-                    this.generateMomentObj(date),
+                    this.generateMomentObj(date, DATE_FORMAT),
                     null,
                     null,
                     true
                   )
                 }
-                tabIndex={tabIndex}
-                handleBackdropLock={handleBackdropLock}
+                handleChange={handleChange}
+                {...{
+                  handleBackdropLock,
+                  isOpenDatePicker,
+                  timeZone,
+                }}
               />
             </div>
           );
         }
-      case 'DateRange': {
+      case 'ZonedDateTime':
         return (
-          <DatetimeRange
-            onChange={(value, valueTo) =>
-              this.handlePatch(widgetField, {
-                ...(value && { value }),
-                ...(valueTo && { valueTo }),
-              })
-            }
-            mandatory={widgetData[0].mandatory}
-            validStatus={widgetData[0].validStatus}
-            onShow={onShow}
-            onHide={onHide}
-            value={widgetData[0].value}
-            valueTo={widgetData[0].valueTo}
-            tabIndex={tabIndex}
-          />
+          <div className={this.getClassNames({ icon: true })}>
+            <DatePicker
+              key={1}
+              field={widgetField}
+              timeFormat={true}
+              dateFormat={dateFormat || true}
+              hasTimeZone={true}
+              inputProps={{
+                placeholder: fields[0].emptyText,
+                disabled: readonly,
+                tabIndex: tabIndex,
+              }}
+              value={widgetValue || widgetData[0].value}
+              onChange={date => handleChange(widgetField, date)}
+              patch={date =>
+                this.handlePatch(
+                  widgetField,
+                  this.generateMomentObj(date, DATE_TIMEZONE_FORMAT),
+                  null,
+                  null,
+                  true
+                )
+              }
+              handleChange={handleChange}
+              {...{
+                handleBackdropLock,
+                isOpenDatePicker,
+                timeZone,
+              }}
+            />
+          </div>
         );
-      }
       case 'Time':
         return (
           <div className={this.getClassNames({ icon: true })}>
             <DatePicker
-              field={fields[0].field}
-              timeFormat={true}
+              field={widgetField}
+              timeFormat={TIME_FORMAT}
               dateFormat={false}
               inputProps={{
                 placeholder: fields[0].emptyText,
@@ -441,17 +489,69 @@ export class RawWidget extends Component {
               patch={date =>
                 this.handlePatch(
                   widgetField,
-                  this.generateMomentObj(date),
+                  this.generateMomentObj(date, TIME_FORMAT),
                   null,
                   null,
                   true
                 )
               }
               tabIndex={tabIndex}
+              handleChange={handleChange}
               handleBackdropLock={handleBackdropLock}
             />
           </div>
         );
+      case 'Timestamp':
+        return (
+          <div className={this.getClassNames({ icon: true })}>
+            <DatePicker
+              field={widgetField}
+              timeFormat={false}
+              dateFormat={DATE_FIELD_FORMATS[widgetType]}
+              inputProps={{
+                placeholder: fields[0].emptyText,
+                disabled: readonly,
+                tabIndex: tabIndex,
+              }}
+              value={widgetValue}
+              onChange={date => handleChange(widgetField, date)}
+              patch={date =>
+                this.handlePatch(
+                  widgetField,
+                  this.generateMomentObj(date, `x`),
+                  null,
+                  null,
+                  true
+                )
+              }
+              tabIndex={tabIndex}
+              handleChange={handleChange}
+              handleBackdropLock={handleBackdropLock}
+            />
+          </div>
+        );
+      case 'DateRange': {
+        return (
+          <DatetimeRange
+            onChange={(value, valueTo) => {
+              const val = Moment(value).format(DATE_FORMAT);
+              const valTo = Moment(valueTo).format(DATE_FORMAT);
+
+              this.handlePatch(widgetField, {
+                ...(val && { value: val }),
+                ...(valTo && { valueTo: valTo }),
+              });
+            }}
+            mandatory={widgetData[0].mandatory}
+            validStatus={widgetData[0].validStatus}
+            onShow={onShow}
+            onHide={onHide}
+            value={widgetData[0].value}
+            valueTo={widgetData[0].valueTo}
+            tabIndex={tabIndex}
+          />
+        );
+      }
       case 'Lookup':
         return (
           <Lookup
@@ -773,6 +873,7 @@ export class RawWidget extends Component {
         return (
           <Attributes
             attributeType="address"
+            entity={entity}
             fields={fields}
             dataId={dataId}
             widgetData={widgetData[0]}
@@ -845,6 +946,10 @@ export class RawWidget extends Component {
     }
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
   render() {
     const {
       caption,
@@ -1008,9 +1113,66 @@ export class RawWidget extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {func} dispatch
+ * @prop {bool} inProgress
+ * @prop {bool} autoFocus
+ * @prop {bool} textSelected
+ * @prop {bool} listenOnKeys
+ * @prop {func} listenOnKeysFalse
+ * @prop {func} listenOnKeysTrue
+ * @prop {array} widgetData
+ * @prop {func} handleFocus
+ * @prop {func} handlePatch
+ * @prop {func} handleBlur
+ * @prop {func} handleProcess
+ * @prop {func} handleChange
+ * @prop {func} hanndleBackdropLock
+ * @prop {func} handleZoomInto
+ * @prop {string} tabId
+ * @prop {string} viewId
+ * @prop {string} rowId
+ * @prop {string|number} dataId
+ * @prop {string} windowType
+ * @prop {string} caption
+ * @prop {string} gridAlign
+ * @prop {string} type
+ * @prop {bool} updated
+ * @prop {bool} isModal
+ * @prop {bool} modalVisible
+ * @prop {bool} filterWidget
+ * @prop {string} filterId
+ * @prop {number} id
+ * @prop {bool} range
+ * @prop {func} onShow
+ * @prop {func} onHide
+ * @prop {string} subentity
+ * @prop {string} subentityId
+ * @prop {number} tabIndex
+ * @prop {func} dropdownOpenCallback
+ * @prop {bool} fullScreen
+ * @prop {string} widgetType
+ * @prop {array} fields
+ * @prop {string} icon
+ * @prop {string} entity
+ * @prop {*} data
+ * @prop {func} closeTableField
+ * @prop {bool} attribute
+ * @prop {bool} allowShowPassword
+ * @prop {string} buttonProcessId
+ * @prop {func} onBlurWidget
+ * @prop {string|array} defaultValue
+ * @prop {bool} noLabel
+ * @prop {bool} isOpenDatePicker
+ * @prop {number} forceHeight
+ * @prop {bool} dataEntry
+ * @prop {bool} lastFormField
+ */
 RawWidget.propTypes = RawWidgetPropTypes;
 RawWidget.defaultProps = RawWidgetDefaultProps;
 
 export default connect(state => ({
   modalVisible: state.windowHandler.modal.visible,
+  timeZone: state.appHandler.me.timeZone,
 }))(RawWidget);

@@ -1,8 +1,10 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import TetheredDateTime from './TetheredDateTime';
+import MomentTZ from 'moment-timezone';
 import onClickOutside from 'react-onclickoutside';
+
+import TetheredDateTime from './TetheredDateTime';
 import { addNotification } from '../../actions/AppActions';
 import {
   allowOutsideClick,
@@ -10,6 +12,8 @@ import {
 } from '../../actions/WindowActions';
 
 class DatePicker extends Component {
+  static timeZoneRegex = new RegExp(/[+-]{1}\d+:\d+/);
+
   constructor(props) {
     super(props);
     this.state = {
@@ -21,6 +25,7 @@ class DatePicker extends Component {
   componentDidMount() {
     const { handleBackdropLock, isOpenDatePicker } = this.props;
     handleBackdropLock && handleBackdropLock(true);
+
     if (isOpenDatePicker) {
       setTimeout(() => {
         this.picker.openCalendar();
@@ -29,11 +34,23 @@ class DatePicker extends Component {
   }
 
   handleBlur = date => {
-    const { patch, handleBackdropLock, dispatch, field } = this.props;
+    const {
+      patch,
+      handleBackdropLock,
+      dispatch,
+      field,
+      handleChange,
+      timeZone,
+    } = this.props;
     const { cache, open } = this.state;
 
     if (!open) {
       return;
+    }
+
+    if (date && !MomentTZ.isMoment(date)) {
+      date = MomentTZ(date, `L LT`);
+      date = date.tz(timeZone, true);
     }
 
     try {
@@ -41,6 +58,9 @@ class DatePicker extends Component {
         JSON.stringify(cache) !==
         (date !== '' ? JSON.stringify(date && date.toDate()) : '')
       ) {
+        // calling handleChange manually to update date stored in the MasterWidget
+        handleChange && handleChange(field, date);
+
         patch(date);
       }
     } catch (error) {
@@ -55,7 +75,9 @@ class DatePicker extends Component {
   };
 
   handleFocus = () => {
-    const { value, dispatch } = this.props;
+    const { dispatch } = this.props;
+    const { value } = this.props;
+
     this.setState({
       cache: value,
       open: true,
@@ -131,11 +153,14 @@ class DatePicker extends Component {
 
 DatePicker.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  handleChange: PropTypes.func,
   handleBackdropLock: PropTypes.func,
   patch: PropTypes.func,
   field: PropTypes.string,
   value: PropTypes.any,
   isOpenDatePicker: PropTypes.bool,
+  hasTimeZone: PropTypes.bool,
+  dateFormat: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
 };
 
 export default connect()(onClickOutside(DatePicker));

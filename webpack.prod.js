@@ -93,6 +93,17 @@ module.exports = {
         test: /\.html$/,
         loader: 'html-loader',
       },
+      {
+        type: 'javascript/auto',
+        test: /\.(json)/,
+        exclude: /(node_modules)/,
+        use: [
+          {
+            loader: 'file-loader',
+            options: { name: '[name].[ext]' },
+          },
+        ],
+      },
     ],
   },
   resolve: {

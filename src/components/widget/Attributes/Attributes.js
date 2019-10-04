@@ -58,7 +58,8 @@ export default class Attributes extends Component {
         fieldName: fieldName,
       };
     } else {
-      throw new Error('Unknown entity: ' + entity);
+      // eslint-disable-next-line no-console
+      console.error('Unknown entity: ' + entity);
     }
 
     this.setState(

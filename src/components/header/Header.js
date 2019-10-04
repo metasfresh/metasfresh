@@ -51,15 +51,28 @@ class Header extends Component {
   udRef = React.createRef();
   inboxRef = React.createRef();
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method
+   */
   componentDidMount() {
     this.initEventListeners();
   }
 
+  /**
+   * @method componentWillUnmount
+   * @summary ToDo: Describe the method
+   */
   componentWillUnmount() {
     this.toggleScrollScope(false);
     this.removeEventListeners();
   }
 
+  /**
+   * @method UNSAFE_componentWillUpdate
+   * @summary ToDo: Describe the method
+   * @prop {object} nextProps
+   */
   UNSAFE_componentWillUpdate(nextProps) {
     const { dropzoneFocused } = this.props;
 
@@ -71,6 +84,12 @@ class Header extends Component {
     }
   }
 
+  /**
+   * @method componentDidUpdate
+   * @summary ToDo: Describe the method
+   * @param {object} prevProps
+   * @param {object} prevState
+   */
   componentDidUpdate(prevProps, prevState) {
     // const {dispatch, pathname} = this.props;
 
@@ -113,30 +132,62 @@ class Header extends Component {
     }
   }
 
+  /**
+   * @method initEventListeners
+   * @summary ToDo: Describe the method
+   */
   initEventListeners = () => {
     document.addEventListener('scroll', this.handleScroll);
   };
 
+  /**
+   * @method removeEventListeners
+   * @summary ToDo: Describe the method
+   */
   removeEventListeners = () => {
     document.removeEventListener('scroll', this.handleScroll);
   };
 
+  /**
+   * @method handleInboxOpen
+   * @summary ToDo: Describe the method
+   * @param {object} state
+   */
   handleInboxOpen = state => {
     this.setState({ isInboxOpen: !!state });
   };
 
+  /**
+   * @method handleInboxToggle
+   * @summary ToDo: Describe the method
+   */
   handleInboxToggle = () => {
     this.setState({ isInboxOpen: !this.state.isInboxOpen });
   };
 
+  /**
+   * @method handleUDOpen
+   * @summary ToDo: Describe the method
+   * @param {object} state
+   */
   handleUDOpen = state => {
     this.setState({ isUDOpen: !!state });
   };
 
+  /**
+   * @method handleUDScroll
+   * @summary ToDo: Describe the method
+   */
   handleUDToggle = () => {
     this.setState({ isUDOpen: !this.state.isUDOpen });
   };
 
+  /**
+   * @method handleMenuOverlay
+   * @summary ToDo: Describe the method
+   * @param {object} e
+   * @param {string} nodeId
+   */
   handleMenuOverlay = (e, nodeId) => {
     const { isSubheaderShow, isSideListShow } = this.state;
 
@@ -164,6 +215,11 @@ class Header extends Component {
     }
   };
 
+  /**
+   * @method handleScroll
+   * @summary ToDo: Describe the method
+   * @param {object} event
+   */
   handleScroll = event => {
     const target = event.srcElement;
     let scrollTop = target && target.body.scrollTop;
@@ -179,11 +235,20 @@ class Header extends Component {
     }
   };
 
+  /**
+   * @method handleDashboardLink
+   * @summary ToDo: Describe the method
+   */
   handleDashboardLink = () => {
     const { dispatch } = this.props;
     dispatch(push('/'));
   };
 
+  /**
+   * @method toggleScrollScope
+   * @summary ToDo: Describe the method
+   * @param {bool} open
+   */
   toggleScrollScope = open => {
     if (!open) {
       document.body.style.overflow = 'auto';
@@ -192,10 +257,27 @@ class Header extends Component {
     }
   };
 
+  /**
+   * @method toggleTooltip
+   * @summary ToDo: Describe the method
+   * @param {object} event
+   */
   toggleTooltip = tooltip => {
     this.setState({ tooltipOpen: tooltip });
   };
 
+  /**
+   * @method openModel
+   * @summary ToDo: Describe the method
+   * @param {string} windowId
+   * @param {*} modalType
+   * @param {*} caption
+   * @param {bool} isAdvanced
+   * @param {*} selected
+   * @param {*} childViewId
+   * @param {*} childViewSelectedIds
+   * @param {*} staticModalType
+   */
   openModal = (
     windowId,
     modalType,
@@ -229,6 +311,16 @@ class Header extends Component {
     );
   };
 
+  /**
+   * @method openModalRow
+   * @summary ToDo: Describe the method
+   * @param {string} windowId
+   * @param {*} modalType
+   * @param {*} caption
+   * @param {string} tabId
+   * @param {string} rowId
+   * @param {string} rowId
+   */
   openModalRow = (
     windowId,
     modalType,
@@ -260,6 +352,13 @@ class Header extends Component {
     );
   };
 
+  /**
+   * @method handlePrint
+   * @summary ToDo: Describe the method
+   * @param {string} windowId
+   * @param {string} docId
+   * @param {string} docNo
+   */
   handlePrint = (windowId, docId, docNo) => {
     openFile(
       'window',
@@ -270,6 +369,12 @@ class Header extends Component {
     );
   };
 
+  /**
+   * @method handleClone
+   * @summary ToDo: Describe the method
+   * @param {string} windowId
+   * @param {string} docId
+   */
   handleClone = (windowId, docId) => {
     const { dispatch } = this.props;
 
@@ -280,34 +385,64 @@ class Header extends Component {
     });
   };
 
+  /**
+   * @method handleDelete
+   * @summary ToDo: Describe the method
+   */
   handleDelete = () => {
     this.setState({
       prompt: Object.assign({}, this.state.prompt, { open: true }),
     });
   };
 
+  /**
+   * @method handleEmail
+   * @summary ToDo: Describe the method
+   */
   handleEmail = () => {
     this.setState({ isEmailOpen: true });
   };
 
+  /**
+   * @method handleLetter
+   * @summary ToDo: Describe the method
+   */
   handleLetter = () => {
     this.setState({ isLetterOpen: true });
   };
 
+  /**
+   * @method handleCloseEmail
+   * @summary ToDo: Describe the method
+   */
   handleCloseEmail = () => {
     this.setState({ isEmailOpen: false });
   };
 
+  /**
+   * @method handleCloseLetter
+   * @summary ToDo: Describe the method
+   */
   handleCloseLetter = () => {
     this.setState({ isLetterOpen: false });
   };
 
+  /**
+   * @method handlePromptCancelClick
+   * @summary ToDo: Describe the method
+   */
   handlePromptCancelClick = () => {
     this.setState({
       prompt: Object.assign({}, this.state.prompt, { open: false }),
     });
   };
 
+  /**
+   * @method handlePromptScroll
+   * @summary ToDo: Describe the method
+   * @param {string} windowId
+   * @param {docId} docId
+   */
   handlePromptSubmitClick = (windowId, docId) => {
     const { dispatch, handleDeletedStatus } = this.props;
 
@@ -324,6 +459,11 @@ class Header extends Component {
     );
   };
 
+  /**
+   * @method handleDocStatusToggle
+   * @summary ToDo: Describe the method
+   * @param {object} event
+   */
   handleDocStatusToggle = close => {
     const elem = document.getElementsByClassName('js-dropdown-toggler')[0];
 
@@ -338,6 +478,11 @@ class Header extends Component {
     }
   };
 
+  /**
+   * @method handleSidelistToggle
+   * @summary ToDo: Describe the method
+   * @param {string} id
+   */
   handleSidelistToggle = (id = null) => {
     const { sideListTab } = this.state;
 
@@ -351,6 +496,11 @@ class Header extends Component {
     });
   };
 
+  /**
+   * @method closeOverlays
+   * @summary ToDo: Describe the method
+   * @param {object} clickedItem
+   */
   closeOverlays = (clickedItem, callback) => {
     const { isSubheaderShow } = this.state;
 
@@ -380,11 +530,20 @@ class Header extends Component {
     }
   };
 
+  /**
+   * @method redirect
+   * @summary ToDo: Describe the method
+   * @param {*} where
+   */
   redirect = where => {
     const { dispatch } = this.props;
     dispatch(push(where));
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   */
   render() {
     const {
       docSummaryData,
@@ -721,64 +880,63 @@ class Header extends Component {
 
 /**
  * @typedef {object} Props Component props
- * @prop {*} activeTabId
+ * @prop {*} activeTab
  * @prop {*} breadcrumb
  * @prop {string} dataId
- * @prop {func} dispatch Dispatch function
- * @prop {object} inbox
- * @prop {func} me
- * @prop {*} childViewId
- * @prop {*} closeCallback
- * @prop {*} childViewSelectedIds
- * @prop {shape} data
- * @prop {*} docId
+ * @prop {func} dispatch
+ * @prop {string} docId
+ * @prop {*} docSummaryData
  * @prop {*} docNoData
  * @prop {*} docStatus
  * @prop {*} docStatusData
- * @prop {*} docSummaryData
  * @prop {*} dropzoneFocused
- * @prop {*} dataId
  * @prop {*} editmode
  * @prop {*} entity
  * @prop {*} handleDeletedStatus
  * @prop {*} handleEditModeToggle
- * @prop {string} indicator
- * @prop {shape} layout
- * @prop {bool} isAdvanced
+ * @prop {object} inbox
  * @prop {bool} isDocumentNotSaved
- * @prop {bool} isNewDoc
- * @prop {string} staticModalType
- * @prop {*} modalTitle
- * @prop {*} modalType
- * @prop {*} modalSaveStatus
- * @prop {*} modalViewId
- * @prop {*} modalViewDocumentIds
+ * @prop {object} me
  * @prop {*} notfound
- * @prop {string} staticModalType
- * @prop {string} tabId
- * @prop {*} parentSelection
- * @prop {*} parentType
- * @prop {*} parentViewId
- * @prop {*} parentViewSelectedIds
  * @prop {*} plugins
  * @prop {*} query
- * @prop {*} siteName
- * @prop {*} showIndicator
  * @prop {*} showSidelist
- * @prop {*} rawModalVisible
- * @prop {string} rowId
- * @prop {*} triggerField
- * @prop {*} viewId
+ * @prop {*} showIndicator
+ * @prop {*} siteName
  * @prop {*} windowId
- * @prop {*} windowType
- *  * @param {object} props Component props
  */
 Header.propTypes = {
+  activeTab: PropTypes.any,
+  breadcrumb: PropTypes.any,
+  dataId: PropTypes.string,
   dispatch: PropTypes.func.isRequired,
+  docId: PropTypes.string,
+  docSummaryData: PropTypes.any,
+  docNoData: PropTypes.any,
+  docStatus: PropTypes.any,
+  docStatusData: PropTypes.any,
+  dropzoneFocused: PropTypes.any,
+  editmode: PropTypes.any,
+  entity: PropTypes.any,
+  handleDeletedStatus: PropTypes.any,
+  handleEditModeToggle: PropTypes.any,
   inbox: PropTypes.object.isRequired,
+  isDocumentNotSaved: PropTypes.bool,
   me: PropTypes.object.isRequired,
+  notfound: PropTypes.any,
+  plugins: PropTypes.any,
+  query: PropTypes.any,
+  showSidelist: PropTypes.any,
+  showIndicator: PropTypes.any,
+  siteName: PropTypes.any,
+  windowId: PropTypes.string,
 };
 
+/**
+ * @method mapStateToProps
+ * @summary ToDo: Describe the method
+ * @param {object} state
+ */
 const mapStateToProps = state => ({
   inbox: state.appHandler.inbox,
   me: state.appHandler.me,
