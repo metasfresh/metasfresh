@@ -1,5 +1,7 @@
 package de.metas.impexp.processing.product;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -187,7 +189,8 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 		// Price List
 		createUpdateProductPrice(importRecord);
 
-		ModelValidationEngine.get().fireImportValidate(this, importRecord, importRecord.getM_Product(), IImportInterceptor.TIMING_AFTER_IMPORT);
+		final I_M_Product productRecord = load(importRecord.getM_Product_ID(), I_M_Product.class);
+		ModelValidationEngine.get().fireImportValidate(this, importRecord, productRecord, IImportInterceptor.TIMING_AFTER_IMPORT);
 
 		// #3404 Create default product planning
 		Services.get(IProductPlanningSchemaBL.class).createDefaultProductPlanningsForAllProducts();
@@ -266,6 +269,7 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 		product.setDocumentNote(importRecord.getDocumentNote());
 		product.setHelp(importRecord.getHelp());
 		product.setUPC(importRecord.getUPC());
+		product.setExternalId(importRecord.getExternalId());
 		product.setSKU(importRecord.getSKU());
 		product.setC_UOM_ID(importRecord.getC_UOM_ID());
 		product.setPackage_UOM_ID(importRecord.getPackage_UOM_ID());

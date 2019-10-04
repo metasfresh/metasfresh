@@ -1,28 +1,8 @@
-package de.metas.location.geocoding.openstreetmap;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
-import de.metas.location.geocoding.GeoCoordinatesRequest;
-import de.metas.location.geocoding.GeographicalCoordinates;
-
 /*
  * #%L
- * metasfresh-pharma
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -40,17 +20,34 @@ import de.metas.location.geocoding.GeographicalCoordinates;
  * #L%
  */
 
-@SuppressWarnings("ArraysAsListWithZeroOrOneArgument")
+package de.metas.location.geocoding.provider.openstreetmap;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import de.metas.location.geocoding.GeoCoordinatesRequest;
+import de.metas.location.geocoding.GeographicalCoordinates;
+
 @Disabled("It makes real queries which can't be mocked so don't run it automatically.")
-class NominatimOSMGeoCoordinatesProviderImplTest
+class NominatimOSMGeocodingProviderImplTest
 {
-	public static final long MILLIS_BETWEEN_REQUESTS = TimeUnit.SECONDS.toMillis(20);
-	private NominatimOSMGeoCoordinatesProviderImpl coordinatesProvider;
+	private static final long MILLIS_BETWEEN_REQUESTS = TimeUnit.SECONDS.toMillis(20);
+	private NominatimOSMGeocodingProviderImpl coordinatesProvider;
 
 	@BeforeEach
 	void beforeEach()
 	{
-		coordinatesProvider = new NominatimOSMGeoCoordinatesProviderImpl("", MILLIS_BETWEEN_REQUESTS, 0);
+		coordinatesProvider = new NominatimOSMGeocodingProviderImpl("", MILLIS_BETWEEN_REQUESTS, 0);
 	}
 
 	private static GeographicalCoordinates toGeographicalCoordinates(final String latitudeStr, final String longitudeStr)
@@ -103,9 +100,8 @@ class NominatimOSMGeoCoordinatesProviderImplTest
 						.countryCode2("DE")
 						.build());
 
-
-//		correct google: 	lat=50.658480, lon=7.169762
-//		correct nominatim: 	lat=50.6583491 lon=7.16960605354244
+		//		correct google: 	lat=50.658480, lon=7.169762
+		//		correct nominatim: 	lat=50.6583491 lon=7.16960605354244
 
 		final GeographicalCoordinates expectedCoordinates = toGeographicalCoordinates("50.6583491", "7.16960605354244");
 
@@ -113,7 +109,6 @@ class NominatimOSMGeoCoordinatesProviderImplTest
 				.isNotEmpty()
 				.contains(expectedCoordinates);
 	}
-
 
 	@Test
 	@DisplayName("bestCoordinates cannot find metasRO by postal and wrong country")
@@ -163,7 +158,7 @@ class NominatimOSMGeoCoordinatesProviderImplTest
 	@DisplayName("2 different requests at the same time should be rate limited")
 	void expect2DifferentRequestsAtTheSameTimeShouldBeRateLimited()
 	{
-		coordinatesProvider = new NominatimOSMGeoCoordinatesProviderImpl("", MILLIS_BETWEEN_REQUESTS, 5);
+		coordinatesProvider = new NominatimOSMGeocodingProviderImpl("", MILLIS_BETWEEN_REQUESTS, 5);
 
 		final Instant start = Instant.now();
 		coordinatesProvider.findBestCoordinates(
@@ -187,7 +182,7 @@ class NominatimOSMGeoCoordinatesProviderImplTest
 	@DisplayName("expect cache hit for duplicate requests")
 	void expectCacheHitForDuplicateRequests()
 	{
-		coordinatesProvider = new NominatimOSMGeoCoordinatesProviderImpl("", MILLIS_BETWEEN_REQUESTS, 5);
+		coordinatesProvider = new NominatimOSMGeocodingProviderImpl("", MILLIS_BETWEEN_REQUESTS, 5);
 		final GeoCoordinatesRequest req = GeoCoordinatesRequest.builder()
 				.postal("5081")
 				.countryCode2("AT")

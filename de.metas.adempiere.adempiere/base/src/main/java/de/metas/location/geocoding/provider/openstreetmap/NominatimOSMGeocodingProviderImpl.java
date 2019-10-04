@@ -1,43 +1,8 @@
-package de.metas.location.geocoding.openstreetmap;
-
-import java.math.BigDecimal;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.cache.CCache;
-import de.metas.location.geocoding.GeoCoordinatesProvider;
-import de.metas.location.geocoding.GeoCoordinatesRequest;
-import de.metas.location.geocoding.GeographicalCoordinates;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.lang.CoalesceUtil;
-import lombok.NonNull;
-
 /*
  * #%L
- * metasfresh-pharma
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -54,10 +19,41 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Component
-public class NominatimOSMGeoCoordinatesProviderImpl implements GeoCoordinatesProvider
+
+package de.metas.location.geocoding.provider.openstreetmap;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import de.metas.cache.CCache;
+import de.metas.location.geocoding.GeocodingProvider;
+import de.metas.location.geocoding.GeoCoordinatesRequest;
+import de.metas.location.geocoding.GeographicalCoordinates;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.lang.CoalesceUtil;
+import lombok.NonNull;
+import org.slf4j.Logger;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
+
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
+public class NominatimOSMGeocodingProviderImpl implements GeocodingProvider
 {
-	private static final Logger logger = LogManager.getLogger(NominatimOSMGeoCoordinatesProviderImpl.class);
+	private static final Logger logger = LogManager.getLogger(NominatimOSMGeocodingProviderImpl.class);
 
 	private final static String DEFAULT_BASE_URL = "https://nominatim.openstreetmap.org/search";
 	@SuppressWarnings("SpellCheckingInspection")
@@ -72,10 +68,10 @@ public class NominatimOSMGeoCoordinatesProviderImpl implements GeoCoordinatesPro
 	private final long millisBetweenRequests;
 	private Instant lastRequestTime;
 
-	NominatimOSMGeoCoordinatesProviderImpl(
-			@Value("${de.metas.location.geocoding.openstreetmap.baseUrl:}") final String baseUrl,
-			@Value("${de.metas.location.geocoding.openstreetmap.millisBetweenRequests:2000}") final long millisBetweenRequests,
-			@Value("${de.metas.location.geocoding.openstreetmap.cacheCapacity:200}") final int cacheCapacity)
+	public NominatimOSMGeocodingProviderImpl(
+			final String baseUrl,
+			final long millisBetweenRequests,
+			final int cacheCapacity)
 	{
 		if (!Check.isEmpty(baseUrl, true))
 		{
@@ -93,7 +89,7 @@ public class NominatimOSMGeoCoordinatesProviderImpl implements GeoCoordinatesPro
 		lastRequestTime = Instant.now().minusMillis(this.millisBetweenRequests);
 
 		logger.info("cacheCapacity={}", cacheCapacity);
-		coordinatesCache = CCache.<GeoCoordinatesRequest, ImmutableList<GeographicalCoordinates>> builder()
+		coordinatesCache = CCache.<GeoCoordinatesRequest, ImmutableList<GeographicalCoordinates>>builder()
 				.cacheMapType(CCache.CacheMapType.LRU)
 				.initialCapacity(cacheCapacity)
 				.build();
@@ -112,6 +108,8 @@ public class NominatimOSMGeoCoordinatesProviderImpl implements GeoCoordinatesPro
 		return Optional.of(coords.get(0));
 	}
 
+	@SuppressWarnings("WeakerAccess")
+	@NonNull
 	@VisibleForTesting
 	ImmutableList<GeographicalCoordinates> findAllCoordinates(final @NonNull GeoCoordinatesRequest request)
 	{
@@ -135,6 +133,7 @@ public class NominatimOSMGeoCoordinatesProviderImpl implements GeoCoordinatesPro
 		}
 	}
 
+	@NonNull
 	private ImmutableList<GeographicalCoordinates> queryAllCoordinates(final @NonNull GeoCoordinatesRequest request)
 	{
 		final Map<String, String> parameterList = prepareParameterList(request);
@@ -159,7 +158,7 @@ public class NominatimOSMGeoCoordinatesProviderImpl implements GeoCoordinatesPro
 		lastRequestTime = Instant.now();
 
 		final ImmutableList<GeographicalCoordinates> result = coords.stream()
-				.map(json -> toGeographicalCoordinates(json))
+				.map(NominatimOSMGeocodingProviderImpl::toGeographicalCoordinates)
 				.collect(GuavaCollectors.toImmutableList());
 
 		logger.debug("Got result for {}: {}", request, result);
@@ -171,7 +170,7 @@ public class NominatimOSMGeoCoordinatesProviderImpl implements GeoCoordinatesPro
 	@NonNull
 	private Map<String, String> prepareParameterList(final @NonNull GeoCoordinatesRequest request)
 	{
-		final String  defaultEmptyValue = "";
+		final String defaultEmptyValue = "";
 
 		final Map<String, String> m = new HashMap<>();
 		m.put("numberAndStreet", CoalesceUtil.coalesce(request.getAddress(), defaultEmptyValue));

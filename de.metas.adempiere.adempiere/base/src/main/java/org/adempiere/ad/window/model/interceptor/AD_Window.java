@@ -11,6 +11,7 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_AD_Element;
+import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -56,10 +57,15 @@ public class AD_Window
 		updateWindowFromElement(window);
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Tab.COLUMNNAME_AD_Element_ID)
+	public void onBeforeWindoSave_WhenElementIdChanged(final I_AD_Window window)
+	{
+		updateWindowFromElement(window);
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Window.COLUMNNAME_AD_Element_ID)
 	public void onAfterWindowSave_WhenElementIdChanged(final I_AD_Window window)
 	{
-		updateWindowFromElement(window);
 		updateTranslationsForElement(window);
 		recreateElementLinkForWindow(window);
 	}

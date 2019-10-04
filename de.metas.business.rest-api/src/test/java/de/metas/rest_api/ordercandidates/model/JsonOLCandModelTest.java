@@ -1,5 +1,7 @@
 package de.metas.rest_api.ordercandidates.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.IOException;
 import java.time.LocalDate;
 
@@ -172,6 +174,25 @@ public class JsonOLCandModelTest
 				.throwable(null) // REMEMBER: throwable is not serialized
 				.build());
 		testSerializeDeserialize(response, jsonObjectMapper);
+	}
+
+	@Test
+	public void test_JsonOLCandCreateBulkResponse_Error_trowable_is_discarded() throws Exception
+	{
+		final JSONObjectMapper<JsonOLCandCreateBulkResponse> jsonObjectMapper = JSONObjectMapper.forClass(JsonOLCandCreateBulkResponse.class);
+
+		final JsonOLCandCreateBulkResponse response = JsonOLCandCreateBulkResponse.error(JsonError.builder()
+				.message("error message")
+				.stackTrace("error stacktrace")
+				.throwable(new RuntimeException("whatever"))
+				.build());
+
+		final String json = jsonObjectMapper.writeValueAsString(response);
+		final JsonOLCandCreateBulkResponse responseDeserialized = jsonObjectMapper.readValue(json);
+		assertThat(responseDeserialized).isEqualTo(JsonOLCandCreateBulkResponse.error(JsonError.builder()
+				.message("error message")
+				.stackTrace("error stacktrace")
+				.build()));
 	}
 
 	private JsonOLCandCreateRequest createDummyJsonOLCandCreateRequest()
