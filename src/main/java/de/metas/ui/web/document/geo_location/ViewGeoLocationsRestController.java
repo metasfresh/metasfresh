@@ -1,21 +1,9 @@
 package de.metas.ui.web.document.geo_location;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.GeographicalCoordinatesWithBPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -41,6 +29,16 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -125,11 +123,17 @@ public class ViewGeoLocationsRestController
 	private ImmutableSet<String> getViewFieldNames(final IView view)
 	{
 		final ViewLayout viewLayout = viewsRepo.getViewLayout(view.getViewId().getWindowId(), view.getViewType(), view.getProfileId());
-		return viewLayout.getElements()
+		final ImmutableSet<String> fieldNames = viewLayout.getElements()
 				.stream()
 				.flatMap(element -> element.getFields().stream())
 				.map(DocumentLayoutElementFieldDescriptor::getField)
 				.collect(ImmutableSet.toImmutableSet());
+
+		// todo @teo is adding the IdFieldName a dirty hack? it is needed for bpartner window, where c_bpartner_id is not present in the list of fields. Should we add it there, or is this enough?
+		return ImmutableSet.<String>builder()
+				.addAll(fieldNames)
+				.add(viewLayout.getIdFieldName())
+				.build();
 	}
 
 	private List<JsonViewRowGeoLocation> retrieveGeoLocations(
