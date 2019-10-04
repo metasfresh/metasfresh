@@ -15,8 +15,8 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.material.event.PostMaterialEventService;
@@ -53,8 +53,8 @@ import lombok.NonNull;
 final class HUAttributeChangesCollector
 {
 	// services
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final PostMaterialEventService materialEventService;
 
@@ -100,7 +100,21 @@ final class HUAttributeChangesCollector
 		}
 
 		final HuId huId = changes.getHuId();
-		final I_M_HU hu = handlingUnitsDAO.getById(huId);
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+
+		//
+		// Consider only those HUs which have QtyOnHand
+		if (!huStatusBL.isQtyOnHand(hu.getHUStatus()))
+		{
+			return ImmutableList.of();
+		}
+
+		//
+		// Consider only VHUs
+		if (!handlingUnitsBL.isVirtual(hu))
+		{
+			return ImmutableList.of();
+		}
 
 		final EventDescriptor eventDescriptor = EventDescriptor.ofClientAndOrg(hu.getAD_Client_ID(), hu.getAD_Org_ID());
 		final Instant date = changes.getLastChangeDate();
