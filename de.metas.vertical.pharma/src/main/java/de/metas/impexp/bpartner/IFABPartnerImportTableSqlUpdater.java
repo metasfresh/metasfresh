@@ -1,6 +1,6 @@
 package de.metas.impexp.bpartner;
 
-import static de.metas.impexp.processing.ImportProcessTemplate.COLUMNNAME_I_IsImported;
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;

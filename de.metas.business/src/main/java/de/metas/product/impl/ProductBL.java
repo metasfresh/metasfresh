@@ -44,6 +44,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.MAttributeSet;
 import org.compiere.model.MProductCategory;
 import org.compiere.model.X_C_UOM;
@@ -255,12 +256,17 @@ public final class ProductBL implements IProductBL
 		{
 			return AttributeSetId.ofRepoId(attributeSetId);
 		}
-		if (product.getM_Product_Category_ID() <= 0) // guard against NPE which might happen in unit tests
+
+		final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoIdOrNull(product.getM_Product_Category_ID());
+		if (productCategoryId == null) // guard against NPE which might happen in unit tests
 		{
 			return AttributeSetId.NONE;
 		}
 
-		attributeSetId = product.getM_Product_Category().getM_AttributeSet_ID();
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+
+		final I_M_Product_Category productCategoryRecord = productDAO.getProductCategoryById(productCategoryId);
+		attributeSetId = productCategoryRecord.getM_AttributeSet_ID();
 		return attributeSetId > 0 ? AttributeSetId.ofRepoId(attributeSetId) : AttributeSetId.NONE;
 	}
 

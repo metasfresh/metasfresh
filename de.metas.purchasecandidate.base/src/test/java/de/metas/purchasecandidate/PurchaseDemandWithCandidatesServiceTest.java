@@ -144,7 +144,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 		productRecord.setValue("product.Value");
 		productRecord.setName("product.Name");
 		productRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
-		productRecord.setM_Product_Category(productCategory);
+		productRecord.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
 		saveRecord(productRecord);
 
 		final I_M_DiscountSchema discountSchemaRecord = newInstance(I_M_DiscountSchema.class);

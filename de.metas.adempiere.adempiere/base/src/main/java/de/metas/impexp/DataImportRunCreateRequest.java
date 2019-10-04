@@ -2,6 +2,8 @@ package de.metas.impexp;
 
 import javax.annotation.Nullable;
 
+import de.metas.impexp.config.DataImportConfigId;
+import de.metas.impexp.format.ImpFormatId;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import lombok.Builder;

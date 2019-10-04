@@ -4,13 +4,12 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_CreditLimit;
-import org.compiere.model.I_I_BPartner;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.util.time.SystemTime;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -37,36 +36,37 @@ import lombok.NonNull;
 
 /* package */ class BPCreditLimitImportHelper
 {
+	private final BPartnerCreditLimitRepository creditLimitRepo;
+
 	private final int Management_C_CreditLimit_Type_ID = 540001;
 	private final int Insurance_C_CreditLimit_Type_ID = 540000;
 
-	public static BPCreditLimitImportHelper newInstance()
+	@Builder
+	private BPCreditLimitImportHelper(
+			@NonNull final BPartnerCreditLimitRepository creditLimitRepo)
 	{
-		return new BPCreditLimitImportHelper();
+		this.creditLimitRepo = creditLimitRepo;
 	}
 
-	private BPCreditLimitImportHelper()
+	public final void importRecord(@NonNull final BPCreditLimitImportRequest request)
 	{
-	}
-
-	public final void importRecord(final I_I_BPartner importRecord)
-	{
-		final I_C_BPartner bpartner = importRecord.getC_BPartner();
-		if (importRecord.getCreditLimit().signum() > 0)
+		if (request.getInsuranceCreditLimit().signum() > 0)
 		{
-			createUpdateBPCreditLimit(bpartner.getC_BPartner_ID(), importRecord.getCreditLimit(), Insurance_C_CreditLimit_Type_ID);
+			createUpdateBPCreditLimit(request.getBpartnerId(), request.getInsuranceCreditLimit(), Insurance_C_CreditLimit_Type_ID);
 		}
 
-		if (importRecord.getCreditLimit2().signum() > 0)
+		if (request.getManagementCreditLimit().signum() > 0)
 		{
-			createUpdateBPCreditLimit(bpartner.getC_BPartner_ID(), importRecord.getCreditLimit2(), Management_C_CreditLimit_Type_ID);
+			createUpdateBPCreditLimit(request.getBpartnerId(), request.getManagementCreditLimit(), Management_C_CreditLimit_Type_ID);
 		}
 	}
 
-	private final void createUpdateBPCreditLimit(final int bPartnerId, @NonNull final BigDecimal amount, final int typeId)
+	private final void createUpdateBPCreditLimit(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final BigDecimal amount,
+			final int typeId)
 	{
-		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-		final Optional<I_C_BPartner_CreditLimit> bpCreditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bPartnerId, typeId);
+		final Optional<I_C_BPartner_CreditLimit> bpCreditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpartnerId.getRepoId(), typeId);
 		if (bpCreditLimit.isPresent())
 		{
 			final I_C_BPartner_CreditLimit creditLimit = bpCreditLimit.get();
@@ -76,7 +76,7 @@ import lombok.NonNull;
 		else
 		{
 			final I_C_BPartner_CreditLimit creditLimit = createBPCreditLimit(amount, typeId);
-			creditLimit.setC_BPartner_ID(bPartnerId);
+			creditLimit.setC_BPartner_ID(bpartnerId.getRepoId());
 			InterfaceWrapperHelper.save(bpCreditLimit);
 		}
 	}

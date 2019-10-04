@@ -1047,7 +1047,7 @@ public interface I_C_BPartner
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setglobalid (java.lang.String globalid);
+	public void setGlobalId (java.lang.String GlobalId);
 
 	/**
 	 * Get Global ID.
@@ -1056,12 +1056,12 @@ public interface I_C_BPartner
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getglobalid();
+	public java.lang.String getGlobalId();
 
-    /** Column definition for globalid */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_globalid = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "globalid", null);
-    /** Column name globalid */
-    public static final String COLUMNNAME_globalid = "globalid";
+    /** Column definition for GlobalId */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_GlobalId = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "GlobalId", null);
+    /** Column name GlobalId */
+    public static final String COLUMNNAME_GlobalId = "GlobalId";
 
 	/**
 	 * Set Druckformat Rechnung.
@@ -2256,7 +2256,7 @@ public interface I_C_BPartner
 	/**
 	 * Set Einkaufspreissystem.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2265,7 +2265,7 @@ public interface I_C_BPartner
 	/**
 	 * Get Einkaufspreissystem.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

@@ -74,9 +74,15 @@ public class AD_Field
 			ifColumnsChanged = { I_AD_Field.COLUMNNAME_AD_Name_ID, I_AD_Field.COLUMNNAME_AD_Column_ID })
 	public void onAfterSave_WhenNameOrColumnChanged(final I_AD_Field field)
 	{
-		updateFieldFromElement(field);
 		updateTranslationsForElement(field);
 		recreateElementLinkForField(field);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_AD_Field.COLUMNNAME_AD_Name_ID, I_AD_Field.COLUMNNAME_AD_Column_ID })
+	public void onBeforeSave_WhenNameOrColumnChanged(final I_AD_Field field)
+	{
+		updateFieldFromElement(field);
 	}
 
 	private void updateFieldFromElement(final I_AD_Field field)

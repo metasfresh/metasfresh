@@ -6,6 +6,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import org.compiere.model.I_C_DataImport_Run;
 import org.springframework.stereotype.Service;
 
+import de.metas.impexp.config.DataImportConfigId;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base

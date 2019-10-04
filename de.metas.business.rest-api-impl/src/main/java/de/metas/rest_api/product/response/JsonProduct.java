@@ -5,6 +5,8 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
 import de.metas.product.ProductId;
@@ -25,12 +27,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -49,8 +51,9 @@ public class JsonProduct
 	@NonNull
 	ProductId id;
 
+	@ApiModelProperty("This translates to `M_Product.Value`.")
 	@NonNull
-	private String productNo;
+	String productNo;
 
 	@NonNull
 	String name;
@@ -58,9 +61,17 @@ public class JsonProduct
 	@Nullable
 	String description;
 
+	@ApiModelProperty("This translates to `M_Product.UPC`.")
 	@Nullable
+	@JsonInclude(Include.NON_EMPTY)
 	String ean;
 
+	@ApiModelProperty("This translates to `M_Product.ExternalId`.")
+	@Nullable
+	@JsonInclude(Include.NON_EMPTY)
+	String externalId;
+
+	@ApiModelProperty("This is the `C_UOM.UOMSymbol` of the product's unit of measurement.")
 	@NonNull
 	String uom;
 

@@ -1,5 +1,6 @@
 package de.metas.rest_api.ordercandidates.impl;
 
+import static de.metas.util.Check.isEmpty;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
@@ -241,21 +242,28 @@ final class BPartnerMasterDataProvider
 			@NonNull final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
 			@NonNull final OrgId orgId)
 	{
-		final JsonRequestBPartner json = jsonBPartnerInfo.getBpartner();
+		final JsonRequestBPartner bpartnerJson = jsonBPartnerInfo.getBpartner();
 
 		final SyncAdvise syncAdvise = jsonBPartnerInfo.getSyncAdvise();
-		final ExternalId externalId = JsonExternalIds.toExternalIdOrNull(json.getExternalId());
 
 		final BPartnerQuery.BPartnerQueryBuilder query = BPartnerQuery.builder()
 				.onlyOrgId(orgId)
 				.onlyOrgId(OrgId.ANY)
 				.outOfTrx(syncAdvise.isLoadReadOnly())
-				.failIfNotExists(syncAdvise.isFailIfNotExists())
-				.externalId(externalId)
-				.bpartnerValue(json.getCode());
+				.failIfNotExists(syncAdvise.isFailIfNotExists());
+
+		if (bpartnerJson != null && bpartnerJson.getExternalId() != null)
+		{
+			final ExternalId externalId = JsonExternalIds.toExternalIdOrNull(bpartnerJson.getExternalId());
+			query.externalId(externalId);
+		}
+		if (bpartnerJson != null && bpartnerJson.getCode() != null)
+		{
+			query.bpartnerValue(bpartnerJson.getCode());
+		}
 
 		final JsonRequestLocation jsonLocation = jsonBPartnerInfo.getLocation();
-		if (jsonLocation != null && jsonLocation.getGln() != null)
+		if (jsonLocation != null && !isEmpty(jsonLocation.getGln(), true))
 		{
 			query.gln(GLN.ofString(jsonLocation.getGln()));
 		}

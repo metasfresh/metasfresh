@@ -58,7 +58,7 @@ class PricingConditionsTestUtils
 	{
 		final I_M_Product product = newInstance(I_M_Product.class);
 		product.setValue(value);
-		product.setM_Product_Category(category);
+		product.setM_Product_Category_ID(category.getM_Product_Category_ID());
 		save(product);
 		return product;
 	}

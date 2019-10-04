@@ -15,7 +15,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1394772433L;
+	private static final long serialVersionUID = -1758677625L;
 
     /** Standard Constructor */
     public X_M_HU_PI_Item_Product (Properties ctx, int M_HU_PI_Item_Product_ID, String trxName)
@@ -111,6 +111,38 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set TU-EAN.
+		@param EAN_TU TU-EAN	  */
+	@Override
+	public void setEAN_TU (java.lang.String EAN_TU)
+	{
+		set_Value (COLUMNNAME_EAN_TU, EAN_TU);
+	}
+
+	/** Get TU-EAN.
+		@return TU-EAN	  */
+	@Override
+	public java.lang.String getEAN_TU () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EAN_TU);
+	}
+
+	/** Set GTIN.
+		@param GTIN GTIN	  */
+	@Override
+	public void setGTIN (java.lang.String GTIN)
+	{
+		set_Value (COLUMNNAME_GTIN, GTIN);
+	}
+
+	/** Get GTIN.
+		@return GTIN	  */
+	@Override
+	public java.lang.String getGTIN () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_GTIN);
 	}
 
 	/** Set Jedes Produkt erlauben.
@@ -278,23 +310,20 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 		return bd;
 	}
 
-	/** Set UPC/EAN.
-		@param UPC 
-		Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
-	  */
+	/** Set TU-UPC.
+		@param UPC_TU TU-UPC	  */
 	@Override
-	public void setUPC (java.lang.String UPC)
+	public void setUPC_TU (java.lang.String UPC_TU)
 	{
-		set_Value (COLUMNNAME_UPC, UPC);
+		set_Value (COLUMNNAME_UPC_TU, UPC_TU);
 	}
 
-	/** Get UPC/EAN.
-		@return Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
-	  */
+	/** Get TU-UPC.
+		@return TU-UPC	  */
 	@Override
-	public java.lang.String getUPC () 
+	public java.lang.String getUPC_TU () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_UPC);
+		return (java.lang.String)get_Value(COLUMNNAME_UPC_TU);
 	}
 
 	/** Set Gültig ab.

@@ -1,7 +1,7 @@
 package de.metas.globalid.impexp;
 
-import static de.metas.impexp.processing.ImportProcessTemplate.COLUMNNAME_I_ErrorMsg;
-import static de.metas.impexp.processing.ImportProcessTemplate.COLUMNNAME_I_IsImported;
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_I_BPartner_GlobalID;
@@ -59,11 +59,11 @@ public class BPartnerGlobalIDImportTableSqlUpdater
 		int no;
 		sql = new StringBuilder("UPDATE " + I_I_BPartner_GlobalID.Table_Name + " i ")
 				.append("SET C_BPartner_ID=(SELECT C_BPartner_ID FROM C_BPartner p ")
-				.append("WHERE i." + I_I_BPartner_GlobalID.COLUMNNAME_globalid)
-				.append("=p." + I_C_BPartner.COLUMNNAME_globalid)
+				.append("WHERE i." + I_I_BPartner_GlobalID.COLUMNNAME_GlobalId)
+				.append("=p." + I_C_BPartner.COLUMNNAME_GlobalId)
 				.append(" AND p.AD_Client_ID=i.AD_Client_ID ")
 				.append(" AND p.IsActive='Y') ")
-				.append("WHERE C_BPartner_ID IS NULL AND " + I_I_BPartner_GlobalID.COLUMNNAME_globalid + " IS NOT NULL")
+				.append("WHERE C_BPartner_ID IS NULL AND " + I_I_BPartner_GlobalID.COLUMNNAME_GlobalId + " IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);

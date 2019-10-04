@@ -7,10 +7,10 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryDataResource;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
-import de.metas.impexp.DataImportConfigId;
 import de.metas.impexp.DataImportRequest;
 import de.metas.impexp.DataImportResult;
 import de.metas.impexp.DataImportService;
+import de.metas.impexp.config.DataImportConfigId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -81,7 +81,8 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 		deleteAttachmentEntry();
 
 		return "@IsImportScheduled@ #" + result.getCountSourceFileValidLines()
-				+ ", @IsError@ #" + result.getCountSourceFileErrorLines();
+				+ ", @IsError@ #" + result.getCountSourceFileErrorLines()
+				+ " (took " + result.getDuration() + ")";
 	}
 
 	private AttachmentEntryId getAttachmentEntryId()

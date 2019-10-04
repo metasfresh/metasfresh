@@ -31,6 +31,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
+import de.metas.process.PInstanceId;
 import de.metas.util.ILoggable;
 
 /**
@@ -61,6 +62,8 @@ public interface IImportProcess<ImportRecordType>
 	IImportProcess<ImportRecordType> setLoggable(ILoggable loggable);
 
 	IImportProcess<ImportRecordType> selectedRecords(TableRecordReferenceSet selectedRecordRefs);
+
+	IImportProcess<ImportRecordType> selectedRecords(PInstanceId selectionId);
 
 	IImportProcess<ImportRecordType> validateOnly(boolean validateOnly);
 

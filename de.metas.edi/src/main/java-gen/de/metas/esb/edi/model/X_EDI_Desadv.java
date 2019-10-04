@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.esb.edi.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for EDI_Desadv
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2143092490L;
+	private static final long serialVersionUID = 683045244L;
 
     /** Standard Constructor */
     public X_EDI_Desadv (Properties ctx, int EDI_Desadv_ID, String trxName)
@@ -41,10 +24,8 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
       /** if (EDI_Desadv_ID == 0)
         {
 			setEDI_Desadv_ID (0);
-			setEDI_ExportStatus (null);
-// P
-			setProcessing (false);
-// N
+			setEDI_ExportStatus (null); // P
+			setProcessing (false); // N
         } */
     }
 
@@ -62,18 +43,6 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_BPartner_Location getBill_Location() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_Bill_Location_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setBill_Location(org.compiere.model.I_C_BPartner_Location Bill_Location)
-	{
-		set_ValueFromPO(COLUMNNAME_Bill_Location_ID, org.compiere.model.I_C_BPartner_Location.class, Bill_Location);
-	}
 
 	/** Set Rechnungsstandort.
 		@param Bill_Location_ID 
@@ -98,18 +67,6 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
 	}
 
 	/** Set Geschäftspartner.
@@ -137,18 +94,6 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class, C_BPartner_Location);
-	}
-
 	/** Set Standort.
 		@param C_BPartner_Location_ID 
 		Identifiziert die (Liefer-) Adresse des Geschäftspartners
@@ -172,18 +117,6 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
-	}
-
-	@Override
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
 	}
 
 	/** Set Währung.
@@ -230,7 +163,7 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateOrdered);
 	}
 
-	/** Set Document No.
+	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
@@ -240,7 +173,7 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Document No.
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
 	@Override
@@ -286,7 +219,7 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_EDI_DESADV_MinimumSumPercentage);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -295,8 +228,7 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 	@Override
 	public void setEDI_DESADV_SumPercentage (java.math.BigDecimal EDI_DESADV_SumPercentage)
 	{
-		set_Value (COLUMNNAME_EDI_DESADV_SumPercentage, EDI_DESADV_SumPercentage);
-	}
+		throw new IllegalArgumentException ("EDI_DESADV_SumPercentage is virtual column");	}
 
 	/** Get Geliefert %.
 		@return Geliefert %	  */
@@ -305,7 +237,7 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_EDI_DESADV_SumPercentage);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -361,18 +293,6 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 		return (java.lang.String)get_Value(COLUMNNAME_EDI_ExportStatus);
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner_Location getHandOver_Location() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_HandOver_Location_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setHandOver_Location(org.compiere.model.I_C_BPartner_Location HandOver_Location)
-	{
-		set_ValueFromPO(COLUMNNAME_HandOver_Location_ID, org.compiere.model.I_C_BPartner_Location.class, HandOver_Location);
-	}
-
 	/** Set Übergabeadresse.
 		@param HandOver_Location_ID Übergabeadresse	  */
 	@Override
@@ -395,7 +315,7 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 		return ii.intValue();
 	}
 
-	/** Set Bewegungs-Datum.
+	/** Set Bewegungsdatum.
 		@param MovementDate 
 		Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	  */
@@ -405,7 +325,7 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 		set_Value (COLUMNNAME_MovementDate, MovementDate);
 	}
 
-	/** Get Bewegungs-Datum.
+	/** Get Bewegungsdatum.
 		@return Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	  */
 	@Override
@@ -480,5 +400,24 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set UserFlag.
+		@param UserFlag 
+		Can be used to flag records and thus make them selectable from the UI via advanced search.
+	  */
+	@Override
+	public void setUserFlag (java.lang.String UserFlag)
+	{
+		set_Value (COLUMNNAME_UserFlag, UserFlag);
+	}
+
+	/** Get UserFlag.
+		@return Can be used to flag records and thus make them selectable from the UI via advanced search.
+	  */
+	@Override
+	public java.lang.String getUserFlag () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_UserFlag);
 	}
 }

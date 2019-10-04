@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.esb.edi.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for EDI_cctop_invoic_v
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_EDI_cctop_invoic_v extends org.compiere.model.PO implements I_EDI
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -544673686L;
+	private static final long serialVersionUID = 247505135L;
 
     /** Standard Constructor */
     public X_EDI_cctop_invoic_v (Properties ctx, int EDI_cctop_invoic_v_ID, String trxName)
@@ -57,18 +40,6 @@ public class X_EDI_cctop_invoic_v extends org.compiere.model.PO implements I_EDI
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class, C_BPartner_Location);
-	}
 
 	/** Set Standort.
 		@param C_BPartner_Location_ID 
@@ -96,7 +67,7 @@ public class X_EDI_cctop_invoic_v extends org.compiere.model.PO implements I_EDI
 	}
 
 	@Override
-	public org.compiere.model.I_C_Invoice getC_Invoice() throws RuntimeException
+	public org.compiere.model.I_C_Invoice getC_Invoice()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class);
 	}
@@ -133,7 +104,7 @@ public class X_EDI_cctop_invoic_v extends org.compiere.model.PO implements I_EDI
 	}
 
 	@Override
-	public org.compiere.model.I_C_Order getC_Order() throws RuntimeException
+	public org.compiere.model.I_C_Order getC_Order()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
 	}
@@ -340,7 +311,7 @@ public class X_EDI_cctop_invoic_v extends org.compiere.model.PO implements I_EDI
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_GrandTotal);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -379,7 +350,7 @@ public class X_EDI_cctop_invoic_v extends org.compiere.model.PO implements I_EDI
 		return (java.lang.String)get_Value(COLUMNNAME_ISO_Code);
 	}
 
-	/** Set Bewegungs-Datum.
+	/** Set Bewegungsdatum.
 		@param MovementDate 
 		Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	  */
@@ -389,7 +360,7 @@ public class X_EDI_cctop_invoic_v extends org.compiere.model.PO implements I_EDI
 		set_Value (COLUMNNAME_MovementDate, MovementDate);
 	}
 
-	/** Get Bewegungs-Datum.
+	/** Get Bewegungsdatum.
 		@return Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	  */
 	@Override
@@ -483,7 +454,7 @@ public class X_EDI_cctop_invoic_v extends org.compiere.model.PO implements I_EDI
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalLines);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -502,7 +473,7 @@ public class X_EDI_cctop_invoic_v extends org.compiere.model.PO implements I_EDI
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_totaltaxbaseamt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -521,20 +492,20 @@ public class X_EDI_cctop_invoic_v extends org.compiere.model.PO implements I_EDI
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_totalvat);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Umsatzsteuer-ID.
-		@param VATaxID Umsatzsteuer-ID	  */
+	/** Set Umsatzsteuer ID.
+		@param VATaxID Umsatzsteuer ID	  */
 	@Override
 	public void setVATaxID (java.lang.String VATaxID)
 	{
 		set_Value (COLUMNNAME_VATaxID, VATaxID);
 	}
 
-	/** Get Umsatzsteuer-ID.
-		@return Umsatzsteuer-ID	  */
+	/** Get Umsatzsteuer ID.
+		@return Umsatzsteuer ID	  */
 	@Override
 	public java.lang.String getVATaxID () 
 	{

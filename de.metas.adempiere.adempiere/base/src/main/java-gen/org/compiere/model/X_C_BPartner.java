@@ -15,7 +15,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 140266020L;
+	private static final long serialVersionUID = -1389553180L;
 
     /** Standard Constructor */
     public X_C_BPartner (Properties ctx, int C_BPartner_ID, String trxName)
@@ -966,19 +966,19 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	/** Set Global ID.
-		@param globalid Global ID	  */
+		@param GlobalId Global ID	  */
 	@Override
-	public void setglobalid (java.lang.String globalid)
+	public void setGlobalId (java.lang.String GlobalId)
 	{
-		set_Value (COLUMNNAME_globalid, globalid);
+		set_Value (COLUMNNAME_GlobalId, GlobalId);
 	}
 
 	/** Get Global ID.
 		@return Global ID	  */
 	@Override
-	public java.lang.String getglobalid () 
+	public java.lang.String getGlobalId () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_globalid);
+		return (java.lang.String)get_Value(COLUMNNAME_GlobalId);
 	}
 
 	@Override

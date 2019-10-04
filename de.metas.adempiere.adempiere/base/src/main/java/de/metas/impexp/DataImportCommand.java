@@ -1,25 +1,28 @@
 package de.metas.impexp;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.HashSet;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
-
-import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.api.IParams;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
+import org.slf4j.Logger;
 import org.springframework.core.io.Resource;
 
-import de.metas.impexp.DataImportResult.DataImportResultBuilder;
+import com.google.common.base.Stopwatch;
+
+import de.metas.impexp.config.DataImportConfigId;
+import de.metas.impexp.format.ImpFormat;
+import de.metas.impexp.format.ImportTableDescriptor;
+import de.metas.impexp.parser.ImpDataParser;
+import de.metas.impexp.parser.ImpDataParserFactory;
 import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.impexp.processing.ImportProcessResult;
+import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.process.PInstanceId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
@@ -48,27 +51,32 @@ import lombok.NonNull;
 
 final class DataImportCommand
 {
-	private final IImportProcessFactory importProcessFactory;
+	private static final Logger logger = LogManager.getLogger(DataImportCommand.class);
 
-	private static final Charset CHARSET = Charset.forName("UTF-8");
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IImportProcessFactory importProcessFactory;
+	private final DataImportRunsService dataImportRunService;
+	private final ImpDataParserFactory parserFactory = new ImpDataParserFactory();
+
+	private static final String SYSCONFIG_InsertBatchSize = "de.metas.impexp.insertBatchSize";
 
 	private final ClientId clientId;
 	private final OrgId orgId;
 	private final UserId userId;
 	private final boolean completeDocuments;
 	private final IParams additionalParameters;
-
 	private final DataImportConfigId dataImportConfigId;
 	private final ImpFormat importFormat;
 	private final Resource data;
 
-	private int sourceFile_validLines = 0;
-	private int sourceFile_linesWithErrors = 0;
-	private final HashSet<TableRecordReference> recordRefsToImport = new HashSet<>();
+	//
+	// State
+	private DataImportRunId dataImportRunId = null;
 
 	@Builder
 	private DataImportCommand(
 			@NonNull final IImportProcessFactory importProcessFactory,
+			@NonNull final DataImportRunsService dataImportRunService,
 			//
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId,
@@ -82,6 +90,8 @@ final class DataImportCommand
 			@NonNull final Resource data)
 	{
 		this.importProcessFactory = importProcessFactory;
+		this.dataImportRunService = dataImportRunService;
+
 		this.clientId = clientId;
 		this.orgId = orgId;
 		this.userId = userId;
@@ -94,152 +104,101 @@ final class DataImportCommand
 
 	public DataImportResult execute()
 	{
-		createImportRecordsFromSource();
-
-		final DataImportResultBuilder resultCollector = DataImportResult.builder()
+		dataImportRunId = dataImportRunService.createNewRun(DataImportRunCreateRequest.builder()
+				.orgId(orgId)
+				.userId(userId)
+				.completeDocuments(completeDocuments)
+				.importFormatId(importFormat.getId())
 				.dataImportConfigId(dataImportConfigId)
-				.importFormatName(importFormat.getName())
-				.countSourceFileValidLines(sourceFile_validLines)
-				.countSourceFileErrorLines(sourceFile_linesWithErrors);
+				.build());
 
-		final TableRecordReferenceSet selectedRecordRefs = TableRecordReferenceSet.of(recordRefsToImport);
-		if (!selectedRecordRefs.isEmpty())
+		final ImportTableAppendResult insertResult = readSourceAndInsertIntoImportTable();
+		logger.debug("Insert into import table result: {}", insertResult);
+
+		final PInstanceId importRecordsSelectionId = createSelectionIdFromDataImportConfigId();
+		final ImportProcessResult validateResult = validateImportRecords(importRecordsSelectionId);
+
+		if (!importFormat.isManualImport())
 		{
-			final ImportProcessResult validateResult = validateImportRecords(selectedRecordRefs);
-			resultCollector
-					.importTableName(validateResult.getImportTableName())
-					.countImportRecordsWithErrors(validateResult.getCountImportRecordsWithErrors().orElse(-1))
-					.targetTableName(validateResult.getTargetTableName());
-
-			completeAsyncImportProcessBuilder();
+			scheduleToImportAsync(importRecordsSelectionId);
 		}
 
-		return resultCollector.build();
+		return DataImportResult.builder()
+				.dataImportConfigId(dataImportConfigId)
+				.importFormatName(importFormat.getName())
+				.countSourceFileValidLines(insertResult.getCountValidRows())
+				.countSourceFileErrorLines(insertResult.getCountRowsWithError())
+				.importTableName(validateResult.getImportTableName())
+				.countImportRecordsWithErrors(validateResult.getCountImportRecordsWithErrors().orElse(-1))
+				.targetTableName(validateResult.getTargetTableName())
+				.duration(validateResult.getDuration())
+				.build();
 	}
 
-	private void createImportRecordsFromSource()
+	private ImportTableAppendResult readSourceAndInsertIntoImportTable()
 	{
-		final ImpDataContext ctx = ImpDataContext.builder()
+		final ImpDataParser sourceParser = parserFactory.createParser(importFormat);
+
+		final ImportTableAppender importTableAppender = ImportTableAppender.builder()
+				.importFormat(importFormat)
 				.clientId(clientId)
 				.orgId(orgId)
 				.userId(userId)
+				.dataImportRunId(dataImportRunId)
+				.dataImportConfigId(dataImportConfigId)
+				.insertBatchSize(getInsertBatchSize())
 				.build();
-		streamSourceLines().forEach(line -> createImportRecord(ctx, line));
+
+		return importTableAppender.appendStream(sourceParser.streamDataLines(data));
 	}
 
-	private ImportProcessResult validateImportRecords(final TableRecordReferenceSet selectedRecordRefs)
+	private int getInsertBatchSize()
 	{
-		return importProcessFactory.newImportProcessForTableName(importFormat.getTableName())
-				.setCtx(Env.getCtx())
-				.clientId(clientId)
-				.validateOnly(true)
-				.completeDocuments(completeDocuments)
-				.setParameters(additionalParameters)
-				.selectedRecords(selectedRecordRefs)
-				// .setLoggable(loggable)
-				.run();
+		return sysConfigBL.getIntValue(SYSCONFIG_InsertBatchSize, -1);
 	}
 
-	private Stream<ImpDataLine> streamSourceLines()
+	private ImportProcessResult validateImportRecords(@NonNull final PInstanceId selectionId)
 	{
-		final AtomicInteger nextLineNo = new AtomicInteger(1);
-
-		return streamDataLineStrings()
-				.map(lineStr -> ImpDataLine.builder()
-						.impFormat(importFormat)
-						.fileLineNo(nextLineNo.getAndIncrement())
-						.lineStr(lineStr)
-						.dataImportConfigId(dataImportConfigId)
-						.build());
-	}
-
-	private Stream<String> streamDataLineStrings()
-	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
 		try
 		{
-			if (importFormat.isMultiLine())
-			{
-				return FileImportReader.readMultiLines(getData(), CHARSET).stream();
-			}
-			else
-			{
-				return FileImportReader.readRegularLines(getData(), CHARSET).stream();
-			}
+			return importProcessFactory.newImportProcessForTableName(importFormat.getImportTableName())
+					.setCtx(Env.getCtx())
+					.clientId(clientId)
+					.validateOnly(true)
+					.completeDocuments(completeDocuments)
+					.setParameters(additionalParameters)
+					.selectedRecords(selectionId)
+					// .setLoggable(loggable)
+					.run();
 		}
-		catch (final IOException ex)
+		finally
 		{
-			throw new AdempiereException("Failed reading attachment", ex);
+			stopwatch.stop();
+			logger.debug("Validated import records of selectionId={} in {}", selectionId, stopwatch);
 		}
 	}
 
-	private byte[] getData()
+	private PInstanceId createSelectionIdFromDataImportConfigId()
 	{
-		try
-		{
-			return Util.readBytes(data.getInputStream());
-		}
-		catch (IOException ex)
-		{
-			throw new AdempiereException("Failed reading resource: " + data, ex);
-		}
+		Check.assumeNotNull(dataImportRunId, "dataImportRunId is not null");
+
+		final ImportTableDescriptor importTableDescriptor = importFormat.getImportTableDescriptor();
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(importTableDescriptor.getTableName())
+				.addEqualsFilter(ImportTableDescriptor.COLUMNNAME_C_DataImport_Run_ID, dataImportRunId)
+				.addEqualsFilter(ImportTableDescriptor.COLUMNNAME_I_ErrorMsg, null)
+				.create()
+				.createSelection();
 	}
 
-	private void createImportRecord(
-			@NonNull final ImpDataContext ctx,
-			@NonNull final ImpDataLine line)
+	private void scheduleToImportAsync(final PInstanceId selectionId)
 	{
-		line.importToDB(ctx);
-
-		if (importFormat.isManualImport())
-		{
-			// nothing to do
-			return;
-		}
-
-		final ImpDataLineStatus importStatus = line.getImportStatus();
-		if (ImpDataLineStatus.ImportPrepared == importStatus)
-		{
-			sourceFile_validLines++;
-			scheduleToImport(line);
-		}
-		else if (ImpDataLineStatus.Error == importStatus)
-		{
-			sourceFile_linesWithErrors++;
-		}
-	}
-
-	private void scheduleToImport(final ImpDataLine line)
-	{
-		// Skip those which were not prepared yet
-		final TableRecordReference importRecordRef = line.getImportRecordRef();
-		if (importRecordRef == null)
-		{
-			return;
-		}
-
-		// Skip those already scheduled
-		if (ImpDataLineStatus.ImportScheduled == line.getImportStatus())
-		{
-			return;
-		}
-
-		recordRefsToImport.add(importRecordRef);
-	}
-
-	private void completeAsyncImportProcessBuilder()
-	{
-		if (recordRefsToImport.isEmpty())
-		{
-			return;
-		}
-
-		final String importTableName = importFormat.getTableName();
-
 		importProcessFactory
 				.newAsyncImportProcessBuilder()
 				.setCtx(Env.getCtx())
-				.setImportTableName(importTableName)
-				.addImportRecords(recordRefsToImport)
+				.setImportTableName(importFormat.getImportTableName())
+				.setImportFromSelectionId(selectionId)
 				.buildAndEnqueue();
 	}
 

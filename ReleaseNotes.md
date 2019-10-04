@@ -10,12 +10,25 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.123
+## Fixes
+* metasfresh-webui-frontend
+  * [#2394](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2394) Rounded corners missing in mandatory fields
+
 # metasfresh 5.122
+## Features
+* metasfresh
+  * [#2518](https://github.com/metasfresh/metasfresh/issues/2518) Add Zahlung einlesen in Action menu for purchase invoice
+  * [#5569](https://github.com/metasfresh/metasfresh/issues/5569) Mandatory Field in Purchase Order: Warehouse ID
+  * [#5587](https://github.com/metasfresh/metasfresh/issues/5587) New Window for Packvorschrift (CU-TU) Standalone
+
 ## Fixes
 * metasfresh-webui-frontend
   * [#2364](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2364) Organisation and client field misalligned
   * [#2367](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2367) Adjustments for dates in filters
   * [#2383](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2383) Fix filter widgets typing
+  * [#2385](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2385) Border radius disturbing on Lookup Fields
+  * [#2391](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2391) Date range picker is not working anymore in Action parms
 
 # metasfresh 5.121
 
@@ -23,7 +36,7 @@ Here come the actual release notes:
 * metasfresh
   * [#5443](https://github.com/metasfresh/metasfresh/issues/5443) Have dedicated Window for UI Elements
   * [#5444](https://github.com/metasfresh/metasfresh/issues/5444) Have dedicated window for organisational master data business partner
-  * [#k5523](https://github.com/metasfresh/metasfresh/pull/5523) Add role update and process documents to webui menu tree
+  * [#5523](https://github.com/metasfresh/metasfresh/pull/5523) Add role update and process documents to webui menu tree
   * [#5527](https://github.com/metasfresh/metasfresh/pull/5527) Lookup widget instead of dropdown
   * [#5538](https://github.com/metasfresh/metasfresh/pull/5538) Pricesystem shall be search widget not dropdown
   * [#5540](https://github.com/metasfresh/metasfresh/issues/5540) Implement receipt CU Label

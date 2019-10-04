@@ -97,7 +97,7 @@ public class M_InOut
 
 	/**
 	 * Calls {@link IDesadvBL#removeInOutFromDesadv(I_M_InOut)} to detach the given inout from it's desadv (if any) when it is reversed, reactivated etc. Also see
-	 * {@link #assertReActivationAllowed(I_M_InOut)}. Note that this method will also be fired if the inout's <code>C_Order</code> is reactivated.
+	 * {@link de.metas.handlingunits.model.validator.M_InOut#assertReActivationAllowed(org.compiere.model.I_M_InOut)}. Note that this method will also be fired if the inout's <code>C_Order</code> is reactivated.
 	 *
 	 * @param inOut
 	 *
