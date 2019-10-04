@@ -120,6 +120,7 @@ public class UOMConversionDAO implements IUOMConversionDAO
 		record.setC_UOM_To_ID(request.getToUomId().getRepoId());
 		record.setMultiplyRate(request.getFromToMultiplier());
 		record.setDivideRate(request.getToFromMultiplier());
+		record.setIsCatchUOMForProduct(request.isCatchUOMForProduct());
 
 		saveRecord(record);
 	}
