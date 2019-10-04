@@ -66,7 +66,7 @@ public final class DocumentFilterDescriptorsProvidersService
 		for (DocumentFilterDescriptorsProviderFactory providerFactory : providerFactories)
 		{
 			final DocumentFilterDescriptorsProvider provider = providerFactory.createFiltersProvider(adTabId, tableName, fields);
-			if (NullDocumentFilterDescriptorsProvider.isNotNull(provider))
+			if (NullDocumentFilterDescriptorsProvider.isNull(provider))
 			{
 				continue;
 			}
