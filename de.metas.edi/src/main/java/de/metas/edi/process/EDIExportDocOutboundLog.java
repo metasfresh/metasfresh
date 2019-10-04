@@ -34,8 +34,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.slf4j.Logger;
 
+import ch.qos.logback.classic.Level;
 import de.metas.async.api.IWorkPackageQueue;
-import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
@@ -65,15 +65,19 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 
 	private static final transient Logger logger = LogManager.getLogger(EDIExportDocOutboundLog.class);
 
+	//
+	// Services
+	final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
 	{
-		final SelectionSize selectionSize = context.getSelectionSize();		
+		final SelectionSize selectionSize = context.getSelectionSize();
 		if (selectionSize.isNoSelection())
 		{
 			ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
-		
+
 		if (selectionSize.isAllSelected() || selectionSize.getSize() > 500)
 		{
 			// we assume that where are some invoice lines selected
@@ -123,14 +127,7 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 	@Override
 	protected String doIt() throws Exception
 	{
-		//
-		// Services
-		final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
-
-		final Properties ctx = getCtx();
-		final String trxName = getTrxName();
-
-		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(ctx, EDIWorkpackageProcessor.class);
+		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), EDIWorkpackageProcessor.class);
 
 		//
 		// Enqueue selected archives as workpackages
@@ -138,14 +135,15 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 		final List<I_EDI_Document_Extension> ediDocuments = retrieveValidSelectedDocuments(pinstanceId);
 		for (final I_EDI_Document_Extension ediDocument : ediDocuments)
 		{
-			final I_C_Queue_Block block = queue.enqueueBlock(ctx);
-			final I_C_Queue_WorkPackage workpackage = queue.enqueueWorkPackage(block, IWorkPackageQueue.PRIORITY_AUTO);
+			final I_C_Queue_WorkPackage workpackage = queue
+					.newBlock()
+					.newWorkpackage()
+					.setPriority(IWorkPackageQueue.PRIORITY_AUTO)
+					.addElement(ediDocument)
+					.bindToThreadInheritedTrx()
+					.build();
 
-			queue.enqueueElement(workpackage, ediDocument);
-
-			queue.markReadyForProcessingAfterTrxCommit(workpackage, trxName);
-
-			logger.info("Enqueued ediDocument {} into C_Queue_WorkPackage {}", new Object[] { ediDocument, workpackage });
+			Loggables.withLogger(logger, Level.INFO).addLog("Enqueued ediDocument {} into C_Queue_WorkPackage {}", new Object[] { ediDocument, workpackage });
 
 			// Mark the Document as: EDI enqueued (async) - before starting
 			ediDocument.setEDI_ExportStatus(I_EDI_Document.EDI_EXPORTSTATUS_Enqueued);
@@ -175,7 +173,7 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 				.list(I_C_Doc_Outbound_Log.class);
 
 		final List<I_EDI_Document_Extension> filteredDocuments = new ArrayList<>();
-		logger.info("Preselected {} C_Doc_Outbound_Log records to be filtered", logs.size());
+		Loggables.withLogger(logger, Level.INFO).addLog("Preselected {} C_Doc_Outbound_Log records to be filtered", logs.size());
 
 		for (final I_C_Doc_Outbound_Log log : logs)
 		{
@@ -187,7 +185,7 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 			// Only EDI-enabled documents
 			if (!ediDocument.isEdiEnabled())
 			{
-				Loggables.addLog("Skipping ediDocument={}, because IsEdiEnabled='N'", ediDocument);
+				Loggables.withLogger(logger, Level.INFO).addLog("Skipping ediDocument={}, because IsEdiEnabled='N'", ediDocument);
 				continue;
 			}
 
@@ -196,7 +194,7 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 			// note that there might be a problem with inouts, if we used this process: inOuts might be invalid, but still we want to aggregate them, and then fix stuff in the DESADV record itself
 			if (!I_EDI_Document.EDI_EXPORTSTATUS_Pending.equals(ediDocument.getEDI_ExportStatus()))
 			{
-				Loggables.addLog("Skipping ediDocument={}, because EDI_ExportStatus={} is != Pending", new Object[] { ediDocument, ediDocument.getEDI_ExportStatus() });
+				Loggables.withLogger(logger, Level.INFO).addLog("Skipping ediDocument={}, because EDI_ExportStatus={} is != Pending", new Object[] { ediDocument, ediDocument.getEDI_ExportStatus() });
 				continue;
 			}
 

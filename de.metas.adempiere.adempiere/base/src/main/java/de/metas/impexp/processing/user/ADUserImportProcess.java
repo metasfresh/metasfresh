@@ -22,6 +22,9 @@ package de.metas.impexp.processing.user;
  * #L%
  */
 
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -38,9 +41,11 @@ import org.compiere.model.I_I_User;
 import org.compiere.model.PO;
 import org.compiere.model.X_I_User;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_Role;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.logging.LogManager;
 import de.metas.security.IRoleDAO;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
@@ -56,6 +61,7 @@ import lombok.NonNull;
  */
 public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 {
+	private static final Logger log = LogManager.getLogger(ADUserImportProcess.class);
 
 	@Override
 	public Class<I_I_User> getImportModelClass()
@@ -105,7 +111,7 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 		final String sqlSelectByValue = "select MIN(bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + ")"
 				+ " from " + I_C_BPartner.Table_Name + " bp "
 				+ " where ( bp." + I_C_BPartner.COLUMNNAME_Value + "=i." + I_I_User.COLUMNNAME_BPValue
-				+ " OR " + I_C_BPartner.COLUMNNAME_globalid+ "=i." + I_I_User.COLUMNNAME_GlobalID + ")"
+				+ " OR " + I_C_BPartner.COLUMNNAME_GlobalId+ "=i." + I_I_User.COLUMNNAME_GlobalId + ")"
 				+ " and bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + "=i." + I_I_User.COLUMNNAME_AD_Client_ID;
 
 		final String sql = "UPDATE " + I_I_User.Table_Name + " i "
@@ -193,7 +199,7 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 		}
 		//
 		// Link back the request to current import record
-		importRecord.setAD_User(user);
+		importRecord.setAD_User_ID(user.getAD_User_ID());
 		//
 		return ImportRecordResult.Inserted;
 	}

@@ -26,21 +26,20 @@ package org.adempiere.server.rpl.trx.spi;
 import org.adempiere.server.rpl.trx.api.IReplicationIssueSolverParams;
 
 import de.metas.util.Loggables;
+import lombok.ToString;
 
 /**
  * This implementation does nothing with the given {@link IReplicationIssueAware}.
- *
- * @author ts
- *
- * @param <T>
  */
+@ToString
 public class NoOpIssueSolver<T extends IReplicationIssueAware> implements IReplicationIssueSolver<T>
 {
+	/**
+	 * Does nothing; we just want to clear the record for further processing.
+	 */
 	@Override
 	public void solveIssues(final IReplicationIssueAware recordWithIssues, final IReplicationIssueSolverParams params)
 	{
 		Loggables.addLog("NoOpIssueSolver is called with IReplicationIssueAware={}", recordWithIssues);
-		// nothing to change; we just want to clear the record for further processing.
 	}
-
 }

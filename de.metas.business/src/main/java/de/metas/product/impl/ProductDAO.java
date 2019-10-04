@@ -1,5 +1,6 @@
 package de.metas.product.impl;
 
+import static de.metas.util.Check.isEmpty;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByIdsOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
@@ -153,9 +154,17 @@ public class ProductDAO implements IProductDAO
 			queryBuilder.addEqualsFilter(I_M_Product.COLUMN_AD_Org_ID, query.getOrgId());
 		}
 
+		if (!isEmpty(query.getValue(), true))
+		{
+			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_Value, query.getValue());
+		}
+		if (!isEmpty(query.getExternalId(), true))
+		{
+			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_ExternalId, query.getExternalId());
+		}
+
 		final int productRepoId = queryBuilder
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Product.COLUMNNAME_Value, query.getValue())
 				.create()
 				.firstId();
 

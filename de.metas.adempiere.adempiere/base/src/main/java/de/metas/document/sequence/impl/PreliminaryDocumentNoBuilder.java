@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MSequence;
 import org.compiere.util.Env;
@@ -15,6 +16,8 @@ import de.metas.document.DocTypeSequenceMap;
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
+import de.metas.document.sequence.DocSequenceId;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
@@ -55,13 +58,13 @@ import de.metas.util.lang.CoalesceUtil;
 	private I_C_DocType _oldDocType; // lazy
 	private String _oldDocumentNo = null;
 	private Object _documentModel;
-	private Integer _adClientId; // lazy
-	private Integer _adOrgId; // lazy
+	private ClientId _adClientId; // lazy
+	private OrgId _adOrgId; // lazy
 
 	//
 	// State
 	private final AtomicBoolean _built = new AtomicBoolean(false);
-	private Integer _oldSequence_ID = null;  // lazy
+	private DocSequenceId _oldSequence_ID = null;  // lazy
 
 	/* package */ PreliminaryDocumentNoBuilder()
 	{
@@ -106,12 +109,12 @@ import de.metas.util.lang.CoalesceUtil;
 		if (isDocNoControlled)
 		{
 			final DocTypeSequenceMap newDocTypeSequenceMap = documentSequenceDAO.retrieveDocTypeSequenceMap(newDocType);
-			final int newDocSequence_ID = newDocTypeSequenceMap.getDocNoSequence_ID(getAD_Client_ID(), getAD_Org_ID());
-			final boolean isNewDocumentNo = isNewDocumentNo() || newDocSequence_ID != getOldSequence_ID();
+			final DocSequenceId newDocSequenceId = newDocTypeSequenceMap.getDocNoSequenceId(getClientId(), getOrgId());
+			final boolean isNewDocumentNo = isNewDocumentNo() || DocSequenceId.equals(newDocSequenceId, getOldSequenceId());
 
 			if (isNewDocumentNo)
 			{
-				newDocumentNo = retrieveCurrentDocumentNo(newDocSequence_ID);
+				newDocumentNo = retrieveCurrentDocumentNo(newDocSequenceId);
 			}
 			else
 			{
@@ -134,28 +137,28 @@ import de.metas.util.lang.CoalesceUtil;
 				.build();
 	}
 
-	private String retrieveCurrentDocumentNo(final int docSequence_ID)
+	private String retrieveCurrentDocumentNo(final DocSequenceId docSequenceId)
 	{
-		final int adClientId = getAD_Client_ID();
-		if (MSequence.isAdempiereSys(adClientId))
+		final ClientId adClientId = getClientId();
+		if (MSequence.isAdempiereSys(adClientId.getRepoId()))
 		{
-			final String documentNo = documentSequenceDAO.retrieveDocumentNoSys(docSequence_ID);
+			final String documentNo = documentSequenceDAO.retrieveDocumentNoSys(docSequenceId.getRepoId());
 			return IPreliminaryDocumentNoBuilder.withPreliminaryMarkers(documentNo);
 		}
 		else
 		{
-			final DocumentSequenceInfo newDocumentSeqInfo = documentSequenceDAO.retriveDocumentSequenceInfo(docSequence_ID);
+			final DocumentSequenceInfo newDocumentSeqInfo = documentSequenceDAO.retriveDocumentSequenceInfo(docSequenceId);
 			final boolean isStartNewYear = newDocumentSeqInfo != null && newDocumentSeqInfo.isStartNewYear();
 			if (isStartNewYear)
 			{
 				final String dateColumnName = newDocumentSeqInfo.getDateColumn();
 				final Date date = getDocumentDate(dateColumnName);
-				final String documentNo = documentSequenceDAO.retrieveDocumentNoByYear(docSequence_ID, date);
+				final String documentNo = documentSequenceDAO.retrieveDocumentNoByYear(docSequenceId.getRepoId(), date);
 				return IPreliminaryDocumentNoBuilder.withPreliminaryMarkers(documentNo);
 			}
 			else
 			{
-				final String documentNo = documentSequenceDAO.retrieveDocumentNo(docSequence_ID);
+				final String documentNo = documentSequenceDAO.retrieveDocumentNo(docSequenceId.getRepoId());
 				return IPreliminaryDocumentNoBuilder.withPreliminaryMarkers(documentNo);
 			}
 		}
@@ -166,32 +169,31 @@ import de.metas.util.lang.CoalesceUtil;
 		Check.assume(!_built.get(), "not already built");
 	}
 
-	private int getOldSequence_ID()
+	private DocSequenceId getOldSequenceId()
 	{
 		if (_oldSequence_ID == null)
 		{
-			_oldSequence_ID = retrieveOldSequence_ID();
+			_oldSequence_ID = retrieveOldSequenceId();
 		}
 		return _oldSequence_ID;
 	}
 
-	private int retrieveOldSequence_ID()
+	private DocSequenceId retrieveOldSequenceId()
 	{
 		final boolean isNewDocumentNo = isNewDocumentNo();
 		if (isNewDocumentNo)
 		{
-			return -1;
+			return null;
 		}
 
 		final I_C_DocType oldDocType = getOldDocType();
 		if (oldDocType == null)
 		{
-			return -1;
+			return null;
 		}
 
 		final DocTypeSequenceMap oldDocTypeSequenceMap = documentSequenceDAO.retrieveDocTypeSequenceMap(oldDocType);
-		final int oldDocSequence_ID = oldDocTypeSequenceMap.getDocNoSequence_ID(getAD_Client_ID(), getAD_Org_ID());
-		return oldDocSequence_ID;
+		return oldDocTypeSequenceMap.getDocNoSequenceId(getClientId(), getOrgId());
 	}
 
 	private Properties getCtx()
@@ -199,16 +201,16 @@ import de.metas.util.lang.CoalesceUtil;
 		return Env.getCtx();
 	}
 
-	private int getAD_Client_ID()
+	private ClientId getClientId()
 	{
 		if (_adClientId == null)
 		{
-			_adClientId = extractAD_Client_ID();
+			_adClientId = extractClientId();
 		}
 		return _adClientId;
 	}
 
-	private int extractAD_Client_ID()
+	private ClientId extractClientId()
 	{
 		final Object documentModel = getDocumentModel();
 		if (documentModel != null)
@@ -216,7 +218,7 @@ import de.metas.util.lang.CoalesceUtil;
 			final Integer adClientId = InterfaceWrapperHelper.getValueOrNull(documentModel, "AD_Client_ID");
 			if (adClientId != null)
 			{
-				return adClientId;
+				return ClientId.ofRepoId(adClientId);
 			}
 		}
 
@@ -224,16 +226,16 @@ import de.metas.util.lang.CoalesceUtil;
 		throw new DocumentNoBuilderException("Could not get AD_Client_ID");
 	}
 
-	private int getAD_Org_ID()
+	private OrgId getOrgId()
 	{
 		if (_adOrgId == null)
 		{
-			_adOrgId = extractAD_Org_ID();
+			_adOrgId = extractOrgId();
 		}
 		return _adOrgId;
 	}
 
-	private int extractAD_Org_ID()
+	private OrgId extractOrgId()
 	{
 		final Object documentModel = getDocumentModel();
 		if (documentModel != null)
@@ -241,7 +243,12 @@ import de.metas.util.lang.CoalesceUtil;
 			final Integer adOrgId = InterfaceWrapperHelper.getValueOrNull(documentModel, "AD_Org_ID");
 			if (adOrgId != null)
 			{
-				return adOrgId;
+				return OrgId.ofRepoId(adOrgId);
+			}
+			else
+			{
+				// return Org=* to cover the user case when user clears (temporary) the Org field.
+				return OrgId.ANY;
 			}
 		}
 

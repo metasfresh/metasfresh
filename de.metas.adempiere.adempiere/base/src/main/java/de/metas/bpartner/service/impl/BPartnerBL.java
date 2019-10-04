@@ -23,7 +23,6 @@ package de.metas.bpartner.service.impl;
  */
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -645,9 +644,10 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public Optional<ShipmentAllocationBestBeforePolicy> getBestBeforePolicy(@NonNull final BPartnerId bpartnerId)
+	public ShipmentAllocationBestBeforePolicy getBestBeforePolicy(@NonNull final BPartnerId bpartnerId)
 	{
 		final I_C_BPartner bpartner = getById(bpartnerId);
-		return ShipmentAllocationBestBeforePolicy.optionalOfNullableCode(bpartner.getShipmentAllocation_BestBefore_Policy());
+		final ShipmentAllocationBestBeforePolicy bestBeforePolicy = ShipmentAllocationBestBeforePolicy.ofNullableCode(bpartner.getShipmentAllocation_BestBefore_Policy());
+		return bestBeforePolicy != null ? bestBeforePolicy : ShipmentAllocationBestBeforePolicy.Expiring_First;
 	}
 }

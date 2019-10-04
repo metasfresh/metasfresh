@@ -25,7 +25,6 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
-import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult;
 import de.metas.impexp.processing.product.MProductImportTableSqlUpdater;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;

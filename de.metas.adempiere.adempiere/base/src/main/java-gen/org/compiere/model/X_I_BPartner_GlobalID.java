@@ -14,7 +14,7 @@ public class X_I_BPartner_GlobalID extends org.compiere.model.PO implements I_I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1677216523L;
+	private static final long serialVersionUID = 779311387L;
 
     /** Standard Constructor */
     public X_I_BPartner_GlobalID (Properties ctx, int I_BPartner_GlobalID_ID, String trxName)
@@ -22,9 +22,8 @@ public class X_I_BPartner_GlobalID extends org.compiere.model.PO implements I_I_
       super (ctx, I_BPartner_GlobalID_ID, trxName);
       /** if (I_BPartner_GlobalID_ID == 0)
         {
-			setglobalid (null);
 			setI_BPartner_GlobalID_ID (0);
-			setI_IsImported (false);
+			setI_IsImported (false); // N
         } */
     }
 
@@ -42,18 +41,6 @@ public class X_I_BPartner_GlobalID extends org.compiere.model.PO implements I_I_
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
 
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
@@ -81,19 +68,19 @@ public class X_I_BPartner_GlobalID extends org.compiere.model.PO implements I_I_
 	}
 
 	/** Set Global ID.
-		@param globalid Global ID	  */
+		@param GlobalId Global ID	  */
 	@Override
-	public void setglobalid (java.lang.String globalid)
+	public void setGlobalId (java.lang.String GlobalId)
 	{
-		set_Value (COLUMNNAME_globalid, globalid);
+		set_Value (COLUMNNAME_GlobalId, GlobalId);
 	}
 
 	/** Get Global ID.
 		@return Global ID	  */
 	@Override
-	public java.lang.String getglobalid () 
+	public java.lang.String getGlobalId () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_globalid);
+		return (java.lang.String)get_Value(COLUMNNAME_GlobalId);
 	}
 
 	/** Set Import BPartnerr Global ID.
@@ -214,7 +201,7 @@ public class X_I_BPartner_GlobalID extends org.compiere.model.PO implements I_I_
 
 	/** Set URL3.
 		@param URL3 
-		Full URL address - e.g. http://www.adempiere.org
+		Vollständige Web-Addresse, z.B. https://metasfresh.com/
 	  */
 	@Override
 	public void setURL3 (java.lang.String URL3)
@@ -223,7 +210,7 @@ public class X_I_BPartner_GlobalID extends org.compiere.model.PO implements I_I_
 	}
 
 	/** Get URL3.
-		@return Full URL address - e.g. http://www.adempiere.org
+		@return Vollständige Web-Addresse, z.B. https://metasfresh.com/
 	  */
 	@Override
 	public java.lang.String getURL3 () 

@@ -40,7 +40,7 @@ public interface IExport<T extends I_EDI_Document>
 	 * 
 	 * @return exceptions which occurred, if any
 	 */
-	List<Exception> createExport();
+	List<Exception> doExport();
 
 	/**
 	 * @return the document registered in the export definition

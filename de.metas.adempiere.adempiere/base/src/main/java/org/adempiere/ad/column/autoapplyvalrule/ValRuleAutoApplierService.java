@@ -2,6 +2,7 @@ package org.adempiere.ad.column.autoapplyvalrule;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Service;
 
@@ -49,7 +50,18 @@ public class ValRuleAutoApplierService
 		{
 			return; // no applier registered; nothing to do
 		}
-		applier.handleRecord(recordModel);
+
+		try
+		{
+			applier.handleRecord(recordModel);
+		}
+		catch (final RuntimeException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("valRuleAutoApplier", applier)
+					.setParameter("recordModel", recordModel);
+		}
 	}
 
 	public void unregisterForTableName(@NonNull final String tableName)

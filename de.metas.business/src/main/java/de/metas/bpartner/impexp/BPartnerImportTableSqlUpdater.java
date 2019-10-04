@@ -1,18 +1,21 @@
 package de.metas.bpartner.impexp;
 
-import static de.metas.impexp.processing.ImportProcessTemplate.COLUMNNAME_I_ErrorMsg;
-import static de.metas.impexp.processing.ImportProcessTemplate.COLUMNNAME_I_IsImported;
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_AD_User;
-import de.metas.interfaces.I_C_BPartner;
+import com.google.common.base.Stopwatch;
+
 import de.metas.logging.LogManager;
+import de.metas.order.DeliveryViaRule;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -52,6 +55,8 @@ public class BPartnerImportTableSqlUpdater
 
 	public void updateBPartnerImportTable(@NonNull final String whereClause)
 	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+
 		dbUpdateOrgs(whereClause);
 
 		dbUpdateBPGroups(whereClause);
@@ -65,6 +70,7 @@ public class BPartnerImportTableSqlUpdater
 		dbUpdateJobs(whereClause);
 
 		dbUpdateCbPartnerIdsFromC_BPartner_ExternalId(whereClause);
+		dbUpdateCbPartnerIdsFromC_BPartner_GlobalId(whereClause);
 		dbUpdateCbPartnerIdsFromValue(whereClause);
 
 		dbUpdateAdUserIdsFromAD_User_ExternalIds(whereClause);
@@ -81,7 +87,7 @@ public class BPartnerImportTableSqlUpdater
 		dbUpdateInvoiceSchedules(whereClause);
 
 		dbUpdatePaymentTerms(whereClause);
-		
+
 		dbUpdatePO_PaymentTerms(whereClause);
 
 		dbUpdateC_Aggregtions(whereClause);
@@ -94,170 +100,194 @@ public class BPartnerImportTableSqlUpdater
 
 		dbUpdatePO_PricingSystems(whereClause);
 
+		stopwatch.stop();
+		logger.info("Took {} to update I_BPartner records ({})", stopwatch, whereClause);
 	}
 
+	private final void executeUpdate(@NonNull final String description, @NonNull final CharSequence sql)
+	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		stopwatch.stop();
+
+		logger.info("{}: Updated {} records in {}", description, no, stopwatch);
+	}
 
 	private void dbUpdateOrgs(final String whereClause)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET AD_Org_ID=(SELECT AD_Org_ID FROM AD_Org o"
-				+ " WHERE i.OrgValue=o.Value AND o.AD_Client_ID IN (0, i.AD_Client_ID)) "
-				+ "WHERE AD_Org_ID IS NULL AND OrgValue IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set Org ={}", no);
+		{
+			final String sql = "UPDATE I_BPartner i "
+					+ "SET AD_Org_ID=(SELECT AD_Org_ID FROM AD_Org o"
+					+ " WHERE i.OrgValue=o.Value AND o.AD_Client_ID IN (0, i.AD_Client_ID)) "
+					+ "WHERE AD_Org_ID IS NULL AND OrgValue IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y' "
+					+ " " + whereClause;
+			executeUpdate("Set Org", sql);
+		}
+
 		//
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Greeting, ' "
-				+ "WHERE AD_Org_ID IS NULL AND OrgValue IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.info("Invalid Org={}", no);
+		{
+			final String sql = "UPDATE I_BPartner i "
+					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Org, ' "
+					+ "WHERE AD_Org_ID IS NULL AND OrgValue IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y' "
+					+ whereClause;
+			executeUpdate("Flag records with invalid Org", sql);
+		}
 	}
 
 	private void dbUpdateBPGroups(final String whereClause)
 	{
-		StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET GroupValue=(SELECT MAX(Value) FROM C_BP_Group g WHERE g.IsDefault='Y'"
-				+ " AND g.AD_Client_ID=i.AD_Client_ID) ");
-		sql.append("WHERE GroupValue IS NULL AND C_BP_Group_ID IS NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set Group Default={}", no);
+		{
+			final String sql = "UPDATE I_BPartner i "
+					+ "SET GroupValue=(SELECT MAX(Value) FROM C_BP_Group g WHERE g.IsDefault='Y' AND g.AD_Client_ID=i.AD_Client_ID) "
+					+ " WHERE GroupValue IS NULL AND C_BP_Group_ID IS NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y' "
+					+ whereClause;
+			executeUpdate("Set Default BP Group", sql);
+		}
+
 		//
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET C_BP_Group_ID=(SELECT C_BP_Group_ID FROM C_BP_Group g"
-				+ " WHERE i.GroupValue=g.Value AND g.AD_Client_ID=i.AD_Client_ID) "
-				+ "WHERE C_BP_Group_ID IS NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set Group={}", no);
+		{
+			final String sql = "UPDATE I_BPartner i "
+					+ "SET C_BP_Group_ID=(SELECT C_BP_Group_ID FROM C_BP_Group g"
+					+ " WHERE i.GroupValue=g.Value AND g.AD_Client_ID=i.AD_Client_ID) "
+					+ "WHERE C_BP_Group_ID IS NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y' "
+					+ whereClause;
+			executeUpdate("Set BP Group", sql);
+		}
+
 		//
-		sql = new StringBuilder("UPDATE I_BPartner "
-				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Group, ' "
-				+ "WHERE C_BP_Group_ID IS NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.info("Invalid Group={}", no);
+		{
+			final String sql = "UPDATE I_BPartner "
+					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Group, ' "
+					+ "WHERE C_BP_Group_ID IS NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y' "
+					+ whereClause;
+			executeUpdate("Flag records with invalid BP Group", sql);
+		}
 	}
 
 	private void dbUpdateCountries(final String whereClause)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET C_Country_ID=(SELECT C_Country_ID FROM C_Country c"
-				+ " WHERE ("
-				+ " (i.CountryCode=c.CountryCode AND c.AD_Client_ID IN (0, i.AD_Client_ID))"
-				+ " OR "
-				+ " (i.CountryName=c.Name AND c.AD_Client_ID IN (0, i.AD_Client_ID))"
-				+ " )) "
-				+ "WHERE C_Country_ID IS NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set Country={}", no);
+		{
+			final String sql = "UPDATE I_BPartner i "
+					+ "SET C_Country_ID=(SELECT C_Country_ID FROM C_Country c"
+					+ " WHERE ("
+					+ " (i.CountryCode=c.CountryCode AND c.AD_Client_ID IN (0, i.AD_Client_ID))"
+					+ " OR "
+					+ " (i.CountryName=c.Name AND c.AD_Client_ID IN (0, i.AD_Client_ID))"
+					+ " )) "
+					+ "WHERE C_Country_ID IS NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y' "
+					+ whereClause;
+			executeUpdate("Set Country", sql);
+		}
+
 		//
-		sql = new StringBuilder("UPDATE I_BPartner "
-				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Country, ' "
-				+ "WHERE C_Country_ID IS NULL AND (City IS NOT NULL OR Address1 IS NOT NULL)"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.info("Invalid Country={}", no);
+		{
+			final String sql = new StringBuilder("UPDATE I_BPartner "
+					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Country, ' "
+					+ "WHERE C_Country_ID IS NULL AND (City IS NOT NULL OR Address1 IS NOT NULL)"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
+							.append(whereClause)
+							.toString();
+			executeUpdate("Flag records with invalid Country", sql);
+		}
 	}
 
 	private void dpUpdateRegions(final String whereClause)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "Set RegionName=(SELECT MAX(Name) FROM C_Region r"
-				+ " WHERE r.IsDefault='Y' AND r.C_Country_ID=i.C_Country_ID"
-				+ " AND r.AD_Client_ID IN (0, i.AD_Client_ID)) ");
-		sql.append("WHERE RegionName IS NULL AND C_Region_ID IS NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set Region Default={}", no);
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "Set RegionName=(SELECT MAX(Name) FROM C_Region r"
+					+ " WHERE r.IsDefault='Y' AND r.C_Country_ID=i.C_Country_ID"
+					+ " AND r.AD_Client_ID IN (0, i.AD_Client_ID)) ");
+			sql.append("WHERE RegionName IS NULL AND C_Region_ID IS NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+			executeUpdate("Set Default Region", sql);
+		}
+
 		//
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "Set C_Region_ID=(SELECT C_Region_ID FROM C_Region r"
-				+ " WHERE r.Name=i.RegionName AND r.C_Country_ID=i.C_Country_ID"
-				+ " AND r.AD_Client_ID IN (0, i.AD_Client_ID)) "
-				+ "WHERE C_Region_ID IS NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set Region={}", no);
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "Set C_Region_ID=(SELECT C_Region_ID FROM C_Region r"
+					+ " WHERE r.Name=i.RegionName AND r.C_Country_ID=i.C_Country_ID"
+					+ " AND r.AD_Client_ID IN (0, i.AD_Client_ID)) "
+					+ "WHERE C_Region_ID IS NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+			executeUpdate("Set Region", sql.toString());
+		}
+
 		//
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Region, ' "
-				+ "WHERE C_Region_ID IS NULL "
-				+ " AND EXISTS (SELECT 1 FROM C_Country c WHERE c.C_Country_ID=i.C_Country_ID AND c.HasRegion='Y')"
-				+ " AND RegionName IS NOT NULL" // tolerate no region
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-						.append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.info("Invalid Region={}", no);
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Region, ' "
+					+ "WHERE C_Region_ID IS NULL "
+					+ " AND EXISTS (SELECT 1 FROM C_Country c WHERE c.C_Country_ID=i.C_Country_ID AND c.HasRegion='Y')"
+					+ " AND RegionName IS NOT NULL" // tolerate no region
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
+							.append(whereClause);
+			executeUpdate("Flag records with invalid Region", sql.toString());
+		}
 	}
 
 	private void dbUpdateGreetings(final String whereClause)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET C_Greeting_ID=(SELECT C_Greeting_ID FROM C_Greeting g"
-				+ " WHERE i.BPContactGreeting=g.Name AND g.AD_Client_ID IN (0, i.AD_Client_ID)) "
-				+ "WHERE C_Greeting_ID IS NULL AND BPContactGreeting IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set Greeting={}", no);
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET C_Greeting_ID=(SELECT C_Greeting_ID FROM C_Greeting g"
+					+ " WHERE i.BPContactGreeting=g.Name AND g.AD_Client_ID IN (0, i.AD_Client_ID)) "
+					+ "WHERE C_Greeting_ID IS NULL AND BPContactGreeting IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+			executeUpdate("Set Greeting", sql);
+		}
+
 		//
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Greeting, ' "
-				+ "WHERE C_Greeting_ID IS NULL AND BPContactGreeting IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.info("Invalid Greeting={}", no);
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Greeting, ' "
+					+ "WHERE C_Greeting_ID IS NULL AND BPContactGreeting IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+			executeUpdate("Flag records with invalid Greeting", sql);
+		}
 	}
 
 	private void dbUpdateJobs(final String whereClause)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET C_Job_ID=(SELECT C_Job_ID FROM C_Job j"
-				+ " WHERE i.JobName=j.Name AND j.AD_Client_ID IN (0, i.AD_Client_ID) AND j.AD_Org_ID IN (0, i.AD_Org_ID) ) "
-				+ "WHERE C_Job_ID IS NULL AND JobName IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set Job={}", no);
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET C_Job_ID=(SELECT C_Job_ID FROM C_Job j"
+					+ " WHERE i.JobName=j.Name AND j.AD_Client_ID IN (0, i.AD_Client_ID) AND j.AD_Org_ID IN (0, i.AD_Org_ID) ) "
+					+ "WHERE C_Job_ID IS NULL AND JobName IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+			executeUpdate("Set Job", sql);
+		}
+
 		//
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Job, ' "
-				+ "WHERE C_Job_ID IS NULL AND JobName IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.info("Invalid Job={}", no);
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Job, ' "
+					+ "WHERE C_Job_ID IS NULL AND JobName IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+			executeUpdate("Flag records with invalid Job", sql);
+		}
 	}
 
 	private void dbUpdateAdUserIdsFromExisting(final String whereClause)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE I_BPartner i "
+		final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
 				+ "SET (C_BPartner_ID,AD_User_ID)="
 				+ "(SELECT C_BPartner_ID,AD_User_ID FROM AD_User u "
 				+ "WHERE i.EMail=u.EMail AND u.AD_Client_ID=i.AD_Client_ID) "
 				+ "WHERE i.EMail IS NOT NULL AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
-		no = DB.executeUpdateEx(DB.convertSqlToNative(sql.toString()), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Found EMail User={}", no);
+		executeUpdate("Set BPartner/User by EMail", DB.convertSqlToNative(sql.toString()));
 	}
 
 	private void dbUpdateCbPartnerIdsFromValue(final String whereClause)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE I_BPartner i "
+		final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
 				+ "SET C_BPartner_ID=(SELECT C_BPartner_ID FROM C_BPartner p"
 				+ " WHERE i."
 				+ I_I_BPartner.COLUMNNAME_BPValue
@@ -268,47 +298,42 @@ public class BPartnerImportTableSqlUpdater
 				+ I_I_BPartner.COLUMNNAME_BPValue
 				+ " IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Found BPartner={}", no);
+		executeUpdate("Set BPartner by Value", sql);
 	}
 
 	private void dbUpdateCbPartnerIdsFromC_BPartner_ExternalId(final String whereClause)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE "
-				+ I_I_BPartner.Table_Name
-				+ " i "
-				+ "SET "
-				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID
-				+ "=(SELECT "
-				+ I_C_BPartner.COLUMNNAME_C_BPartner_ID
-				+ " FROM "
-				+ I_C_BPartner.Table_Name
-				+ " p WHERE i."
-				+ I_I_BPartner.COLUMNNAME_C_BPartner_ExternalId
-				+ "=p."
-				+ I_C_BPartner.COLUMNNAME_ExternalId
-				+ " AND p."
-				+ I_C_BPartner.COLUMNNAME_AD_Client_ID
-				+ "=i."
-				+ I_I_BPartner.COLUMNNAME_AD_Client_ID
+		final StringBuilder sql = new StringBuilder("UPDATE " + I_I_BPartner.Table_Name + " i "
+				+ "SET " + I_I_BPartner.COLUMNNAME_C_BPartner_ID + "=(SELECT " + I_C_BPartner.COLUMNNAME_C_BPartner_ID
+				+ " FROM " + I_C_BPartner.Table_Name
+				+ " p WHERE i." + I_I_BPartner.COLUMNNAME_C_BPartner_ExternalId + "=p." + I_C_BPartner.COLUMNNAME_ExternalId
+				+ " AND p." + I_C_BPartner.COLUMNNAME_AD_Client_ID + "=i." + I_I_BPartner.COLUMNNAME_AD_Client_ID
 				+ ") "
 				+ "WHERE "
-				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID
-				+ " IS NULL AND "
-				+ I_I_BPartner.COLUMNNAME_C_BPartner_ExternalId
-				+ " IS NOT NULL"
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID + " IS NULL AND "
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_ExternalId + " IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Found BPartner={}", no);
+		executeUpdate("Set BPartner by ExternalId", sql);
+	}
+
+	private void dbUpdateCbPartnerIdsFromC_BPartner_GlobalId(final String whereClause)
+	{
+		final StringBuilder sql = new StringBuilder("UPDATE " + I_I_BPartner.Table_Name + " i " + "SET "
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID + "=(SELECT " + I_C_BPartner.COLUMNNAME_C_BPartner_ID
+				+ " FROM " + I_C_BPartner.Table_Name
+				+ " p WHERE i." + I_I_BPartner.COLUMNNAME_GlobalId + "=p." + I_C_BPartner.COLUMNNAME_GlobalId
+				+ " AND p." + I_C_BPartner.COLUMNNAME_AD_Client_ID + "=i." + I_I_BPartner.COLUMNNAME_AD_Client_ID
+				+ ") "
+				+ "WHERE "
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID + " IS NULL AND "
+				+ I_I_BPartner.COLUMNNAME_GlobalId + " IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
+		executeUpdate("Set BPartner by GlobalId", sql);
 	}
 
 	private void dbUpdateAdUserIdsFromContactNames(final String whereClause)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE "
+		final StringBuilder sql = new StringBuilder("UPDATE "
 				+ I_I_BPartner.Table_Name
 				+ " i SET "
 				+ I_I_BPartner.COLUMNNAME_AD_User_ID
@@ -337,15 +362,12 @@ public class BPartnerImportTableSqlUpdater
 				+ I_I_BPartner.COLUMNNAME_ContactName
 				+ " IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Found Contact={}", no);
+		executeUpdate("Set User by ContactName", sql);
 	}
 
 	private void dbUpdateAdUserIdsFromAD_User_ExternalIds(final String whereClause)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE "
+		final StringBuilder sql = new StringBuilder("UPDATE "
 				+ I_I_BPartner.Table_Name
 				+ " i SET "
 				+ I_I_BPartner.COLUMNNAME_AD_User_ID
@@ -374,15 +396,12 @@ public class BPartnerImportTableSqlUpdater
 				+ I_I_BPartner.COLUMNNAME_AD_User_ExternalId
 				+ " IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Found Contact={}", no);
+		executeUpdate("Set User by ExternalId", sql);
 	}
 
 	private void dbUpdateCBPartnerLocationsFromC_BPartner_Location_ExternalIds(final String whereClause)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE "
+		final StringBuilder sql = new StringBuilder("UPDATE "
 				+ I_I_BPartner.Table_Name
 				+ " i SET "
 				+ I_I_BPartner.COLUMNNAME_C_BPartner_Location_ID
@@ -411,16 +430,12 @@ public class BPartnerImportTableSqlUpdater
 				+ I_I_BPartner.COLUMNNAME_C_BPartner_Location_ExternalId
 				+ " IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Found Contact={}", no);
+		executeUpdate("Set Location by ExternalId", sql);
 	}
 
-
-	private void dbUpdateCBPartnerLocationsFromGLN(String whereClause)
+	private void dbUpdateCBPartnerLocationsFromGLN(final String whereClause)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE "
+		final StringBuilder sql = new StringBuilder("UPDATE "
 				+ I_I_BPartner.Table_Name
 				+ " i SET "
 				+ I_I_BPartner.COLUMNNAME_C_BPartner_Location_ID
@@ -449,16 +464,12 @@ public class BPartnerImportTableSqlUpdater
 				+ I_I_BPartner.COLUMNNAME_GLN
 				+ " IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Found Contact={}", no);
-
+		executeUpdate("Set Location by GLN", sql);
 	}
 
 	private void dbUpdateLocations(final String whereClause)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE "
+		final StringBuilder sql = new StringBuilder("UPDATE "
 				+ I_I_BPartner.Table_Name
 				+ " i SET "
 				+ I_I_BPartner.COLUMNNAME_C_BPartner_Location_ID
@@ -515,191 +526,194 @@ public class BPartnerImportTableSqlUpdater
 				+ I_I_BPartner.COLUMNNAME_C_BPartner_Location_ID
 				+ " IS NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Found Location={}", no);
+		executeUpdate("Set Location by Address matching", sql);
 	}
 
 	private void dbUpdateInterestAreas(final String whereClause)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE I_BPartner i "
+		final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
 				+ "SET R_InterestArea_ID=(SELECT R_InterestArea_ID FROM R_InterestArea ia "
 				+ "WHERE i.InterestAreaName=ia.Name AND ia.AD_Client_ID=i.AD_Client_ID) "
 				+ "WHERE R_InterestArea_ID IS NULL AND InterestAreaName IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set Interest Area={}", no);
+		executeUpdate("Set Interest Area", sql);
 	}
 
 	private void dbUpdateInvoiceSchedules(final String whereClause)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET C_InvoiceSchedule_ID=(SELECT C_InvoiceSchedule_ID FROM C_InvoiceSchedule invSched"
-				+ " WHERE i.InvoiceSchedule=invSched.Name AND invSched.AD_Client_ID IN (0, i.AD_Client_ID)) "
-				+ "WHERE C_InvoiceSchedule_ID IS NULL AND InvoiceSchedule IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set InvoiceSchedule={}", no);
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET C_InvoiceSchedule_ID=(SELECT C_InvoiceSchedule_ID FROM C_InvoiceSchedule invSched"
+					+ " WHERE i.InvoiceSchedule=invSched.Name AND invSched.AD_Client_ID IN (0, i.AD_Client_ID)) "
+					+ "WHERE C_InvoiceSchedule_ID IS NULL AND InvoiceSchedule IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+			executeUpdate("Set Invoice Schedule", sql);
+		}
+
 		//
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid InvoiceSchedule, ' "
-				+ "WHERE C_InvoiceSchedule_ID IS NULL AND InvoiceSchedule IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.info("Invalid InvoiceSchedule={}", no);
-	}
-	
-	private void dbUpdatePaymentTerms(final String whereClause)
-	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET C_PaymentTerm_ID=(SELECT C_PaymentTerm_ID FROM C_PaymentTerm pt"
-				+ " WHERE i.PaymentTermValue=pt.Name AND pt.AD_Client_ID IN (0, i.AD_Client_ID)) "
-				+ "WHERE C_PaymentTerm_ID IS NULL AND PaymentTerm IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set PO_PaymentTerm={}", no);
-		//
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid C_PaymentTerm_ID, ' "
-				+ "WHERE C_PaymentTerm_ID IS NULL AND PaymentTermValue IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.info("Invalid PO_PaymentTerm={}", no);
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid InvoiceSchedule, ' "
+					+ "WHERE C_InvoiceSchedule_ID IS NULL AND InvoiceSchedule IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+			executeUpdate("Flag records with invalid Invoice Schedule", sql);
+		}
 	}
 
-	
+	private void dbUpdatePaymentTerms(final String whereClause)
+	{
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET C_PaymentTerm_ID=(SELECT C_PaymentTerm_ID FROM C_PaymentTerm pt"
+					+ " WHERE i.PaymentTermValue=pt.Name AND pt.AD_Client_ID IN (0, i.AD_Client_ID)) "
+					+ "WHERE C_PaymentTerm_ID IS NULL AND PaymentTerm IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+			executeUpdate("Set SO Payment Term", sql);
+		}
+
+		//
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid C_PaymentTerm_ID, ' "
+					+ "WHERE C_PaymentTerm_ID IS NULL AND PaymentTermValue IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+			executeUpdate("Flag records with invalid SO Payment Terms", sql);
+		}
+	}
 
 	private void dbUpdatePO_PaymentTerms(final String whereClause)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET PO_PaymentTerm_ID=(SELECT C_PaymentTerm_ID FROM C_PaymentTerm pt"
-				+ " WHERE i.PaymentTerm=pt.Name AND pt.AD_Client_ID IN (0, i.AD_Client_ID)) "
-				+ "WHERE PO_PaymentTerm_ID IS NULL AND PaymentTerm IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set PO_PaymentTerm={}", no);
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET PO_PaymentTerm_ID=(SELECT C_PaymentTerm_ID FROM C_PaymentTerm pt"
+					+ " WHERE i.PaymentTerm=pt.Name AND pt.AD_Client_ID IN (0, i.AD_Client_ID)) "
+					+ "WHERE PO_PaymentTerm_ID IS NULL AND PaymentTerm IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+			executeUpdate("Set PO Payment Term", sql);
+		}
+
 		//
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid PO_PaymentTerm, ' "
-				+ "WHERE PO_PaymentTerm_ID IS NULL AND PaymentTerm IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.info("Invalid PO_PaymentTerm={}", no);
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid PO_PaymentTerm, ' "
+					+ "WHERE PO_PaymentTerm_ID IS NULL AND PaymentTerm IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+			executeUpdate("Flag records with invalid PO Payment Terms", sql);
+		}
 	}
 
 	private void dbUpdateC_Aggregtions(final String whereClause)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET C_Aggregation_ID=(SELECT C_Aggregation_ID FROM C_Aggregation a"
-				+ " WHERE i.AggregationName=a.Name AND a.AD_Client_ID IN (0, i.AD_Client_ID) AND a.AD_Org_ID IN (0, i.AD_Org_ID ) )"
-				+ "WHERE C_Aggregation_ID IS NULL AND AggregationName IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set C_Aggregation_ID={}", no);
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET C_Aggregation_ID=(SELECT C_Aggregation_ID FROM C_Aggregation a"
+					+ " WHERE i.AggregationName=a.Name AND a.AD_Client_ID IN (0, i.AD_Client_ID) AND a.AD_Org_ID IN (0, i.AD_Org_ID ) )"
+					+ "WHERE C_Aggregation_ID IS NULL AND AggregationName IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+			executeUpdate("Set C_Aggregation_ID", sql);
+		}
+
 		//
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid AggregationName, ' "
-				+ "WHERE C_Aggregation_ID IS NULL AND AggregationName IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.info("Invalid C_Aggregation_ID={}", no);
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid AggregationName, ' "
+					+ "WHERE C_Aggregation_ID IS NULL AND AggregationName IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+			executeUpdate("Flag records with invalid AggregationName", sql);
+		}
 	}
 
 	private void dbUpdateM_Shippers(final String whereClause)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET M_Shipper_ID=(SELECT M_Shipper_ID FROM M_Shipper s"
-				+ " WHERE i.ShipperName=s.Name AND s.AD_Client_ID IN (0, i.AD_Client_ID)), "
-				+ " DeliveryViaRule = 'S' "
-				+ "WHERE M_Shipper_ID IS NULL AND ShipperName IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set M_Shipper_ID={}", no);
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET M_Shipper_ID=(SELECT M_Shipper_ID FROM M_Shipper s"
+					+ " WHERE i.ShipperName=s.Name AND s.AD_Client_ID IN (0, i.AD_Client_ID)), "
+					+ " DeliveryViaRule = 'S' "
+					+ "WHERE M_Shipper_ID IS NULL AND ShipperName IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+			executeUpdate("Set M_Shipper_ID", sql);
+		}
+
 		//
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET DeliveryViaRule = 'P' "
-				+ "WHERE M_Shipper_ID IS NULL AND ShipperName = 'P' "
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set DeliveryViaRule={}", no);
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET DeliveryViaRule = " + DB.TO_STRING(DeliveryViaRule.Pickup.getCode())
+					+ "WHERE M_Shipper_ID IS NULL AND ShipperName = 'P' "
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+			executeUpdate("Set DeliveryViaRule=Pickup when M_Shipper_ID is not set", sql);
+		}
+
 		//
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Shipper or DeliveryViaRule, ' "
-				+ "WHERE M_Shipper_ID IS NULL AND DeliveryViaRule IS NULL AND ShipperName IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.info("Invalid Invalid Shipper or DeliveryViaRule={}", no);
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Shipper or DeliveryViaRule, ' "
+					+ "WHERE M_Shipper_ID IS NULL AND DeliveryViaRule IS NULL AND ShipperName IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+			executeUpdate("Flag records with invalid Invalid Shipper or DeliveryViaRule", sql);
+		}
 	}
 
 	private void dbUpdateAD_PrintFormats(final String whereClause)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET AD_PrintFormat_ID=(SELECT AD_PrintFormat_ID FROM AD_PrintFormat pf"
-				+ " WHERE i.PrintFormat_Name=pf.Name AND pf.AD_Client_ID IN (0, i.AD_Client_ID) AND pf.AD_Org_ID IN (0, i.AD_Org_ID ) ) "
-				+ "WHERE AD_PrintFormat_ID IS NULL AND PrintFormat_Name IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set AD_PrintFormat_ID={}", no);
-		//
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid PrintFormat_Name, ' "
-				+ "WHERE AD_PrintFormat_ID IS NULL AND PrintFormat_Name IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.info("Invalid AD_PrintFormat_ID={}", no);
-	}
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET AD_PrintFormat_ID=(SELECT AD_PrintFormat_ID FROM AD_PrintFormat pf"
+					+ " WHERE i.PrintFormat_Name=pf.Name AND pf.AD_Client_ID IN (0, i.AD_Client_ID) AND pf.AD_Org_ID IN (0, i.AD_Org_ID ) ) "
+					+ "WHERE AD_PrintFormat_ID IS NULL AND PrintFormat_Name IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+			executeUpdate("Set AD_PrintFormat_ID", sql);
+		}
 
+		//
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid PrintFormat_Name, ' "
+					+ "WHERE AD_PrintFormat_ID IS NULL AND PrintFormat_Name IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+			executeUpdate("Flag records with invalid AD_PrintFormat_ID", sql);
+		}
+	}
 
 	private void dbUpdateM_PricingSystems(final String whereClause)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET M_PricingSystem_ID=(SELECT M_PricingSystem_ID FROM M_PricingSystem ps"
-				+ " WHERE i.PricingSystem_Value=ps.value AND ps.AD_Client_ID IN (0, i.AD_Client_ID) and ps.IsActive='Y' ) "
-				+ "WHERE M_PricingSystem_ID IS NULL AND PricingSystem_Value IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set M_PricingSystem_ID={}", no);
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET M_PricingSystem_ID=(SELECT M_PricingSystem_ID FROM M_PricingSystem ps"
+					+ " WHERE i.PricingSystem_Value=ps.value AND ps.AD_Client_ID IN (0, i.AD_Client_ID) and ps.IsActive='Y' ) "
+					+ "WHERE M_PricingSystem_ID IS NULL AND PricingSystem_Value IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+			executeUpdate("Set M_PricingSystem_ID={}", sql);
+		}
+
 		//
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid M_PricingSystem_ID, ' "
-				+ "WHERE M_PricingSystem_ID IS NULL AND PricingSystem_Value IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.info("Invalid M_PricingSystem={}", no);
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid M_PricingSystem_ID, ' "
+					+ "WHERE M_PricingSystem_ID IS NULL AND PricingSystem_Value IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+			executeUpdate("Flag records with invalid M_PricingSystem", sql);
+		}
 	}
 
 	private void dbUpdatePO_PricingSystems(final String whereClause)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET M_PricingSystem_ID=(SELECT M_PricingSystem_ID FROM M_PricingSystem ps"
-				+ " WHERE i.PO_PricingSystem_Value=ps.value AND ps.AD_Client_ID IN (0, i.AD_Client_ID) and IsActive='Y') "
-				+ "WHERE M_PricingSystem_ID IS NULL AND PO_PricingSystem_Value IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set M_PricingSystem_ID={}", no);
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET PO_PricingSystem_ID=(SELECT M_PricingSystem_ID FROM M_PricingSystem ps"
+					+ " WHERE i.PO_PricingSystem_Value=ps.value AND ps.AD_Client_ID IN (0, i.AD_Client_ID) and IsActive='Y') "
+					+ "WHERE PO_PricingSystem_ID IS NULL AND PO_PricingSystem_Value IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+			executeUpdate("Set PO_PricingSystem_ID", sql);
+		}
+
 		//
-		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid M_PricingSystem_ID, ' "
-				+ "WHERE M_PricingSystem_ID IS NULL AND PO_PricingSystem_Value IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.info("Invalid M_PricingSystem={}", no);
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid M_PricingSystem_ID, ' "
+					+ "WHERE PO_PricingSystem_ID IS NULL AND PO_PricingSystem_Value IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+			executeUpdate("Flag records with invalid PO_PricingSystem_ID", sql);
+		}
 	}
 }

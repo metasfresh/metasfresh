@@ -203,7 +203,7 @@ public class AttributeDAO implements IAttributeDAO
 	public AttributeId retrieveAttributeIdByValue(final String value)
 	{
 		final AttributeId attributeId = retrieveAttributeIdByValueOrNull(value);
-		Check.assumeNotNull(attributeId, "There is no attribute defined for the value {}", value);
+		Check.assumeNotNull(attributeId, "There is no active M_Attribute record with M_Attribute.Value={}", value);
 		return attributeId;
 	}
 

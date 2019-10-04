@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
 import de.metas.product.ProductId;
@@ -50,8 +51,9 @@ public class JsonProduct
 	@NonNull
 	ProductId id;
 
+	@ApiModelProperty("This translates to `M_Product.Value`.")
 	@NonNull
-	private String productNo;
+	String productNo;
 
 	@NonNull
 	String name;
@@ -62,9 +64,15 @@ public class JsonProduct
 	@ApiModelProperty(value = "This translates to `M_Product.UPC`.<br>Note that different bPartners may assign different EANs to the same product")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Nullable
+	@JsonInclude(Include.NON_EMPTY)
 	String ean;
 
-	@ApiModelProperty(value = "This translates to `C_UOM.UOMSymbol` of the product's UOM")
+	@ApiModelProperty("This translates to `M_Product.ExternalId`.")
+	@Nullable
+	@JsonInclude(Include.NON_EMPTY)
+	String externalId;
+
+	@ApiModelProperty("This is the `C_UOM.UOMSymbol` of the product's unit of measurement.")
 	@NonNull
 	String uom;
 

@@ -3,10 +3,10 @@ package de.metas.rest_api.ordercandidates.response;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.ordercandidates.request.JsonOrganization;
 import lombok.Builder;
@@ -34,9 +34,7 @@ import lombok.Value;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-@Builder
 public class JsonOLCand
 {
 	private int id;
@@ -84,4 +82,53 @@ public class JsonOLCand
 	private BigDecimal discount;
 
 	private int warehouseDestId;
+
+	@JsonCreator
+	@Builder
+	private JsonOLCand(
+			@JsonProperty("id") final int id,
+			@JsonProperty("externalLineId") final String externalLineId,
+			@JsonProperty("externalHeaderId") final String externalHeaderId,
+			@JsonProperty("poReference") final String poReference,
+			@JsonProperty("org") final JsonOrganization org,
+			@JsonProperty("bpartner") final JsonResponseBPartnerLocationAndContact bpartner,
+			@JsonProperty("billBPartner") final JsonResponseBPartnerLocationAndContact billBPartner,
+			@JsonProperty("dropShipBPartner") final JsonResponseBPartnerLocationAndContact dropShipBPartner,
+			@JsonProperty("handOverBPartner") final JsonResponseBPartnerLocationAndContact handOverBPartner,
+			@JsonProperty("dateOrdered") final LocalDate dateOrdered,
+			@JsonProperty("datePromised") final LocalDate datePromised,
+			@JsonProperty("flatrateConditionsId") final int flatrateConditionsId,
+			@JsonProperty("productId") final int productId,
+			@JsonProperty("productDescription") final String productDescription,
+			@JsonProperty("qty") final BigDecimal qty,
+			@JsonProperty("uomId") final int uomId,
+			@JsonProperty("huPIItemProductId") final int huPIItemProductId,
+			@JsonProperty("pricingSystemId") final int pricingSystemId,
+			@JsonProperty("price") final BigDecimal price,
+			@JsonProperty("discount") final BigDecimal discount,
+			@JsonProperty("warehouseDestId") final int warehouseDestId)
+	{
+		this.id = id;
+		this.externalLineId = externalLineId;
+		this.externalHeaderId = externalHeaderId;
+		this.poReference = poReference;
+		this.org = org;
+		this.bpartner = bpartner;
+		this.billBPartner = billBPartner;
+		this.dropShipBPartner = dropShipBPartner;
+		this.handOverBPartner = handOverBPartner;
+		this.dateOrdered = dateOrdered;
+		this.datePromised = datePromised;
+		this.flatrateConditionsId = flatrateConditionsId;
+		this.productId = productId;
+		this.productDescription = productDescription;
+		this.qty = qty;
+		this.uomId = uomId;
+		this.huPIItemProductId = huPIItemProductId;
+		this.pricingSystemId = pricingSystemId;
+		this.price = price;
+		this.discount = discount;
+		this.warehouseDestId = warehouseDestId;
+	}
+
 }

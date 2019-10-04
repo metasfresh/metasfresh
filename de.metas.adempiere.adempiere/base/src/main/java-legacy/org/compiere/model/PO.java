@@ -50,6 +50,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.model.X_AD_MigrationStep;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.persistence.po.INoDataFoundHandler;
 import org.adempiere.ad.persistence.po.NoDataFoundHandlers;
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -1025,7 +1026,7 @@ public abstract class PO
 	{
 		if (index < 0 || index >= get_ColumnCount())
 		{
-			log.warn("Index invalid - " + index);
+			log.warn("Index invalid - {}", index);
 			return false;
 		}
 		final String ColumnName = p_info.getColumnName(index);
@@ -1033,8 +1034,17 @@ public abstract class PO
 		if (p_info.isVirtualColumn(index))
 		{
 			final AdempiereException ex = new AdempiereException("Setting a Virtual Column is not allowed: " + ColumnName);
-			log.warn(ex.getLocalizedMessage(), ex);
+			log.warn("", ex);
 			return false;
+		}
+		if(m_currentChangeType != null && m_currentChangeType.isAfter())
+		{
+			final AdempiereException ex = new AdempiereException("Changing "+this+" on AFTER NEW/CHANGE shall be avoided because those changes won't be persisted in database.")
+					.appendParametersToMessage()
+					.setParameter("columnName", ColumnName)
+					.setParameter("value", value);
+			ex.throwIfDeveloperModeOrLogWarningElse(log);
+			// NOTE: don't return, allow setting the value because maybe some legacy code depends on it. At least we informed the developer.
 		}
 
 		final Object valueToUse = POUtils.stripZerosAndLogIssueIfBigDecimalScaleTooBig(value, this);
@@ -1798,7 +1808,7 @@ public abstract class PO
 						return load0(trxName, true); // this is the retry, so isRetry=true this time
 					}
 				}
-				log.error("NO Data found for " + get_WhereClause(true) + ", trxName=" + m_trxName, new Exception());
+				log.error("NO Data found for " + get_WhereClause(true) + ", trxName=" + m_trxName, new Exception("trace"));
 				m_IDs = new Object[] { I_ZERO };
 				success = false;
 				// throw new DBException("NO Data found for " + get_WhereClause(true));
@@ -2960,7 +2970,7 @@ public abstract class PO
 		// metas: tsa: 02380
 		if (m_trxName == null)
 		{
-			fireModelChange(ModelValidator.TYPE_BEFORE_SAVE_TRX);
+			fireModelChange(ModelChangeType.BEFORE_SAVE_TRX);
 		}
 
 		return true; // save is needed
@@ -2980,7 +2990,7 @@ public abstract class PO
 		}
 
 		// Call ModelValidators TYPE_NEW/TYPE_CHANGE
-		fireModelChange(newRecord ? ModelValidator.TYPE_BEFORE_NEW : ModelValidator.TYPE_BEFORE_CHANGE);
+		fireModelChange(newRecord ? ModelChangeType.BEFORE_NEW : ModelChangeType.BEFORE_CHANGE);
 
 		// Save
 		if (newRecord)
@@ -3068,8 +3078,8 @@ public abstract class PO
 		if (success)
 		{
 			final boolean replication = isReplication();
-			fireModelChange(newRecord ? (replication ? ModelValidator.TYPE_AFTER_NEW_REPLICATION : ModelValidator.TYPE_AFTER_NEW)
-					: (replication ? ModelValidator.TYPE_AFTER_CHANGE_REPLICATION : ModelValidator.TYPE_AFTER_CHANGE));
+			fireModelChange(newRecord ? (replication ? ModelChangeType.AFTER_NEW_REPLICATION : ModelChangeType.AFTER_NEW)
+					: (replication ? ModelChangeType.AFTER_CHANGE_REPLICATION : ModelChangeType.AFTER_CHANGE));
 		}
 
 		final int columnsCount = p_info.getColumnCount();
@@ -3139,7 +3149,7 @@ public abstract class PO
 		// Deferred processing of this po (metas-ts 1076)
 		if (success)
 		{
-			fireModelChange(ModelValidator.TYPE_SUBSEQUENT);
+			fireModelChange(ModelChangeType.SUBSEQUENT);
 		}
 
 		// Return "success"
@@ -4155,7 +4165,7 @@ public abstract class PO
 
 		// Call ModelValidators TYPE_DELETE
 		{
-			fireModelChange(isReplication() ? ModelValidator.TYPE_BEFORE_DELETE_REPLICATION : ModelValidator.TYPE_BEFORE_DELETE);
+			fireModelChange(isReplication() ? ModelChangeType.BEFORE_DELETE_REPLICATION : ModelChangeType.BEFORE_DELETE);
 		}
 
 		// Delete translations, if any
@@ -4212,7 +4222,7 @@ public abstract class PO
 		// Call ModelValidators TYPE_AFTER_DELETE - teo_sarca [ 1675490 ]
 		if (success)
 		{
-			fireModelChange(ModelValidator.TYPE_AFTER_DELETE); // metas: use fireModelChange method - 01512
+			fireModelChange(ModelChangeType.AFTER_DELETE); // metas: use fireModelChange method - 01512
 		}
 
 		//
@@ -4429,27 +4439,11 @@ public abstract class PO
 		{
 			sb.append(" AND ").append(whereClause);
 		}
-		sb.append(" AND NOT EXISTS (SELECT * FROM ").append(acctTable)
+		sb.append(" AND NOT EXISTS (SELECT 1 FROM ").append(acctTable)
 				.append(" e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.")
 				.append(get_TableName()).append("_ID=").append(get_ID()).append(")");
 		//
-		final int no = DB.executeUpdate(sb.toString(), get_TrxName());
-		if (no > 0)
-		{
-			log.debug("Inserted {} accounting records for {}", no, this);
-		}
-		else
-		{
-			final AdempiereException ex = new AdempiereException("No accouting records were inserted."
-					+ "\n Acct Table: " + acctTable
-					+ "\n Base Table: " + acctBaseTable
-					+ "\n SQL: " + sb
-					+ "\n PO: " + this
-					+ "\n TrxName: " + get_TrxName()
-					+ "\n Ctx: " + getCtx()
-					+ "\n return count: " + no);
-			log.warn(ex.getLocalizedMessage(), ex);
-		}
+		final int no = DB.executeUpdateEx(sb.toString(), get_TrxName());
 		return no > 0;
 	}	// insert_Accounting
 
@@ -5078,13 +5072,13 @@ public abstract class PO
 	 * @return error or null
 	 * @task 01512
 	 */
-	private final void fireModelChange(final int type)
+	private final void fireModelChange(final ModelChangeType type)
 	{
-		if (type == -1)
+		if (type == null)
 		{
 			throw new IllegalArgumentException("Invalid type " + type + " (" + this + ")");
 		}
-		if (m_currentChangeType != -1)
+		if (m_currentChangeType != null)
 		{
 			throw new AdempiereException("Object is already involved in a model change event"
 					+ "(" + this
@@ -5094,22 +5088,22 @@ public abstract class PO
 		try
 		{
 			m_currentChangeType = type;
-			ModelValidationEngine.get().fireModelChange(this, type);
+			ModelValidationEngine.get().fireModelChange(this, type.getChangeType());
 		}
 		finally
 		{
 			// Make sure replication flag is reset
-			if (type == ModelValidator.TYPE_AFTER_NEW_REPLICATION
-					|| type == ModelValidator.TYPE_AFTER_CHANGE_REPLICATION
-					|| type == ModelValidator.TYPE_BEFORE_DELETE_REPLICATION)
+			if (type == ModelChangeType.AFTER_NEW_REPLICATION
+					|| type == ModelChangeType.AFTER_CHANGE_REPLICATION
+					|| type == ModelChangeType.BEFORE_DELETE_REPLICATION)
 			{
 				setReplication(false);
 			}
-			m_currentChangeType = -1;
+			m_currentChangeType = null;
 		}
 	}
 
-	private int m_currentChangeType = -1;
+	private ModelChangeType m_currentChangeType = null;
 
 	/**
 	 * DynAttr which holds the <code>CopyRecordSupport</code> class which handles this PO

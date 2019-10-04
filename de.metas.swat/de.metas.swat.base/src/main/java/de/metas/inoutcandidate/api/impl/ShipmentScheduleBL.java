@@ -342,9 +342,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 				if (isDropShip)
 				{
-					// if there is bpp that is dropship and has a C_BPartner_Vendor_ID, set it in the schedule
-					final org.compiere.model.I_C_BPartner bpVendor = bpp.getC_BPartner_Vendor(); // the customer's vendor for the given product
-					sched.setC_BPartner_Vendor_ID(bpVendor.getC_BPartner_ID());
+					// if there is bpp that is dropship and has a C_BPartner_Vendor_ID,
+					// set the customer's vendor for the given product in the schedule
+					sched.setC_BPartner_Vendor_ID(bpp.getC_BPartner_Vendor_ID());
 				}
 
 				// set the dropship flag in shipment schedule as it is in the bpp
@@ -760,9 +760,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		}
 		else
 		{
-			// see if there is an existing shipment for this order
-			final OrderId orderId = scheduleSourceDoc.getRecordRef().getIdAssumingTableName(I_C_Order.Table_Name, OrderId::ofRepoId);
-			candidate = candidates.getInOutForOrderId(orderId, warehouseId, bpartnerAddress);
+			// see if there is an existing shipment for this order (or flatrate term)
+			candidate = candidates.getInOutForRecordRef(scheduleSourceDoc.getRecordRef(), warehouseId, bpartnerAddress);
 		}
 
 		if (candidate == null)
@@ -1161,10 +1160,18 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public Optional<ShipmentAllocationBestBeforePolicy> getBestBeforePolicy(@NonNull final ShipmentScheduleId id)
+	public ShipmentAllocationBestBeforePolicy getBestBeforePolicy(@NonNull final ShipmentScheduleId id)
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = getById(id);
-		return ShipmentAllocationBestBeforePolicy.optionalOfNullableCode(shipmentSchedule.getShipmentAllocation_BestBefore_Policy());
+		final Optional<ShipmentAllocationBestBeforePolicy> bestBeforePolicy = ShipmentAllocationBestBeforePolicy.optionalOfNullableCode(shipmentSchedule.getShipmentAllocation_BestBefore_Policy());
+		if (bestBeforePolicy.isPresent())
+		{
+			return bestBeforePolicy.get();
+		}
+
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		final BPartnerId bpartnerId = getBPartnerId(shipmentSchedule);
+		return bpartnerBL.getBestBeforePolicy(bpartnerId);
 	}
 
 	@Override

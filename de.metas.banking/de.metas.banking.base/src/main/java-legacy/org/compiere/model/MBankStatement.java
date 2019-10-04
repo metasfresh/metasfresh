@@ -444,8 +444,8 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		if (DOCSTATUS_Drafted.equals(getDocStatus())
 				|| DOCSTATUS_Invalid.equals(getDocStatus())
 				|| DOCSTATUS_InProgress.equals(getDocStatus())
-				|| DOCSTATUS_Genehmigt.equals(getDocStatus())
-				|| DOCSTATUS_NichtGenehmigt.equals(getDocStatus()))
+				|| DOCSTATUS_Approved.equals(getDocStatus())
+				|| DOCSTATUS_NotApproved.equals(getDocStatus()))
 			;
 		// Std Period open?
 		else
@@ -557,7 +557,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		if (m_processMsg != null)
 			return false;
 
-		return false;
+		throw new UnsupportedOperationException();
 	}	// reverseCorrectionIt
 
 	/**
@@ -579,7 +579,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		if (m_processMsg != null)
 			return false;
 
-		return false;
+		throw new UnsupportedOperationException();
 	}	// reverseAccrualIt
 
 	/**
@@ -600,7 +600,8 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
 		if (m_processMsg != null)
 			return false;
-		return false;
+
+		throw new UnsupportedOperationException();
 	}	// reActivateIt
 
 	/*************************************************************************

@@ -1,7 +1,5 @@
 package de.metas.impexp.processing.spi;
 
-import java.util.Collection;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -26,9 +24,8 @@ import java.util.Collection;
 
 import java.util.Properties;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import de.metas.impexp.processing.IImportProcess;
+import de.metas.process.PInstanceId;
 
 /**
  * Builds an {@link IImportProcess} instance and executes it asynchronously.
@@ -55,12 +52,7 @@ public interface IAsyncImportProcessBuilder
 	IAsyncImportProcessBuilder setImportTableName(String tableName);
 
 	/**
-	 * Enqueues an import table record that needs to be imported.
+	 * Enqueues all import table record identified by given selection
 	 */
-	IAsyncImportProcessBuilder addImportRecord(TableRecordReference importRecordRef);
-
-	/**
-	 * Enqueues import table records that needs to be imported.
-	 */
-	IAsyncImportProcessBuilder addImportRecords(Collection<TableRecordReference> importRecordRefs);
+	IAsyncImportProcessBuilder setImportFromSelectionId(PInstanceId fromSelectionId);
 }
