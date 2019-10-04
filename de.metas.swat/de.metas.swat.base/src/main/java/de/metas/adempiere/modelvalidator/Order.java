@@ -83,9 +83,9 @@ public class Order implements ModelValidator
 				bpartner.setIsCustomer(true);
 				bpartner.setIsProspect(false);
 				//
-				int client_id = Env.getAD_Client_ID(Env.getCtx());
-				int org_id = Env.getAD_Org_ID(Env.getCtx());
-				boolean recreate = MSysConfig.getBooleanValue("RECREATE_SEARCHKEY", true, client_id);
+				final int client_id = Env.getAD_Client_ID(Env.getCtx());
+				final int org_id = Env.getAD_Org_ID(Env.getCtx());
+				final boolean recreate = MSysConfig.getBooleanValue("RECREATE_SEARCHKEY", true, client_id);
 				if (recreate)
 				{
 					final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
@@ -113,7 +113,7 @@ public class Order implements ModelValidator
 				// bpartner address
 				if (orderLine.getC_BPartner_Location_ID() > 0)
 				{
-					String BPartnerAddress = orderLine.getBPartnerAddress();
+					final String BPartnerAddress = orderLine.getBPartnerAddress();
 					if (Check.isEmpty(BPartnerAddress, true))
 					{
 						Services.get(IDocumentLocationBL.class).setBPartnerAddress(orderLine);
@@ -122,7 +122,7 @@ public class Order implements ModelValidator
 
 				// 01717
 				{
-					org.compiere.model.I_C_Order order = orderLine.getC_Order();
+					final org.compiere.model.I_C_Order order = orderLine.getC_Order();
 					if (order.isDropShip())
 					{
 						if (orderLine.getC_BPartner_ID() < 0)
@@ -143,13 +143,13 @@ public class Order implements ModelValidator
 
 		// start: c.ghita@metas.ro: 01447
 
-		if (po.getDynAttribute(PO.DYNATTR_CopyRecordSupport) == null)
+		if (po.getDynAttribute(PO.DYNATTR_CopyRecordSupport) == null && ((type != TYPE_AFTER_CHANGE && type != TYPE_AFTER_NEW)))
 		{
 			// BPartner address
 			{
 				if (order.getC_BPartner_Location_ID() > 0)
 				{
-					String BPartnerAddress = order.getBPartnerAddress();
+					final String BPartnerAddress = order.getBPartnerAddress();
 					if (Check.isEmpty(BPartnerAddress, true) || po.is_ValueChanged(I_C_Order.COLUMNNAME_C_BPartner_ID)
 							|| po.is_ValueChanged(I_C_Order.COLUMNNAME_C_BPartner_Location_ID)
 							|| po.is_ValueChanged(I_C_Order.COLUMNNAME_AD_User_ID))
@@ -162,7 +162,7 @@ public class Order implements ModelValidator
 			{
 				if (order.getBill_Location_ID() > 0)
 				{
-					String BillToAddress = order.getBillToAddress();
+					final String BillToAddress = order.getBillToAddress();
 					if (Check.isEmpty(BillToAddress, true) || po.is_ValueChanged(I_C_Order.COLUMNNAME_Bill_BPartner_ID)
 							|| po.is_ValueChanged(I_C_Order.COLUMNNAME_Bill_Location_ID)
 							|| po.is_ValueChanged(I_C_Order.COLUMNNAME_Bill_User_ID))
@@ -208,7 +208,7 @@ public class Order implements ModelValidator
 					ol.saveEx();
 				}
 			}
-			
+
 			//
 			// checking if all is okay with this order
 			orderBL.checkForPriceList(order);
