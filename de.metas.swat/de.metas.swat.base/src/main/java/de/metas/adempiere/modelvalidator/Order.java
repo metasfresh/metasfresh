@@ -146,7 +146,7 @@ public class Order implements ModelValidator
 
 		// start: c.ghita@metas.ro: 01447
 
-		if (po.getDynAttribute(PO.DYNATTR_CopyRecordSupport) == null && ((type != TYPE_AFTER_CHANGE && type != TYPE_AFTER_NEW)))
+		if (po.getDynAttribute(PO.DYNATTR_CopyRecordSupport) == null && type.isAfter() && type.isNewOrChange())
 		{
 			// BPartner address
 			{
