@@ -320,8 +320,39 @@ export default class Attributes extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {func} patch
+ * @prop {func} handleBackdropLock
+ * @prop {bool} [isModal]
+ * @prop {*} widgetData
+ * @prop {*} dataId
+ * @prop {*} rowId
+ * @prop {*} attributeType
+ * @prop {*} tabIndex
+ * @prop {*} readonly
+ * @prop {*} onBlur
+ * @prop {*} docType
+ * @prop {*} tabId
+ * @prop {*} viewId
+ * @prop {*} fieldName
+ * @prop {*} entity
+ * @todo Check props. Which proptype? Required or optional?
+ */
 Attributes.propTypes = {
   patch: PropTypes.func.isRequired,
   handleBackdropLock: PropTypes.func,
   isModal: PropTypes.bool,
+  widgetData: PropTypes.any,
+  dataId: PropTypes.any,
+  rowId: PropTypes.any,
+  attributeType: PropTypes.any,
+  tabIndex: PropTypes.any,
+  readonly: PropTypes.any,
+  onBlur: PropTypes.any,
+  docType: PropTypes.any,
+  tabId: PropTypes.any,
+  viewId: PropTypes.any,
+  fieldName: PropTypes.any,
+  entity: PropTypes.any,
 };
