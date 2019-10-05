@@ -2,6 +2,10 @@ import React, { useRef } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
+/**
+ * @file Function based component.
+ * @module Checkbox
+ */
 const Checkbox = props => {
   const rawWidget = useRef(null);
   const {
@@ -64,6 +68,18 @@ const Checkbox = props => {
   );
 };
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {array} widgetData
+ * @prop {bool} [disabled]
+ * @prop {bool} [fullScreen]
+ * @prop {number} [tabIndex]
+ * @prop {bool} [filterWidget]
+ * @prop {func} [handlePatch]
+ * @prop {string} [widgetField]
+ * @prop {string|number} [id]
+ * @todo Check props. Which proptype? Required or optional?
+ */
 Checkbox.propTypes = {
   widgetData: PropTypes.array.isRequired,
   disabled: PropTypes.bool,
