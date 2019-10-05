@@ -533,12 +533,15 @@ export class RawWidget extends Component {
       case 'DateRange': {
         return (
           <DatetimeRange
-            onChange={(value, valueTo) =>
+            onChange={(value, valueTo) => {
+              const val = Moment(value).format(DATE_FORMAT);
+              const valTo = Moment(valueTo).format(DATE_FORMAT);
+
               this.handlePatch(widgetField, {
-                ...(value && { value }),
-                ...(valueTo && { valueTo }),
-              })
-            }
+                ...(val && { value: val }),
+                ...(valTo && { valueTo: valTo }),
+              });
+            }}
             mandatory={widgetData[0].mandatory}
             validStatus={widgetData[0].validStatus}
             onShow={onShow}
