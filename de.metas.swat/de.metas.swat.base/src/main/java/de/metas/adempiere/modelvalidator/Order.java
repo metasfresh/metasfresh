@@ -1,5 +1,6 @@
 package de.metas.adempiere.modelvalidator;
 
+import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.MClient;
@@ -102,12 +103,14 @@ public class Order implements ModelValidator
 
 
 	@Override
-	public String modelChange(final PO po, int type) throws Exception
+	public String modelChange(final PO po, final int typeInt) throws Exception
 	{
+		final ModelChangeType type = ModelChangeType.valueOf(typeInt);
+
 		// start: c.ghita@metas.ro: 01563
 		if (po instanceof X_C_OrderLine)
 		{
-			if (type == TYPE_BEFORE_NEW && po.getDynAttribute(PO.DYNATTR_CopyRecordSupport) == null)
+			if (type.isNew() && type.isBefore() && po.getDynAttribute(PO.DYNATTR_CopyRecordSupport) == null)
 			{
 				final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(po, I_C_OrderLine.class);
 				// bpartner address
@@ -188,14 +191,14 @@ public class Order implements ModelValidator
 		// end: c.ghita@metas.ro: 01447
 
 		// metas: start: task 05899
-		if (type == TYPE_BEFORE_SAVE_TRX || type == TYPE_BEFORE_NEW || type == TYPE_BEFORE_CHANGE)
+		if (type.isBeforeSaveTrx() || (type.isBefore() && type.isNewOrChange()))
 		{
 			final boolean overridePricingSystem = false;
 			orderBL.setM_PricingSystem_ID(order, overridePricingSystem);
 		}
 		// metas: end: task 05899
 
-		if (type == TYPE_AFTER_CHANGE || type == TYPE_AFTER_NEW)
+		if (type.isAfter() && type.isNewOrChange())
 		{
 			// If the Price List is Changed (may be because of a PricingSystem change)
 			// the prices in the order lines need to be updated.
@@ -208,12 +211,12 @@ public class Order implements ModelValidator
 					ol.saveEx();
 				}
 			}
-			
+
 			//
 			// checking if all is okay with this order
 			orderBL.checkForPriceList(order);
 		}
-		else if (type == TYPE_BEFORE_CHANGE || type == TYPE_BEFORE_NEW)
+		else if (type.isBefore() && type.isNewOrChange())
 		{
 			//
 			// Reset IncotermLocation if Incoterm is empty
@@ -231,13 +234,6 @@ public class Order implements ModelValidator
 				final OrderFreightCostsService orderFreightCostService = Adempiere.getBean(OrderFreightCostsService.class);
 				orderFreightCostService.updateFreightAmt(order);
 			}
-
-			//
-			// Set Bill Contact - us1010
-			// if (order.getBill_User_ID() <= 0)
-			// {
-			// orderBL.setBill_User_ID(order);
-			// }
 		}
 		return null;
 	}
