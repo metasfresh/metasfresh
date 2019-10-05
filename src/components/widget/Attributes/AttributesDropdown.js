@@ -5,6 +5,11 @@ import { Map } from 'immutable';
 
 import RawWidget from '../RawWidget';
 
+/**
+ * @file Class based component.
+ * @module AttributesDropdown
+ * @extends Component
+ */
 class AttributesDropdown extends Component {
   constructor(props) {
     super(props);
@@ -14,6 +19,11 @@ class AttributesDropdown extends Component {
     };
   }
 
+  /**
+   * @method handleClickOutside
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleClickOutside = () => {
     const { onClickOutside } = this.props;
 
@@ -31,6 +41,14 @@ class AttributesDropdown extends Component {
     }, 10);
   };
 
+  /**
+   * @method handlePatch
+   * @summary ToDo: Describe the method
+   * @param {*} prop
+   * @param {*} value
+   * @param {*} id
+   * @todo Write the documentation
+   */
   handlePatch = (prop, value, id) => {
     const { handlePatch, attrId } = this.props;
     const { patchCallbacks } = this.state;
@@ -56,6 +74,11 @@ class AttributesDropdown extends Component {
     });
   };
 
+  /**
+   * @method renderFields
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   renderFields = () => {
     const {
       tabIndex,
@@ -96,6 +119,11 @@ class AttributesDropdown extends Component {
     }
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     return (
       <div className="attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced">
@@ -105,6 +133,21 @@ class AttributesDropdown extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {number} [tabIndex]
+ * @prop {bool} [isModal]
+ * @prop {object} data
+ * @prop {string} attributeType
+ * @prop {func} handleChange
+ * @prop {*} attrId
+ * @prop {array} layout
+ * @prop {func} [onClickOutside]
+ * @prop {func} handlePatch
+ * @prop {func} disableOnClickOutside
+ * @prop {func} enableOnClickOutside
+ * @todo Check props. Which proptype? Required or optional?
+ */
 AttributesDropdown.propTypes = {
   tabIndex: PropTypes.number,
   isModal: PropTypes.bool,

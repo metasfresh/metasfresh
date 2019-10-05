@@ -7,6 +7,11 @@ import { completeRequest, patchRequest } from '../../../actions/GenericActions';
 import { parseToDisplay } from '../../../utils/documentListHelper';
 import AttributesDropdown from './AttributesDropdown';
 
+/**
+ * @file Class based component.
+ * @module Attributes
+ * @extends Component
+ */
 export default class Attributes extends Component {
   constructor(props) {
     super(props);
@@ -19,6 +24,11 @@ export default class Attributes extends Component {
     };
   }
 
+  /**
+   * @method handleInit
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleInit = () => {
     const {
       docType,
@@ -101,6 +111,12 @@ export default class Attributes extends Component {
     );
   };
 
+  /**
+   * @method handleToggle
+   * @summary ToDo: Describe the method
+   * @param {*} option
+   * @todo Write the documentation
+   */
   handleToggle = option => {
     const { handleBackdropLock } = this.props;
     const { loading } = this.state;
@@ -125,6 +141,12 @@ export default class Attributes extends Component {
     }
   };
 
+  /**
+   * @method handleKeyDown
+   * @summary ToDo: Describe the method
+   * @param {object} event
+   * @todo Write the documentation
+   */
   handleKeyDown = e => {
     switch (e.key) {
       case 'Escape':
@@ -134,6 +156,13 @@ export default class Attributes extends Component {
     }
   };
 
+  /**
+   * @method handleChange
+   * @summary ToDo: Describe the method
+   * @param {*} field
+   * @param {*} value
+   * @todo Write the documentation
+   */
   handleChange = (field, value) => {
     this.setState(prevState => ({
       data: Object.assign({}, prevState.data, {
@@ -142,6 +171,15 @@ export default class Attributes extends Component {
     }));
   };
 
+  /**
+   * @method handlePatch
+   * @summary ToDo: Describe the method
+   * @param {*} prop
+   * @param {*} value
+   * @param {*} id
+   * @param {func} cb
+   * @todo Write the documentation
+   */
   handlePatch = (prop, value, id, cb) => {
     const { attributeType, onBlur } = this.props;
     const { data, loading } = this.state;
@@ -182,6 +220,11 @@ export default class Attributes extends Component {
     return Promise.resolve(true);
   };
 
+  /**
+   * @method handleCompletion
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleCompletion = () => {
     const { data, loading } = this.state;
 
@@ -204,6 +247,11 @@ export default class Attributes extends Component {
     }
   };
 
+  /**
+   * @method doCompleteRequest
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   doCompleteRequest = () => {
     const { attributeType, patch } = this.props;
     const { data } = this.state;
@@ -214,6 +262,11 @@ export default class Attributes extends Component {
     });
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     const {
       widgetData,
@@ -267,8 +320,39 @@ export default class Attributes extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {func} patch
+ * @prop {func} handleBackdropLock
+ * @prop {bool} [isModal]
+ * @prop {*} widgetData
+ * @prop {*} dataId
+ * @prop {*} rowId
+ * @prop {*} attributeType
+ * @prop {*} tabIndex
+ * @prop {*} readonly
+ * @prop {*} onBlur
+ * @prop {*} docType
+ * @prop {*} tabId
+ * @prop {*} viewId
+ * @prop {*} fieldName
+ * @prop {*} entity
+ * @todo Check props. Which proptype? Required or optional?
+ */
 Attributes.propTypes = {
   patch: PropTypes.func.isRequired,
   handleBackdropLock: PropTypes.func,
   isModal: PropTypes.bool,
+  widgetData: PropTypes.any,
+  dataId: PropTypes.any,
+  rowId: PropTypes.any,
+  attributeType: PropTypes.any,
+  tabIndex: PropTypes.any,
+  readonly: PropTypes.any,
+  onBlur: PropTypes.any,
+  docType: PropTypes.any,
+  tabId: PropTypes.any,
+  viewId: PropTypes.any,
+  fieldName: PropTypes.any,
+  entity: PropTypes.any,
 };

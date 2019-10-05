@@ -5,6 +5,11 @@ import { connect } from 'react-redux';
 import { dropdownRequest } from '../../actions/GenericActions';
 import DocumentStatusContextShortcuts from '../keyshortcuts/DocumentStatusContextShortcuts';
 
+/**
+ * @file Class based component.
+ * @module ActionButton
+ * @extends Component
+ */
 class ActionButton extends Component {
   constructor(props) {
     super(props);
@@ -15,10 +20,21 @@ class ActionButton extends Component {
     };
   }
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   componentDidMount() {
     this.fetchStatusList();
   }
 
+  /**
+   * @method handleKeyDown
+   * @summary ToDo: Describe the method
+   * @param {object} event
+   * @todo Write the documentation
+   */
   handleKeyDown = e => {
     const { list, selected } = this.state;
     switch (e.key) {
@@ -43,6 +59,12 @@ class ActionButton extends Component {
     }
   };
 
+  /**
+   * @method navigate
+   * @summary ToDo: Describe the method
+   * @param {bool} up
+   * @todo Write the documentation
+   */
   navigate = up => {
     const { selected, list } = this.state;
     const next = up ? selected + 1 : selected - 1;
@@ -52,12 +74,22 @@ class ActionButton extends Component {
     });
   };
 
+  /**
+   * @method handleDropdownBlur
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleDropdownBlur = () => {
     if (this.statusDropdown) {
       this.statusDropdown.classList.remove('dropdown-status-open');
     }
   };
 
+  /**
+   * @method handleDropdownFocus
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleDropdownFocus = () => {
     const { dropdownOpenCallback } = this.props;
 
@@ -66,6 +98,11 @@ class ActionButton extends Component {
     this.statusDropdown.classList.add('dropdown-status-open');
   };
 
+  /**
+   * @method fetchStatusList
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   fetchStatusList() {
     const { windowType, fields, dataId } = this.props;
     if (!dataId) {
@@ -83,6 +120,12 @@ class ActionButton extends Component {
     });
   }
 
+  /**
+   * @method handleChangeStatus
+   * @summary ToDo: Describe the method
+   * @param {*} status
+   * @todo Write the documentation
+   */
   handleChangeStatus = status => {
     const { onChange } = this.props;
     const changePromise = onChange(status);
@@ -93,6 +136,12 @@ class ActionButton extends Component {
     }
   };
 
+  /**
+   * @method getStatusClassName
+   * @summary ToDo: Describe the method
+   * @param {string} abrev
+   * @todo Write the documentation
+   */
   getStatusClassName = abrev => {
     const { data } = this.props;
 
@@ -109,6 +158,12 @@ class ActionButton extends Component {
     }
   };
 
+  /**
+   * @method getStatusContext
+   * @summary ToDo: Describe the method
+   * @param {string} abrev
+   * @todo Write the documentation
+   */
   getStatusContext = abrev => {
     if (abrev === 'DR') {
       return 'primary';
@@ -119,6 +174,12 @@ class ActionButton extends Component {
     }
   };
 
+  /**
+   * @method renderStatusList
+   * @summary ToDo: Describe the method
+   * @param {*} list
+   * @todo Write the documentation
+   */
   renderStatusList = list => {
     const { selected } = this.state;
 
@@ -140,6 +201,11 @@ class ActionButton extends Component {
     });
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     const { data, modalVisible } = this.props;
     const { list } = this.state;
@@ -180,9 +246,27 @@ class ActionButton extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {func} dispatch
+ * @prop {bool} modalVisible
+ * @prop {*} data
+ * @prop {*} onChange
+ * @prop {*} dropdownOpenCallback
+ * @prop {*} windowType
+ * @prop {*} fields
+ * @prop {*} dataId
+ * @todo Check title, buttons. Which proptype? Required or optional?
+ */
 ActionButton.propTypes = {
   dispatch: PropTypes.func.isRequired,
   modalVisible: PropTypes.bool.isRequired,
+  data: PropTypes.any,
+  onChange: PropTypes.any,
+  dropdownOpenCallback: PropTypes.any,
+  windowType: PropTypes.any,
+  fields: PropTypes.any,
+  dataId: PropTypes.any,
 };
 
 export default connect(state => ({
