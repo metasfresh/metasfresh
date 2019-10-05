@@ -11,6 +11,11 @@ import {
   disableOutsideClick,
 } from '../../actions/WindowActions';
 
+/**
+ * @file Class based component.
+ * @module DatePicker
+ * @extends Component
+ */
 class DatePicker extends Component {
   static timeZoneRegex = new RegExp(/[+-]{1}\d+:\d+/);
 
@@ -22,6 +27,11 @@ class DatePicker extends Component {
     };
   }
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   componentDidMount() {
     const { handleBackdropLock, isOpenDatePicker } = this.props;
     handleBackdropLock && handleBackdropLock(true);
@@ -33,6 +43,12 @@ class DatePicker extends Component {
     }
   }
 
+  /**
+   * @method handleBlur
+   * @summary ToDo: Describe the method
+   * @param {*} date
+   * @todo Write the documentation
+   */
   handleBlur = date => {
     const {
       patch,
@@ -74,6 +90,11 @@ class DatePicker extends Component {
     handleBackdropLock && handleBackdropLock(false);
   };
 
+  /**
+   * @method handleFocus
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleFocus = () => {
     const { dispatch } = this.props;
     const { value } = this.props;
@@ -85,6 +106,11 @@ class DatePicker extends Component {
     dispatch(disableOutsideClick());
   };
 
+  /**
+   * @method handleClose
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleClose = () => {
     const { dispatch } = this.props;
     this.setState({
@@ -93,6 +119,11 @@ class DatePicker extends Component {
     dispatch(allowOutsideClick());
   };
 
+  /**
+   * @method handleClickOutside
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleClickOutside = () => {
     const { open } = this.state;
 
@@ -102,10 +133,23 @@ class DatePicker extends Component {
     this.handleBlur(this.picker.state.selectedDate);
   };
 
+  /**
+   * @method handleKeydown
+   * @summary ToDo: Describe the method
+   * @param {object} event
+   * @todo Write the documentation
+   */
   handleKeydown = e => {
     e.stopPropagation();
   };
 
+  /**
+   * @method renderDay
+   * @summary ToDo: Describe the method
+   * @param {*} props
+   * @param {*} currentDate
+   * @todo Write the documentation
+   */
   renderDay = (props, currentDate) => {
     return (
       <td {...props} onDoubleClick={() => this.handleBlur(currentDate)}>
@@ -114,6 +158,11 @@ class DatePicker extends Component {
     );
   };
 
+  /**
+   * @method focusInput
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   focusInput = () => {
     this.inputElement && this.inputElement.focus();
   };
@@ -130,6 +179,11 @@ class DatePicker extends Component {
     </div>
   );
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     return (
       <div tabIndex="-1" onKeyDown={this.handleKeydown} className="datepicker">
