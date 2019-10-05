@@ -246,9 +246,27 @@ class ActionButton extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {func} dispatch
+ * @prop {bool} modalVisible
+ * @prop {*} data
+ * @prop {*} onChange
+ * @prop {*} dropdownOpenCallback
+ * @prop {*} windowType
+ * @prop {*} fields
+ * @prop {*} dataId
+ * @todo Check title, buttons. Which proptype? Required or optional?
+ */
 ActionButton.propTypes = {
   dispatch: PropTypes.func.isRequired,
   modalVisible: PropTypes.bool.isRequired,
+  data: PropTypes.any,
+  onChange: PropTypes.any,
+  dropdownOpenCallback: PropTypes.any,
+  windowType: PropTypes.any,
+  fields: PropTypes.any,
+  dataId: PropTypes.any,
 };
 
 export default connect(state => ({
