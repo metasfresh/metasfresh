@@ -205,6 +205,20 @@ class DatePicker extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {func} dispatch
+ * @prop {func} [handleChange]
+ * @prop {func} [handleBackdropLock]
+ * @prop {func} [patch]
+ * @prop {string} [field]
+ * @prop {*} [value]
+ * @prop {bool} [isOpenDatePicker]
+ * @prop {bool} [hasTimeZone]
+ * @prop {bool|string} [dateFormat]
+ * @prop {*} [timeZone]
+ * @todo Check title, buttons. Which proptype? Required or optional?
+ */
 DatePicker.propTypes = {
   dispatch: PropTypes.func.isRequired,
   handleChange: PropTypes.func,
@@ -215,6 +229,7 @@ DatePicker.propTypes = {
   isOpenDatePicker: PropTypes.bool,
   hasTimeZone: PropTypes.bool,
   dateFormat: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
+  timeZone: PropTypes.any,
 };
 
 export default connect()(onClickOutside(DatePicker));
