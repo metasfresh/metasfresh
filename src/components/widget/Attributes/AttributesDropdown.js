@@ -133,6 +133,21 @@ class AttributesDropdown extends Component {
   }
 }
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {number} [tabIndex]
+ * @prop {bool} [isModal]
+ * @prop {object} data
+ * @prop {string} attributeType
+ * @prop {func} handleChange
+ * @prop {*} attrId
+ * @prop {array} layout
+ * @prop {func} [onClickOutside]
+ * @prop {func} handlePatch
+ * @prop {func} disableOnClickOutside
+ * @prop {func} enableOnClickOutside
+ * @todo Check props. Which proptype? Required or optional?
+ */
 AttributesDropdown.propTypes = {
   tabIndex: PropTypes.number,
   isModal: PropTypes.bool,
