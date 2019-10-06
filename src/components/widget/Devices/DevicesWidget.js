@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-
+import PropTypes from 'prop-types';
 import Device from './Device';
 
 /**
@@ -38,5 +38,18 @@ class DevicesWidget extends Component {
     );
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} devices
+ * @prop {*} handleChange
+ * @prop {*} tabIndex
+ * @todo Check props. Which proptype? Required or optional?
+ */
+DevicesWidget.propTypes = {
+  devices: PropTypes.any,
+  handleChange: PropTypes.any,
+  tabIndex: PropTypes.any,
+};
 
 export default DevicesWidget;
