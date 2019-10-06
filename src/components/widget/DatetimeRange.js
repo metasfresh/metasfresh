@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import DateRangePicker from 'react-bootstrap-daterangepicker';
 import counterpart from 'counterpart';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
 
 /**
  * @file Class based component.
@@ -147,5 +148,28 @@ class DatetimeRange extends Component {
     );
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} value
+ * @prop {*} valueTo
+ * @prop {*} onChange
+ * @prop {*} onHide
+ * @prop {*} onShow
+ * @prop {*} mandatory
+ * @prop {*} validStatus
+ * @prop {*} timePicker
+ * @todo Check props. Which proptype? Required or optional?
+ */
+DatetimeRange.propTypes = {
+  value: PropTypes.any,
+  valueTo: PropTypes.any,
+  onChange: PropTypes.any,
+  onHide: PropTypes.any,
+  onShow: PropTypes.any,
+  mandatory: PropTypes.any,
+  validStatus: PropTypes.any,
+  timePicker: PropTypes.any,
+};
 
 export default DatetimeRange;
