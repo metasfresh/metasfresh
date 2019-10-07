@@ -29,6 +29,7 @@ import java.util.Properties;
 import java.util.stream.Stream;
 
 import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_Payment;
 
@@ -100,4 +101,13 @@ public interface IPaymentDAO extends ISingletonService
 	List<I_C_Payment> retrievePostedWithoutFactAcct(Properties ctx, Timestamp startTime);
 
 	Stream<PaymentId> streamPaymentIdsByBPartnerId(BPartnerId bpartnerId);
+
+	/**
+	 * Updates the discount and the payment based on DateTrx and the payment term policy.
+	 * 
+	 * @param payment
+	 * @param c_Invoice_ID
+	 * @param c_DocType
+	 */
+	void updateDiscountAndPayment(I_C_Payment payment, int c_Invoice_ID, I_C_DocType c_DocType);
 }

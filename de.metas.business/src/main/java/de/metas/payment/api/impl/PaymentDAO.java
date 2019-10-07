@@ -23,14 +23,22 @@ package de.metas.payment.api.impl;
  */
 
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.Query;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.DB;
+
+import de.metas.adempiere.model.I_C_Invoice;
 
 public class PaymentDAO extends AbstractPaymentDAO
 {
@@ -92,6 +100,71 @@ public class PaymentDAO extends AbstractPaymentDAO
 			return BigDecimal.ZERO;
 		}
 		return sqlValueBD;
+	}
+
+	@Override
+	public void updateDiscountAndPayment(I_C_Payment payment,int c_Invoice_ID, I_C_DocType c_DocType)
+	{
+		String sql = "SELECT C_BPartner_ID,C_Currency_ID," // 1..2
+				+ " invoiceOpen(C_Invoice_ID, ?)," // 3 #1
+				+ " invoiceDiscount(C_Invoice_ID,?,?), IsSOTrx " // 4..5 #2/3
+				+ "FROM C_Invoice WHERE C_Invoice_ID=?"; // #4
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, null);
+			pstmt.setInt(1, c_Invoice_ID);
+			pstmt.setTimestamp(2, payment.getDateTrx());
+			pstmt.setInt(3, c_Invoice_ID);
+			pstmt.setInt(4, c_Invoice_ID);
+			rs = pstmt.executeQuery();
+			if (rs.next())
+			{
+				final int bpartnerId = rs.getInt(1);
+				payment.setC_BPartner_ID(bpartnerId);
+
+				// Set Invoice Currency
+				final int C_Currency_ID = rs.getInt(2);
+				payment.setC_Currency_ID(C_Currency_ID);
+
+				//
+				BigDecimal InvoiceOpen = rs.getBigDecimal(3); // Set Invoice
+				// OPen Amount
+				if (InvoiceOpen == null)
+				{
+					InvoiceOpen = BigDecimal.ZERO;
+				}
+				BigDecimal DiscountAmt = rs.getBigDecimal(4); // Set Discount
+				// Amt
+				if (DiscountAmt == null)
+				{
+					DiscountAmt = BigDecimal.ZERO;
+				}
+
+				BigDecimal payAmt = InvoiceOpen.subtract(DiscountAmt);
+				if (X_C_DocType.DOCBASETYPE_APCreditMemo.equals(c_DocType.getDocBaseType())
+						|| X_C_DocType.DOCBASETYPE_ARCreditMemo.equals(c_DocType.getDocBaseType()))
+				{
+					if (payAmt.signum() < 0)
+					{
+						payAmt = payAmt.abs();
+					}
+				}
+
+				payment.setPayAmt(payAmt);
+				payment.setDiscountAmt(DiscountAmt);
+			}
+		}
+		catch (SQLException e)
+		{
+			throw new DBException(e, sql);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
+		
 	}
 	
 }

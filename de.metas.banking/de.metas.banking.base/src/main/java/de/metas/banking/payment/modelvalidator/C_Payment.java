@@ -3,11 +3,6 @@
  */
 package de.metas.banking.payment.modelvalidator;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 
 /*
@@ -37,7 +32,6 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -45,12 +39,11 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.DB;
 
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.ICashStatementBL;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Services;
 
 /**
@@ -141,70 +134,13 @@ public class C_Payment
 	public void onDateChange(final I_C_Payment payment)
 	{
 		final I_C_Invoice invoice = payment.getC_Invoice();
-		if(invoice ==null) {
+		if (invoice == null)
+		{
 			return;
-		}else {
-			String sql = "SELECT C_BPartner_ID,C_Currency_ID," // 1..2
-					+ " invoiceOpen(C_Invoice_ID, ?)," // 3 #1
-					+ " invoiceDiscount(C_Invoice_ID,?,?), IsSOTrx " // 4..5 #2/3
-					+ "FROM C_Invoice WHERE C_Invoice_ID=?"; // #4
-				PreparedStatement pstmt = null;
-				ResultSet rs = null;
-				try
-				{
-					pstmt = DB.prepareStatement (sql, null);
-					pstmt.setInt (1, invoice.getC_Invoice_ID());
-					pstmt.setTimestamp (2, payment.getDateTrx());
-					pstmt.setInt (3, invoice.getC_Invoice_ID());
-					pstmt.setInt (4, invoice.getC_Invoice_ID());
-					rs = pstmt.executeQuery ();
-					if (rs.next ())
-					{
-						final int bpartnerId = rs.getInt (1);
-						payment.setC_BPartner_ID(bpartnerId);
-						
-						// Set Invoice Currency
-						final int C_Currency_ID = rs.getInt (2);
-						payment.setC_Currency_ID(C_Currency_ID);
-						
-						//
-						BigDecimal InvoiceOpen = rs.getBigDecimal (3); // Set Invoice
-						// OPen Amount
-						if (InvoiceOpen == null)
-						{
-							InvoiceOpen = BigDecimal.ZERO;
-						}
-						BigDecimal DiscountAmt = rs.getBigDecimal (4); // Set Discount
-						// Amt
-						if (DiscountAmt == null)
-						{
-							DiscountAmt = BigDecimal.ZERO;
-						}
-
-						BigDecimal payAmt = InvoiceOpen.subtract(DiscountAmt);
-						final I_C_DocType invoiceDocType = invoice.getC_DocType();
-						if (X_C_DocType.DOCBASETYPE_APCreditMemo.equals(invoiceDocType.getDocBaseType())
-								|| X_C_DocType.DOCBASETYPE_ARCreditMemo.equals(invoiceDocType.getDocBaseType()))
-						{
-							if (payAmt.signum() < 0)
-							{
-								payAmt = payAmt.abs();
-							}
-						}
-
-						//
-						payment.setPayAmt(payAmt);
-						payment.setDiscountAmt(DiscountAmt);
-					}
-				}
-				catch (SQLException e)
-				{
-					throw new DBException(e, sql);
-				}
-				finally
-				{
-					DB.close (rs, pstmt);
-				}
+		}
+		else
+		{
+			Services.get(IPaymentDAO.class).updateDiscountAndPayment(payment, invoice.getC_Invoice_ID(), invoice.getC_DocType());
 		}
 	}
 
