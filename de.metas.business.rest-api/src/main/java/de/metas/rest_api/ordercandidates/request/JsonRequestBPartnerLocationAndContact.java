@@ -17,7 +17,6 @@ import de.metas.util.Check;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -60,7 +59,7 @@ public final class JsonRequestBPartnerLocationAndContact
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private JsonRequestBPartnerLocationAndContact(
-			@JsonProperty("bpartner") @NonNull final JsonRequestBPartner bpartner,
+			@JsonProperty("bpartner") final JsonRequestBPartner bpartner,
 			@JsonProperty("location") final JsonRequestLocation location,
 			@JsonProperty("contact") final JsonRequestContact contact,
 			@JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
@@ -70,9 +69,11 @@ public final class JsonRequestBPartnerLocationAndContact
 		this.contact = contact;
 		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 
-		final boolean lokupValuesAreOk = !isEmpty(bpartner.getCode(), true)
-				|| bpartner.getExternalId() != null
-				|| !isEmpty(location.getGln(), true);
+		final boolean hasBPartnerCode = bpartner != null && !isEmpty(bpartner.getCode(), true);
+		final boolean hasBPartnerExternalId = bpartner != null && bpartner.getExternalId() != null;
+		final boolean hasBPartnerLocationGln = location != null && !isEmpty(location.getGln(), true);
+
+		final boolean lokupValuesAreOk = hasBPartnerCode || hasBPartnerExternalId || hasBPartnerLocationGln;
 		Check.errorUnless(
 				lokupValuesAreOk,
 				"At least one of bpartner.code, bpartner.externalId or location.gln needs to be non-empty; this={}", this);
