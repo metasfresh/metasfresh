@@ -16,20 +16,6 @@ import SelectionDropdown from '../SelectionDropdown';
  * @extends Component
  */
 class Labels extends Component {
-  static propTypes = {
-    name: PropTypes.string.isRequired,
-    selected: PropTypes.array.isRequired,
-    className: PropTypes.string,
-    onChange: PropTypes.func.isRequired,
-    tabIndex: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  };
-
-  static defaultProps = {
-    entity: 'window',
-    selected: [],
-    onChange: () => {},
-  };
-
   state = {
     cursor: this.props.selected.length,
     focused: false,
@@ -390,6 +376,42 @@ class Labels extends Component {
     );
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {string} name
+ * @prop {array} selected
+ * @prop {string} [className]
+ * @prop {func} onChange
+ * @prop {string|number} [tabIndex]
+ * @prop {*} windowType
+ * @prop {*} docId
+ * @prop {*} name
+ * @prop {*} entity
+ * @prop {*} subentity
+ * @prop {*} subentityId
+ * @prop {*} viewId
+ * @todo Check title, buttons. Which proptype? Required or optional?
+ */
+Labels.propTypes = {
+  name: PropTypes.string.isRequired,
+  selected: PropTypes.array.isRequired,
+  className: PropTypes.string,
+  onChange: PropTypes.func.isRequired,
+  tabIndex: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  windowType: PropTypes.any,
+  docId: PropTypes.any,
+  entity: PropTypes.any,
+  subentity: PropTypes.any,
+  subentityId: PropTypes.any,
+  viewId: PropTypes.any,
+};
+
+Labels.defaultProps = {
+  entity: 'window',
+  selected: [],
+  onChange: () => {},
+};
 
 export default connect(({ windowHandler }) => ({
   docId: windowHandler.master.docId,
