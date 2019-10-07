@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.Getter;
@@ -119,6 +120,11 @@ public final class ImpFormatColumn
 		return ImpFormatColumnDataType.Number.equals(dataType);
 	}
 
+	public boolean isYesNo()
+	{
+		return ImpFormatColumnDataType.YesNo.equals(dataType);
+	}
+
 	public boolean isDate()
 	{
 		return ImpFormatColumnDataType.Date.equals(dataType);
@@ -188,6 +194,10 @@ public final class ImpFormatColumn
 		{
 			return parseNumber(valueStr);
 		}
+		else if (isYesNo())
+		{
+			return parseYesNo(valueStr);
+		}
 		else if (isDate())
 		{
 			// FIXME: HARDCODED - consider this an empty value for date
@@ -207,6 +217,7 @@ public final class ImpFormatColumn
 			return parseString(valueStr);
 		}
 	}
+
 
 	/**
 	 * Return date as YYYY-MM-DD HH24:MI:SS (JDBC Timestamp format w/o miliseconds)
@@ -296,6 +307,12 @@ public final class ImpFormatColumn
 			throw new AdempiereException("@Invalid@ @Number@: " + valueStr, ex);
 		}
 	}
+
+	private boolean parseYesNo(String valueStr)
+	{
+		return StringUtils.toBoolean(valueStr, false);
+	}
+
 
 	private String normalizeNumberString(String info)
 	{

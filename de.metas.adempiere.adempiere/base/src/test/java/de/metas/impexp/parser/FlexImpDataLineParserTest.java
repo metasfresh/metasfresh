@@ -2,6 +2,7 @@ package de.metas.impexp.parser;
 
 import static de.metas.impexp.format.ImpFormatColumnDataType.Number;
 import static de.metas.impexp.format.ImpFormatColumnDataType.String;
+import static de.metas.impexp.format.ImpFormatColumnDataType.YesNo;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -46,64 +47,110 @@ import de.metas.impexp.format.ImportTableDescriptor;
 public class FlexImpDataLineParserTest
 {
 	@Nested
-	@DisplayName("Format: Number, String, String")
-	public class Number_String_String
+	@DisplayName("Format: Number, String, String, YesNo")
+	public class Number_String_String_YesNo
 	{
 		private FlexImpDataLineParser parser;
 
 		@BeforeEach
 		public void beforeTest()
 		{
-			parser = createParserForColumns(Number, String, String);
+			parser = createParserForColumns(Number, String, String, YesNo);
 		}
 
 		@Test
 		public void no_quotes()
 		{
-			assertThat(extractValues(parser.parseDataCells("10;String1;String2")))
-					.containsExactly(new BigDecimal("10"), "String1", "String2");
+			assertThat(extractValues(parser.parseDataCells("10;String1;String2;f")))
+					.containsExactly(new BigDecimal("10"), "String1", "String2", false);
 		}
 
 		@Test
 		public void second_column_with_quotes()
 		{
-			assertThat(extractValues(parser.parseDataCells("10;\"String1\";String2")))
-					.containsExactly(new BigDecimal("10"), "String1", "String2");
+			assertThat(extractValues(parser.parseDataCells("10;\"String1\";String2;f\"")))
+					.containsExactly(new BigDecimal("10"), "String1", "String2", false);
 		}
 
 		@Test
-		public void all_columns_with_quotes()
+		public void all_columns_with_quotes_true()
 		{
-			assertThat(extractValues(parser.parseDataCells("\"10\";\"String1\";\"String2\"")))
-					.containsExactly(new BigDecimal("10"), "String1", "String2");
+			assertThat(extractValues(parser.parseDataCells("\"10\";\"String1\";\"String2\";\"true\"")))
+					.containsExactly(new BigDecimal("10"), "String1", "String2", true);
+		}
+
+		@Test
+		public void all_columns_with_quotes_false()
+		{
+			assertThat(extractValues(parser.parseDataCells("\"10\";\"String1\";\"String2\";\"false\"")))
+					.containsExactly(new BigDecimal("10"), "String1", "String2", false);
+		}
+
+
+		@Test
+		public void all_columns_with_quotes_Y()
+		{
+			assertThat(extractValues(parser.parseDataCells("\"10\";\"String1\";\"String2\";\"y\"")))
+					.containsExactly(new BigDecimal("10"), "String1", "String2", true);
+		}
+
+
+		@Test
+		public void all_columns_with_quotes_N()
+		{
+			assertThat(extractValues(parser.parseDataCells("\"10\";\"String1\";\"String2\";\"n\"")))
+					.containsExactly(new BigDecimal("10"), "String1", "String2", false);
+		}
+
+		@Test
+		public void all_columns_with_quotes_FALSE()
+		{
+			assertThat(extractValues(parser.parseDataCells("\"10\";\"String1\";\"String2\";\"FALSE\"")))
+					.containsExactly(new BigDecimal("10"), "String1", "String2", false);
+		}
+
+
+		@Test
+		public void all_columns_with_quotes_TRUE()
+		{
+			assertThat(extractValues(parser.parseDataCells("\"10\";\"String1\";\"String2\";\"TRUE\"")))
+					.containsExactly(new BigDecimal("10"), "String1", "String2", true);
 		}
 
 		@Test
 		public void empty_string()
 		{
-			assertThat(extractValues(parser.parseDataCells("\"10\";\"\";\"String2\"")))
-					.containsExactly(new BigDecimal("10"), "", "String2");
+			assertThat(extractValues(parser.parseDataCells("\"10\";\"\";\"String2\";\"\"")))
+					.containsExactly(new BigDecimal("10"), "", "String2", false);
 		}
 
 		@Test
 		public void empty_number()
 		{
-			assertThat(extractValues(parser.parseDataCells(";\"\";\"String2\"")))
-					.containsExactly(null, "", "String2");
+			assertThat(extractValues(parser.parseDataCells(";\"\";\"String2\";\"Y\"")))
+					.containsExactly(null, "", "String2", true);
 		}
+
+		@Test
+		public void empty_yesNo()
+		{
+			assertThat(extractValues(parser.parseDataCells(";\"\";\"String2\";")))
+					.containsExactly(null, "", "String2", false);
+		}
+
 
 		@Test
 		public void quoted_column_contains_delimiter()
 		{
-			assertThat(extractValues(parser.parseDataCells("\"10\";\"String;1\";\"String2\"")))
-					.containsExactly(new BigDecimal("10"), "String;1", "String2");
+			assertThat(extractValues(parser.parseDataCells("\"10\";\"String;1\";\"String2\"; \"\"")))
+					.containsExactly(new BigDecimal("10"), "String;1", "String2", false);
 		}
 
 		@Test
 		public void multiline_column()
 		{
-			assertThat(extractValues(parser.parseDataCells("\"10\";\"String\r\n1\";\"String2\"")))
-					.containsExactly(new BigDecimal("10"), "String\r\n1", "String2");
+			assertThat(extractValues(parser.parseDataCells("\"10\";\"String\r\n1\";\"String2\";\no")))
+					.containsExactly(new BigDecimal("10"), "String\r\n1", "String2", false);
 		}
 	}
 
