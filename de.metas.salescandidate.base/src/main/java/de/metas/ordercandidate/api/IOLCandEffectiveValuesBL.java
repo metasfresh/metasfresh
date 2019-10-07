@@ -195,7 +195,7 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	I_M_Product getM_Product_Effective(I_C_OLCand olCand);
 
 	/**
-	 * Returns <code>C_UOM_ID</code> if <code>IsManualPrice='Y'</code> and {@link #getRecordOrStockUOMId(I_C_OLCand)} otherwise.
+	 * Returns {@link #getRecordOrStockUOMId(I_C_OLCand)} (i.e. the record's own UOM-ID) if <code>IsManualPrice='Y'</code> and <code>C_UOM_Internal_ID</code> (i.e. metasfresh's pricing-engine-based UOM-ID) otherwise.
 	 */
 	int getC_UOM_Effective_ID(I_C_OLCand olCand);
 
