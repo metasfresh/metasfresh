@@ -46,7 +46,7 @@ import de.metas.edi.esb.route.AbstractEDIRoute;
 @Component
 public class StepComXMLDesadvRoute extends AbstractEDIRoute
 {
-	private static final String ROUTE_ID_AGGREGATE = "MF-Desadv-To-STEPCOM-XML-Desadv";
+	public static final String ROUTE_ID = "MF-Desadv-To-STEPCOM-XML-Desadv";
 
 	private static final String EDI_DESADV_XML_FILENAME_PATTERN = "edi.file.desadv.stepcom-xml.filename";
 
@@ -91,7 +91,7 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 		final String feedbackMessageRoutingKey = Util.resolvePropertyPlaceholders(getContext(), Constants.EP_AMQP_TO_AD_DURABLE_ROUTING_KEY);
 
 		from(StepComXMLDesadvRoute.EP_EDI_STEPCOM_XML_DESADV_CONSUMER)
-				.routeId(ROUTE_ID_AGGREGATE)
+				.routeId(ROUTE_ID)
 
 				.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
 				.setProperty(StepComXMLDesadvRoute.EDI_XML_DESADV_IS_TEST).constant(isTest)
@@ -103,7 +103,7 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 				.log(LoggingLevel.INFO, "EDI: Setting EDI feedback headers...")
 				.process(exchange -> {
 					// i'm sure that there are better ways, but we want the EDIFeedbackRoute to identify that the error is coming from *this* route.
-					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ROUTE_ID, ROUTE_ID_AGGREGATE);
+					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ROUTE_ID, ROUTE_ID);
 
 					final EDIExpDesadvType xmlDesadv = exchange.getIn().getBody(EDIExpDesadvType.class); // throw exceptions if mandatory fields are missing
 

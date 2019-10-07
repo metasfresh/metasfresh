@@ -36,6 +36,8 @@ import de.metas.edi.esb.processor.feedback.EDIXmlErrorFeedbackProcessor;
 import de.metas.edi.esb.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.route.exports.CompuDataDesadvRoute;
 import de.metas.edi.esb.route.exports.CompuDataInvoicRoute;
+import de.metas.edi.esb.route.exports.StepComXMLDesadvRoute;
+import de.metas.edi.esb.route.exports.StepComXMLInvoicRoute;
 
 /**
  * In order to avoid endless loops when processing feedback, we're NOT extending AbstractEDIRoute here.<br>
@@ -89,8 +91,12 @@ public class EDIFeedbackRoute extends RouteBuilder
 							//.when(body().isInstanceOf(EDICctopInvoicVType.class))
 							.when(header(EDIXmlFeedbackHelper.HEADER_ROUTE_ID).isEqualTo(CompuDataInvoicRoute.ROUTE_ID))
 								.process(errorInvoiceProcessor)
-							.when(header(EDIXmlFeedbackHelper.HEADER_ROUTE_ID).isEqualTo(CompuDataDesadvRoute.ROUTE_ID_AGGREGATE))
+							.when(header(EDIXmlFeedbackHelper.HEADER_ROUTE_ID).isEqualTo(StepComXMLInvoicRoute.ROUTE_ID))
+								.process(errorInvoiceProcessor)
+							.when(header(EDIXmlFeedbackHelper.HEADER_ROUTE_ID).isEqualTo(CompuDataDesadvRoute.ROUTE_ID))
 								.process(errorDesadvProcessor)
+							.when(header(EDIXmlFeedbackHelper.HEADER_ROUTE_ID).isEqualTo(StepComXMLDesadvRoute.ROUTE_ID))
+								.process(errorInvoiceProcessor)
 							.otherwise()
 								.log(LoggingLevel.ERROR, "EDI: No available feedback processor found for header[HEADER_ROUTE_ID]=" + header(EDIXmlFeedbackHelper.HEADER_ROUTE_ID))
 								.stop() // if there's no error handler, just forget about it...

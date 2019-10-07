@@ -46,7 +46,7 @@ import de.metas.edi.esb.route.AbstractEDIRoute;
 @Component
 public class StepComXMLInvoicRoute extends AbstractEDIRoute
 {
-	private static final String ROUTE_ID = "MF-Invoice-To-STEPCOM-XML-Invoic";
+	public static final String ROUTE_ID = "MF-Invoice-To-STEPCOM-XML-Invoic";
 
 	private static final String EDI_STEPCOM_XML_INVOICE_FILENAME_PATTERN = "edi.file.invoice.stepcom-xml.filename";
 

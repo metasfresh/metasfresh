@@ -46,7 +46,7 @@ import de.metas.edi.esb.route.AbstractEDIRoute;
 @Component
 public class CompuDataDesadvRoute extends AbstractEDIRoute
 {
-	public static final String ROUTE_ID_AGGREGATE = "MF-Desadv-To-COMPUDATA-Desadv";
+	public static final String ROUTE_ID = "MF-Desadv-To-COMPUDATA-Desadv";
 
 	private static final String EDI_DESADV_FILENAME_PATTERN = "edi.file.desadv.compudata.filename";
 
@@ -78,7 +78,7 @@ public class CompuDataDesadvRoute extends AbstractEDIRoute
 		final String isTest = Util.resolvePropertyPlaceholders(getContext(), CompuDataDesadvRoute.EDI_DESADV_IS_TEST);
 
 		from(CompuDataDesadvRoute.EP_EDI_COMPUDATA_DESADV_CONSUMER)
-				.routeId(ROUTE_ID_AGGREGATE)
+				.routeId(ROUTE_ID)
 
 				.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
 				.setProperty(CompuDataDesadvRoute.EDI_DESADV_IS_TEST).constant(isTest)
@@ -94,7 +94,7 @@ public class CompuDataDesadvRoute extends AbstractEDIRoute
 					public void process(final Exchange exchange)
 					{
 						// i'm sure that there are better ways, but we want the EDIFeedbackRoute to identify that the error is coming from *this* route.
-						exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ROUTE_ID, ROUTE_ID_AGGREGATE);
+						exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ROUTE_ID, ROUTE_ID);
 
 						final EDIExpDesadvType xmlDesadv = exchange.getIn().getBody(EDIExpDesadvType.class); // throw exceptions if mandatory fields are missing
 
