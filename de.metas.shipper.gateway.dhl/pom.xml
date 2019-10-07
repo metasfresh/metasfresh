@@ -21,42 +21,47 @@
   -->
 
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<modelVersion>4.0.0</modelVersion>
+         xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<artifactId>de.metas.parent</artifactId>
-		<groupId>de.metas</groupId>
-		<version>10.0.0</version>
-		<relativePath>../pom.xml</relativePath>
-	</parent>
+    <parent>
+        <artifactId>de.metas.parent</artifactId>
+        <groupId>de.metas</groupId>
+        <version>10.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-	<version>10.0.0</version> <!-- needed by versions:set during the jenkins build -->
-	<groupId>de.metas.shipper.gateway</groupId>
-	<artifactId>de.metas.shipper.gateway.dhl</artifactId>
-	<packaging>jar</packaging>
+    <version>10.0.0</version> <!-- needed by versions:set during the jenkins build -->
+    <groupId>de.metas.shipper.gateway</groupId>
+    <artifactId>de.metas.shipper.gateway.dhl</artifactId>
+    <packaging>jar</packaging>
 
-	<properties>
-		<migration-sql-basedir></migration-sql-basedir>
-		<metasfresh.version>[1,10.0.0]</metasfresh.version>
-	</properties>
+    <properties>
+        <migration-sql-basedir></migration-sql-basedir>
+        <metasfresh.version>[1,10.0.0]</metasfresh.version>
+    </properties>
 
-	<dependencies>
+    <dependencies>
 
-		<!-- needed so we know what to implement -->
-		<dependency>
-			<groupId>de.metas.shipper.gateway</groupId>
-			<artifactId>de.metas.shipper.gateway.spi</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
+        <!-- needed so we know what to implement -->
+        <dependency>
+            <groupId>de.metas.shipper.gateway</groupId>
+            <artifactId>de.metas.shipper.gateway.spi</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
 
-		<!-- needed for its common business logic -->
-		<dependency>
-			<groupId>de.metas.shipper.gateway</groupId>
-			<artifactId>de.metas.shipper.gateway.commons</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
+        <!-- needed for its common business logic -->
+        <dependency>
+            <groupId>de.metas.shipper.gateway</groupId>
+            <artifactId>de.metas.shipper.gateway.commons</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
 
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
-	</dependencies>
+    </dependencies>
 </project>
