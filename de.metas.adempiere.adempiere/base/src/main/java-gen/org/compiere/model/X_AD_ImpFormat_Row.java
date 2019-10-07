@@ -14,7 +14,7 @@ public class X_AD_ImpFormat_Row extends org.compiere.model.PO implements I_AD_Im
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1179006990L;
+	private static final long serialVersionUID = -1451603552L;
 
     /** Standard Constructor */
     public X_AD_ImpFormat_Row (Properties ctx, int AD_ImpFormat_Row_ID, String trxName)
@@ -211,6 +211,8 @@ public class X_AD_ImpFormat_Row extends org.compiere.model.PO implements I_AD_Im
 	public static final String DATATYPE_Date = "D";
 	/** Constant = C */
 	public static final String DATATYPE_Constant = "C";
+	/** YesNo = B */
+	public static final String DATATYPE_YesNo = "B";
 	/** Set Daten-Typ.
 		@param DataType 
 		Type of data
