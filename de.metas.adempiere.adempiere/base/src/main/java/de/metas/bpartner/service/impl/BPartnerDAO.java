@@ -1066,8 +1066,9 @@ public class BPartnerDAO implements IBPartnerDAO
 				return InterfaceWrapperHelper.create(BPartnerLocationId.toRepoId(relBPLocationId), I_C_BPartner_Location.class);
 			}
 		}
-		return null;
 
+		// if no location was found based on relation, return own location, null or non-null
+		return ownToLocation;
 	}
 
 	private String getFilterColumnNameForType(BPartnerLocationQuery.Type type)

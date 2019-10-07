@@ -38,7 +38,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
@@ -686,112 +685,10 @@ public class OrderBL implements IOrderBL
 			return false;
 		}
 
-		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+		order.setBill_BPartner_ID(billtoLocation.getC_BPartner_ID());
+		order.setBill_Location_ID(billtoLocation.getC_BPartner_Location_ID());
 
-		//
-		// Search in relation and try to find an adequate Bill Partner if the bill location could not be found
-		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
-		if (bpLocationId == null)
-		{
-			return false; // didn't find it
-		}
-		final I_C_BPartner_Location bpLocation = bpartnersRepo.getBPartnerLocationById(bpLocationId);
-		final I_C_BP_Relation billPartnerRelation = bpartnersRepo.retrieveBillBPartnerRelationFirstEncountered(order, bpartner, bpLocation);
-		if (billPartnerRelation == null)
-		{
-			return false; // didn't find it
-		}
-
-		final I_C_BPartner partnerToUse = InterfaceWrapperHelper.create(billPartnerRelation.getC_BPartnerRelation(), I_C_BPartner.class);
-		final I_C_BPartner_Location defaultLocation = InterfaceWrapperHelper.create(billPartnerRelation.getC_BPartnerRelation_Location(), I_C_BPartner_Location.class);
-		setBillLocation(order, partnerToUse, defaultLocation);
 		return true; // found it
-	}
-
-	private boolean setBillLocation(
-			final org.compiere.model.I_C_Order order,
-			final org.compiere.model.I_C_BPartner billBPartner,
-			final org.compiere.model.I_C_BPartner_Location defaultBillLocation)
-	{
-		if (billBPartner == null)
-		{
-			return false;
-		}
-
-		int billLocationIdToUse = 0;
-		boolean foundLoc = false;
-
-		if (defaultBillLocation != null && defaultBillLocation.getC_BPartner_Location_ID() > 0)
-		{
-			billLocationIdToUse = defaultBillLocation.getC_BPartner_Location_ID();
-			foundLoc = true;
-		}
-
-		if (!foundLoc)
-		{
-			final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-			final List<I_C_BPartner_Location> locations = bPartnerDAO.retrieveBPartnerLocations(billBPartner);
-
-			// Set Locations
-			final List<I_C_BPartner_Location> invLocations = new ArrayList<>();
-			for (final I_C_BPartner_Location loc : locations)
-			{
-				if (foundLoc)
-				{
-					break;
-				}
-
-				if (loc.isBillToDefault())
-				{
-					billLocationIdToUse = loc.getC_BPartner_Location_ID();
-					foundLoc = true;
-				}
-
-				if (loc.isBillTo())
-				{
-					invLocations.add(loc);
-				}
-			}
-
-			// set first invoice location if is not set
-			if (!foundLoc)
-			{
-				if (!invLocations.isEmpty())
-				{
-					final I_C_BPartner_Location firstInvLocation = invLocations.get(0);
-
-					billLocationIdToUse = firstInvLocation.getC_BPartner_Location_ID();
-				}
-				else if (!locations.isEmpty())
-				{
-					// set to first
-					if (order.getBill_Location_ID() == 0)
-					{
-						final I_C_BPartner_Location firstRetrievedLocation = locations.get(0);
-						billLocationIdToUse = firstRetrievedLocation.getC_BPartner_Location_ID();
-					}
-				}
-			}
-		}
-
-		order.setBill_BPartner_ID(billBPartner.getC_BPartner_ID());
-		order.setBill_Location_ID(billLocationIdToUse);
-
-		if (billLocationIdToUse > 0)
-		{
-			foundLoc = true;
-		}
-
-		// 07138
-		// We don't need a SEVERE log for this. even though the partner doesn't have a bill to address
-		// there are still fallbacks on the relation, etc
-		// In case no address is found, the caller is responsible for deciding what to to (e.g. show a user error).
-
-		if (!foundLoc)
-		{
-			logger.debug("MOrder.setBPartner - Has no Bill To Address: " + billBPartner);
-		}
-		return foundLoc;
 	}
 
 	@Override
