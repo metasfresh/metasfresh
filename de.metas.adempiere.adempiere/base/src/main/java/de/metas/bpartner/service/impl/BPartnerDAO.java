@@ -1024,7 +1024,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		final I_C_BPartner_Location ownToLocation = queryBuilder
 				.create()
 				.first();
-		if (!query.isAlsoTryRelation() || ownToLocation != null)
+		if (!query.isAlsoTryRelation() && ownToLocation != null)
 		{
 			// !alsoTryRelation => we return whatever we got here (null or not)
 			// ownBillToLocation != null => we return the not-null location we found
@@ -1050,19 +1050,21 @@ public class BPartnerDAO implements IBPartnerDAO
 						.bplocationId(BPartnerLocationId.ofRepoIdOrNull(bpRelationRecord.getC_BPartnerRelation_ID(), bpRelationRecord.getC_BPartnerRelation_Location_ID()))
 						.build());
 
-
 		if (query.getRelationBPArtnerLocationId() != null)
 		{
-			final List<BPartnerLocationId> relations = relationsStream.filter(bpRelation -> Objects.equals(query.getRelationBPArtnerLocationId(), bpRelation.getBplocationId()))
-					.map(bpRelation -> bpRelation.getRelationBPLocationId())
-					.collect(ImmutableList.toImmutableList());
+			relationsStream.filter(bpRelation -> Objects.equals(query.getRelationBPArtnerLocationId(), bpRelation.getBplocationId()))
+			.map(bpRelation -> bpRelation.getRelationBPLocationId())
+			.collect(ImmutableList.toImmutableList());
 		}
-
 
 		final Optional<BPRelation> relation = relationsStream.findFirst();
 		if (relation.isPresent())
 		{
-			return InterfaceWrapperHelper.create(relation.getC_BPartnerRelation_Location(), I_C_BPartner_Location.class);
+			final BPartnerLocationId relBPLocationId = relation.get().getRelationBPLocationId();
+			if (relBPLocationId != null)
+			{
+				return InterfaceWrapperHelper.create(BPartnerLocationId.toRepoId(relBPLocationId), I_C_BPartner_Location.class);
+			}
 		}
 		return null;
 
