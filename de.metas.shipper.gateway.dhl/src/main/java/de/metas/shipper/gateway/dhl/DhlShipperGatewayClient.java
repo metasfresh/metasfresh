@@ -26,6 +26,7 @@ import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
+import lombok.Builder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,9 +36,14 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 {
 	private static final Logger logger = LoggerFactory.getLogger(DhlShipperGatewayClient.class);
 
+	@Builder
+	public DhlShipperGatewayClient()
+	{
+	}
+
 	@Override public String getShipperGatewayId()
 	{
-		return null;
+		return DhlConstants.SHIPPER_GATEWAY_ID;
 	}
 
 	@Override public DeliveryOrder createDeliveryOrder(final DeliveryOrder draftDeliveryOrder) throws ShipperGatewayException

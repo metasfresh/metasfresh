@@ -22,20 +22,9 @@
 
 package de.metas.shipper.gateway.dhl;
 
-import de.metas.shipper.gateway.spi.ShipperGatewayClient;
-import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
-import org.springframework.stereotype.Service;
+import org.compiere.model.X_M_Shipper;
 
-@Service
-public class DhlShipperGatewayClientFactory implements ShipperGatewayClientFactory
+public class DhlConstants
 {
-	@Override public String getShipperGatewayId()
-	{
-		return DhlConstants.SHIPPER_GATEWAY_ID;
-	}
-
-	@Override public ShipperGatewayClient newClientForShipperId(final int shipperId)
-	{
-		return null;
-	}
+	public static final String SHIPPER_GATEWAY_ID = X_M_Shipper.SHIPPERGATEWAY_DHL;
 }

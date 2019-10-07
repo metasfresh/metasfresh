@@ -37,7 +37,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 
 	@Override public String getShipperGatewayId()
 	{
-		return null;
+		return DhlConstants.SHIPPER_GATEWAY_ID;
 	}
 
 	@Override public ITableRecordReference toTableRecordReference(final DeliveryOrder deliveryOrder)
