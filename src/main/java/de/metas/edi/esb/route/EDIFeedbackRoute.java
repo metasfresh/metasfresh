@@ -96,7 +96,7 @@ public class EDIFeedbackRoute extends RouteBuilder
 							.when(header(EDIXmlFeedbackHelper.HEADER_ROUTE_ID).isEqualTo(CompuDataDesadvRoute.ROUTE_ID))
 								.process(errorDesadvProcessor)
 							.when(header(EDIXmlFeedbackHelper.HEADER_ROUTE_ID).isEqualTo(StepComXMLDesadvRoute.ROUTE_ID))
-								.process(errorInvoiceProcessor)
+								.process(errorDesadvProcessor)
 							.otherwise()
 								.log(LoggingLevel.ERROR, "EDI: No available feedback processor found for header[HEADER_ROUTE_ID]=" + header(EDIXmlFeedbackHelper.HEADER_ROUTE_ID))
 								.stop() // if there's no error handler, just forget about it...
