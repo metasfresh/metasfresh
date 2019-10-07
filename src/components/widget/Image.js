@@ -1,9 +1,15 @@
 import counterpart from 'counterpart';
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
 import { getImageAction, postImageAction } from '../../actions/AppActions';
 import Loader from '../app/Loader';
 
+/**
+ * @file Function based component.
+ * @module Placeholder
+ * @param {object} props
+ */
 const Placeholder = props => (
   <div className="image-placeholder">
     <div className="placeholder-value">{props.children}</div>
@@ -349,5 +355,29 @@ class Image extends Component {
     );
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} children
+ * @todo Check props. Which proptype? Required or optional?
+ */
+Placeholder.propTypes = {
+  children: PropTypes.any,
+};
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} data
+ * @prop {*} handlePatch
+ * @prop {*} fields
+ * @prop {*} readonly
+ * @todo Check props. Which proptype? Required or optional?
+ */
+Image.propTypes = {
+  data: PropTypes.any,
+  handlePatch: PropTypes.any,
+  fields: PropTypes.any,
+  readonly: PropTypes.any,
+};
 
 export default Image;
