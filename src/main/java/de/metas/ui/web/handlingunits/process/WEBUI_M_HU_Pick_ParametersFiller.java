@@ -14,6 +14,8 @@ import org.compiere.util.DisplayType;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -96,7 +98,7 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 		return result;
 	}
 
-	private static final LookupDataSource createShipmentScheduleDataSource(final HuId huId)
+	private static LookupDataSource createShipmentScheduleDataSource(final HuId huId)
 	{
 		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.builder()
 				.setCtxTableName(null)
@@ -132,7 +134,7 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 		return Services.get(IValidationRuleFactory.class).createSQLValidationRule(sqlWhereClause.toString());
 	}
 
-	private static final ProductId getSingleProductId(final HuId huId)
+	private static ProductId getSingleProductId(final HuId huId)
 	{
 		final I_M_HU hu = Services.get(IHandlingUnitsDAO.class).getById(huId);
 		final Set<ProductId> productIds = Services.get(IHUContextFactory.class)
@@ -181,10 +183,13 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 	private String createPickingSlotLabel(@NonNull final I_M_PickingSlot pickingslot)
 	{
 		final StringBuilder result = new StringBuilder(pickingslot.getPickingSlot());
-		if (pickingslot.getC_BPartner_ID() > 1)
+		
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(pickingslot.getC_BPartner_ID());
+		if (bpartnerId != null)
 		{
-			final I_C_BPartner bPartner = pickingslot.getC_BPartner();
-			result.append("_").append(bPartner.getName()).append("_").append(bPartner.getValue());
+			final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+			final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
+			result.append("_").append(bpartner.getName()).append("_").append(bpartner.getValue());
 		}
 		return result.toString();
 	}
