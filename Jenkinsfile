@@ -24,7 +24,7 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 			description: 'Version of the metasfresh "main" code we shall use when resolving dependencies. Leave empty and this build will use the latest.',
 			name: 'MF_UPSTREAM_VERSION'),
 
-		booleanParam(defaultValue: true, description: '''Set to true if this build shall trigger "endcustomer" builds.<br>
+		booleanParam(defaultValue: false, description: '''Set to true if this build shall trigger "endcustomer" builds.<br>
 Set to false if this build is called from elsewhere and the orchestrating also takes place elsewhere''',
 			name: 'MF_TRIGGER_DOWNSTREAM_BUILDS')
 	]),
