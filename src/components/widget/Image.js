@@ -10,6 +10,11 @@ const Placeholder = props => (
   </div>
 );
 
+/**
+ * @file Class based component.
+ * @module Image
+ * @extends Component
+ */
 class Image extends Component {
   constructor(props) {
     super(props);
@@ -22,6 +27,11 @@ class Image extends Component {
     };
   }
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   componentDidMount() {
     const { data } = this.props;
 
@@ -32,6 +42,11 @@ class Image extends Component {
     return this.updateImagePreview(data.value);
   }
 
+  /**
+   * @method isCameraAvailable
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   isCameraAvailable() {
     return (
       (!~location.protocol.indexOf('https') ||
@@ -41,6 +56,12 @@ class Image extends Component {
     );
   }
 
+  /**
+   * @method uploadBlob
+   * @summary ToDo: Describe the method
+   * @param {*} blob
+   * @todo Write the documentation
+   */
   uploadBlob(blob) {
     const { data, handlePatch } = this.props;
 
@@ -80,6 +101,12 @@ class Image extends Component {
       });
   }
 
+  /**
+   * @method updateImagePreview
+   * @summary ToDo: Describe the method
+   * @param {*} id
+   * @todo Write the documentation
+   */
   updateImagePreview(id) {
     return getImageAction(id)
       .then(blob => {
@@ -100,6 +127,11 @@ class Image extends Component {
       });
   }
 
+  /**
+   * @method takeSnapshot
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   takeSnapshot() {
     const width = this.camera.offsetWidth;
     const height = this.camera.offsetHeight;
@@ -118,6 +150,11 @@ class Image extends Component {
     });
   }
 
+  /**
+   * @method stopUsingCamera
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   stopUsingCamera() {
     const { stream } = this.state;
 
@@ -135,6 +172,11 @@ class Image extends Component {
     });
   }
 
+  /**
+   * @method handleCamera
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleCamera() {
     this.setState(
       {
@@ -164,10 +206,21 @@ class Image extends Component {
     );
   }
 
+  /**
+   * @method handleUploadFiler
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleUploadFile() {
     this.uploadBlob(this.imageInput.files[0]);
   }
 
+  /**
+   * @method handleKeyDown
+   * @summary ToDo: Describe the method
+   * @param {object} event
+   * @todo Write the documentation
+   */
   handleKeyDown = e => {
     switch (e.key) {
       case 'Escape':
@@ -177,6 +230,11 @@ class Image extends Component {
     }
   };
 
+  /**
+   * @method handleClear
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleClear = () => {
     const { handlePatch, data } = this.props;
     handlePatch(data.field, null);
@@ -186,6 +244,11 @@ class Image extends Component {
     });
   };
 
+  /**
+   * @method renderVideoPreview
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   renderVideoPreview() {
     const { isLoading } = this.state;
     return (
@@ -196,6 +259,11 @@ class Image extends Component {
     );
   }
 
+  /**
+   * @method renderRegularCameraControl
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   renderRegularCameraControl() {
     return (
       <div
@@ -208,6 +276,11 @@ class Image extends Component {
     );
   }
 
+  /**
+   * @method renderImagePreview
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   renderImagePreview() {
     const { isLoading, imageSrc } = this.state;
     const { fields } = this.props;
@@ -227,6 +300,11 @@ class Image extends Component {
     else return <Placeholder>{fields[0].emptyText}</Placeholder>;
   }
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     const { imageSrc, usingCamera } = this.state;
     const { readonly } = this.props;
