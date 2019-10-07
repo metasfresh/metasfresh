@@ -26,6 +26,7 @@ import de.metas.location.geocoding.GeocodingConfig;
 import de.metas.location.geocoding.GeocodingConfigRepository;
 import de.metas.ui.web.config.WebConfig;
 import lombok.NonNull;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -42,6 +43,7 @@ public class GeoLocationConfigRestController
 		this.geocodingConfigRepository = geocodingConfigRepository;
 	}
 
+	@GetMapping
 	public JsonGeoLocationConfig getConfig()
 	{
 		if (!geocodingConfigRepository.getGeocodingConfig().isPresent())
