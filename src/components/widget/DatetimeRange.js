@@ -3,7 +3,13 @@ import React, { Component } from 'react';
 import DateRangePicker from 'react-bootstrap-daterangepicker';
 import counterpart from 'counterpart';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
 
+/**
+ * @file Class based component.
+ * @module DateTimeRange
+ * @extends Component
+ */
 class DatetimeRange extends Component {
   constructor(props) {
     super(props);
@@ -13,6 +19,11 @@ class DatetimeRange extends Component {
     };
   }
 
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   componentDidMount() {
     const { value, valueTo } = this.props;
     if (value && valueTo) {
@@ -23,6 +34,13 @@ class DatetimeRange extends Component {
     }
   }
 
+  /**
+   * @method handleApply
+   * @summary ToDo: Describe the method
+   * @param {object} event
+   * @param {*} picker
+   * @todo Write the documentation
+   */
   handleApply = (event, picker) => {
     const { onChange } = this.props;
 
@@ -37,6 +55,11 @@ class DatetimeRange extends Component {
     );
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     const today = counterpart.translate('window.daterange.today');
     const yesterday = counterpart.translate('window.daterange.yesterday');
@@ -125,5 +148,28 @@ class DatetimeRange extends Component {
     );
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} value
+ * @prop {*} valueTo
+ * @prop {*} onChange
+ * @prop {*} onHide
+ * @prop {*} onShow
+ * @prop {*} mandatory
+ * @prop {*} validStatus
+ * @prop {*} timePicker
+ * @todo Check props. Which proptype? Required or optional?
+ */
+DatetimeRange.propTypes = {
+  value: PropTypes.any,
+  valueTo: PropTypes.any,
+  onChange: PropTypes.any,
+  onHide: PropTypes.any,
+  onShow: PropTypes.any,
+  mandatory: PropTypes.any,
+  validStatus: PropTypes.any,
+  timePicker: PropTypes.any,
+};
 
 export default DatetimeRange;
