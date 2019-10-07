@@ -46,7 +46,7 @@ import de.metas.edi.esb.route.AbstractEDIRoute;
 @Component
 public class StepComXMLInvoicRoute extends AbstractEDIRoute
 {
-	private static final String ROUTE_ID = "XML-Invoice-To-XML-EDI-Invoic";
+	private static final String ROUTE_ID = "MF-Invoice-To-STEPCOM-XML-Invoic";
 
 	private static final String EDI_STEPCOM_XML_INVOICE_FILENAME_PATTERN = "edi.file.invoice.stepcom-xml.filename";
 
@@ -120,13 +120,13 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 				.log(LoggingLevel.INFO, "EDI: Sending the EDI file to the FILE component...")
 				.to(EP_EDI_XML_FILE_INVOICE)
 
-				.log(LoggingLevel.INFO, "EDI: Creating ADempiere feedback XML Java Object...")
+				.log(LoggingLevel.INFO, "EDI: Creating metasfresh feedback XML Java Object...")
 				.process(new EDIXmlSuccessFeedbackProcessor<>(EDIInvoiceFeedbackType.class, EDIInvoiceFeedback_QNAME, METHOD_setCInvoiceID))
 
 				.log(LoggingLevel.INFO, "EDI: Marshalling XML Java Object feedback -> XML document...")
 				.marshal(jaxb)
 
-				.log(LoggingLevel.INFO, "EDI: Sending success response to ADempiere...")
+				.log(LoggingLevel.INFO, "EDI: Sending success response to metasfresh...")
 				.setHeader("rabbitmq.ROUTING_KEY").simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
 				.to(Constants.EP_AMQP_TO_AD);
 	}

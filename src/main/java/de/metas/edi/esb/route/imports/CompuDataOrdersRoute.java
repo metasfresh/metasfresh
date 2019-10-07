@@ -62,7 +62,7 @@ public class CompuDataOrdersRoute extends AbstractEDIRoute
 
 		// create route and split it
 		ProcessorDefinition<?> ediToXMLOrdersRoute = from(CompuDataOrdersRoute.EDI_INPUT_ORDERS)
-				.routeId("COMPUDATA-Order-To-XML-OLCand")
+				.routeId("COMPUDATA-Order-To-MF-OLCand")
 
 				.log(LoggingLevel.INFO, "EDI: Storing CamelFileName header as property for future use...")
 				.setProperty(Exchange.FILE_NAME, header(Exchange.FILE_NAME))
@@ -120,13 +120,13 @@ public class CompuDataOrdersRoute extends AbstractEDIRoute
 				.log(LoggingLevel.INFO, "Creating JAXB C_OLCand elements and splitting them by XML Document...")
 				.split().method(CompudataEDIOrdersBean.class, CompudataEDIOrdersBean.METHOD_createXMLDocument)
 					//
-					// aggregate exchanges back to List after data is sent to ADempiere so that we can move the EDI document to DONE
+					// aggregate exchanges back to List after data is sent to metasfresh so that we can move the EDI document to DONE
 					.aggregationStrategy(new EDIAggregationStrategy())
 					//
 					.log(LoggingLevel.TRACE, "EDI: Marshalling XML Java Object -> XML document...")
 					.marshal(jaxb)
 					//
-					.log(LoggingLevel.TRACE, "EDI: Sending XML Order document to ADempiere...")
+					.log(LoggingLevel.TRACE, "EDI: Sending XML Order document to metasfresh...")
 					.to(Constants.EP_AMQP_TO_AD)
 				.end();
 		// @formatter:on

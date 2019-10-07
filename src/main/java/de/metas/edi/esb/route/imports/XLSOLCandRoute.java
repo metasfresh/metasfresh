@@ -50,13 +50,13 @@ import de.metas.edi.esb.xls.XlsToMapListConverter;
 
 /**
  * Camel Route for importing customer's Excel files to order candidates.
- * It reads excel files from a configured folder and sends them to ADempiere amqp endpoint as {@link XLSImpCOLCandType} messages.
+ * It reads excel files from a configured folder and sends them to metasfresh amqp endpoint as {@link XLSImpCOLCandType} messages.
  *
  * The data flow is:
  * <ul>
  * <li>from: Excel file (from {@link #EP_OLCAND_INPUT_ORDERS})
  * <li>{@link XLS_OLCand_Row} (internal representation of an customer's excel row)
- * <li> {@link XLSImpCOLCandType} (XML representation of an excel row/C_OLCand that will be sent to adempiere)
+ * <li> {@link XLSImpCOLCandType} (XML representation of an excel row/C_OLCand that will be sent to metasfresh)
  * <li>to: {@link Constants#EP_AMQP_TO_AD}
  * </ul>
  *
@@ -66,7 +66,7 @@ import de.metas.edi.esb.xls.XlsToMapListConverter;
 @Component
 public class XLSOLCandRoute extends AbstractEDIRoute
 {
-	public static final String ROUTE_ID = XLSOLCandRoute.class.getName();
+	public static final String ROUTE_ID = "Excel-Orders-To-MF-OLCand";
 	private static final transient Logger logger = LoggerFactory.getLogger(ROUTE_ID);
 
 	public static final String EP_OLCAND_INPUT_ORDERS = "{{xls.order.input}}";
@@ -144,7 +144,7 @@ public class XLSOLCandRoute extends AbstractEDIRoute
 				.split(body())
 				.marshal(jaxb)
 				//
-				.log(LoggingLevel.TRACE, "XLS_OLCand: Sending XML Order document to ADempiere...")
+				.log(LoggingLevel.TRACE, "XLS_OLCand: Sending XML Order document to metasfresh...")
 				.to(Constants.EP_AMQP_TO_AD);
 	}
 }

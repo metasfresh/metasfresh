@@ -40,7 +40,7 @@ public abstract class RESOURCE_Excel
 	protected XLS_OLCand_Row_Expectations rowsExpectations;
 	/** How many data rows our Excel file has (valid or not) */
 	protected int count_DataRows;
-	/** How many data rows which are also valid and can be imported to ADempiere */
+	/** How many data rows which are also valid and can be imported to metasfresh */
 	protected int count_ValidDataRows;
 
 	public RESOURCE_Excel()

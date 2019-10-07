@@ -13,15 +13,14 @@ package de.metas.edi.esb.route;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
@@ -42,8 +41,6 @@ import de.metas.edi.esb.route.exports.CompuDataInvoicRoute;
  * Instead, we're using our own exception handler here to catch any exception in feedback, log it, and stop the route from continuing execution.<br>
  *
  * <b>NOTE: Any exception that occurs here should due to misconfiguring the properties.</b>
- *
- * @author al
  */
 public class EDIFeedbackRoute extends RouteBuilder
 {
@@ -67,9 +64,11 @@ public class EDIFeedbackRoute extends RouteBuilder
 		// At the moment, there's no need to differentiate between the DeadLetterChannel and Exception,
 		// so send them both to the same queue to avoid duplicate code
 		from(AbstractEDIRoute.EP_EDI_ERROR)
+				.routeId("Exception-To-CommonError")
 				.to(EDIFeedbackRoute.EP_EDI_ERROR_COMMON);
 
 		from(AbstractEDIRoute.EP_EDI_DEADLETTER)
+				.routeId("DeadLetter-To-CommonError")
 				.to(EDIFeedbackRoute.EP_EDI_ERROR_COMMON);
 
 		final Processor errorInvoiceProcessor = new EDIXmlErrorFeedbackProcessor<EDIInvoiceFeedbackType>(EDIInvoiceFeedbackType.class,
@@ -79,6 +78,7 @@ public class EDIFeedbackRoute extends RouteBuilder
 
 		// @formatter:off
 		from(EDIFeedbackRoute.EP_EDI_ERROR_COMMON)
+				.routeId("CommonError")
 				.to(AbstractEDIRoute.EP_EDI_LOG_ExceptionHandler)
 				.choice()
 					.when(exchangeProperty(AbstractEDIRoute.IS_CREATE_XML_FEEDBACK).isEqualTo(true))
@@ -101,8 +101,9 @@ public class EDIFeedbackRoute extends RouteBuilder
 						.setHeader(Exchange.FILE_NAME, exchangeProperty(Exchange.FILE_NAME).append(".error.xml"))
 						// If errors occurred, put the feedback in the error directory
 						.to(EDIFeedbackRoute.EP_EDI_LOCAL_ERROR)
-						// Send the feedback to ADempiere
-						.log(LoggingLevel.INFO, "EDI: Sending error response to ADempiere...")
+
+						// Send the feedback to metasfresh
+						.log(LoggingLevel.INFO, "EDI: Sending error response to metasfresh...")
 						.to(Constants.EP_AMQP_TO_AD)
 				.end();
 		// @formatter:on

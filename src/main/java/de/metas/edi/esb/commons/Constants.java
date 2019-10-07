@@ -30,9 +30,9 @@ import de.metas.edi.esb.jaxb.metasfresh.ObjectFactory;
 public final class Constants
 {
 	/**
-	 * Date pattern that should be used by the ADempiere replication interface.
+	 * Date pattern that should be used by the metasfresh replication interface.
 	 */
-	public static final String ADEMPIERE_DATE_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS"; // TODO extract pattern to props file
+	public static final String METASFRESH_DATE_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS"; // TODO extract pattern to props file
 
 	/**
 	 * @see http://fusesource.com/docs/router/2.8/component_ref/_IDU_ActiveMQ.html

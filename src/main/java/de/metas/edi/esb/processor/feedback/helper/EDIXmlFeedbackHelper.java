@@ -72,7 +72,7 @@ public final class EDIXmlFeedbackHelper
 			final Class<T> feedbackType, final QName feedbackQName,
 			final String recordIdSetter)
 	{
-		// make sure that the response sent to ADempiere has the correct CHARSET
+		// make sure that the response sent to metasfresh has the correct CHARSET
 		// NOTE that this will override the existing CHARSET, and that if you do stuff with other exchange content afterwards, you need to set it (again if necessary)
 		exchange.setProperty(Exchange.CHARSET_NAME, Util.resolvePropertyPlaceholders(exchange.getContext(), EDIXmlFeedbackHelper.EDI_FEEDBACK_CHAREST_NAME));
 

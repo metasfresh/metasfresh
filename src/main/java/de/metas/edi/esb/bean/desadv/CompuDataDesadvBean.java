@@ -66,7 +66,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 	@Override
 	public final void createEDIData(final Exchange exchange)
 	{
-		final EDIDesadvValidation validation = new EDIDesadvValidation();
+		final CompuDataDesadvValidation validation = new CompuDataDesadvValidation();
 
 		validateString(exchange.getProperty(CompuDataDesadvRoute.EDI_DESADV_IS_TEST, String.class), "exchange property " + CompuDataDesadvRoute.EDI_DESADV_IS_TEST + " cannot be null or empty");
 

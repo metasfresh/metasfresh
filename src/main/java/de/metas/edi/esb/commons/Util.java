@@ -168,7 +168,7 @@ public final class Util
 	 * If the isNewDateOverride is used, on exception, create today's date.<br />
 	 * See {@link #createCalendarDate(String, boolean, String)}<br />
 	 * <br />
-	 * Date pattern used: {@link Constants#ADEMPIERE_DATE_PATTERN}
+	 * Date pattern used: {@link Constants#METASFRESH_DATE_PATTERN}
 	 *
 	 * @param date
 	 * @param isNewDateOverride
@@ -176,7 +176,7 @@ public final class Util
 	 */
 	public static XMLGregorianCalendar createCalendarDate(final String date, final boolean isNewDateOverride)
 	{
-		return Util.createCalendarDate(date, isNewDateOverride, Constants.ADEMPIERE_DATE_PATTERN);
+		return Util.createCalendarDate(date, isNewDateOverride, Constants.METASFRESH_DATE_PATTERN);
 	}
 
 	/**
@@ -198,7 +198,7 @@ public final class Util
 	 * Creates an {@link XMLGregorianCalendar} date.<br />
 	 * On exception, assumes isNewDateOverride=false (see {@link #createCalendarDate(String, boolean)}).<br />
 	 * <br />
-	 * Date pattern used: {@link Constants#ADEMPIERE_DATE_PATTERN}
+	 * Date pattern used: {@link Constants#METASFRESH_DATE_PATTERN}
 	 *
 	 * @param date
 	 * @param isNewDateOverride
@@ -206,7 +206,7 @@ public final class Util
 	 */
 	public static XMLGregorianCalendar createCalendarDate(final String date)
 	{
-		return Util.createCalendarDate(date, false, Constants.ADEMPIERE_DATE_PATTERN);
+		return Util.createCalendarDate(date, false, Constants.METASFRESH_DATE_PATTERN);
 	}
 
 	/**
@@ -226,7 +226,7 @@ public final class Util
 	}
 
 	/**
-	 * Returns ADempiere-boolean String
+	 * Returns metasfresh boolean String
 	 *
 	 * @param value
 	 * @return String "Y" or "N"
@@ -252,7 +252,7 @@ public final class Util
 	}
 
 	/**
-	 * Returns ADempiere-boolean String
+	 * Returns metasfresh boolean String
 	 *
 	 * @param value
 	 * @return String "Y" or "N"
@@ -704,10 +704,9 @@ public final class Util
 	/**
 	 * Remove trailing zeros after decimal separator
 	 *
-	 * @param bd
 	 * @return <code>bd</code> without trailing zeros after separator; if argument is NULL then NULL will be retu
 	 */
-	// NOTE: this is copy-paste of org.adempiere.util.NumberUtils.stripTrailingDecimalZeros(BigDecimal)
+	// NOTE: this is copy-paste of de.metas.util.NumberUtils.stripTrailingDecimalZeros(BigDecimal)
 	public static BigDecimal stripTrailingDecimalZeros(final BigDecimal bd)
 	{
 		if (bd == null)

@@ -43,7 +43,7 @@ import de.metas.edi.esb.route.AbstractEDIRoute;
 public class StepComXMLOrdersRoute
 		extends RouteBuilder
 {
-	public static final String ROUTE_NAME = "STEPCOM-XML-Orders-To-XML-OLCand";
+	public static final String ROUTE_NAME = "STEPCOM-XML-Orders-To-MF-OLCand";
 
 	private static final String XML_INPUT_ORDERS = "{{edi.input.orders.stepcom-xml.filename}}";
 
@@ -94,7 +94,7 @@ public class StepComXMLOrdersRoute
 				.log(LoggingLevel.INFO, "Splitting XML document into indivdual C_OLCands...")
 				.split().method(StepComXMLEDIOrdersBean.class, AbstractEDIOrdersBean.METHOD_createXMLDocument)
 					//
-					// aggregate exchanges back to List after data is sent to ADempiere so that we can move the EDI document to DONE
+					// aggregate exchanges back to List after data is sent to metasfresh so that we can move the EDI document to DONE
 					//.aggregationStrategy(new EDIAggregationStrategy())
 					//
 					.log(LoggingLevel.TRACE, "EDI: Marshalling XML Java Object -> XML document...")

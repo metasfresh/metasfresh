@@ -46,7 +46,7 @@ import de.metas.edi.esb.route.AbstractEDIRoute;
 @Component
 public class StepComXMLDesadvRoute extends AbstractEDIRoute
 {
-	private static final String ROUTE_ID_AGGREGATE = "XML-InOut-To-XML-EDI-DESADV";
+	private static final String ROUTE_ID_AGGREGATE = "MF-Desadv-To-STEPCOM-XML-Desadv";
 
 	private static final String EDI_DESADV_XML_FILENAME_PATTERN = "edi.file.desadv.stepcom-xml.filename";
 

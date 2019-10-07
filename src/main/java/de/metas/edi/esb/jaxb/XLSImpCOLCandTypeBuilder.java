@@ -159,7 +159,7 @@ public class XLSImpCOLCandTypeBuilder
 		olcand.setPriceEntered(priceEntered);
 		// Note that this price shall not be propagated to the order line, so C_OLCand.
 		// IsManual shall not be set to Y.
-		// We only need this price in ADempiere so we can detect discrepancies
+		// We only need this price in metasfresh in order to detect discrepancies
 		olcand.setIsManualPrice("N");
 
 		//

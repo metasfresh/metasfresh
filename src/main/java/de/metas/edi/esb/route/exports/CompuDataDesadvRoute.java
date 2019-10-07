@@ -46,7 +46,7 @@ import de.metas.edi.esb.route.AbstractEDIRoute;
 @Component
 public class CompuDataDesadvRoute extends AbstractEDIRoute
 {
-	public static final String ROUTE_ID_AGGREGATE = "XML-Desadv-To-EDI-DESADV-Aggregate";
+	public static final String ROUTE_ID_AGGREGATE = "MF-Desadv-To-COMPUDATA-Desadv";
 
 	private static final String EDI_DESADV_FILENAME_PATTERN = "edi.file.desadv.compudata.filename";
 
@@ -130,7 +130,7 @@ public class CompuDataDesadvRoute extends AbstractEDIRoute
 				.log(LoggingLevel.INFO, "EDI: Marshalling XML Java Object feedback -> XML document...")
 				.marshal(jaxb)
 
-				.log(LoggingLevel.INFO, "EDI: Sending success response to ADempiere...")
+				.log(LoggingLevel.INFO, "EDI: Sending success response to metasfresh...")
 				.to(Constants.EP_AMQP_TO_AD);
 	}
 }

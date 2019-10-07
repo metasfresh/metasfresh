@@ -85,7 +85,7 @@ public class StepComXMLDesadvBean
 
 	public final void createXMLEDIData(final Exchange exchange)
 	{
-		final EDIDesadvValidation validation = new EDIDesadvValidation();
+		final StepComDesadvValidation validation = new StepComDesadvValidation();
 
 		// validate mandatory exchange properties
 		validateString(

@@ -23,7 +23,7 @@ import de.metas.edi.esb.route.AbstractEDIRoute;
 @Component
 public class CompuDataInvoicRoute extends AbstractEDIRoute
 {
-	public static final String ROUTE_ID = "XML-Invoic-To-EDI-Invoic";
+	public static final String ROUTE_ID = "MF-Invoic-To-COMPUDATA-Invoic";
 
 	private static final String EDI_INVOICE_FILENAME_PATTERN = "edi.file.invoice.compudata.filename";
 
@@ -89,13 +89,13 @@ public class CompuDataInvoicRoute extends AbstractEDIRoute
 		.log(LoggingLevel.INFO, "EDI: Sending the EDI file to the FILE component...")
 				.to(CompuDataInvoicRoute.EP_EDI_FILE_INVOICE)
 
-		.log(LoggingLevel.INFO, "EDI: Creating ADempiere feedback XML Java Object...")
+		.log(LoggingLevel.INFO, "EDI: Creating metasfresh feedback XML Java Object...")
 				.process(new EDIXmlSuccessFeedbackProcessor<EDIInvoiceFeedbackType>(EDIInvoiceFeedbackType.class, CompuDataInvoicRoute.EDIInvoiceFeedback_QNAME, CompuDataInvoicRoute.METHOD_setCInvoiceID))
 
 		.log(LoggingLevel.INFO, "EDI: Marshalling XML Java Object feedback -> XML document...")
 				.marshal(jaxb)
 
-		.log(LoggingLevel.INFO, "EDI: Sending success response to ADempiere...")
+		.log(LoggingLevel.INFO, "EDI: Sending success response to metasfresh...")
 				.to(Constants.EP_AMQP_TO_AD);
 	}
 }
