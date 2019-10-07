@@ -10,6 +10,11 @@ import {
 import Label from './Label';
 import SelectionDropdown from '../SelectionDropdown';
 
+/**
+ * @file Class based component.
+ * @module Labels
+ * @extends Component
+ */
 class Labels extends Component {
   static propTypes = {
     name: PropTypes.string.isRequired,
@@ -34,6 +39,12 @@ class Labels extends Component {
 
   lastTypeAhead = '';
 
+  /**
+   * @async
+   * @method handleClick
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleClick = async () => {
     this.input.focus();
 
@@ -67,10 +78,20 @@ class Labels extends Component {
     });
   };
 
+  /**
+   * @method handleFocus
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleFocus = () => {
     this.input.focus();
   };
 
+  /**
+   * @method handleBlur
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleBlur = () => {
     this.clearInput();
 
@@ -80,6 +101,13 @@ class Labels extends Component {
     });
   };
 
+  /**
+   * @async
+   * @method handleKeyUp
+   * @summary ToDo: Describe the method
+   * @param {object} event
+   * @todo Write the documentation
+   */
   handleKeyUp = async event => {
     const typeAhead = event.target.innerHTML;
 
@@ -116,6 +144,12 @@ class Labels extends Component {
     }
   };
 
+  /**
+   * @method handleKeyDown
+   * @summary ToDo: Describe the method
+   * @param {object} event
+   * @todo Write the documentation
+   */
   handleKeyDown = event => {
     const typeAhead = event.target.innerHTML;
     const { onChange, selected } = this.props;
@@ -181,10 +215,22 @@ class Labels extends Component {
     event.preventDefault();
   };
 
+  /**
+   * @method handleTemporarySelection
+   * @summary ToDo: Describe the method
+   * @param {*} suggestion
+   * @todo Write the documentation
+   */
   handleTemporarySelection = suggestion => {
     this.setState({ suggestion });
   };
 
+  /**
+   * @method handleSuggestionAdd
+   * @summary ToDo: Describe the method
+   * @param {*} suggestion
+   * @todo Write the documentation
+   */
   handleSuggestionAdd = suggestion => {
     const { onChange, selected } = this.props;
     const { cursor } = this.state;
@@ -203,36 +249,74 @@ class Labels extends Component {
     });
   };
 
+  /**
+   * @method handleLabelRemove
+   * @summary ToDo: Describe the method
+   * @param {*} label
+   * @todo Write the documentation
+   */
   handleLabelRemove = label => {
     this.props.onChange(this.props.selected.filter(item => item !== label));
   };
 
+  /**
+   * @method handleLabelClick
+   * @summary ToDo: Describe the method
+   * @param {*} label
+   * @todo Write the documentation
+   */
   handleLabelClick = label => {
     this.setState({
       cursor: this.props.selected.indexOf(label) + 1,
     });
   };
 
+  /**
+   * @method handleCancel
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   handleCancel = () => {
     this.clearInput();
 
     this.setState({ focused: false });
   };
 
+  /**
+   * @method unusedSuggestions
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   unusedSuggestions = () => {
     const selected = new Set(this.props.selected.map(item => item.key));
 
     return suggestion => !selected.has(suggestion.key);
   };
 
+  /**
+   * @method firstVisibleSuggestion
+   * @summary ToDo: Describe the method
+   * @param {*} suggestions
+   * @todo Write the documentation
+   */
   firstVisibleSuggestion = suggestions => {
     return suggestions.filter(this.unusedSuggestions())[0];
   };
 
+  /**
+   * @method clearInput
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   clearInput = () => {
     this.input.innerHTML = '';
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     const { focused, suggestion, cursor } = this.state;
     const { className, selected, tabIndex } = this.props;
