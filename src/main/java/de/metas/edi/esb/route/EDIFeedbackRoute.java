@@ -27,6 +27,7 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
+import org.springframework.stereotype.Component;
 
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.jaxb.metasfresh.EDIDesadvFeedbackType;
@@ -42,6 +43,7 @@ import de.metas.edi.esb.route.exports.CompuDataInvoicRoute;
  *
  * <b>NOTE: Any exception that occurs here should due to misconfiguring the properties.</b>
  */
+@Component
 public class EDIFeedbackRoute extends RouteBuilder
 {
 	/**
