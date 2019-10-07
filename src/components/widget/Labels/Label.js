@@ -9,19 +9,6 @@ const noOp = () => {};
  * @extends Component
  */
 class Label extends Component {
-  static propTypes = {
-    label: PropTypes.shape({
-      caption: PropTypes.node,
-    }).isRequired,
-    onClick: PropTypes.func,
-    onRemove: PropTypes.func,
-  };
-
-  static defaultProps = {
-    onClick: noOp,
-    onRemove: noOp,
-  };
-
   /**
    * @method handleClick
    * @summary ToDo: Describe the method
@@ -63,5 +50,25 @@ class Label extends Component {
     );
   }
 }
+
+/**
+ * @typedef {object} Props Component props
+ * @prop {*} label
+ * @prop {func} [onClick]
+ * @prop {func} [onRemove]
+ * @todo Check props. Which proptype? Required or optional?
+ */
+Label.propTypes = {
+  label: PropTypes.shape({
+    caption: PropTypes.node,
+  }).isRequired,
+  onClick: PropTypes.func,
+  onRemove: PropTypes.func,
+};
+
+Label.defaultProps = {
+  onClick: noOp,
+  onRemove: noOp,
+};
 
 export default Label;
