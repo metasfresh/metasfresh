@@ -1,0 +1,5 @@
+-- 2019-10-07T12:03:01.117Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_Value_ID=540969,Updated=TO_TIMESTAMP('2019-10-07 15:03:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558031
+;
+
