@@ -20,28 +20,10 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.dhl;
+package de.metas.shipper.gateway.dhl.model;
 
-import de.metas.shipper.gateway.spi.ShipperGatewayClient;
-import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
-import org.springframework.stereotype.Service;
+import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 
-@Service
-public class DhlShipperGatewayClientFactory implements ShipperGatewayClientFactory
+public class DhlCustomDeliveryData implements CustomDeliveryData
 {
-
-	@Override
-	public String getShipperGatewayId()
-	{
-		return DhlConstants.SHIPPER_GATEWAY_ID;
-	}
-
-	@Override
-	public ShipperGatewayClient newClientForShipperId(final int shipperId)
-	{
-		//		DhlClientConfig config = configRepo.getByShipperId(shipperId);
-		return DhlShipperGatewayClient.builder()
-				//				.config(config)
-				.build();
-	}
 }

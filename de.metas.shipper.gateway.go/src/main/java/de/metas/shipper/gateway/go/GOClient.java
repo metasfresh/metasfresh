@@ -407,7 +407,7 @@ public class GOClient implements ShipperGatewayClient
 	}
 
 	private Sendung.Zustelldatum createGODeliveryDateOrNull(final DeliveryDate deliveryDate)
-	{
+		{
 		if (deliveryDate == null)
 		{
 			return null;
