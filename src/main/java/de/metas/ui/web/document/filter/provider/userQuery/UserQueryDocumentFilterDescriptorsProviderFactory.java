@@ -9,10 +9,12 @@ import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.apps.search.IUserQueryField;
 import org.compiere.apps.search.UserQueryRepository;
+import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.user.UserId;
@@ -41,14 +43,16 @@ import de.metas.util.Services;
  * #L%
  */
 
-final public class UserQueryDocumentFilterDescriptorsProviderFactory
+@Component
+final public class UserQueryDocumentFilterDescriptorsProviderFactory implements DocumentFilterDescriptorsProviderFactory
 {
-	public static final transient UserQueryDocumentFilterDescriptorsProviderFactory instance = new UserQueryDocumentFilterDescriptorsProviderFactory();
+	private final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
 
-	private UserQueryDocumentFilterDescriptorsProviderFactory()
+	public UserQueryDocumentFilterDescriptorsProviderFactory()
 	{
 	}
 
+	@Override
 	public DocumentFilterDescriptorsProvider createFiltersProvider(
 			@Nullable final AdTabId adTabId,
 			@Nullable final String tableName,
@@ -61,7 +65,7 @@ final public class UserQueryDocumentFilterDescriptorsProviderFactory
 
 		Check.assumeNotEmpty(tableName, "tableName is not empty");
 
-		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
+		final int adTableId = adTablesRepo.retrieveTableId(tableName);
 
 		final List<IUserQueryField> searchFields = fields
 				.stream()

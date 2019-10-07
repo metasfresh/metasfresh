@@ -5,8 +5,8 @@ import java.util.Collection;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.element.api.AdTabId;
-import org.compiere.Adempiere;
 import org.elasticsearch.client.Client;
+import org.springframework.stereotype.Component;
 
 import de.metas.elasticsearch.indexer.IESModelIndexer;
 import de.metas.elasticsearch.indexer.IESModelIndexersRegistry;
@@ -16,11 +16,13 @@ import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterInlineRenderMode;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -44,30 +46,33 @@ import de.metas.util.Services;
  * #L%
  */
 
-public class FullTextSearchDocumentFilterDescriptorsProviderFactory
+@Component
+public class FullTextSearchDocumentFilterDescriptorsProviderFactory implements DocumentFilterDescriptorsProviderFactory
 {
-	public static final transient FullTextSearchDocumentFilterDescriptorsProviderFactory instance = new FullTextSearchDocumentFilterDescriptorsProviderFactory();
-
 	private static final String MSG_FULL_TEXT_SEARCH_CAPTION = "Search";
 
 	// services
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IESModelIndexersRegistry esModelIndexersRegistry = Services.get(IESModelIndexersRegistry.class);
+	private final Client elasticsearchClient;
 
-	private FullTextSearchDocumentFilterDescriptorsProviderFactory()
+	public FullTextSearchDocumentFilterDescriptorsProviderFactory(
+			@NonNull final org.elasticsearch.client.Client elasticsearchClient)
 	{
+		this.elasticsearchClient = elasticsearchClient;
 	}
 
+	@Override
 	public DocumentFilterDescriptorsProvider createFiltersProvider(
-			final AdTabId adTabId,
+			@Nullable final AdTabId adTabId_NOTUSED,
 			@Nullable final String tableName,
-			final Collection<DocumentFieldDescriptor> fields)
+			@Nullable final Collection<DocumentFieldDescriptor> fields_NOTUSED)
 	{
 		if (tableName == null)
 		{
 			return NullDocumentFilterDescriptorsProvider.instance;
 		}
 
-		final IESModelIndexersRegistry esModelIndexersRegistry = Services.get(IESModelIndexersRegistry.class);
 		final IESModelIndexer modelIndexer = esModelIndexersRegistry.getFullTextSearchModelIndexer(tableName)
 				.orElse(null);
 		if (modelIndexer == null)
@@ -95,8 +100,6 @@ public class FullTextSearchDocumentFilterDescriptorsProviderFactory
 
 	private FullTextSearchFilterContext createFullTextSearchFilterContext(final IESModelIndexer modelIndexer)
 	{
-		final Client elasticsearchClient = Adempiere.getBean(org.elasticsearch.client.Client.class);
-
 		return FullTextSearchFilterContext.builder()
 				.elasticsearchClient(elasticsearchClient)
 				.modelTableName(modelIndexer.getModelTableName())

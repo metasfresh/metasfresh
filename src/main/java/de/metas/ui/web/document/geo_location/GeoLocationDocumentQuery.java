@@ -1,12 +1,11 @@
-package de.metas.ui.web.document.filter.provider;
+package de.metas.ui.web.document.geo_location;
 
-import java.util.Collection;
+import java.math.BigDecimal;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.element.api.AdTabId;
-
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -30,8 +29,19 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
  * #L%
  */
 
-public interface DocumentFilterDescriptorsProviderFactory
+@Value
+@Builder
+public class GeoLocationDocumentQuery
 {
-	@Nullable
-	DocumentFilterDescriptorsProvider createFiltersProvider(AdTabId adTabId, String tableName, Collection<DocumentFieldDescriptor> fields);
+	@NonNull
+	IntegerLookupValue country;
+
+	String address1;
+	String city;
+	String postal;
+
+	@NonNull
+	BigDecimal distanceInKm;
+
+	boolean visitorsAddress;
 }

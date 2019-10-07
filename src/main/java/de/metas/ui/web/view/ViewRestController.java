@@ -8,7 +8,6 @@ import java.util.Objects;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.MimeType;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -85,10 +84,10 @@ import lombok.NonNull;
 @RequestMapping(value = ViewRestController.ENDPOINT)
 public class ViewRestController
 {
-	static final String PARAM_WindowId = "windowId";
+	public static final String PARAM_WindowId = "windowId";
 
 	// FIXME: change "documentView" to "view"
-	/* package */static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/documentView/{" + PARAM_WindowId + "}";
+	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/documentView/{" + PARAM_WindowId + "}";
 
 	private static final String PARAM_ViewId = "viewId";
 	private static final String PARAM_ViewDataType = "viewType";
@@ -101,20 +100,21 @@ public class ViewRestController
 	//
 	private static final String PARAM_FilterId = "filterId";
 
-	@Autowired
-	private UserSession userSession;
+	private final UserSession userSession;
+	private final IViewsRepository viewsRepo;
+	private final ProcessRestController processRestController;
+	private final WindowRestController windowRestController;
 
-	@Autowired
-	private IViewsRepository viewsRepo;
-
-	@Autowired
-	private ProcessRestController processRestController;
-
-	@Autowired
-	private WindowRestController windowRestController;
-
-	public ViewRestController()
+	public ViewRestController(
+			@NonNull final UserSession userSession,
+			@NonNull final IViewsRepository viewsRepo,
+			@NonNull final ProcessRestController processRestController,
+			@NonNull final WindowRestController windowRestController)
 	{
+		this.userSession = userSession;
+		this.viewsRepo = viewsRepo;
+		this.processRestController = processRestController;
+		this.windowRestController = windowRestController;
 	}
 
 	private JSONOptions newJSONOptions()

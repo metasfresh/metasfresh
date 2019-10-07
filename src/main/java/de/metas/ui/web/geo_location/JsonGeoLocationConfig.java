@@ -1,13 +1,3 @@
-package de.metas.ui.web.document.filter.provider;
-
-import java.util.Collection;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.element.api.AdTabId;
-
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
-
 /*
  * #%L
  * metasfresh-webui-api
@@ -18,20 +8,38 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface DocumentFilterDescriptorsProviderFactory
+package de.metas.ui.web.geo_location;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
+@Value
+@Builder
+class JsonGeoLocationConfig
 {
+	@JsonProperty("provider")
 	@Nullable
-	DocumentFilterDescriptorsProvider createFiltersProvider(AdTabId adTabId, String tableName, Collection<DocumentFieldDescriptor> fields);
+	private final JsonGeoLocationProvider provider;
+
+	@JsonProperty("googleMapsApiKey")
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String googleMapsApiKey;
+
 }
