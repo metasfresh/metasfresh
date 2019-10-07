@@ -19,7 +19,9 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Check;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -54,16 +56,17 @@ public class SqlViewSelectData
 	private static final String COLUMNNAME_Paging_Prefix = "_sel_";
 	private static final String COLUMNNAME_Paging_UUID = COLUMNNAME_Paging_Prefix + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID;
 	public static final String COLUMNNAME_Paging_SeqNo_OneBased = COLUMNNAME_Paging_Prefix + I_T_WEBUI_ViewSelection.COLUMNNAME_Line;
-
 	public static final String COLUMNNAME_Paging_Parent_Prefix = COLUMNNAME_Paging_Prefix + "parent_";
-
 	public static final String COLUMNNAME_IsRecordMissing = COLUMNNAME_Paging_Prefix + "IsRecordMissing";
 
 	private final SqlViewKeyColumnNamesMap keyColumnNamesMap;
-	private final IStringExpression _sqlSelectByPage;
-	private final IStringExpression _sqlSelectRowIdsByPage;
-	private final IStringExpression _sqlSelectById;
-	private final IStringExpression _sqlSelectLines;
+	@Getter(AccessLevel.PRIVATE)
+	private final IStringExpression sqlSelectByPage;
+	@Getter(AccessLevel.PRIVATE)
+	private final IStringExpression sqlSelectRowIdsByPage;
+	@Getter(AccessLevel.PRIVATE)
+	private final IStringExpression sqlSelectById;
+	private final IStringExpression sqlSelectLines;
 
 	@Builder
 	private SqlViewSelectData(
@@ -77,14 +80,14 @@ public class SqlViewSelectData
 		this.keyColumnNamesMap = keyColumnNamesMap;
 		final IStringExpression sqlSelect = buildSqlSelect(sqlTableName, sqlTableAlias, keyColumnNamesMap, displayFieldNames, allFields, groupingBinding);
 
-		_sqlSelectByPage = sqlSelect.toComposer()
+		sqlSelectByPage = sqlSelect.toComposer()
 				.append("\n WHERE ")
 				// NOTE: already filtered by UUID
 				.append("\n " + COLUMNNAME_Paging_SeqNo_OneBased + " BETWEEN ? AND ?")
 				.append("\n ORDER BY " + COLUMNNAME_Paging_SeqNo_OneBased)
 				.build();
 
-		_sqlSelectRowIdsByPage = buildSqlSelect(
+		sqlSelectRowIdsByPage = buildSqlSelect(
 				sqlTableName,
 				sqlTableAlias,
 				keyColumnNamesMap,
@@ -99,7 +102,7 @@ public class SqlViewSelectData
 						.append("\n ORDER BY " + COLUMNNAME_Paging_SeqNo_OneBased)
 						.build();
 
-		_sqlSelectById = sqlSelect.toComposer()
+		sqlSelectById = sqlSelect.toComposer()
 				.append("\n WHERE ")
 				// NOTE: already filtered by UUID
 				.append("\n")
@@ -109,35 +112,15 @@ public class SqlViewSelectData
 						.collect(Collectors.joining("\nAND ")))
 				.build();
 
-		if (groupingBinding != null)
-		{
-			this._sqlSelectLines = buildSqlSelectLines(sqlTableName, sqlTableAlias, keyColumnNamesMap, displayFieldNames, allFields);
-		}
-		else
-		{
-			this._sqlSelectLines = null;
-		}
-	}
-
-	private IStringExpression getSqlSelectByPage()
-	{
-		return _sqlSelectByPage;
-	}
-
-	private IStringExpression getSqlSelectRowIdsByPage()
-	{
-		return _sqlSelectRowIdsByPage;
-	}
-
-	private IStringExpression getSqlSelectById()
-	{
-		return _sqlSelectById;
+		this.sqlSelectLines = groupingBinding != null
+				? buildSqlSelectLines(sqlTableName, sqlTableAlias, keyColumnNamesMap, displayFieldNames, allFields)
+				: null;
 	}
 
 	private IStringExpression getSqlSelectLines()
 	{
-		Check.assumeNotNull(_sqlSelectLines, "sqlSelectLines is not null (grouping not supported)");
-		return _sqlSelectLines;
+		Check.assumeNotNull(sqlSelectLines, "sqlSelectLines is not null (grouping not supported)");
+		return sqlSelectLines;
 	}
 
 	private static List<SqlViewRowFieldBinding> extractKeyFields(final Collection<SqlViewRowFieldBinding> allFields, final SqlViewKeyColumnNamesMap keyColumnNamesMap)

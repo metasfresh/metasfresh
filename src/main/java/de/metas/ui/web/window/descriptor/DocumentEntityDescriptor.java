@@ -29,6 +29,7 @@ import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
+import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -44,7 +45,7 @@ import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.AdProcessId;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
-import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvidersService;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
@@ -427,6 +428,7 @@ public class DocumentEntityDescriptor
 	public static final class Builder
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentEntityDescriptor.Builder.class);
+		private DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService;
 
 		private boolean _built = false;
 
@@ -1054,10 +1056,21 @@ public class DocumentEntityDescriptor
 
 		private DocumentFilterDescriptorsProvider createFilterDescriptors()
 		{
+			final DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService = this.filterDescriptorsProvidersService != null
+					? this.filterDescriptorsProvidersService
+					: SpringContextHolder.instance.getBean(DocumentFilterDescriptorsProvidersService.class);
+
 			final String tableName = getTableName().orElse(null);
 			final AdTabId adTabId = getAdTabId().orElse(null);
 			final Collection<DocumentFieldDescriptor> fields = getFields().values();
-			return DocumentFilterDescriptorsProviderFactory.instance.createFiltersProvider(adTabId, tableName, fields);
+
+			return filterDescriptorsProvidersService.createFiltersProvider(adTabId, tableName, fields);
+		}
+
+		public Builder setFilterDescriptorsProvidersService(final DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService)
+		{
+			this.filterDescriptorsProvidersService = filterDescriptorsProvidersService;
+			return this;
 		}
 
 		public Builder setRefreshViewOnChangeEvents(final boolean refreshViewOnChangeEvents)
