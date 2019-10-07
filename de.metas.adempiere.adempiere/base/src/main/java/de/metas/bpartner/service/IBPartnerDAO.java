@@ -31,6 +31,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
@@ -286,6 +288,9 @@ public interface IBPartnerDAO extends ISingletonService
 		Type type;
 
 		boolean alsoTryRelation;
+
+		@Nullable
+		BPartnerLocationId relationBPArtnerLocationId;
 	}
 
 	BPGroupId getBPGroupIdByBPartnerId(BPartnerId bpartnerId);
