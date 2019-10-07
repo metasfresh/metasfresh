@@ -10,6 +10,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveBillContactRequest;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveBillContactRequest.ContactType;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
@@ -90,10 +91,11 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 				.builder()
 				.bpartnerId(bpartnerId)
 				.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, invoiceRecord.getC_BPartner_Location_ID()))
+				.contactType(ContactType.BILL_TO_DEFAULT)
 				.filter(user -> !Check.isEmpty(user.getEmailAddress(), true))
 				.build();
 
-		final User billContact = bpartnerBL.retrieveBillContactOrNull(request);
+		final User billContact = bpartnerBL.retrieveContactOrNull(request);
 		if (billContact != null)
 		{
 			final DocOutBoundRecipientId recipientId = DocOutBoundRecipientId.ofRepoId(billContact.getId().getRepoId());

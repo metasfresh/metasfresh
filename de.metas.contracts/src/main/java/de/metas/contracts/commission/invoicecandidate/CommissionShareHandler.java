@@ -14,6 +14,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.IProductAcctDAO;
@@ -24,6 +25,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
@@ -125,7 +127,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		// ic.setPOReference(olc.getPOReference());
 
 		// product
-		ic.setM_Product_ID(ProductId.toRepoId(COMMISSION_PRODUCT_ID));
+		ic.setM_Product_ID(COMMISSION_PRODUCT_ID.getRepoId());
 
 		// charge
 		// final int chargeId = olc.getC_Charge_ID();
@@ -142,8 +144,8 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(commissionShareRecord.getC_BPartner_SalesRep_ID());
 
 		final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemId(bPartnerId, SOTrx.PURCHASE);
-		final BPartnerLocationId remitToALocationId = bPartnerDAO.getRemitToDefaultLocationIdByBpartnerId(bPartnerId);
-		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, remitToALocationId, SOTrx.PURCHASE);
+		final BPartnerLocationId commissionToLocationId = bPartnerDAO.getCommissionToDefaultLocationIdByBpartnerId(bPartnerId);
+		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, commissionToLocationId, SOTrx.PURCHASE);
 
 		final IEditablePricingContext pricingContext = pricingBL
 				.createInitialContext(
@@ -158,62 +160,55 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 
 		ic.setInvoicableQtyBasedOn(X_C_Invoice_Candidate.INVOICABLEQTYBASEDON_Nominal);
 		ic.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId));
-		ic.setPriceActual(pricingResult.getPriceStd());// compute, taking into accoutn the discount
+		ic.setM_PriceList_Version_ID(pricingResult.getPriceListVersionId().getRepoId());
+		ic.setC_Currency_ID(pricingResult.getCurrencyId().getRepoId());
+		ic.setPriceActual(pricingResult.getPriceStd());// compute, taking into account the discount
 		ic.setPrice_UOM_ID(pricingResult.getPriceUomId().getRepoId());
 
-		ic.setPriceEntered(pricingResult.getPriceStd()); // cg : task 04917
-		ic.setDiscount(olc.getDiscount());
-		ic.setC_Currency_ID(pricingResult.getCurrencyId().getRepoId());
+		ic.setPriceEntered(pricingResult.getPriceStd());
+		ic.setDiscount(pricingResult.getDiscount().toBigDecimal());
 
+		I_C_Flatrate_Term term=null; // TODO get term for commission-bpartner
 
-		ic.setBill_BPartner_ID(BPartnerId.toRepoId(olCandEffectiveValuesBL.getBillBPartnerEffectiveId(olc)));
+		ic.setBill_BPartner_ID(bPartnerId.getRepoId());
 
 		// bill location
-		final int billLocationId = BPartnerLocationId.toRepoId(olCandEffectiveValuesBL.getBillLocationEffectiveId(olc));
-		ic.setBill_Location_ID(billLocationId);
+		ic.setBill_Location_ID(term.getBill_Location_ID());
+		ic.setBill_User_ID(term.getBill_User_ID());
 
-		final int billUserId = BPartnerContactId.toRepoId(olCandEffectiveValuesBL.getBillContactEffectiveId(olc));
-		ic.setBill_User_ID(billUserId);
 
-		ic.setDescription(olc.getDescription());
+
 
 		ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Immediate); // Immediate
 
-		// 04285: set header and footer
-
-		ic.setDescriptionBottom(olc.getDescriptionBottom());
-		ic.setDescriptionHeader(olc.getDescriptionHeader());
 
 		// 05265
 		ic.setIsSOTrx(true);
 
-		ic.setPresetDateInvoiced(olc.getPresetDateInvoiced());
-		ic.setC_DocTypeInvoice_ID(olc.getC_DocTypeInvoice_ID());
+		ic.setC_DocTypeInvoice_ID(olc.getC_DocTypeInvoice_ID());  // TODO: dedicated invoice doctype
 
 		// 07442 activity and tax
+		final OrgId orgId = OrgId.ofRepoId(commissionShareRecord.getAD_Org_ID());
 		final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
-				ClientId.ofRepoId(olc.getAD_Client_ID()),
-				OrgId.ofRepoId(olc.getAD_Org_ID()),
-				productId);
+				ClientId.ofRepoId(commissionShareRecord.getAD_Client_ID()),
+				orgId,
+				COMMISSION_PRODUCT_ID);
 		ic.setC_Activity_ID(ActivityId.toRepoId(activityId));
 
 		final ITaxBL taxBL = Services.get(ITaxBL.class);
 		final int taxId = taxBL.getTax(
-				ctx,
+				Env.getCtx(),
 				ic, // model
-				TaxCategoryId.ofRepoIdOrNull(olc.getC_TaxCategory_ID()),
-				ProductId.toRepoId(productId),
-				CoalesceUtil.coalesce(olc.getDatePromised_Override(), olc.getDatePromised(), olc.getPresetDateInvoiced()),
+				pricingResult.getTaxCategoryId(),
+				COMMISSION_PRODUCT_ID.getRepoId(),
+				ic.getDeliveryDate(),
 				orgId,
 				(WarehouseId)null,
-				BPartnerLocationId.toRepoId(olCandEffectiveValuesBL.getDropShipLocationEffectiveId(olc)),
-				true /* isSOTrx */);
+				commissionToLocationId.getRepoId(),
+				false /* isSOTrx */);
 		ic.setC_Tax_ID(taxId);
 
-		ic.setExternalId(olc.getExternalLineId());
-
-		// TODO Auto-generated method stub
-		return null;
+		return InvoiceCandidateGenerateResult.of(this, ic);
 	}
 
 	@Override

@@ -173,9 +173,8 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public User retrieveBillContactOrNull(@NonNull final RetrieveBillContactRequest request)
+	public User retrieveContactOrNull(@NonNull final RetrieveBillContactRequest request)
 	{
-
 		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 		final List<I_AD_User> contactRecords = bPartnerDAO.retrieveContacts(
@@ -212,6 +211,7 @@ public class BPartnerBL implements IBPartnerBL
 			{
 				defaultContact = contact;
 			}
+			TODO match according to ContactType
 			if (contactRecord.isBillToContact_Default())
 			{
 				defaultBillContact = contact;

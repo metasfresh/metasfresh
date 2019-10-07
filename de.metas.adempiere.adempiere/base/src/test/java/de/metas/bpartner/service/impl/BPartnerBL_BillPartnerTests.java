@@ -147,7 +147,7 @@ public class BPartnerBL_BillPartnerTests
 				.bPartnerLocationId(bpartnerLocationId)
 				.filter(predicate)
 				.build();
-		final User result = bPartnerBL.retrieveBillContactOrNull(request);
+		final User result = bPartnerBL.retrieveContactOrNull(request);
 		return result;
 	}
 

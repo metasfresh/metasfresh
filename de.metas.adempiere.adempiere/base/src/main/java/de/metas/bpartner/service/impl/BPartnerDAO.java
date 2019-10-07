@@ -959,7 +959,18 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		return retrieveBPartnerLocations(bpartnerId)
 				.stream()
-				.filter(I_C_BPartner_Location::isShipToDefault)
+				.filter(I_C_BPartner_Location::isShipToDefault) // we have only one location with isShipToDefault=Y
+				.findFirst()
+				.map(bpLocation -> BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(bpLocation.getC_BPartner_ID()), bpLocation.getC_BPartner_Location_ID()))
+				.orElse(null);
+	}
+
+	@Override
+	public BPartnerLocationId getCommissionToDefaultLocationIdByBpartnerId(@NonNull final BPartnerId bpartnerId)
+	{
+		return retrieveBPartnerLocations(bpartnerId)
+				.stream()
+				.filter(I_C_BPartner_Location::isCommissionToDefault)
 				.findFirst()
 				.map(bpLocation -> BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(bpLocation.getC_BPartner_ID()), bpLocation.getC_BPartner_Location_ID()))
 				.orElse(null);
