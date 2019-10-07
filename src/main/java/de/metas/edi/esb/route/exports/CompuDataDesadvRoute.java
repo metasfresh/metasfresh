@@ -53,11 +53,6 @@ public class CompuDataDesadvRoute extends AbstractEDIRoute
 	public static final String EP_EDI_DESADV_SINGLE_CONSUMER = "direct:edi.desadv.consumer.single";
 	public static final String EP_EDI_COMPUDATA_DESADV_CONSUMER = "direct:edi.desadv.consumer.aggregate";
 
-	/**
-	 * Common file routing for both single and aggregated DESADV documents
-	 */
-	private static final String EP_EDI_DESADV_COMMON_CONSUMER = "direct:edi.desadv.consumer.common";
-
 	public static final String EDI_DESADV_IS_TEST = "edi.props.desadv.isTest";
 	public static final String EDI_DESADV_IS_AGGREGATE = "edi.props.desadv.isAggregate";
 
@@ -110,11 +105,7 @@ public class CompuDataDesadvRoute extends AbstractEDIRoute
 
 				.log(LoggingLevel.INFO, "EDI: Converting XML Java Object -> EDI Java Object...")
 				.bean(CompuDataDesadvBean.class, AbstractEDIDesadvCommonBean.METHOD_createEDIData)
-				//
-				// Send to common route
-				.to(CompuDataDesadvRoute.EP_EDI_DESADV_COMMON_CONSUMER);
 
-		from(CompuDataDesadvRoute.EP_EDI_DESADV_COMMON_CONSUMER)
 				.log(LoggingLevel.INFO, "EDI: Marshalling EDI Java Object to EDI Format using SDF...")
 				.marshal(sdf)
 
