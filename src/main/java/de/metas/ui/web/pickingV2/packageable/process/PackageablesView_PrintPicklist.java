@@ -103,8 +103,8 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 		InterfaceWrapperHelper.save(pinstance);
 
 		final List<ProcessInfoParameter> piParams = new ArrayList<>();
-		final int c_order_id = row.getFieldValueAsInt(I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID, -1);
-		piParams.add(ProcessInfoParameter.of(I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID, c_order_id));
+		final String orderNo = row.getOrderDocumentNo();
+		piParams.add(ProcessInfoParameter.of(I_M_Packageable_V.COLUMNNAME_OrderDocumentNo, orderNo));
 		Services.get(IADPInstanceDAO.class).saveParameterToDB(PInstanceId.ofRepoId(pinstance.getAD_PInstance_ID()), piParams);
 
 		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
