@@ -1029,93 +1029,91 @@ export class RawWidget extends Component {
       }
     }
 
+    const labelProps = {};
+
+    if (!noLabel && caption && fields[0].supportZoomInto) {
+      labelProps.onClick = () => handleZoomInto(fields[0].field);
+    }
+
     return (
       <div
         className={classnames(
           'form-group',
           formGroupClass,
           {
-            row: !quickInput,
             'form-group-table': rowId && !isModal,
-            [`${formGroupClass}`]: formGroupClass,
           },
           widgetFieldsName
         )}
       >
-        {captionElement || null}
-        {!noLabel && caption && (
+        <div className={classnames({ row: true })}>
+          {captionElement || null}
+          {!noLabel && caption && (
+            <label
+              className={classnames('form-control-label', labelClass, {
+                'input-zoom': quickInput && fields[0].supportZoomInto,
+                'zoom-into': fields[0].supportZoomInto,
+              })}
+              title={description || caption}
+              {...labelProps}
+            >
+              {caption}
+            </label>
+          )}
           <div
-            key="title"
-            className={classnames('form-control-label', labelClass, {
-              'input-zoom': quickInput && fields[0].supportZoomInto,
-            })}
-            title={description || caption}
+            className={fieldClass}
+            onMouseEnter={() => this.handleErrorPopup(true)}
+            onMouseLeave={() => this.handleErrorPopup(false)}
           >
-            {fields[0].supportZoomInto ? (
-              <span
-                className="zoom-into"
-                onClick={() => handleZoomInto(fields[0].field)}
+            {!clearedFieldWarning && warning && (
+              <div
+                className={classnames('field-warning', {
+                  'field-warning-message': warning,
+                  'field-error-message': warning && warning.error,
+                })}
+                onMouseEnter={() => this.toggleTooltip(true)}
+                onMouseLeave={() => this.toggleTooltip(false)}
               >
-                {caption}
-              </span>
-            ) : (
-              caption
+                <span>{warning.caption}</span>
+                <i
+                  className="meta-icon-close-alt"
+                  onClick={() => this.clearFieldWarning(warning)}
+                />
+                {warning.message && tooltipToggled && (
+                  <Tooltips action={warning.message} type="" />
+                )}
+              </div>
+            )}
+
+            <div
+              className={classnames('input-body-container', {
+                focused: isEdited,
+              })}
+              title={valueDescription}
+            >
+              <ReactCSSTransitionGroup
+                transitionName="fade"
+                transitionEnterTimeout={200}
+                transitionLeaveTimeout={200}
+              >
+                {errorPopup &&
+                  validStatus &&
+                  !validStatus.valid &&
+                  !validStatus.initialValue &&
+                  this.renderErrorPopup(validStatus.reason)}
+              </ReactCSSTransitionGroup>
+              {widgetBody}
+            </div>
+            {fields[0].devices && !widgetData[0].readonly && (
+              <DevicesWidget
+                devices={fields[0].devices}
+                tabIndex={1}
+                handleChange={value =>
+                  handlePatch && handlePatch(fields[0].field, value)
+                }
+              />
             )}
           </div>
-        )}
-        <div
-          className={fieldClass}
-          onMouseEnter={() => this.handleErrorPopup(true)}
-          onMouseLeave={() => this.handleErrorPopup(false)}
-        >
-          {!clearedFieldWarning && warning && (
-            <div
-              className={classnames('field-warning', {
-                'field-warning-message': warning,
-                'field-error-message': warning && warning.error,
-              })}
-              onMouseEnter={() => this.toggleTooltip(true)}
-              onMouseLeave={() => this.toggleTooltip(false)}
-            >
-              <span>{warning.caption}</span>
-              <i
-                className="meta-icon-close-alt"
-                onClick={() => this.clearFieldWarning(warning)}
-              />
-              {warning.message && tooltipToggled && (
-                <Tooltips action={warning.message} type="" />
-              )}
-            </div>
-          )}
-
-          <div
-            className={classnames('input-body-container', {
-              focused: isEdited,
-            })}
-            title={valueDescription}
-          >
-            <ReactCSSTransitionGroup
-              transitionName="fade"
-              transitionEnterTimeout={200}
-              transitionLeaveTimeout={200}
-            >
-              {errorPopup &&
-                validStatus &&
-                !validStatus.valid &&
-                !validStatus.initialValue &&
-                this.renderErrorPopup(validStatus.reason)}
-            </ReactCSSTransitionGroup>
-            {widgetBody}
-          </div>
-          {fields[0].devices && !widgetData[0].readonly && (
-            <DevicesWidget
-              devices={fields[0].devices}
-              tabIndex={1}
-              handleChange={value =>
-                handlePatch && handlePatch(fields[0].field, value)
-              }
-            />
-          )}
         </div>
       </div>
     );

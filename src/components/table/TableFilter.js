@@ -191,9 +191,9 @@ class TableFilter extends Component {
     const tabIndex = fullScreen || modalVisible ? -1 : this.props.tabIndex;
 
     return (
-      <div className="form-flex-align table-filter-line">
+      <div className="table-filter-line">
         <div className="form-flex-align">
-          <div>
+          <div className="row filter-panel-buttons">
             {!isBatchEntry && allowCreateNew && (
               <button
                 className="btn btn-meta-outline-secondary btn-distance btn-sm"
@@ -205,7 +205,7 @@ class TableFilter extends Component {
             )}
             {supportQuickInput && !fullScreen && allowCreateNew && (
               <button
-                className="btn btn-meta-outline-secondary btn-distance btn-sm"
+                className="btn btn-meta-outline-secondary btn-distance btn-sm close-batch-entry"
                 onClick={handleBatchEntryToggle}
                 onMouseEnter={this.showTooltip}
                 onMouseLeave={this.hideTooltip}

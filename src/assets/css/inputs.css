@@ -61,8 +61,12 @@ input {
     &.input-zoom {
         display: flex;
         align-items: center;
-        margin: 0 15px;
+
+        @media (min-width: $breakpoint-md){
+            /*margin: 0 15px;*/
+        }       
     }
+
     .zoom-into:hover {
         text-decoration: underline;
         cursor: pointer;
@@ -104,21 +108,37 @@ input {
 }
 
 .form-flex-align {
-    display: flex;
     flex-wrap: nowrap;
     justify-content: space-between;
-    margin-bottom: .5rem;
+    margin-bottom: 15px;
     align-items: center;
+    position: relative;
 
-    flex:1;
-}
+    > .row {
+        margin-top: 15px;
+    }
 
-/*.form-flex-align > *:not(:last-child){
-    margin-right: .5rem;
-}*/
+    input {
+        flex: 2 1 auto;
+    }
 
-.form-flex-align input {
-    flex: 2 1 auto;
+    @media (min-width: $breakpoint-sm){
+        > .row {
+            margin-top: 0;
+        }
+    }
+
+    @media (min-width: $breakpoint-lg){
+        padding-top: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    @media (min-width: $breakpoint-xl){
+        flex-direction: row;
+        align-items: center;
+    }
 }
 
 .form-group-table {
@@ -475,9 +495,6 @@ input:checked + .input-slider:before {
 @media (max-width: $breakpoint){
     .input-dropdown-container .input-dropdown{
         flex-direction: column;
-    }
-    .input-dropdown .input-icon {
-        top: -9px;
     }
     .input-editable {
         flex: 1 1 50%;

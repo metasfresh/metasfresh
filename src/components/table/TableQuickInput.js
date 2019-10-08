@@ -173,19 +173,19 @@ class TableQuickInput extends Component {
 
     const stylingLayout = [
       {
-        formGroup: `col-sm-6`,
-        label: `quickInput-label`,
-        field: `col`,
+        formGroup: `col-12 col-lg-4 col-xl-5`,
+        label: `col-12 col-lg-3 quickInput-label`,
+        field: `col-12 col-lg-9`,
       },
       {
-        formGroup: `col-sm-3`,
-        label: `col-sm-4`,
-        field: `col-sm-8`,
+        formGroup: `col-12 col-lg-3 col-xl-3`,
+        label: `col-12 col-sm-4 col-lg-5 col-xl-4`,
+        field: `col-12 col-sm-8 col-lg-7 col-xl-8`,
       },
       {
-        formGroup: `col-sm-2`,
-        label: `col-sm-8`,
-        field: `col-sm-4`,
+        formGroup: `col-12 col-lg-3 col-xl-2`,
+        label: `col-12 col-sm-9 col-lg-7`,
+        field: `col-12 col-sm-3 col-lg-5`,
       },
     ];
 
@@ -286,7 +286,9 @@ class TableQuickInput extends Component {
         ref={c => (this.form = c)}
       >
         {this.renderFields(layout, data, docId, 'window', id)}
-        <div className="col-sm-2 col-md-1 hint">{"(Press 'Enter' to add)"}</div>
+        <div className="col-sm-12 col-md-3 col-lg-2 hint">
+          {`(Press 'Enter' to add)`}
+        </div>
         <button type="submit" className="hidden-up" />
       </form>
     );

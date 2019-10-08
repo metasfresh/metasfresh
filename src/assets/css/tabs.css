@@ -88,7 +88,6 @@
 
     .collapsible-section {
         transition: height, padding .25s ease-in-out;
-        /*margin: 0;*/
         margin-bottom: 20px;
 
         &.collapsed {
@@ -259,33 +258,42 @@
     height: calc(100% - 55px);
     background-color: #fff;
     z-index: 99;
-}
 
-.tabs-fullscreen.container-fluid {
-    height: calc(100% - 55px);
+    &.container-fluid {
+        height: calc(100% - 55px);
+    }
 }
 
 .tab-pane {
     display: none;
-}
+    
+    &.active {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
 
-.tab-pane.active {
-    flex-grow: 1;
+    .btn-fullscreen {
+        position: absolute;
+        top: -7px;
+        right: 7px;
 
-    display: flex;
-    flex-direction: column;
-}
+        @media (min-width: $breakpoint-sm){
+            right: 15px;
+        }
+    }
 
-.tab-pane .panel:not(.panel-prompt):not(.table-content-empty) {
-    padding-bottom: 100px;
-}
+    .panel:not(.panel-prompt):not(.table-content-empty) {
+        padding-bottom: 100px;
+    }
 
-.tab-pane .input-dropdown-list {
-    max-height: 100px;
-}
+    .input-dropdown-list {
+        max-height: 100px;
+    }
 
-.tab-pane tbody tr:last-child {
-    border-bottom: 1px solid $brand-border-color;
+    tbody tr:last-child {
+        border-bottom: 1px solid $brand-border-color;
+    }
 }
 
 .tabs-wrapper,
