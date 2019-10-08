@@ -56,7 +56,7 @@ public class M_PickingSlot
 
 		//
 		// Reset the partner and location
-		pickingSlot.setC_BPartner(null);
-		pickingSlot.setC_BPartner_Location(null);
+		pickingSlot.setC_BPartner_ID(-1);
+		pickingSlot.setC_BPartner_Location_ID(-1);
 	}
 }

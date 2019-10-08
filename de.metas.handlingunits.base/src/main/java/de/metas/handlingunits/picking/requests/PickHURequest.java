@@ -50,4 +50,6 @@ public class PickHURequest
 	/** Quantity to be picked. If not set, the whole HU shall be picked */
 	@Nullable
 	Quantity qtyToPick;
+
+	boolean autoReview;
 }
