@@ -16,6 +16,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
@@ -34,6 +35,7 @@ import de.metas.dataentry.layout.DataEntrySubTab;
 import de.metas.dataentry.layout.DataEntryTab;
 import de.metas.dataentry.layout.DataEntryTab.DocumentLinkColumnName;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvidersService;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
@@ -92,8 +94,8 @@ public class DataEntryTabLoaderTest
 				dataEntryRecordRepository,
 				dataEntryWebuiTools);
 
-		return DataEntryTabLoader
-				.builder()
+		return DataEntryTabLoader.builder()
+				.filterDescriptorsProvidersService(new DocumentFilterDescriptorsProvidersService(ImmutableList.of()))
 				.windowId(windowId)
 				.adWindowId(windowId.toAdWindowIdOrNull())
 				.dataEntrySubTabBindingDescriptorBuilder(dataEntrySubTabBindingDescriptorBuilder)

@@ -1,10 +1,13 @@
 package de.metas.ui.web.document.filter.provider;
 
 import java.util.Collection;
+import java.util.Map;
 
 import javax.annotation.concurrent.Immutable;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 
@@ -35,12 +38,12 @@ public final class NullDocumentFilterDescriptorsProvider implements DocumentFilt
 {
 	public static final transient NullDocumentFilterDescriptorsProvider instance = new NullDocumentFilterDescriptorsProvider();
 
-	public static final boolean isNull(final DocumentFilterDescriptorsProvider provider)
+	public static boolean isNull(final DocumentFilterDescriptorsProvider provider)
 	{
 		return provider == null || provider == instance;
 	}
 
-	public static final boolean isNotNull(final DocumentFilterDescriptorsProvider provider)
+	public static boolean isNotNull(final DocumentFilterDescriptorsProvider provider)
 	{
 		return !isNull(provider);
 	}
@@ -61,4 +64,12 @@ public final class NullDocumentFilterDescriptorsProvider implements DocumentFilt
 		return null;
 	}
 
+	/**
+	 * NOTE: required for snapshot testing
+	 */
+	@JsonValue
+	private Map<String, String> toJson()
+	{
+		return ImmutableMap.of();
+	}
 }

@@ -1,7 +1,7 @@
 package de.metas.ui.web.document.filter.provider;
 
 import java.util.Collection;
-import java.util.stream.Stream;
+import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
@@ -33,29 +33,29 @@ import lombok.ToString;
  */
 
 @ToString
-class CompositeDocumentFilterDescriptorsProvider implements DocumentFilterDescriptorsProvider
+final class CompositeDocumentFilterDescriptorsProvider implements DocumentFilterDescriptorsProvider
 {
-	public static DocumentFilterDescriptorsProvider compose(final DocumentFilterDescriptorsProvider... providers)
+	public static DocumentFilterDescriptorsProvider compose(@NonNull final List<DocumentFilterDescriptorsProvider> providers)
 	{
-		if (providers == null || providers.length <= 0)
+		if (providers.isEmpty())
 		{
 			return NullDocumentFilterDescriptorsProvider.instance;
 		}
 
-		final ImmutableList<DocumentFilterDescriptorsProvider> providersList = Stream.of(providers)
+		final ImmutableList<DocumentFilterDescriptorsProvider> nonNullProviders = providers.stream()
 				.filter(NullDocumentFilterDescriptorsProvider::isNotNull)
 				.collect(ImmutableList.toImmutableList());
 
-		if (providersList.isEmpty())
+		if (nonNullProviders.isEmpty())
 		{
 			return NullDocumentFilterDescriptorsProvider.instance;
 		}
-		else if (providersList.size() == 1)
+		else if (nonNullProviders.size() == 1)
 		{
-			return providersList.get(0);
+			return nonNullProviders.get(0);
 		}
 
-		return new CompositeDocumentFilterDescriptorsProvider(providersList);
+		return new CompositeDocumentFilterDescriptorsProvider(nonNullProviders);
 	}
 
 	private final ImmutableList<DocumentFilterDescriptorsProvider> providers;

@@ -45,10 +45,10 @@ import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository.SqlHUEditorViewRepositoryBuilder;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
-import de.metas.ui.web.view.SqlViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
+import de.metas.ui.web.view.descriptor.SqlViewBindingFactory;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -185,7 +185,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 			final SqlDocumentEntityDataBindingDescriptor huEntityBindings = SqlDocumentEntityDataBindingDescriptor.cast(huEntityDescriptor.getDataBinding());
 			huEntityBindings.getFields()
 					.stream()
-					.map(huField -> SqlViewFactory.createViewFieldBindingBuilder(huField, displayFieldNames).build())
+					.map(huField -> SqlViewBindingFactory.createViewFieldBinding(huField, displayFieldNames))
 					.forEach(sqlViewBinding::field);
 		}
 

@@ -1,12 +1,12 @@
-package de.metas.ui.web.document.filter.provider;
+package de.metas.ui.web.document.geo_location.json;
 
-import java.util.Collection;
+import java.util.List;
 
-import javax.annotation.Nullable;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import org.adempiere.ad.element.api.AdTabId;
-
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -30,8 +30,15 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
  * #L%
  */
 
-public interface DocumentFilterDescriptorsProviderFactory
+@Value
+@Builder
+public class JsonViewGeoLocationsResult
 {
-	@Nullable
-	DocumentFilterDescriptorsProvider createFiltersProvider(AdTabId adTabId, String tableName, Collection<DocumentFieldDescriptor> fields);
+	@JsonProperty("viewId")
+	@NonNull
+	private final String viewId;
+
+	@JsonProperty("locations")
+	@NonNull
+	List<JsonViewRowGeoLocation> locations;
 }

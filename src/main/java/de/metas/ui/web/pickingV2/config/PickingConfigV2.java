@@ -1,12 +1,7 @@
-package de.metas.ui.web.document.filter.provider;
+package de.metas.ui.web.pickingV2.config;
 
-import java.util.Collection;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.element.api.AdTabId;
-
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
@@ -30,8 +25,9 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
  * #L%
  */
 
-public interface DocumentFilterDescriptorsProviderFactory
+@Builder
+@Value
+public class PickingConfigV2
 {
-	@Nullable
-	DocumentFilterDescriptorsProvider createFiltersProvider(AdTabId adTabId, String tableName, Collection<DocumentFieldDescriptor> fields);
+	boolean pickingReviewRequired;
 }

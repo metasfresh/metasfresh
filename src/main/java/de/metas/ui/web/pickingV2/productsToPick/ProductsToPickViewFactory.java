@@ -107,6 +107,7 @@ public class ProductsToPickViewFactory implements IViewFactory
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Locator),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductValue),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Qty),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_QtyOverride),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductPackageSize),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductPackageSizeUOM),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_LotNumber),
