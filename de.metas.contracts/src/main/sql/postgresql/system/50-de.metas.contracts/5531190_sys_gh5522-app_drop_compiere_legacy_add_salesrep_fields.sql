@@ -419,7 +419,7 @@ CREATE INDEX c_commission_instance_bill_bpartner_id
 CREATE INDEX c_commission_share_c_bpartner_salesrep_id
     ON public.c_commission_share (c_bpartner_salesrep_id);
 	
-DROP INDEX public.c_commissionshare_c_commission_instance_id;
+DROP INDEX IF EXISTS public.c_commission_share_c_commission_instance_id;
 CREATE INDEX c_commission_share_c_commission_instance_id
     ON public.c_commission_share (c_commission_instance_id);
 
