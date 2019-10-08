@@ -1047,24 +1047,20 @@ public class BPartnerDAO implements IBPartnerDAO
 						.bpartnerId(BPartnerId.ofRepoId(bpRelationRecord.getC_BPartner_ID()))
 						.bplocationId(BPartnerLocationId.ofRepoIdOrNull(bpRelationRecord.getC_BPartner_ID(), bpRelationRecord.getC_BPartner_Location_ID()))
 						.relationBPartnerId(BPartnerId.ofRepoId(bpRelationRecord.getC_BPartnerRelation_ID()))
-						.bplocationId(BPartnerLocationId.ofRepoIdOrNull(bpRelationRecord.getC_BPartnerRelation_ID(), bpRelationRecord.getC_BPartnerRelation_Location_ID()))
+						.relationBPLocationId(BPartnerLocationId.ofRepoIdOrNull(bpRelationRecord.getC_BPartnerRelation_ID(), bpRelationRecord.getC_BPartnerRelation_Location_ID()))
 						.build());
 
+		Optional<BPartnerLocationId> relBPLocationId = Optional.empty();
 		if (query.getRelationBPArtnerLocationId() != null)
 		{
-			relationsStream.filter(bpRelation -> Objects.equals(query.getRelationBPArtnerLocationId(), bpRelation.getBplocationId()))
-			.map(bpRelation -> bpRelation.getRelationBPLocationId())
-			.collect(ImmutableList.toImmutableList());
+			relBPLocationId = relationsStream.filter(bpRelation -> Objects.equals(query.getRelationBPArtnerLocationId(), bpRelation.getBplocationId()))
+					.map(bpRelation -> bpRelation.getRelationBPLocationId())
+					.findFirst();
 		}
 
-		final Optional<BPRelation> relation = relationsStream.findFirst();
-		if (relation.isPresent())
+		if (relBPLocationId.isPresent())
 		{
-			final BPartnerLocationId relBPLocationId = relation.get().getRelationBPLocationId();
-			if (relBPLocationId != null)
-			{
-				return InterfaceWrapperHelper.create(BPartnerLocationId.toRepoId(relBPLocationId), I_C_BPartner_Location.class);
-			}
+			return InterfaceWrapperHelper.load(relBPLocationId.get().getRepoId(), I_C_BPartner_Location.class);
 		}
 
 		// if no location was found based on relation, return own location, null or non-null
