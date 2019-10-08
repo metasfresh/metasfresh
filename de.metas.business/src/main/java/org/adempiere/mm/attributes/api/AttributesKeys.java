@@ -148,6 +148,7 @@ public final class AttributesKeys
 				.stream()
 				.filter(additionalFilter)
 				.map(ai -> createAttributesKeyPart(ai))
+				.filter(Predicates.notNull())
 				.collect(ImmutableSet.toImmutableSet());
 
 		if (parts.isEmpty())
@@ -181,8 +182,10 @@ public final class AttributesKeys
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
 		{
-			final AttributeValueId attributeValueId = AttributeValueId.ofRepoId(ai.getM_AttributeValue_ID());
-			return AttributesKeyPart.ofAttributeValueId(attributeValueId);
+			final AttributeValueId attributeValueId = AttributeValueId.ofRepoIdOrNull(ai.getM_AttributeValue_ID());
+			return attributeValueId != null
+					? AttributesKeyPart.ofAttributeValueId(attributeValueId)
+					: null;
 		}
 		else
 		{
