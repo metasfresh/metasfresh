@@ -11,7 +11,7 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<parameter name="C_OrderSO_ID" class="java.lang.Integer"/>
+	<parameter name="OrderDocumentNo" class="java.lang.String"/>
 	<parameter name="ad_language" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
@@ -26,7 +26,7 @@ distinct
   ad_org_id,
   c_orderso_id
 from m_packageable_v
-where c_orderso_id = $P{C_OrderSO_ID};]]>
+where orderdocumentno = $P{OrderDocumentNo};]]>
 	</queryString>
 	<field name="bpartnervalue" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="bpartnervalue"/>
@@ -77,7 +77,7 @@ where c_orderso_id = $P{C_OrderSO_ID};]]>
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="RECORD_ID">
-					<subreportParameterExpression><![CDATA[$P{C_OrderSO_ID}]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[($F{c_orderso_id}).intValue()]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_bp_org_block_left.jasper"]]></subreportExpression>
@@ -151,7 +151,7 @@ where c_orderso_id = $P{C_OrderSO_ID};]]>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 				</reportElement>
 				<subreportParameter name="c_order_id">
-					<subreportParameterExpression><![CDATA[$P{C_OrderSO_ID}]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[($F{c_orderso_id}).intValue()]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
