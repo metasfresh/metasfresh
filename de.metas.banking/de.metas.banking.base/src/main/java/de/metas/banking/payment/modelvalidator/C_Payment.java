@@ -67,19 +67,19 @@ public class C_Payment
 		super();
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Payment.COLUMNNAME_C_Currency_ID, I_C_Payment.COLUMNNAME_C_ConversionType_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Payment.COLUMNNAME_C_Currency_ID, I_C_Payment.COLUMNNAME_C_ConversionType_ID })
 	public void onCurrencyChange(final I_C_Payment payment)
 	{
 		Services.get(IPaymentBL.class).onCurrencyChange(payment);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_C_Payment.COLUMNNAME_IsOverUnderPayment)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Payment.COLUMNNAME_IsOverUnderPayment)
 	public void onIsOverUnderPaymentChange(final I_C_Payment payment)
 	{
 		Services.get(IPaymentBL.class).onIsOverUnderPaymentChange(payment, true);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_C_Payment.COLUMNNAME_PayAmt)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Payment.COLUMNNAME_PayAmt)
 	public void onPayAmtChange(final I_C_Payment payment)
 	{
 		Services.get(IPaymentBL.class).onPayAmtChange(payment, true);
