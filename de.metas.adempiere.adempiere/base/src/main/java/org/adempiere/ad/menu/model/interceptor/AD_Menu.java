@@ -1,7 +1,5 @@
 package org.adempiere.ad.menu.model.interceptor;
 
-import java.sql.SQLException;
-
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -52,9 +50,9 @@ public class AD_Menu
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Tab.COLUMNNAME_AD_Element_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Tab.COLUMNNAME_AD_Element_ID)
 	@CalloutMethod(columnNames = I_AD_Menu.COLUMNNAME_AD_Element_ID)
-	public void onElementIDChanged(final I_AD_Menu menu) throws SQLException
+	public void onElementIDChanged(final I_AD_Menu menu)
 	{
 		final IADElementDAO adElementDAO = Services.get(IADElementDAO.class);
 
@@ -65,7 +63,6 @@ public class AD_Menu
 		}
 
 		final I_AD_Element menuElement = adElementDAO.getById(menu.getAD_Element_ID());
-
 		if (menuElement == null)
 		{
 			// nothing to do. It was not yet set

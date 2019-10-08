@@ -55,7 +55,6 @@ import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
-import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
@@ -140,26 +139,21 @@ public class HUPickingSlotBL
 		final I_M_HU[] huArr = new I_M_HU[] { null };
 		Services.get(IHUTrxBL.class)
 				.createHUContextProcessorExecutor(huContext)
-				.run(new IHUContextProcessor()
-				{
-					@Override
-					public IMutableAllocationResult process(final IHUContext huContext)
-					{
-						//
-						// Create a new HU instance
-						final IHUBuilder huBuilder = Services.get(IHandlingUnitsDAO.class).createHUBuilder(huContext);
-						huBuilder.setM_HU_Item_Parent(null); // no parent
-						huBuilder.setM_HU_PI_Item_Product(itemProduct);
+				.run((IHUContextProcessor)huContext1 -> {
+					//
+					// Create a new HU instance
+					final IHUBuilder huBuilder = Services.get(IHandlingUnitsDAO.class).createHUBuilder(huContext1);
+					huBuilder.setM_HU_Item_Parent(null); // no parent
+					huBuilder.setM_HU_PI_Item_Product(itemProduct);
 
-						huBuilder.setLocatorId(getLocatorId(pickingSlot));
+					huBuilder.setLocatorId(getLocatorId(pickingSlot));
 
-						// We are creating the new HUs on picking slot as picked, to avoid some allocation business logic to consider them
-						huBuilder.setHUStatus(X_M_HU.HUSTATUS_Picked);
+					// We are creating the new HUs on picking slot as picked, to avoid some allocation business logic to consider them
+					huBuilder.setHUStatus(X_M_HU.HUSTATUS_Picked);
 
-						final I_M_HU_PI huPI = itemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
-						huArr[0] = huBuilder.create(huPI);
-						return NULL_RESULT;
-					}
+					final I_M_HU_PI huPI = itemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
+					huArr[0] = huBuilder.create(huPI);
+					return IHUContextProcessor.NULL_RESULT;
 				});
 		final I_M_HU hu = huArr[0];
 
@@ -209,32 +203,26 @@ public class HUPickingSlotBL
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(pickingSlot);
 		// trxManager.assertTrxNull(context);
-		trxManager.run(context.getTrxName(), new TrxRunnable()
-		{
+		trxManager.run(context.getTrxName(), (TrxRunnable)localTrxName -> {
+			final I_M_PickingSlot pickingSlotInTrx = InterfaceWrapperHelper.create(pickingSlot, I_M_PickingSlot.class);
+			final I_M_HU currentHU = pickingSlot.getM_HU();
+			unassignedHURef.setValue(currentHU);
 
-			@Override
-			public void run(final String localTrxName) throws Exception
+			pickingSlotInTrx.setM_HU(null);
+			InterfaceWrapperHelper.save(pickingSlotInTrx);
+
+			final boolean destroyed = Services.get(IHandlingUnitsBL.class).destroyIfEmptyStorage(currentHU);
+
+			if (!destroyed)
 			{
-				final I_M_PickingSlot pickingSlotInTrx = InterfaceWrapperHelper.create(pickingSlot, I_M_PickingSlot.class);
-				final I_M_HU currentHU = pickingSlot.getM_HU();
-				unassignedHURef.setValue(currentHU);
-
-				pickingSlotInTrx.setM_HU(null);
-				InterfaceWrapperHelper.save(pickingSlotInTrx);
-
-				final boolean destroyed = Services.get(IHandlingUnitsBL.class).destroyIfEmptyStorage(currentHU);
-
-				if (!destroyed)
+				//
+				// Add current HU to picking slot queue
+				if (addToQueue)
 				{
-					//
-					// Add current HU to picking slot queue
-					if (addToQueue)
-					{
-						addToPickingSlotQueue(pickingSlotInTrx, currentHU);
-					}
+					addToPickingSlotQueue(pickingSlotInTrx, currentHU);
 				}
-				InterfaceWrapperHelper.save(pickingSlotInTrx);
 			}
+			InterfaceWrapperHelper.save(pickingSlotInTrx);
 		});
 
 		// mark the picking slot as staled (and needs to be reloaded in case of usage) because we modified it in transaction
@@ -306,19 +294,13 @@ public class HUPickingSlotBL
 		// to make sure everything is logged and updated correctly.
 		final List<IQueueActionResult> queueActionResults = new ArrayList<>(hus.size());
 		huTrxBL.createHUContextProcessorExecutor(huContextInitial)
-				.run(new IHUContextProcessor()
-				{
-
-					@Override
-					public IMutableAllocationResult process(final IHUContext huContext)
+				.run((IHUContextProcessor)huContext -> {
+					for (final I_M_HU hu : hus)
 					{
-						for (final I_M_HU hu : hus)
-						{
-							final IQueueActionResult result = addToPickingSlotQueue0(huContext, pickingSlot, hu);
-							queueActionResults.add(result);
-						}
-						return NULL_RESULT;
+						final IQueueActionResult result = addToPickingSlotQueue0(huContext, pickingSlot, hu);
+						queueActionResults.add(result);
 					}
+					return IHUContextProcessor.NULL_RESULT;
 				});
 
 		return queueActionResults;
@@ -587,8 +569,8 @@ public class HUPickingSlotBL
 			return;
 		}
 
-		pickingSlot.setC_BPartner(null);
-		pickingSlot.setC_BPartner_Location(null);
+		pickingSlot.setC_BPartner_ID(-1);
+		pickingSlot.setC_BPartner_Location_ID(-1);
 		InterfaceWrapperHelper.save(pickingSlot);
 	}
 
