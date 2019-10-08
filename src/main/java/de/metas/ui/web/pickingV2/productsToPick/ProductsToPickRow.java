@@ -27,6 +27,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -100,8 +101,11 @@ public class ProductsToPickRow implements IViewRow
 
 	static final String FIELD_Qty = "qty";
 	@ViewColumn(fieldName = FIELD_Qty, widgetType = DocumentFieldWidgetType.Quantity, captionKey = "Qty", widgetSize = WidgetSize.Small)
-	@Getter
 	private final Quantity qty;
+
+	static final String FIELD_QtyOverride = "qtyOverride";
+	@ViewColumn(fieldName = FIELD_QtyOverride, widgetType = DocumentFieldWidgetType.Quantity, captionKey = "QtyOverride", widgetSize = WidgetSize.Small, editor = ViewEditorRenderMode.ALWAYS)
+	private final Quantity qtyOverride;
 
 	static final String FIELD_QtyReview = "qtyReview";
 	@ViewColumn(fieldName = FIELD_QtyReview, widgetType = DocumentFieldWidgetType.Quantity, captionKey = "Qty", widgetSize = WidgetSize.Small, editor = ViewEditorRenderMode.ALWAYS)
@@ -146,6 +150,7 @@ public class ProductsToPickRow implements IViewRow
 			final String repackNumber,
 			//
 			@NonNull final Quantity qty,
+			@Nullable final Quantity qtyOverride,
 			@Nullable final BigDecimal qtyReview,
 			//
 			final PickingCandidatePickStatus pickStatus,
@@ -171,6 +176,7 @@ public class ProductsToPickRow implements IViewRow
 		this.repackNumber = repackNumber;
 
 		this.qty = qty;
+		this.qtyOverride = qtyOverride;
 		this.qtyReview = qtyReview;
 
 		this.pickStatus = pickStatus != null ? pickStatus : PickingCandidatePickStatus.TO_BE_PICKED;
@@ -217,13 +223,20 @@ public class ProductsToPickRow implements IViewRow
 		return rowId.getHuId();
 	}
 
-	public ProductsToPickRow withUpdatesFromPickingCandidateIfNotNull(final PickingCandidate pickingCandidate)
+	public Quantity getQtyEffective()
 	{
-		if (pickingCandidate == null)
-		{
-			return this;
-		}
+		return CoalesceUtil.coalesce(qtyOverride, qty);
+	}
 
+	public ProductsToPickRow withUpdatesFromPickingCandidateIfNotNull(@Nullable final PickingCandidate pickingCandidate)
+	{
+		return pickingCandidate != null
+				? withUpdatesFromPickingCandidate(pickingCandidate)
+				: this;
+	}
+
+	public ProductsToPickRow withUpdatesFromPickingCandidate(@NonNull final PickingCandidate pickingCandidate)
+	{
 		return toBuilder()
 				.qtyReview(pickingCandidate.getQtyReview())
 				.pickStatus(pickingCandidate.getPickStatus())
@@ -241,6 +254,20 @@ public class ProductsToPickRow implements IViewRow
 		}
 
 		return toBuilder().qty(qty).build();
+	}
+
+	public ProductsToPickRow withQtyOverride(@Nullable final BigDecimal qtyOverrideBD)
+	{
+		final Quantity qtyOverride = qtyOverrideBD != null
+				? Quantity.of(qtyOverrideBD, qty.getUOM())
+				: null;
+
+		if (Objects.equals(this.qtyOverride, qtyOverride))
+		{
+			return this;
+		}
+
+		return toBuilder().qtyOverride(qtyOverride).build();
 	}
 
 	public boolean isApproved()
