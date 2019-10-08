@@ -12,6 +12,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 
 /**
@@ -194,12 +195,11 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	I_M_Product getM_Product_Effective(I_C_OLCand olCand);
 
 	/**
-	 * Returns <code>C_UOM_ID</code> if <code>IsManualPrice='Y'</code> and <code>C_UOM_Internal_ID</code> otherwise.
-	 *
-	 * @param olCand
-	 * @return
+	 * Returns {@link #getRecordOrStockUOMId(I_C_OLCand)} (i.e. the record's own UOM-ID) if <code>IsManualPrice='Y'</code> and <code>C_UOM_Internal_ID</code> (i.e. metasfresh's pricing-engine-based UOM-ID) otherwise.
 	 */
 	int getC_UOM_Effective_ID(I_C_OLCand olCand);
+
+	UomId getRecordOrStockUOMId(I_C_OLCand olCandRecord);
 
 	/**
 	 * Like {@link #getC_UOM_Effective_ID(I_C_OLCand)}, but return the actual uom.
@@ -215,8 +215,8 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 * <ul>
 	 * <li><code>HandOver_Partner_Override_ID</code></li>
 	 * <li><code>HandOver_Partner_ID</code></li>
- 	 * <li><code>C_BPartner_Override_ID</code></li>
- 	 * <li><code>C_BPartner_ID</code></li>
+	 * <li><code>C_BPartner_Override_ID</code></li>
+	 * <li><code>C_BPartner_ID</code></li>
 	 * </ul>
 	 *
 	 * #100 FRESH-435: even if the (effective) HandOver_Partner_ID is the same as the (effective) C_BPartner_ID, this method shall not return 0.
@@ -260,5 +260,4 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 */
 
 	I_C_BPartner_Location getHandOver_Location_Effective(I_C_OLCand olCand);
-
 }
