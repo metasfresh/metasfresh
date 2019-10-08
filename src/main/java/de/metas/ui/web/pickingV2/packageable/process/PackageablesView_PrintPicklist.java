@@ -18,7 +18,6 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.report.jasper.client.JRClient;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
 
 /*
@@ -50,21 +49,7 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		return checkPreconditionsApplicable_SingleSelectedRow()
-				.and(this::acceptIfSingleSelectedRow);
-	}
-
-	private ProcessPreconditionsResolution acceptIfSingleSelectedRow()
-	{
-		final DocumentIdsSelection rowIds = getSelectedRowIds();
-		if (!rowIds.isSingleDocumentId())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("select a single row");
-		}
-		else
-		{
-			return ProcessPreconditionsResolution.accept();
-		}
+		return checkPreconditionsApplicable_SingleSelectedRow();
 	}
 
 	@Override
