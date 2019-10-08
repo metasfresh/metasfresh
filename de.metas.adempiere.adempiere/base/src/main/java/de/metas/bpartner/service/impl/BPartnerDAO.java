@@ -6,6 +6,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -51,6 +56,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
@@ -62,6 +68,8 @@ import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.X_C_Location;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -76,6 +84,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
 import de.metas.bpartner.GLN;
+import de.metas.bpartner.GeographicalCoordinatesWithBPartnerLocationId;
 import de.metas.bpartner.service.BPartnerContactQuery;
 import de.metas.bpartner.service.BPartnerIdNotFoundException;
 import de.metas.bpartner.service.BPartnerQuery;
@@ -88,6 +97,7 @@ import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
+import de.metas.location.geocoding.GeographicalCoordinates;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -1399,5 +1409,98 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 
 		return Optional.of(BPartnerContactId.ofRepoId(userRecord.getC_BPartner_ID(), userRecord.getAD_User_ID()));
+	}
+
+	@Override
+	public List<GeographicalCoordinatesWithBPartnerLocationId> getGeoCoordinatesByBPartnerIds(@NonNull final Collection<BPartnerId> bpartnerIds)
+	{
+		if (bpartnerIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final List<Object> sqlParams = new ArrayList<>();
+		final String sql = "SELECT "
+				+ " bpl." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID
+				+ ", bpl." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID
+				+ ", l." + I_C_Location.COLUMNNAME_Latitude
+				+ ", l." + I_C_Location.COLUMNNAME_Longitude
+				+ " FROM " + I_C_BPartner.Table_Name + " bp "
+				+ " INNER JOIN " + I_C_BPartner_Location.Table_Name + " bpl ON (bpl.C_BPartner_ID=bp.C_BPartner_ID)"
+				+ " INNER JOIN " + I_C_Location.Table_Name + " l on (l.C_Location_ID=bpl.C_Location_ID)"
+				+ " WHERE " + DB.buildSqlList("bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID, bpartnerIds, sqlParams)
+				+ " AND bpl.IsActive='Y' "
+				+ " AND l." + I_C_Location.COLUMNNAME_GeocodingStatus + "=?";
+		sqlParams.add(X_C_Location.GEOCODINGSTATUS_Resolved);
+
+		return retrieveGeographicalCoordinatesWithBPartnerLocationIds(sql, sqlParams);
+	}
+
+	@Override
+	public List<GeographicalCoordinatesWithBPartnerLocationId> getGeoCoordinatesByBPartnerLocationIds(@NonNull final Collection<Integer> bpartnerLocationRepoIds)
+	{
+		if (bpartnerLocationRepoIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final List<Object> sqlParams = new ArrayList<>();
+		final String sql = "SELECT "
+				+ " bpl." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID
+				+ ", bpl." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID
+				+ ", l." + I_C_Location.COLUMNNAME_Latitude
+				+ ", l." + I_C_Location.COLUMNNAME_Longitude
+				+ " FROM " + I_C_BPartner_Location.Table_Name + " bpl "
+				+ " INNER JOIN " + I_C_Location.Table_Name + " l on l.C_Location_ID=bpl.C_Location_ID"
+				+ " WHERE " + DB.buildSqlList("bpl." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, bpartnerLocationRepoIds, sqlParams)
+				+ " AND l." + I_C_Location.COLUMNNAME_GeocodingStatus + "=?";
+		sqlParams.add(X_C_Location.GEOCODINGSTATUS_Resolved);
+
+		return retrieveGeographicalCoordinatesWithBPartnerLocationIds(sql, sqlParams);
+	}
+
+	private List<GeographicalCoordinatesWithBPartnerLocationId> retrieveGeographicalCoordinatesWithBPartnerLocationIds(final String sql, final List<Object> sqlParams)
+	{
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			DB.setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
+
+			final List<GeographicalCoordinatesWithBPartnerLocationId> result = new ArrayList<>();
+			while (rs.next())
+			{
+				final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(
+						rs.getInt(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID),
+						rs.getInt(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID));
+
+				final BigDecimal latitude = rs.getBigDecimal(I_C_Location.COLUMNNAME_Latitude);
+				final BigDecimal longitude = rs.getBigDecimal(I_C_Location.COLUMNNAME_Longitude);
+				if (latitude == null || longitude == null)
+				{
+					// shall not happen
+					logger.warn("Ignored location for bpartnerLocationId={} because the coordonate is not valid: lat={}, long={}", bpartnerLocationId, latitude, longitude);
+					continue;
+				}
+				final GeographicalCoordinates coordinate = GeographicalCoordinates.builder()
+						.latitude(latitude)
+						.longitude(longitude)
+						.build();
+
+				result.add(GeographicalCoordinatesWithBPartnerLocationId.of(bpartnerLocationId, coordinate));
+			}
+
+			return result;
+		}
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex, sql, sqlParams);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
 	}
 }

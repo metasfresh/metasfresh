@@ -90,7 +90,6 @@ public interface IQualityInspectionOrder
 	IProductionMaterial getProductionMaterial(ProductionMaterialType type, I_M_Product product);
 
 	/**
-	 *
 	 * @return raw production material; never return null
 	 */
 	IProductionMaterial getRawProductionMaterial();

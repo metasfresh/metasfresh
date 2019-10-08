@@ -32,8 +32,6 @@ public interface I_M_PickingSlot
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_AD_Client>(I_M_PickingSlot.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -43,7 +41,7 @@ public interface I_M_PickingSlot
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -53,15 +51,11 @@ public interface I_M_PickingSlot
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_AD_Org>(I_M_PickingSlot.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
@@ -88,10 +82,6 @@ public interface I_M_PickingSlot
 	 */
 	public int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
     /** Column definition for C_BPartner_ID */
     public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_C_BPartner>(I_M_PickingSlot.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
@@ -116,10 +106,6 @@ public interface I_M_PickingSlot
 	 * <br>Virtual Column: false
 	 */
 	public int getC_BPartner_Location_ID();
-
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location();
-
-	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location);
 
     /** Column definition for C_BPartner_Location_ID */
     public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_C_BPartner_Location>(I_M_PickingSlot.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
@@ -228,7 +214,7 @@ public interface I_M_PickingSlot
     public static final String COLUMNNAME_IsPickingRackSystem = "IsPickingRackSystem";
 
 	/**
-	 * Set Handling Units.
+	 * Set Handling Unit.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -237,7 +223,7 @@ public interface I_M_PickingSlot
 	public void setM_HU_ID (int M_HU_ID);
 
 	/**
-	 * Get Handling Units.
+	 * Get Handling Unit.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -269,10 +255,6 @@ public interface I_M_PickingSlot
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Locator_ID();
-
-	public org.compiere.model.I_M_Locator getM_Locator();
-
-	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator);
 
     /** Column definition for M_Locator_ID */
     public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_M_Locator> COLUMN_M_Locator_ID = new org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_M_Locator>(I_M_PickingSlot.class, "M_Locator_ID", org.compiere.model.I_M_Locator.class);
@@ -321,10 +303,6 @@ public interface I_M_PickingSlot
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Warehouse_ID();
-
-	public org.compiere.model.I_M_Warehouse getM_Warehouse();
-
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
 
     /** Column definition for M_Warehouse_ID */
     public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_M_Warehouse>(I_M_PickingSlot.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);

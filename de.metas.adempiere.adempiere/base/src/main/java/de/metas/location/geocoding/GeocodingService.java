@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import de.metas.location.geocoding.provider.GeocodingProviderFactory;
@@ -44,18 +45,13 @@ public class GeocodingService
 
 	public Optional<GeographicalCoordinates> findBestCoordinates(@NonNull final GeoCoordinatesRequest request)
 	{
-		final GeocodingProvider provider = getProviderOrNull();
-		if (provider == null)
-		{
-			return Optional.empty();
-		}
-
+		final GeocodingProvider provider = getProvider();
 		return provider.findBestCoordinates(request);
 	}
 
-	@Nullable
-	private GeocodingProvider getProviderOrNull()
+	@NonNull
+	private GeocodingProvider getProvider()
 	{
-		return providersFactory.getProvider().orElse(null);
+		return providersFactory.getProvider().orElseThrow(() -> new AdempiereException("No Provider Selected"));
 	}
 }

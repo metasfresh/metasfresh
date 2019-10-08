@@ -44,6 +44,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
 import de.metas.bpartner.GLN;
+import de.metas.bpartner.GeographicalCoordinatesWithBPartnerLocationId;
 import de.metas.email.EMailAddress;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -300,4 +301,8 @@ public interface IBPartnerDAO extends ISingletonService
 	boolean pricingSystemBelongsToCustomerForPriceMutation(PricingSystemId pricingSystemId);
 
 	Optional<BPartnerContactId> getBPartnerContactIdBy(BPartnerContactQuery query);
+
+	List<GeographicalCoordinatesWithBPartnerLocationId> getGeoCoordinatesByBPartnerIds(Collection<BPartnerId> bpartnerIds);
+
+	List<GeographicalCoordinatesWithBPartnerLocationId> getGeoCoordinatesByBPartnerLocationIds(Collection<Integer> bpartnerLocationRepoIds);
 }

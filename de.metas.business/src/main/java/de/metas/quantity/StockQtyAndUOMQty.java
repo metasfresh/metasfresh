@@ -46,6 +46,12 @@ public class StockQtyAndUOMQty
 	{
 		return Optional.ofNullable(uomQty);
 	}
+	
+	@JsonIgnore
+	public boolean isUOMQtySet()
+	{
+		return uomQty != null;
+	}
 
 	@JsonIgnore
 	public Quantity getUOMQtyNotNull()
@@ -63,17 +69,23 @@ public class StockQtyAndUOMQty
 	{
 		Check.assumeEquals(productId, other.productId, "The other instance's productId need to be equal to this instance's productId; this={}; other={}", this, other);
 
-		final StockQtyAndUOMQtyBuilder result = StockQtyAndUOMQty.builder()
+		return StockQtyAndUOMQty.builder()
 				.productId(productId)
-				.stockQty(stockQty.add(other.getStockQty()));
+				.stockQty(stockQty.add(other.getStockQty()))
+				.uomQty(addNullables(uomQty, other.uomQty))
+				.build();
+	}
 
-		if (getUOMQtyOpt().isPresent())
+	private static Quantity addNullables(final Quantity qty1, final Quantity qty2)
+	{
+		if (qty1 != null)
 		{
-			Check.assume(other.getUOMQtyOpt().isPresent(), "If this instance's uomQty is present, then the other instance's uomQty also needs to be present; this={}; other={}", this, other);
-			result.uomQty(uomQty.add(other.uomQty));
+			return qty2 != null ? qty1.add(qty2) : qty1;
 		}
-
-		return result.build();
+		else
+		{
+			return qty2;
+		}
 	}
 
 	public int signum()
