@@ -602,7 +602,7 @@ public interface I_C_OLCand
 	 * Maßeinheit
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setC_UOM_ID (int C_UOM_ID);
@@ -612,7 +612,7 @@ public interface I_C_OLCand
 	 * Maßeinheit
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getC_UOM_ID();

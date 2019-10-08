@@ -52,7 +52,7 @@ import lombok.NonNull;
  */
 
 /**
- * 
+ *
  * @task http://dewiki908/mediawiki/index.php/09623_old_incoice_location_taken_sometimes_in_excel_import_%28104714160405%29
  */
 @Component
@@ -228,8 +228,9 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		}
 		else
 		{
-			// this olCand has no TU/Gebinde price-UOM, so we just continuer with the olCand's imported UOM
-			olCand.setC_UOM_Internal_ID(olCand.getC_UOM_ID());
+			// this olCand has no TU/Gebinde price-UOM, so we just continue with the olCand's imported UOM
+			final UomId internalUomId = olCandEffectiveValuesBL.getRecordOrStockUOMId(olCand);
+			olCand.setC_UOM_Internal_ID(internalUomId.getRepoId());
 		}
 
 		// note: the customer's price remains as it is in the "PriceEntered" column
