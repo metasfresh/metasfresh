@@ -1039,11 +1039,10 @@ public abstract class PO
 		}
 		if(m_currentChangeType != null && m_currentChangeType.isAfter())
 		{
-			final AdempiereException ex = new AdempiereException("Changing "+this+" on AFTER NEW/CHANGE shall be avoided because those changes won't be persisted in database.")
+			AdempiereException.logWarningIfDeveloperMode(log, () -> new AdempiereException("Changing " + this + " on AFTER NEW/CHANGE shall be avoided because those changes won't be persisted in database.")
 					.appendParametersToMessage()
 					.setParameter("columnName", ColumnName)
-					.setParameter("value", value);
-			ex.throwIfDeveloperModeOrLogWarningElse(log);
+					.setParameter("value", value));
 			// NOTE: don't return, allow setting the value because maybe some legacy code depends on it. At least we informed the developer.
 		}
 
