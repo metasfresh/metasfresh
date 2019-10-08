@@ -1,6 +1,5 @@
 package de.metas.ui.web.pickingV2.packageable.process;
 
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,12 +85,12 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 	private String buildFilename(PackageableRow row)
 	{
 
-		final ZonedDateTime date = row.getPreparationDate();
+		final String customer = row.getCustomer().getDisplayName();
 		final String docuemntNo = row.getOrderDocumentNo();
 
 		return Joiner.on("_")
 				.skipNulls()
-				.join(docuemntNo, date)
+				.join(docuemntNo, customer)
 				+ ".pdf";
 	}
 
