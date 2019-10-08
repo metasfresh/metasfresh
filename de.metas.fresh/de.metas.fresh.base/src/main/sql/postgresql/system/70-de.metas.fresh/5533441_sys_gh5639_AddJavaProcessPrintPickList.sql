@@ -18,3 +18,6 @@ UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2019-10-08 10:2
 UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Print Pick list',Updated=TO_TIMESTAMP('2019-10-08 10:21:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=541203
 ;
 
+
+UPDATE AD_Process set classname='de.metas.ui.web.pickingV2.packageable.process.PackageablesView_PrintPicklist' where AD_Process_ID = 541203;
+
