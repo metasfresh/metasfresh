@@ -351,6 +351,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		{
 			throw AdempiereException
 					.wrapIfNeeded(e)
+					.appendParametersToMessage()
 					.setParameter("immutableAttributeSet", this)
 					.setParameter("attributeKey", Check.isEmpty(attributeKey, true) ? "<EMPTY>" : attributeKey);
 		}
