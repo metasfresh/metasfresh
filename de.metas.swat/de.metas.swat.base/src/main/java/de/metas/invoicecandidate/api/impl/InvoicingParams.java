@@ -45,6 +45,7 @@ public class InvoicingParams implements IInvoicingParams
 	private static final String PARA_DateAcct = I_C_Invoice_Candidate.COLUMNNAME_DateAcct;
 	private static final String PARA_POReference = I_C_Invoice_Candidate.COLUMNNAME_POReference;
 	private static final String PARA_Check_NetAmtToInvoice = ICNetAmtToInvoiceChecker.PARAMETER_NAME;
+	private static final String PARA_IsUpdateLocationAndContactForInvoice = "IsUpdateLocationAndContactForInvoice";
 
 	private final IParams params;
 
@@ -69,6 +70,12 @@ public class InvoicingParams implements IInvoicingParams
 	public boolean isIgnoreInvoiceSchedule()
 	{
 		return params.getParameterAsBool(PARA_IgnoreInvoiceSchedule);
+	}
+
+	@Override
+	public boolean isUpdateLocationAndUserForInvoice()
+	{
+		return params.getParameterAsBool(PARA_IsUpdateLocationAndContactForInvoice);
 	}
 
 	@Override

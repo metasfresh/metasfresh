@@ -31,6 +31,10 @@ import java.time.LocalDate;
  * @author tsa
  *
  */
+/**
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public interface IInvoicingParams
 {
 	/** @return {@code true} if only those invoice candidates which were approved for invoicing shall be enqueued. */
@@ -73,4 +77,13 @@ public interface IInvoicingParams
 	 * <b>note that we don't want to store the actual invoices in the result if there is a chance to encounter memory problems-</b>
 	 */
 	boolean isStoreInvoicesInResult();
+
+	/**
+	 * When this parameter is set on true, the invoices that are to be created will get the current users and locations of their business partners,
+	 * regardless of the Bill_Location and Bill_User values set in the enqueued invoice candidates.
+	 * The invoice candidates themselves will not be changed.
+	 * Nevertheless, the Bill_Location_Override and Bill_User_Override will be respected if they are set in the
+	 * invoice candidates.
+	 */
+	boolean isUpdateLocationAndUserForInvoice();
 }
