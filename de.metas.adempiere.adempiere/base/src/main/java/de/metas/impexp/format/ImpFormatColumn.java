@@ -218,7 +218,6 @@ public final class ImpFormatColumn
 		}
 	}
 
-
 	/**
 	 * Return date as YYYY-MM-DD HH24:MI:SS (JDBC Timestamp format w/o miliseconds)
 	 *
@@ -252,6 +251,10 @@ public final class ImpFormatColumn
 	 */
 	private String parseString(final String info)
 	{
+		if (info == null || info.isEmpty())
+		{
+			return null;
+		}
 		String retValue = info;
 
 		// Length restriction
@@ -312,7 +315,6 @@ public final class ImpFormatColumn
 	{
 		return StringUtils.toBoolean(valueStr, false);
 	}
-
 
 	private String normalizeNumberString(String info)
 	{
