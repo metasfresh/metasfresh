@@ -72,7 +72,7 @@ node('agent && linux')
 			'pom.xml', // pomFile
 			MAVEN_SETTINGS, // settingsFile
 			"mvn-${MF_UPSTREAM_BRANCH}", // mvnRepoName
-			'https://repo.metasfresh.com' // mvnRepoBaseURL
+			'https://nexus.metasfresh.com' // mvnRepoBaseURL
 		)
 		echo "mvnConf=${mvnConf}"
 
