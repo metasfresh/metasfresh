@@ -1019,7 +1019,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 
 		queryBuilder.orderBy()
-			.addColumn(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
+		.addColumn(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
 
 		final I_C_BPartner_Location ownToLocation = queryBuilder
 				.create()
@@ -1031,33 +1031,36 @@ public class BPartnerDAO implements IBPartnerDAO
 			return ownToLocation;
 		}
 
-		final IQueryBuilder<I_C_BP_Relation> bpRelationQueryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BP_Relation.class)
-				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, query.getBpartnerId())
-				.addEqualsFilter(getFilterColumnNameForType(query.getType()), true)
-				.addOnlyActiveRecordsFilter();
-
-		queryBuilder.orderBy()
-			.addColumn(I_C_BP_Relation.COLUMNNAME_C_BP_Relation_ID);
-
-		final Stream<BPRelation> relationsStream = bpRelationQueryBuilder
-				.create()
-				.stream()
-				.map(bpRelationRecord -> ofRelationRecord(bpRelationRecord));
-
-		Optional<BPartnerLocationId> relBPLocationId = Optional.empty();
 		if (query.getRelationBPartnerLocationId() != null)
 		{
+
+			final IQueryBuilder<I_C_BP_Relation> bpRelationQueryBuilder = Services.get(IQueryBL.class)
+					.createQueryBuilder(I_C_BP_Relation.class)
+					.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, query.getBpartnerId())
+					.addEqualsFilter(getFilterColumnNameForType(query.getType()), true)
+					.addOnlyActiveRecordsFilter();
+
+			queryBuilder.orderBy()
+			.addColumn(I_C_BP_Relation.COLUMNNAME_C_BP_Relation_ID);
+
+			final Stream<BPRelation> relationsStream = bpRelationQueryBuilder
+					.create()
+					.stream()
+
+			Optional<BPartnerLocationId> relBPLocationId = Optional.empty();
+
 			relBPLocationId = relationsStream
 					.filter(bpRelation -> Objects.equals(query.getRelationBPartnerLocationId(), bpRelation.getBplocationId()))
 					.map(bpRelation -> bpRelation.getTargetBPLocationId())
 					.findFirst();
+
+			if (relBPLocationId.isPresent())
+			{
+				return InterfaceWrapperHelper.load(relBPLocationId.get().getRepoId(), I_C_BPartner_Location.class);
+			}
 		}
 
-		if (relBPLocationId.isPresent())
-		{
-			return InterfaceWrapperHelper.load(relBPLocationId.get().getRepoId(), I_C_BPartner_Location.class);
-		}
+
 
 		// if no location was found based on relation, return own location, null or non-null
 		return ownToLocation;
