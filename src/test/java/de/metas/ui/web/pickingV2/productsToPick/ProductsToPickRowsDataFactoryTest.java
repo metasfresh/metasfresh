@@ -152,27 +152,27 @@ public class ProductsToPickRowsDataFactoryTest
 		final ProductsToPickRowsData rowsData = productsToPickRowsDataFactory.create(packageableRow);
 
 		final ImmutableList<ProductsToPickRow> rows = ImmutableList.copyOf(rowsData.getTopLevelRows());
-		rows.forEach(row -> System.out.println("hu=" + row.getHuId() + ", exp=" + row.getExpiringDate() + ", qty=" + row.getQty() + " -- " + row));
+		rows.forEach(row -> System.out.println("hu=" + row.getHuId() + ", exp=" + row.getExpiringDate() + ", qty=" + row.getQtyEffective() + " -- " + row));
 		assertThat(rows).hasSize(4);
 
 		final ProductsToPickRow row1 = rows.get(0);
 		assertThat(row1.getHuId()).isEqualTo(huId1);
-		assertThat(row1.getQty()).isEqualTo(Quantity.of(10, uomKg));
+		assertThat(row1.getQtyEffective()).isEqualTo(Quantity.of(10, uomKg));
 		assertThat(row1.getExpiringDate()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 1));
 
 		final ProductsToPickRow row2 = rows.get(1);
 		assertThat(row2.getHuId()).isEqualTo(huId2);
-		assertThat(row2.getQty()).isEqualTo(Quantity.of(11, uomKg));
+		assertThat(row2.getQtyEffective()).isEqualTo(Quantity.of(11, uomKg));
 		assertThat(row2.getExpiringDate()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 2));
 
 		final ProductsToPickRow row3 = rows.get(2);
 		assertThat(row3.getHuId()).isEqualTo(huId3);
-		assertThat(row3.getQty()).isEqualTo(Quantity.of(12, uomKg));
+		assertThat(row3.getQtyEffective()).isEqualTo(Quantity.of(12, uomKg));
 		assertThat(row3.getExpiringDate()).isNull();
 
 		final ProductsToPickRow row4 = rows.get(3);
 		assertThat(row4.getHuId()).isNull();
-		assertThat(row4.getQty()).isEqualTo(Quantity.of(100 - 10 - 11 - 12, uomKg));
+		assertThat(row4.getQtyEffective()).isEqualTo(Quantity.of(100 - 10 - 11 - 12, uomKg));
 		assertThat(row4.getExpiringDate()).isNull();
 	}
 
@@ -209,27 +209,27 @@ public class ProductsToPickRowsDataFactoryTest
 		final ProductsToPickRowsData rowsData = productsToPickRowsDataFactory.create(packageableRow);
 
 		final ImmutableList<ProductsToPickRow> rows = ImmutableList.copyOf(rowsData.getTopLevelRows());
-		rows.forEach(row -> System.out.println("hu=" + row.getHuId() + ", exp=" + row.getExpiringDate() + ", qty=" + row.getQty() + " -- " + row));
+		rows.forEach(row -> System.out.println("hu=" + row.getHuId() + ", exp=" + row.getExpiringDate() + ", qty=" + row.getQtyEffective() + " -- " + row));
 		assertThat(rows).hasSize(4);
 
 		final ProductsToPickRow row1 = rows.get(0);
 		assertThat(row1.getHuId()).isEqualTo(huId2);
-		assertThat(row1.getQty()).isEqualTo(Quantity.of(11, uomKg));
+		assertThat(row1.getQtyEffective()).isEqualTo(Quantity.of(11, uomKg));
 		assertThat(row1.getExpiringDate()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 2));
 
 		final ProductsToPickRow row2 = rows.get(1);
 		assertThat(row2.getHuId()).isEqualTo(huId1);
-		assertThat(row2.getQty()).isEqualTo(Quantity.of(10, uomKg));
+		assertThat(row2.getQtyEffective()).isEqualTo(Quantity.of(10, uomKg));
 		assertThat(row2.getExpiringDate()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 1));
 
 		final ProductsToPickRow row3 = rows.get(2);
 		assertThat(row3.getHuId()).isEqualTo(huId3);
-		assertThat(row3.getQty()).isEqualTo(Quantity.of(12, uomKg));
+		assertThat(row3.getQtyEffective()).isEqualTo(Quantity.of(12, uomKg));
 		assertThat(row3.getExpiringDate()).isNull();
 
 		final ProductsToPickRow row4 = rows.get(3);
 		assertThat(row4.getHuId()).isNull();
-		assertThat(row4.getQty()).isEqualTo(Quantity.of(100 - 10 - 11 - 12, uomKg));
+		assertThat(row4.getQtyEffective()).isEqualTo(Quantity.of(100 - 10 - 11 - 12, uomKg));
 		assertThat(row4.getExpiringDate()).isNull();
 	}
 

@@ -9,6 +9,7 @@ import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
 import de.metas.handlingunits.picking.requests.PickHURequest;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.ui.web.pickingV2.config.PickingConfigV2;
 import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRow;
 
 /*
@@ -45,7 +46,7 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only picker shall pick");
 		}
-		
+
 		final List<ProductsToPickRow> selectedRows = getSelectedRows();
 		if (selectedRows.isEmpty())
 		{
@@ -76,10 +77,13 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 
 	private void pickRow(final ProductsToPickRow row)
 	{
+		final PickingConfigV2 pickingConfig = getPickingConfig();
+
 		final PickHUResult result = pickingCandidatesService.pickHU(PickHURequest.builder()
 				.shipmentScheduleId(row.getShipmentScheduleId())
-				.qtyToPick(row.getQty())
+				.qtyToPick(row.getQtyEffective())
 				.pickFromHuId(row.getHuId())
+				.autoReview(!pickingConfig.isPickingReviewRequired())
 				.build());
 
 		updateViewRowFromPickingCandidate(row.getId(), result.getPickingCandidate());
