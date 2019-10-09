@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.requests.PickHURequest;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
@@ -63,5 +64,21 @@ public class ProductsToPickRowsRepository
 				.pickingCandidateService(pickingCandidateService)
 				.locatorLookup(LookupDataSourceFactory.instance.searchInTableLookup(I_M_Locator.Table_Name))
 				.build();
+	}
+
+	public PickHURequest createPickHURequest(@NonNull final ProductsToPickRow row, final boolean isPickingReviewRequired)
+	{
+		return PickHURequest.builder()
+				.shipmentScheduleId(row.getShipmentScheduleId())
+				.qtyToPick(row.getQtyEffective())
+				.pickFromHuId(row.getHuId())
+				.autoReview(!isPickingReviewRequired)
+				.build();
+	}
+
+	public void pick(@NonNull final PackageableRow packageableRow)
+	{
+		final ProductsToPickRowsData productsToPickRowsData = createProductsToPickRowsData(packageableRow);
+		productsToPickRowsData.getAllRows().forEach(productsToPickRow -> createPickHURequest(productsToPickRow, false));
 	}
 }

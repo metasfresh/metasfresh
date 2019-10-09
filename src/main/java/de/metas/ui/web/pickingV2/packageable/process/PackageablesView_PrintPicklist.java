@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_PInstance;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Joiner;
 
@@ -18,7 +19,9 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.report.jasper.client.JRClient;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
+import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRowsRepository;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -46,6 +49,9 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 {
 	final private static AdProcessId PickListPdf_AD_Process_ID = AdProcessId.ofRepoId(541202);
 
+	@Autowired
+	private ProductsToPickRowsRepository productsToPickRowsRepository;
+
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -57,8 +63,13 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 	{
 		final PackageableRow row = getSingleSelectedRow();
 
+		// pick
+		productsToPickRowsRepository.pick(row);
+
+		// print
 		final byte[] pickList = printPicklist(row);
 
+		// preview
 		getResult().setReportData(
 				pickList,
 				buildFilename(row),
@@ -67,7 +78,7 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 		return MSG_OK;
 	}
 
-	private String buildFilename(PackageableRow row)
+	private String buildFilename(@NonNull final PackageableRow row)
 	{
 
 		final String customer = row.getCustomer().getDisplayName();
@@ -79,7 +90,7 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 				+ ".pdf";
 	}
 
-	private byte[] printPicklist(final PackageableRow row)
+	private byte[] printPicklist(@NonNull final PackageableRow row)
 	{
 
 		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(PickListPdf_AD_Process_ID);
@@ -103,6 +114,5 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 		final byte[] pdf = jrClient.report(jasperProcessInfo);
 
 		return pdf;
-
 	}
 }
