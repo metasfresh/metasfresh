@@ -37,12 +37,13 @@ import lombok.Value;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-final @Value
+@Value
 @Builder
 public class BPRelation
 {
-	final @NonNull BPartnerId bpartnerId;
-	final @Nullable BPartnerLocationId bplocationId;
-	final @NonNull BPartnerId relationBPartnerId;
-	final @Nullable BPartnerLocationId relationBPLocationId;
+	@NonNull BPartnerId bpartnerId;
+	@Nullable BPartnerLocationId bplocationId;
+
+	@NonNull BPartnerId targetBPartnerId;
+	@Nullable BPartnerLocationId targetBPLocationId;
 }

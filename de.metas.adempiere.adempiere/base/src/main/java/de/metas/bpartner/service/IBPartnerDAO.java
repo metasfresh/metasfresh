@@ -287,10 +287,15 @@ public interface IBPartnerDAO extends ISingletonService
 		@NonNull
 		Type type;
 
+		/** If a "direct" bPartner location for the given type and {@link #getBpartnerId()} is found and this is {@code false}, then don't look further. */
 		boolean alsoTryRelation;
 
+		/**
+		 * Ignored if {@link #isAlsoTryRelation()} is {@code false}.
+		 * If set, then prefer the bPartner relation which has this id as {@code C_BPartner_Location_ID} and if found, return that relation's {@code C_BPartnerRelation_Location_ID}.
+		 */
 		@Nullable
-		BPartnerLocationId relationBPArtnerLocationId;
+		BPartnerLocationId relationBPartnerLocationId;
 	}
 
 	BPGroupId getBPGroupIdByBPartnerId(BPartnerId bpartnerId);

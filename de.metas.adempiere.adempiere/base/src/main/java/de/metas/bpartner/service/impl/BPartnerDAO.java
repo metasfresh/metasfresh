@@ -1019,7 +1019,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 
 		queryBuilder.orderBy()
-		.addColumn(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
+			.addColumn(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
 
 		final I_C_BPartner_Location ownToLocation = queryBuilder
 				.create()
@@ -1038,23 +1038,19 @@ public class BPartnerDAO implements IBPartnerDAO
 				.addOnlyActiveRecordsFilter();
 
 		queryBuilder.orderBy()
-		.addColumn(I_C_BP_Relation.COLUMNNAME_C_BP_Relation_ID);
+			.addColumn(I_C_BP_Relation.COLUMNNAME_C_BP_Relation_ID);
 
 		final Stream<BPRelation> relationsStream = bpRelationQueryBuilder
 				.create()
 				.stream()
-				.map(bpRelationRecord -> BPRelation.builder()
-						.bpartnerId(BPartnerId.ofRepoId(bpRelationRecord.getC_BPartner_ID()))
-						.bplocationId(BPartnerLocationId.ofRepoIdOrNull(bpRelationRecord.getC_BPartner_ID(), bpRelationRecord.getC_BPartner_Location_ID()))
-						.relationBPartnerId(BPartnerId.ofRepoId(bpRelationRecord.getC_BPartnerRelation_ID()))
-						.relationBPLocationId(BPartnerLocationId.ofRepoIdOrNull(bpRelationRecord.getC_BPartnerRelation_ID(), bpRelationRecord.getC_BPartnerRelation_Location_ID()))
-						.build());
+				.map(bpRelationRecord -> ofRelationRecord(bpRelationRecord));
 
 		Optional<BPartnerLocationId> relBPLocationId = Optional.empty();
-		if (query.getRelationBPArtnerLocationId() != null)
+		if (query.getRelationBPartnerLocationId() != null)
 		{
-			relBPLocationId = relationsStream.filter(bpRelation -> Objects.equals(query.getRelationBPArtnerLocationId(), bpRelation.getBplocationId()))
-					.map(bpRelation -> bpRelation.getRelationBPLocationId())
+			relBPLocationId = relationsStream
+					.filter(bpRelation -> Objects.equals(query.getRelationBPartnerLocationId(), bpRelation.getBplocationId()))
+					.map(bpRelation -> bpRelation.getTargetBPLocationId())
 					.findFirst();
 		}
 
@@ -1065,6 +1061,16 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		// if no location was found based on relation, return own location, null or non-null
 		return ownToLocation;
+	}
+
+	private BPRelation ofRelationRecord(@NonNull final I_C_BP_Relation bpRelationRecord)
+	{
+		return BPRelation.builder()
+				.bpartnerId(BPartnerId.ofRepoId(bpRelationRecord.getC_BPartner_ID()))
+				.bplocationId(BPartnerLocationId.ofRepoIdOrNull(bpRelationRecord.getC_BPartner_ID(), bpRelationRecord.getC_BPartner_Location_ID()))
+				.targetBPartnerId(BPartnerId.ofRepoId(bpRelationRecord.getC_BPartnerRelation_ID()))
+				.targetBPLocationId(BPartnerLocationId.ofRepoIdOrNull(bpRelationRecord.getC_BPartnerRelation_ID(), bpRelationRecord.getC_BPartnerRelation_Location_ID()))
+				.build();
 	}
 
 	private String getFilterColumnNameForType(BPartnerLocationQuery.Type type)

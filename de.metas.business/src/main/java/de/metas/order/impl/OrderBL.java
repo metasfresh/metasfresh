@@ -251,7 +251,7 @@ public class OrderBL implements IOrderBL
 		// First try: if order and bill partner and location are the same, and the contact is set
 		// we can use the same contact
 		final BPartnerLocationId billToBPLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_Location_ID());
-		final BPartnerLocationId shipToBPLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
+		final BPartnerLocationId shipToBPLocationId = extractBPartnerLocationOrNull(order);
 		final BPartnerContactId shipToContactId = BPartnerContactId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getAD_User_ID());
 		if (BPartnerLocationId.equals(shipToBPLocationId, billToBPLocationId) && shipToContactId != null)
 		{
@@ -439,10 +439,15 @@ public class OrderBL implements IOrderBL
 
 	private DeliveryViaRule findDeliveryViaRule(final I_C_Order order)
 	{
-		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+		final BPartnerId bpartnerId = extractBPartnerIdOrNull(order);
 		return bpartnerId != null
 				? Services.get(IBPartnerBL.class).getDeliveryViaRuleOrNull(bpartnerId, SOTrx.ofBoolean(order.isSOTrx()))
 						: null;
+	}
+
+	private BPartnerId extractBPartnerIdOrNull(final I_C_Order order)
+	{
+		return BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
 	}
 
 	@Override
@@ -484,7 +489,7 @@ public class OrderBL implements IOrderBL
 	@Override
 	public I_C_BPartner getBPartnerOrNull(@NonNull final I_C_Order order)
 	{
-		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+		final BPartnerId bpartnerId = extractBPartnerIdOrNull(order);
 		return bpartnerId != null
 				? Services.get(IBPartnerDAO.class).getById(bpartnerId, I_C_BPartner.class)
 						: null;
@@ -663,20 +668,19 @@ public class OrderBL implements IOrderBL
 	@Override
 	public boolean setBillLocation(final I_C_Order order)
 	{
-		final I_C_BPartner bpartner = getBPartnerOrNull(order);
-		if (bpartner == null)
+		final BPartnerId bpartnerId = extractBPartnerIdOrNull(order);
+		if (bpartnerId == null)
 		{
 			return false; // nothing to be done
 		}
-
 
 		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 		final BPartnerLocationQuery query = BPartnerLocationQuery
 				.builder()
 				.type(Type.BILL_TO)
 				.alsoTryRelation(true)
-				.relationBPArtnerLocationId(BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID()))
-				.bpartnerId(de.metas.bpartner.BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()))
+				.relationBPartnerLocationId(extractBPartnerLocationOrNull(order))
+				.bpartnerId(bpartnerId)
 				.build();
 		final I_C_BPartner_Location billtoLocation = bPartnerDAO.retrieveBPartnerLocation(query);
 
@@ -689,6 +693,11 @@ public class OrderBL implements IOrderBL
 		order.setBill_Location_ID(billtoLocation.getC_BPartner_Location_ID());
 
 		return true; // found it
+	}
+
+	private BPartnerLocationId extractBPartnerLocationOrNull(final I_C_Order order)
+	{
+		return BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
 	}
 
 	@Override
@@ -797,7 +806,7 @@ public class OrderBL implements IOrderBL
 			return BPartnerLocationId.ofRepoId(order.getDropShip_BPartner_ID(), order.getDropShip_Location_ID());
 		}
 
-		return BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
+		return extractBPartnerLocationOrNull(order);
 	}
 
 	@Override
