@@ -3,6 +3,7 @@ package de.metas.invoicecandidate.internalbusinesslogic;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
@@ -100,12 +101,11 @@ public class InvoicedDataLoader
 			for (final I_C_Invoice_Line_Alloc ila : ilas)
 			{
 				// we don't need to check the invoice's DocStatus. If the ila is there, we count it.
-				final UomId ilaUomId = UomId.ofRepoId(ila.getC_UOM_ID());
-				final Quantity currentQty = Quantitys.create(ila.getQtyInvoicedInUOM(), ilaUomId);
-
-				qty = Quantitys.add(conversionCtx,
-						qty,
-						currentQty);
+				final Quantity qtyInvoiced = extractQtyInvoiced(ila);
+				if(qtyInvoiced != null)
+				{
+					qty = Quantitys.add(conversionCtx, qty, qtyInvoiced);
+				}
 
 				qtyInStockUom = Quantitys.add(conversionCtx,
 						qtyInStockUom,
@@ -137,6 +137,15 @@ public class InvoicedDataLoader
 		}
 
 		return result.build();
+	}
+
+	private static Quantity extractQtyInvoiced(final I_C_Invoice_Line_Alloc ila)
+	{
+		final UomId uomId = UomId.ofRepoIdOrNull(ila.getC_UOM_ID());
+		
+		return uomId != null
+				? Quantitys.create(ila.getQtyInvoicedInUOM(), uomId)
+				: null;
 	}
 
 	private RawData loadRawData()
