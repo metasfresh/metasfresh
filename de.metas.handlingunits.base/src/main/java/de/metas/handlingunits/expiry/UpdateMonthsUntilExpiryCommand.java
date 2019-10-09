@@ -78,7 +78,7 @@ final class UpdateMonthsUntilExpiryCommand
 			final HuId huId = husWithExpiryDates.next();
 			countChecked++;
 
-			final boolean updated = updateMonthsUntilExpiry(huId, today);
+			final boolean updated = updateTopLevelHU(huId);
 			if (updated)
 			{
 				countUpdated++;
@@ -91,11 +91,31 @@ final class UpdateMonthsUntilExpiryCommand
 				.build();
 	}
 
-	private boolean updateMonthsUntilExpiry(@NonNull final HuId huId, @NonNull final LocalDate today)
+	private boolean updateTopLevelHU(@NonNull final HuId topLevelHUId)
 	{
 		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext(Env.getCtx());
-		final IAttributeStorage huAttributes = getHUAttributes(huId, huContext);
-		if (huAttributes.hasAttribute(AttributeConstants.ATTR_MonthsUntilExpiry))
+		final IAttributeStorage huAttributes = getHUAttributes(topLevelHUId, huContext);
+		return updateRecursive(huAttributes);
+	}
+
+	private boolean updateRecursive(@NonNull final IAttributeStorage huAttributes)
+	{
+		boolean updated = update(huAttributes);
+
+		for (final IAttributeStorage childHUAttributes : huAttributes.getChildAttributeStorages(true))
+		{
+			if (updateRecursive(childHUAttributes))
+			{
+				updated = true;
+			}
+		}
+
+		return updated;
+	}
+
+	private boolean update(@NonNull final IAttributeStorage huAttributes)
+	{
+		if (!huAttributes.hasAttribute(AttributeConstants.ATTR_MonthsUntilExpiry))
 		{
 			return false;
 		}
@@ -109,6 +129,8 @@ final class UpdateMonthsUntilExpiryCommand
 
 		huAttributes.setSaveOnChange(true);
 		huAttributes.setValue(AttributeConstants.ATTR_MonthsUntilExpiry, monthsUntilExpiry);
+		huAttributes.saveChangesIfNeeded();
+
 		return true;
 	}
 
