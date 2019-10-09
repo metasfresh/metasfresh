@@ -15,10 +15,10 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.model.I_M_HU_BestBefore_V;
-import de.metas.handlingunits.model.X_M_HU;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -49,6 +49,7 @@ public class HUWithExpiryDatesRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 	public Stream<HUWithExpiryDates> streamByWarnDateExceeded(@NonNull final LocalDate today)
 	{
@@ -83,7 +84,7 @@ public class HUWithExpiryDatesRepository
 	{
 		final Timestamp timestamp = TimeUtil.asTimestamp(expiryWarnDate);
 
-		I_M_HU_BestBefore_V recordOrdNull = queryBL.createQueryBuilder(I_M_HU_BestBefore_V.class)
+		final I_M_HU_BestBefore_V recordOrdNull = queryBL.createQueryBuilder(I_M_HU_BestBefore_V.class)
 				.addCompareFilter(I_M_HU_BestBefore_V.COLUMN_HU_ExpiredWarnDate, Operator.LESS_OR_EQUAL, timestamp, DateTruncQueryFilterModifier.DAY)
 				.addNotEqualsFilter(I_M_HU_BestBefore_V.COLUMN_HU_Expired, HUAttributeConstants.ATTR_Expired_Value_Expired)
 				.addEqualsFilter(I_M_HU_BestBefore_V.COLUMN_M_HU_ID, huId)
@@ -97,7 +98,7 @@ public class HUWithExpiryDatesRepository
 	{
 		return handlingUnitsDAO.createHUQueryBuilder()
 				.addOnlyWithAttributeNotNull(AttributeConstants.ATTR_BestBeforeDate)
-				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
+				.addHUStatusesToInclude(huStatusBL.getQtyOnHandStatuses())
 				.createQuery()
 				.iterateIds(HuId::ofRepoId);
 	}
