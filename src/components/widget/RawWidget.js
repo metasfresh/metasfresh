@@ -1046,7 +1046,7 @@ export class RawWidget extends Component {
           widgetFieldsName
         )}
       >
-        <div className={classnames({ row: true })}>
+        <div className="row">
           {captionElement || null}
           {!noLabel && caption && (
             <label
