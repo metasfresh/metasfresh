@@ -5,15 +5,12 @@ import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.testsupport.MetasfreshAssertions.assertThat;
-import static de.metas.testsupport.QueryFilterTestUtil.extractFilters;
 import static de.metas.testsupport.QueryFilterTestUtil.extractSingleFilter;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
-
 import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
@@ -24,7 +21,7 @@ import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
-import lombok.NonNull;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -53,10 +50,13 @@ public class AvailableToPromiseSqlHelperTest
 {
 	private static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1, 2);
 
+	private IQueryBL queryBL;
+
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		queryBL = Services.get(IQueryBL.class);
 	}
 
 	private MaterialDescriptor createMaterialDescriptor()
@@ -68,6 +68,11 @@ public class AvailableToPromiseSqlHelperTest
 		final MaterialDescriptor materialDescriptor = EventTestHelper.createMaterialDescriptor()
 				.withProductDescriptor(productDescriptor);
 		return materialDescriptor;
+	}
+
+	private ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> newCompositeFilter()
+	{
+		return queryBL.createCompositeQueryFilter(I_MD_Candidate_ATP_QueryResult.class);
 	}
 
 	@Test
@@ -82,11 +87,16 @@ public class AvailableToPromiseSqlHelperTest
 		final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> dbFilter = dbQuery.getCompositeFilter();
 		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Warehouse_ID, WAREHOUSE_ID.getRepoId());
 
-		final ICompositeQueryFilter includedCompositeOrFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);
-		assertThat(includedCompositeOrFilter).isJoinOr();
-
 		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Product_ID, PRODUCT_ID);
-		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%1%2%");
+
+		{
+			final ICompositeQueryFilter attributesFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);
+
+			final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> expectedAttributesFilter = newCompositeFilter()
+					.setJoinOr()
+					.addStringLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, "%1%2%", /* ignoreCase */false);
+			assertThat(attributesFilter.toString()).isEqualTo(expectedAttributesFilter.toString());
+		}
 	}
 
 	@Test
@@ -104,11 +114,16 @@ public class AvailableToPromiseSqlHelperTest
 		final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> dbFilter = dbQuery.getCompositeFilter();
 		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Warehouse_ID);
 
-		final ICompositeQueryFilter includedCompositeOrFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);
-		assertThat(includedCompositeOrFilter).isJoinOr();
-
 		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Product_ID, 10, 20);
-		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%1%2%");
+
+		{
+			final ICompositeQueryFilter attributesFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);
+
+			final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> expectedAttributesFilter = newCompositeFilter()
+					.setJoinOr()
+					.addStringLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, "%1%2%", /* ignoreCase */false);
+			assertThat(attributesFilter.toString()).isEqualTo(expectedAttributesFilter.toString());
+		}
 	}
 
 	@Test
@@ -126,13 +141,17 @@ public class AvailableToPromiseSqlHelperTest
 		final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> dbFilter = dbQuery.getCompositeFilter();
 		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Warehouse_ID);
 
-		final ICompositeQueryFilter includedCompositeOrFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);
-		assertThat(includedCompositeOrFilter).isJoinOr();
-
 		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Product_ID, PRODUCT_ID);
 
-		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%3%");
-		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%1%2%");
+		{
+			final ICompositeQueryFilter attributesFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);
+
+			final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> expectedAttributesFilter = newCompositeFilter()
+					.setJoinOr()
+					.addStringLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, "%1%2%", /* ignoreCase */false)
+					.addStringLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, "%3%", /* ignoreCase */false);
+			assertThat(attributesFilter.toString()).isEqualTo(expectedAttributesFilter.toString());
+		}
 	}
 
 	@Test
@@ -152,51 +171,56 @@ public class AvailableToPromiseSqlHelperTest
 		final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> dbFilter = dbQuery.getCompositeFilter();
 		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Warehouse_ID);
 
-		assertThat(dbFilter).hasCompositeOrFilter();
-		final ICompositeQueryFilter includedCompositeOrFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);
-		assertThat(includedCompositeOrFilter).isJoinOr();
-
 		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Product_ID, PRODUCT_ID);
 
-		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%3%");
-		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%1%2%");
+		//
+		// Attributes related filter
+		{
+			assertThat(dbFilter).hasCompositeOrFilter();
+			final ICompositeQueryFilter attributesFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);
 
-		assertThat(includedCompositeOrFilter).hasCompositeAndFilter();
-		final List<ICompositeQueryFilter> includedCompositeAndFilters = extractFilters(includedCompositeOrFilter, ICompositeQueryFilter.class);
-
-		assertHasOneFilterWithNotLikeExpressions(includedCompositeAndFilters);
+			final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> expectedAttributesFilter = newCompositeFilter()
+					.setJoinOr()
+					.addStringLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, "%1%2%", /* ignoreCase */false)
+					.addStringLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, "%3%", /* ignoreCase */false)
+					.addFilter(newCompositeFilter()
+							.setJoinAnd()
+							.addStringNotLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, "%1%2%", /* ignoreCase */false)
+							.addStringNotLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, "%3%", /* ignoreCase */false));
+			assertThat(attributesFilter.toString()).isEqualTo(expectedAttributesFilter.toString());
+		}
 	}
 
-	private void assertHasOneANDFilterWithLikeExpression(
-			@NonNull final ICompositeQueryFilter compositeFilter,
-			@NonNull final String likeExpression)
-	{
-		assertThat(compositeFilter).hasCompositeAndFilter();
-
-		final List<ICompositeQueryFilter> includedCompositeAndFilters = extractFilters(compositeFilter, ICompositeQueryFilter.class);
-		assertThat(includedCompositeAndFilters).anySatisfy(filter -> {
-			assertThat(filter).isJoinAnd();
-			assertThat(filter).hasStringLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, likeExpression);
-		});
-
-	}
-
-	private void assertHasOneFilterWithNotLikeExpressions(
-			@NonNull final List<ICompositeQueryFilter> includedCompositeAndFilters)
-	{
-		assertThat(includedCompositeAndFilters).anySatisfy(includedCompositeAndFilter -> {
-
-			assertThat(includedCompositeAndFilter).isJoinAnd();
-			assertThat(includedCompositeAndFilter).hasNotQueryFilter();
-			final List<NotQueryFilter> notQueryFilters = extractFilters(includedCompositeAndFilter, NotQueryFilter.class);
-			assertThat(notQueryFilters).hasSize(2);
-
-			assertThat(notQueryFilters).anySatisfy(notQueryFilter -> {
-				assertThat(notQueryFilter.getFilter()).isStringLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, "%3%");
-			});
-			assertThat(notQueryFilters).anySatisfy(notQueryFilter -> {
-				assertThat(notQueryFilter.getFilter()).isStringLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, "%1%2%");
-			});
-		});
-	}
+	// private void assertHasOneANDFilterWithLikeExpression(
+	// @NonNull final ICompositeQueryFilter compositeFilter,
+	// @NonNull final String likeExpression)
+	// {
+	// // assertThat(compositeFilter).hasCompositeAndFilter();
+	//
+	// final List<ICompositeQueryFilter> includedFilters = extractFilters(compositeFilter, ICompositeQueryFilter.class);
+	// assertThat(includedFilters).anySatisfy(filter -> {
+	// assertThat(filter).isJoinAnd();
+	// assertThat(filter).hasStringLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, likeExpression);
+	// });
+	//
+	// }
+	//
+	// private void assertHasOneFilterWithNotLikeExpressions(
+	// @NonNull final List<ICompositeQueryFilter> includedCompositeAndFilters)
+	// {
+	// assertThat(includedCompositeAndFilters).anySatisfy(includedCompositeAndFilter -> {
+	//
+	// assertThat(includedCompositeAndFilter).isJoinAnd();
+	// assertThat(includedCompositeAndFilter).hasNotQueryFilter();
+	// final List<NotQueryFilter> notQueryFilters = extractFilters(includedCompositeAndFilter, NotQueryFilter.class);
+	// assertThat(notQueryFilters).hasSize(2);
+	//
+	// assertThat(notQueryFilters).anySatisfy(notQueryFilter -> {
+	// assertThat(notQueryFilter.getFilter()).isStringLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, "%3%");
+	// });
+	// assertThat(notQueryFilters).anySatisfy(notQueryFilter -> {
+	// assertThat(notQueryFilter.getFilter()).isStringLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, "%1%2%");
+	// });
+	// });
+	// }
 }

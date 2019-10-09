@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.warehouse.WarehouseId;
@@ -15,7 +16,7 @@ import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.material.commons.AttributesKeyQueryHelper;
+import de.metas.material.commons.attributes.AttributesKeyQueryHelper;
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -112,10 +113,12 @@ import lombok.experimental.UtilityClass;
 
 		//
 		// Storage Attributes Key
-		final AttributesKeyQueryHelper<I_MD_Candidate_ATP_QueryResult>//
-		helper = AttributesKeyQueryHelper.createFor(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey);
+		{
+			final AttributesKeyQueryHelper<I_MD_Candidate_ATP_QueryResult> helper = AttributesKeyQueryHelper.createFor(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey);
+			final IQueryFilter<I_MD_Candidate_ATP_QueryResult> attributesFilter = helper.createFilter(query.getStorageAttributesKeys());
+			queryBuilder.filter(attributesFilter);
+		}
 
-		queryBuilder.filter(helper.createORFilterForStorageAttributesKeys(query.getStorageAttributesKeys()));
 		return queryBuilder;
 	}
 
