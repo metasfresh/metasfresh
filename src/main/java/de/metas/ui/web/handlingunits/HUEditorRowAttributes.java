@@ -1,6 +1,7 @@
 package de.metas.ui.web.handlingunits;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +26,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.product.ProductId;
+import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.view.descriptor.ViewRowAttributesLayout;
 import de.metas.ui.web.view.json.JSONViewRowAttributes;
@@ -261,10 +263,22 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		final String attributeValueType = attributesStorage.getAttributeValueType(attribute);
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
 		{
-			return DateTimeConverters.fromJson(jsonValue.toString(), DocumentFieldWidgetType.LocalDate);
-		}
+			final LocalDate localDate = DateTimeConverters.fromObjectToLocalDate(jsonValue.toString());
+			if (localDate == null)
+			{
+				return null;
+			}
 
-		return jsonValue;
+			// convert the LocalDate to ZonedDateTime using session's time zone,
+			// because later on the date is converted to Timestamp using system's default time zone.
+			// And we want to have a valid date for session's timezone.
+			final ZoneId zoneId = UserSession.getTimeZoneOrSystemDefault();
+			return localDate.atStartOfDay(zoneId);
+		}
+		else
+		{
+			return jsonValue;
+		}
 	}
 
 	@Override
