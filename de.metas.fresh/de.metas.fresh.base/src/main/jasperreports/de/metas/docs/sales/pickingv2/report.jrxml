@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="1.100000000000001"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="96"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="fresh\de\metas\docs\sales\pickingv2\uat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="dev.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -99,28 +99,28 @@ where orderdocumentno = $P{OrderDocumentNo};]]>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock_right.jasper"]]></subreportExpression>
 			</subreport>
 			<textField>
-				<reportElement x="149" y="270" width="140" height="13" uuid="db6df361-8a5d-463e-960f-6803493b3c59"/>
+				<reportElement x="163" y="270" width="140" height="13" uuid="db6df361-8a5d-463e-960f-6803493b3c59"/>
 				<textElement>
 					<font fontName="Arial" size="11" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{orderdocumentno}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="149" y="287" width="140" height="13" uuid="09e318a4-4f31-4eb1-a46a-c2ce2345bc99"/>
+				<reportElement x="163" y="287" width="140" height="13" uuid="09e318a4-4f31-4eb1-a46a-c2ce2345bc99"/>
 				<textElement>
 					<font fontName="Arial" size="11" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{preparationdate}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="40" y="288" width="110" height="13" uuid="a6cab927-75bc-461b-8a4c-ed16b6cf94e4"/>
+				<reportElement x="40" y="288" width="120" height="13" uuid="a6cab927-75bc-461b-8a4c-ed16b6cf94e4"/>
 				<textElement>
 					<font fontName="Arial" size="11" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{preparationdate}+": "]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="40" y="270" width="108" height="13" uuid="f88eb9c5-03bf-4e91-aacf-6623132631e6"/>
+				<reportElement x="40" y="270" width="120" height="13" uuid="f88eb9c5-03bf-4e91-aacf-6623132631e6"/>
 				<textElement>
 					<font fontName="Arial" size="11" isBold="true"/>
 				</textElement>
