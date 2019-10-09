@@ -1043,14 +1043,10 @@ public class BPartnerDAO implements IBPartnerDAO
 			queryBuilder.orderBy()
 			.addColumn(I_C_BP_Relation.COLUMNNAME_C_BP_Relation_ID);
 
-			final Stream<BPRelation> relationsStream = bpRelationQueryBuilder
+			final Optional<BPartnerLocationId> relBPLocationId = bpRelationQueryBuilder
 					.create()
 					.stream()
-					.map(bpRelationRecord -> ofRelationRecord(bpRelationRecord));
-
-			Optional<BPartnerLocationId> relBPLocationId = Optional.empty();
-
-			relBPLocationId = relationsStream
+					.map(bpRelationRecord -> ofRelationRecord(bpRelationRecord))
 					.filter(bpRelation -> Objects.equals(query.getRelationBPartnerLocationId(), bpRelation.getBplocationId()))
 					.map(bpRelation -> bpRelation.getTargetBPLocationId())
 					.findFirst();
