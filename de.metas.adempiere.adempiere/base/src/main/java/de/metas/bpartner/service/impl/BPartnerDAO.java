@@ -1046,6 +1046,7 @@ public class BPartnerDAO implements IBPartnerDAO
 			final Stream<BPRelation> relationsStream = bpRelationQueryBuilder
 					.create()
 					.stream()
+					.map(bpRelationRecord -> ofRelationRecord(bpRelationRecord));
 
 			Optional<BPartnerLocationId> relBPLocationId = Optional.empty();
 
