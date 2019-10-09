@@ -62,7 +62,13 @@ public final class UIDisplayedEntityTypes extends Constraint
 			@NonNull final String entityType)
 	{
 		// Get the constraint of current logged in role.
-		final IUserRolePermissions role = Env.getUserRolePermissions(ctx);
+		final IUserRolePermissions role = Env.getUserRolePermissionsOrNull(ctx);
+		if(role == null)
+		{
+			// cannot extract the role from given context => consider the entity as displayed
+			return true;
+		}
+		
 		return isEntityTypeDisplayedInUIOrTrueIfNull(role, entityType);
 	}
 

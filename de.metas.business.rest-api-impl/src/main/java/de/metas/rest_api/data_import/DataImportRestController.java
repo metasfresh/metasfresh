@@ -68,8 +68,8 @@ public class DataImportRestController
 			@ApiParam("Data Import internal name (i.e. `C_DataImport.InternalName`)") //
 			@RequestParam("dataImportConfig") @NonNull final String dataImportConfigInternalName,
 
-			@ApiParam("Try complete documents in case it applies") //
-			@RequestParam(name = "completeDocuments", required = false, defaultValue = "false") final boolean completeDocuments,
+			@ApiParam("Try to complete documents if it applies to the given import") //
+			@RequestParam(name = "completeDocuments", required = false, defaultValue = "true") final boolean completeDocuments,
 
 			@ApiParam("The text file you are importing") //
 			@RequestBody @NonNull final String content)

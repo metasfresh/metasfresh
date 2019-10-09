@@ -30,6 +30,9 @@ import java.util.Collection;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
@@ -42,6 +45,8 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.model.I_C_POSKey;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.fresh.picking.form.PackingStates;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -97,7 +102,7 @@ public class PickingSlotKey extends TerminalKey
 		final String pickingSlotName = buildPickingSlotName();
 		key.setName(pickingSlotName);
 
-		value = new KeyNamePair(pickingSlot.getM_PickingSlot_ID(), pickingSlotName);
+		value = KeyNamePair.of(pickingSlot.getM_PickingSlot_ID(), pickingSlotName);
 		status = new PickingSlotStatus();
 
 		//
@@ -396,32 +401,41 @@ public class PickingSlotKey extends TerminalKey
 				.append("<font size=\"5\">")
 				.append(pickingSlot.getPickingSlot())
 				.append("</font>")
-				.append("</div>");
+				.append("</div>" );
 
-		if (pickingSlot.getM_Warehouse_ID() > 0)
+		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(pickingSlot.getM_Warehouse_ID());
+		if (warehouseId != null)
 		{
-			final String warehouseName = truncatedString(pickingSlot.getM_Warehouse().getName(), maxLength);
+			final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+			final String warehouseName = warehousesRepo.getWarehouseName(warehouseId);
+			final String warehouseNameTrunc = truncatedString(warehouseName, maxLength);
 			pickingSlotName.append("<br>")
 					.append("<font size=\"3\">")
-					.append(StringUtils.maskHTML(warehouseName))
+					.append(StringUtils.maskHTML(warehouseNameTrunc))
 					.append("</font>");
 		}
 
-		if (null != pickingSlot.getC_BPartner())
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(pickingSlot.getC_BPartner_ID());
+		if (bpartnerId != null)
 		{
-			final String bpName = truncatedString(pickingSlot.getC_BPartner().getName(), maxLength);
+			final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+			final String bpName = bpartnerBL.getBPartnerName(bpartnerId);
+			final String bpNameTrunc = truncatedString(bpName, maxLength);
 			pickingSlotName.append("<br>")
 					.append("<font size=\"3\">")
-					.append(StringUtils.maskHTML(bpName))
+					.append(StringUtils.maskHTML(bpNameTrunc))
 					.append("</font>");
 		}
 
-		if (null != pickingSlot.getC_BPartner_Location())
+		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, pickingSlot.getC_BPartner_Location_ID());
+		if (bpartnerLocationId != null)
 		{
-			final String bplName = truncatedString(pickingSlot.getC_BPartner_Location().getName(), maxLength);
+			final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+			final I_C_BPartner_Location bpl = bpartnersRepo.getBPartnerLocationById(bpartnerLocationId);
+			final String bplNameTrunc = truncatedString(bpl.getName(), maxLength);
 			pickingSlotName.append("<br>")
 					.append("<font size=\"3\">")
-					.append(bplName)
+					.append(bplNameTrunc)
 					.append("</font>");
 		}
 
