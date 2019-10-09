@@ -1,19 +1,18 @@
 package de.metas.ui.web.pickingV2.packageable.process;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_PInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
+import de.metas.process.PInstanceRequest;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -52,6 +51,8 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 	@Autowired
 	private ProductsToPickRowsRepository productsToPickRowsRepository;
 
+	final private IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
+
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -78,6 +79,36 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 		return MSG_OK;
 	}
 
+	private byte[] printPicklist(@NonNull final PackageableRow row)
+	{
+		final PInstanceRequest pinstanceRequest = createPInstanceRequest(row);
+		final PInstanceId pinstanceId = adPInstanceDAO.createADPinstanceAndADPInstancePara(pinstanceRequest);
+
+		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
+				.setCtx(getCtx())
+				.setAD_Process_ID(PickListPdf_AD_Process_ID)
+				.setAD_PInstance(adPInstanceDAO.getById(pinstanceId))
+				.setReportLanguage(getProcessInfo().getReportLanguage())
+				.setJRDesiredOutputType(OutputType.PDF)
+				.build();
+
+		final JRClient jrClient = JRClient.get();
+		return jrClient.report(jasperProcessInfo);
+	}
+
+	private PInstanceRequest createPInstanceRequest(@NonNull final PackageableRow row)
+	{
+		final String orderNo = row.getOrderDocumentNo();
+		final List<ProcessInfoParameter> piParams = ImmutableList.of(ProcessInfoParameter.of(I_M_Packageable_V.COLUMNNAME_OrderDocumentNo, orderNo));
+
+		final PInstanceRequest  pinstanceRequest = PInstanceRequest.builder()
+				.processId(PickListPdf_AD_Process_ID)
+				.processParams(piParams)
+				.build();
+		return pinstanceRequest;
+	}
+
+
 	private String buildFilename(@NonNull final PackageableRow row)
 	{
 
@@ -88,31 +119,5 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 				.skipNulls()
 				.join(docuemntNo, customer)
 				+ ".pdf";
-	}
-
-	private byte[] printPicklist(@NonNull final PackageableRow row)
-	{
-
-		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(PickListPdf_AD_Process_ID);
-		pinstance.setIsProcessing(true);
-		InterfaceWrapperHelper.save(pinstance);
-
-		final List<ProcessInfoParameter> piParams = new ArrayList<>();
-		final String orderNo = row.getOrderDocumentNo();
-		piParams.add(ProcessInfoParameter.of(I_M_Packageable_V.COLUMNNAME_OrderDocumentNo, orderNo));
-		Services.get(IADPInstanceDAO.class).saveParameterToDB(PInstanceId.ofRepoId(pinstance.getAD_PInstance_ID()), piParams);
-
-		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
-				.setCtx(getCtx())
-				.setAD_Process_ID(PickListPdf_AD_Process_ID)
-				.setAD_PInstance(pinstance)
-				.setReportLanguage(getProcessInfo().getReportLanguage())
-				.setJRDesiredOutputType(OutputType.PDF)
-				.build();
-
-		final JRClient jrClient = JRClient.get();
-		final byte[] pdf = jrClient.report(jasperProcessInfo);
-
-		return pdf;
 	}
 }
