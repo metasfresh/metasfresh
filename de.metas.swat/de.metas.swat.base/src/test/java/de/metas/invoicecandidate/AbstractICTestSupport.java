@@ -75,6 +75,8 @@ import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.aggregation.model.X_C_AggregationItem;
 import de.metas.aggregation.model.X_C_Aggregation_Attribute;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
@@ -116,6 +118,7 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.testsupport.AbstractTestSupport;
 import de.metas.uom.UomId;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.Getter;
@@ -274,6 +277,8 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 
 		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentEntryService));
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+
 	}
 
 	protected void config_InvoiceCand_HeaderAggregation()
