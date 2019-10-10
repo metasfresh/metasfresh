@@ -741,6 +741,29 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_Shipper_ZipCode = "DHL_Shipper_ZipCode";
 
 	/**
+	 * Set DHL_WeightInKg.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDHL_WeightInKg (java.math.BigDecimal DHL_WeightInKg);
+
+	/**
+	 * Get DHL_WeightInKg.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getDHL_WeightInKg();
+
+    /** Column definition for DHL_WeightInKg */
+    public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object> COLUMN_DHL_WeightInKg = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object>(I_DHL_ShipmentOrder.class, "DHL_WeightInKg", null);
+    /** Column name DHL_WeightInKg */
+    public static final String COLUMNNAME_DHL_WeightInKg = "DHL_WeightInKg";
+
+	/**
 	 * Set DHL_WidthInCm.
 	 *
 	 * <br>Type: Integer
@@ -762,29 +785,6 @@ public interface I_DHL_ShipmentOrder
     public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object> COLUMN_DHL_WidthInCm = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object>(I_DHL_ShipmentOrder.class, "DHL_WidthInCm", null);
     /** Column name DHL_WidthInCm */
     public static final String COLUMNNAME_DHL_WidthInCm = "DHL_WidthInCm";
-
-	/**
-	 * Set DHL_WeightInKg.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setDHL_WightInKg (java.math.BigDecimal DHL_WightInKg);
-
-	/**
-	 * Get DHL_WeightInKg.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getDHL_WightInKg();
-
-    /** Column definition for DHL_WightInKg */
-    public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object> COLUMN_DHL_WightInKg = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object>(I_DHL_ShipmentOrder.class, "DHL_WightInKg", null);
-    /** Column name DHL_WightInKg */
-    public static final String COLUMNNAME_DHL_WightInKg = "DHL_WightInKg";
 
 	/**
 	 * Set Aktiv.

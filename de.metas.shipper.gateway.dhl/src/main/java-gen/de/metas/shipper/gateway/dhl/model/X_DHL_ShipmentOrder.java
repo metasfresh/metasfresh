@@ -15,7 +15,7 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1193116047L;
+	private static final long serialVersionUID = -1451121083L;
 
     /** Standard Constructor */
     public X_DHL_ShipmentOrder (Properties ctx, int DHL_ShipmentOrder_ID, String trxName)
@@ -26,8 +26,8 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 			setDHL_HeightInCm (0); // 0
 			setDHL_LengthInCm (0); // 0
 			setDHL_ShipmentOrder_ID (0);
+			setDHL_WeightInKg (BigDecimal.ZERO); // 0
 			setDHL_WidthInCm (0); // 0
-			setDHL_WightInKg (BigDecimal.ZERO); // 0
 			setPackageId (0); // 0
         } */
     }
@@ -525,6 +525,25 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 		return (java.lang.String)get_Value(COLUMNNAME_DHL_Shipper_ZipCode);
 	}
 
+	/** Set DHL_WeightInKg.
+		@param DHL_WeightInKg DHL_WeightInKg	  */
+	@Override
+	public void setDHL_WeightInKg (java.math.BigDecimal DHL_WeightInKg)
+	{
+		set_Value (COLUMNNAME_DHL_WeightInKg, DHL_WeightInKg);
+	}
+
+	/** Get DHL_WeightInKg.
+		@return DHL_WeightInKg	  */
+	@Override
+	public java.math.BigDecimal getDHL_WeightInKg () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DHL_WeightInKg);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** Set DHL_WidthInCm.
 		@param DHL_WidthInCm DHL_WidthInCm	  */
 	@Override
@@ -542,25 +561,6 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set DHL_WeightInKg.
-		@param DHL_WightInKg DHL_WeightInKg	  */
-	@Override
-	public void setDHL_WightInKg (java.math.BigDecimal DHL_WightInKg)
-	{
-		set_Value (COLUMNNAME_DHL_WightInKg, DHL_WightInKg);
-	}
-
-	/** Get DHL_WeightInKg.
-		@return DHL_WeightInKg	  */
-	@Override
-	public java.math.BigDecimal getDHL_WightInKg () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DHL_WightInKg);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
 	}
 
 	/** Set Package Id.
