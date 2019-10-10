@@ -15,7 +15,7 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1451121083L;
+	private static final long serialVersionUID = 297601985L;
 
     /** Standard Constructor */
     public X_DHL_ShipmentOrder (Properties ctx, int DHL_ShipmentOrder_ID, String trxName)
@@ -392,6 +392,40 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 	public int getDHL_ShipmentOrder_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_DHL_ShipmentOrder_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public I_DHL_ShipmentOrderRequest getDHL_ShipmentOrderRequest()
+	{
+		return get_ValueAsPO(COLUMNNAME_DHL_ShipmentOrderRequest_ID, I_DHL_ShipmentOrderRequest.class);
+	}
+
+	@Override
+	public void setDHL_ShipmentOrderRequest(I_DHL_ShipmentOrderRequest DHL_ShipmentOrderRequest)
+	{
+		set_ValueFromPO(COLUMNNAME_DHL_ShipmentOrderRequest_ID, I_DHL_ShipmentOrderRequest.class, DHL_ShipmentOrderRequest);
+	}
+
+	/** Set DHL Shipment Order Request.
+		@param DHL_ShipmentOrderRequest_ID DHL Shipment Order Request	  */
+	@Override
+	public void setDHL_ShipmentOrderRequest_ID (int DHL_ShipmentOrderRequest_ID)
+	{
+		if (DHL_ShipmentOrderRequest_ID < 1) 
+			set_Value (COLUMNNAME_DHL_ShipmentOrderRequest_ID, null);
+		else 
+			set_Value (COLUMNNAME_DHL_ShipmentOrderRequest_ID, Integer.valueOf(DHL_ShipmentOrderRequest_ID));
+	}
+
+	/** Get DHL Shipment Order Request.
+		@return DHL Shipment Order Request	  */
+	@Override
+	public int getDHL_ShipmentOrderRequest_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DHL_ShipmentOrderRequest_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

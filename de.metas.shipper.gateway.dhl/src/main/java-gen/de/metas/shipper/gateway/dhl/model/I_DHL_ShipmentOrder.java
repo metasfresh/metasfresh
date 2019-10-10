@@ -557,6 +557,33 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_ShipmentOrder_ID = "DHL_ShipmentOrder_ID";
 
 	/**
+	 * Set DHL Shipment Order Request.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDHL_ShipmentOrderRequest_ID (int DHL_ShipmentOrderRequest_ID);
+
+	/**
+	 * Get DHL Shipment Order Request.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getDHL_ShipmentOrderRequest_ID();
+
+	public I_DHL_ShipmentOrderRequest getDHL_ShipmentOrderRequest();
+
+	public void setDHL_ShipmentOrderRequest(I_DHL_ShipmentOrderRequest DHL_ShipmentOrderRequest);
+
+    /** Column definition for DHL_ShipmentOrderRequest_ID */
+    public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, I_DHL_ShipmentOrderRequest> COLUMN_DHL_ShipmentOrderRequest_ID = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, I_DHL_ShipmentOrderRequest>(I_DHL_ShipmentOrder.class, "DHL_ShipmentOrderRequest_ID", I_DHL_ShipmentOrderRequest.class);
+    /** Column name DHL_ShipmentOrderRequest_ID */
+    public static final String COLUMNNAME_DHL_ShipmentOrderRequest_ID = "DHL_ShipmentOrderRequest_ID";
+
+	/**
 	 * Set DHL_Shipper_City.
 	 *
 	 * <br>Type: String
