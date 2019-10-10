@@ -61,29 +61,23 @@ class MasterWidget extends Component {
       if (dateParse.includes(widgetType) && !Moment.isMoment(next)) {
         next = Moment(next);
       }
-
+      this.setState(
+        {
+          updated: true,
+          data: next,
+        },
+        () => {
+          this.timeout = setTimeout(() => {
+            this.setState({
+              updated: false,
+            });
+          }, 1000);
+        }
+      );
+    } else if (edited) {
       this.setState({
-        data: next,
+        edited: false,
       });
-
-      if (!edited) {
-        this.setState(
-          {
-            updated: true,
-          },
-          () => {
-            this.timeout = setTimeout(() => {
-              this.setState({
-                updated: false,
-              });
-            }, 1000);
-          }
-        );
-      } else {
-        this.setState({
-          edited: false,
-        });
-      }
     }
   }
 
@@ -203,17 +197,6 @@ class MasterWidget extends Component {
   };
 
   /**
-   * @method setEditedFlag
-   * @summary ToDo: Describe the method.
-   * @param {*} edited
-   */
-  setEditedFlag = edited => {
-    this.setState({
-      edited: edited,
-    });
-  };
-
-  /**
    * @method validatePrecision
    * @summary ToDo: Describe the method.
    * @param {*} value
@@ -266,7 +249,7 @@ class MasterWidget extends Component {
           res.data &&
           /*eslint-disable */
           window.open(url, '_blank');
-        /*eslint-enable */
+          /*eslint-enable */
       });
   };
 
@@ -300,7 +283,6 @@ class MasterWidget extends Component {
         handlePatch={this.handlePatch}
         handleChange={this.handleChange}
         handleProcess={this.handleProcess}
-        setEditedFlag={this.setEditedFlag}
         handleZoomInto={this.handleZoomInto}
         onBlurWidget={this.handleBlurWidget}
       />
@@ -315,8 +297,14 @@ class MasterWidget extends Component {
  * @prop {func} openModal
  */
 MasterWidget.propTypes = {
+  isModal: PropTypes.bool,
   dataEntry: PropTypes.bool,
+  fieldName: PropTypes.string,
   isOpenDatePicker: PropTypes.bool,
+  onClickOutside: PropTypes.func,
+  onBlurWidget: PropTypes.func,
+  handleBackdropLock: PropTypes.func,
+  updatePropertyValue: PropTypes.func,
   openModal: PropTypes.func.isRequired,
 };
 
