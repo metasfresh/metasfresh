@@ -23,6 +23,8 @@ import de.metas.bpartner.GLN;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
+import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.cache.CCache;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
@@ -79,7 +81,7 @@ final class BPartnerMasterDataProvider
 {
 	//
 	// Services
-	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final ILocationDAO locationsRepo = Services.get(ILocationDAO.class);
 	private final ICountryDAO countryRepo = Services.get(ICountryDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -216,7 +218,7 @@ final class BPartnerMasterDataProvider
 		final BPartnerQuery query = createBPartnerQuery(jsonBPartnerInfo, context.getOrgId());
 
 		{
-			final BPartnerId bpartnerId = bpartnersRepo.retrieveBPartnerIdBy(query).orElse(null);
+			final BPartnerId bpartnerId = bpartnerDAO.retrieveBPartnerIdBy(query).orElse(null);
 			if (bpartnerId != null)
 			{
 				return bpartnerId;
@@ -227,7 +229,7 @@ final class BPartnerMasterDataProvider
 		{
 			final BPartnerQuery queryWithoutGLN = query.withNoGLNs();
 			final BPartnerId bpartnerId = !queryWithoutGLN.isEmpty()
-					? bpartnersRepo.retrieveBPartnerIdBy(query).orElse(null)
+					? bpartnerDAO.retrieveBPartnerIdBy(query).orElse(null)
 					: null;
 			if (bpartnerId != null)
 			{
@@ -280,24 +282,34 @@ final class BPartnerMasterDataProvider
 		BPartnerLocationId existingBPLocationId = null;
 		if (context.getLocationId() != null)
 		{
-			existingBPLocationId = context.getLocationId();
+			return context.getLocationId();
+		}
+
+		if (jsonBPartnerLocation == null) // no JSON-location was provided at all; see if we have something in our masterdata
+		{
+			existingBPLocationId = bpartnerDAO
+					.retrieveBPartnerLocationId(BPartnerLocationQuery.builder()
+							.bpartnerId(bpartnerId)
+							.type(Type.SHIP_TO)
+							.applyTypeStrictly(false) // if there is no "ShipTo", then take what we get
+							.build());
 		}
 
 		if (existingBPLocationId == null
 				&& jsonBPartnerLocation != null
 				&& jsonBPartnerLocation.getExternalId() != null)
 		{
-			existingBPLocationId = bpartnersRepo
+			existingBPLocationId = bpartnerDAO
 					.getBPartnerLocationIdByExternalId(
 							bpartnerId,
 							JsonExternalIds.toExternalIdOrNull(jsonBPartnerLocation.getExternalId()))
 					.orElse(null);
 		}
-		if (existingBPLocationId == null
+		if (existingBPLocationId == null // locationId not yet found
 				&& jsonBPartnerLocation != null
 				&& jsonBPartnerLocation.getGln() != null)
 		{
-			existingBPLocationId = bpartnersRepo
+			existingBPLocationId = bpartnerDAO
 					.getBPartnerLocationIdByGln(
 							bpartnerId,
 							GLN.ofString(jsonBPartnerLocation.getGln()))
@@ -320,7 +332,7 @@ final class BPartnerMasterDataProvider
 		}
 		else if (jsonBPartnerContact != null && jsonBPartnerContact.getExternalId() != null)
 		{
-			existingContactId = bpartnersRepo
+			existingContactId = bpartnerDAO
 					.getContactIdByExternalId(
 							bpartnerId,
 							JsonExternalIds.toExternalIdOrNull(jsonBPartnerContact.getExternalId()))
@@ -359,7 +371,7 @@ final class BPartnerMasterDataProvider
 		final I_C_BPartner bpartnerRecord;
 		if (existingBPartnerId != null)
 		{
-			bpartnerRecord = bpartnersRepo.getByIdInTrx(existingBPartnerId);
+			bpartnerRecord = bpartnerDAO.getByIdInTrx(existingBPartnerId);
 			if (bpartnerRecord == null)
 			{
 				throw new AdempiereException("@NotFound@ @C_BPartner_ID@: " + existingBPartnerId);
@@ -377,7 +389,7 @@ final class BPartnerMasterDataProvider
 
 		updateBPartnerRecord(bpartnerRecord, json);
 		permissionService.assertCanCreateOrUpdate(bpartnerRecord);
-		bpartnersRepo.save(bpartnerRecord);
+		bpartnerDAO.save(bpartnerRecord);
 
 		return BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID());
 	}
@@ -419,7 +431,7 @@ final class BPartnerMasterDataProvider
 
 	public JsonResponseBPartner getJsonBPartnerById(@NonNull final BPartnerId bpartnerId)
 	{
-		final I_C_BPartner record = bpartnersRepo.getById(bpartnerId);
+		final I_C_BPartner record = bpartnerDAO.getById(bpartnerId);
 		Check.assumeNotNull(record, "bpartner shall exist for {}", bpartnerId);
 
 		return JsonResponseBPartner.builder()
@@ -461,7 +473,7 @@ final class BPartnerMasterDataProvider
 		final I_C_BPartner_Location bpLocationRecord;
 		if (existingBPLocationId != null)
 		{
-			bpLocationRecord = bpartnersRepo.getBPartnerLocationById(existingBPLocationId);
+			bpLocationRecord = bpartnerDAO.getBPartnerLocationById(existingBPLocationId);
 		}
 		else
 		{
@@ -471,7 +483,7 @@ final class BPartnerMasterDataProvider
 
 		updateBPartnerLocationRecord(bpLocationRecord, bpartnerId, jsonBPartnerLocation);
 		permissionService.assertCanCreateOrUpdate(bpLocationRecord);
-		bpartnersRepo.save(bpLocationRecord);
+		bpartnerDAO.save(bpLocationRecord);
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, bpLocationRecord.getC_BPartner_Location_ID());
 
 		if (context.isBPartnerIsOrgBP())
@@ -527,7 +539,7 @@ final class BPartnerMasterDataProvider
 			return null;
 		}
 
-		final I_C_BPartner_Location bpLocationRecord = bpartnersRepo.getBPartnerLocationById(bpartnerLocationId);
+		final I_C_BPartner_Location bpLocationRecord = bpartnerDAO.getBPartnerLocationById(bpartnerLocationId);
 		if (bpLocationRecord == null)
 		{
 			return null;
@@ -587,7 +599,7 @@ final class BPartnerMasterDataProvider
 		I_AD_User contactRecord;
 		if (existingContactId != null)
 		{
-			contactRecord = bpartnersRepo.getContactById(existingContactId);
+			contactRecord = bpartnerDAO.getContactById(existingContactId);
 		}
 		else
 		{
@@ -597,7 +609,7 @@ final class BPartnerMasterDataProvider
 
 		updateBPartnerContactRecord(contactRecord, bpartnerId, jsonBPartnerContact);
 		permissionService.assertCanCreateOrUpdate(contactRecord);
-		bpartnersRepo.save(contactRecord);
+		bpartnerDAO.save(contactRecord);
 
 		return BPartnerContactId.ofRepoId(bpartnerId, contactRecord.getAD_User_ID());
 	}
@@ -618,7 +630,7 @@ final class BPartnerMasterDataProvider
 			return null;
 		}
 
-		final I_AD_User bpContactRecord = bpartnersRepo.getContactById(bpartnerContactId);
+		final I_AD_User bpContactRecord = bpartnerDAO.getContactById(bpartnerContactId);
 		if (bpContactRecord == null)
 		{
 			return null;

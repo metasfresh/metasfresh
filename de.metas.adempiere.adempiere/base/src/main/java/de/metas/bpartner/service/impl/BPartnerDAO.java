@@ -1000,12 +1000,11 @@ public class BPartnerDAO implements IBPartnerDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
-
 	@Override
 	public I_C_BPartner_Location retrieveBPartnerLocation(@NonNull final BPartnerLocationQuery query)
 	{
 		final BPartnerLocationId bPartnerLocationId = retrieveBPartnerLocationId(query);
-		if(bPartnerLocationId == null)
+		if (bPartnerLocationId == null)
 		{
 			return null;
 		}
@@ -1015,23 +1014,27 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public BPartnerLocationId retrieveBPartnerLocationId(@NonNull final BPartnerLocationQuery query)
 	{
-		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner_Location.class);
+		final String typeFilterColumnName = getFilterColumnNameForType(query.getType());
 
-		final ICompositeQueryFilter<I_C_BPartner_Location> filters = queryBuilder.getCompositeFilter();
-		filters.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, query.getBpartnerId());
-		filters.addEqualsFilter(getFilterColumnNameForType(query.getType()), true);
-		filters.addOnlyActiveRecordsFilter();
+		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BPartner_Location.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner_Location.COLUMN_C_BPartner_ID, query.getBpartnerId());
+		if (query.isApplyTypeStrictly())
+		{
+			queryBuilder.addEqualsFilter(typeFilterColumnName, true);
+		}
+		else
+		{
+			queryBuilder.orderByDescending(typeFilterColumnName); // "Y" first
+		}
 
 		final String orderByColumnName = getOrderByColumnNameForType(query.getType());
 		if (orderByColumnName != null)
 		{
-			queryBuilder.orderBy()
-					.addColumn(I_C_BPartner_Location.COLUMNNAME_IsBillToDefault, Direction.Descending, Nulls.Last);
+			queryBuilder.orderByDescending(orderByColumnName);
 		}
-
-		queryBuilder.orderBy()
-				.addColumn(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
+		queryBuilder.orderBy(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
 
 		final I_C_BPartner_Location ownToLocation = queryBuilder
 				.create()
@@ -1040,13 +1043,17 @@ public class BPartnerDAO implements IBPartnerDAO
 		{
 			// !alsoTryRelation => we return whatever we got here (null or not)
 			// ownBillToLocation != null => we return the not-null location we found
+			if (ownToLocation == null)
+			{
+				return null;
+			}
 			return BPartnerLocationId.ofRepoId(query.getBpartnerId(), ownToLocation.getC_BPartner_Location_ID());
 		}
 
 		final IQueryBuilder<I_C_BP_Relation> bpRelationQueryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BP_Relation.class)
 				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, query.getBpartnerId())
-				.addEqualsFilter(getFilterColumnNameForType(query.getType()), true)
+				.addEqualsFilter(typeFilterColumnName, true)
 				.addOnlyActiveRecordsFilter();
 
 		queryBuilder.orderBy()

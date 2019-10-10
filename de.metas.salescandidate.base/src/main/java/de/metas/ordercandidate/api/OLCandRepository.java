@@ -19,9 +19,6 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
-import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.document.DocTypeId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -57,7 +54,7 @@ import lombok.NonNull;
 @Repository
 public class OLCandRepository
 {
-	private IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	public OLCandSource getForProcessor(@NonNull OLCandProcessorDescriptor processor)
 	{
@@ -89,24 +86,16 @@ public class OLCandRepository
 			olCandPO.setAD_Org_ID(request.getOrgId().getRepoId());
 		}
 		final OrgId orgId = OrgId.ofRepoIdOrAny(olCandPO.getAD_Org_ID());
-		final ZoneId timeZone = Services.get(IOrgDAO.class).getTimeZone(orgId);
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
 		{
 			final BPartnerInfo bpartner = request.getBpartner();
-			BPartnerLocationId bpartnerLocationId = bpartner.getBpartnerLocationId();
+			final BPartnerLocationId bpartnerLocationId = bpartner.getBpartnerLocationId();
 			if (bpartnerLocationId == null)
 			{
-				bpartnerLocationId = bPartnerDAO
-						.retrieveBPartnerLocationId(BPartnerLocationQuery.builder()
-								.bpartnerId(bpartner.getBpartnerId())
-								.type(Type.SHIP_TO)
-								.build());
-				if (bpartnerLocationId == null)
-				{
-					throw new AdempiereException("Given OLCandCreateRequest has no BpartnerLocationId and its bpartner has no shipTo-Location to fall back to")
-							.appendParametersToMessage()
-							.setParameter("OLCandCreateRequest", request);
-				}
+				throw new AdempiereException("Given OLCandCreateRequest has no BpartnerLocationId")
+						.appendParametersToMessage()
+						.setParameter("OLCandCreateRequest", request);
 			}
 
 			olCandPO.setC_BPartner_ID(BPartnerId.toRepoId(bpartner.getBpartnerId()));
