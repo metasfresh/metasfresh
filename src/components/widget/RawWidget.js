@@ -87,9 +87,8 @@ export class RawWidget extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} e
    */
-  handleFocus = e => {
+  handleFocus = () => {
     const { dispatch, handleFocus, listenOnKeysFalse } = this.props;
-    const el = e.target;
 
     dispatch(disableShortcut());
     listenOnKeysFalse && listenOnKeysFalse();
@@ -98,7 +97,6 @@ export class RawWidget extends Component {
       this.setState(
         {
           isEdited: true,
-          cachedValue: el.value,
         },
         () => {
           handleFocus && handleFocus();
