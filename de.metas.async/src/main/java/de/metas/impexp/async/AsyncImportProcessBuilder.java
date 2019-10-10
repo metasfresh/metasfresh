@@ -5,6 +5,7 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.impexp.processing.IImportProcess;
 import de.metas.impexp.processing.spi.IAsyncImportProcessBuilder;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
@@ -13,7 +14,7 @@ import lombok.NonNull;
 
 /**
  * {@link IAsyncImportProcessBuilder} implementation which creates and enqueues an {@link AsyncImportWorkpackageProcessor} workpackage.
- * 
+ *
  * @author tsa
  *
  */
@@ -23,6 +24,11 @@ final class AsyncImportProcessBuilder implements IAsyncImportProcessBuilder
 
 	private String _importTableName;
 	private PInstanceId importRecordsSelectionId = null;
+
+	private boolean validateOnly = false;
+	private boolean insertOnly = false;
+	private boolean deleteOldImported = false;
+	private boolean completeDocuments = false;
 
 	private Properties _ctx;
 
@@ -47,11 +53,16 @@ final class AsyncImportProcessBuilder implements IAsyncImportProcessBuilder
 				.setContext(ctx)
 				.newWorkpackage()
 				.parameters()
+				.setParameter(IImportProcess.PARAM_IsDocComplete, completeDocuments)
 				.setParameter(AsyncImportWorkpackageProcessor.PARAM_ImportTableName, importTableName)
+				.setParameter(IImportProcess.PARAM_DeleteOldImported, deleteOldImported)
+				.setParameter(IImportProcess.PARAM_IsValidateOnly, validateOnly)
+				.setParameter(IImportProcess.PARAM_IsInsertOnly, insertOnly)
 				.setParameter(AsyncImportWorkpackageProcessor.PARAM_Selection_ID, importRecordsSelectionId)
 				.end()
 				//
 				.build();
+
 	}
 
 	@Override
@@ -86,6 +97,34 @@ final class AsyncImportProcessBuilder implements IAsyncImportProcessBuilder
 	public IAsyncImportProcessBuilder setImportFromSelectionId(@NonNull final PInstanceId fromSelectionId)
 	{
 		this.importRecordsSelectionId = fromSelectionId;
+		return this;
+	}
+
+	@Override
+	public IAsyncImportProcessBuilder setCompleteDocuments(final boolean completeDocuments)
+	{
+		this.completeDocuments = completeDocuments;
+		return this;
+	}
+
+	@Override
+	public IAsyncImportProcessBuilder setValidateOnly(final boolean validateOnly)
+	{
+		this.validateOnly = validateOnly;
+		return this;
+	}
+
+	@Override
+	public IAsyncImportProcessBuilder setInsertOnly(final boolean insertOnly)
+	{
+		this.insertOnly = insertOnly;
+		return this;
+	}
+
+	@Override
+	public IAsyncImportProcessBuilder setDeleteOldImported(final boolean deleteOldImported)
+	{
+		this.deleteOldImported = deleteOldImported;
 		return this;
 	}
 }

@@ -169,7 +169,6 @@ final class DataImportCommand
 					.completeDocuments(completeDocuments)
 					.setParameters(additionalParameters)
 					.selectedRecords(selectionId)
-					// .setLoggable(loggable)
 					.run();
 		}
 		finally
@@ -199,6 +198,7 @@ final class DataImportCommand
 				.setCtx(Env.getCtx())
 				.setImportTableName(importFormat.getImportTableName())
 				.setImportFromSelectionId(selectionId)
+				.setCompleteDocuments(completeDocuments)
 				.buildAndEnqueue();
 	}
 
