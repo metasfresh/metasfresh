@@ -73,7 +73,7 @@ public class InvoicingParams implements IInvoicingParams
 	}
 
 	@Override
-	public boolean isUpdateLocationAndUserForInvoice()
+	public boolean isUpdateLocationAndContactForInvoice()
 	{
 		return params.getParameterAsBool(PARA_IsUpdateLocationAndContactForInvoice);
 	}

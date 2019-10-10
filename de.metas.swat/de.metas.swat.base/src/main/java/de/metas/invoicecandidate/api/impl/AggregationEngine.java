@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.api.impl;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.time.LocalDate;
@@ -128,7 +129,7 @@ public final class AggregationEngine
 	private final LocalDate today;
 	private final LocalDate defaultDateInvoiced;
 	private final LocalDate defaultDateAcct;
-	private final boolean isUpdateLocationAndContactForInvoice;
+	private final boolean updateLocationAndContactForInvoice;
 
 	private final AdTableId inoutLineTableId;
 	/**
@@ -142,24 +143,17 @@ public final class AggregationEngine
 			final boolean alwaysUseDefaultHeaderAggregationKeyBuilder,
 			@Nullable final LocalDate defaultDateInvoiced,
 			@Nullable final LocalDate defaultDateAcct,
-			final boolean isUpdateLocationAndContactForInvoice)
+			final boolean updateLocationAndContactForInvoice)
 	{
+		this.bpartnerBL = coalesce(bpartnerBL, Services.get(IBPartnerBL.class));
 
-		if (bpartnerBL == null)
-		{
-			this.bpartnerBL = Services.get(IBPartnerBL.class);
-		}
-		else
-		{
-			this.bpartnerBL = bpartnerBL;
-		}
 		this.alwaysUseDefaultHeaderAggregationKeyBuilder = alwaysUseDefaultHeaderAggregationKeyBuilder;
 
 		this.today = TimeUtil.asLocalDate(invoiceCandBL.getToday());
 
 		this.defaultDateInvoiced = defaultDateInvoiced;
 		this.defaultDateAcct = defaultDateAcct;
-		this.isUpdateLocationAndContactForInvoice = isUpdateLocationAndContactForInvoice;
+		this.updateLocationAndContactForInvoice = updateLocationAndContactForInvoice;
 
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		inoutLineTableId = AdTableId.ofRepoId(adTableDAO.retrieveTableId(I_M_InOutLine.Table_Name));
@@ -391,8 +385,8 @@ public final class AggregationEngine
 	{
 		invoiceHeader.setAD_Org_ID(ic.getAD_Org_ID());
 		invoiceHeader.setBill_BPartner_ID(ic.getBill_BPartner_ID());
-		invoiceHeader.setBill_Location_ID(getBill_Location_ID(ic, isUpdateLocationAndContactForInvoice));
-		invoiceHeader.setBill_User_ID(getBill_User_ID(ic, isUpdateLocationAndContactForInvoice));
+		invoiceHeader.setBill_Location_ID(getBill_Location_ID(ic, updateLocationAndContactForInvoice));
+		invoiceHeader.setBill_User_ID(getBill_User_ID(ic, updateLocationAndContactForInvoice));
 		invoiceHeader.setC_Order_ID(ic.getC_Order_ID());
 		invoiceHeader.setPOReference(ic.getPOReference()); // task 07978
 

@@ -99,7 +99,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final AggregationEngine engine = AggregationEngine.builder()
 				.defaultDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
-				.isUpdateLocationAndContactForInvoice(true)
+				.updateLocationAndContactForInvoice(true)
 				.build();
 
 		engine.addInvoiceCandidate(ic1);
@@ -130,7 +130,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final AggregationEngine engine = AggregationEngine.builder()
 				.defaultDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
-				.isUpdateLocationAndContactForInvoice(false)
+				.updateLocationAndContactForInvoice(false)
 				.build();
 
 		engine.addInvoiceCandidate(ic1);
@@ -168,7 +168,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final AggregationEngine engine = AggregationEngine.builder()
 				.defaultDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
-				.isUpdateLocationAndContactForInvoice(true)
+				.updateLocationAndContactForInvoice(true)
 				.build();
 
 		engine.addInvoiceCandidate(ic1);

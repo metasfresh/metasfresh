@@ -85,5 +85,5 @@ public interface IInvoicingParams
 	 * Nevertheless, the Bill_Location_Override and Bill_User_Override will be respected if they are set in the
 	 * invoice candidates.
 	 */
-	boolean isUpdateLocationAndUserForInvoice();
+	boolean isUpdateLocationAndContactForInvoice();
 }
