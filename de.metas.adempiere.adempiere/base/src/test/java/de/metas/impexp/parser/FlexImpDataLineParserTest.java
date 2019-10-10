@@ -121,21 +121,21 @@ public class FlexImpDataLineParserTest
 		public void empty_string()
 		{
 			assertThat(extractValues(parser.parseDataCells("\"10\";\"\";\"String2\";\"\"")))
-					.containsExactly(new BigDecimal("10"), "", "String2", false);
+					.containsExactly(new BigDecimal("10"), null, "String2", false);
 		}
 
 		@Test
 		public void empty_number()
 		{
 			assertThat(extractValues(parser.parseDataCells(";\"\";\"String2\";\"Y\"")))
-					.containsExactly(null, "", "String2", true);
+					.containsExactly(null, null, "String2", true);
 		}
 
 		@Test
 		public void empty_yesNo()
 		{
 			assertThat(extractValues(parser.parseDataCells(";\"\";\"String2\";")))
-					.containsExactly(null, "", "String2", false);
+					.containsExactly(null, null, "String2", false);
 		}
 
 
