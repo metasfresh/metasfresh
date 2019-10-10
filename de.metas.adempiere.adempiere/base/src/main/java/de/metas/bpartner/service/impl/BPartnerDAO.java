@@ -89,6 +89,7 @@ import de.metas.bpartner.service.BPartnerContactQuery;
 import de.metas.bpartner.service.BPartnerIdNotFoundException;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
@@ -1491,5 +1492,23 @@ public class BPartnerDAO implements IBPartnerDAO
 		{
 			DB.close(rs, pstmt);
 		}
+	}
+
+	@Override
+	public BPartnerLocationId retrieveCurrentBillLocationOrNull(final BPartnerId partnerId)
+	{
+		final BPartnerLocationQuery query = BPartnerLocationQuery
+				.builder()
+				.type(Type.BILL_TO)
+				.bpartnerId(partnerId)
+				.build();
+		final I_C_BPartner_Location billToLocation = retrieveBPartnerLocation(query);
+
+		if (billToLocation == null)
+		{
+			return null;
+		}
+
+		return BPartnerLocationId.ofRepoId(partnerId, billToLocation.getC_BPartner_Location_ID());
 	}
 }

@@ -303,4 +303,6 @@ public interface IBPartnerDAO extends ISingletonService
 	List<GeographicalCoordinatesWithBPartnerLocationId> getGeoCoordinatesByBPartnerIds(Collection<BPartnerId> bpartnerIds);
 
 	List<GeographicalCoordinatesWithBPartnerLocationId> getGeoCoordinatesByBPartnerLocationIds(Collection<Integer> bpartnerLocationRepoIds);
+
+	BPartnerLocationId retrieveCurrentBillLocationOrNull(BPartnerId partnerId);
 }
