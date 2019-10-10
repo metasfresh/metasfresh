@@ -8,6 +8,8 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.report.jasper.OutputType;
+import de.metas.handlingunits.picking.PickingCandidate;
+import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
@@ -49,7 +51,10 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 	final private static AdProcessId PickListPdf_AD_Process_ID = AdProcessId.ofRepoId(541202);
 
 	@Autowired
-	private ProductsToPickRowsRepository productsToPickRowsRepository;
+	private  ProductsToPickRowsRepository productsToPickRowsRepository;
+
+	@Autowired
+	private PickingCandidateRepository pickingCandidateRepository;
 
 	final private IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 
@@ -65,7 +70,10 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 		final PackageableRow row = getSingleSelectedRow();
 
 		// pick
-		productsToPickRowsRepository.pick(row);
+		final List<PickingCandidate> pcickingCandidates = productsToPickRowsRepository.pick(row);
+
+		//save
+		pickingCandidateRepository.saveAll(pcickingCandidates);
 
 		// print
 		final byte[] pickList = printPicklist(row);

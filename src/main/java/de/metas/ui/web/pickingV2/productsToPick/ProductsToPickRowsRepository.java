@@ -1,9 +1,14 @@
 package de.metas.ui.web.pickingV2.productsToPick;
 
+import java.util.List;
+
 import org.compiere.model.I_M_Locator;
 import org.springframework.stereotype.Repository;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.PickHURequest;
 import de.metas.handlingunits.reservation.HUReservationService;
@@ -76,9 +81,13 @@ public class ProductsToPickRowsRepository
 				.build();
 	}
 
-	public void pick(@NonNull final PackageableRow packageableRow)
+	public List<PickingCandidate> pick(@NonNull final PackageableRow packageableRow)
 	{
 		final ProductsToPickRowsData productsToPickRowsData = createProductsToPickRowsData(packageableRow);
-		productsToPickRowsData.getAllRows().forEach(productsToPickRow -> createPickHURequest(productsToPickRow, false));
+		return productsToPickRowsData.getAllRows().stream()
+				.map(productsToPickRow -> pickingCandidateService.pickHU(createPickHURequest(productsToPickRow, false)))
+				.map(pickHUResult -> pickHUResult.getPickingCandidate())
+				.collect(ImmutableList.toImmutableList());
 	}
+
 }
