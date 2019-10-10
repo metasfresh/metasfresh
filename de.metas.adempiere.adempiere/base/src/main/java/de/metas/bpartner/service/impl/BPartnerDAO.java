@@ -1000,8 +1000,20 @@ public class BPartnerDAO implements IBPartnerDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
+
 	@Override
 	public I_C_BPartner_Location retrieveBPartnerLocation(@NonNull final BPartnerLocationQuery query)
+	{
+		final BPartnerLocationId bPartnerLocationId = retrieveBPartnerLocationId(query);
+		if(bPartnerLocationId == null)
+		{
+			return null;
+		}
+		return loadOutOfTrx(bPartnerLocationId, I_C_BPartner_Location.class);
+	}
+
+	@Override
+	public BPartnerLocationId retrieveBPartnerLocationId(@NonNull final BPartnerLocationQuery query)
 	{
 		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner_Location.class);
@@ -1028,7 +1040,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		{
 			// !alsoTryRelation => we return whatever we got here (null or not)
 			// ownBillToLocation != null => we return the not-null location we found
-			return ownToLocation;
+			return BPartnerLocationId.ofRepoId(query.getBpartnerId(), ownToLocation.getC_BPartner_Location_ID());
 		}
 
 		final IQueryBuilder<I_C_BP_Relation> bpRelationQueryBuilder = Services.get(IQueryBL.class)
@@ -1046,7 +1058,7 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		if (billtoRelation != null)
 		{
-			return InterfaceWrapperHelper.create(billtoRelation.getC_BPartnerRelation_Location(), I_C_BPartner_Location.class);
+			return BPartnerLocationId.ofRepoId(query.getBpartnerId(), billtoRelation.getC_BPartnerRelation_Location_ID());
 		}
 		return null;
 

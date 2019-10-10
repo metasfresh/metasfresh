@@ -266,6 +266,8 @@ public interface IBPartnerDAO extends ISingletonService
 
 	ImmutableSet<BPartnerId> retrieveBPartnerIdsBy(BPartnerQuery query);
 
+	BPartnerLocationId retrieveBPartnerLocationId(BPartnerLocationQuery query);
+
 	I_C_BPartner_Location retrieveBPartnerLocation(BPartnerLocationQuery query);
 
 	ImmutableSet<BPartnerId> retrieveAllCustomerIDs();

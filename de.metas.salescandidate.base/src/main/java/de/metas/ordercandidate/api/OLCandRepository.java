@@ -7,6 +7,7 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -18,6 +19,9 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
+import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.document.DocTypeId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -53,6 +57,8 @@ import lombok.NonNull;
 @Repository
 public class OLCandRepository
 {
+	private IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+
 	public OLCandSource getForProcessor(@NonNull OLCandProcessorDescriptor processor)
 	{
 		return RelationTypeOLCandSource.builder()
@@ -87,14 +93,30 @@ public class OLCandRepository
 
 		{
 			final BPartnerInfo bpartner = request.getBpartner();
+			BPartnerLocationId bpartnerLocationId = bpartner.getBpartnerLocationId();
+			if (bpartnerLocationId == null)
+			{
+				bpartnerLocationId = bPartnerDAO
+						.retrieveBPartnerLocationId(BPartnerLocationQuery.builder()
+								.bpartnerId(bpartner.getBpartnerId())
+								.type(Type.SHIP_TO)
+								.build());
+				if (bpartnerLocationId == null)
+				{
+					throw new AdempiereException("Given OLCandCreateRequest has no BpartnerLocationId and its bpartner has no shipTo-Location to fall back to")
+							.appendParametersToMessage()
+							.setParameter("OLCandCreateRequest", request);
+				}
+			}
+
 			olCandPO.setC_BPartner_ID(BPartnerId.toRepoId(bpartner.getBpartnerId()));
-			olCandPO.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartner.getBpartnerLocationId()));
+			olCandPO.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartnerLocationId));
 			olCandPO.setAD_User_ID(BPartnerContactId.toRepoId(bpartner.getContactId()));
 		}
 
 		if (request.getBillBPartner() != null)
 		{
-			BPartnerInfo bpartner = request.getBillBPartner();
+			final BPartnerInfo bpartner = request.getBillBPartner();
 			olCandPO.setBill_BPartner_ID(BPartnerId.toRepoId(bpartner.getBpartnerId()));
 			olCandPO.setBill_Location_ID(BPartnerLocationId.toRepoId(bpartner.getBpartnerLocationId()));
 			olCandPO.setBill_User_ID(BPartnerContactId.toRepoId(bpartner.getContactId()));
