@@ -34,8 +34,7 @@ import java.util.stream.Stream;
 public enum DhlServiceType implements ServiceType
 {
 
-	Overnight("???"),
-	AnythingElse("???");
+	V01PAK("V01PAK");
 
 	@Getter
 	private final String code;
