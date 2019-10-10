@@ -52,7 +52,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
@@ -69,6 +71,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import de.metas.money.MoneyService;
 import de.metas.order.IOrderLineBL;
+import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -160,6 +163,7 @@ public class InvoiceCandBLCreateInvoicesTest
 
 		final BPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new BPartnerStatisticsUpdater();
 		Services.registerService(IBPartnerStatisticsUpdater.class, asyncBPartnerStatisticsUpdater);
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
 	}
 
