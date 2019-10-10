@@ -17,6 +17,8 @@ class ActionButton extends Component {
     docId: PropTypes.string,
     tabIndex: PropTypes.number,
     children: PropTypes.element,
+    showTooltip: PropTypes.func,
+    hideTooltip: PropTypes.func,
   };
 
   handleClick = () => {
@@ -45,7 +47,7 @@ class ActionButton extends Component {
   };
 
   render() {
-    const { action, tabIndex, children } = this.props;
+    const { action, tabIndex, children, showTooltip, hideTooltip } = this.props;
 
     return (
       <button
@@ -53,6 +55,8 @@ class ActionButton extends Component {
         className="btn btn-meta-outline-secondary btn-distance btn-sm"
         tabIndex={tabIndex}
         title={action.description}
+        onMouseEnter={showTooltip}
+        onMouseLeave={hideTooltip}
       >
         {action.caption}
         {children}
@@ -152,21 +156,15 @@ class TableFilter extends Component {
     return <TableFilterContextShortcuts shortcutActions={shortcutActions} />;
   };
 
-  showTooltip = () => {
+  showTooltip = name => {
     this.setState({
-      isTooltipShow: keymap.TOGGLE_QUICK_INPUT,
+      isTooltipShow: name,
     });
   };
 
-  hideTooltip = (key = null) => {
+  hideTooltip = () => {
     this.setState({
-      isTooltipShow: key,
-    });
-  };
-
-  showExpandTooltip = () => {
-    this.setState({
-      isTooltipShow: keymap.TOGGLE_EXPAND,
+      isTooltipShow: null,
     });
   };
 
@@ -207,7 +205,7 @@ class TableFilter extends Component {
               <button
                 className="btn btn-meta-outline-secondary btn-distance btn-sm"
                 onClick={handleBatchEntryToggle}
-                onMouseEnter={this.showTooltip}
+                onMouseEnter={() => this.showTooltip(keymap.TOGGLE_QUICK_INPUT)}
                 onMouseLeave={this.hideTooltip}
                 tabIndex={tabIndex}
               >
@@ -241,15 +239,21 @@ class TableFilter extends Component {
                       docType,
                       selected,
                     }}
+                    showTooltip={() => this.showTooltip(action.processId)}
+                    hideTooltip={this.hideTooltip}
                     key={`top-action-${action.processId}`}
                   >
-                    <Tooltips
-                      name={
-                        action.shortcut ? action.shortcut.replace('-', '+') : ''
-                      }
-                      action={action.caption}
-                      type={''}
-                    />
+                    {isTooltipShow === action.processId && (
+                      <Tooltips
+                        name={
+                          action.shortcut
+                            ? action.shortcut.replace('-', '+')
+                            : ''
+                        }
+                        action={action.caption}
+                        type={''}
+                      />
+                    )}
                   </ActionButton>
                 ))
               : null}
@@ -272,7 +276,7 @@ class TableFilter extends Component {
           <button
             className="btn-icon btn-meta-outline-secondary pointer"
             onClick={toggleFullScreen}
-            onMouseEnter={this.showExpandTooltip}
+            onMouseEnter={() => this.showTooltip(keymap.TOGGLE_EXPAND)}
             onMouseLeave={this.hideTooltip}
             tabIndex="-1"
           >
