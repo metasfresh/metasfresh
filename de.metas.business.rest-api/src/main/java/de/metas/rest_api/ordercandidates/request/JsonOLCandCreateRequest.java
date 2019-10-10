@@ -78,7 +78,7 @@ public final class JsonOLCandCreateRequest
 			value = " This translates to `C_OLCand.C_BPartner_ID`, `C_OLCand.C_BPartner_Location_ID` and `C_OLCand.AD_User_ID`.\n"
 					+ "It's the business partner that places/placed the order this candidate is about.\n"
 					+ "\n"
-					+ "Note that the given partner's location can also be left empty, if the repartner can be found in metasfresh and has an address there.\n"
+					+ "Note that the given partner's *location* can also be left empty, if the partner can be found in metasfresh and has an address there.\n"
 					+ "If there are multiple adresses, the default shipTo address is preferred.")
 	private JsonRequestBPartnerLocationAndContact bpartner;
 
