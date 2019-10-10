@@ -22,11 +22,13 @@
 
 package de.metas.shipper.gateway.dhl;
 
+import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import lombok.Builder;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,9 +38,12 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 {
 	private static final Logger logger = LoggerFactory.getLogger(DhlShipperGatewayClient.class);
 
+	private final DhlClientConfig config;
+
 	@Builder
-	public DhlShipperGatewayClient()
+	public DhlShipperGatewayClient(@NonNull final DhlClientConfig config)
 	{
+		this.config = config;
 	}
 
 	@Override public String getShipperGatewayId()

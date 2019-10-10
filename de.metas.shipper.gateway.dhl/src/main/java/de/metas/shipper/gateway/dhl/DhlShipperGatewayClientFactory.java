@@ -22,6 +22,7 @@
 
 package de.metas.shipper.gateway.dhl;
 
+import de.metas.shipper.gateway.dhl.model.DhlClientConfigRepository;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class DhlShipperGatewayClientFactory implements ShipperGatewayClientFactory
 {
+	private final DhlClientConfigRepository configRepo;
+
+	public DhlShipperGatewayClientFactory(final DhlClientConfigRepository configRepo)
+	{
+		this.configRepo = configRepo;
+	}
 
 	@Override
 	public String getShipperGatewayId()
@@ -39,9 +46,10 @@ public class DhlShipperGatewayClientFactory implements ShipperGatewayClientFacto
 	@Override
 	public ShipperGatewayClient newClientForShipperId(final int shipperId)
 	{
+		return null;
 		//		DhlClientConfig config = configRepo.getByShipperId(shipperId);
-		return DhlShipperGatewayClient.builder()
-				//				.config(config)
-				.build();
+		//		return DhlShipperGatewayClient.builder()
+		//				.config(config)
+		//				.build();
 	}
 }
