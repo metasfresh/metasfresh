@@ -28,10 +28,6 @@ import java.time.LocalDate;
 /**
  * Invoicing Enqueueing & generating parameters.
  *
- * @author tsa
- *
- */
-/**
  * @author metas-dev <dev@metasfresh.com>
  *
  */
