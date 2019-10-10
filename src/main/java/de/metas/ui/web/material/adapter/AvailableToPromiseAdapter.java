@@ -12,6 +12,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResult;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResultGroup;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.IProductBL;
@@ -59,8 +60,7 @@ public class AvailableToPromiseAdapter
 	@NonNull
 	public AvailableToPromiseResultForWebui retrieveAvailableStock(@NonNull final AvailableToPromiseQuery query)
 	{
-		final de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResult //
-		commonsAvailableStock = availableToPromiseRepository.retrieveAvailableStock(query);
+		final AvailableToPromiseResult commonsAvailableStock = availableToPromiseRepository.retrieveAvailableStock(query);
 
 		final AvailableToPromiseResultForWebuiBuilder clientResultBuilder = AvailableToPromiseResultForWebui.builder();
 
