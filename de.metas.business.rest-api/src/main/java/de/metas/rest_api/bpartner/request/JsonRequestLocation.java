@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.SyncAdvise;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Value;
@@ -36,6 +37,7 @@ import lombok.Value;
  * #L%
  */
 
+@ApiModel("Locations can be inserted/updated, or just looked up. For lookup, metasfresh tries first the `externalId` and then the `gln`.")
 @Value
 public class JsonRequestLocation
 {
@@ -91,7 +93,7 @@ public class JsonRequestLocation
 	@JsonInclude(Include.NON_EMPTY)
 	String countryCode;
 
-	@ApiModelProperty(allowEmptyValue = true/* we want to allow unsetting the GLN */, //
+	@ApiModelProperty(allowEmptyValue = true/* we want to allow unsetting the GLN */,
 			value = "This translates to `C_BPartner_Location.GLN`.")
 	String gln;
 
