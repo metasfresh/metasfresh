@@ -111,11 +111,7 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 		final boolean existsPickingCandidates = pickingCandidateService.existsPickingCandidates(row.getShipmentScheduleIds());
 		if (!existsPickingCandidates)
 		{
-			// pick
-			final List<PickingCandidate> pcickingCandidates = productsToPickRowsRepository.pick(row);
-
-			// save
-			pickingCandidateService.saveAll(pcickingCandidates);
+			productsToPickRowsRepository.pick(row);
 		}
 	}
 
