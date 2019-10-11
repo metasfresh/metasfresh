@@ -233,6 +233,29 @@ public interface I_DHL_Shipper_Config
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Unterschrift.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSignature (java.lang.String Signature);
+
+	/**
+	 * Get Unterschrift.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getSignature();
+
+    /** Column definition for Signature */
+    public static final org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_Signature = new org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object>(I_DHL_Shipper_Config.class, "Signature", null);
+    /** Column name Signature */
+    public static final String COLUMNNAME_Signature = "Signature";
+
+	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *
@@ -261,4 +284,27 @@ public interface I_DHL_Shipper_Config
     public static final org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, org.compiere.model.I_AD_User>(I_DHL_Shipper_Config.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Benutzer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setUser (java.lang.String User);
+
+	/**
+	 * Get Benutzer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getUser();
+
+    /** Column definition for User */
+    public static final org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_User = new org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object>(I_DHL_Shipper_Config.class, "User", null);
+    /** Column name User */
+    public static final String COLUMNNAME_User = "User";
 }

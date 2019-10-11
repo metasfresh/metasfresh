@@ -29,7 +29,7 @@ import lombok.Value;
 
 @Value
 @Builder
-@ToString(exclude={"applicationID", "applicationToken", "accountNumber"})
+@ToString(of = { "baseUrl" })
 public class DhlClientConfig
 {
 	@NonNull
@@ -43,5 +43,11 @@ public class DhlClientConfig
 
 	@NonNull
 	private final String accountNumber;
+
+	@NonNull
+	String user;
+
+	@NonNull
+	String signature;
 
 }

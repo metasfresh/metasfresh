@@ -54,6 +54,8 @@ public class DhlClientConfigRepository
 				.applicationToken(configPO.getApplicationToken())
 				.baseUrl(configPO.getdhl_api_url())
 				.accountNumber(configPO.getAccountNumber())
+				.user(configPO.getUser())
+				.signature(configPO.getSignature())
 				.build();
 	}
 }
