@@ -1034,11 +1034,9 @@ public class BPartnerDAO implements IBPartnerDAO
 			queryBuilder.orderByDescending(typeFilterColumnName); // "Y" first
 		}
 
-		final String orderByColumnName = getOrderByColumnNameForType(query.getType());
-		if (orderByColumnName != null)
-		{
-			queryBuilder.orderByDescending(orderByColumnName);
-		}
+		getOrderByColumnNameForType(query.getType()) // order by e.g. "IsDefaultShipToLocation"
+				.ifPresent(queryBuilder::orderByDescending);
+
 		queryBuilder.orderBy(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
 
 		final I_C_BPartner_Location ownToLocation = queryBuilder
@@ -1117,17 +1115,17 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 	}
 
-	private static String getOrderByColumnNameForType(final BPartnerLocationQuery.Type type)
+	private static Optional<String> getOrderByColumnNameForType(final BPartnerLocationQuery.Type type)
 	{
 		switch (type)
 		{
 			case BILL_TO:
-				return I_C_BPartner_Location.COLUMNNAME_IsBillToDefault;
+				return Optional.of(I_C_BPartner_Location.COLUMNNAME_IsBillToDefault);
 			case SHIP_TO:
-				return I_C_BPartner_Location.COLUMNNAME_IsShipToDefault;
+				return Optional.of(I_C_BPartner_Location.COLUMNNAME_IsShipToDefault);
 			default:
 				// not every type has one
-				return null;
+				return Optional.empty();
 		}
 	}
 
@@ -1554,5 +1552,5 @@ public class BPartnerDAO implements IBPartnerDAO
 		final I_C_BPartner_Location billToLocation = retrieveBPartnerLocation(query);
 
 		return createLocationIdOrNull(partnerId, billToLocation);
-		}
 	}
+}
