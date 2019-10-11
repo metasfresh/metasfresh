@@ -15,9 +15,11 @@ import java.time.Instant;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.material.commons.attributes.AttributesKeyPattern;
@@ -53,6 +55,7 @@ import de.metas.material.event.commons.ProductDescriptor;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class AvailableToPromiseRepositoryTest
 {
 	private static final BPartnerId BPARTNER_ID_1 = BPartnerId.ofRepoId(10);
@@ -60,9 +63,6 @@ public class AvailableToPromiseRepositoryTest
 	private static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1, 2);
 
 	private AvailableToPromiseRepository availableToPromiseRepository;
-
-	// @Rule
-	// public AdempiereTestWatcher adempiereTestWatcher = new AdempiereTestWatcher();
 
 	@BeforeEach
 	public void init()
