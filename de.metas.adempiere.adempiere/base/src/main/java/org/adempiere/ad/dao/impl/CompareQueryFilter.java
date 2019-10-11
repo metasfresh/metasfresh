@@ -39,9 +39,11 @@ import de.metas.util.Check;
 import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 
+@EqualsAndHashCode(doNotUseGetters=true)
 public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
 	/**
