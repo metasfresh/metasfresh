@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
@@ -51,7 +52,7 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 	final private static AdProcessId PickListPdf_AD_Process_ID = AdProcessId.ofRepoId(541202);
 
 	@Autowired
-	private  ProductsToPickRowsRepository productsToPickRowsRepository;
+	private ProductsToPickRowsRepository productsToPickRowsRepository;
 
 	@Autowired
 	private PickingCandidateRepository pickingCandidateRepository;
@@ -61,7 +62,29 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		return checkPreconditionsApplicable_SingleSelectedRow();
+		return checkPreconditionsApplicable_SingleSelectedRow()
+				.and(this::acceptIfPickingCandidatesAreDraft);
+	}
+
+	private ProcessPreconditionsResolution acceptIfPickingCandidatesAreDraft()
+	{
+		final PackageableRow row = getSingleSelectedRow();
+
+		// allow draft pikcing candidates
+		final List<PickingCandidate> pickingCandidates = pickingCandidateRepository.getByShipmentScheduleIdsAndStatus(row.getShipmentScheduleIds(), PickingCandidateStatus.Draft);
+		if (pickingCandidates.size() > 0)
+		{
+			return ProcessPreconditionsResolution.accept();
+		}
+
+		// allow if there is no picking candidate yet, this process will generate before printing
+		final boolean existsPickingCandidates = pickingCandidateRepository.existsPickingCandidates(row.getShipmentScheduleIds());
+		if (!existsPickingCandidates)
+		{
+			return ProcessPreconditionsResolution.accept();
+		}
+
+		return ProcessPreconditionsResolution.rejectWithInternalReason("no picking product to print");
 	}
 
 	@Override
@@ -72,7 +95,7 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 		// pick
 		final List<PickingCandidate> pcickingCandidates = productsToPickRowsRepository.pick(row);
 
-		//save
+		// save
 		pickingCandidateRepository.saveAll(pcickingCandidates);
 
 		// print
@@ -109,13 +132,12 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 		final String orderNo = row.getOrderDocumentNo();
 		final List<ProcessInfoParameter> piParams = ImmutableList.of(ProcessInfoParameter.of(I_M_Packageable_V.COLUMNNAME_OrderDocumentNo, orderNo));
 
-		final PInstanceRequest  pinstanceRequest = PInstanceRequest.builder()
+		final PInstanceRequest pinstanceRequest = PInstanceRequest.builder()
 				.processId(PickListPdf_AD_Process_ID)
 				.processParams(piParams)
 				.build();
 		return pinstanceRequest;
 	}
-
 
 	private String buildFilename(@NonNull final PackageableRow row)
 	{
