@@ -63,6 +63,7 @@ import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
+import de.metas.process.PInstanceRequest;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoLog;
@@ -160,8 +161,8 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		try
 		{
 			DB.getConstraints() // 02625
-					.setOnlyAllowedTrxNamePrefixes(true)
-					.addAllowedTrxNamePrefix(ITrx.TRXNAME_PREFIX_LOCAL);
+			.setOnlyAllowedTrxNamePrefixes(true)
+			.addAllowedTrxNamePrefix(ITrx.TRXNAME_PREFIX_LOCAL);
 
 			saveParametersToDB0(pinstanceId, piParams);
 		}
@@ -474,12 +475,12 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	public void lock(final PInstanceId pinstanceId)
 	{
 		Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_AD_PInstance.class)
-				.addEqualsFilter(I_AD_PInstance.COLUMN_AD_PInstance_ID, pinstanceId)
-				.create()
-				.updateDirectly()
-				.addSetColumnValue(I_AD_PInstance.COLUMNNAME_IsProcessing, true)
-				.execute();
+		.createQueryBuilderOutOfTrx(I_AD_PInstance.class)
+		.addEqualsFilter(I_AD_PInstance.COLUMN_AD_PInstance_ID, pinstanceId)
+		.create()
+		.updateDirectly()
+		.addSetColumnValue(I_AD_PInstance.COLUMNNAME_IsProcessing, true)
+		.execute();
 	}
 
 	@Override
@@ -583,6 +584,17 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 
 		return adPInstance;
 	}
+
+	@Override
+	public PInstanceId createADPinstanceAndADPInstancePara(final @NonNull PInstanceRequest pinstanceRequest)
+	{
+		final I_AD_PInstance adPInstanceRecord = createAD_PInstance(pinstanceRequest.getProcessId());
+		final PInstanceId adPInstance = PInstanceId.ofRepoId(adPInstanceRecord.getAD_PInstance_ID());
+		saveParameterToDB(adPInstance, pinstanceRequest.getProcessParams());
+		return adPInstance;
+	}
+
+
 
 	@Override
 	public I_AD_PInstance getById(@NonNull final PInstanceId pinstanceId)

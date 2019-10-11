@@ -55,6 +55,7 @@ public class AsyncImportWorkpackageProcessor extends WorkpackageProcessorAdapter
 	// services
 	private static final transient Logger logger = LogManager.getLogger(AsyncImportWorkpackageProcessor.class);
 
+	public static final String PARAM_completid = "ImportTableName";
 	public static final String PARAM_ImportTableName = "ImportTableName";
 	public static final String PARAM_Selection_ID = IImportProcess.PARAM_Selection_ID;
 
@@ -88,7 +89,7 @@ public class AsyncImportWorkpackageProcessor extends WorkpackageProcessorAdapter
 		final IImportProcess<Object> importProcessor = Services.get(IImportProcessFactory.class).newImportProcessForTableName(importTableName);
 		importProcessor.setCtx(ctx);
 		importProcessor.setLoggable(Loggables.get());
-		importProcessor.setParameters(getParameters());
+		importProcessor.setParameters(getParameters()); // make all package parameters available to the import-BL!
 		final ImportProcessResult result = importProcessor.run();
 
 		final UserId recipientUserId = UserId.ofRepoId(workpackage.getCreatedBy());

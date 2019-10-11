@@ -24,6 +24,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.impexp.processing.product.MProductImportTableSqlUpdater;
 import de.metas.pricing.PriceListId;
@@ -74,9 +75,10 @@ public class IFAProductImportProcess extends SimpleImportProcessTemplate<I_I_Pha
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
-		final String whereClause = getWhereClause();
+		final ImportRecordsSelection selection = getImportRecordsSelection();
+
 		MProductImportTableSqlUpdater.builder()
-				.whereClause(whereClause)
+				.selection(selection)
 				.ctx(getCtx())
 				.tableName(getImportTableName())
 				.valueName(I_I_Pharma_Product.COLUMNNAME_A00PZN)
@@ -84,7 +86,7 @@ public class IFAProductImportProcess extends SimpleImportProcessTemplate<I_I_Pha
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(@NonNull final IMutable<Object> state, @NonNull final I_I_Pharma_Product importRecord, final boolean isInsertOnly) 
+	protected ImportRecordResult importRecord(@NonNull final IMutable<Object> state, @NonNull final I_I_Pharma_Product importRecord, final boolean isInsertOnly)
 	{
 		final org.compiere.model.I_M_Product existentProduct = productDAO.retrieveProductByValue(importRecord.getA00PZN());
 

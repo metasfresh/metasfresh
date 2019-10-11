@@ -4,6 +4,7 @@ import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -43,6 +44,7 @@ import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandQuery;
 import de.metas.ordercandidate.api.OLCandRepository;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.rest_api.attachment.JsonAttachmentType;
@@ -92,6 +94,8 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 	public static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE." + OrderCandidatesRestControllerImpl.class.getName();
 
 	private static final Logger logger = LogManager.getLogger(OrderCandidatesRestControllerImpl.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
 	private final JsonConverters jsonConverters;
 	private final OLCandRepository olCandRepo;
 	private PermissionServiceFactory permissionServiceFactory;
@@ -229,10 +233,12 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 		{
 			throw new AdempiereException("@NotFound@ @C_BPartner_Location_ID@");
 		}
+		final OrgId orgId = masterdataProvider.getCreateOrgId(json.getOrg());
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
 		final ZonedDateTime dateEffective = CoalesceUtil.coalesceSuppliers(
-				() -> TimeUtil.asZonedDateTime(json.getDateRequired()),
-				() -> TimeUtil.asZonedDateTime(json.getDateOrdered()),
+				() -> TimeUtil.asZonedDateTime(json.getDateRequired(), timeZone),
+				() -> TimeUtil.asZonedDateTime(json.getDateOrdered(), timeZone),
 				() -> SystemTime.asZonedDateTime());
 
 		final PricingSystemId pricingSystemId = masterdataProvider.getPricingSystemIdByValue(json.getPricingSystemCode());
@@ -278,13 +284,13 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 				.build();
 	}
 
-	@PostMapping("/{dataSourceName}/{externalReference}/attachments")
+	@PostMapping("/{dataSourceName}/{externalHeaderId}/attachments")
 	@Override
 	public ResponseEntity<JsonAttachment> attachFile(
 			@PathVariable("dataSourceName") final String dataSourceName,
 
-			@ApiParam(required = true, value = "External reference of the order line candidates to which the given file shall be attached") //
-			@PathVariable("externalReference") final String externalReference,
+			@ApiParam(required = true, value = "`externalheaderId` of the order line candidates to which the given file shall be attached") //
+			@PathVariable("externalHeaderId") final String externalHeaderId,
 
 			@ApiParam(value = "List with an even number of items;\n"
 					+ "transformed to a map of key-value pairs and added to the new attachment as tags.\n"
@@ -300,7 +306,7 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 		final OLCandQuery query = OLCandQuery
 				.builder()
 				.inputDataSourceName(dataSourceName)
-				.externalHeaderId(externalReference)
+				.externalHeaderId(externalHeaderId)
 				.build();
 
 		final String fileName = file.getOriginalFilename();
@@ -315,7 +321,7 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 		final AttachmentEntry attachmentEntry = olCandsService.addAttachment(query, request);
 
 		final JsonAttachment jsonAttachment = toJsonAttachment(
-				externalReference,
+				externalHeaderId,
 				dataSourceName,
 				attachmentEntry);
 		return new ResponseEntity<>(jsonAttachment, HttpStatus.CREATED);
