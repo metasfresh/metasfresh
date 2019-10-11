@@ -21,8 +21,8 @@ import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
-import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
@@ -77,11 +77,11 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 	protected void updateAndValidateImportRecords()
 	{
 
-		final String whereClause = getWhereClause();
+		final ImportRecordsSelection selection = getImportRecordsSelection();
 
 		p_C_BP_BankAccount_ID = getParameters().getParameterAsInt("C_BP_BankAccount_ID", -1);
-		BankStatementImportTableSqlUpdater.updateBPBankAccount(p_C_BP_BankAccount_ID, whereClause);
-		BankStatementImportTableSqlUpdater.updateBankStatementImportTable(whereClause);
+		BankStatementImportTableSqlUpdater.updateBPBankAccount(p_C_BP_BankAccount_ID, selection);
+		BankStatementImportTableSqlUpdater.updateBankStatementImportTable(selection);
 	}
 
 	@Override
