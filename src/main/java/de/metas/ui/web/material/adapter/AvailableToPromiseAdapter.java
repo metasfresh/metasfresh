@@ -1,15 +1,18 @@
 package de.metas.ui.web.material.adapter;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.material.commons.attributes.AttributesKeyPattern;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResult;
@@ -19,9 +22,6 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.AvailableToPromiseResultForWebuiBuilder;
-import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group;
-import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group.GroupBuilder;
-import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group.Type;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -50,6 +50,7 @@ import lombok.NonNull;
 @Service
 public class AvailableToPromiseAdapter
 {
+	private final IProductBL productsService = Services.get(IProductBL.class);
 	private final AvailableToPromiseRepository availableToPromiseRepository;
 
 	public AvailableToPromiseAdapter(@NonNull final AvailableToPromiseRepository stockRepository)
@@ -67,13 +68,13 @@ public class AvailableToPromiseAdapter
 		final List<AvailableToPromiseResultGroup> commonsResultGroups = commonsAvailableStock.getResultGroups();
 		for (final AvailableToPromiseResultGroup commonsResultGroup : commonsResultGroups)
 		{
-			final Group clientResultGroup = createClientResultGroup(commonsResultGroup);
+			final AvailableToPromiseResultForWebui.Group clientResultGroup = createClientResultGroup(commonsResultGroup);
 			clientResultBuilder.group(clientResultGroup);
 		}
 		return clientResultBuilder.build();
 	}
 
-	private Group createClientResultGroup(@NonNull final AvailableToPromiseResultGroup commonsResultGroup)
+	private AvailableToPromiseResultForWebui.Group createClientResultGroup(@NonNull final AvailableToPromiseResultGroup commonsResultGroup)
 	{
 		try
 		{
@@ -86,51 +87,50 @@ public class AvailableToPromiseAdapter
 		}
 	}
 
-	private Group createClientResultGroup0(final AvailableToPromiseResultGroup commonsResultGroup)
+	private AvailableToPromiseResultForWebui.Group createClientResultGroup0(final AvailableToPromiseResultGroup commonsResultGroup)
 	{
-		final GroupBuilder groupBuilder = Group.builder()
-				.productId(ProductId.ofRepoId(commonsResultGroup.getProductId()));
-
-		final Quantity quantity = Quantity.of(
-				commonsResultGroup.getQty(),
-				retrieveStockingUOM(commonsResultGroup.getProductId()));
-		groupBuilder.qty(quantity);
+		final Quantity quantity = extractQuantity(commonsResultGroup);
 
 		final AttributesKey attributesKey = commonsResultGroup.getStorageAttributesKey();
-		final Type type = extractGroupType(attributesKey);
-		groupBuilder.type(type);
+		final AvailableToPromiseResultForWebui.Group.Type type = extractGroupType(attributesKey);
 
-		if (type == Type.ATTRIBUTE_SET)
-		{
-			groupBuilder.attributes(AttributesKeys.toImmutableAttributeSet(attributesKey));
-		}
+		final ImmutableAttributeSet attributes = AvailableToPromiseResultForWebui.Group.Type.ATTRIBUTE_SET.equals(type)
+				? AttributesKeys.toImmutableAttributeSet(attributesKey)
+				: ImmutableAttributeSet.EMPTY;
 
-		return groupBuilder.build();
+		return AvailableToPromiseResultForWebui.Group.builder()
+				.productId(ProductId.ofRepoId(commonsResultGroup.getProductId()))
+				.qty(quantity)
+				.type(type)
+				.attributes(attributes)
+				.build();
 	}
 
-	private I_C_UOM retrieveStockingUOM(final int productId)
+	private Quantity extractQuantity(final AvailableToPromiseResultGroup commonsResultGroup)
 	{
-		return Services.get(IProductBL.class).getStockUOM(productId);
+		final BigDecimal qty = commonsResultGroup.getQty();
+		final I_C_UOM uom = productsService.getStockUOM(commonsResultGroup.getProductId());
+		return Quantity.of(qty, uom);
 	}
 
 	@VisibleForTesting
-	static Group.Type extractGroupType(@NonNull final AttributesKey attributesKey)
+	static AvailableToPromiseResultForWebui.Group.Type extractGroupType(@NonNull final AttributesKey attributesKey)
 	{
 		if (AttributesKey.ALL.equals(attributesKey))
 		{
-			return Group.Type.ALL_STORAGE_KEYS;
+			return AvailableToPromiseResultForWebui.Group.Type.ALL_STORAGE_KEYS;
 		}
 		else if (AttributesKey.OTHER.equals(attributesKey))
 		{
-			return Group.Type.OTHER_STORAGE_KEYS;
+			return AvailableToPromiseResultForWebui.Group.Type.OTHER_STORAGE_KEYS;
 		}
 		else
 		{
-			return Type.ATTRIBUTE_SET;
+			return AvailableToPromiseResultForWebui.Group.Type.ATTRIBUTE_SET;
 		}
 	}
 
-	public Set<AttributesKey> getPredefinedStorageAttributeKeys()
+	public Set<AttributesKeyPattern> getPredefinedStorageAttributeKeys()
 	{
 		return availableToPromiseRepository.getPredefinedStorageAttributeKeys();
 	}

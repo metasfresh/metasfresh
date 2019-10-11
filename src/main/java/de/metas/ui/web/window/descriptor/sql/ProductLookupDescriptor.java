@@ -591,7 +591,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 		final AvailableToPromiseQuery query = AvailableToPromiseQuery.builder()
 				.productIds(productLookupValues.getKeysAsInt())
-				.storageAttributesKeys(availableToPromiseAdapter.getPredefinedStorageAttributeKeys())
+				.storageAttributesKeyPatterns(availableToPromiseAdapter.getPredefinedStorageAttributeKeys())
 				.date(dateOrNull)
 				.bpartner(BPartnerClassifier.specificOrNone(bpartnerId))
 				.build();
