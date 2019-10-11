@@ -54,17 +54,15 @@ public class BPartnerDAO_retrieveBPartnerLocationTests
 	{
 		final BPartnerId bpartnerId1 = createBPartnerWithName("BPartner 1");
 
-		final I_C_BPartner_Location shipLocationRecord1 = newInstance(I_C_BPartner_Location.class);
-		shipLocationRecord1.setC_BPartner_ID(bpartnerId1.getRepoId());
-		shipLocationRecord1.setIsShipTo(true);
-		shipLocationRecord1.setIsBillTo(false);
-		saveRecord(shipLocationRecord1);
+		final BPLocationBuilder builder = new BPLocationBuilder(bpartnerId1)
+				.billTo(false)
+				.shipTo(true);
+		builder.createRecord();
 
-		final I_C_BPartner_Location billLocationRecord1 = newInstance(I_C_BPartner_Location.class);
-		billLocationRecord1.setC_BPartner_ID(bpartnerId1.getRepoId());
-		billLocationRecord1.setIsShipTo(false);
-		billLocationRecord1.setIsBillTo(true);
-		saveRecord(billLocationRecord1);
+		final I_C_BPartner_Location billLocationRecord1 = builder
+				.billTo(true)
+				.shipTo(false)
+				.createRecord();
 
 		final BPartnerLocationQuery query = BPartnerLocationQuery.builder()
 				.bpartnerId(bpartnerId1)
@@ -82,17 +80,12 @@ public class BPartnerDAO_retrieveBPartnerLocationTests
 	{
 		final BPartnerId bpartnerId1 = createBPartnerWithName("BPartner 1");
 
-		final I_C_BPartner_Location shipLocationRecord1 = newInstance(I_C_BPartner_Location.class);
-		shipLocationRecord1.setC_BPartner_ID(bpartnerId1.getRepoId());
-		shipLocationRecord1.setIsShipTo(true);
-		shipLocationRecord1.setIsBillTo(false);
-		saveRecord(shipLocationRecord1);
+		final BPLocationBuilder builder = new BPLocationBuilder(bpartnerId1)
+				.billTo(false)
+				.shipTo(true);
+		final I_C_BPartner_Location shipLocationRecord1 = builder.createRecord();
 
-		final I_C_BPartner_Location shipLocationRecord2 = newInstance(I_C_BPartner_Location.class);
-		shipLocationRecord2.setC_BPartner_ID(bpartnerId1.getRepoId());
-		shipLocationRecord2.setIsShipTo(true);
-		shipLocationRecord2.setIsBillTo(false);
-		saveRecord(shipLocationRecord2);
+		builder.createRecord(); // create another shipToLocation record
 
 		final BPartnerLocationQuery query = BPartnerLocationQuery.builder()
 				.bpartnerId(bpartnerId1)
