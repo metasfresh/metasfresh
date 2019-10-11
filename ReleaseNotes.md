@@ -10,6 +10,11 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.124
+## Fixes
+* metasfresh-webui-frontend
+  * [#2393](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2393) Sales Order Line: fix batch entry layout
+
 # metasfresh 5.123
 ## Fixes
 * metasfresh-webui-frontend
