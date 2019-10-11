@@ -40,9 +40,11 @@ public final class AddToResultGroupRequest
 {
 	WarehouseId warehouseId;
 	int productId;
-	AttributesKey storageAttributesKey;
 	BPartnerClassifier bpartner;
+	AttributesKey storageAttributesKey;
+
 	BigDecimal qty;
+
 	Instant date;
 	int seqNo; // needed to disambiguated requests with the same date
 
@@ -58,11 +60,11 @@ public final class AddToResultGroupRequest
 	{
 		this.warehouseId = warehouseId;
 		this.productId = Check.assumeGreaterThanZero(productId, "productId");
-
+		this.bpartner = bpartner;
 		this.storageAttributesKey = storageAttributesKey;
 
-		this.bpartner = bpartner;
 		this.qty = qty;
+
 		this.date = date;
 		this.seqNo = Check.assumeGreaterThanZero(seqNo, "seqNo");
 	}
@@ -74,8 +76,7 @@ public final class AddToResultGroupRequest
 
 	public DateAndSeqNo getDateAndSeqNo()
 	{
-		return DateAndSeqNo
-				.builder()
+		return DateAndSeqNo.builder()
 				.date(date)
 				.seqNo(seqNo)
 				.build();

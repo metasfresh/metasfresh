@@ -5,7 +5,6 @@ import static de.metas.material.dispo.commons.candidate.IdConstants.toRepoId;
 
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Objects;
 
 import javax.annotation.Nullable;
 
@@ -13,12 +12,15 @@ import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.material.commons.attributes.AttributesKeyPatterns;
+import de.metas.material.commons.attributes.AttributesKeyQueryHelper;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
@@ -189,7 +191,7 @@ public class RepositoryCommons
 			atLeastOneFilterAdded = true;
 		}
 
-		if (!Objects.equals(materialDescriptorQuery.getStorageAttributesKey(), AttributesKey.ALL))
+		if (!materialDescriptorQuery.getStorageAttributesKey().isAll())
 		{
 			final AttributesKey attributesKey = materialDescriptorQuery.getStorageAttributesKey();
 			if (matchExactStorageAttributesKey)
@@ -198,7 +200,11 @@ public class RepositoryCommons
 			}
 			else
 			{
-				builder.addStringLikeFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, attributesKey.getSqlLikeString(), false); // iggnoreCase=false
+				final IQueryFilter<I_MD_Candidate> filter = AttributesKeyQueryHelper
+						.createFor(I_MD_Candidate.COLUMN_StorageAttributesKey)
+						.createFilter(AttributesKeyPatterns.ofAttributeKey(attributesKey));
+
+				builder.filter(filter);
 			}
 			atLeastOneFilterAdded = true;
 		}

@@ -1,14 +1,17 @@
 package de.metas.material.commons.attributes;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.StringLikeFilter;
 import org.adempiere.model.ModelColumn;
 
-import de.metas.material.event.commons.AttributesKey;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -56,72 +59,52 @@ public class AttributesKeyQueryHelper<T>
 		this.modelColumn = modelColumn;
 	}
 
+	public IQueryFilter<T> createFilter(@NonNull final AttributesKeyPattern attributesKeyPattern)
+	{
+		return createFilter(ImmutableList.of(attributesKeyPattern));
+	}
+
 	/**
 	 * @return an OR filter that matches any of the given {@code attributesKeys}.
 	 */
-	public IQueryFilter<T> createFilter(@NonNull final List<AttributesKey> attributesKeys)
+	public IQueryFilter<T> createFilter(@NonNull final List<AttributesKeyPattern> attributesKeyPatterns)
 	{
-		final ICompositeQueryFilter<T> result = queryBL.createCompositeQueryFilter(clazz).setJoinOr();
+		Check.assumeNotEmpty(attributesKeyPatterns, "attributesKeyPatterns is not empty");
 
-		for (final AttributesKey attributesKey : attributesKeys)
+		if (attributesKeyPatterns.contains(AttributesKeyPattern.ALL))
 		{
-			final IQueryFilter<T> filter = createFilter(attributesKey, attributesKeys);
-			if (filter != null)
-			{
-				result.addFilter(filter);
-			}
+			return ConstantQueryFilter.of(true);
 		}
 
-		return result;
-	}
-
-	private IQueryFilter<T> createFilter(
-			@NonNull final AttributesKey attributesKey,
-			@NonNull final List<AttributesKey> allAttributesKeys)
-	{
-		if (attributesKey.isOther())
+		if (attributesKeyPatterns.contains(AttributesKeyPattern.OTHER))
 		{
-			return createOtherAttributesFilter(allAttributesKeys);
+			return ConstantQueryFilter.of(true);
 		}
-		else if (attributesKey.isAll())
+
+		final ArrayList<IQueryFilter<T>> filters = new ArrayList<>();
+
+		for (final AttributesKeyPattern attributesKeyPattern : attributesKeyPatterns)
 		{
-			// nothing to add to the initial productIds filters
-			return null;
+			final String likeExpression = attributesKeyPattern.getSqlLikeString();
+			final boolean ignoreCase = false;
+			final StringLikeFilter<T> filter = new StringLikeFilter<>(modelColumn.getColumnName(), likeExpression, ignoreCase);
+
+			filters.add(filter);
+		}
+
+		if (filters.isEmpty())
+		{
+			return ConstantQueryFilter.of(true);
+		}
+		else if (filters.size() == 1)
+		{
+			return filters.get(0);
 		}
 		else
 		{
-			final String likeExpression = createLikeExpression(attributesKey);
-			final boolean ignoreCase = false;
-			return new StringLikeFilter<>(modelColumn.getColumnName(), likeExpression, ignoreCase);
+			return queryBL.createCompositeQueryFilter(clazz)
+					.setJoinOr()
+					.addFilters(filters);
 		}
-	}
-
-	private IQueryFilter<T> createOtherAttributesFilter(@NonNull final List<AttributesKey> attributesKeys)
-	{
-		ICompositeQueryFilter<T> filter = null;
-
-		for (final AttributesKey attributeKey : attributesKeys)
-		{
-			if (attributeKey.isOther())
-			{
-				continue;
-			}
-
-			if (filter == null)
-			{
-				filter = queryBL.createCompositeQueryFilter(clazz).setJoinAnd();
-			}
-
-			final String likeExpression = createLikeExpression(attributeKey);
-			filter.addStringNotLikeFilter(modelColumn, likeExpression, false);
-		}
-
-		return filter;
-	}
-
-	private static String createLikeExpression(@NonNull final AttributesKey attributesKey)
-	{
-		final String storageAttributesKeyLikeExpression = attributesKey.getSqlLikeString();
-		return "%" + storageAttributesKeyLikeExpression + "%";
 	}
 }

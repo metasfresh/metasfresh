@@ -22,6 +22,8 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.material.commons.attributes.AttributesKeyPattern;
+import de.metas.material.commons.attributes.AttributesKeyPatterns;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery.AvailableToPromiseMultiQueryBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
@@ -184,7 +186,7 @@ public class AvailableToPromiseRepositoryTest
 		final AvailableToPromiseQuery query1 = AvailableToPromiseQuery
 				.builder()
 				.productId(PRODUCT_ID)
-				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
+				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(STORAGE_ATTRIBUTES_KEY))
 				.bpartner(BPartnerClassifier.specific(BPARTNER_ID_1))
 				.build();
 		multiQueryBuilder.query(query1);
@@ -192,7 +194,7 @@ public class AvailableToPromiseRepositoryTest
 		final AvailableToPromiseQuery query2 = AvailableToPromiseQuery
 				.builder()
 				.productId(PRODUCT_ID)
-				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
+				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(STORAGE_ATTRIBUTES_KEY))
 				.bpartner(BPartnerClassifier.specific(BPARTNER_ID_2))
 				.build();
 		multiQueryBuilder.query(query2);
@@ -255,7 +257,7 @@ public class AvailableToPromiseRepositoryTest
 		final AvailableToPromiseQuery query = AvailableToPromiseQuery.builder()
 				.bpartner(BPartnerClassifier.specific(BPARTNER_ID_1)) // shall not matter since all 3 records are not assigned to a particular customer
 				.productId(PRODUCT_ID)
-				.storageAttributesKey(AttributesKey.ALL)
+				.storageAttributesKeyPattern(AttributesKeyPattern.ALL)
 				.build();
 
 		final AvailableToPromiseMultiQuery multiQuery = AvailableToPromiseMultiQuery.builder()

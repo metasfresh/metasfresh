@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.material.commons.attributes.AttributesKeyPatterns;
 import de.metas.material.dispo.commons.model.I_C_OrderLine;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery.AvailableToPromiseMultiQueryBuilder;
@@ -137,7 +138,7 @@ public class OrderAvailableToPromiseTool
 		final AvailableToPromiseQuery query = AvailableToPromiseQuery
 				.builder()
 				.productId(orderLineKey.getProductId())
-				.storageAttributesKey(orderLineKey.getAttributesKey())
+				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(orderLineKey.getAttributesKey()))
 				.bpartner(orderLineKey.getBpartner())
 				.date(preparationDate)
 				.build();

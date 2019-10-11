@@ -22,6 +22,7 @@ import org.compiere.util.TimeUtil;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.material.event.commons.AttributeKeyPartType;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.AttributesKeyPart;
 import de.metas.util.Services;
@@ -217,7 +218,7 @@ public final class AttributesKeys
 
 			for (final AttributesKeyPart part : attributesKey.getParts())
 			{
-				if (part.getType() == AttributesKeyPart.Type.AttributeIdAndValue)
+				if (part.getType() == AttributeKeyPartType.AttributeIdAndValue)
 				{
 					final AttributeId attributeId = part.getAttributeId();
 					final Object value = part.getValue();
@@ -225,7 +226,7 @@ public final class AttributesKeys
 
 					builder.attributeValue(attributeId, value, attributeValueId);
 				}
-				else if (part.getType() == AttributesKeyPart.Type.AttributeValueId)
+				else if (part.getType() == AttributeKeyPartType.AttributeValueId)
 				{
 					attributeValueIds.add(part.getAttributeValueId());
 				}

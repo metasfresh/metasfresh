@@ -166,7 +166,7 @@ public class RepositoryCommonsTest
 		final List<IQueryFilter<I_MD_Candidate>> filters = queryBuilder.getCompositeFilter().getFilters();
 
 		assertThat(filters).hasSize(1);
-		assertThat(filters.get(0)).isStringLikeFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, "1%2%3");
+		assertThat(filters.get(0)).isStringLikeFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, "%1%2%3%");
 	}
 
 	@Test

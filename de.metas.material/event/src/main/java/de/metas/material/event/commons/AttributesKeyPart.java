@@ -9,8 +9,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.util.NumberUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -42,9 +40,9 @@ import lombok.Value;
 @EqualsAndHashCode(doNotUseGetters = true)
 public final class AttributesKeyPart implements Comparable<AttributesKeyPart>
 {
-	public static final AttributesKeyPart ALL = newForSpecialType(Type.All, -1000);
-	public static final AttributesKeyPart OTHER = newForSpecialType(Type.Other, -1001);
-	public static final AttributesKeyPart NONE = newForSpecialType(Type.None, -1002);
+	public static final AttributesKeyPart ALL = newForSpecialType(AttributeKeyPartType.All);
+	public static final AttributesKeyPart OTHER = newForSpecialType(AttributeKeyPartType.Other);
+	public static final AttributesKeyPart NONE = newForSpecialType(AttributeKeyPartType.None);
 
 	static AttributesKeyPart parseString(@NonNull final String stringRepresentation)
 	{
@@ -111,7 +109,7 @@ public final class AttributesKeyPart implements Comparable<AttributesKeyPart>
 		final int specialCode = -1;
 		final AttributeId attributeId = null;
 		final String value = null;
-		return new AttributesKeyPart(Type.AttributeValueId, stringRepresentation, specialCode, attributeValueId, attributeId, value);
+		return new AttributesKeyPart(AttributeKeyPartType.AttributeValueId, stringRepresentation, specialCode, attributeValueId, attributeId, value);
 	}
 
 	public static AttributesKeyPart ofStringAttribute(@NonNull final AttributeId attributeId, @Nullable final String valueStr)
@@ -119,7 +117,6 @@ public final class AttributesKeyPart implements Comparable<AttributesKeyPart>
 		return ofAttributeIdAndValue(attributeId, normalizeStringValue(valueStr));
 	}
 
-	@VisibleForTesting
 	public static String normalizeStringValue(final String valueStr)
 	{
 		return valueStr != null ? valueStr : "";
@@ -130,7 +127,6 @@ public final class AttributesKeyPart implements Comparable<AttributesKeyPart>
 		return ofAttributeIdAndValue(attributeId, normalizeNumberValue(valueBD));
 	}
 
-	@VisibleForTesting
 	public static String normalizeNumberValue(@Nullable final BigDecimal valueBD)
 	{
 		return valueBD != null ? NumberUtils.stripTrailingDecimalZeros(valueBD).toString() : "";
@@ -143,23 +139,22 @@ public final class AttributesKeyPart implements Comparable<AttributesKeyPart>
 		return ofAttributeIdAndValue(attributeId, valueStr);
 	}
 
-	@VisibleForTesting
 	public static String normalizeDateValue(@Nullable final LocalDate valueDate)
 	{
 		return valueDate != null ? valueDate.toString() : "";
 	}
 
-	@VisibleForTesting
-	static AttributesKeyPart ofAttributeIdAndValue(@NonNull final AttributeId attributeId, @NonNull final String value)
+	public static AttributesKeyPart ofAttributeIdAndValue(@NonNull final AttributeId attributeId, @NonNull final String value)
 	{
 		final String stringRepresentation = attributeId.getRepoId() + "=" + value;
 		final int specialCode = -1;
 		final AttributeValueId attributeValueId = null;
-		return new AttributesKeyPart(Type.AttributeIdAndValue, stringRepresentation, specialCode, attributeValueId, attributeId, value);
+		return new AttributesKeyPart(AttributeKeyPartType.AttributeIdAndValue, stringRepresentation, specialCode, attributeValueId, attributeId, value);
 	}
 
-	private static AttributesKeyPart newForSpecialType(final Type type, final int specialCode)
+	private static AttributesKeyPart newForSpecialType(final AttributeKeyPartType type)
 	{
+		final int specialCode = type.getSpecialCode();
 		final String stringRepresentation = String.valueOf(specialCode);
 		final AttributeValueId attributeValueId = null;
 		final AttributeId attributeId = null;
@@ -167,12 +162,7 @@ public final class AttributesKeyPart implements Comparable<AttributesKeyPart>
 		return new AttributesKeyPart(type, stringRepresentation, specialCode, attributeValueId, attributeId, value);
 	}
 
-	public enum Type
-	{
-		All, Other, None, AttributeValueId, AttributeIdAndValue
-	}
-
-	private final Type type;
+	private final AttributeKeyPartType type;
 	private final String stringRepresentation;
 	private final int specialCode;
 	private final AttributeValueId attributeValueId;
@@ -180,7 +170,7 @@ public final class AttributesKeyPart implements Comparable<AttributesKeyPart>
 	private final String value;
 
 	private AttributesKeyPart(
-			@NonNull final Type type,
+			@NonNull final AttributeKeyPartType type,
 			@NonNull final String stringRepresentation,
 			final int specialCode,
 			final AttributeValueId attributeValueId,
@@ -223,13 +213,13 @@ public final class AttributesKeyPart implements Comparable<AttributesKeyPart>
 
 	private Integer getAttributeValueIdOrSpecialCodeOrNull()
 	{
-		if (type == Type.AttributeValueId)
+		if (type == AttributeKeyPartType.AttributeValueId)
 		{
 			return attributeValueId.getRepoId();
 		}
-		else if (type == Type.All
-				|| type == Type.Other
-				|| type == Type.None)
+		else if (type == AttributeKeyPartType.All
+				|| type == AttributeKeyPartType.Other
+				|| type == AttributeKeyPartType.None)
 		{
 			return specialCode;
 		}
@@ -241,7 +231,7 @@ public final class AttributesKeyPart implements Comparable<AttributesKeyPart>
 
 	private Integer getAttributeIdOrNull()
 	{
-		return Type.AttributeIdAndValue == type ? attributeId.getRepoId() : null;
+		return AttributeKeyPartType.AttributeIdAndValue == type ? attributeId.getRepoId() : null;
 	}
 
 	private static int compareNullsLast(final Integer i1, final Integer i2)

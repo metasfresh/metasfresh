@@ -1,11 +1,11 @@
 package de.metas.material.event.commons;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -148,7 +148,6 @@ public final class AttributesKey
 	private final String attributesKeyString;
 	@JsonIgnore
 	private final ImmutableSet<AttributesKeyPart> parts;
-	private transient String sqlLikeString; // lazy
 
 	private AttributesKey(
 			@NonNull final String attributesKeyString,
@@ -224,23 +223,6 @@ public final class AttributesKey
 		}
 	}
 
-	public String getSqlLikeString()
-	{
-		String sqlLikeString = this.sqlLikeString;
-		if (sqlLikeString == null)
-		{
-			this.sqlLikeString = sqlLikeString = computeSqlLikeString();
-		}
-		return sqlLikeString;
-	}
-
-	private String computeSqlLikeString()
-	{
-		return parts.stream()
-				.map(AttributesKeyPart::getStringRepresentation)
-				.collect(Collectors.joining("%"));
-	}
-
 	public boolean contains(@NonNull final AttributesKey attributesKey)
 	{
 		return parts.containsAll(attributesKey.parts);
@@ -252,5 +234,19 @@ public final class AttributesKey
 	public boolean intersects(@NonNull final AttributesKey attributesKey)
 	{
 		return parts.stream().anyMatch(part -> attributesKey.parts.contains(part));
+	}
+
+	public String getValueByAttributeId(@NonNull final AttributeId attributeId)
+	{
+		for (AttributesKeyPart part : parts)
+		{
+			if (part.getType() == AttributeKeyPartType.AttributeIdAndValue
+					&& AttributeId.equals(part.getAttributeId(), attributeId))
+			{
+				return part.getValue();
+			}
+		}
+
+		throw new AdempiereException("Attribute `" + attributeId + "` was not found in `" + this + "`");
 	}
 }

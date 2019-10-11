@@ -33,7 +33,7 @@ import lombok.ToString;
 
 @EqualsAndHashCode(doNotUseGetters = true)
 @ToString(doNotUseGetters = true)
-public class BPartnerClassifier
+public final class BPartnerClassifier
 {
 	public static BPartnerClassifier any()
 	{
@@ -63,7 +63,7 @@ public class BPartnerClassifier
 	private static final BPartnerClassifier ANY = new BPartnerClassifier(BPartnerClassifierType.ANY, null);
 	private static final BPartnerClassifier NONE = new BPartnerClassifier(BPartnerClassifierType.NONE, null);
 
-	private static enum BPartnerClassifierType
+	private enum BPartnerClassifierType
 	{
 		ANY, NONE, SPECIFIC
 	}

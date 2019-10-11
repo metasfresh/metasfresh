@@ -15,7 +15,9 @@ import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 
+import de.metas.material.commons.attributes.AttributesKeyPattern;
 import de.metas.material.commons.attributes.AttributesKeyQueryHelper;
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.util.Check;
@@ -113,9 +115,11 @@ import lombok.experimental.UtilityClass;
 
 		//
 		// Storage Attributes Key
+		final ImmutableList<AttributesKeyPattern> storageAttributesKeyPatterns = query.getStorageAttributesKeyPatterns();
+		if(!storageAttributesKeyPatterns.isEmpty())
 		{
 			final AttributesKeyQueryHelper<I_MD_Candidate_ATP_QueryResult> helper = AttributesKeyQueryHelper.createFor(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey);
-			final IQueryFilter<I_MD_Candidate_ATP_QueryResult> attributesFilter = helper.createFilter(query.getStorageAttributesKeys());
+			final IQueryFilter<I_MD_Candidate_ATP_QueryResult> attributesFilter = helper.createFilter(storageAttributesKeyPatterns);
 			queryBuilder.filter(attributesFilter);
 		}
 

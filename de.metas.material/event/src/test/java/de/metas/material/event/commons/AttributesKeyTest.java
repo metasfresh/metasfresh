@@ -103,9 +103,9 @@ public class AttributesKeyTest
 		AttributeValueId attributeValueId2 = AttributeValueId.ofRepoId(2);
 
 		final AttributesKey key = AttributesKey.ofParts(
-				AttributesKeyPart.ofAttributeIdAndValue(attributeId1, "value1"),
+				AttributesKeyPart.ofStringAttribute(attributeId1, "value1"),
 				AttributesKeyPart.ofAttributeValueId(attributeValueId1),
-				AttributesKeyPart.ofAttributeIdAndValue(attributeId2, "value2"),
+				AttributesKeyPart.ofStringAttribute(attributeId2, "value2"),
 				AttributesKeyPart.ofAttributeValueId(attributeValueId2),
 				AttributesKeyPart.OTHER);
 
