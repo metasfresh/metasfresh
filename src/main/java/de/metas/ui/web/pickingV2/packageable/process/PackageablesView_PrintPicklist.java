@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.handlingunits.picking.PickingCandidate;
-import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.process.AdProcessId;
@@ -55,7 +55,7 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 	private ProductsToPickRowsRepository productsToPickRowsRepository;
 
 	@Autowired
-	private PickingCandidateRepository pickingCandidateRepository;
+	private PickingCandidateService pickingCandidateService;
 
 	final private IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 
@@ -70,15 +70,15 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 	{
 		final PackageableRow row = getSingleSelectedRow();
 
-		// allow draft pikcing candidates
-		final List<PickingCandidate> pickingCandidates = pickingCandidateRepository.getByShipmentScheduleIdsAndStatus(row.getShipmentScheduleIds(), PickingCandidateStatus.Draft);
+		// allow draft picking candidates
+		final List<PickingCandidate> pickingCandidates = pickingCandidateService.getByShipmentScheduleIdsAndStatus(row.getShipmentScheduleIds(), PickingCandidateStatus.Draft);
 		if (pickingCandidates.size() > 0)
 		{
 			return ProcessPreconditionsResolution.accept();
 		}
 
 		// allow if there is no picking candidate yet, this process will generate before printing
-		final boolean existsPickingCandidates = pickingCandidateRepository.existsPickingCandidates(row.getShipmentScheduleIds());
+		final boolean existsPickingCandidates = pickingCandidateService.existsPickingCandidates(row.getShipmentScheduleIds());
 		if (!existsPickingCandidates)
 		{
 			return ProcessPreconditionsResolution.accept();
