@@ -1,10 +1,16 @@
 package de.metas.ui.web.pickingV2.productsToPick;
 
+import java.util.List;
+
 import org.compiere.model.I_M_Locator;
 import org.springframework.stereotype.Repository;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.requests.PickHURequest;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
@@ -64,4 +70,24 @@ public class ProductsToPickRowsRepository
 				.locatorLookup(LookupDataSourceFactory.instance.searchInTableLookup(I_M_Locator.Table_Name))
 				.build();
 	}
+
+	public PickHURequest createPickHURequest(@NonNull final ProductsToPickRow row, final boolean isPickingReviewRequired)
+	{
+		return PickHURequest.builder()
+				.shipmentScheduleId(row.getShipmentScheduleId())
+				.qtyToPick(row.getQtyEffective())
+				.pickFromHuId(row.getHuId())
+				.autoReview(!isPickingReviewRequired)
+				.build();
+	}
+
+	public List<PickingCandidate> pick(@NonNull final PackageableRow packageableRow)
+	{
+		final ProductsToPickRowsData productsToPickRowsData = createProductsToPickRowsData(packageableRow);
+		return productsToPickRowsData.getAllRows().stream()
+				.map(productsToPickRow -> pickingCandidateService.pickHU(createPickHURequest(productsToPickRow, false)))
+				.map(pickHUResult -> pickHUResult.getPickingCandidate())
+				.collect(ImmutableList.toImmutableList());
+	}
+
 }
