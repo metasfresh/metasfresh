@@ -32,6 +32,8 @@ import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.util.Check;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.slf4j.Logger;
@@ -46,51 +48,98 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 {
 	private static final Logger logger = LoggerFactory.getLogger(DhlDeliveryOrderRepository.class);
 
-	@Override public String getShipperGatewayId()
+	@Override
+	public String getShipperGatewayId()
 	{
 		return DhlConstants.SHIPPER_GATEWAY_ID;
 	}
 
-	@Override public ITableRecordReference toTableRecordReference(final DeliveryOrder deliveryOrder)
+	@Override
+	public ITableRecordReference toTableRecordReference(final DeliveryOrder deliveryOrder)
 	{
 		return null;
 	}
 
-	@Override public DeliveryOrder getByRepoId(final DeliveryOrderId deliveryOrderRepoId)
+	@Override
+	public DeliveryOrder getByRepoId(final DeliveryOrderId deliveryOrderRepoId)
 	{
-		return null;
+		final I_DHL_ShipmentOrderRequest dhlShipmentOrderRequest = InterfaceWrapperHelper.load(deliveryOrderRepoId, I_DHL_ShipmentOrderRequest.class);
+		Check.assumeNotNull(dhlShipmentOrderRequest, "DHL delivery order must exist for ID={}", deliveryOrderRepoId);
+
+		return toDeliveryOrderFromPO(dhlShipmentOrderRequest);
 	}
 
-	@Override public DeliveryOrder save(final DeliveryOrder order)
+	/**
+	 * Explanation of the different data structures:
+	 * <p>
+	 * - DeliveryOrder is the DTO
+	 * - I_DHL_ShipmentOrderRequest is the persisted object for that DTO with data relevant for DHL.
+	 * Each different shipper has its own "shipper-PO" with its own relevant data.
+	 */
+	@Override
+	public DeliveryOrder save(final DeliveryOrder deliveryOrder)
 	{
-		// todo currently working here
-		I_DHL_ShipmentOrderRequest orderRequestPO = toShipmentOrderRequestPO(order);
+		if (deliveryOrder.getRepoId() >= 1)
+		{
+			toUpdateShipmentOrderRequestPOAfterCompletion(deliveryOrder);
+			return deliveryOrder;
+		}
+		else
+		{
+			final I_DHL_ShipmentOrderRequest orderRequestPO = toCreateShipmentOrderRequestPO(deliveryOrder);
+			return deliveryOrder
+					.toBuilder()
+					.repoId(orderRequestPO.getDHL_ShipmentOrderRequest_ID())
+					.build();
 
+		}
+	}
+
+	/**
+	 * Read the DHL specific PO and return a DTO.
+	 * <p>
+	 * keep in sync with {@link #toCreateShipmentOrderRequestPO(DeliveryOrder)}
+	 */
+	private DeliveryOrder toDeliveryOrderFromPO(final I_DHL_ShipmentOrderRequest dhlShipmentOrderRequest)
+	{
+		//  todo
 		return null;
 	}
 
 	/**
 	 * Persists the shipper-dependant DeliveryOrder details
+	 * <p>
+	 * todo: https://chat.metasfresh.org/metasfresh/pl/z7pahtuci3b35naios3ha16tnh
+	 * <p>
+	 * keep in sync with {@link #toDeliveryOrderFromPO(I_DHL_ShipmentOrderRequest)}
 	 */
-	private I_DHL_ShipmentOrderRequest toShipmentOrderRequestPO(final DeliveryOrder order)
+	@NonNull
+	private I_DHL_ShipmentOrderRequest toCreateShipmentOrderRequestPO(@NonNull final DeliveryOrder deliveryOrder)
 	{
-
 		final I_DHL_ShipmentOrderRequest shipmentOrderRequest = InterfaceWrapperHelper.newInstance(I_DHL_ShipmentOrderRequest.class);
 		InterfaceWrapperHelper.save(shipmentOrderRequest);
 
-		for (final DeliveryPosition deliveryPosition : order.getDeliveryPositions())
+		//		int totalPackages = 0;
+		//		final int MAX_NUMBER_OF_PACKAGES = 30; // todo this must not be hardcoded; though i'm not sure where i read about this limitation. maybe i'm wrong and there's no limitations in the number of packages sent in 1 order
+		for (final DeliveryPosition deliveryPosition : deliveryOrder.getDeliveryPositions())
 		{
 			final ImmutableList<Integer> packageIdsAsList = deliveryPosition.getPackageIds().asList();
 			for (int i = 0; i < deliveryPosition.getNumberOfPackages(); i++)
 			{
-				final ContactPerson deliveryContact = order.getDeliveryContact();
+				//				if (totalPackages > MAX_NUMBER_OF_PACKAGES)
+				//				{
+				//					throw new AdempiereException("Maximum number of packages for a delivery order for DHL is 30.");
+				//				}
+				//				totalPackages++;
+
+				final ContactPerson deliveryContact = deliveryOrder.getDeliveryContact();
 
 				final I_DHL_ShipmentOrder shipmentOrder = InterfaceWrapperHelper.newInstance(I_DHL_ShipmentOrder.class);
 				shipmentOrder.setDHL_ShipmentOrderRequest_ID(shipmentOrderRequest.getDHL_ShipmentOrderRequest_ID()); // save to parent
 				{
 					//
 					// Misc which doesn't fit dhl structure
-					final Address deliveryAddress = order.getDeliveryAddress();
+					final Address deliveryAddress = deliveryOrder.getDeliveryAddress();
 
 					shipmentOrder.setPackageId(packageIdsAsList.get(i));
 					shipmentOrder.setC_BPartner_ID(deliveryAddress.getBpartnerId());
@@ -99,10 +148,11 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 
 				{
 					// (2.2.1) Shipment Details aka PackageDetails
-					shipmentOrder.setDHL_Product(order.getServiceType().getCode());
+					shipmentOrder.setDHL_Product(deliveryOrder.getServiceType().getCode());
 					shipmentOrder.setDHL_AccountNumber("22222222220104"); // todo from where do i get this? 	 how to get DHL account numbers??
-					shipmentOrder.setCustomerReference(order.getCustomerReference());
-					shipmentOrder.setDHL_ShipmentDate(order.getPickupDate().getDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
+					//noinspection ConstantConditions
+					shipmentOrder.setCustomerReference(deliveryOrder.getCustomerReference());
+					shipmentOrder.setDHL_ShipmentDate(deliveryOrder.getPickupDate().getDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
 					// (2.2.1.8)
 					final PackageDimensions packageDimensions = deliveryPosition.getPackageDimensions();
 					shipmentOrder.setDHL_HeightInCm(packageDimensions.getHeightInCM());
@@ -110,12 +160,13 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 					shipmentOrder.setDHL_WidthInCm(packageDimensions.getWidthInCM());
 					shipmentOrder.setDHL_WeightInKg(BigDecimal.valueOf(deliveryPosition.getGrossWeightKg()));
 					// (2.2.1.10)
+					//noinspection ConstantConditions
 					shipmentOrder.setDHL_RecipientEmailAddress(deliveryContact != null ? deliveryContact.getEmailAddress() : null);
 				}
 
 				{
 					// (2.2.4) Receiver aka Delivery
-					final Address deliveryAddress = order.getDeliveryAddress();
+					final Address deliveryAddress = deliveryOrder.getDeliveryAddress();
 
 					shipmentOrder.setDHL_Receiver_Name1(deliveryAddress.getCompanyName1());
 					// (2.2.4.2)
@@ -128,14 +179,15 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 					// (2.2.4.2.10)
 					shipmentOrder.setDHL_Receiver_CountryISO2Code(deliveryAddress.getCountry().getAlpha2());
 					// (2.2.4.2)
+					//noinspection ConstantConditions
 					shipmentOrder.setDHL_Receiver_Email(deliveryContact != null ? deliveryContact.getEmailAddress() : null);
+					//noinspection ConstantConditions
 					shipmentOrder.setDHL_Receiver_Phone(deliveryContact != null ? deliveryContact.getPhoneAsStringOrNull() : null);
 				}
 
 				{
 					// (2.2.2) Shipper aka Pickup
-					final Address pickupAddress = order.getPickupAddress();
-					//			deliveryOrder.getPickupNote() // todo what is a pickup note? do we need one?
+					final Address pickupAddress = deliveryOrder.getPickupAddress();
 					// (2.2.2.1)
 					shipmentOrder.setDHL_Shipper_Name1(pickupAddress.getCompanyName1());
 					shipmentOrder.setDHL_Shipper_Name2(pickupAddress.getCompanyName2());
@@ -150,17 +202,18 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 				}
 
 				InterfaceWrapperHelper.save(shipmentOrder);
+				{
+					// (2.1) The id column (I_DHL_ShipmentOrder_ID) is used as ShipmentOrder.sequenceNumber since it's unique
+					// nothing to persist here, but must be filled when retrieving the PO
+				}
 			} // fori loop
 		}
 		return shipmentOrderRequest;
 	}
 
-	private class Dhl_ShipmentOrderRequest
+	private void toUpdateShipmentOrderRequestPOAfterCompletion(final DeliveryOrder deliveryOrder)
 	{
-		public void addShipmentOrder(final I_DHL_ShipmentOrder shipmentOrder)
-		{
-
-		}
+		// todo
 	}
 
 }

@@ -23,7 +23,14 @@
 package de.metas.shipper.gateway.dhl.model;
 
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
+import lombok.Builder;
+import lombok.Value;
 
+import java.util.Map;
+
+@Value
+@Builder
 public class DhlCustomDeliveryData implements CustomDeliveryData
 {
+	Map<Integer, String> packageIdsToSequenceNumber;
 }
