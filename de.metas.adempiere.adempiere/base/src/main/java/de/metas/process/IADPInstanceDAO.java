@@ -106,4 +106,6 @@ public interface IADPInstanceDAO extends ISingletonService
 	Set<TableRecordReference> retrieveSelectedIncludedRecords(PInstanceId pinstanceId);
 
 	void saveSelectedIncludedRecords(PInstanceId pinstanceId, Set<TableRecordReference> recordRefs);
+
+	PInstanceId createADPinstanceAndADPInstancePara(PInstanceRequest pinstanceRequest);
 }
