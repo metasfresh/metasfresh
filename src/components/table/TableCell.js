@@ -132,16 +132,35 @@ class TableCell extends PureComponent {
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
-    const { widgetData, updateRow, readonly, rowId } = this.props;
+    const {
+      getWidgetData,
+      updateRow,
+      readonly,
+      rowId,
+      item,
+      isEditable,
+      supportFieldEdit,
+    } = this.props;
+    const {
+      item: nextItem,
+      isEditable: nextIsEditable,
+      supportFieldEdit: nextSupportFieldEdit,
+    } = nextProps;
     // We should avoid highlighting when whole row is exchanged (sorting)
     if (rowId !== nextProps.rowId) {
       return;
     }
+    const widgetData = getWidgetData(item, isEditable, supportFieldEdit);
+    const nextWidgetData = getWidgetData(
+      nextItem,
+      nextIsEditable,
+      nextSupportFieldEdit
+    );
 
     if (
       !readonly &&
       JSON.stringify(widgetData[0].value) !==
-        JSON.stringify(nextProps.widgetData[0].value)
+        JSON.stringify(nextWidgetData[0].value)
     ) {
       updateRow();
     }
@@ -205,9 +224,11 @@ class TableCell extends PureComponent {
   render() {
     const {
       isEdited,
+      isEditable,
+      supportFieldEdit,
       cellExtended,
       extendLongText,
-      widgetData,
+      getWidgetData,
       item,
       windowId,
       rowId,
@@ -228,6 +249,7 @@ class TableCell extends PureComponent {
       onClickOutside,
       isGerman,
     } = this.props;
+    const widgetData = getWidgetData(item, isEditable, supportFieldEdit);
 
     const docId = `${this.props.docId}`;
     const { tooltipToggled } = this.state;

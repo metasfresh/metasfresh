@@ -236,6 +236,34 @@ class TableItem extends PureComponent {
     });
   };
 
+  getWidgetData = (item, isEditable, supportFieldEdit) => {
+    const { fieldsByName } = this.props;
+    const { editedCells } = this.state;
+    const cells = merge({}, fieldsByName, editedCells);
+
+    return item.fields.map(prop => {
+      if (cells) {
+        let cellWidget = cells[prop.field] || -1;
+
+        if (
+          isEditable ||
+          (supportFieldEdit && typeof cellWidget === 'object')
+        ) {
+          cellWidget = {
+            ...cellWidget,
+            widgetType: item.widgetType,
+            displayed: true,
+            readonly: false,
+          };
+        }
+        return cellWidget;
+      }
+
+      // @TODO: Why -1 ? - Kuba
+      return -1;
+    });
+  };
+
   renderCells = () => {
     const {
       cols,
@@ -287,26 +315,6 @@ class TableItem extends PureComponent {
             const isEdited = edited === property;
             const extendLongText = multilineText ? multilineTextLines : 0;
 
-            let widgetData = item.fields.map(prop => {
-              if (cells) {
-                let cellWidget = cells[prop.field] || -1;
-
-                if (
-                  isEditable ||
-                  (supportFieldEdit && typeof cellWidget === 'object')
-                ) {
-                  cellWidget = {
-                    ...cellWidget,
-                    widgetType: item.widgetType,
-                    displayed: true,
-                    readonly: false,
-                  };
-                }
-                return cellWidget;
-              }
-              return -1;
-            });
-            // HACK: Color fields should always be readonly
             isEditable = item.widgetType === 'Color' ? false : isEditable;
 
             return (
@@ -319,7 +327,6 @@ class TableItem extends PureComponent {
                   rowId,
                   tabId,
                   item,
-                  widgetData,
                   tabIndex,
                   listenOnKeys,
                   caption,
@@ -333,6 +340,7 @@ class TableItem extends PureComponent {
                   handleRightClick,
                   keyProperty,
                 }}
+                getWidgetData={this.getWidgetData}
                 cellExtended={cellsExtended}
                 key={`${rowId}-${property}`}
                 isRowSelected={isSelected}
