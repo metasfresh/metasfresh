@@ -533,9 +533,26 @@ public class OrderCandidatesRestControllerImplTest
 		//
 		// Masterdata: BPartner & Location
 		final BPartnerLocationId bpartnerAndLocation = testMasterdata.prepareBPartnerAndLocation()
-				.bpValue("bpCode")
+				.bpValue("mainPartner")
 				.salesPricingSystemId(pricingSystemId)
 				.countryId(countryId_DE)
+				.build();
+
+		final BPartnerLocationId billBpartnerAndLocation = testMasterdata.prepareBPartnerAndLocation()
+				.bpValue("billPartner")
+				.salesPricingSystemId(pricingSystemId)
+				.countryId(countryId_DE)
+				.build();
+
+		final BPartnerLocationId dropShipBpartnerAndLocation = testMasterdata.prepareBPartnerAndLocation()
+				.bpValue("droptShipPartner")
+				.salesPricingSystemId(pricingSystemId)
+				.gln(GLN.ofString("redHerring!"))
+				.countryId(countryId_DE)
+				.build();
+		final BPartnerLocationId expectedDropShipLocation = testMasterdata.prepareBPartnerLocation().bpartnerId(dropShipBpartnerAndLocation.getBpartnerId())
+				.countryId(countryId_DE)
+				.gln(GLN.ofString("expectedDropShipLocation"))
 				.build();
 
 		startInterceptors();
@@ -559,10 +576,23 @@ public class OrderCandidatesRestControllerImplTest
 						.build())
 				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
 						.bpartner(JsonRequestBPartner.builder()
-								.code("bpCode")
-								.build())
-						// no location specified!
+								.code("mainPartner")
+								.build()) // no location specified!
 						.build())
+				.billBPartner(JsonRequestBPartnerLocationAndContact.builder()
+						.bpartner(JsonRequestBPartner.builder()
+								.code("billPartner")
+								.build()) // again, no location specified!
+						.build())
+				.dropShipBPartner(JsonRequestBPartnerLocationAndContact.builder()
+						.bpartner(JsonRequestBPartner.builder()
+								.code("droptShipPartner")
+								.build())
+						.location(JsonRequestLocation.builder()
+								.gln("expectedDropShipLocation")
+								.build())
+						.build())
+
 				.build());
 
 		final JsonOLCandCreateBulkResponse response = orderCandidatesRestControllerImpl
@@ -574,10 +604,18 @@ public class OrderCandidatesRestControllerImplTest
 		final JsonOLCand olCand = olCands.get(0);
 
 		// assert That the OLCand record has the C_BPartner_Location_ID that was not specified in JSON, but looked up
-		final List<I_C_OLCand> olCandRecord = POJOLookupMap.get().getRecords(I_C_OLCand.class);
-		assertThat(olCandRecord)
-				.hasSize(1)
-				.extracting(COLUMNNAME_C_OLCand_ID, COLUMNNAME_C_BPartner_ID, COLUMNNAME_C_BPartner_Location_ID)
-				.contains(tuple(olCand.getId(), bpartnerAndLocation.getBpartnerId().getRepoId(), bpartnerAndLocation.getRepoId()));
+		final List<I_C_OLCand> olCandRecords = POJOLookupMap.get().getRecords(I_C_OLCand.class);
+		assertThat(olCandRecords).hasSize(1)
+				.extracting(COLUMNNAME_C_OLCand_ID)
+				.contains(olCand.getId());
+
+		assertThat(olCandRecords).extracting(COLUMNNAME_C_BPartner_ID, COLUMNNAME_C_BPartner_Location_ID)
+				.contains(tuple(bpartnerAndLocation.getBpartnerId().getRepoId(), bpartnerAndLocation.getRepoId()));
+
+		assertThat(olCandRecords).extracting(COLUMNNAME_Bill_BPartner_ID, COLUMNNAME_Bill_Location_ID)
+				.contains(tuple(billBpartnerAndLocation.getBpartnerId().getRepoId(), billBpartnerAndLocation.getRepoId()));
+
+		assertThat(olCandRecords).extracting(COLUMNNAME_DropShip_BPartner_ID, COLUMNNAME_DropShip_Location_ID)
+				.contains(tuple(dropShipBpartnerAndLocation.getBpartnerId().getRepoId(), expectedDropShipLocation.getRepoId()));
 	}
 }
