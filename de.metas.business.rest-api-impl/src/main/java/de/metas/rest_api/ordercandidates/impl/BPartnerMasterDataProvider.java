@@ -293,7 +293,7 @@ final class BPartnerMasterDataProvider
 							.type(Type.SHIP_TO)
 							.applyTypeStrictly(false) // if there is no "ShipTo", then take what we get
 							.build());
-			return bpLocationId;
+			return bpLocationId; // we don't have anything else, so return it even if null
 		}
 
 		BPartnerLocationId existingBPLocationId = null;
