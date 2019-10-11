@@ -171,6 +171,24 @@ class TableQuickInput extends Component {
 
     this.rawWidgets = [];
 
+    const stylingLayout = [
+      {
+        formGroup: `col-12 col-lg-4 col-xl-5`,
+        label: `col-12 col-lg-3 quickInput-label`,
+        field: `col-12 col-lg-9`,
+      },
+      {
+        formGroup: `col-12 col-lg-3 col-xl-3`,
+        label: `col-12 col-sm-4 col-lg-5 col-xl-4`,
+        field: `col-12 col-sm-8 col-lg-7 col-xl-8`,
+      },
+      {
+        formGroup: `col-12 col-lg-3 col-xl-2`,
+        label: `col-12 col-sm-9 col-lg-7`,
+        field: `col-12 col-sm-3 col-lg-5`,
+      },
+    ];
+
     if (data && layout) {
       return layout.map((item, idx) => {
         const widgetData = item.fields.map(elem => data[elem.field] || -1);
@@ -183,6 +201,9 @@ class TableQuickInput extends Component {
                 this.rawWidgets.push(c);
               }
             }}
+            fieldFormGroupClass={stylingLayout[idx].formGroup}
+            fieldLabelClass={stylingLayout[idx].label}
+            fieldInputClass={stylingLayout[idx].field}
             inProgress={inProgress}
             entity={attributeType}
             subentity="quickInput"
@@ -261,11 +282,13 @@ class TableQuickInput extends Component {
     return (
       <form
         onSubmit={this.onSubmit}
-        className="quick-input-container"
+        className="row quick-input-container"
         ref={c => (this.form = c)}
       >
         {this.renderFields(layout, data, docId, 'window', id)}
-        <div className="hint">{"(Press 'Enter' to add)"}</div>
+        <div className="col-sm-12 col-md-3 col-lg-2 hint">
+          {`(Press 'Enter' to add)`}
+        </div>
         <button type="submit" className="hidden-up" />
       </form>
     );

@@ -48,7 +48,7 @@ class Tab extends Component {
   render() {
     const { children } = this.props;
 
-    return <div className="table-flex-wrapper">{children}</div>;
+    return <div>{children}</div>;
   }
 }
 

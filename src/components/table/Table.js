@@ -1133,9 +1133,9 @@ class Table extends Component {
     }
 
     return (
-      <div ref={ref => (this.wrapper = ref)} className="table-flex-wrapper">
+      <div ref={ref => (this.wrapper = ref)} className="row table-flex-wrapper">
         <div
-          className={classnames('table-flex-wrapper', {
+          className={classnames('col-12', {
             'table-flex-wrapper-row': mainTable,
           })}
         >
@@ -1170,27 +1170,23 @@ class Table extends Component {
             />
           )}
           {!readonly && (
-            <div className="row">
-              <div className="col-12">
-                <TableFilter
-                  openModal={() => this.openModal(windowId, tabId, 'NEW')}
-                  {...{
-                    toggleFullScreen,
-                    fullScreen,
-                    docId,
-                    tabIndex,
-                    isBatchEntry,
-                    supportQuickInput,
-                    selected,
-                  }}
-                  docType={windowId}
-                  tabId={tabId}
-                  handleBatchEntryToggle={this.handleBatchEntryToggle}
-                  allowCreateNew={tabInfo && tabInfo.allowCreateNew}
-                  wrapperHeight={this.wrapper && this.wrapper.offsetHeight}
-                />
-              </div>
-            </div>
+            <TableFilter
+              openModal={() => this.openModal(windowId, tabId, 'NEW')}
+              {...{
+                toggleFullScreen,
+                fullScreen,
+                docId,
+                tabIndex,
+                isBatchEntry,
+                supportQuickInput,
+                selected,
+              }}
+              docType={windowId}
+              tabId={tabId}
+              handleBatchEntryToggle={this.handleBatchEntryToggle}
+              allowCreateNew={tabInfo && tabInfo.allowCreateNew}
+              wrapperHeight={this.wrapper && this.wrapper.offsetHeight}
+            />
           )}
 
           <div

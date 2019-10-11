@@ -47,10 +47,6 @@ export class RawWidget extends Component {
     this.generateMomentObj = generateMomentObj.bind(this);
   }
 
-  /**
-   * @method componentDidMount
-   * @summary ToDo: Describe the method.
-   */
   componentDidMount() {
     const { autoFocus, textSelected } = this.props;
     const { rawWidget } = this;
@@ -946,10 +942,6 @@ export class RawWidget extends Component {
     }
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method.
-   */
   render() {
     const {
       caption,
@@ -965,6 +957,10 @@ export class RawWidget extends Component {
       widgetType,
       handleZoomInto,
       dataEntry,
+      subentity,
+      fieldFormGroupClass,
+      fieldLabelClass,
+      fieldInputClass,
     } = this.props;
     const {
       errorPopup,
@@ -974,6 +970,7 @@ export class RawWidget extends Component {
     } = this.state;
     const widgetBody = this.renderWidget();
     const { validStatus, warning } = widgetData[0];
+    const quickInput = subentity === 'quickInput';
 
     // We have to hardcode that exception in case of having
     // wrong two line rendered one line widgets
@@ -1005,170 +1002,127 @@ export class RawWidget extends Component {
       .map(field => 'form-field-' + field.field)
       .join(' ');
 
-    let labelClass = dataEntry ? 'col-sm-5' : '';
-    if (!labelClass) {
-      labelClass =
-        type === 'primary' && !oneLineException
-          ? 'col-sm-12 panel-title'
-          : type === 'primaryLongLabels'
-          ? 'col-sm-6'
-          : 'col-sm-3';
+    let labelClass;
+    let fieldClass;
+    let formGroupClass = '';
+
+    if (quickInput) {
+      labelClass = fieldLabelClass;
+      fieldClass = fieldInputClass;
+      formGroupClass = fieldFormGroupClass;
+    } else {
+      labelClass = dataEntry ? 'col-sm-5' : '';
+      if (!labelClass) {
+        labelClass =
+          type === 'primary' && !oneLineException
+            ? 'col-sm-12 panel-title'
+            : type === 'primaryLongLabels'
+            ? 'col-sm-6'
+            : 'col-sm-3';
+      }
+
+      fieldClass = dataEntry ? 'col-sm-7' : '';
+      if (!fieldClass) {
+        fieldClass =
+          ((type === 'primary' || noLabel) && !oneLineException
+            ? 'col-sm-12 '
+            : type === 'primaryLongLabels'
+            ? 'col-sm-6'
+            : 'col-sm-9 ') + (fields[0].devices ? 'form-group-flex' : '');
+      }
     }
 
-    let fieldClass = dataEntry ? 'col-sm-7' : '';
-    if (!fieldClass) {
-      fieldClass =
-        ((type === 'primary' || noLabel) && !oneLineException
-          ? 'col-sm-12 '
-          : type === 'primaryLongLabels'
-          ? 'col-sm-6'
-          : 'col-sm-9 ') + (fields[0].devices ? 'form-group-flex' : '');
+    const labelProps = {};
+
+    if (!noLabel && caption && fields[0].supportZoomInto) {
+      labelProps.onClick = () => handleZoomInto(fields[0].field);
     }
 
     return (
       <div
         className={classnames(
-          'form-group row ',
+          'form-group',
+          formGroupClass,
           {
             'form-group-table': rowId && !isModal,
           },
           widgetFieldsName
         )}
       >
-        {captionElement || null}
-        {!noLabel && caption && (
+        <div className="row">
+          {captionElement || null}
+          {!noLabel && caption && (
+            <label
+              className={classnames('form-control-label', labelClass, {
+                'input-zoom': quickInput && fields[0].supportZoomInto,
+                'zoom-into': fields[0].supportZoomInto,
+              })}
+              title={description || caption}
+              {...labelProps}
+            >
+              {caption}
+            </label>
+          )}
           <div
-            key="title"
-            className={classnames('form-control-label', labelClass)}
-            title={description || caption}
+            className={fieldClass}
+            onMouseEnter={() => this.handleErrorPopup(true)}
+            onMouseLeave={() => this.handleErrorPopup(false)}
           >
-            {fields[0].supportZoomInto ? (
-              <span
-                className="zoom-into"
-                onClick={() => handleZoomInto(fields[0].field)}
+            {!clearedFieldWarning && warning && (
+              <div
+                className={classnames('field-warning', {
+                  'field-warning-message': warning,
+                  'field-error-message': warning && warning.error,
+                })}
+                onMouseEnter={() => this.toggleTooltip(true)}
+                onMouseLeave={() => this.toggleTooltip(false)}
               >
-                {caption}
-              </span>
-            ) : (
-              caption
+                <span>{warning.caption}</span>
+                <i
+                  className="meta-icon-close-alt"
+                  onClick={() => this.clearFieldWarning(warning)}
+                />
+                {warning.message && tooltipToggled && (
+                  <Tooltips action={warning.message} type="" />
+                )}
+              </div>
+            )}
+
+            <div
+              className={classnames('input-body-container', {
+                focused: isEdited,
+              })}
+              title={valueDescription}
+            >
+              <ReactCSSTransitionGroup
+                transitionName="fade"
+                transitionEnterTimeout={200}
+                transitionLeaveTimeout={200}
+              >
+                {errorPopup &&
+                  validStatus &&
+                  !validStatus.valid &&
+                  !validStatus.initialValue &&
+                  this.renderErrorPopup(validStatus.reason)}
+              </ReactCSSTransitionGroup>
+              {widgetBody}
+            </div>
+            {fields[0].devices && !widgetData[0].readonly && (
+              <DevicesWidget
+                devices={fields[0].devices}
+                tabIndex={1}
+                handleChange={value =>
+                  handlePatch && handlePatch(fields[0].field, value)
+                }
+              />
             )}
           </div>
-        )}
-        <div
-          className={fieldClass}
-          onMouseEnter={() => this.handleErrorPopup(true)}
-          onMouseLeave={() => this.handleErrorPopup(false)}
-        >
-          {!clearedFieldWarning && warning && (
-            <div
-              className={classnames('field-warning', {
-                'field-warning-message': warning,
-                'field-error-message': warning && warning.error,
-              })}
-              onMouseEnter={() => this.toggleTooltip(true)}
-              onMouseLeave={() => this.toggleTooltip(false)}
-            >
-              <span>{warning.caption}</span>
-              <i
-                className="meta-icon-close-alt"
-                onClick={() => this.clearFieldWarning(warning)}
-              />
-              {warning.message && tooltipToggled && (
-                <Tooltips action={warning.message} type="" />
-              )}
-            </div>
-          )}
-
-          <div
-            className={classnames('input-body-container', {
-              focused: isEdited,
-            })}
-            title={valueDescription}
-          >
-            <ReactCSSTransitionGroup
-              transitionName="fade"
-              transitionEnterTimeout={200}
-              transitionLeaveTimeout={200}
-            >
-              {errorPopup &&
-                validStatus &&
-                !validStatus.valid &&
-                !validStatus.initialValue &&
-                this.renderErrorPopup(validStatus.reason)}
-            </ReactCSSTransitionGroup>
-            {widgetBody}
-          </div>
-          {fields[0].devices && !widgetData[0].readonly && (
-            <DevicesWidget
-              devices={fields[0].devices}
-              tabIndex={1}
-              handleChange={value =>
-                handlePatch && handlePatch(fields[0].field, value)
-              }
-            />
-          )}
         </div>
       </div>
     );
   }
 }
 
-/**
- * @typedef {object} Props Component props
- * @prop {func} dispatch
- * @prop {bool} inProgress
- * @prop {bool} autoFocus
- * @prop {bool} textSelected
- * @prop {bool} listenOnKeys
- * @prop {func} listenOnKeysFalse
- * @prop {func} listenOnKeysTrue
- * @prop {array} widgetData
- * @prop {func} handleFocus
- * @prop {func} handlePatch
- * @prop {func} handleBlur
- * @prop {func} handleProcess
- * @prop {func} handleChange
- * @prop {func} hanndleBackdropLock
- * @prop {func} handleZoomInto
- * @prop {string} tabId
- * @prop {string} viewId
- * @prop {string} rowId
- * @prop {string|number} dataId
- * @prop {string} windowType
- * @prop {string} caption
- * @prop {string} gridAlign
- * @prop {string} type
- * @prop {bool} updated
- * @prop {bool} isModal
- * @prop {bool} modalVisible
- * @prop {bool} filterWidget
- * @prop {string} filterId
- * @prop {number} id
- * @prop {bool} range
- * @prop {func} onShow
- * @prop {func} onHide
- * @prop {string} subentity
- * @prop {string} subentityId
- * @prop {number} tabIndex
- * @prop {func} dropdownOpenCallback
- * @prop {bool} fullScreen
- * @prop {string} widgetType
- * @prop {array} fields
- * @prop {string} icon
- * @prop {string} entity
- * @prop {*} data
- * @prop {func} closeTableField
- * @prop {bool} attribute
- * @prop {bool} allowShowPassword
- * @prop {string} buttonProcessId
- * @prop {func} onBlurWidget
- * @prop {string|array} defaultValue
- * @prop {bool} noLabel
- * @prop {bool} isOpenDatePicker
- * @prop {number} forceHeight
- * @prop {bool} dataEntry
- * @prop {bool} lastFormField
- */
 RawWidget.propTypes = RawWidgetPropTypes;
 RawWidget.defaultProps = RawWidgetDefaultProps;
 

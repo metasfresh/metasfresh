@@ -57,6 +57,20 @@ input {
     &.instruction-sent {
         white-space: normal;
     }
+
+    &.input-zoom {
+        display: flex;
+        align-items: center;
+
+        @media (min-width: $breakpoint-md){
+            /*margin: 0 15px;*/
+        }       
+    }
+
+    .zoom-into:hover {
+        text-decoration: underline;
+        cursor: pointer;
+    }
 }
 
 .form-group {
@@ -94,21 +108,37 @@ input {
 }
 
 .form-flex-align {
-    display: flex;
     flex-wrap: nowrap;
     justify-content: space-between;
-    margin-bottom: .5rem;
+    margin-bottom: 15px;
     align-items: center;
+    position: relative;
 
-    flex:1;
-}
+    > .row {
+        margin-top: 15px;
+    }
 
-.form-flex-align > *:not(:last-child){
-    margin-right: .5rem;
-}
+    input {
+        flex: 2 1 auto;
+    }
 
-.form-flex-align input {
-    flex: 2 1 auto;
+    @media (min-width: $breakpoint-sm){
+        > .row {
+            margin-top: 0;
+        }
+    }
+
+    @media (min-width: $breakpoint-lg){
+        padding-top: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    @media (min-width: $breakpoint-xl){
+        flex-direction: row;
+        align-items: center;
+    }
 }
 
 .form-group-table {
@@ -467,9 +497,6 @@ input:checked + .input-slider:before {
     .input-dropdown-container .input-dropdown{
         flex-direction: column;
     }
-    .input-dropdown .input-icon {
-        top: -9px;
-    }
     .input-editable {
         flex: 1 1 50%;
         flex-shrink: 1;
@@ -788,7 +815,7 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     }
 
     .input-field {
-        padding-top: 2px;
+        /*padding-top: 2px;*/
         padding-bottom: 0;
     }
 }
@@ -853,26 +880,6 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     z-index: 50;
     margin-top:5px;
     width: 450px;
-}
-
-.quick-input-container {
-    display: flex;
-    align-items: center;
-    flex-direction: row;
-    flex:1;
-
-     > * {
-        margin:0;
-        flex:2;
-    }
-
-     .hint {
-        flex:1;
-    }
-
-     > *:first-of-type {
-        flex:8;
-    }
 }
 
 /* Others */

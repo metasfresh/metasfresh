@@ -27,7 +27,8 @@ describe('RawWidget component', () => {
       const wrapper = shallow(<RawWidget {...props} />);
       const html = wrapper.html();
 
-      expect(html).toContain('form-group row');
+      expect(html).toContain('form-group');
+      expect(html).toContain('row');
       expect(html).toContain('input-block');
       expect(wrapper.find('textarea').length).toBe(1);
       expect(html).toContain(fixtures.longText.data1.value)
@@ -176,7 +177,8 @@ describe('RawWidget component', () => {
       const wrapper = shallow(<RawWidget {...props} />);
       const html = wrapper.html();
 
-      expect(html).toContain('form-group row');
+      expect(html).toContain('form-group');
+      expect(html).toContain('row');
       expect(html).toContain('input-block');
       expect(wrapper.find('input').length).toBe(1);
       expect(html).toContain(fixtures.text.data1.value)
@@ -298,7 +300,8 @@ describe('RawWidget component', () => {
       const wrapper = shallow(<RawWidget {...props} />);
       const html = wrapper.html();
 
-      expect(html).toContain('form-group row');
+      expect(html).toContain('form-group');
+      expect(html).toContain('row');
       expect(html).toContain('input-block');
       expect(wrapper.find('input').length).toBe(1);
       expect(html).toContain(fixtures.integer.data1.value)
