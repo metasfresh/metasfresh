@@ -209,7 +209,7 @@ final class ProductMasterDataProvider
 
 		if (existingProductId == null && syncAdvise.getIfNotExists().isFail())
 		{
-			final String msg = StringUtils.formatMessage("Found no existing product; Searched via value={} and orgId in ({}, 0)", productValue, orgId);
+			final String msg = StringUtils.formatMessage("Found no existing product; Searched via (value={} or externalId={}) and orgId in ({}, 0)", productValue, productExternalId, orgId);
 			throw new ProductNotFoundException(msg);
 		}
 
