@@ -172,17 +172,27 @@ public class BPartnerImportTableSqlUpdater
 	private void dbUpdateCountries(final String whereClause)
 	{
 		{
-			final String sql = "UPDATE I_BPartner i "
+			final String countryNameSql = "UPDATE I_BPartner i "
 					+ "SET C_Country_ID=(SELECT C_Country_ID FROM C_Country c"
 					+ " WHERE ("
-					+ " (i.CountryCode=c.CountryCode AND c.AD_Client_ID IN (0, i.AD_Client_ID))"
-					+ " OR "
 					+ " (i.CountryName=c.Name AND c.AD_Client_ID IN (0, i.AD_Client_ID))"
 					+ " )) "
 					+ "WHERE C_Country_ID IS NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y' "
 					+ whereClause;
-			executeUpdate("Set Country", sql);
+			executeUpdate("Set Country", countryNameSql);
+		}
+		
+		{
+			final String countryCodeSql = "UPDATE I_BPartner i "
+					+ "SET C_Country_ID=(SELECT C_Country_ID FROM C_Country c"
+					+ " WHERE ("
+					+ " (i.CountryCode=c.CountryCode AND c.AD_Client_ID IN (0, i.AD_Client_ID))"
+					+ " )) "
+					+ "WHERE C_Country_ID IS NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y' "
+					+ whereClause;
+			executeUpdate("Set Country", countryCodeSql);
 		}
 
 		//

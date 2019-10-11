@@ -107,21 +107,36 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 	private void dbUpdateBPartnerIds(final String sqlImportWhereClause)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
+		{
+			final String sqlSelectByValue = "select MIN(bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + ")"
+					+ " from " + I_C_BPartner.Table_Name + " bp "
+					+ " where ( bp." + I_C_BPartner.COLUMNNAME_Value + "=i." + I_I_User.COLUMNNAME_BPValue + ")"
+					+ " and bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + "=i." + I_I_User.COLUMNNAME_AD_Client_ID;
 
-		final String sqlSelectByValue = "select MIN(bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + ")"
-				+ " from " + I_C_BPartner.Table_Name + " bp "
-				+ " where ( bp." + I_C_BPartner.COLUMNNAME_Value + "=i." + I_I_User.COLUMNNAME_BPValue
-				+ " OR " + I_C_BPartner.COLUMNNAME_GlobalId+ "=i." + I_I_User.COLUMNNAME_GlobalId + ")"
-				+ " and bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + "=i." + I_I_User.COLUMNNAME_AD_Client_ID;
+			final String sqlUpdateByValue = "UPDATE " + I_I_User.Table_Name + " i "
+					+ "\n SET " + I_I_User.COLUMNNAME_C_BPartner_ID + "=(" + sqlSelectByValue + ")"
+					+ "\n WHERE " + sqlImportWhereClause
+					+ "\n AND i." + I_I_User.COLUMNNAME_C_BPartner_ID + " IS NULL";
 
-		final String sql = "UPDATE " + I_I_User.Table_Name + " i "
-				+ "\n SET " + I_I_User.COLUMNNAME_C_BPartner_ID + "=(" + sqlSelectByValue + ")"
-				+ "\n WHERE " + sqlImportWhereClause
-				+ "\n AND i." + I_I_User.COLUMNNAME_C_BPartner_ID + " IS NULL";
+			final int resultsForValueUpdate = DB.executeUpdateEx(sqlUpdateByValue, trxName);
+			log.debug("Set C_BPartner_ID for {} records", resultsForValueUpdate);
+		}
 
-		final int no = DB.executeUpdateEx(sql, trxName);
-		log.debug("Set C_BPartner_ID for {} records", no);
-		//
+		{
+			final String sqlSelectByGlobalId = "select MIN(bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + ")"
+					+ " from " + I_C_BPartner.Table_Name + " bp "
+					+ " where ( bp." + I_C_BPartner.COLUMNNAME_GlobalId + "=i." + I_I_User.COLUMNNAME_GlobalId + ")"
+					+ " and bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + "=i." + I_I_User.COLUMNNAME_AD_Client_ID;
+
+			final String sqlUpdateByGlobalId = "UPDATE " + I_I_User.Table_Name + " i "
+					+ "\n SET " + I_I_User.COLUMNNAME_C_BPartner_ID + "=(" + sqlSelectByGlobalId + ")"
+					+ "\n WHERE " + sqlImportWhereClause
+					+ "\n AND i." + I_I_User.COLUMNNAME_C_BPartner_ID + " IS NULL";
+
+			final int resultsForGlobalIdUpdate = DB.executeUpdateEx(sqlUpdateByGlobalId, trxName);
+			log.debug("Set C_BPartner_ID for {} records", resultsForGlobalIdUpdate);
+		}
+
 		// Flag missing BPartners
 		markAsError("BPartner not found", I_I_User.COLUMNNAME_C_BPartner_ID + " IS NULL"
 				+ "\n AND " + sqlImportWhereClause);
@@ -168,7 +183,7 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 	@Override
 	protected ImportRecordResult importRecord(final IMutable<Object> state,
 			final I_I_User importRecord,
-			final boolean isInsertOnly ) throws Exception
+			final boolean isInsertOnly) throws Exception
 	{
 		//
 		// Create a new user
@@ -216,7 +231,7 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 		user.setPhone(importRecord.getPhone());
 		user.setFax(importRecord.getFax());
 		user.setMobilePhone(importRecord.getMobilePhone());
-		//user.gen
+		// user.gen
 
 		final de.metas.adempiere.model.I_AD_User loginUser = InterfaceWrapperHelper.create(user, de.metas.adempiere.model.I_AD_User.class);
 		loginUser.setLogin(importRecord.getLogin());
