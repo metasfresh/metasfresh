@@ -284,13 +284,13 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 				.build();
 	}
 
-	@PostMapping("/{dataSourceName}/{externalReference}/attachments")
+	@PostMapping("/{dataSourceName}/{externalHeaderId}/attachments")
 	@Override
 	public ResponseEntity<JsonAttachment> attachFile(
 			@PathVariable("dataSourceName") final String dataSourceName,
 
-			@ApiParam(required = true, value = "External reference of the order line candidates to which the given file shall be attached") //
-			@PathVariable("externalReference") final String externalReference,
+			@ApiParam(required = true, value = "`externalheaderId` of the order line candidates to which the given file shall be attached") //
+			@PathVariable("externalHeaderId") final String externalHeaderId,
 
 			@ApiParam(value = "List with an even number of items;\n"
 					+ "transformed to a map of key-value pairs and added to the new attachment as tags.\n"
@@ -306,7 +306,7 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 		final OLCandQuery query = OLCandQuery
 				.builder()
 				.inputDataSourceName(dataSourceName)
-				.externalHeaderId(externalReference)
+				.externalHeaderId(externalHeaderId)
 				.build();
 
 		final String fileName = file.getOriginalFilename();
@@ -321,7 +321,7 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 		final AttachmentEntry attachmentEntry = olCandsService.addAttachment(query, request);
 
 		final JsonAttachment jsonAttachment = toJsonAttachment(
-				externalReference,
+				externalHeaderId,
 				dataSourceName,
 				attachmentEntry);
 		return new ResponseEntity<>(jsonAttachment, HttpStatus.CREATED);
