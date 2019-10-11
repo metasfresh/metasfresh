@@ -1063,8 +1063,9 @@ public class BPartnerDAO implements IBPartnerDAO
 				.stream()
 				.map(bpRelationRecord -> ofRelationRecord(bpRelationRecord))
 				.filter(bpRelation -> Objects.equals(query.getRelationBPartnerLocationId(), bpRelation.getBplocationId()))
-				.map(bpRelation -> bpRelation.getTargetBPLocationId())
-				.findFirst();
+				.findFirst()
+				.map(bpRelation -> bpRelation.getTargetBPLocationId());
+
 
 		if (relBPLocationId.isPresent())
 		{
