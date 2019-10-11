@@ -218,6 +218,18 @@ class TableItem extends PureComponent {
     }
   };
 
+  handleClick = e => {
+    const { onClick, item } = this.props;
+
+    onClick(e, item);
+  };
+
+  handleClickOutside = e => {
+    const { changeListenOnTrue } = this.props;
+    this.handleEditProperty(e);
+    changeListenOnTrue();
+  };
+
   handleCellExtend = () => {
     this.setState({
       cellsExtended: !this.state.cellsExtended,
@@ -234,7 +246,6 @@ class TableItem extends PureComponent {
       tabId,
       mainTable,
       newRow,
-      changeListenOnTrue,
       tabIndex,
       entity,
       getSizeClass,
@@ -242,6 +253,7 @@ class TableItem extends PureComponent {
       caption,
       colspan,
       viewId,
+      keyProperty,
       isSelected,
     } = this.props;
     const {
@@ -315,38 +327,26 @@ class TableItem extends PureComponent {
                   viewId,
                   extendLongText,
                   property,
+                  isEditable,
+                  supportZoomInto,
+                  supportFieldEdit,
+                  handleRightClick,
+                  keyProperty,
                 }}
                 cellExtended={cellsExtended}
                 key={`${rowId}-${property}`}
                 isRowSelected={isSelected}
                 isEdited={isEdited}
-                handleDoubleClick={e => {
-                  if (isEditable) {
-                    this.handleEditProperty(e, property, true, widgetData[0]);
-                  }
-                }}
-                onClickOutside={e => {
-                  this.handleEditProperty(e);
-                  changeListenOnTrue();
-                }}
+                handleDoubleClick={this.handleEditProperty}
+                onClickOutside={this.handleClickOutside}
                 onCellChange={this.onCellChange}
                 onCellExtend={this.handleCellExtend}
                 updatedRow={updatedRow || newRow}
                 updateRow={this.updateRow}
-                handleKeyDown={e =>
-                  this.handleKeyDown(e, property, widgetData[0])
-                }
+                handleKeyDown={this.handleKeyDown}
                 listenOnKeysTrue={this.listenOnKeysTrue}
                 listenOnKeysFalse={this.listenOnKeysFalse}
-                closeTableField={e => this.closeTableField(e)}
-                handleRightClick={e =>
-                  handleRightClick(
-                    e,
-                    property,
-                    supportZoomInto,
-                    supportFieldEdit
-                  )
-                }
+                closeTableField={this.closeTableField}
               />
             );
           }
@@ -482,7 +482,6 @@ class TableItem extends PureComponent {
     const {
       key,
       isSelected,
-      onClick,
       odd,
       indentSupported,
       indent,
@@ -498,7 +497,7 @@ class TableItem extends PureComponent {
       <WithMobileDoubleTap>
         <tr
           key={key}
-          onClick={onClick}
+          onClick={this.handleClick}
           onDoubleClick={this.handleDoubleClick}
           className={classnames({
             'row-selected': isSelected,

@@ -170,6 +170,38 @@ class TableCell extends PureComponent {
     }
   };
 
+  handleKeyDown = e => {
+    const { handleKeyDown, property, widgetData } = this.props;
+
+    handleKeyDown(e, property, widgetData[0]);
+  };
+
+  handleRightClick = e => {
+    const {
+      handleRightClick,
+      property,
+      supportZoomInto,
+      supportFieldEdit,
+      keyProperty,
+    } = this.props;
+
+    handleRightClick(
+      e,
+      keyProperty,
+      property,
+      !!supportZoomInto,
+      supportFieldEdit
+    );
+  };
+
+  onDoubleClick = e => {
+    const { isEditable, property, widgetData, handleDoubleClick } = this.props;
+
+    if (isEditable) {
+      handleDoubleClick(e, property, true, widgetData[0]);
+    }
+  };
+
   render() {
     const {
       isEdited,
@@ -181,8 +213,6 @@ class TableCell extends PureComponent {
       rowId,
       tabId,
       property,
-      handleDoubleClick,
-      handleKeyDown,
       updatedRow,
       tabIndex,
       entity,
@@ -191,7 +221,6 @@ class TableCell extends PureComponent {
       listenOnKeysTrue,
       closeTableField,
       getSizeClass,
-      handleRightClick,
       mainTable,
       onCellChange,
       viewId,
@@ -259,9 +288,9 @@ class TableCell extends PureComponent {
       <td
         tabIndex={modalVisible ? -1 : tabIndex}
         ref={c => (this.cell = c)}
-        onDoubleClick={handleDoubleClick}
-        onKeyDown={handleKeyDown}
-        onContextMenu={handleRightClick}
+        onDoubleClick={this.onDoubleClick}
+        onKeyDown={this.handleKeyDown}
+        onContextMenu={this.handleRightClick}
         className={classnames(
           {
             [`text-${item.gridAlign}`]: item.gridAlign,
