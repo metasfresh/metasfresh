@@ -16,8 +16,8 @@ import de.metas.banking.model.I_I_Datev_Payment;
 import de.metas.banking.model.X_I_Datev_Payment;
 import de.metas.bpartner.BPartnerId;
 import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
-import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult;
 import de.metas.organization.OrgId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
@@ -51,7 +51,9 @@ public class DatevPaymentImportProcess extends SimpleImportProcessTemplate<I_I_D
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
-		CPaymentImportTableSqlUpdater.updatePaymentImportTable(getWhereClause());
+		final ImportRecordsSelection selection = getImportRecordsSelection();
+
+		CPaymentImportTableSqlUpdater.updatePaymentImportTable(selection);
 	}
 
 	@Override
@@ -111,7 +113,7 @@ public class DatevPaymentImportProcess extends SimpleImportProcessTemplate<I_I_D
 	private I_C_Payment createNewPayment(@NonNull final I_I_Datev_Payment importRecord)
 	{
 		final LocalDate date = TimeUtil.asLocalDate(importRecord.getDateTrx());
-		
+
 		final IPaymentBL paymentsService = Services.get(IPaymentBL.class);
 		return paymentsService.newBuilderOfInvoice(importRecord.getC_Invoice())
 				//.receipt(importRecord.isReceipt())
