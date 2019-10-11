@@ -24,13 +24,24 @@ package de.metas.shipper.gateway.dhl.model;
 
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 
 @Value
 @Builder
-//todo @ToString(exclude=bla)
+@ToString(exclude={"applicationID", "applicationToken", "accountNumber"})
 public class DhlClientConfig
 {
 	@NonNull
 	private final String baseUrl;
+
+	@NonNull
+	private final String applicationID;
+
+	@NonNull
+	private final String applicationToken;
+
+	@NonNull
+	private final String accountNumber;
+
 }

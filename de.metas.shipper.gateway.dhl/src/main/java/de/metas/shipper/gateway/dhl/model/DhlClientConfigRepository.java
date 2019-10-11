@@ -22,14 +22,38 @@
 
 package de.metas.shipper.gateway.dhl.model;
 
+import de.metas.cache.CCache;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class DhlClientConfigRepository
 {
+	private final CCache<Integer, DhlClientConfig> cache = CCache.newCache(I_DHL_Shipper_Config.Table_Name, 1, CCache.EXPIREMINUTES_Never);
+
 	public DhlClientConfig getByShipperId(final int shipperId)
 	{
-		// todo
-		return null;
+		return cache.getOrLoad(shipperId, () -> readConfig(shipperId));
+	}
+
+	private static DhlClientConfig readConfig(final int shipperId)
+	{
+		final I_DHL_Shipper_Config configPO = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_DHL_Shipper_Config.class)
+				.addEqualsFilter(I_DHL_Shipper_Config.COLUMNNAME_DHL_Shipper_Config_ID, shipperId)
+				.create()
+				.first();
+		if (configPO == null)
+		{
+			throw new AdempiereException("No DHL shipper configuration found for shipperId=" + shipperId);
+		}
+		return DhlClientConfig.builder()
+				.applicationID(configPO.getapplicationID())
+				.applicationToken(configPO.getApplicationToken())
+				.baseUrl(configPO.getdhl_api_url())
+				.accountNumber(configPO.getAccountNumber())
+				.build();
 	}
 }

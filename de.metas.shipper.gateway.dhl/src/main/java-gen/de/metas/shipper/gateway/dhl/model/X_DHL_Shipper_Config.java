@@ -14,7 +14,7 @@ public class X_DHL_Shipper_Config extends org.compiere.model.PO implements I_DHL
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1349247344L;
+	private static final long serialVersionUID = 60361517L;
 
     /** Standard Constructor */
     public X_DHL_Shipper_Config (Properties ctx, int DHL_Shipper_Config_ID, String trxName)
@@ -40,6 +40,54 @@ public class X_DHL_Shipper_Config extends org.compiere.model.PO implements I_DHL
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Kontonummer.
+		@param AccountNumber Kontonummer	  */
+	@Override
+	public void setAccountNumber (java.lang.String AccountNumber)
+	{
+		set_Value (COLUMNNAME_AccountNumber, AccountNumber);
+	}
+
+	/** Get Kontonummer.
+		@return Kontonummer	  */
+	@Override
+	public java.lang.String getAccountNumber () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_AccountNumber);
+	}
+
+	/** Set Anwendungs-ID.
+		@param applicationID Anwendungs-ID	  */
+	@Override
+	public void setapplicationID (java.lang.String applicationID)
+	{
+		set_Value (COLUMNNAME_applicationID, applicationID);
+	}
+
+	/** Get Anwendungs-ID.
+		@return Anwendungs-ID	  */
+	@Override
+	public java.lang.String getapplicationID () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_applicationID);
+	}
+
+	/** Set Anwendungs-Token.
+		@param ApplicationToken Anwendungs-Token	  */
+	@Override
+	public void setApplicationToken (java.lang.String ApplicationToken)
+	{
+		set_Value (COLUMNNAME_ApplicationToken, ApplicationToken);
+	}
+
+	/** Get Anwendungs-Token.
+		@return Anwendungs-Token	  */
+	@Override
+	public java.lang.String getApplicationToken () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ApplicationToken);
+	}
 
 	/** Set DHL API URL.
 		@param dhl_api_url DHL API URL	  */

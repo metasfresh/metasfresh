@@ -23,6 +23,29 @@ public interface I_DHL_Shipper_Config
     /** Load Meta Data */
 
 	/**
+	 * Set Kontonummer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAccountNumber (java.lang.String AccountNumber);
+
+	/**
+	 * Get Kontonummer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getAccountNumber();
+
+    /** Column definition for AccountNumber */
+    public static final org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_AccountNumber = new org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object>(I_DHL_Shipper_Config.class, "AccountNumber", null);
+    /** Column name AccountNumber */
+    public static final String COLUMNNAME_AccountNumber = "AccountNumber";
+
+	/**
 	 * Get Mandant.
 	 * Mandant für diese Installation.
 	 *
@@ -61,6 +84,52 @@ public interface I_DHL_Shipper_Config
     public static final org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, org.compiere.model.I_AD_Org>(I_DHL_Shipper_Config.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Anwendungs-ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setapplicationID (java.lang.String applicationID);
+
+	/**
+	 * Get Anwendungs-ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getapplicationID();
+
+    /** Column definition for applicationID */
+    public static final org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_applicationID = new org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object>(I_DHL_Shipper_Config.class, "applicationID", null);
+    /** Column name applicationID */
+    public static final String COLUMNNAME_applicationID = "applicationID";
+
+	/**
+	 * Set Anwendungs-Token.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setApplicationToken (java.lang.String ApplicationToken);
+
+	/**
+	 * Get Anwendungs-Token.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getApplicationToken();
+
+    /** Column definition for ApplicationToken */
+    public static final org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_ApplicationToken = new org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object>(I_DHL_Shipper_Config.class, "ApplicationToken", null);
+    /** Column name ApplicationToken */
+    public static final String COLUMNNAME_ApplicationToken = "ApplicationToken";
 
 	/**
 	 * Get Erstellt.
