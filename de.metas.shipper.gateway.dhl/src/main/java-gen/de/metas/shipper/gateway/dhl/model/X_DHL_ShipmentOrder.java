@@ -15,7 +15,7 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 297601985L;
+	private static final long serialVersionUID = 362685523L;
 
     /** Standard Constructor */
     public X_DHL_ShipmentOrder (Properties ctx, int DHL_ShipmentOrder_ID, String trxName)
@@ -398,15 +398,15 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 	}
 
 	@Override
-	public I_DHL_ShipmentOrderRequest getDHL_ShipmentOrderRequest()
+	public de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest getDHL_ShipmentOrderRequest()
 	{
-		return get_ValueAsPO(COLUMNNAME_DHL_ShipmentOrderRequest_ID, I_DHL_ShipmentOrderRequest.class);
+		return get_ValueAsPO(COLUMNNAME_DHL_ShipmentOrderRequest_ID, de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest.class);
 	}
 
 	@Override
-	public void setDHL_ShipmentOrderRequest(I_DHL_ShipmentOrderRequest DHL_ShipmentOrderRequest)
+	public void setDHL_ShipmentOrderRequest(de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest DHL_ShipmentOrderRequest)
 	{
-		set_ValueFromPO(COLUMNNAME_DHL_ShipmentOrderRequest_ID, I_DHL_ShipmentOrderRequest.class, DHL_ShipmentOrderRequest);
+		set_ValueFromPO(COLUMNNAME_DHL_ShipmentOrderRequest_ID, de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest.class, DHL_ShipmentOrderRequest);
 	}
 
 	/** Set DHL Shipment Order Request.

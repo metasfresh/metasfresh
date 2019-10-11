@@ -574,12 +574,12 @@ public interface I_DHL_ShipmentOrder
 	 */
 	public int getDHL_ShipmentOrderRequest_ID();
 
-	public I_DHL_ShipmentOrderRequest getDHL_ShipmentOrderRequest();
+	public de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest getDHL_ShipmentOrderRequest();
 
-	public void setDHL_ShipmentOrderRequest(I_DHL_ShipmentOrderRequest DHL_ShipmentOrderRequest);
+	public void setDHL_ShipmentOrderRequest(de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest DHL_ShipmentOrderRequest);
 
     /** Column definition for DHL_ShipmentOrderRequest_ID */
-    public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, I_DHL_ShipmentOrderRequest> COLUMN_DHL_ShipmentOrderRequest_ID = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, I_DHL_ShipmentOrderRequest>(I_DHL_ShipmentOrder.class, "DHL_ShipmentOrderRequest_ID", I_DHL_ShipmentOrderRequest.class);
+    public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest> COLUMN_DHL_ShipmentOrderRequest_ID = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest>(I_DHL_ShipmentOrder.class, "DHL_ShipmentOrderRequest_ID", de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest.class);
     /** Column name DHL_ShipmentOrderRequest_ID */
     public static final String COLUMNNAME_DHL_ShipmentOrderRequest_ID = "DHL_ShipmentOrderRequest_ID";
 
