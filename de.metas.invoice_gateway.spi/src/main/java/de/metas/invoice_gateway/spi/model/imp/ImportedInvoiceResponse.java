@@ -42,16 +42,7 @@ public class ImportedInvoiceResponse
 {
 	public enum Status
 	{
-		ACCEPTET, PENDING, REJECTED;
-
-		public static String toStringOrNull(@Nullable final Status status)
-		{
-			if (status == null)
-			{
-				return null;
-			}
-			return status.toString();
-		}
+		ACCEPTET, PENDING, REJECTED
 	}
 
 	@Nullable
@@ -97,8 +88,7 @@ public class ImportedInvoiceResponse
 		@NonNull
 		String text;
 
-		@Override
-		public String toString()
+		@Override public String toString()
 		{
 			return code + ": " + text + ";";
 		}
