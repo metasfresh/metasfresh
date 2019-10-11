@@ -44,6 +44,7 @@ import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_Role;
+import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.logging.LogManager;
 import de.metas.security.IRoleDAO;
@@ -90,8 +91,10 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
+		 final ImportRecordsSelection selection = getImportRecordsSelection();
+
 		final String sqlImportWhereClause = COLUMNNAME_I_IsImported + "<>" + DB.TO_BOOLEAN(true)
-				+ "\n " + getWhereClause();
+				+ "\n " + selection.toSqlWhereClause("i.");
 		//
 		// Update C_BPartner_ID by value
 		{
@@ -148,13 +151,13 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 
 		final String sqlSelectByValue = "select MIN(r." + I_AD_Role.COLUMNNAME_AD_Role_ID + ")"
 				+ " from " + I_AD_Role.Table_Name + " r "
-				+ " where r." + I_AD_Role.COLUMNNAME_Name + "=u." + I_I_User.COLUMNNAME_RoleName
-				+ " and r." + I_AD_Role.COLUMNNAME_AD_Client_ID + "=u." + I_I_User.COLUMNNAME_AD_Client_ID;
+				+ " where r." + I_AD_Role.COLUMNNAME_Name + "=i." + I_I_User.COLUMNNAME_RoleName
+				+ " and r." + I_AD_Role.COLUMNNAME_AD_Client_ID + "=i." + I_I_User.COLUMNNAME_AD_Client_ID;
 
-		final String sql = "UPDATE " + I_I_User.Table_Name + " u "
+		final String sql = "UPDATE " + I_I_User.Table_Name + " i "
 				+ "\n SET " + I_I_User.COLUMNNAME_AD_Role_ID + "=(" + sqlSelectByValue + ")"
 				+ "\n WHERE " + sqlImportWhereClause
-				+ "\n AND u." + I_I_User.COLUMNNAME_AD_Role_ID + " IS NULL";
+				+ "\n AND i." + I_I_User.COLUMNNAME_AD_Role_ID + " IS NULL";
 
 		final int no = DB.executeUpdateEx(sql, trxName);
 		log.debug("Set R_RequestType_ID for {} records", no);
@@ -162,7 +165,7 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 
 	private final void markAsError(final String errorMsg, final String sqlWhereClause)
 	{
-		final String sql = "UPDATE " + I_I_User.Table_Name
+		final String sql = "UPDATE " + I_I_User.Table_Name + " i "
 				+ "\n SET " + COLUMNNAME_I_IsImported + "=?, " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||? "
 				+ "\n WHERE " + sqlWhereClause;
 		final Object[] sqlParams = new Object[] { X_I_User.I_ISIMPORTED_ImportFailed, errorMsg + "; " };

@@ -14,6 +14,7 @@ import org.compiere.model.X_I_Replenish;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -66,7 +67,9 @@ public class ReplenishmentImportProcess extends SimpleImportProcessTemplate<I_I_
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
-		RepelnishmentImportTableSqlUpdater.updateReplenishmentImportTable(getWhereClause());
+		final ImportRecordsSelection selection = getImportRecordsSelection();
+
+		RepelnishmentImportTableSqlUpdater.updateReplenishmentImportTable(selection);
 	}
 
 	@Override
@@ -98,7 +101,7 @@ public class ReplenishmentImportProcess extends SimpleImportProcessTemplate<I_I_
 		else
 		{
 			final ITranslatableString errorMsg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_NoValidRecord);
-			throw new AdempiereException(errorMsg); 
+			throw new AdempiereException(errorMsg);
 		}
 
 	}
@@ -126,7 +129,7 @@ public class ReplenishmentImportProcess extends SimpleImportProcessTemplate<I_I_
 
 		return replenishImportResult;
 	}
-	
+
 	@Override
 	protected void markImported(@NonNull final I_I_Replenish importRecord)
 	{

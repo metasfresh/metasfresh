@@ -87,7 +87,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 	private ImportTableDescriptor _importTableDescriptor; // lazy
 	private DBFunctions dbFunctions; // lazy
 	private PInstanceId selectionId; // lazy
-	private String whereClause; // lazy
+	private ImportRecordsSelection importRecordsSelection; // lazy
 
 	private void assertNotStarted()
 	{
@@ -276,33 +276,25 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 	protected abstract String getTargetTableName();
 
 	/** @return SQL WHERE clause to filter records that are candidates for import; <b>please prefix your where clause with " AND "</b> */
-	protected final String getWhereClause()
+	protected final ImportRecordsSelection getImportRecordsSelection()
 	{
-		String whereClause = this.whereClause;
-		if (whereClause == null)
+		ImportRecordsSelection importRecordsSelection = this.importRecordsSelection;
+		if (importRecordsSelection == null)
 		{
-			whereClause = this.whereClause = buildWhereClause();
-			logger.debug("Using where clause: {}", whereClause);
+			importRecordsSelection = this.importRecordsSelection = buildImportRecordsSelection();
+			logger.debug("Using selection: {}", importRecordsSelection);
 		}
-		return whereClause;
+		return importRecordsSelection;
 	}
 
-	private final String buildWhereClause()
+	private final ImportRecordsSelection buildImportRecordsSelection()
 	{
-		final StringBuilder whereClause = new StringBuilder();
-
-		// AD_Client
-		final ClientId clientId = getClientId();
-		whereClause.append(" AND AD_Client_ID=").append(clientId.getRepoId());
-
-		// Selection_ID
-		final PInstanceId selectionId = getOrCreateSelectionId();
-		if (selectionId != null)
-		{
-			whereClause.append(" AND ").append(DB.createT_Selection_SqlWhereClause(selectionId, getImportKeyColumnName()));
-		}
-
-		return whereClause.toString();
+		return ImportRecordsSelection.builder()
+				.importTableName(getImportTableName())
+				.importKeyColumnName(getImportKeyColumnName())
+				.clientId(getClientId())
+				.selectionId(getOrCreateSelectionId())
+				.build();
 	}
 
 	protected final ImportProcessResultCollector getResultCollector()
@@ -368,7 +360,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 		final StringBuilder sql = new StringBuilder("DELETE FROM " + getImportTableName() + " WHERE 1=1");
 
 		//
-		sql.append("\n /* standard import filter */ ").append(getWhereClause());
+		sql.append("\n /* standard import filter */ ").append(getImportRecordsSelection().toSqlWhereClause());
 
 		//
 		// Delete mode filters
@@ -445,7 +437,8 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 			sqlParams.add(value);
 		}
 
-		sql.append("\n WHERE (" + ImportTableDescriptor.COLUMNNAME_I_IsImported + "<>'Y' OR " + ImportTableDescriptor.COLUMNNAME_I_IsImported + " IS NULL) " + getWhereClause());
+		sql.append("\n WHERE (" + ImportTableDescriptor.COLUMNNAME_I_IsImported + "<>'Y' OR " + ImportTableDescriptor.COLUMNNAME_I_IsImported + " IS NULL) ")
+				.append(" ").append(getImportRecordsSelection().toSqlWhereClause());
 		final int no = DB.executeUpdateEx(sql.toString(),
 				sqlParams.toArray(),
 				ITrx.TRXNAME_ThreadInherited);
@@ -568,8 +561,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 		{
 			final ImmutableList<ImportRecordType> importRecordsList = importGroup.getImportRecords();
 			overallResultCollector.addCountImportRecordsConsidered(importRecordsList.size());
-			
-			
+
 			final ImportGroupResult importGroupResult = importRecords(importRecordsList, stateHolder);
 
 			for (final ImportRecordType importRecord : importRecordsList)
@@ -589,7 +581,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 
 	private String buildSqlSelectRecordsToImport()
 	{
-		final String whereClause = getWhereClause();
+		final String whereClause = getImportRecordsSelection().toSqlWhereClause();
 		final StringBuilder sql = new StringBuilder("SELECT * FROM " + getImportTableName() + " WHERE " + ImportTableDescriptor.COLUMNNAME_I_IsImported + "='N' ").append(whereClause);
 
 		// ORDER BY
@@ -674,7 +666,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 		final String sql = "UPDATE " + getImportTableName()
 				+ " SET " + ImportTableDescriptor.COLUMNNAME_I_IsImported + "='N', Updated=now() "
 				+ " WHERE " + ImportTableDescriptor.COLUMNNAME_I_IsImported + "<>'Y' "
-				+ " " + getWhereClause();
+				+ " " + getImportRecordsSelection().toSqlWhereClause();
 		final int countNotImported = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
 		return countNotImported >= 0 ? countNotImported : 0;
 	}

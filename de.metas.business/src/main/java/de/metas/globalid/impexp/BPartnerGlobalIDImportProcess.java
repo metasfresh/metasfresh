@@ -13,6 +13,7 @@ import org.compiere.model.X_I_BPartner_GlobalID;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -63,7 +64,8 @@ public class BPartnerGlobalIDImportProcess extends SimpleImportProcessTemplate<I
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
-		BPartnerGlobalIDImportTableSqlUpdater.updateBPartnerGlobalIDImortTable(getWhereClause());
+		final ImportRecordsSelection selection = getImportRecordsSelection();
+		BPartnerGlobalIDImportTableSqlUpdater.updateBPartnerGlobalIDImortTable(selection);
 	}
 
 	@Override
