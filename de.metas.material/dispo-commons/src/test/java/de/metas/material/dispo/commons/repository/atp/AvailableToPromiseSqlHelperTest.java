@@ -14,8 +14,8 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.material.commons.attributes.AttributesKeyPatterns;
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
@@ -51,7 +51,7 @@ public class AvailableToPromiseSqlHelperTest
 {
 	private IQueryBL queryBL;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

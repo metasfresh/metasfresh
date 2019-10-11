@@ -15,11 +15,9 @@ import java.time.Instant;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.material.commons.attributes.AttributesKeyPattern;
@@ -61,15 +59,12 @@ public class AvailableToPromiseRepositoryTest
 	private static final BPartnerId BPARTNER_ID_2 = BPartnerId.ofRepoId(20);
 	private static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1, 2);
 
-	public static final BigDecimal TWENTY = new BigDecimal("20");
-	public static final BigDecimal THIRTY = new BigDecimal("30");
-
 	private AvailableToPromiseRepository availableToPromiseRepository;
 
-	@Rule
-	public AdempiereTestWatcher adempiereTestWatcher = new AdempiereTestWatcher();
+	// @Rule
+	// public AdempiereTestWatcher adempiereTestWatcher = new AdempiereTestWatcher();
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -95,7 +90,7 @@ public class AvailableToPromiseRepositoryTest
 
 		final BigDecimal result = availableToPromiseRepository.retrieveAvailableStockQtySum(query);
 
-		assertThat(result).isEqualByComparingTo(TWENTY);
+		assertThat(result).isEqualByComparingTo("20");
 	}
 
 	/**
@@ -115,7 +110,7 @@ public class AvailableToPromiseRepositoryTest
 
 		final BigDecimal result = availableToPromiseRepository.retrieveAvailableStockQtySum(query);
 
-		assertThat(result).isEqualByComparingTo(TWENTY);
+		assertThat(result).isEqualByComparingTo("20");
 	}
 
 	/**
@@ -214,7 +209,7 @@ public class AvailableToPromiseRepositoryTest
 		assertThat(resultGroups)
 				.filteredOn(group -> group.getBpartner().equals(BPartnerClassifier.specific(BPARTNER_ID_1)))
 				.hasSize(1)
-				.allSatisfy(group -> assertThat(group.getQty()).isEqualByComparingTo(TWENTY));
+				.allSatisfy(group -> assertThat(group.getQty()).isEqualByComparingTo("20"));
 
 		assertThat(resultGroups)
 				.filteredOn(group -> group.getBpartner().equals(BPartnerClassifier.specific(BPARTNER_ID_2)))
@@ -230,7 +225,7 @@ public class AvailableToPromiseRepositoryTest
 
 		final AvailableToPromiseResult result = availableToPromiseRepository.retrieveAvailableStock(multiQuery);
 		assertThat(result.getResultGroups()).hasSize(1); // there is just one predefined bucket
-		assertThat(result.getResultGroups().get(0).getQty()).isEqualByComparingTo(THIRTY);
+		assertThat(result.getResultGroups().get(0).getQty()).isEqualByComparingTo("30");
 	}
 
 	/**
@@ -266,7 +261,7 @@ public class AvailableToPromiseRepositoryTest
 				.build();
 
 		final BigDecimal resultQtySum = availableToPromiseRepository.retrieveAvailableStockQtySum(multiQuery);
-		assertThat(resultQtySum).isEqualByComparingTo(THIRTY);
+		assertThat(resultQtySum).isEqualByComparingTo("30");
 
 		return multiQuery;
 	}
