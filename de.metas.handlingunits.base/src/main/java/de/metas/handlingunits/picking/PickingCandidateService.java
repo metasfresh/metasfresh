@@ -268,9 +268,4 @@ public class PickingCandidateService
 				.perform();
 
 	}
-
-	public void saveAll(@NonNull final Collection<PickingCandidate> candidates)
-	{
-		pickingCandidateRepository.saveAll(candidates);
-	}
 }
