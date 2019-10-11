@@ -43,7 +43,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 
-@EqualsAndHashCode(doNotUseGetters=true)
+@EqualsAndHashCode(doNotUseGetters = true, exclude = { "sqlBuilt", "sqlWhereClause", "sqlParams" })
 public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
 	/**
