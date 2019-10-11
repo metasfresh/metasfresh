@@ -13,19 +13,6 @@ import { shouldRenderColumn } from '../../utils/tableHelpers';
 import { WithMobileDoubleTap } from '../WithMobileDoubleTap';
 
 class TableItem extends PureComponent {
-  static getDerivedStateFromProps(props, state) {
-    // Any time the dataKey changes,
-    // Reset edited cells as we have a completely
-    // new dataset
-    if (props.dataKey !== state.dataKey) {
-      return {
-        ...state,
-        editedCells: {},
-      };
-    }
-    return state;
-  }
-
   constructor(props) {
     super(props);
 
@@ -44,7 +31,6 @@ class TableItem extends PureComponent {
 
     this.state = {
       edited: '',
-      dataKey: props.dataKey,
       activeCell: '',
       updatedRow: false,
       listenOnKeys: true,
@@ -59,6 +45,12 @@ class TableItem extends PureComponent {
 
     if (multilineText && this.props.isSelected !== prevProps.isSelected) {
       this.handleCellExtend();
+    }
+
+    if (this.props.dataKey !== prevProps.dataKey) {
+      this.setState({
+        editedCells: {},
+      });
     }
   }
 
@@ -539,6 +531,7 @@ TableItem.propTypes = {
   processed: PropTypes.bool,
   notSaved: PropTypes.bool,
   isSelected: PropTypes.bool,
+  dataKey: PropTypes.string.isRequired,
 };
 
 export default connect(
