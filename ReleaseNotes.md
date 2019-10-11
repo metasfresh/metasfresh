@@ -14,6 +14,7 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh-webui-frontend
   * [#2393](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2393) Sales Order Line: fix batch entry layout
+  * [#2403](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2403) Widgets not properly automatically updated
   * [#2405](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2405) Fix sorting in tabs-tables
 
 # metasfresh 5.123
