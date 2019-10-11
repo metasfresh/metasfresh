@@ -285,6 +285,9 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 				getC_BP_Location_Effective_ID(olCand, Type.SHIP_TO));
 	}
 
+	/**
+	 * @param if falling back to the {@code C_BPartner_Location} masterdata, then prefer this type.
+	 */
 	private int getC_BP_Location_Effective_ID(@NonNull final I_C_OLCand olCandRecord, @NonNull final Type type)
 	{
 		if (olCandRecord.getC_BP_Location_Override_ID() > 0)
@@ -300,10 +303,11 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 				.retrieveBPartnerLocationId(BPartnerLocationQuery.builder()
 						.bpartnerId(BPartnerId.ofRepoId(getC_BPartner_Effective_ID(olCandRecord)))
 						.type(type)
+						.applyTypeStrictly(false)
 						.build());
 		if (bpartnerLocationId == null)
 		{
-			throw new AdempiereException("Given olCandRecord has no C_BP_Location_Override_ID nor C_BPartner_Location_ID and the effective C_BPartner_ID also has no shipTo-Location")
+			throw new AdempiereException("Given olCandRecord has no C_BP_Location_Override_ID nor C_BPartner_Location_ID and the effective C_BPartner also has no C_BPartner_Location")
 					.appendParametersToMessage()
 					.setParameter("olCandRecord", olCandRecord);
 		}

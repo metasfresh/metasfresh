@@ -279,21 +279,24 @@ final class BPartnerMasterDataProvider
 	{
 		final BPartnerId bpartnerId = context.getBpartnerId();
 
-		BPartnerLocationId existingBPLocationId = null;
-		if (context.getLocationId() != null)
+		if (jsonBPartnerLocation == null) // no JSON-location-spec was provided at all
 		{
-			return context.getLocationId();
-		}
+			final BPartnerLocationId ctxLocationId = context.getLocationId();
+			if (ctxLocationId != null)
+			{
+				return ctxLocationId; // we already have one in our ctx, so let's go with that
+			}
 
-		if (jsonBPartnerLocation == null) // no JSON-location was provided at all; see if we have something in our masterdata
-		{
-			existingBPLocationId = bpartnerDAO
+			final BPartnerLocationId bpLocationId = bpartnerDAO // see if we can find something in the DB
 					.retrieveBPartnerLocationId(BPartnerLocationQuery.builder()
 							.bpartnerId(bpartnerId)
 							.type(Type.SHIP_TO)
 							.applyTypeStrictly(false) // if there is no "ShipTo", then take what we get
 							.build());
+			return bpLocationId;
 		}
+
+		BPartnerLocationId existingBPLocationId = null;
 
 		if (existingBPLocationId == null
 				&& jsonBPartnerLocation != null
