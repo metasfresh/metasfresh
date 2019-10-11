@@ -54,6 +54,7 @@ import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import de.metas.util.rest.ExternalId;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -266,6 +267,8 @@ public interface IBPartnerDAO extends ISingletonService
 
 	ImmutableSet<BPartnerId> retrieveBPartnerIdsBy(BPartnerQuery query);
 
+	BPartnerLocationId retrieveBPartnerLocationId(BPartnerLocationQuery query);
+
 	I_C_BPartner_Location retrieveBPartnerLocation(BPartnerLocationQuery query);
 
 	ImmutableSet<BPartnerId> retrieveAllCustomerIDs();
@@ -284,6 +287,13 @@ public interface IBPartnerDAO extends ISingletonService
 
 		@NonNull
 		Type type;
+
+		/**
+		 * If {@code false}, then bpartner locations with the given type are preferred, but also a location with another type can be returned.
+		 * {@code true} by default.
+		 */
+		@Default
+		boolean applyTypeStrictly = true;
 
 		boolean alsoTryRelation;
 	}
