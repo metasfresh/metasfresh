@@ -6,8 +6,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.material.commons.attributes.AttributesKeyMatcher;
@@ -226,14 +224,15 @@ final class AvailableToPromiseResultBucket
 			@NonNull final AvailableToPromiseResultGroupBuilder group,
 			@NonNull final AttributesKey requestStorageAttributesKey)
 	{
-		AttributesKey groupAttributesKey = group.getStorageAttributesKey();
+		final AttributesKey groupAttributesKey = group.getStorageAttributesKey();
 		if (groupAttributesKey.isAll())
 		{
 			return true;
 		}
 		else if (groupAttributesKey.isOther())
 		{
-			throw new AdempiereException("GroupAttributesKey=OTHERS cannot match requestStorageAttributesKey=" + requestStorageAttributesKey);
+			// accept it. We assume that the actual matching was done on Bucket level and not on Group level
+			return true;
 		}
 		else if (groupAttributesKey.isNone())
 		{
