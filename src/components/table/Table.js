@@ -656,9 +656,15 @@ class Table extends Component {
     }
   };
 
-  handleClick = (e, keyProperty, item) => {
-    const { onSelectionChanged } = this.props;
+  handleClick = (e, item) => {
+    const {
+      onSelectionChanged,
+      openIncludedViewOnSelect,
+      showIncludedViewOnSelect,
+      keyProperty,
+    } = this.props;
     const id = item[keyProperty];
+    let selectionValue = false;
 
     if (e.button === 0) {
       const { selected } = this.state;
@@ -692,9 +698,20 @@ class Table extends Component {
         onSelectionChanged(newSelection);
       }
 
-      return newSelection.length > 0;
+      selectionValue = newSelection.length > 0;
     }
-    return true;
+    selectionValue = true;
+
+    if (openIncludedViewOnSelect) {
+      showIncludedViewOnSelect({
+        showIncludedView: selectionValue && item.supportIncludedViews,
+        forceClose: !selectionValue,
+        windowType: item.supportIncludedViews
+          ? item.includedView.windowType || item.includedView.windowId
+          : null,
+        viewId: item.supportIncludedViews ? item.includedView.viewId : '',
+      });
+    }
   };
 
   handleRightClick = (e, id, fieldName, supportZoomInto, supportFieldEdit) => {
@@ -959,8 +976,6 @@ class Table extends Component {
       entity,
       indentSupported,
       collapsible,
-      showIncludedViewOnSelect,
-      openIncludedViewOnSelect,
       viewId,
       supportOpenRecord,
     } = this.props;
@@ -998,6 +1013,7 @@ class Table extends Component {
           collapsible,
           viewId,
           supportOpenRecord,
+          item,
         }}
         dataKey={hash(item.fieldsByName)}
         key={`${i}-${viewId}`}
@@ -1012,32 +1028,12 @@ class Table extends Component {
             this.rowRefs[keyProp] = c.wrappedInstance;
           }
         }}
+        keyProperty={item[keyProperty]}
         rowId={item[keyProperty]}
         tabId={tabId}
         onDoubleClick={this.handleDoubleClick}
-        onClick={e => {
-          const selected = this.handleClick(e, keyProperty, item);
-
-          if (openIncludedViewOnSelect) {
-            showIncludedViewOnSelect({
-              showIncludedView: selected && item.supportIncludedViews,
-              forceClose: !selected,
-              windowType: item.supportIncludedViews
-                ? item.includedView.windowType || item.includedView.windowId
-                : null,
-              viewId: item.supportIncludedViews ? item.includedView.viewId : '',
-            });
-          }
-        }}
-        handleRightClick={(e, fieldName, supportZoomInto, supportFieldEdit) =>
-          this.handleRightClick(
-            e,
-            item[keyProperty],
-            fieldName,
-            !!supportZoomInto,
-            supportFieldEdit
-          )
-        }
+        onClick={this.handleClick}
+        handleRightClick={this.handleRightClick}
         changeListenOnTrue={() => this.changeListen(true)}
         changeListenOnFalse={() => this.changeListen(false)}
         newRow={i === rows.length - 1 ? newRow : false}
