@@ -94,7 +94,7 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 		 final ImportRecordsSelection selection = getImportRecordsSelection();
 
 		final String sqlImportWhereClause = COLUMNNAME_I_IsImported + "<>" + DB.TO_BOOLEAN(true)
-				+ "\n " + selection.toSqlWhereClause("i.");
+				+ "\n " + selection.toSqlWhereClause("i");
 		//
 		// Update C_BPartner_ID by value
 		{
