@@ -27,10 +27,10 @@ import java.util.Map;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableList;
 
@@ -59,7 +59,6 @@ import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHa
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -83,6 +82,7 @@ import mockit.Mocked;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class CandidateChangeHandlerTests
 {
 	private static final BigDecimal FIFTEEN = new BigDecimal("15");
@@ -94,10 +94,6 @@ public class CandidateChangeHandlerTests
 	private static final BigDecimal THIRTEEN = new BigDecimal("13");
 
 	private static final BigDecimal THREE = new BigDecimal("3");
-
-	/** Watches the current tests and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
 	private final Instant t1 = Instant.parse("2017-11-22T00:00:00Z");
 	private final Instant t2 = t1.plus(10, ChronoUnit.MINUTES);
@@ -112,14 +108,11 @@ public class CandidateChangeHandlerTests
 
 	private CandidateChangeService candidateChangeHandler;
 
-	@Mocked
-	private PostMaterialEventService postMaterialEventService;
-
 	private StockCandidateService stockCandidateService;
 
 	private CandidateRepositoryWriteService candidateRepositoryCommands;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -127,7 +120,9 @@ public class CandidateChangeHandlerTests
 		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 		candidateRepositoryCommands = new CandidateRepositoryWriteService();
 
-		stockRepository = new AvailableToPromiseRepository();
+		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
+
+		stockRepository = Mockito.mock(AvailableToPromiseRepository.class);
 		stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands);
@@ -152,7 +147,7 @@ public class CandidateChangeHandlerTests
 		assertThat(result.get(CandidateType.UNRELATED_DECREASE)).isSameAs(handler2);
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test //(expected = RuntimeException.class)
 	public void createMapOfHandlers_when_typeColission_then_exception()
 	{
 		final CandidateHandler handler1 = createHandlerThatSupportsTypes(ImmutableList.of(CandidateType.DEMAND, CandidateType.SUPPLY));
