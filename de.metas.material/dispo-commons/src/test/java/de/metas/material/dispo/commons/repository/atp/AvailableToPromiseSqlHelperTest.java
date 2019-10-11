@@ -6,9 +6,8 @@ import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.testsupport.MetasfreshAssertions.assertThat;
-import static de.metas.testsupport.QueryFilterTestUtil.extractSingleFilter;
-import static org.assertj.core.api.Assertions.assertThat;
 
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -48,11 +47,8 @@ import de.metas.util.Services;
  * #L%
  */
 
-@SuppressWarnings({ "rawtypes" })
 public class AvailableToPromiseSqlHelperTest
 {
-	private static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1, 2);
-
 	private IQueryBL queryBL;
 
 	@Before
@@ -62,11 +58,11 @@ public class AvailableToPromiseSqlHelperTest
 		queryBL = Services.get(IQueryBL.class);
 	}
 
-	private MaterialDescriptor createMaterialDescriptor()
+	private MaterialDescriptor createMaterialDescriptor(final AttributesKey attributesKey)
 	{
 		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(
 				PRODUCT_ID,
-				STORAGE_ATTRIBUTES_KEY,
+				attributesKey,
 				ATTRIBUTE_SET_INSTANCE_ID);
 		final MaterialDescriptor materialDescriptor = EventTestHelper.createMaterialDescriptor()
 				.withProductDescriptor(productDescriptor);
@@ -81,7 +77,7 @@ public class AvailableToPromiseSqlHelperTest
 	@Test
 	public void createDBQuery_for_simple_stock_query()
 	{
-		final MaterialDescriptor materialDescriptor = createMaterialDescriptor();
+		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(AttributesKey.ofAttributeValueIds(1, 2));
 		final AvailableToPromiseQuery query = AvailableToPromiseQuery.forMaterialDescriptor(materialDescriptor);
 		// MaterialQuery(warehouseIds=[51], date=Thu Nov 30 13:25:21 EET 2017, productIds=[24], storageAttributesKeys=[1§&§2], bpartnerId=-1)
 
@@ -96,7 +92,7 @@ public class AvailableToPromiseSqlHelperTest
 				.addInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMNNAME_C_BPartner_Customer_ID, BPARTNER_ID, null)
 				.addStringLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, "%1%2%", /* ignoreCase */false);
 
-		assertThat(dbFilter.toString()).isEqualTo(expectedFilter.toString());
+		assertThat(dbFilter).isEqualTo(expectedFilter);
 
 	}
 
@@ -106,7 +102,7 @@ public class AvailableToPromiseSqlHelperTest
 		final AvailableToPromiseQuery query = AvailableToPromiseQuery.builder()
 				.productId(10)
 				.productId(20)
-				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(STORAGE_ATTRIBUTES_KEY))
+				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(AttributesKey.ofAttributeValueIds(1, 2)))
 				.date(TimeUtil.asZonedDateTime(NOW))
 				.build();
 
@@ -119,7 +115,7 @@ public class AvailableToPromiseSqlHelperTest
 				.addEqualsFilter(I_MD_Candidate_ATP_QueryResult.COLUMNNAME_C_BPartner_Customer_ID, null)
 				.addStringLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, "%1%2%", /* ignoreCase */false);
 
-		assertThat(dbFilter.toString()).isEqualTo(expectedFilter.toString());
+		assertThat(dbFilter).isEqualTo(expectedFilter);
 	}
 
 	@Test
@@ -127,27 +123,23 @@ public class AvailableToPromiseSqlHelperTest
 	{
 		final AvailableToPromiseQuery query = AvailableToPromiseQuery.builder()
 				.productId(PRODUCT_ID)
-				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(STORAGE_ATTRIBUTES_KEY))
+				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(AttributesKey.ofAttributeValueIds(1, 2)))
 				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(AttributesKey.ofAttributeValueIds(3)))
 				.date(TimeUtil.asZonedDateTime(NOW))
 				.build();
 
 		final IQueryBuilder<I_MD_Candidate_ATP_QueryResult> dbQuery = AvailableToPromiseSqlHelper.createDBQueryForStockQueryBuilder(query);
-
 		final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> dbFilter = dbQuery.getCompositeFilter();
-		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Warehouse_ID);
 
-		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Product_ID, PRODUCT_ID);
-
-		{
-			final ICompositeQueryFilter attributesFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);
-
-			final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> expectedAttributesFilter = newCompositeFilter()
-					.setJoinOr()
-					.addStringLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, "%1%2%", /* ignoreCase */false)
-					.addStringLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, "%3%", /* ignoreCase */false);
-			assertThat(attributesFilter.toString()).isEqualTo(expectedAttributesFilter.toString());
-		}
+		final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> expectedFilter = newCompositeFilter()
+				.addCompareFilter(I_MD_Candidate_ATP_QueryResult.COLUMNNAME_DateProjected, Operator.LESS_OR_EQUAL, TimeUtil.asTimestamp(NOW))
+				.addInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMNNAME_M_Product_ID, PRODUCT_ID)
+				.addEqualsFilter(I_MD_Candidate_ATP_QueryResult.COLUMNNAME_C_BPartner_Customer_ID, null)
+				.addFilter(newCompositeFilter()
+						.setJoinOr()
+						.addStringLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, "%1%2%", /* ignoreCase */false)
+						.addStringLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, "%3%", /* ignoreCase */false));
+		assertThat(dbFilter).isEqualTo(expectedFilter);
 	}
 
 	@Test
@@ -155,7 +147,7 @@ public class AvailableToPromiseSqlHelperTest
 	{
 		final AvailableToPromiseQuery query = AvailableToPromiseQuery.builder()
 				.productId(PRODUCT_ID)
-				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(STORAGE_ATTRIBUTES_KEY))
+				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(AttributesKey.ofAttributeValueIds(1, 2)))
 				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(AttributesKey.ofAttributeValueIds(3)))
 				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(AttributesKey.OTHER))
 				.date(TimeUtil.asZonedDateTime(NOW))
@@ -163,27 +155,13 @@ public class AvailableToPromiseSqlHelperTest
 
 		// invoke the method under test
 		final IQueryBuilder<I_MD_Candidate_ATP_QueryResult> dbQuery = AvailableToPromiseSqlHelper.createDBQueryForStockQueryBuilder(query);
-
 		final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> dbFilter = dbQuery.getCompositeFilter();
-		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Warehouse_ID);
 
-		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Product_ID, PRODUCT_ID);
-
-		//
-		// Attributes related filter
-		{
-			assertThat(dbFilter).hasCompositeOrFilter();
-			final ICompositeQueryFilter attributesFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);
-
-			final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> expectedAttributesFilter = newCompositeFilter()
-					.setJoinOr()
-					.addStringLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, "%1%2%", /* ignoreCase */false)
-					.addStringLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, "%3%", /* ignoreCase */false)
-					.addFilter(newCompositeFilter()
-							.setJoinAnd()
-							.addStringNotLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, "%1%2%", /* ignoreCase */false)
-							.addStringNotLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, "%3%", /* ignoreCase */false));
-			assertThat(attributesFilter.toString()).isEqualTo(expectedAttributesFilter.toString());
-		}
+		final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> expectedFilter = newCompositeFilter()
+				.addCompareFilter(I_MD_Candidate_ATP_QueryResult.COLUMNNAME_DateProjected, Operator.LESS_OR_EQUAL, TimeUtil.asTimestamp(NOW))
+				.addInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMNNAME_M_Product_ID, PRODUCT_ID)
+				.addEqualsFilter(I_MD_Candidate_ATP_QueryResult.COLUMNNAME_C_BPartner_Customer_ID, null)
+				.addFilter(ConstantQueryFilter.of(true)); // attributes filter
+		assertThat(dbFilter).isEqualTo(expectedFilter);
 	}
 }
