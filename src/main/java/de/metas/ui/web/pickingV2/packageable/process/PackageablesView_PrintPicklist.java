@@ -92,11 +92,7 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 	{
 		final PackageableRow row = getSingleSelectedRow();
 
-		// pick
-		final List<PickingCandidate> pcickingCandidates = productsToPickRowsRepository.pick(row);
-
-		// save
-		pickingCandidateService.saveAll(pcickingCandidates);
+		pickIfNeeded(row);
 
 		// print
 		final byte[] pickList = printPicklist(row);
@@ -108,6 +104,19 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 				OutputType.PDF.getContentType());
 
 		return MSG_OK;
+	}
+
+	private void pickIfNeeded(final PackageableRow row)
+	{
+		final boolean existsPickingCandidates = pickingCandidateService.existsPickingCandidates(row.getShipmentScheduleIds());
+		if (!existsPickingCandidates)
+		{
+			// pick
+			final List<PickingCandidate> pcickingCandidates = productsToPickRowsRepository.pick(row);
+
+			// save
+			pickingCandidateService.saveAll(pcickingCandidates);
+		}
 	}
 
 	private byte[] printPicklist(@NonNull final PackageableRow row)
