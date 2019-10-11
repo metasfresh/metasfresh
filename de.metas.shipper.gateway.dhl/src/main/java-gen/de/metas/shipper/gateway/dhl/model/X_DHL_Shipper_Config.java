@@ -14,7 +14,7 @@ public class X_DHL_Shipper_Config extends org.compiere.model.PO implements I_DHL
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 949810014L;
+	private static final long serialVersionUID = -589644841L;
 
     /** Standard Constructor */
     public X_DHL_Shipper_Config (Properties ctx, int DHL_Shipper_Config_ID, String trxName)
@@ -143,19 +143,19 @@ public class X_DHL_Shipper_Config extends org.compiere.model.PO implements I_DHL
 		return (java.lang.String)get_Value(COLUMNNAME_Signature);
 	}
 
-	/** Set Benutzer.
-		@param User Benutzer	  */
+	/** Set Nutzer-ID/Login.
+		@param UserName Nutzer-ID/Login	  */
 	@Override
-	public void setUser (java.lang.String User)
+	public void setUserName (java.lang.String UserName)
 	{
-		set_Value (COLUMNNAME_User, User);
+		set_Value (COLUMNNAME_UserName, UserName);
 	}
 
-	/** Get Benutzer.
-		@return Benutzer	  */
+	/** Get Nutzer-ID/Login.
+		@return Nutzer-ID/Login	  */
 	@Override
-	public java.lang.String getUser () 
+	public java.lang.String getUserName () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_User);
+		return (java.lang.String)get_Value(COLUMNNAME_UserName);
 	}
 }

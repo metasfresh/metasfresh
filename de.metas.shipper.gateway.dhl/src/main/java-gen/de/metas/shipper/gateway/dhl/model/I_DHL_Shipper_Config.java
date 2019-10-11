@@ -286,25 +286,25 @@ public interface I_DHL_Shipper_Config
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Benutzer.
+	 * Set Nutzer-ID/Login.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setUser (java.lang.String User);
+	public void setUserName (java.lang.String UserName);
 
 	/**
-	 * Get Benutzer.
+	 * Get Nutzer-ID/Login.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getUser();
+	public java.lang.String getUserName();
 
-    /** Column definition for User */
-    public static final org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_User = new org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object>(I_DHL_Shipper_Config.class, "User", null);
-    /** Column name User */
-    public static final String COLUMNNAME_User = "User";
+    /** Column definition for UserName */
+    public static final org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_UserName = new org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object>(I_DHL_Shipper_Config.class, "UserName", null);
+    /** Column name UserName */
+    public static final String COLUMNNAME_UserName = "UserName";
 }

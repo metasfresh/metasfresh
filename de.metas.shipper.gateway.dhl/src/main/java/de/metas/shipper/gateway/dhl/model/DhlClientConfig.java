@@ -45,7 +45,7 @@ public class DhlClientConfig
 	private final String accountNumber;
 
 	@NonNull
-	String user;
+	String username;
 
 	@NonNull
 	String signature;

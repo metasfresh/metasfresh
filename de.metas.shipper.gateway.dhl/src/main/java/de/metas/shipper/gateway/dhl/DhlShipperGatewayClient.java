@@ -312,7 +312,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 			{
 				// service authentication
 				final AuthentificationType authentificationType = objectFactoryCis.createAuthentificationType();
-				authentificationType.setUser(config.getUser());
+				authentificationType.setUser(config.getUsername());
 				authentificationType.setSignature(config.getSignature());
 				final JAXBElement<AuthentificationType> authentification = objectFactoryCis.createAuthentification(authentificationType);
 
