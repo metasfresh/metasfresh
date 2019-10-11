@@ -63,8 +63,6 @@ import org.junit.rules.TestName;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.adempiere.service.impl.PlainPrinterRoutingDAO;
-import de.metas.document.archive.api.IDocOutboundDAO;
-import de.metas.document.archive.api.impl.PlainDocOutboundDAO;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.i18n.Language;
@@ -153,9 +151,6 @@ public class Helper
 		}
 
 		AdempiereTestHelper.get().staticInit();
-
-		// de.metas.document.archive
-		Services.registerService(IDocOutboundDAO.class, new PlainDocOutboundDAO());
 
 		// de.metas.printing (this module):
 		Services.registerService(IPrintingDAO.class, printingDAO);

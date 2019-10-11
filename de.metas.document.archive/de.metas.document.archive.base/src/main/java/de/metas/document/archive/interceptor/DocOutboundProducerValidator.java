@@ -1,5 +1,6 @@
 package de.metas.document.archive.interceptor;
 
+import org.adempiere.service.IClientDAO;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
@@ -29,11 +30,10 @@ import lombok.NonNull;
 	private final ModelValidationEngine modelValidationEngine;
 	private int m_AD_Client_ID = -1;
 
-	public DocOutboundProducerValidator(final ModelValidationEngine modelValidationEngine, final I_C_Doc_Outbound_Config config)
+	public DocOutboundProducerValidator(@NonNull final ModelValidationEngine modelValidationEngine, final I_C_Doc_Outbound_Config config)
 	{
 		super(config);
 
-		Check.assumeNotNull(modelValidationEngine, "modelValidationEngine not null");
 		this.modelValidationEngine = modelValidationEngine;
 	}
 
@@ -47,7 +47,7 @@ import lombok.NonNull;
 		final I_AD_Client client;
 		if (adClientId > 0)
 		{
-			client = config.getAD_Client();
+			client = Services.get(IClientDAO.class).getById(adClientId);
 		}
 		else
 		{

@@ -66,7 +66,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 		final I_C_Doc_Outbound_Log_Line docExchangeLine = createLogLine(archive);
 		docExchangeLine.setAction(action);
-		docExchangeLine.setAD_User(user);
+		docExchangeLine.setAD_User_ID(user.getAD_User_ID());
 
 		save(docExchangeLine);
 	}
@@ -122,7 +122,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 		docExchangeLine.setAction(X_C_Doc_Outbound_Log_Line.ACTION_Print);
 		// create stuff
-		docExchangeLine.setAD_User(user);
+		docExchangeLine.setAD_User_ID(user.getAD_User_ID());
 		docExchangeLine.setStatus(status);
 
 		save(docExchangeLine);
