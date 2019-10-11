@@ -20,7 +20,6 @@
  * #L%
  */
 
-import com.google.common.collect.ImmutableList;
 import de.dhl.webservice.cisbase.AuthentificationType;
 import de.dhl.webservice.cisbase.CommunicationType;
 import de.dhl.webservice.cisbase.CountryType;
@@ -37,10 +36,8 @@ import de.dhl.webservices.businesscustomershipping._3.ShipmentNotificationType;
 import de.dhl.webservices.businesscustomershipping._3.ShipmentOrderType;
 import de.dhl.webservices.businesscustomershipping._3.ShipperType;
 import de.dhl.webservices.businesscustomershipping._3.Version;
-import de.metas.shipper.gateway.dhl.model.DhlServiceType;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
-import de.metas.shipper.gateway.spi.model.CountryCode;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
@@ -65,7 +62,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -104,7 +100,7 @@ class CreateShipmentRequestFromDeliveryOrderTest
 
 	private CreateShipmentOrderRequest createShipmentOrderRequestFromDeliveryOrder()
 	{
-		final DeliveryOrder request = createDummyDeliveryOrder();
+		final DeliveryOrder request = DhlTestUtil.createDummyDeliveryOrder();
 		final ShipmentOrderType shipmentOrderType = createShipmentFromDeliveryOrder(request);
 
 		final Version version = createHardcodedVersion(objectFactory);
@@ -219,13 +215,6 @@ class CreateShipmentRequestFromDeliveryOrderTest
 
 	}
 
-	/**
-	 * todo how do i find the version?
-	 * todo Should this be a hardcoded value (3.0 in this case)?
-	 * todo or should i always query the dhl api and get their version response?
-	 * todo i don't understand this :(
-	 * todo Ref: https://entwickler.dhl.de/group/ep/wsapis/geschaeftskundenversand-3.0/operationen/createshipmentorder/ioreference section 1. Version
-	 */
 	@NonNull
 	private static Version createHardcodedVersion(final ObjectFactory objectFactory)
 	{
@@ -235,58 +224,8 @@ class CreateShipmentRequestFromDeliveryOrderTest
 		return version;
 	}
 
-	private DeliveryOrder createDummyDeliveryOrder()
-	{
-		final DeliveryOrder deliveryOrderCreateRequest = DeliveryOrder.builder()
-				// shipper
-				.pickupAddress(Address.builder()
-						.companyName1("TheBestPessimist Inc.")
-						.companyName2("The Second Shipper Company Name")
-						.street1("Eduard-Otto-Straße")
-						.street2("Street Name 2 ")
-						.houseNo("10")
-						.zipCode("53129")
-						.city("Bonn")
-						.country(COUNTRY_CODE_DE)
-						.build())
-				.pickupDate(PickupDate.builder()
-						.date(LocalDate.now().plusDays(1)) // always tomorrow!
-						.build())
-				// todo dhl shipper name should be the bpartner name, or what else?? (2.2.2.1.1)
-				// receiver
-				.deliveryAddress(Address.builder()
-						.companyName1("DHL Packet gmbh")
-						.companyName2("The Second Receiver Company Name")
-						.street1("Charles-de-Gaulle-Str.")
-						.houseNo("20")
-						.zipCode("53113")
-						.city("Bonn")
-						.country(COUNTRY_CODE_DE)
-						.build())
-				.deliveryContact(ContactPerson.builder()
-						.emailAddress("tbp@tbp.com")
-						.simplePhoneNumber("012345689")
-						.build())
-
-				// todo WHAT IS DELIVERY POSITION ??????????????????????????????
-				.deliveryPosition(DeliveryPosition.builder()
-						.numberOfPackages(5)
-						.packageDimensions(PackageDimensions.builder()
-								.heightInCM(10)
-								.lengthInCM(10)
-								.widthInCM(10)
-								.build())
-						.packageIds(ImmutableList.of(1, 2, 3, 4, 5))
-						.grossWeightKg(1)
-						.content("what is this?")
-						.build())
-				.customerReference("the helpful customer reference")
-				.serviceType(DhlServiceType.V01PAK)
-				.build();
-		return deliveryOrderCreateRequest;
-	}
-
-	@NonNull private WebServiceTemplate createWebServiceTemplate()
+	@NonNull
+	private WebServiceTemplate createWebServiceTemplate()
 	{
 		final HttpComponentsMessageSender messageSender = createMessageSenderWithCIGAuthentication(USER_NAME, PASSWORD);
 
@@ -327,7 +266,8 @@ class CreateShipmentRequestFromDeliveryOrderTest
 	{
 		// thx to https://www.devglan.com/spring-mvc/custom-header-in-spring-soap-request
 		// for the SoapHeader reference
-		@Override public void doWithMessage(final WebServiceMessage message)
+		@Override
+		public void doWithMessage(final WebServiceMessage message)
 		{
 			try
 			{
