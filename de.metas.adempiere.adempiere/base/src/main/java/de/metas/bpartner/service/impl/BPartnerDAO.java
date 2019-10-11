@@ -48,6 +48,8 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -1017,10 +1019,12 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		final String typeFilterColumnName = getFilterColumnNameForType(query.getType());
 
+		final BPartnerId bpartnerId = query.getBpartnerId();
+
 		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner_Location.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BPartner_Location.COLUMN_C_BPartner_ID, query.getBpartnerId());
+				.addEqualsFilter(I_C_BPartner_Location.COLUMN_C_BPartner_ID, bpartnerId);
 		if (query.isApplyTypeStrictly())
 		{
 			queryBuilder.addEqualsFilter(typeFilterColumnName, true);
@@ -1044,14 +1048,14 @@ public class BPartnerDAO implements IBPartnerDAO
 		{
 			// !alsoTryRelation => we return whatever we got here (null or not)
 			// ownBillToLocation != null => we return the not-null location we found
-			return BPartnerLocationId.ofRepoId(query.getBpartnerId(), ownToLocation.getC_BPartner_Location_ID());
+			return createLocationIdOrNull(bpartnerId, ownToLocation);
 		}
 
 		if (query.getRelationBPartnerLocationId() != null)
 		{
 			final IQueryBuilder<I_C_BP_Relation> bpRelationQueryBuilder = Services.get(IQueryBL.class)
 					.createQueryBuilder(I_C_BP_Relation.class)
-					.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, query.getBpartnerId())
+					.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, bpartnerId)
 					.addEqualsFilter(typeFilterColumnName, true)
 					.addOnlyActiveRecordsFilter();
 
@@ -1073,7 +1077,18 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 
 		// if no location was found based on relation, return own location, null or non-null
-		return ownToLocation == null ? null : BPartnerLocationId.ofRepoId(query.getBpartnerId(), ownToLocation.getC_BPartner_Location_ID());
+		return createLocationIdOrNull(bpartnerId, ownToLocation);
+	}
+
+	private BPartnerLocationId createLocationIdOrNull(
+			@NonNull final BPartnerId bpartnerId,
+			@Nullable final I_C_BPartner_Location bpLocationRecord)
+	{
+		if (bpLocationRecord == null)
+		{
+			return null;
+		}
+		return BPartnerLocationId.ofRepoId(bpartnerId, bpLocationRecord.getC_BPartner_Location_ID());
 	}
 
 	private BPRelation ofRelationRecord(@NonNull final I_C_BP_Relation bpRelationRecord)
@@ -1538,11 +1553,6 @@ public class BPartnerDAO implements IBPartnerDAO
 				.build();
 		final I_C_BPartner_Location billToLocation = retrieveBPartnerLocation(query);
 
-		if (billToLocation == null)
-		{
-			return null;
+		return createLocationIdOrNull(partnerId, billToLocation);
 		}
-
-		return BPartnerLocationId.ofRepoId(partnerId, billToLocation.getC_BPartner_Location_ID());
 	}
-}
