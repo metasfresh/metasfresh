@@ -96,7 +96,7 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 		final List<PickingCandidate> pcickingCandidates = productsToPickRowsRepository.pick(row);
 
 		// save
-		pickingCandidateRepository.saveAll(pcickingCandidates);
+		pickingCandidateService.saveAll(pcickingCandidates);
 
 		// print
 		final byte[] pickList = printPicklist(row);
