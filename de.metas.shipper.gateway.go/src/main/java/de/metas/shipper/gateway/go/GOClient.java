@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.xml.bind.JAXBElement;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.slf4j.Logger;
@@ -134,7 +135,9 @@ public class GOClient implements ShipperGatewayClient
 		return GOConstants.SHIPPER_GATEWAY_ID;
 	}
 
+	@Deprecated
 	@Override
+	@VisibleForTesting
 	public DeliveryOrder createDeliveryOrder(@NonNull final DeliveryOrder draftDeliveryOrder)
 	{
 		logger.trace("Creating delivery order for {}", draftDeliveryOrder);
@@ -407,7 +410,7 @@ public class GOClient implements ShipperGatewayClient
 	}
 
 	private Sendung.Zustelldatum createGODeliveryDateOrNull(final DeliveryDate deliveryDate)
-		{
+	{
 		if (deliveryDate == null)
 		{
 			return null;

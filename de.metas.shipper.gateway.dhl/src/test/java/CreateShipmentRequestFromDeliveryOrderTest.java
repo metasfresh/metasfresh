@@ -125,6 +125,8 @@ class CreateShipmentRequestFromDeliveryOrderTest
 		// (2.2)  the shipment
 		final ShipmentOrderType.Shipment shipmentOrderTypeShipment = objectFactory.createShipmentOrderTypeShipment();
 
+		final ContactPerson deliveryContact = deliveryOrder.getDeliveryContact();
+
 		{
 			// (2.2.1) Shipment Details
 			final PickupDate pickupDate = deliveryOrder.getPickupDate();
@@ -135,6 +137,7 @@ class CreateShipmentRequestFromDeliveryOrderTest
 			// todo how to get DHL account numbers??
 			shipmentDetailsTypeType.setAccountNumber("22222222220104"); // todo hardcoded
 			// todo this is PO reference
+			//noinspection ConstantConditions
 			shipmentDetailsTypeType.setCustomerReference(deliveryOrder.getCustomerReference());
 			shipmentDetailsTypeType.setShipmentDate(pickupDate.getDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
 			// (2.2.1.8)
@@ -147,7 +150,8 @@ class CreateShipmentRequestFromDeliveryOrderTest
 			shipmentDetailsTypeType.setShipmentItem(shipmentItemType);
 			// (2.2.1.10)
 			final ShipmentNotificationType shipmentNotificationType = objectFactory.createShipmentNotificationType();
-			shipmentNotificationType.setRecipientEmailAddress(deliveryOrder.getDeliveryContact().getEmailAddress());
+			//noinspection ConstantConditions
+			shipmentNotificationType.setRecipientEmailAddress(deliveryContact != null ? deliveryContact.getEmailAddress() : null);
 			shipmentDetailsTypeType.setNotification(shipmentNotificationType);
 			shipmentOrderTypeShipment.setShipmentDetails(shipmentDetailsTypeType);
 		}
@@ -155,7 +159,6 @@ class CreateShipmentRequestFromDeliveryOrderTest
 		{
 			// (2.2.4) Receiver aka Delivery
 			final Address deliveryAddress = deliveryOrder.getDeliveryAddress();
-			final ContactPerson deliveryContact = deliveryOrder.getDeliveryContact();
 
 			final ReceiverType receiverType = objectFactory.createReceiverType();
 			receiverType.setName1(deliveryAddress.getCompanyName1()); // where do i find this name in deliveryOrder?
@@ -173,8 +176,10 @@ class CreateShipmentRequestFromDeliveryOrderTest
 			receiverType.setAddress(receiverNativeAddressType);
 			// (2.2.4.2)
 			final CommunicationType communicationType = objectFactoryCis.createCommunicationType();
-			communicationType.setEmail(deliveryContact.getEmailAddress());
-			communicationType.setPhone(deliveryContact.getPhoneAsStringOrNull());
+			//noinspection ConstantConditions
+			communicationType.setEmail(deliveryContact != null ? deliveryContact.getEmailAddress() : null);
+			//noinspection ConstantConditions
+			communicationType.setPhone(deliveryContact != null ? deliveryContact.getPhoneAsStringOrNull() : null);
 			receiverType.setCommunication(communicationType);
 
 			shipmentOrderTypeShipment.setReceiver(receiverType);
