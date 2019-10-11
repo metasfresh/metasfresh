@@ -37,6 +37,7 @@ import org.adempiere.util.lang.IMutable;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_I_BPartner;
 import org.compiere.model.I_I_User;
 import org.compiere.model.PO;
 import org.compiere.model.X_I_User;
@@ -91,7 +92,7 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
-		 final ImportRecordsSelection selection = getImportRecordsSelection();
+		final ImportRecordsSelection selection = getImportRecordsSelection();
 
 		final String sqlImportWhereClause = COLUMNNAME_I_IsImported + "<>" + DB.TO_BOOLEAN(true)
 				+ "\n " + selection.toSqlWhereClause("i");
@@ -111,33 +112,41 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 		{
-			final String sqlSelectByValue = "select MIN(bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + ")"
-					+ " from " + I_C_BPartner.Table_Name + " bp "
-					+ " where ( bp." + I_C_BPartner.COLUMNNAME_Value + "=i." + I_I_User.COLUMNNAME_BPValue + ")"
-					+ " and bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + "=i." + I_I_User.COLUMNNAME_AD_Client_ID;
 
-			final String sqlUpdateByValue = "UPDATE " + I_I_User.Table_Name + " i "
-					+ "\n SET " + I_I_User.COLUMNNAME_C_BPartner_ID + "=(" + sqlSelectByValue + ")"
-					+ "\n WHERE " + sqlImportWhereClause
-					+ "\n AND i." + I_I_User.COLUMNNAME_C_BPartner_ID + " IS NULL";
+			final StringBuilder sqlUpdateByValue = new StringBuilder("UPDATE " + I_I_User.Table_Name + " i " + "SET "
+					+ I_I_User.COLUMNNAME_C_BPartner_ID + "=bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID
+					+ " FROM " + I_C_BPartner.Table_Name + " bp"
+					+ " WHERE i." + I_I_User.COLUMNNAME_C_BPartner_ID + " IS NULL "
+					+ " AND ( bp." + I_C_BPartner.COLUMNNAME_Value + " =i." + I_I_User.COLUMNNAME_BPValue + ")"
 
-			final int resultsForValueUpdate = DB.executeUpdateEx(sqlUpdateByValue, trxName);
+					+ " AND bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + " = i." + I_I_User.COLUMNNAME_AD_Client_ID
+					+ " AND bp." + I_C_BPartner.COLUMNNAME_IsActive + " ='Y' "
+					+ " AND i." + I_I_User.COLUMNNAME_I_IsImported + " = 'N' AND ")
+
+							.append(sqlImportWhereClause);
+
+			final int resultsForValueUpdate = DB.executeUpdateEx(sqlUpdateByValue.toString(), trxName);
 			log.debug("Set C_BPartner_ID for {} records", resultsForValueUpdate);
+
 		}
 
 		{
-			final String sqlSelectByGlobalId = "select MIN(bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + ")"
-					+ " from " + I_C_BPartner.Table_Name + " bp "
-					+ " where ( bp." + I_C_BPartner.COLUMNNAME_GlobalId + "=i." + I_I_User.COLUMNNAME_GlobalId + ")"
-					+ " and bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + "=i." + I_I_User.COLUMNNAME_AD_Client_ID;
 
-			final String sqlUpdateByGlobalId = "UPDATE " + I_I_User.Table_Name + " i "
-					+ "\n SET " + I_I_User.COLUMNNAME_C_BPartner_ID + "=(" + sqlSelectByGlobalId + ")"
-					+ "\n WHERE " + sqlImportWhereClause
-					+ "\n AND i." + I_I_User.COLUMNNAME_C_BPartner_ID + " IS NULL";
+			final StringBuilder sqlUpdateByGlobalId = new StringBuilder("UPDATE " + I_I_User.Table_Name + " i " + "SET "
+					+ I_I_User.COLUMNNAME_C_BPartner_ID + "=bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID
+					+ " FROM " + I_C_BPartner.Table_Name + " bp"
+					+ " WHERE i." + I_I_User.COLUMNNAME_C_BPartner_ID + " IS NULL "
+					+ " AND ( bp." + I_C_BPartner.COLUMNNAME_GlobalId + "=i." + I_I_User.COLUMNNAME_GlobalId + ")"
+					+ " AND bp." + I_C_BPartner.COLUMNNAME_GlobalId + " IS NOT NULL "
+					+ " AND bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + " = i." + I_I_BPartner.COLUMNNAME_AD_Client_ID
+					+ " AND bp." + I_C_BPartner.COLUMNNAME_IsActive + " ='Y' "
+					+ " AND i." + I_I_User.COLUMNNAME_I_IsImported + " = 'N' AND ")
 
-			final int resultsForGlobalIdUpdate = DB.executeUpdateEx(sqlUpdateByGlobalId, trxName);
+							.append(sqlImportWhereClause);
+
+			final int resultsForGlobalIdUpdate = DB.executeUpdateEx(sqlUpdateByGlobalId.toString(), trxName);
 			log.debug("Set C_BPartner_ID for {} records", resultsForGlobalIdUpdate);
+
 		}
 
 		// Flag missing BPartners
