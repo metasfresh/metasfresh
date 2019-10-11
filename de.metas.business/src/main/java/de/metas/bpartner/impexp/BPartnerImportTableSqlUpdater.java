@@ -209,8 +209,7 @@ public class BPartnerImportTableSqlUpdater
 					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Country, ' "
 					+ "WHERE C_Country_ID IS NULL AND (City IS NOT NULL OR Address1 IS NOT NULL)"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-					.append(selection.toSqlWhereClause()).toString();
-
+							.append(selection.toSqlWhereClause()).toString();
 
 			executeUpdate("Flag records with invalid Country", sql);
 		}
@@ -225,7 +224,7 @@ public class BPartnerImportTableSqlUpdater
 					+ " AND r.AD_Client_ID IN (0, i.AD_Client_ID)) ");
 			sql.append("WHERE RegionName IS NULL AND C_Region_ID IS NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-			.append(selection.toSqlWhereClause("i"));
+					.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Set Default Region", sql);
 		}
@@ -238,7 +237,7 @@ public class BPartnerImportTableSqlUpdater
 					+ " AND r.AD_Client_ID IN (0, i.AD_Client_ID)) "
 					+ "WHERE C_Region_ID IS NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-					.append(selection.toSqlWhereClause("i"));
+							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Set Region", sql.toString());
 		}
@@ -251,7 +250,7 @@ public class BPartnerImportTableSqlUpdater
 					+ " AND EXISTS (SELECT 1 FROM C_Country c WHERE c.C_Country_ID=i.C_Country_ID AND c.HasRegion='Y')"
 					+ " AND RegionName IS NOT NULL" // tolerate no region
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-					.append(selection.toSqlWhereClause("i"));
+							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Flag records with invalid Region", sql.toString());
 		}
@@ -265,7 +264,7 @@ public class BPartnerImportTableSqlUpdater
 					+ " WHERE i.BPContactGreeting=g.Name AND g.AD_Client_ID IN (0, i.AD_Client_ID)) "
 					+ "WHERE C_Greeting_ID IS NULL AND BPContactGreeting IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-					.append(selection.toSqlWhereClause("i"));
+							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Set Greeting", sql);
 		}
@@ -276,7 +275,7 @@ public class BPartnerImportTableSqlUpdater
 					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Greeting, ' "
 					+ "WHERE C_Greeting_ID IS NULL AND BPContactGreeting IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-					.append(selection.toSqlWhereClause("i"));
+							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Flag records with invalid Greeting", sql);
 		}
@@ -290,7 +289,7 @@ public class BPartnerImportTableSqlUpdater
 					+ " WHERE i.JobName=j.Name AND j.AD_Client_ID IN (0, i.AD_Client_ID) AND j.AD_Org_ID IN (0, i.AD_Org_ID) ) "
 					+ "WHERE C_Job_ID IS NULL AND JobName IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-					.append(selection.toSqlWhereClause("i"));
+							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Set Job", sql);
 		}
@@ -301,7 +300,7 @@ public class BPartnerImportTableSqlUpdater
 					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Job, ' "
 					+ "WHERE C_Job_ID IS NULL AND JobName IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-					.append(selection.toSqlWhereClause("i"));
+							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Flag records with invalid Job", sql);
 		}
@@ -314,25 +313,25 @@ public class BPartnerImportTableSqlUpdater
 				+ "(SELECT C_BPartner_ID,AD_User_ID FROM AD_User u "
 				+ "WHERE i.EMail=u.EMail AND u.AD_Client_ID=i.AD_Client_ID) "
 				+ "WHERE i.EMail IS NOT NULL AND " + COLUMNNAME_I_IsImported + "='N'")
-				.append(selection.toSqlWhereClause("i"));
+						.append(selection.toSqlWhereClause("i"));
 
 		executeUpdate("Set BPartner/User by EMail", DB.convertSqlToNative(sql.toString()));
 	}
 
 	private void dbUpdateCbPartnerIdsFromValue(final ImportRecordsSelection selection)
 	{
-		final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET C_BPartner_ID=(SELECT C_BPartner_ID FROM C_BPartner p"
-				+ " WHERE i."
-				+ I_I_BPartner.COLUMNNAME_BPValue
-				+ "=p."
-				+ I_C_BPartner.COLUMNNAME_Value
-				+ " AND p.AD_Client_ID=i.AD_Client_ID) "
-				+ "WHERE C_BPartner_ID IS NULL AND "
-				+ I_I_BPartner.COLUMNNAME_BPValue
-				+ " IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "='N'")
-				.append(selection.toSqlWhereClause("i"));
+
+		final StringBuilder sql = new StringBuilder("UPDATE " + I_I_BPartner.Table_Name + " i " + "SET "
+				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID + "=bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID
+				+ " FROM " + I_C_BPartner.Table_Name + " bp"
+				+ " WHERE i." + I_I_BPartner.COLUMNNAME_C_BPartner_ID + " IS NULL "
+				+ " AND i." + I_I_BPartner.COLUMNNAME_BPValue + " IS NOT NULL "
+				+ " AND bp." + I_C_BPartner.COLUMNNAME_Value + " = i." + I_I_BPartner.COLUMNNAME_BPValue
+				+ " AND bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + " = i." + I_I_BPartner.COLUMNNAME_AD_Client_ID
+				+ " AND bp." + I_C_BPartner.COLUMNNAME_IsActive + " ='Y' "
+				+ " AND i." + I_I_BPartner.COLUMNNAME_I_IsImported + " = 'N'")
+
+						.append(selection.toSqlWhereClause("i"));
 
 		executeUpdate("Set BPartner by Value", sql);
 	}
@@ -349,7 +348,7 @@ public class BPartnerImportTableSqlUpdater
 				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID + " IS NULL AND "
 				+ I_I_BPartner.COLUMNNAME_C_BPartner_ExternalId + " IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'")
-				.append(selection.toSqlWhereClause("i"));
+						.append(selection.toSqlWhereClause("i"));
 
 		executeUpdate("Set BPartner by ExternalId", sql);
 	}
@@ -367,7 +366,7 @@ public class BPartnerImportTableSqlUpdater
 				+ " AND bp." + I_C_BPartner.COLUMNNAME_IsActive + " ='Y' "
 				+ " AND i." + I_I_BPartner.COLUMNNAME_I_IsImported + " = 'N'")
 
-				.append(selection.toSqlWhereClause("i"));
+						.append(selection.toSqlWhereClause("i"));
 
 		executeUpdate("Set BPartner by GlobalId", sql);
 	}
@@ -403,7 +402,7 @@ public class BPartnerImportTableSqlUpdater
 				+ I_I_BPartner.COLUMNNAME_ContactName
 				+ " IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'")
-				.append(selection.toSqlWhereClause("i"));
+						.append(selection.toSqlWhereClause("i"));
 
 		executeUpdate("Set User by ContactName", sql);
 	}
@@ -439,7 +438,7 @@ public class BPartnerImportTableSqlUpdater
 				+ I_I_BPartner.COLUMNNAME_AD_User_ExternalId
 				+ " IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'")
-				.append(selection.toSqlWhereClause("i"));
+						.append(selection.toSqlWhereClause("i"));
 
 		executeUpdate("Set User by ExternalId", sql);
 	}
@@ -475,7 +474,7 @@ public class BPartnerImportTableSqlUpdater
 				+ I_I_BPartner.COLUMNNAME_C_BPartner_Location_ExternalId
 				+ " IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'")
-				.append(selection.toSqlWhereClause("i"));
+						.append(selection.toSqlWhereClause("i"));
 
 		executeUpdate("Set Location by ExternalId", sql);
 	}
@@ -511,7 +510,7 @@ public class BPartnerImportTableSqlUpdater
 				+ I_I_BPartner.COLUMNNAME_GLN
 				+ " IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'")
-				.append(selection.toSqlWhereClause("i"));
+						.append(selection.toSqlWhereClause("i"));
 
 		executeUpdate("Set Location by GLN", sql);
 	}
@@ -575,7 +574,7 @@ public class BPartnerImportTableSqlUpdater
 				+ I_I_BPartner.COLUMNNAME_C_BPartner_Location_ID
 				+ " IS NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'")
-				.append(selection.toSqlWhereClause("i"));
+						.append(selection.toSqlWhereClause("i"));
 
 		executeUpdate("Set Location by Address matching", sql);
 	}
@@ -587,7 +586,7 @@ public class BPartnerImportTableSqlUpdater
 				+ "WHERE i.InterestAreaName=ia.Name AND ia.AD_Client_ID=i.AD_Client_ID) "
 				+ "WHERE R_InterestArea_ID IS NULL AND InterestAreaName IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'")
-				.append(selection.toSqlWhereClause("i"));
+						.append(selection.toSqlWhereClause("i"));
 
 		executeUpdate("Set Interest Area", sql);
 	}
@@ -600,7 +599,7 @@ public class BPartnerImportTableSqlUpdater
 					+ " WHERE i.InvoiceSchedule=invSched.Name AND invSched.AD_Client_ID IN (0, i.AD_Client_ID)) "
 					+ "WHERE C_InvoiceSchedule_ID IS NULL AND InvoiceSchedule IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-					.append(selection.toSqlWhereClause("i"));
+							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Set Invoice Schedule", sql);
 		}
@@ -611,7 +610,7 @@ public class BPartnerImportTableSqlUpdater
 					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid InvoiceSchedule, ' "
 					+ "WHERE C_InvoiceSchedule_ID IS NULL AND InvoiceSchedule IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-					.append(selection.toSqlWhereClause("i"));
+							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Flag records with invalid Invoice Schedule", sql);
 		}
@@ -625,7 +624,7 @@ public class BPartnerImportTableSqlUpdater
 					+ " WHERE i.PaymentTermValue=pt.Name AND pt.AD_Client_ID IN (0, i.AD_Client_ID)) "
 					+ "WHERE C_PaymentTerm_ID IS NULL AND PaymentTerm IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-					.append(selection.toSqlWhereClause("i"));
+							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Set SO Payment Term", sql);
 		}
@@ -636,7 +635,7 @@ public class BPartnerImportTableSqlUpdater
 					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid C_PaymentTerm_ID, ' "
 					+ "WHERE C_PaymentTerm_ID IS NULL AND PaymentTermValue IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-					.append(selection.toSqlWhereClause("i"));
+							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Flag records with invalid SO Payment Terms", sql);
 		}
@@ -650,7 +649,7 @@ public class BPartnerImportTableSqlUpdater
 					+ " WHERE i.PaymentTerm=pt.Name AND pt.AD_Client_ID IN (0, i.AD_Client_ID)) "
 					+ "WHERE PO_PaymentTerm_ID IS NULL AND PaymentTerm IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-					.append(selection.toSqlWhereClause("i"));
+							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Set PO Payment Term", sql);
 		}
@@ -661,7 +660,7 @@ public class BPartnerImportTableSqlUpdater
 					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid PO_PaymentTerm, ' "
 					+ "WHERE PO_PaymentTerm_ID IS NULL AND PaymentTerm IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-					.append(selection.toSqlWhereClause("i"));
+							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Flag records with invalid PO Payment Terms", sql);
 		}
@@ -675,7 +674,7 @@ public class BPartnerImportTableSqlUpdater
 					+ " WHERE i.AggregationName=a.Name AND a.AD_Client_ID IN (0, i.AD_Client_ID) AND a.AD_Org_ID IN (0, i.AD_Org_ID ) )"
 					+ "WHERE C_Aggregation_ID IS NULL AND AggregationName IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-					.append(selection.toSqlWhereClause("i"));
+							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Set C_Aggregation_ID", sql);
 		}
@@ -686,7 +685,7 @@ public class BPartnerImportTableSqlUpdater
 					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid AggregationName, ' "
 					+ "WHERE C_Aggregation_ID IS NULL AND AggregationName IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-					.append(selection.toSqlWhereClause("i"));
+							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Flag records with invalid AggregationName", sql);
 		}
@@ -701,7 +700,7 @@ public class BPartnerImportTableSqlUpdater
 					+ " DeliveryViaRule = 'S' "
 					+ "WHERE M_Shipper_ID IS NULL AND ShipperName IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-					.append(selection.toSqlWhereClause("i"));
+							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Set M_Shipper_ID", sql);
 		}
@@ -712,7 +711,7 @@ public class BPartnerImportTableSqlUpdater
 					+ "SET DeliveryViaRule = " + DB.TO_STRING(DeliveryViaRule.Pickup.getCode())
 					+ "WHERE M_Shipper_ID IS NULL AND ShipperName = 'P' "
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-					.append(selection.toSqlWhereClause("i"));
+							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Set DeliveryViaRule=Pickup when M_Shipper_ID is not set", sql);
 		}
@@ -723,7 +722,7 @@ public class BPartnerImportTableSqlUpdater
 					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Shipper or DeliveryViaRule, ' "
 					+ "WHERE M_Shipper_ID IS NULL AND DeliveryViaRule IS NULL AND ShipperName IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-					.append(selection.toSqlWhereClause("i"));
+							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Flag records with invalid Invalid Shipper or DeliveryViaRule", sql);
 		}
@@ -737,7 +736,7 @@ public class BPartnerImportTableSqlUpdater
 					+ " WHERE i.PrintFormat_Name=pf.Name AND pf.AD_Client_ID IN (0, i.AD_Client_ID) AND pf.AD_Org_ID IN (0, i.AD_Org_ID ) ) "
 					+ "WHERE AD_PrintFormat_ID IS NULL AND PrintFormat_Name IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-					.append(selection.toSqlWhereClause("i"));
+							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Set AD_PrintFormat_ID", sql);
 		}
@@ -748,7 +747,7 @@ public class BPartnerImportTableSqlUpdater
 					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid PrintFormat_Name, ' "
 					+ "WHERE AD_PrintFormat_ID IS NULL AND PrintFormat_Name IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-					.append(selection.toSqlWhereClause("i"));
+							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Flag records with invalid AD_PrintFormat_ID", sql);
 		}
@@ -762,7 +761,7 @@ public class BPartnerImportTableSqlUpdater
 					+ " WHERE i.PricingSystem_Value=ps.value AND ps.AD_Client_ID IN (0, i.AD_Client_ID) and ps.IsActive='Y' ) "
 					+ "WHERE M_PricingSystem_ID IS NULL AND PricingSystem_Value IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-					.append(selection.toSqlWhereClause("i"));
+							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Set M_PricingSystem_ID={}", sql);
 		}
@@ -773,7 +772,7 @@ public class BPartnerImportTableSqlUpdater
 					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid M_PricingSystem_ID, ' "
 					+ "WHERE M_PricingSystem_ID IS NULL AND PricingSystem_Value IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-					.append(selection.toSqlWhereClause("i"));
+							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Flag records with invalid M_PricingSystem", sql);
 		}
@@ -787,7 +786,7 @@ public class BPartnerImportTableSqlUpdater
 					+ " WHERE i.PO_PricingSystem_Value=ps.value AND ps.AD_Client_ID IN (0, i.AD_Client_ID) and IsActive='Y') "
 					+ "WHERE PO_PricingSystem_ID IS NULL AND PO_PricingSystem_Value IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-					.append(selection.toSqlWhereClause("i"));
+							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Set PO_PricingSystem_ID", sql);
 		}
@@ -798,7 +797,7 @@ public class BPartnerImportTableSqlUpdater
 					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid M_PricingSystem_ID, ' "
 					+ "WHERE PO_PricingSystem_ID IS NULL AND PO_PricingSystem_Value IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-					.append(selection.toSqlWhereClause("i"));
+							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Flag records with invalid PO_PricingSystem_ID", sql);
 		}
