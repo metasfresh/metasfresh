@@ -1,5 +1,7 @@
 package org.adempiere.mm.attributes;
 
+import java.util.Objects;
+
 import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -87,5 +89,10 @@ public class AttributeId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static boolean equals(final AttributeId id1, final AttributeId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }
