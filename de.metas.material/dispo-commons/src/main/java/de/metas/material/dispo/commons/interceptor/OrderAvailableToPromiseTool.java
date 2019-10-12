@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.Adempiere;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
 
@@ -30,6 +29,7 @@ import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -55,14 +55,27 @@ import lombok.Value;
  * #L%
  */
 
-public class OrderAvailableToPromiseTool
+final class OrderAvailableToPromiseTool
 {
-	public static void updateOrderLineRecords(@NonNull final I_C_Order orderRecord)
+	private final AvailableToPromiseRepository stockRepository;
+	private final ModelProductDescriptorExtractor productDescriptorFactory;
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@Builder
+	private OrderAvailableToPromiseTool(
+			@NonNull final AvailableToPromiseRepository stockRepository,
+			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
+	{
+		this.stockRepository = stockRepository;
+		this.productDescriptorFactory = productDescriptorFactory;
+	}
+
+	public void updateOrderLineRecords(@NonNull final I_C_Order orderRecord)
 	{
 		// we use the date at which the order needs to be ready for shipping
 		final ZonedDateTime preparationDate = TimeUtil.asZonedDateTime(orderRecord.getPreparationDate());
 
-		final List<I_C_OrderLine> orderLineRecords = Services.get(IQueryBL.class)
+		final List<I_C_OrderLine> orderLineRecords = queryBL
 				.createQueryBuilder(I_C_OrderLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderRecord.getC_Order_ID())
@@ -75,7 +88,7 @@ public class OrderAvailableToPromiseTool
 		}
 
 		final ImmutableListMultimap<OrderLineKey, I_C_OrderLine> //
-		keys2orderLines = Multimaps.index(orderLineRecords, OrderLineKey::forOrderLineRecord);
+		keys2orderLines = Multimaps.index(orderLineRecords, this::createOrderKeyForOrderLineRecord);
 
 		final AvailableToPromiseMultiQueryBuilder multiQueryBuilder = AvailableToPromiseMultiQuery.builder();
 
@@ -86,7 +99,6 @@ public class OrderAvailableToPromiseTool
 			multiQueryBuilder.query(query);
 		}
 
-		final AvailableToPromiseRepository stockRepository = Adempiere.getBean(AvailableToPromiseRepository.class);
 		final AvailableToPromiseResult result = stockRepository.retrieveAvailableStock(multiQueryBuilder.build());
 
 		for (final AvailableToPromiseResultGroup resultGroup : result.getResultGroups())
@@ -100,9 +112,9 @@ public class OrderAvailableToPromiseTool
 		}
 	}
 
-	public static void resetQtyAvailableToPromise(@NonNull final I_C_Order orderRecord)
+	public void resetQtyAvailableToPromise(@NonNull final I_C_Order orderRecord)
 	{
-		final Stream<I_C_OrderLine> orderLineRecords = Services.get(IQueryBL.class)
+		final Stream<I_C_OrderLine> orderLineRecords = queryBL
 				.createQueryBuilder(I_C_OrderLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderRecord.getC_Order_ID())
@@ -116,16 +128,15 @@ public class OrderAvailableToPromiseTool
 		});
 	}
 
-	public static void updateOrderLineRecordAndDoNotSave(@NonNull final I_C_OrderLine orderLineRecord)
+	public void updateOrderLineRecordAndDoNotSave(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		// we use the date at which the order needs to be ready for shipping
 		final ZonedDateTime preparationDate = TimeUtil.asZonedDateTime(orderLineRecord.getC_Order().getPreparationDate());
 
-		final OrderLineKey orderLineKey = OrderLineKey.forOrderLineRecord(orderLineRecord);
+		final OrderLineKey orderLineKey = createOrderKeyForOrderLineRecord(orderLineRecord);
 
 		final AvailableToPromiseQuery query = createSingleQuery(preparationDate, orderLineKey);
 
-		final AvailableToPromiseRepository stockRepository = Adempiere.getBean(AvailableToPromiseRepository.class);
 		final BigDecimal result = stockRepository.retrieveAvailableStockQtySum(query);
 
 		orderLineRecord.setQty_AvailableToPromise(result);
@@ -145,25 +156,24 @@ public class OrderAvailableToPromiseTool
 		return query;
 	}
 
+	private OrderLineKey createOrderKeyForOrderLineRecord(@NonNull final I_C_OrderLine orderLineRecord)
+	{
+		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(orderLineRecord, AttributesKey.ALL);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(orderLineRecord.getC_BPartner_ID()); // this column is mandatory and always > 0
+
+		return new OrderLineKey(
+				productDescriptor.getProductId(),
+				productDescriptor.getStorageAttributesKey(),
+				BPartnerClassifier.specific(bpartnerId));
+	}
+
 	@Value
 	private static class OrderLineKey
 	{
 		int productId;
 		AttributesKey attributesKey;
 		BPartnerClassifier bpartner;
-
-		private static OrderLineKey forOrderLineRecord(@NonNull final I_C_OrderLine orderLineRecord)
-		{
-			final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
-			final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(orderLineRecord, AttributesKey.ALL);
-
-			final BPartnerId bpartnerId = BPartnerId.ofRepoId(orderLineRecord.getC_BPartner_ID()); // this column is mandatory and always > 0
-
-			return new OrderLineKey(
-					productDescriptor.getProductId(),
-					productDescriptor.getStorageAttributesKey(),
-					BPartnerClassifier.specific(bpartnerId));
-		}
 
 		private static OrderLineKey forResultGroup(@NonNull final AvailableToPromiseResultGroup resultGroup)
 		{
