@@ -13,11 +13,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 
 import org.adempiere.warehouse.WarehouseId;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.engine.DocStatus;
+import de.metas.event.Event;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -30,6 +32,7 @@ import de.metas.material.event.ddorder.DDOrderCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
+import de.metas.material.event.eventbus.MaterialEventConverter;
 import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
@@ -101,6 +104,42 @@ public class MaterialEventSerializerTests
 	private static final BigDecimal TWELVE = ELEVEN.add(ONE);
 
 	private static final BigDecimal THIRTEEN = TWELVE.add(ONE);
+
+	private MaterialEventConverter materialEventConverter;
+
+	@BeforeEach
+	public void init()
+	{
+		this.materialEventConverter = new MaterialEventConverter();
+	}
+
+	private void assertEventEqualAfterSerializeDeserialize(final MaterialEvent originalEvent)
+	{
+		//
+		// Test direct serialization/deserialization
+		{
+			final JSONObjectMapper<MaterialEvent> jsonObjectMapper = JSONObjectMapper.forClass(MaterialEvent.class);
+
+			final String serializedEvent = jsonObjectMapper.writeValueAsString(originalEvent);
+			final MaterialEvent deserializedEvent = jsonObjectMapper.readValue(serializedEvent);
+
+			assertThat(deserializedEvent).isEqualTo(originalEvent);
+		}
+
+		//
+		// Test via materialEventConverter
+		{
+			final Event eventbusEvent = materialEventConverter.fromMaterialEvent(originalEvent);
+			final MaterialEvent deserializedEvent = materialEventConverter.toMaterialEvent(eventbusEvent);
+
+			assertThat(deserializedEvent).isEqualTo(originalEvent);
+		}
+	}
+
+	private static EventDescriptor createEventDescriptor()
+	{
+		return EventDescriptor.ofClientAndOrg(1, 2);
+	}
 
 	@Test
 	public void ddOrderRequestedEvent()
@@ -692,21 +731,5 @@ public class MaterialEventSerializerTests
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(evt);
-	}
-
-	public static MaterialEvent assertEventEqualAfterSerializeDeserialize(final MaterialEvent originalEvent)
-	{
-		final JSONObjectMapper<MaterialEvent> jsonObjectMapper = JSONObjectMapper.forClass(MaterialEvent.class);
-
-		final String serializedEvt = jsonObjectMapper.writeValueAsString(originalEvent);
-		final MaterialEvent deserializedEvt = jsonObjectMapper.readValue(serializedEvt);
-
-		assertThat(deserializedEvt).isEqualTo(originalEvent);
-		return deserializedEvt;
-	}
-
-	private static EventDescriptor createEventDescriptor()
-	{
-		return EventDescriptor.ofClientAndOrg(1, 2);
 	}
 }
