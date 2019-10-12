@@ -15,7 +15,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.compiere.util.TimeUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;

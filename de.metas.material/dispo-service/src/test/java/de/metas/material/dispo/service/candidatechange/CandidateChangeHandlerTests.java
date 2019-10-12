@@ -15,6 +15,7 @@ import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.compiere.util.TimeUtil.asTimestamp;
 
 import java.math.BigDecimal;
@@ -103,13 +104,9 @@ public class CandidateChangeHandlerTests
 	private final WarehouseId OTHER_WAREHOUSE_ID = WarehouseId.ofRepoId(WAREHOUSE_ID.getRepoId() + 10);
 
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
-
 	private AvailableToPromiseRepository stockRepository;
-
 	private CandidateChangeService candidateChangeHandler;
-
 	private StockCandidateService stockCandidateService;
-
 	private CandidateRepositoryWriteService candidateRepositoryCommands;
 
 	@BeforeEach
@@ -122,7 +119,7 @@ public class CandidateChangeHandlerTests
 
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
-		stockRepository = Mockito.mock(AvailableToPromiseRepository.class);
+		stockRepository = Mockito.spy(AvailableToPromiseRepository.class);
 		stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands);
@@ -147,13 +144,14 @@ public class CandidateChangeHandlerTests
 		assertThat(result.get(CandidateType.UNRELATED_DECREASE)).isSameAs(handler2);
 	}
 
-	@Test //(expected = RuntimeException.class)
+	@Test
 	public void createMapOfHandlers_when_typeColission_then_exception()
 	{
 		final CandidateHandler handler1 = createHandlerThatSupportsTypes(ImmutableList.of(CandidateType.DEMAND, CandidateType.SUPPLY));
 		final CandidateHandler handler2 = createHandlerThatSupportsTypes(ImmutableList.of(CandidateType.DEMAND, CandidateType.UNRELATED_DECREASE));
 
-		CandidateChangeService.createMapOfHandlers(ImmutableList.of(handler1, handler2));
+		assertThatThrownBy(() -> CandidateChangeService.createMapOfHandlers(ImmutableList.of(handler1, handler2)))
+				.isInstanceOf(RuntimeException.class);
 	}
 
 	private CandidateHandler createHandlerThatSupportsTypes(final ImmutableList<CandidateType> types)

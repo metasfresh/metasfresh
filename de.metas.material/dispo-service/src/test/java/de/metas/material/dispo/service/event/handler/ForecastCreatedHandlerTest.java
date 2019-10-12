@@ -5,6 +5,8 @@ import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
@@ -13,9 +15,11 @@ import java.util.stream.Collectors;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableList;
 
@@ -28,6 +32,7 @@ import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseReposito
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.handler.StockUpCandiateHandler;
+import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -36,9 +41,6 @@ import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.NonNull;
-import mockit.Delegate;
-import mockit.Expectations;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -62,26 +64,22 @@ import mockit.Mocked;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class ForecastCreatedHandlerTest
 {
-	@Rule
-	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
-
 	private ForecastCreatedHandler forecastCreatedHandler;
-
-	@Mocked
+	private CandidateRepositoryRetrieval candidateRepository;
+	private AvailableToPromiseRepository stockRepository;
 	private PostMaterialEventService postMaterialEventService;
 
-	@Mocked
-	private CandidateRepositoryRetrieval candidateRepository;
-
-	@Mocked
-	private AvailableToPromiseRepository stockRepository;
-
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		candidateRepository = Mockito.mock(CandidateRepositoryRetrieval.class);
+		stockRepository = Mockito.mock(AvailableToPromiseRepository.class);
+		postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
 		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService();
 		forecastCreatedHandler = new ForecastCreatedHandler(
@@ -110,15 +108,8 @@ public class ForecastCreatedHandlerTest
 		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery
 				.forDescriptorAndAllPossibleBPartnerIds(materialDescriptorOfFirstAndOnlyForecastLine);
 
-		// @formatter:off
-		new Expectations()
-		{{
-			stockRepository.retrieveAvailableStockQtySum(query);
-			times = 1; result = BigDecimal.ZERO;
-
-			postMaterialEventService.postEventNow(with(eventQuantity("8")));
-			times = 1;
-		}}; // @formatter:on
+		when(stockRepository.retrieveAvailableStockQtySum(query))
+				.thenReturn(BigDecimal.ZERO);
 
 		forecastCreatedHandler.handleEvent(forecastCreatedEvent);
 		final List<I_MD_Candidate> result = DispoTestUtils.retrieveAllRecords().stream().sorted(Comparator.comparing(I_MD_Candidate::getSeqNo)).collect(Collectors.toList());
@@ -129,6 +120,8 @@ public class ForecastCreatedHandlerTest
 		assertThat(demandCandidate.getMD_Candidate_Type()).isEqualTo(CandidateType.STOCK_UP.toString());
 		assertThat(demandCandidate.getQty()).isEqualByComparingTo("8");
 		assertThat(result).allSatisfy(r -> assertThat(r.getC_BPartner_Customer_ID()).isEqualTo(BPARTNER_ID.getRepoId()));
+
+		assertEventPostedWithQty("8");
 	}
 
 	/**
@@ -148,15 +141,8 @@ public class ForecastCreatedHandlerTest
 		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery
 				.forDescriptorAndAllPossibleBPartnerIds(materialDescriptorOfFirstAndOnlyForecastLine);
 
-		// @formatter:off
-		new Expectations()
-		{{
-			stockRepository.retrieveAvailableStockQtySum(query);
-			times = 1; result = new BigDecimal("3");
-
-			postMaterialEventService.postEventNow(with(eventQuantity("5")));
-			times = 1;
-		}};	// @formatter:on
+		when(stockRepository.retrieveAvailableStockQtySum(query))
+				.thenReturn(new BigDecimal("3"));
 
 		forecastCreatedHandler.handleEvent(forecastCreatedEvent);
 		final List<I_MD_Candidate> result = DispoTestUtils.retrieveAllRecords().stream().sorted(Comparator.comparing(I_MD_Candidate::getSeqNo)).collect(Collectors.toList());
@@ -166,6 +152,8 @@ public class ForecastCreatedHandlerTest
 		assertThat(result.get(0).getMD_Candidate_Type()).isEqualTo(CandidateType.STOCK_UP.toString());
 		assertThat(result.get(0).getQty()).isEqualByComparingTo("8");
 		assertThat(result).allSatisfy(r -> assertThat(r.getC_BPartner_Customer_ID()).isEqualTo(BPARTNER_ID.getRepoId()));
+
+		assertEventPostedWithQty("5");
 	}
 
 	private ForecastCreatedEvent createForecastWithQtyOfEight()
@@ -192,19 +180,20 @@ public class ForecastCreatedHandlerTest
 				.build();
 	}
 
-	private Delegate<SupplyRequiredEvent> eventQuantity(@NonNull final String expectedEventQty)
+	private void assertEventPostedWithQty(@NonNull final String expectedEventQty)
 	{
-		return new Delegate<SupplyRequiredEvent>()
-		{
-			@SuppressWarnings("unused")
-			public boolean verifyQty(@NonNull final SupplyRequiredEvent event)
-			{
-				return event.getSupplyRequiredDescriptor()
-						.getMaterialDescriptor()
-						.getQuantity()
-						.compareTo(new BigDecimal(expectedEventQty)) == 0;
-			}
-		};
-	}
+		final ArgumentCaptor<MaterialEvent> eventCaptor = ArgumentCaptor.forClass(MaterialEvent.class);
+		verify(postMaterialEventService)
+				.postEventNow(eventCaptor.capture());
 
+		final SupplyRequiredEvent event = (SupplyRequiredEvent)eventCaptor.getValue();
+
+		final BigDecimal eventQty = event.getSupplyRequiredDescriptor()
+				.getMaterialDescriptor()
+				.getQuantity();
+
+		assertThat(eventQty)
+				.as("eventQty of " + event)
+				.isEqualByComparingTo(expectedEventQty);
+	}
 }

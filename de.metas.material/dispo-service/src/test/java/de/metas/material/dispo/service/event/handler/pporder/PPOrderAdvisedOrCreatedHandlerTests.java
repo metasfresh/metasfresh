@@ -19,9 +19,10 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableList;
 
@@ -50,7 +51,6 @@ import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -74,11 +74,9 @@ import mockit.Mocked;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class PPOrderAdvisedOrCreatedHandlerTests
 {
-	@Rule
-	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
-
 	public static final int rawProduct1Id = 50;
 
 	public static final int rawProduct2Id = 55;
@@ -89,19 +87,18 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 
 	private static final BigDecimal ELEVEN = TEN.add(ONE);
 
-	@Mocked
-	private PostMaterialEventService postMaterialEventService;
-
 	private PPOrderAdvisedHandler ppOrderAdvisedHandler;
 
 	private AvailableToPromiseRepository stockRepository;
 
 	private PPOrderCreatedHandler ppOrderCreatedHandler;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService();
@@ -185,38 +182,38 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		//
 		// Check bom lines demand candidates
 		// => NONE
-//		{
-//			final I_MD_Candidate t1Product1Demand = DispoTestUtils.filter(CandidateType.DEMAND, NOW, rawProduct1Id).get(0);
-//			assertThat(t1Product1Demand.getQty()).isEqualByComparingTo(NINE);
-//			assertThat(t1Product1Demand.getM_Product_ID()).isEqualTo(rawProduct1Id);
-//			assertThat(t1Product1Demand.getMD_Candidate_GroupId()).isEqualTo(supplyDemandGroupId.toInt());
-//			// no parent relationship between production supply and demand because it can be m:n
-//			// assertThat(t1Product1Demand.getMD_Candidate_Parent_ID()).isEqualTo(t2Supply.getMD_Candidate_ID());
-//
-//			final I_MD_Candidate t1Product1Stock = DispoTestUtils.filter(CandidateType.STOCK, NOW, rawProduct1Id).get(0);
-//			assertThat(t1Product1Stock.getQty()).isEqualByComparingTo(NINE.negate());
-//			assertThat(t1Product1Stock.getM_Product_ID()).isEqualTo(rawProduct1Id);
-//			assertThat(t1Product1Stock.getMD_Candidate_GroupId()).isGreaterThan(0);  // stock candidates have their own groupIds too
-//			assertThat(t1Product1Stock.getMD_Candidate_GroupId()).isNotEqualTo(supplyDemandGroupId);  // stock candidates' groupIds are different from supply/demand groups' groupIds
-//			assertThat(t1Product1Stock.getMD_Candidate_GroupId()).isNotEqualTo(t2Stock.getMD_Candidate_GroupId());  // stock candidates' groupIds are different if they are about different products or warehouses
-//			assertThat(t1Product1Stock.getMD_Candidate_Parent_ID()).isEqualTo(t1Product1Demand.getMD_Candidate_ID());
-//		}
-//
-//		{
-//			final I_MD_Candidate t1Product2Demand = DispoTestUtils.filter(CandidateType.DEMAND, NOW, rawProduct2Id).get(0);
-//			assertThat(t1Product2Demand.getQty()).isEqualByComparingTo(TEN);
-//			assertThat(t1Product2Demand.getM_Product_ID()).isEqualTo(rawProduct2Id);
-//			assertThat(t1Product2Demand.getMD_Candidate_GroupId()).isEqualTo(supplyDemandGroupId.toInt());
-//			// no parent relationship between production supply and demand because it can be m:n
-//			// assertThat(t1Product2Demand.getMD_Candidate_Parent_ID()).isEqualTo(t2Supply.getMD_Candidate_ID());
-//
-//			final I_MD_Candidate t1Product2Stock = DispoTestUtils.filter(CandidateType.STOCK, NOW, rawProduct2Id).get(0);
-//			assertThat(t1Product2Stock.getQty()).isEqualByComparingTo(TEN.negate());
-//			assertThat(t1Product2Stock.getM_Product_ID()).isEqualTo(rawProduct2Id);
-//			assertThat(t1Product2Stock.getMD_Candidate_GroupId()).isGreaterThan(0); // stock candidates have their own groupIds too
-//			assertThat(t1Product2Stock.getMD_Candidate_Parent_ID()).isEqualTo(t1Product2Demand.getMD_Candidate_ID());
-//			assertThat(t1Product2Stock.getMD_Candidate_GroupId()).isNotEqualTo(t1Product1Stock.getMD_Candidate_GroupId());  // stock candidates' groupIds are different if they are about different products or warehouses
-//		}
+		// {
+		// final I_MD_Candidate t1Product1Demand = DispoTestUtils.filter(CandidateType.DEMAND, NOW, rawProduct1Id).get(0);
+		// assertThat(t1Product1Demand.getQty()).isEqualByComparingTo(NINE);
+		// assertThat(t1Product1Demand.getM_Product_ID()).isEqualTo(rawProduct1Id);
+		// assertThat(t1Product1Demand.getMD_Candidate_GroupId()).isEqualTo(supplyDemandGroupId.toInt());
+		// // no parent relationship between production supply and demand because it can be m:n
+		// // assertThat(t1Product1Demand.getMD_Candidate_Parent_ID()).isEqualTo(t2Supply.getMD_Candidate_ID());
+		//
+		// final I_MD_Candidate t1Product1Stock = DispoTestUtils.filter(CandidateType.STOCK, NOW, rawProduct1Id).get(0);
+		// assertThat(t1Product1Stock.getQty()).isEqualByComparingTo(NINE.negate());
+		// assertThat(t1Product1Stock.getM_Product_ID()).isEqualTo(rawProduct1Id);
+		// assertThat(t1Product1Stock.getMD_Candidate_GroupId()).isGreaterThan(0); // stock candidates have their own groupIds too
+		// assertThat(t1Product1Stock.getMD_Candidate_GroupId()).isNotEqualTo(supplyDemandGroupId); // stock candidates' groupIds are different from supply/demand groups' groupIds
+		// assertThat(t1Product1Stock.getMD_Candidate_GroupId()).isNotEqualTo(t2Stock.getMD_Candidate_GroupId()); // stock candidates' groupIds are different if they are about different products or warehouses
+		// assertThat(t1Product1Stock.getMD_Candidate_Parent_ID()).isEqualTo(t1Product1Demand.getMD_Candidate_ID());
+		// }
+		//
+		// {
+		// final I_MD_Candidate t1Product2Demand = DispoTestUtils.filter(CandidateType.DEMAND, NOW, rawProduct2Id).get(0);
+		// assertThat(t1Product2Demand.getQty()).isEqualByComparingTo(TEN);
+		// assertThat(t1Product2Demand.getM_Product_ID()).isEqualTo(rawProduct2Id);
+		// assertThat(t1Product2Demand.getMD_Candidate_GroupId()).isEqualTo(supplyDemandGroupId.toInt());
+		// // no parent relationship between production supply and demand because it can be m:n
+		// // assertThat(t1Product2Demand.getMD_Candidate_Parent_ID()).isEqualTo(t2Supply.getMD_Candidate_ID());
+		//
+		// final I_MD_Candidate t1Product2Stock = DispoTestUtils.filter(CandidateType.STOCK, NOW, rawProduct2Id).get(0);
+		// assertThat(t1Product2Stock.getQty()).isEqualByComparingTo(TEN.negate());
+		// assertThat(t1Product2Stock.getM_Product_ID()).isEqualTo(rawProduct2Id);
+		// assertThat(t1Product2Stock.getMD_Candidate_GroupId()).isGreaterThan(0); // stock candidates have their own groupIds too
+		// assertThat(t1Product2Stock.getMD_Candidate_Parent_ID()).isEqualTo(t1Product2Demand.getMD_Candidate_ID());
+		// assertThat(t1Product2Stock.getMD_Candidate_GroupId()).isNotEqualTo(t1Product1Stock.getMD_Candidate_GroupId()); // stock candidates' groupIds are different if they are about different products or warehouses
+		// }
 
 		final int ppOrderId = ppOrderEvent.getPpOrder().getPpOrderId();
 		assertThat(DispoTestUtils.filterExclStock()).allSatisfy(r -> assertCandidateRecordHasPpOrderId(r, ppOrderId));

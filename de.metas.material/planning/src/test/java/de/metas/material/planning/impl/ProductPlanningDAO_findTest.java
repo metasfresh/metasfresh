@@ -21,9 +21,9 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_M_Attribute;
 import org.eevolution.model.I_PP_Product_Planning;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.business.BusinessTestHelper;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
@@ -53,12 +53,9 @@ import de.metas.product.ResourceId;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class ProductPlanningDAO_findTest
 {
-
-	@Rule
-	public AdempiereTestWatcher adempiereTestWatcher = new AdempiereTestWatcher();
-
 	private I_M_Warehouse warehouse;
 	private I_M_Product product;
 	private I_S_Resource plant;
@@ -70,7 +67,7 @@ public class ProductPlanningDAO_findTest
 	private I_M_Attribute madeInCologneAttribute;
 	private AttributeListValue madeInCologneAttributeValue;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
