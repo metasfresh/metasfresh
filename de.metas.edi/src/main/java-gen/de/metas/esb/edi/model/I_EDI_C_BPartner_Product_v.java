@@ -154,7 +154,8 @@ public interface I_EDI_C_BPartner_Product_v
     public static final String COLUMNNAME_ProductNo = "ProductNo";
 
 	/**
-	 * Set UPC/EAN.
+	 * Set UPC.
+	 * Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -163,7 +164,8 @@ public interface I_EDI_C_BPartner_Product_v
 	public void setUPC (java.lang.String UPC);
 
 	/**
-	 * Get UPC/EAN.
+	 * Get UPC.
+	 * Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

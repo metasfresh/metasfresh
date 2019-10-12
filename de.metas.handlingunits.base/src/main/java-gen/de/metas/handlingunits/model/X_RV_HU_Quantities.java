@@ -15,7 +15,7 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -799081529L;
+	private static final long serialVersionUID = -834974263L;
 
     /** Standard Constructor */
     public X_RV_HU_Quantities (Properties ctx, int RV_HU_Quantities_ID, String trxName)
@@ -163,18 +163,6 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 		return (java.lang.String)get_Value(COLUMNNAME_M_HU_PI_Item_Product);
 	}
 
-	@Override
-	public org.compiere.model.I_M_Product_Category getM_Product_Category()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class);
-	}
-
-	@Override
-	public void setM_Product_Category(org.compiere.model.I_M_Product_Category M_Product_Category)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class, M_Product_Category);
-	}
-
 	/** Set Produkt Kategorie.
 		@param M_Product_Category_ID 
 		Kategorie eines Produktes
@@ -246,7 +234,7 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 
 	/** Set Produktschlüssel.
 		@param ProductValue 
-		Schlüssel des Produktes
+		Produkt-Identifikator; "val-<Suchschlüssel>", "ext-<Externe Id>" oder interne M_Product_ID
 	  */
 	@Override
 	public void setProductValue (java.lang.String ProductValue)
@@ -255,7 +243,7 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 	}
 
 	/** Get Produktschlüssel.
-		@return Schlüssel des Produktes
+		@return Produkt-Identifikator; "val-<Suchschlüssel>", "ext-<Externe Id>" oder interne M_Product_ID
 	  */
 	@Override
 	public java.lang.String getProductValue () 

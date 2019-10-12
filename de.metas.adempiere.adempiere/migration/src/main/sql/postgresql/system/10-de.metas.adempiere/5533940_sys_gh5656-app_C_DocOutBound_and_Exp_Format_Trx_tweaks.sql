@@ -13,7 +13,7 @@ UPDATE AD_Column SET ColumnSQL='', IsLazyLoading='N',Updated=TO_TIMESTAMP('2019-
 INSERT INTO t_alter_column values('c_doc_outbound_log','EDI_ExportStatus','CHAR(1)',null,null)
 ;
 
-DROP FUNCTION "de.metas.edi".getediexportstatus(numeric, numeric);
+DROP FUNCTION IF EXISTS "de.metas.edi".getediexportstatus(numeric, numeric);
 CREATE OR REPLACE FUNCTION "de.metas.edi".getediexportstatus(p_ad_table_id numeric, p_record_id numeric)
   RETURNS character AS
 $BODY$

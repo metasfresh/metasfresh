@@ -67,11 +67,18 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 
 public class DesadvBL implements IDesadvBL
 {
 	/** Process used to print the {@link I_EDI_DesadvLine_SSCC}s labels */
 	private static final String AD_PROCESS_VALUE_EDI_DesadvLine_SSCC_Print = "EDI_DesadvLine_SSCC_Print";
+
+	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final transient IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+	private final transient ISSCC18CodeDAO sscc18CodeDAO = Services.get(ISSCC18CodeDAO.class);
+	private final transient IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
+	private final transient IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 
 	@Override
 	public I_EDI_Desadv addToDesadvCreateForOrderIfNotExist(final I_C_Order order)
@@ -198,10 +205,12 @@ public class DesadvBL implements IDesadvBL
 		if (materialItemProduct != null)
 		{
 			newDesadvLine.setGTIN(materialItemProduct.getGTIN());
-			newDesadvLine.setUPC_TU(materialItemProduct.getUPC_TU());
+			newDesadvLine.setUPC_TU(materialItemProduct.getUPC());
 			newDesadvLine.setEAN_TU(materialItemProduct.getEAN_TU());
-		}
 
+			newDesadvLine.setM_HU_PackagingCode_TU_ID(materialItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PackagingCode_ID());
+			newDesadvLine.setM_HU_PackagingCode_LU_ID(materialItemProduct.getM_HU_PackagingCode_LU_Fallback_ID());
+		}
 		newDesadvLine.setIsSubsequentDeliveryPlanned(false); // the default
 
 		InterfaceWrapperHelper.save(newDesadvLine);
@@ -253,12 +262,6 @@ public class DesadvBL implements IDesadvBL
 	@Override
 	public I_EDI_Desadv addToDesadvCreateForInOutIfNotExist(final I_M_InOut inOut)
 	{
-		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-		final ISSCC18CodeDAO sscc18CodeDAO = Services.get(ISSCC18CodeDAO.class);
-		final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
-		final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
-
 		final I_EDI_Desadv desadv;
 
 		if (inOut.getC_Order_ID() > 0)
@@ -306,7 +309,7 @@ public class DesadvBL implements IDesadvBL
 			// Check.errorIf(topLevelHUs.size() != 1, "Expecting one top level HU for M_InOutLine {}, but got this: {}", inOutLine, topLevelHUs);
 			if (topLevelHUs.size() == 1)
 			{
-				final I_M_HU hu = topLevelHUs.get(0);
+				final I_M_HU hu = CollectionUtils.singleElement(topLevelHUs);
 				desadvLine.setM_HU_ID(hu.getM_HU_ID());
 
 				final AttributeId sscc18AttributeId = sscc18CodeDAO.retrieveSSCC18AttributeId();
@@ -319,6 +322,15 @@ public class DesadvBL implements IDesadvBL
 					desadvLine.setIPA_SSCC18(sscc18HUAttribute.getValue());
 					desadvLine.setIsManual_IPA_SSCC18(false);
 				}
+
+				final int packagingCodeLU_ID = extractPackagingCodeId(hu);
+				desadvLine.setM_HU_PackagingCode_LU_ID(packagingCodeLU_ID);
+
+				final int packagingCodeTU_ID = CollectionUtils.extractSingleElementOrDefault(
+						huAssignmentDAO.retrieveTUHUsForModel(inOutLine),
+						this::extractPackagingCodeId,
+						-1);
+				desadvLine.setM_HU_PackagingCode_TU_ID(packagingCodeTU_ID);
 			}
 
 			// check if we got the value
@@ -336,6 +348,11 @@ public class DesadvBL implements IDesadvBL
 		}
 
 		return desadv;
+	}
+
+	private int extractPackagingCodeId(final I_M_HU hu)
+	{
+		return hu.getM_HU_PI_Version().getM_HU_PackagingCode_ID();
 	}
 
 	@Override

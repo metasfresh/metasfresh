@@ -96,7 +96,7 @@ public class C_Invoice
 		}
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REVERSECORRECT })
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REVERSECORRECT)
 	public void forbiddReversal(final I_C_Invoice invoice)
 	{
 		final String ediStatus = invoice.getEDI_ExportStatus();

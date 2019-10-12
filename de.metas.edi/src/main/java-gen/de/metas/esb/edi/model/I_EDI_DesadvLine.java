@@ -383,6 +383,98 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
+	 * Set LU Verpackungscode.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_HU_PackagingCode_LU_ID (int M_HU_PackagingCode_LU_ID);
+
+	/**
+	 * Get LU Verpackungscode.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_HU_PackagingCode_LU_ID();
+
+    /** Column definition for M_HU_PackagingCode_LU_ID */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_M_HU_PackagingCode_LU_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "M_HU_PackagingCode_LU_ID", null);
+    /** Column name M_HU_PackagingCode_LU_ID */
+    public static final String COLUMNNAME_M_HU_PackagingCode_LU_ID = "M_HU_PackagingCode_LU_ID";
+
+	/**
+	 * Set M_HU_PackagingCode_LU_Text.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_HU_PackagingCode_LU_Text (java.lang.String M_HU_PackagingCode_LU_Text);
+
+	/**
+	 * Get M_HU_PackagingCode_LU_Text.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getM_HU_PackagingCode_LU_Text();
+
+    /** Column definition for M_HU_PackagingCode_LU_Text */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_M_HU_PackagingCode_LU_Text = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "M_HU_PackagingCode_LU_Text", null);
+    /** Column name M_HU_PackagingCode_LU_Text */
+    public static final String COLUMNNAME_M_HU_PackagingCode_LU_Text = "M_HU_PackagingCode_LU_Text";
+
+	/**
+	 * Set TU Verpackungscode.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_HU_PackagingCode_TU_ID (int M_HU_PackagingCode_TU_ID);
+
+	/**
+	 * Get TU Verpackungscode.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_HU_PackagingCode_TU_ID();
+
+    /** Column definition for M_HU_PackagingCode_TU_ID */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_M_HU_PackagingCode_TU_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "M_HU_PackagingCode_TU_ID", null);
+    /** Column name M_HU_PackagingCode_TU_ID */
+    public static final String COLUMNNAME_M_HU_PackagingCode_TU_ID = "M_HU_PackagingCode_TU_ID";
+
+	/**
+	 * Set M_HU_PackagingCode_TU_Text.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_HU_PackagingCode_TU_Text (java.lang.String M_HU_PackagingCode_TU_Text);
+
+	/**
+	 * Get M_HU_PackagingCode_TU_Text.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getM_HU_PackagingCode_TU_Text();
+
+    /** Column definition for M_HU_PackagingCode_TU_Text */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_M_HU_PackagingCode_TU_Text = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "M_HU_PackagingCode_TU_Text", null);
+    /** Column name M_HU_PackagingCode_TU_Text */
+    public static final String COLUMNNAME_M_HU_PackagingCode_TU_Text = "M_HU_PackagingCode_TU_Text";
+
+	/**
 	 * Set Bewegungs-Menge.
 	 * Menge eines bewegten Produktes.
 	 *

@@ -341,8 +341,8 @@ public interface I_EDI_Desadv
 	/**
 	 * Set EDI Status Exportieren.
 	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: true
+	 * <br>Type: List
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setEDI_ExportStatus (java.lang.String EDI_ExportStatus);
@@ -350,8 +350,8 @@ public interface I_EDI_Desadv
 	/**
 	 * Get EDI Status Exportieren.
 	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: true
+	 * <br>Type: List
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getEDI_ExportStatus();
