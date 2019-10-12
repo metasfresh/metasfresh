@@ -84,7 +84,6 @@ public final class AttributesKey
 	}
 
 	@VisibleForTesting
-	@Deprecated
 	public static AttributesKey ofAttributeValueIds(final int... attributeValueIds)
 	{
 		if (attributeValueIds == null || attributeValueIds.length == 0)
@@ -98,7 +97,6 @@ public final class AttributesKey
 	}
 
 	@VisibleForTesting
-	@Deprecated
 	public static AttributesKey ofAttributeValueIds(final AttributeValueId... attributeValueIds)
 	{
 		if (attributeValueIds == null || attributeValueIds.length == 0)
