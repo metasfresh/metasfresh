@@ -15,7 +15,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -343188457L;
+	private static final long serialVersionUID = -1551971923L;
 
     /** Standard Constructor */
     public X_EDI_DesadvLine (Properties ctx, int EDI_DesadvLine_ID, String trxName)
@@ -315,8 +315,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	@Override
 	public void setM_HU_PackagingCode_LU_Text (java.lang.String M_HU_PackagingCode_LU_Text)
 	{
-		set_Value (COLUMNNAME_M_HU_PackagingCode_LU_Text, M_HU_PackagingCode_LU_Text);
-	}
+		throw new IllegalArgumentException ("M_HU_PackagingCode_LU_Text is virtual column");	}
 
 	/** Get M_HU_PackagingCode_LU_Text.
 		@return M_HU_PackagingCode_LU_Text	  */
@@ -353,8 +352,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	@Override
 	public void setM_HU_PackagingCode_TU_Text (java.lang.String M_HU_PackagingCode_TU_Text)
 	{
-		set_Value (COLUMNNAME_M_HU_PackagingCode_TU_Text, M_HU_PackagingCode_TU_Text);
-	}
+		throw new IllegalArgumentException ("M_HU_PackagingCode_TU_Text is virtual column");	}
 
 	/** Get M_HU_PackagingCode_TU_Text.
 		@return M_HU_PackagingCode_TU_Text	  */

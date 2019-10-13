@@ -1,6 +1,6 @@
 package de.metas.edi.model.validator;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 
 /*
  * #%L
@@ -39,7 +39,6 @@ import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
-import de.metas.handlingunits.model.I_M_HU_PackagingCode;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -62,36 +61,6 @@ public class EDI_DesadvLine
 		{
 			orderLine.setEDI_DesadvLine_ID(0);
 			InterfaceWrapperHelper.save(orderLine);
-		}
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
-			ifColumnsChanged = I_EDI_DesadvLine.COLUMNNAME_M_HU_PackagingCode_LU_ID)
-	public void updatePackagingCodeLU(final I_EDI_DesadvLine desadvLine)
-	{
-		if (desadvLine.getM_HU_PackagingCode_LU_ID() <= 0)
-		{
-			desadvLine.setM_HU_PackagingCode_LU_Text(null);
-		}
-		else
-		{
-			final I_M_HU_PackagingCode packagingCodeRecord = loadOutOfTrx(desadvLine.getM_HU_PackagingCode_LU_ID(), I_M_HU_PackagingCode.class);
-			desadvLine.setM_HU_PackagingCode_LU_Text(packagingCodeRecord.getPackagingCode());
-		}
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
-			ifColumnsChanged = I_EDI_DesadvLine.COLUMNNAME_M_HU_PackagingCode_TU_ID)
-	public void updatePackagingCodeTU(final I_EDI_DesadvLine desadvLine)
-	{
-		if (desadvLine.getM_HU_PackagingCode_TU_ID() <= 0)
-		{
-			desadvLine.setM_HU_PackagingCode_TU_Text(null);
-		}
-		else
-		{
-			final I_M_HU_PackagingCode packagingCodeRecord = loadOutOfTrx(desadvLine.getM_HU_PackagingCode_TU_ID(), I_M_HU_PackagingCode.class);
-			desadvLine.setM_HU_PackagingCode_TU_Text(packagingCodeRecord.getPackagingCode());
 		}
 	}
 

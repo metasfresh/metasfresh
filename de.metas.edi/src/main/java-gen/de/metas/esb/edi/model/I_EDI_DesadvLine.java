@@ -410,8 +410,10 @@ public interface I_EDI_DesadvLine
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setM_HU_PackagingCode_LU_Text (java.lang.String M_HU_PackagingCode_LU_Text);
 
 	/**
@@ -419,7 +421,7 @@ public interface I_EDI_DesadvLine
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true
 	 */
 	public java.lang.String getM_HU_PackagingCode_LU_Text();
 
@@ -456,8 +458,10 @@ public interface I_EDI_DesadvLine
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setM_HU_PackagingCode_TU_Text (java.lang.String M_HU_PackagingCode_TU_Text);
 
 	/**
@@ -465,7 +469,7 @@ public interface I_EDI_DesadvLine
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true
 	 */
 	public java.lang.String getM_HU_PackagingCode_TU_Text();
 

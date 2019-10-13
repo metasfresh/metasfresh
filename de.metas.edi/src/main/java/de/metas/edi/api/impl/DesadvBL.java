@@ -68,6 +68,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
 
 public class DesadvBL implements IDesadvBL
 {
@@ -79,13 +80,18 @@ public class DesadvBL implements IDesadvBL
 	private final transient ISSCC18CodeDAO sscc18CodeDAO = Services.get(ISSCC18CodeDAO.class);
 	private final transient IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
 	private final transient IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
+	private final transient IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final transient IBPartnerProductDAO bPartnerProductDAO = Services.get(IBPartnerProductDAO.class);
+	private final transient IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	@Override
 	public I_EDI_Desadv addToDesadvCreateForOrderIfNotExist(final I_C_Order order)
 	{
 		Check.assumeNotEmpty(order.getPOReference(), "C_Order {} has a not-empty POReference", order);
-
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 		final I_EDI_Desadv desadv = retrieveOrCreateDesadv(order);
 		order.setEDI_Desadv(desadv);
@@ -121,19 +127,14 @@ public class DesadvBL implements IDesadvBL
 			final I_EDI_Desadv desadv,
 			final I_C_OrderLine orderLine)
 	{
-		final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
-
 		final I_EDI_DesadvLine existingDesadvLine = desadvDAO.retrieveMatchingDesadvLinevOrNull(desadv, orderLine.getLine());
 		if (existingDesadvLine != null)
 		{
 			return existingDesadvLine; // done
 		}
 
-		final IBPartnerProductDAO bPartnerProductDAO = Services.get(IBPartnerProductDAO.class);
-		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
-
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-		final org.compiere.model.I_C_BPartner buyerBPartner = Services.get(IBPartnerDAO.class).getById(order.getC_BPartner_ID());
+		final org.compiere.model.I_C_BPartner buyerBPartner = bpartnerDAO.getById(order.getC_BPartner_ID());
 
 		final I_EDI_DesadvLine newDesadvLine = InterfaceWrapperHelper.newInstance(I_EDI_DesadvLine.class, order);
 		newDesadvLine.setEDI_Desadv(desadv);
@@ -162,7 +163,7 @@ public class DesadvBL implements IDesadvBL
 
 		newDesadvLine.setProductDescription(orderLine.getProductDescription());
 
-		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		final I_M_Product product = productDAO.getById(productId);
 		final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
 
 		//
@@ -222,7 +223,6 @@ public class DesadvBL implements IDesadvBL
 	 */
 	private void setQty(final I_EDI_DesadvLine desadvLine, final BigDecimal newMovementQty)
 	{
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 		final ProductId productId = ProductId.ofRepoId(desadvLine.getM_Product_ID());
 
@@ -235,9 +235,6 @@ public class DesadvBL implements IDesadvBL
 
 	private I_EDI_Desadv retrieveOrCreateDesadv(final I_C_Order order)
 	{
-		final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
-		final IOrderBL orderBL = Services.get(IOrderBL.class);
-
 		I_EDI_Desadv desadv = desadvDAO.retrieveMatchingDesadvOrNull(order.getPOReference(), InterfaceWrapperHelper.getContextAware(order));
 		if (desadv == null)
 		{
@@ -350,7 +347,7 @@ public class DesadvBL implements IDesadvBL
 		return desadv;
 	}
 
-	private int extractPackagingCodeId(final I_M_HU hu)
+	private int extractPackagingCodeId(@NonNull final I_M_HU hu)
 	{
 		return hu.getM_HU_PI_Version().getM_HU_PackagingCode_ID();
 	}
@@ -363,7 +360,6 @@ public class DesadvBL implements IDesadvBL
 			return;
 		}
 
-		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
 		for (final I_M_InOutLine inOutLine : inOutLines)
 		{
@@ -401,11 +397,8 @@ public class DesadvBL implements IDesadvBL
 			return;
 		}
 
-		final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
-
 		final I_EDI_Desadv desadv = order.getEDI_Desadv();
 
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
 		for (final I_C_OrderLine orderLine : orderLines)
 		{
@@ -427,8 +420,6 @@ public class DesadvBL implements IDesadvBL
 	@Override
 	public void removeOrderLineFromDesadv(final I_C_OrderLine orderLine)
 	{
-		final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
-
 		if (orderLine.getEDI_DesadvLine_ID() <= 0)
 		{
 			return;
@@ -452,9 +443,8 @@ public class DesadvBL implements IDesadvBL
 	}
 
 	@Override
-	public void printSSCC18_Labels(final Properties ctx, final Collection<Integer> desadvLineSSCC_IDs_ToPrint)
+	public void printSSCC18_Labels(@NonNull final Properties ctx, final Collection<Integer> desadvLineSSCC_IDs_ToPrint)
 	{
-		Check.assumeNotNull(ctx, "ctx not null");
 		Check.assumeNotEmpty(desadvLineSSCC_IDs_ToPrint, "desadvLineSSCC_IDs_ToPrint not empty");
 
 		//
@@ -480,8 +470,7 @@ public class DesadvBL implements IDesadvBL
 	@Override
 	public void setMinimumPercentage(final I_EDI_Desadv desadv)
 	{
-		final BigDecimal minimumPercentageAccepted = Services.get(IDesadvDAO.class).retrieveMinimumSumPercentage();
+		final BigDecimal minimumPercentageAccepted = desadvDAO.retrieveMinimumSumPercentage();
 		desadv.setEDI_DESADV_MinimumSumPercentage(minimumPercentageAccepted);
 	}
-
 }
