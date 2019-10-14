@@ -21,6 +21,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.user.User;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
@@ -50,7 +51,7 @@ import lombok.Value;
  * #L%
  */
 
-public class BPartnerBL_BillPartnerTests
+public class BPartnerBL_RetrieveContactOrNullTests
 {
 	private BPartnerId bpartnerId;
 	private BPartnerLocationId bpartnerLocationId;
@@ -145,6 +146,7 @@ public class BPartnerBL_BillPartnerTests
 				.builder()
 				.bpartnerId(bpartnerId)
 				.bPartnerLocationId(bpartnerLocationId)
+				.contactType(ContactType.BILL_TO_DEFAULT)
 				.filter(predicate)
 				.build();
 		final User result = bPartnerBL.retrieveContactOrNull(request);
@@ -185,9 +187,9 @@ public class BPartnerBL_BillPartnerTests
 		assertThat(result.getName()).isEqualTo("C");
 	}
 
-	private de.metas.bpartner.service.impl.BPartnerBL_BillPartnerTests.UserRecordCreator.UserRecordCreatorBuilder userRecordCreator()
+	private de.metas.bpartner.service.impl.BPartnerBL_RetrieveContactOrNullTests.UserRecordCreator.UserRecordCreatorBuilder userRecordCreator()
 	{
-		final de.metas.bpartner.service.impl.BPartnerBL_BillPartnerTests.UserRecordCreator.UserRecordCreatorBuilder builder = UserRecordCreator
+		final de.metas.bpartner.service.impl.BPartnerBL_RetrieveContactOrNullTests.UserRecordCreator.UserRecordCreatorBuilder builder = UserRecordCreator
 				.builder()
 				.bpartnerId(bpartnerId);
 		return builder;
