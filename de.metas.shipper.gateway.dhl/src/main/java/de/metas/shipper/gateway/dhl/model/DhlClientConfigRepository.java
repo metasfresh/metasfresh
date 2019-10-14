@@ -42,6 +42,7 @@ public class DhlClientConfigRepository
 	{
 		final I_DHL_Shipper_Config configPO = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_DHL_Shipper_Config.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DHL_Shipper_Config.COLUMNNAME_DHL_Shipper_Config_ID, shipperId)
 				.create()
 				.first();

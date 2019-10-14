@@ -23,17 +23,25 @@
 package de.metas.shipper.gateway.dhl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
+import de.metas.shipper.gateway.dhl.model.DhlServiceType;
 import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrder;
 import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
+import de.metas.shipper.gateway.spi.model.CountryCode;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.slf4j.Logger;
@@ -41,7 +49,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.List;
 
 @Repository
 public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
@@ -100,10 +111,91 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	 * <p>
 	 * keep in sync with {@link #toCreateShipmentOrderRequestPO(DeliveryOrder)}
 	 */
-	private DeliveryOrder toDeliveryOrderFromPO(final I_DHL_ShipmentOrderRequest dhlShipmentOrderRequest)
+	private DeliveryOrder toDeliveryOrderFromPO(final I_DHL_ShipmentOrderRequest requestPo)
 	{
-		//  todo
-		return null;
+		final List<I_DHL_ShipmentOrder> ordersPo = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_DHL_ShipmentOrder.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list();
+
+		final I_DHL_ShipmentOrder order = ordersPo.get(0);
+
+		final DeliveryOrder doFromPO = DeliveryOrder.builder()
+				.repoId(requestPo.getDHL_ShipmentOrderRequest_ID())
+				.deliveryAddress(Address.builder()
+						.bpartnerId(order.getC_BPartner_ID())
+						.bpartnerLocationId(order.getC_BPartner_Location_ID())
+						.companyName1(order.getDHL_Receiver_Name1())
+						.companyName2(order.getDHL_Receiver_Name2())
+						.street1(order.getDHL_Receiver_StreetName1())
+						.street2(order.getDHL_Receiver_StreetName2())
+						.houseNo(order.getDHL_Receiver_StreetNumber())
+						.zipCode(order.getDHL_Receiver_ZipCode())
+						.city(order.getDHL_Receiver_City())
+						.country(CountryCode.builder()
+								.alpha2(order.getDHL_Receiver_CountryISO2Code())
+								.alpha3(order.getDHL_Receiver_CountryISO3Code())
+								.build())
+						.build())
+				.deliveryContact(ContactPerson.builder()
+						.simplePhoneNumber(order.getDHL_Receiver_Phone())
+						.emailAddress(order.getDHL_Receiver_Email())
+						.build())
+				.pickupAddress(Address.builder()
+						.companyName1(order.getDHL_Shipper_Name1())
+						.companyName2(order.getDHL_Shipper_Name2())
+						.street1(order.getDHL_Shipper_StreetName1())
+						.street2(order.getDHL_Shipper_StreetName2())
+						.houseNo(order.getDHL_Shipper_StreetNumber())
+						.zipCode(order.getDHL_Shipper_ZipCode())
+						.city(order.getDHL_Shipper_City())
+						.country(CountryCode.builder()
+								.alpha2(order.getDHL_Shipper_CountryISO2Code())
+								.alpha3(order.getDHL_Shipper_CountryISO3Code())
+								.build())
+						.build())
+				.pickupDate(PickupDate.builder()
+						.date(LocalDate.parse(order.getDHL_ShipmentDate(), DateTimeFormatter.ISO_LOCAL_DATE))
+						.build())
+				// other
+				.customerReference(order.getCustomerReference())
+				.serviceType(DhlServiceType.valueOf(order.getDHL_Product()))
+				.deliveryPositions(constructDeliveryPositions(requestPo))
+				.build();
+
+		return doFromPO;
+	}
+
+	private Iterable<? extends DeliveryPosition> constructDeliveryPositions(final I_DHL_ShipmentOrderRequest requestPo)
+	{
+		final List<I_DHL_ShipmentOrder> ordersPo = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_DHL_ShipmentOrder.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list();
+		final I_DHL_ShipmentOrder firstOrder = ordersPo.get(0);
+
+		final ImmutableMap<Integer, String> packageIdsToSequenceNumber = ordersPo.stream()
+				.collect(ImmutableMap.toImmutableMap(I_DHL_ShipmentOrder::getPackageId, i_dhl_shipmentOrder -> Integer.toString(i_dhl_shipmentOrder.getDHL_ShipmentOrder_ID())));
+
+		final ImmutableSet<Integer> packageIds = packageIdsToSequenceNumber.keySet();
+
+		final DeliveryPosition singleDeliveryPosition = DeliveryPosition.builder()
+				.packageDimensions(PackageDimensions.builder()
+						.widthInCM(firstOrder.getDHL_WidthInCm())
+						.lengthInCM(firstOrder.getDHL_LengthInCm())
+						.heightInCM(firstOrder.getDHL_HeightInCm())
+						.build())
+				.grossWeightKg(firstOrder.getDHL_WeightInKg().intValue())
+				.customDeliveryData(DhlCustomDeliveryData.builder()
+						.packageIdsToSequenceNumber(packageIdsToSequenceNumber)
+						.build())
+				.numberOfPackages(packageIds.size())
+				.packageIds(packageIds)
+				.build();
+
+		return Collections.singleton(singleDeliveryPosition);
 	}
 
 	/**
@@ -118,6 +210,11 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	{
 		final I_DHL_ShipmentOrderRequest shipmentOrderRequest = InterfaceWrapperHelper.newInstance(I_DHL_ShipmentOrderRequest.class);
 		InterfaceWrapperHelper.save(shipmentOrderRequest);
+
+		// maybe this will be removed in the future, but for now it simplifies the PO deserialisation implementation  dramatically, ref: constructDeliveryPositions()
+		Check.errorIf(deliveryOrder.getDeliveryPositions().size() != 1,
+				"The DHL implementation needs to always create DeliveryOrders with exactly 1 DeliveryPosition; deliveryOrder={}",
+				deliveryOrder);
 
 		//		int totalPackages = 0;
 		//		final int MAX_NUMBER_OF_PACKAGES = 30; // todo this must not be hardcoded; though i'm not sure where i read about this limitation. maybe i'm wrong and there's no limitations in the number of packages sent in 1 order
