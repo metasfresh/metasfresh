@@ -132,15 +132,8 @@ class TableCell extends PureComponent {
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
-    const {
-      updateRow,
-      readonly,
-      rowId,
-      tdValue,
-    } = this.props;
-    const {
-      tdValue: nextTdValue,
-    } = nextProps;
+    const { updateRow, readonly, rowId, tdValue } = this.props;
+    const { tdValue: nextTdValue } = nextProps;
     // We should avoid highlighting when whole row is exchanged (sorting)
     if (rowId !== nextProps.rowId) {
       return;
