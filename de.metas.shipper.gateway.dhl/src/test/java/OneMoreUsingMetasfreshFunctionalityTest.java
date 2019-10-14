@@ -21,6 +21,8 @@
  */
 
 import de.metas.shipper.gateway.dhl.DhlDeliveryOrderRepository;
+import de.metas.shipper.gateway.dhl.DhlShipperGatewayClient;
+import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import org.adempiere.test.AdempiereTestHelper;
@@ -28,37 +30,52 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.Assert.assertEquals;
+
 @Disabled("makes ACTUAL calls to dhl api and needs auth")
 class OneMoreUsingMetasfreshFunctionalityTest
 {
-	//	ShipperGatewayFacade shipperGatewayFacade;
-	//	ShipperGatewayServicesRegistry shipperGatewayServicesRegistry = SpringContextHolder.instance.getBean(ShipperGatewayServicesRegistry.class);
-	//	private DhlDraftDeliveryOrderCreator dhlDraftDeliveryOrderCreator;
 	private DhlDeliveryOrderRepository dhlDeliveryOrderRepository;
+
+	private DhlShipperGatewayClient client;
 
 	@BeforeEach
 	void init()
 	{
 		AdempiereTestHelper.get().init(); // how do i add adempiere Test Helper?
-		//		dhlDraftDeliveryOrderCreator = new DhlDraftDeliveryOrderCreator();
 		dhlDeliveryOrderRepository = new DhlDeliveryOrderRepository();
+		client = new DhlShipperGatewayClient(DhlClientConfig.builder()
+				.baseUrl("https://cig.dhl.de/services/sandbox/soap")
+				.applicationID("a") // secret
+				.applicationToken("b") // secret
+				.accountNumber("22222222220104")
+				.signature("pass")
+				.username("2222222222_01")
+				.build());
+	}
+
+	@Test
+	void testDeliveryOrderPersistence()
+	{
+		final DeliveryOrder originalDO = dhlDeliveryOrderRepository.save(DhlTestUtil.createDummyDeliveryOrder());
+
+		final DeliveryOrder deserialisedDO = dhlDeliveryOrderRepository.getByRepoId(DeliveryOrderId.ofRepoId(originalDO.getRepoId()));
+		assertEquals(originalDO, deserialisedDO);
 	}
 
 	@Test
 	void createDOPersistThenSendItToDHL()
 	{
-		// not sure how to create the DraftDeliveryOrderRequest yet
-		//		dhlDraftDeliveryOrderCreator.createDraftDeliveryOrder()
-
 		// persist the DO
 		final DeliveryOrder deliveryOrder = dhlDeliveryOrderRepository.save(DhlTestUtil.createDummyDeliveryOrder());
 
-		System.out.println(deliveryOrder.getRepoId());
-		System.out.println(deliveryOrder);
 		final DeliveryOrderId deliveryOrderRepoId = DeliveryOrderId.ofRepoId(deliveryOrder.getRepoId());
+		final DeliveryOrder deserialisedDO = dhlDeliveryOrderRepository.getByRepoId(deliveryOrderRepoId);
 
-		// todo implement retrieving the DO from PO
-		System.out.println(dhlDeliveryOrderRepository.getByRepoId(deliveryOrderRepoId));
-
+		final DeliveryOrder completedDeliveryOrder = client.completeDeliveryOrder(deserialisedDO);
+//		deliveryOrderRepo.save(completedDeliveryOrder);
+//
+//		final List<PackageLabels> packageLabelsList = client.getPackageLabelsList(completedDeliveryOrder);
+//		printLabels(completedDeliveryOrder, packageLabelsList, deliveryOrderRepo);
 	}
 }
