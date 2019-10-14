@@ -48,6 +48,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.logging.LogManager;
 import de.metas.pricing.service.ProductPrices;
@@ -97,9 +98,10 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
-		final String whereClause = getWhereClause();
+		final ImportRecordsSelection selection = getImportRecordsSelection();
+
 		MProductImportTableSqlUpdater.builder()
-				.whereClause(whereClause)
+				.selection(selection)
 				.ctx(getCtx())
 				.tableName(getImportTableName())
 				.valueName(I_I_Product.COLUMNNAME_Value)
