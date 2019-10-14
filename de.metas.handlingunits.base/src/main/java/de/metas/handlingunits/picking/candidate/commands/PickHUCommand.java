@@ -104,7 +104,7 @@ public class PickHUCommand
 		final PickingCandidate pickingCandidate = getOrCreatePickingCandidate();
 		pickingCandidate.assertDraft();
 
-		if (createPickingCandidatesOnly)
+		if (!createPickingCandidatesOnly)
 		{
 			pickingCandidate.pick(qtyToPick);
 			pickingCandidate.packTo(packToId);
