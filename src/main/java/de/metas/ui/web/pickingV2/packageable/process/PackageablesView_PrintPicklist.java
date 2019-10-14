@@ -20,6 +20,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.report.jasper.client.JRClient;
+import de.metas.ui.web.pickingV2.config.PickingConfigV2;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRowsRepository;
 import de.metas.util.Services;
@@ -111,7 +112,11 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 		final boolean existsPickingCandidates = pickingCandidateService.existsPickingCandidates(row.getShipmentScheduleIds());
 		if (!existsPickingCandidates)
 		{
-			productsToPickRowsRepository.pick(row);
+			final @NonNull PickingConfigV2 pickingConfig = PickingConfigV2.builder()
+					.createPickingCandidatesOnly(true)
+					.pickingReviewRequired(false)
+					.build();
+			productsToPickRowsRepository.pick(row, pickingConfig);
 		}
 	}
 
