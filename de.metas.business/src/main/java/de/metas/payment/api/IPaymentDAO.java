@@ -104,10 +104,6 @@ public interface IPaymentDAO extends ISingletonService
 
 	/**
 	 * Updates the discount and the payment based on DateTrx and the payment term policy.
-	 * 
-	 * @param payment
-	 * @param c_Invoice_ID
-	 * @param c_DocType
 	 */
 	void updateDiscountAndPayment(I_C_Payment payment, int c_Invoice_ID, I_C_DocType c_DocType);
 }

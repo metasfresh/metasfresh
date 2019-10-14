@@ -737,7 +737,6 @@ public final class MPayment extends X_C_Payment
 	public void setOverUnderAmt(final BigDecimal OverUnderAmt)
 	{
 		super.setOverUnderAmt(OverUnderAmt == null ? BigDecimal.ZERO : OverUnderAmt);
-//		setIsOverUnderPayment(getOverUnderAmt().compareTo(BigDecimal.ZERO) != 0);
 	}	// setOverUnderAmt
 
 	/**

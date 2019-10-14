@@ -106,8 +106,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 		queryBuilder
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_Posted, true) // Posted
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_Processed, true) // Processed
-				.addInArrayOrAllFilter(I_C_Payment.COLUMN_DocStatus, DocStatus.completedOrClosedStatuses())
-		;
+				.addInArrayOrAllFilter(I_C_Payment.COLUMN_DocStatus, DocStatus.completedOrClosedStatuses());
 
 		// Only the documents created after the given start time
 		if (startTime != null)
@@ -188,68 +187,15 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 				.listIds(PaymentId::ofRepoId)
 				.stream();
 	}
-	@Override
-	public void updateDiscountAndPayment(I_C_Payment payment,int c_Invoice_ID, I_C_DocType c_DocType)
-	{
-		String sql = "SELECT C_BPartner_ID,C_Currency_ID," // 1..2
-				+ " invoiceOpen(C_Invoice_ID, ?)," // 3 #1
-				+ " invoiceDiscount(C_Invoice_ID,?,?), IsSOTrx " // 4..5 #2/3
-				+ "FROM C_Invoice WHERE C_Invoice_ID=?"; // #4
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, c_Invoice_ID);
-			pstmt.setTimestamp(2, payment.getDateTrx());
-			pstmt.setInt(3, c_Invoice_ID);
-			pstmt.setInt(4, c_Invoice_ID);
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				final int bpartnerId = rs.getInt(1);
-				payment.setC_BPartner_ID(bpartnerId);
 
-				// Set Invoice Currency
-				final int C_Currency_ID = rs.getInt(2);
-				payment.setC_Currency_ID(C_Currency_ID);
-
-				//
-				BigDecimal InvoiceOpen = rs.getBigDecimal(3); // Set Invoice
-				// OPen Amount
-				if (InvoiceOpen == null)
-				{
-					InvoiceOpen = BigDecimal.ZERO;
-				}
-				BigDecimal DiscountAmt = rs.getBigDecimal(4); // Set Discount
-				// Amt
-				if (DiscountAmt == null)
-				{
-					DiscountAmt = BigDecimal.ZERO;
-				}
-
-				BigDecimal payAmt = InvoiceOpen.subtract(DiscountAmt);
-				if (X_C_DocType.DOCBASETYPE_APCreditMemo.equals(c_DocType.getDocBaseType())
-						|| X_C_DocType.DOCBASETYPE_ARCreditMemo.equals(c_DocType.getDocBaseType()))
-				{
-					if (payAmt.signum() < 0)
-					{
-						payAmt = payAmt.abs();
-					}
-				}
-
-				payment.setPayAmt(payAmt);
-				payment.setDiscountAmt(DiscountAmt);
-			}
-		}
-		catch (SQLException e)
-		{
-			throw new DBException(e, sql);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
-		
-	}
+	/*
+	 * TODO please consider the following improvement
+	 * - create an AD_Table like `C_InvoiceOpenAmounts` that has the required values (`C_BPartner_ID`, `C_Currency_ID`, `InvoiceOpen`...) as columns
+	 * - put this select-stuff into a DB function. that function shall return the `C_InvoiceOpenAmounts` as result (i.e. the metasfresh `C_InvoiceOpenAmounts` table is not a physical table in the DB; it's just what the DB-function returns)
+	 * - create a model class `I_C_InvoiceOpenAmounts` for your AD_Table.
+	 * - have the `PaymentDAO` implementation invoke the DB-function to get it's `I_C_InvoiceOpenAmounts` (=> you can do this with IQueryBL)
+	 * - have the `PlainPaymentDAO ` implementation return "plain" instances of `I_C_InvoiceOpenAmounts`
+	 * - that way, one can write a unit test where they first create one or two plain `I_C_InvoiceOpenAmounts`s and then query them in their test
+	 */
+	public abstract void updateDiscountAndPayment(I_C_Payment payment, int c_Invoice_ID, I_C_DocType c_DocType);
 }

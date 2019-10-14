@@ -28,8 +28,10 @@ import java.util.List;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.service.ClientId;
+import org.apache.commons.lang.NotImplementedException;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
 
@@ -90,6 +92,12 @@ public class PlainPaymentDAO extends AbstractPaymentDAO
 		}
 
 		return sum;
+	}
+
+	@Override
+	public void updateDiscountAndPayment(I_C_Payment payment, int c_Invoice_ID, I_C_DocType c_DocType)
+	{
+		throw new NotImplementedException();
 	}
 	
 
