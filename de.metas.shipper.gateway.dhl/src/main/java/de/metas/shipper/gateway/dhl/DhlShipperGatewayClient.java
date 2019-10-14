@@ -23,6 +23,7 @@
 package de.metas.shipper.gateway.dhl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.dhl.webservice.cisbase.AuthentificationType;
 import de.dhl.webservice.cisbase.CommunicationType;
 import de.dhl.webservice.cisbase.CountryType;
@@ -31,6 +32,8 @@ import de.dhl.webservice.cisbase.NativeAddressType;
 import de.dhl.webservice.cisbase.ReceiverNativeAddressType;
 import de.dhl.webservices.businesscustomershipping._3.CreateShipmentOrderRequest;
 import de.dhl.webservices.businesscustomershipping._3.CreateShipmentOrderResponse;
+import de.dhl.webservices.businesscustomershipping._3.CreationState;
+import de.dhl.webservices.businesscustomershipping._3.LabelData;
 import de.dhl.webservices.businesscustomershipping._3.ReceiverType;
 import de.dhl.webservices.businesscustomershipping._3.ShipmentDetailsTypeType;
 import de.dhl.webservices.businesscustomershipping._3.ShipmentItemType;
@@ -40,6 +43,7 @@ import de.dhl.webservices.businesscustomershipping._3.ShipperType;
 import de.dhl.webservices.businesscustomershipping._3.Version;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
+import de.metas.shipper.gateway.dhl.model.DhlPackageLabelType;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.Address;
@@ -47,6 +51,7 @@ import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import lombok.Builder;
@@ -73,6 +78,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.List;
 
 public class DhlShipperGatewayClient implements ShipperGatewayClient
@@ -140,7 +146,17 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	@Override
 	public List<PackageLabels> getPackageLabelsList(final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
-		return null;
+		logger.trace("getPackageLabelsList for {}", deliveryOrder);
+
+		final DhlCustomDeliveryData customDeliveryData = (DhlCustomDeliveryData)deliveryOrder.getCustomDeliveryData();
+
+		final ImmutableList<PackageLabels> packageLabels = customDeliveryData.getSequenceNumberToPdfLabel().values().stream()
+				.map(DhlShipperGatewayClient::createPackageLabel)
+				.collect(ImmutableList.toImmutableList());
+		logger.trace("getPackageLabelsList: labels are {}", packageLabels);
+
+		return packageLabels;
+
 	}
 
 	/////////////////////////////////////////////////
@@ -149,10 +165,47 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	/////////////////////////////////////////////////
 	/////////////////////////////////////////////////
 
-	private DeliveryOrder updateDeliveryOrderFromResponse(final DeliveryOrder deliveryOrder, final CreateShipmentOrderResponse response)
+	private static PackageLabels createPackageLabel(final byte[] labelData)
 	{
-		// todo implement this
-		return deliveryOrder;
+		return PackageLabels.builder()
+				//				.orderId() todo what order is is this???
+				.label(PackageLabel.builder()
+						.type(DhlPackageLabelType.GUI)
+						.labelData(labelData)
+						.contentType(PackageLabel.CONTENTTYPE_PDF)
+						.build())
+				.build();
+	}
+
+	private DeliveryOrder updateDeliveryOrderFromResponse(@NonNull final DeliveryOrder deliveryOrder, @NonNull final CreateShipmentOrderResponse response)
+	{
+		// here i assume again that there's a single delivery position.
+		final DhlCustomDeliveryData initialDeliveryData = (DhlCustomDeliveryData)deliveryOrder.getDeliveryPositions().get(0).getCustomDeliveryData();
+
+		final ImmutableMap.Builder<String, byte[]> sequenceNumberToPdfLabel = ImmutableMap.builder();
+		final ImmutableMap.Builder<String, String> sequenceNumberToAwb = ImmutableMap.builder();
+
+		for (final CreationState creationState : response.getCreationState())
+		{
+			final LabelData labelData = creationState.getLabelData();
+
+			final byte[] decoded = Base64.getDecoder().decode(labelData.getLabelData());
+			sequenceNumberToPdfLabel.put(creationState.getSequenceNumber(), decoded);
+
+			// i hope shipmentNumber is the AWB
+			sequenceNumberToAwb.put(creationState.getSequenceNumber(), creationState.getShipmentNumber());
+		}
+
+		final DhlCustomDeliveryData updatedDeliveryData = initialDeliveryData.toBuilder()
+				.sequenceNumberToAWB(sequenceNumberToAwb.build())
+				.sequenceNumberToPdfLabel(sequenceNumberToPdfLabel.build())
+				.build();
+
+		final DeliveryOrder updatedDeliveryOrder = deliveryOrder.toBuilder()
+				.customDeliveryData(updatedDeliveryData)
+				.build();
+
+		return updatedDeliveryOrder;
 	}
 
 	private Object doActualRequest(final Object request)
@@ -161,24 +214,25 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		final Object response = webServiceTemplate.marshalSendAndReceive(request, soapHeaderWithAuth);
 		logPersist(response);
 
+		return response;
+	}
+
+	private void logPersist(final Object object)
+	{
+
 		final org.springframework.oxm.Marshaller marshaller = webServiceTemplate.getMarshaller();
 
 		// todo this has to be extracted to a database logger.
 		try
 		{
 			final StringResult result = new StringResult();
-			marshaller.marshal(response, result);
+			marshaller.marshal(object, result);
 			System.out.println(result.toString());
 		}
 		catch (IOException ignored)
 		{
 		}
 
-		return response;
-	}
-
-	private void logPersist(final Object object)
-	{
 		// todo persist the full request body!
 	}
 
@@ -187,6 +241,8 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	{
 		final CreateShipmentOrderRequest createShipmentOrderRequest = objectFactory.createCreateShipmentOrderRequest();
 		createShipmentOrderRequest.setVersion(API_VERSION);
+		createShipmentOrderRequest.setLabelResponseType("B64");
+		createShipmentOrderRequest.setLabelFormat(DhlPackageLabelType.GUI.name());
 
 		for (final DeliveryPosition deliveryPosition : deliveryOrder.getDeliveryPositions())
 		{

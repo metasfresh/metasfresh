@@ -22,16 +22,9 @@
 
 package de.metas.shipper.gateway.dhl.model;
 
-import com.google.common.collect.ImmutableMap;
-import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
-import lombok.Builder;
-import lombok.Value;
+import de.metas.shipper.gateway.spi.model.PackageLabelType;
 
-@Value
-@Builder(toBuilder = true)
-public class DhlCustomDeliveryData implements CustomDeliveryData
+public enum DhlPackageLabelType implements PackageLabelType
 {
-	ImmutableMap<Integer, String> packageIdsToSequenceNumber;
-	ImmutableMap<String, byte[]> sequenceNumberToPdfLabel;
-	ImmutableMap<String, String> sequenceNumberToAWB;
+	GUI
 }
