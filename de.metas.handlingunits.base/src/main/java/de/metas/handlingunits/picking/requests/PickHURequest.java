@@ -52,4 +52,6 @@ public class PickHURequest
 	Quantity qtyToPick;
 
 	boolean autoReview;
+
+	boolean createPickingCandidatesOnly;
 }
