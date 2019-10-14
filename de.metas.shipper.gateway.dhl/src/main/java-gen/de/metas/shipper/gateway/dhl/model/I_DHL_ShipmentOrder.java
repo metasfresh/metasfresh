@@ -63,6 +63,29 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set awb.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setawb (java.lang.String awb);
+
+	/**
+	 * Get awb.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getawb();
+
+    /** Column definition for awb */
+    public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object> COLUMN_awb = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object>(I_DHL_ShipmentOrder.class, "awb", null);
+    /** Column name awb */
+    public static final String COLUMNNAME_awb = "awb";
+
+	/**
 	 * Set Geschäftspartner.
 	 * Bezeichnet einen Geschäftspartner
 	 *
@@ -906,6 +929,29 @@ public interface I_DHL_ShipmentOrder
     public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object> COLUMN_PackageId = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object>(I_DHL_ShipmentOrder.class, "PackageId", null);
     /** Column name PackageId */
     public static final String COLUMNNAME_PackageId = "PackageId";
+
+	/**
+	 * Set PdfLabelData.
+	 *
+	 * <br>Type: Binary
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPdfLabelData (byte[] PdfLabelData);
+
+	/**
+	 * Get PdfLabelData.
+	 *
+	 * <br>Type: Binary
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public byte[] getPdfLabelData();
+
+    /** Column definition for PdfLabelData */
+    public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object> COLUMN_PdfLabelData = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object>(I_DHL_ShipmentOrder.class, "PdfLabelData", null);
+    /** Column name PdfLabelData */
+    public static final String COLUMNNAME_PdfLabelData = "PdfLabelData";
 
 	/**
 	 * Get Aktualisiert.

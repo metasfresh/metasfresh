@@ -15,7 +15,7 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -350522583L;
+	private static final long serialVersionUID = -1123981938L;
 
     /** Standard Constructor */
     public X_DHL_ShipmentOrder (Properties ctx, int DHL_ShipmentOrder_ID, String trxName)
@@ -46,6 +46,22 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set awb.
+		@param awb awb	  */
+	@Override
+	public void setawb (java.lang.String awb)
+	{
+		set_Value (COLUMNNAME_awb, awb);
+	}
+
+	/** Get awb.
+		@return awb	  */
+	@Override
+	public java.lang.String getawb () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_awb);
+	}
 
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
@@ -646,5 +662,21 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set PdfLabelData.
+		@param PdfLabelData PdfLabelData	  */
+	@Override
+	public void setPdfLabelData (byte[] PdfLabelData)
+	{
+		set_Value (COLUMNNAME_PdfLabelData, PdfLabelData);
+	}
+
+	/** Get PdfLabelData.
+		@return PdfLabelData	  */
+	@Override
+	public byte[] getPdfLabelData () 
+	{
+		return (byte[])get_Value(COLUMNNAME_PdfLabelData);
 	}
 }
