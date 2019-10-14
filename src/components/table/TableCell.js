@@ -190,7 +190,15 @@ class TableCell extends PureComponent {
   };
 
   handleKeyDown = e => {
-    const { handleKeyDown, property, widgetData } = this.props;
+    const {
+      handleKeyDown,
+      property,
+      item,
+      getWidgetData,
+      isEditable,
+      supportFieldEdit,
+    } = this.props;
+    const widgetData = getWidgetData(item, isEditable, supportFieldEdit);
 
     handleKeyDown(e, property, widgetData[0]);
   };
@@ -214,7 +222,15 @@ class TableCell extends PureComponent {
   };
 
   onDoubleClick = e => {
-    const { isEditable, property, widgetData, handleDoubleClick } = this.props;
+    const {
+      property,
+      item,
+      getWidgetData,
+      isEditable,
+      supportFieldEdit,
+      handleDoubleClick,
+    } = this.props;
+    const widgetData = getWidgetData(item, isEditable, supportFieldEdit);
 
     if (isEditable) {
       handleDoubleClick(e, property, true, widgetData[0]);
@@ -382,9 +398,11 @@ class TableCell extends PureComponent {
 }
 
 TableCell.propTypes = {
+  isEditable: PropTypes.bool,
   cellExtended: PropTypes.bool,
   extendLongText: PropTypes.number,
   property: PropTypes.string,
+  getWidgetData: PropTypes.func,
   handleRightClick: PropTypes.func,
   handleKeyDown: PropTypes.func,
   handleDoubleClick: PropTypes.func,
