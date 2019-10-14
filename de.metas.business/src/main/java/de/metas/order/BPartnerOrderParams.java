@@ -1,24 +1,21 @@
-package de.metas.ordercandidate.api;
+package de.metas.order;
 
-import org.adempiere.warehouse.WarehouseId;
+import java.util.Optional;
 
-import de.metas.document.DocTypeId;
 import de.metas.freighcost.FreightCostRule;
-import de.metas.order.DeliveryRule;
-import de.metas.order.DeliveryViaRule;
-import de.metas.order.InvoiceRule;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.shipping.ShipperId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.business
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -38,19 +35,29 @@ import lombok.Value;
 
 @Value
 @Builder
-public class OLCandOrderDefaults
+public class BPartnerOrderParams
 {
-	DocTypeId docTypeTargetId;
+	@NonNull
+	Optional<DeliveryRule> deliveryRule;
 
-	DeliveryRule deliveryRule;
-	DeliveryViaRule deliveryViaRule;
-	ShipperId shipperId;
-	WarehouseId warehouseId;
-	FreightCostRule freightCostRule;
+	@NonNull
+	Optional<DeliveryViaRule> deliveryViaRule;
 
+	@NonNull
+	Optional<FreightCostRule> freightCostRule;
+
+	@NonNull
+	Optional<InvoiceRule> invoiceRule;
+
+	@NonNull
 	PaymentRule paymentRule;
-	PaymentTermId paymentTermId;
 
-	InvoiceRule invoiceRule;
-	PricingSystemId pricingSystemId;
+	@NonNull
+	Optional<PaymentTermId> paymentTermId;
+
+	@NonNull
+	Optional<PricingSystemId> pricingSystemId;
+
+	@NonNull
+	Optional<ShipperId> shipperId;
 }

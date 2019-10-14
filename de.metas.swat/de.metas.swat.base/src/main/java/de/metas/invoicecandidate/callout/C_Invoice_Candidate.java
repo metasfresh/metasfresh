@@ -137,7 +137,7 @@ public class C_Invoice_Candidate
 	private void setPricingSystem(final Properties ctx, final I_C_Invoice_Candidate ic)
 	{
 		final IBPartnerDAO bPartnerPA = Services.get(IBPartnerDAO.class);
-		final PricingSystemId pricingSysId = bPartnerPA.retrievePricingSystemId(
+		final PricingSystemId pricingSysId = bPartnerPA.retrievePricingSystemIdOrNull(
 				BPartnerId.ofRepoId(ic.getBill_BPartner_ID()),
 				SOTrx.ofBoolean(ic.isSOTrx()));
 		ic.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSysId));

@@ -1,5 +1,8 @@
 package de.metas.order;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
+
 import java.math.BigDecimal;
 import java.util.Optional;
 
@@ -27,6 +30,7 @@ import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
@@ -36,7 +40,6 @@ import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /*
@@ -70,12 +73,16 @@ public class OrderFreightCostsService
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+
 	private final FreightCostService freightCostService;
+	private final BPartnerOrderParamsRepository bPartnerOrderParamsRepository;
 
 	public OrderFreightCostsService(
-			@NonNull final FreightCostService freightCostService)
+			@NonNull final FreightCostService freightCostService,
+			@NonNull final BPartnerOrderParamsRepository bPartnerOrderParamsRepository)
 	{
 		this.freightCostService = freightCostService;
+		this.bPartnerOrderParamsRepository = bPartnerOrderParamsRepository;
 	}
 
 	public void addFreightRateLineIfNeeded(final I_C_Order order)
@@ -181,34 +188,50 @@ public class OrderFreightCostsService
 		return false;
 	}
 
-	private FreightCostContext extractFreightCostContext(final I_C_Order order)
+	private FreightCostContext extractFreightCostContext(@NonNull final I_C_Order orderRecord)
 	{
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
-		final BPartnerId shipToBPartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+		final BPartnerId shipToBPartnerId = BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID());
 
-		final BPartnerLocationId shipToBPLocationId = BPartnerLocationId.ofRepoIdOrNull(shipToBPartnerId, order.getC_BPartner_Location_ID());
+		final BPartnerLocationId shipToBPLocationId = BPartnerLocationId.ofRepoIdOrNull(shipToBPartnerId, orderRecord.getC_BPartner_Location_ID());
 		final CountryId shipToCountryId = shipToBPLocationId != null
 				? bpartnerBL.getBPartnerLocationCountryId(shipToBPLocationId)
 				: null;
 
-		final FreightCostRule freightCostRule = FreightCostRule.ofNullableCodeOr(order.getFreightCostRule(), FreightCostRule.FreightIncluded);
+		final FreightCostRule freightCostRule = FreightCostRule.ofNullableCodeOr(orderRecord.getFreightCostRule(), FreightCostRule.FreightIncluded);
 
-		final ShipperId orderShipperid = ShipperId.ofRepoIdOrNull(order.getM_Shipper_ID());
-		final ShipperId partnerShipperId = shipToBPartnerId != null
-				? bpartnerBL.getShipperIdOrNull(shipToBPartnerId)
-				: null;
+		final ShipperId shipperId = coalesceSuppliers(
+				() -> ShipperId.ofRepoIdOrNull(orderRecord.getM_Shipper_ID()),
+				() -> retrievePartnerShipperId(orderRecord));
 
 		return FreightCostContext.builder()
-				.shipFromOrgId(OrgId.ofRepoId(order.getC_Order_ID()))
+				.shipFromOrgId(OrgId.ofRepoId(orderRecord.getC_Order_ID()))
 				.shipToBPartnerId(shipToBPartnerId)
 				.shipToCountryId(shipToCountryId)
-				.shipperId(CoalesceUtil.coalesce(orderShipperid, partnerShipperId))
-				.date(TimeUtil.asLocalDate(order.getDateOrdered()))
+				.shipperId(shipperId)
+				.date(TimeUtil.asLocalDate(orderRecord.getDateOrdered()))
 				.freightCostRule(freightCostRule)
-				.deliveryViaRule(DeliveryViaRule.ofNullableCodeOr(order.getDeliveryViaRule(), DeliveryViaRule.Pickup))
-				.manualFreightAmt(freightCostRule.isFixPrice() ? extractManualFreightAmtOrNull(order) : null)
+				.deliveryViaRule(DeliveryViaRule.ofNullableCodeOr(orderRecord.getDeliveryViaRule(), DeliveryViaRule.Pickup))
+				.manualFreightAmt(freightCostRule.isFixPrice() ? extractManualFreightAmtOrNull(orderRecord) : null)
 				.build();
+	}
+
+	private ShipperId retrievePartnerShipperId(@NonNull final I_C_Order orderRecord)
+	{
+		final BPartnerId shipBPartnerId = BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID());
+		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(coalesce(
+				orderRecord.getBill_BPartner_ID(),
+				orderRecord.getC_BPartner_ID()));
+
+		final BPartnerOrderParamsQuery query = BPartnerOrderParamsQuery.builder()
+				.shipBPartnerId(shipBPartnerId)
+				.billBPartnerId(billBPartnerId)
+				.soTrx(SOTrx.ofBoolean(orderRecord.isSOTrx()))
+				.build();
+
+		final BPartnerOrderParams params = bPartnerOrderParamsRepository.getBy(query);
+		return params.getShipperId().orElse(null);
 	}
 
 	private Money extractManualFreightAmtOrNull(final I_C_Order order)

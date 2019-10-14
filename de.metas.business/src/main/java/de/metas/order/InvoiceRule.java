@@ -1,13 +1,13 @@
-package de.metas.invoicecandidate.internalbusinesslogic;
+package de.metas.order;
 
 import java.util.Arrays;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.X_C_Order;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
-import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.Getter;
 import lombok.NonNull;
@@ -36,10 +36,10 @@ import lombok.NonNull;
 
 public enum InvoiceRule implements ReferenceListAwareEnum
 {
-	AfterDelivery(X_C_Invoice_Candidate.INVOICERULE_AfterDelivery), //
-	AfterOrderDelivered(X_C_Invoice_Candidate.INVOICERULE_AfterOrderDelivered), //
-	CustomerScheduleAfterDelivery(X_C_Invoice_Candidate.INVOICERULE_CustomerScheduleAfterDelivery), //
-	Immediate(X_C_Invoice_Candidate.INVOICERULE_Immediate) //
+	AfterDelivery(X_C_Order.INVOICERULE_AfterDelivery), //
+	AfterOrderDelivered(X_C_Order.INVOICERULE_AfterOrderDelivered), //
+	CustomerScheduleAfterDelivery(X_C_Order.INVOICERULE_CustomerScheduleAfterDelivery), //
+	Immediate(X_C_Order.INVOICERULE_Immediate) //
 	;
 
 	@Getter

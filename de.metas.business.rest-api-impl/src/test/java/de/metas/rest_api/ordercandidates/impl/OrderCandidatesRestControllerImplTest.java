@@ -46,6 +46,7 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.ordercandidate.api.OLCandRegistry;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.ordercandidate.api.OLCandValidatorService;
@@ -153,7 +154,7 @@ public class OrderCandidatesRestControllerImplTest
 
 		orderCandidatesRestControllerImpl = new OrderCandidatesRestControllerImpl(
 				new JsonConverters(),
-				new OLCandRepository());
+				new OLCandRepository(new BPartnerOrderParamsRepository()));
 		orderCandidatesRestControllerImpl.setPermissionServiceFactory(PermissionServiceFactories.singleton(permissionService));
 
 		LogManager.setLoggerLevel(orderCandidatesRestControllerImpl.getClass(), Level.ALL);

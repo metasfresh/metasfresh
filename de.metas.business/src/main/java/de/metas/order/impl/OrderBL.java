@@ -1,5 +1,7 @@
 package de.metas.order.impl;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -37,6 +39,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner_Location;
@@ -57,6 +60,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveBillContactRequest;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveBillContactRequest.RetrieveBillContactRequestBuilder;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -68,12 +73,15 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.order.BPartnerOrderParams;
+import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
@@ -85,6 +93,7 @@ import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
@@ -96,6 +105,8 @@ import lombok.NonNull;
 public class OrderBL implements IOrderBL
 {
 	private static final transient Logger logger = LogManager.getLogger(OrderBL.class);
+
+	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
@@ -118,15 +129,15 @@ public class OrderBL implements IOrderBL
 				return;
 			}
 
-			final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+			final IBPartnerDAO bpartnersDAO = Services.get(IBPartnerDAO.class);
 			final BPartnerId bpartnerId = bpartnerAndLocation.getBpartnerId();
 			final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
-			final PricingSystemId pricingSysId = bpartnersRepo.retrievePricingSystemId(bpartnerId, soTrx);
+			final PricingSystemId pricingSysId = bpartnersDAO.retrievePricingSystemIdOrNull(bpartnerId, soTrx);
 
 			final boolean throwExIfNotFound = !overridePricingSystemAndDontThrowExIfNotFound;
 			if (pricingSysId == null && throwExIfNotFound)
 			{
-				final String bpartnerName = Services.get(IBPartnerBL.class).getBPartnerValueAndName(bpartnerId);
+				final String bpartnerName = bpartnerBL.getBPartnerValueAndName(bpartnerId);
 				Check.errorIf(true, "Unable to find pricing system for BPartner {}_{}; SOTrx={}", bpartnerName, soTrx);
 			}
 
@@ -258,29 +269,20 @@ public class OrderBL implements IOrderBL
 			return true;
 		}
 
-		final IBPartnerBL bpartnerService = Services.get(IBPartnerBL.class);
-		final I_AD_User billContact;
-		// Case: Bill Location is set, we can use it to retrieve the contact for that location
+		final RetrieveBillContactRequestBuilder retrieveBillContanctRequest = RetrieveBillContactRequest.builder()
+				.bpartnerId(BPartnerId.ofRepoId(order.getBill_BPartner_ID()));
 		if (billToBPLocationId != null)
 		{
-			final I_C_BPartner_Location billLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(billToBPLocationId);
-			billContact = bpartnerService.retrieveUserForLoc(billLocation);
+			// Case: Bill Location is set, we can use it to retrieve the contact for that location
+			retrieveBillContanctRequest.bPartnerLocationId(billToBPLocationId);
 		}
-		// Case: Bill Location is NOT set, we search for default bill contact
-		else
-		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-			final String trxName = InterfaceWrapperHelper.getTrxName(order);
-			final int bPartnerId = order.getBill_BPartner_ID();
-			billContact = bpartnerService.retrieveBillContact(ctx, bPartnerId, trxName);
-		}
-
+		final User billContact = bpartnerBL.retrieveBillContactOrNull(retrieveBillContanctRequest.build());
 		if (billContact == null)
 		{
 			return false;
 		}
 
-		order.setBill_User_ID(billContact.getAD_User_ID());
+		order.setBill_User_ID(billContact.getId().getRepoId());
 		return true;
 	}
 
@@ -436,12 +438,30 @@ public class OrderBL implements IOrderBL
 				: findDeliveryViaRule(order);
 	}
 
-	private DeliveryViaRule findDeliveryViaRule(final I_C_Order order)
+	private DeliveryViaRule findDeliveryViaRule(final I_C_Order orderRecord)
 	{
-		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
-		return bpartnerId != null
-				? Services.get(IBPartnerBL.class).getDeliveryViaRuleOrNull(bpartnerId, SOTrx.ofBoolean(order.isSOTrx()))
-				: null;
+		final BPartnerOrderParams params = retrieveBPartnerParams(orderRecord);
+		return params.getDeliveryViaRule().orElse(null);
+	}
+
+	private BPartnerOrderParams retrieveBPartnerParams(@NonNull final I_C_Order orderRecord)
+	{
+		final BPartnerId shipBPartnerId = BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID());
+		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(coalesce(
+				orderRecord.getBill_BPartner_ID(),
+				orderRecord.getC_BPartner_ID()));
+
+		final SOTrx soTrx =  SOTrx.ofBoolean(orderRecord.isSOTrx());
+
+		final BPartnerOrderParamsRepository bpartnerOrderParamsRepository = SpringContextHolder.instance.getBean(BPartnerOrderParamsRepository.class);
+
+		final BPartnerOrderParamsQuery query = BPartnerOrderParamsQuery.builder()
+				.shipBPartnerId(shipBPartnerId)
+				.billBPartnerId(billBPartnerId)
+				.soTrx(soTrx)
+				.build();
+		final BPartnerOrderParams params = bpartnerOrderParamsRepository.getBy(query);
+		return params;
 	}
 
 	@Override

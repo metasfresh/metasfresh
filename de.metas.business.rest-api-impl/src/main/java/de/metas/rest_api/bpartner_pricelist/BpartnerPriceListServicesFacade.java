@@ -76,7 +76,7 @@ public class BpartnerPriceListServicesFacade
 
 	public Optional<PricingSystemId> getPricingSystemId(final BPartnerId bpartnerId, final SOTrx soTrx)
 	{
-		final PricingSystemId pricingSystemId = bpartnersRepo.retrievePricingSystemId(bpartnerId, soTrx);
+		final PricingSystemId pricingSystemId = bpartnersRepo.retrievePricingSystemIdOrNull(bpartnerId, soTrx);
 		return Optional.ofNullable(pricingSystemId);
 	}
 

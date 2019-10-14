@@ -44,6 +44,7 @@ import de.metas.freighcost.FreightCostRule;
 import de.metas.freighcost.FreightCostService;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.money.CurrencyId;
+import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderFreightCostsService;
@@ -99,7 +100,7 @@ public class FreightCostTest
 
 		final FreightCostRepository freightCostRepo = new FreightCostRepository();
 		final FreightCostService freightCostService = new FreightCostService(freightCostRepo);
-		orderFreightCostsService = new OrderFreightCostsService(freightCostService);
+		orderFreightCostsService = new OrderFreightCostsService(freightCostService, new BPartnerOrderParamsRepository());
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 

@@ -128,9 +128,9 @@ public interface IBPartnerDAO extends ISingletonService
 
 	EMailAddress getContactEMail(BPartnerContactId contactId);
 
-	PricingSystemId retrievePricingSystemIdInTrx(BPartnerId bPartnerId, SOTrx soTrx);
+	PricingSystemId retrievePricingSystemIdOrNullInTrx(BPartnerId bPartnerId, SOTrx soTrx);
 
-	PricingSystemId retrievePricingSystemId(BPartnerId bPartnerId, SOTrx soTrx);
+	PricingSystemId retrievePricingSystemIdOrNull(BPartnerId bPartnerId, SOTrx soTrx);
 
 	ShipperId getShipperId(BPartnerId bpartnerId);
 
