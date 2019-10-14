@@ -243,7 +243,7 @@ class TableItem extends PureComponent {
 
     return item.fields.map(prop => {
       if (cells) {
-        let cellWidget = cells[prop.field] || -1;
+        let cellWidget = cells[prop.field] || null;
 
         if (
           isEditable ||
@@ -259,8 +259,7 @@ class TableItem extends PureComponent {
         return cellWidget;
       }
 
-      // @TODO: Why -1 ? - Kuba
-      return -1;
+      return null;
     });
   };
 
