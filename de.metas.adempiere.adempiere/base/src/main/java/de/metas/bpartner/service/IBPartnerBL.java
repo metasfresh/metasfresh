@@ -176,7 +176,7 @@ public interface IBPartnerBL extends ISingletonService
 	/**
 	 * Retrieves (out of transaction) a list of {@link User} that could be bill contacts, best first. See {@link ContactQuery}.
 	 */
-	User retrieveContactOrNull(RetrieveBillContactRequest request);
+	User retrieveContactOrNull(RetrieveContactRequest request);
 
 	String getAddressStringByBPartnerLocationId(BPartnerLocationId bpartnerLocationId);
 
@@ -186,7 +186,7 @@ public interface IBPartnerBL extends ISingletonService
 
 	@Value
 	@Builder
-	public static class RetrieveBillContactRequest
+	public static class RetrieveContactRequest
 	{
 		public enum ContactType
 		{

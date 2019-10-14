@@ -20,7 +20,7 @@ import com.google.common.base.Predicates;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerBL.RetrieveBillContactRequest;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.user.User;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
@@ -141,7 +141,7 @@ public class BPartnerBL_BillPartnerTests
 
 	private User invokeMethodUnderTestWithPredicate(@NonNull final Predicate<User> predicate)
 	{
-		final RetrieveBillContactRequest request = RetrieveBillContactRequest
+		final RetrieveContactRequest request = RetrieveContactRequest
 				.builder()
 				.bpartnerId(bpartnerId)
 				.bPartnerLocationId(bpartnerLocationId)

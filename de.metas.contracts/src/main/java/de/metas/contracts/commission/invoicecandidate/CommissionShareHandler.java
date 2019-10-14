@@ -18,14 +18,13 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.IProductAcctDAO;
-import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.document.DocTypeId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
@@ -34,8 +33,6 @@ import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
-import de.metas.location.ICountryDAO;
-import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
@@ -48,10 +45,8 @@ import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantitys;
 import de.metas.tax.api.ITaxBL;
-import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /*
@@ -79,6 +74,7 @@ import lombok.NonNull;
 public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 {
 	public static final ProductId COMMISSION_PRODUCT_ID = ProductId.ofRepoId(540420);
+	public static final DocTypeId COLLISSION_DOCTYPE_ID = DocTypeId.ofRepoId(99999); // TODO
 
 	@Override
 	public Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(int limit_IGNORED)
@@ -168,7 +164,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		ic.setPriceEntered(pricingResult.getPriceStd());
 		ic.setDiscount(pricingResult.getDiscount().toBigDecimal());
 
-		I_C_Flatrate_Term term=null; // TODO get term for commission-bpartner
+		I_C_Flatrate_Term term = null; // TODO get term for commission-bpartner
 
 		ic.setBill_BPartner_ID(bPartnerId.getRepoId());
 
@@ -176,16 +172,12 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		ic.setBill_Location_ID(term.getBill_Location_ID());
 		ic.setBill_User_ID(term.getBill_User_ID());
 
-
-
-
 		ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Immediate); // Immediate
-
 
 		// 05265
 		ic.setIsSOTrx(true);
 
-		ic.setC_DocTypeInvoice_ID(olc.getC_DocTypeInvoice_ID());  // TODO: dedicated invoice doctype
+		ic.setC_DocTypeInvoice_ID(COLLISSION_DOCTYPE_ID.getRepoId());
 
 		// 07442 activity and tax
 		final OrgId orgId = OrgId.ofRepoId(commissionShareRecord.getAD_Org_ID());

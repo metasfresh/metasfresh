@@ -61,7 +61,7 @@ import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerBL.RetrieveBillContactRequest;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocTypeDAO;
 import de.metas.inout.InOutId;
@@ -500,13 +500,13 @@ public final class AggregationEngine
 
 		final BPartnerLocationId partnerLocationId = BPartnerLocationId.ofRepoId(ic.getBill_BPartner_ID(), getBill_Location_ID(ic, isUpdateLocationAndContactForInvoice));
 
-		final RetrieveBillContactRequest request = RetrieveBillContactRequest
+		final RetrieveContactRequest request = RetrieveContactRequest
 				.builder()
 				.bpartnerId(partnerLocationId.getBpartnerId())
 				.bPartnerLocationId(partnerLocationId)
 				.build();
 
-		final User billContact = bpartnerBL.retrieveBillContactOrNull(request);
+		final User billContact = bpartnerBL.retrieveContactOrNull(request);
 		return billContact == null ? -1 : billContact.getId().getRepoId();
 	}
 

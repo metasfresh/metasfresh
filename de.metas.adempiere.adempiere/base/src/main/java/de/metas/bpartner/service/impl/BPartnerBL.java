@@ -32,6 +32,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_User;
@@ -51,6 +52,7 @@ import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerAware;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
@@ -173,7 +175,7 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public User retrieveContactOrNull(@NonNull final RetrieveBillContactRequest request)
+	public User retrieveContactOrNull(@NonNull final RetrieveContactRequest request)
 	{
 		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
@@ -185,7 +187,7 @@ public class BPartnerBL implements IBPartnerBL
 		// we will collect the candidates for our return value into these variables
 		final Set<User> contactsAtLocation = new TreeSet<>(request.getComparator());
 		final Set<User> contactsAtOtherLocations = new TreeSet<>(request.getComparator());
-		User defaultBillContact = null;
+		User defaultContactOfType = null;
 		User defaultContact = null;
 
 		for (final I_AD_User contactRecord : contactRecords)
@@ -211,22 +213,38 @@ public class BPartnerBL implements IBPartnerBL
 			{
 				defaultContact = contact;
 			}
-			TODO match according to ContactType
-			if (contactRecord.isBillToContact_Default())
+			if (recordMatchesType(contactRecord, request.getContactType()))
 			{
-				defaultBillContact = contact;
+				defaultContactOfType = contact;
 			}
 		}
 
 		if (!contactsAtLocation.isEmpty())
 		{
-			return findBestMatch(contactsAtLocation, defaultBillContact, defaultContact);
+			return findBestMatch(contactsAtLocation, defaultContactOfType, defaultContact);
 		}
 		else if (!contactsAtOtherLocations.isEmpty())
 		{
-			return findBestMatch(contactsAtOtherLocations, defaultBillContact, defaultContact);
+			return findBestMatch(contactsAtOtherLocations, defaultContactOfType, defaultContact);
 		}
 		return null;
+	}
+
+	private boolean recordMatchesType(@NonNull final I_AD_User contactRecord, @NonNull final ContactType contactType)
+	{
+		switch (contactType)
+		{
+			case BILL_TO_DEFAULT:
+				return contactRecord.isBillToContact_Default();
+			case SALES_DEFAULT:
+				return contactRecord.isSalesContact_Default();
+			case SHIP_TO_DEFAULT:
+				return contactRecord.isShipToContact_Default();
+			case SUBJECT_MATTER:
+				return contactRecord.isSubjectMatterContact();
+			default:
+				throw new AdempiereException("Unsupporded contactType=" + contactType);
+		}
 	}
 
 	private User findBestMatch(
