@@ -2,6 +2,7 @@ package de.metas.ui.web.pickingV2.packageable.process;
 
 import java.util.List;
 
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Joiner;
@@ -117,6 +118,9 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 					.pickingReviewRequired(false)
 					.build();
 			productsToPickRowsRepository.pick(row, pickingConfig);
+
+			// commit in DB so that the report can access it
+			Services.get(ITrxManager.class).commit(getTrxName());
 		}
 	}
 
