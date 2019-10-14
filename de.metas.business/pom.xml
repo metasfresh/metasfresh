@@ -84,10 +84,10 @@
 			<artifactId>assertj-core</artifactId>
 			<scope>test</scope>
 		</dependency>
-        <dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
-			<version>2.1</version>
+		<dependency>
+			<groupId>de.metas.jax.rs</groupId>
+			<artifactId>de.metas.jax.rs</artifactId>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
 	</dependencies>
