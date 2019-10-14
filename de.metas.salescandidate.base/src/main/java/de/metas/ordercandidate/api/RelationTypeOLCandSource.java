@@ -10,12 +10,8 @@ import org.compiere.util.Env;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.freighcost.FreightCostRule;
-import de.metas.lang.SOTrx;
 import de.metas.order.BPartnerOrderParams;
-import de.metas.order.BPartnerOrderParamsRepository;
-import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
@@ -57,8 +53,6 @@ final class RelationTypeOLCandSource implements OLCandSource
 	private final IOLCandBL olCandBL = Services.get(IOLCandBL.class);
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
-	private final BPartnerOrderParamsRepository bPartnerOrderParamsRepository;
-
 	private final OLCandOrderDefaults orderDefaults;
 	private final int olCandProcessorId;
 	private final String relationTypeInternalName;
@@ -66,12 +60,10 @@ final class RelationTypeOLCandSource implements OLCandSource
 	@Builder
 	private RelationTypeOLCandSource(
 			@NonNull final OLCandOrderDefaults orderDefaults,
-			@NonNull final BPartnerOrderParamsRepository bPartnerOrderParamsRepository,
 			final int olCandProcessorId)
 	{
 		Check.assume(olCandProcessorId > 0, "olCandProcessorId > 0");
 
-		this.bPartnerOrderParamsRepository = bPartnerOrderParamsRepository;
 		this.olCandProcessorId = olCandProcessorId;
 		this.orderDefaults = orderDefaults;
 		this.relationTypeInternalName = mkRelationTypeInternalNameForOLCandProcessorId(olCandProcessorId);
@@ -104,16 +96,9 @@ final class RelationTypeOLCandSource implements OLCandSource
 				.map(record -> toOLCand(record));
 	}
 
-	private OLCand toOLCand(final I_C_OLCand olCandRecord)
+	private OLCand toOLCand(@NonNull final I_C_OLCand olCandRecord)
 	{
-		final BPartnerId billBPartnerId = olCandEffectiveValuesBL.getBillBPartnerEffectiveId(olCandRecord);
-		final BPartnerId shipBPartnerId = olCandEffectiveValuesBL.getDropShipBPartnerEffectiveId(olCandRecord);
-
-		final BPartnerOrderParams params = bPartnerOrderParamsRepository.getBy(BPartnerOrderParamsQuery.builder()
-				.soTrx(SOTrx.SALES)
-				.shipBPartnerId(shipBPartnerId)
-				.billBPartnerId(billBPartnerId)
-				.build());
+		final BPartnerOrderParams params = olCandBL.getBPartnerOrderParams(olCandRecord);
 
 		final DeliveryRule deliveryRule = olCandBL.getDeliveryRule(olCandRecord, params, orderDefaults);
 		final DeliveryViaRule deliveryViaRule = olCandBL.getDeliveryViaRule(olCandRecord, params, orderDefaults);

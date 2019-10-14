@@ -61,11 +61,12 @@ public class DefaultOLCandValidator implements IOLCandValidator
 	// services
 	private static final Logger logger = LogManager.getLogger(DefaultOLCandValidator.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final IOLCandBL olCandBL = Services.get(IOLCandBL.class);
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
+
+	private final IOLCandBL olCandBL;
 
 	// error messages
 	private static final String ERR_Bill_Location_Inactive = "ERR_Bill_Location_Inactive";
@@ -79,6 +80,11 @@ public class DefaultOLCandValidator implements IOLCandValidator
 	 * @task http://dewiki908/mediawiki/index.php/08803_ADR_from_Partner_versus_Pricelist
 	 */
 	private static final ModelDynAttributeAccessor<I_C_OLCand, IPricingResult> DYNATTR_OLCAND_PRICEVALIDATOR_PRICING_RESULT = new ModelDynAttributeAccessor<>(DefaultOLCandValidator.class.getSimpleName() + "#pricingResult", IPricingResult.class);
+
+	public DefaultOLCandValidator(@NonNull final IOLCandBL olCandBL)
+	{
+		this.olCandBL = olCandBL;
+	}
 
 	@Override
 	public boolean validate(final I_C_OLCand olCand)

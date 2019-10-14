@@ -122,11 +122,11 @@ public class BPartnerOrderParamsRepository
 	{
 		if (soTrx.isSales())
 		{
-			return Optional.of(DeliveryRule.ofNullableCode(bpartnerRecord.getDeliveryViaRule()));
+			return Optional.ofNullable(DeliveryRule.ofNullableCode(bpartnerRecord.getDeliveryViaRule()));
 		}
 		else if (soTrx.isPurchase())
 		{
-			return Optional.of(DeliveryRule.ofNullableCode(bpartnerRecord.getPO_DeliveryViaRule()));
+			return Optional.ofNullable(DeliveryRule.ofNullableCode(bpartnerRecord.getPO_DeliveryViaRule()));
 		}
 
 		return Optional.empty(); // shall not happen
@@ -136,11 +136,11 @@ public class BPartnerOrderParamsRepository
 	{
 		if (soTrx.isSales())
 		{
-			return Optional.of(DeliveryViaRule.ofNullableCode(bpartnerRecord.getDeliveryViaRule()));
+			return Optional.ofNullable(DeliveryViaRule.ofNullableCode(bpartnerRecord.getDeliveryViaRule()));
 		}
 		else if (soTrx.isPurchase())
 		{
-			return Optional.of(DeliveryViaRule.ofNullableCode(bpartnerRecord.getPO_DeliveryViaRule()));
+			return Optional.ofNullable(DeliveryViaRule.ofNullableCode(bpartnerRecord.getPO_DeliveryViaRule()));
 		}
 
 		return Optional.empty(); // shall not happen

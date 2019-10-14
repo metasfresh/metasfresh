@@ -101,4 +101,6 @@ public interface IOLCandBL extends ISingletonService
 
 	ShipperId getShipperId(BPartnerOrderParams bPartnerOrderParams, OLCandOrderDefaults orderDefaults);
 
+	BPartnerOrderParams getBPartnerOrderParams(I_C_OLCand olCandRecord);
+
 }

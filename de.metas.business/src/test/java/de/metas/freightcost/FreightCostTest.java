@@ -48,6 +48,7 @@ import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderFreightCostsService;
+import de.metas.payment.PaymentRule;
 import de.metas.pricing.service.impl.PricingTestHelper;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
@@ -516,6 +517,7 @@ public class FreightCostTest
 
 		final I_C_BPartner partner1 = createPartner("Partner1", bpGroup.getC_BP_Group_ID());
 		partner1.setM_Shipper_ID(shipper1.getM_Shipper_ID());
+		partner1.setPaymentRule(PaymentRule.OnCredit.getCode());
 		save(partner1);
 
 		final CurrencyId currency1 = createCurrency(CurrencyCode.EUR);
@@ -788,6 +790,7 @@ public class FreightCostTest
 		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
 		partner.setName(partnerName);
 		partner.setC_BP_Group_ID(bpGroupId);
+		partner.setPaymentRule(PaymentRule.OnCredit.getCode());
 
 		save(partner);
 

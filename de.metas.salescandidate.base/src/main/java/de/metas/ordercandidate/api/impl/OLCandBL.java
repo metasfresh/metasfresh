@@ -35,6 +35,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.PO;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
@@ -48,9 +49,11 @@ import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.BPartnerOrderParams;
+import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
+import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.api.OLCandOrderDefaults;
@@ -80,12 +83,21 @@ import de.metas.util.lang.Percent;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
 
+@Service
 public class OLCandBL implements IOLCandBL
 {
 	private static final Logger logger = LogManager.getLogger(OLCandBL.class);
 
 	private final IOLCandEffectiveValuesBL effectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+
+	private final BPartnerOrderParamsRepository bPartnerOrderParamsRepository;
+
+	public OLCandBL(@NonNull final BPartnerOrderParamsRepository bPartnerOrderParamsRepository)
+	{
+		this.bPartnerOrderParamsRepository = bPartnerOrderParamsRepository;
+	}
 
 	@Override
 	public void process(@NonNull final OLCandProcessorDescriptor processor)
@@ -288,7 +300,6 @@ public class OLCandBL implements IOLCandBL
 		final IPricingResult pricingResult;
 
 		// note that even with manual price and/or discount, we need to invoke the pricing engine, in order to get the tax category
-		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 		final BPartnerId billBPartnerId = effectiveValuesBL.getBillBPartnerEffectiveId(olCand);
 
@@ -298,9 +309,11 @@ public class OLCandBL implements IOLCandBL
 
 		final BigDecimal qty = qtyOverride != null ? qtyOverride : olCand.getQty();
 
+		final BPartnerOrderParams bPartnerOrderParams = getBPartnerOrderParams(olCand);
+
 		final PricingSystemId pricingSystemId = CoalesceUtil.coalesceSuppliers(
 				() -> pricingSystemIdOverride,
-				() -> getPricingSystemId(olCand, null/* bPartnerOrderParams */, null/* orderDefaults */));
+				() -> getPricingSystemId(olCand, bPartnerOrderParams, null/* orderDefaults */));
 
 		if (pricingSystemId == null)
 		{
@@ -374,6 +387,20 @@ public class OLCandBL implements IOLCandBL
 		pricingResult.setDisallowDiscount(olCand.isManualDiscount());
 
 		return pricingResult;
+	}
+
+	@Override
+	public BPartnerOrderParams getBPartnerOrderParams(@NonNull final I_C_OLCand olCandRecord)
+	{
+		final BPartnerId billBPartnerId = effectiveValuesBL.getBillBPartnerEffectiveId(olCandRecord);
+		final BPartnerId shipBPartnerId = effectiveValuesBL.getDropShipBPartnerEffectiveId(olCandRecord);
+
+		final BPartnerOrderParams params = bPartnerOrderParamsRepository.getBy(BPartnerOrderParamsQuery.builder()
+				.soTrx(SOTrx.SALES)
+				.shipBPartnerId(shipBPartnerId)
+				.billBPartnerId(billBPartnerId)
+				.build());
+		return params;
 	}
 
 	@Override

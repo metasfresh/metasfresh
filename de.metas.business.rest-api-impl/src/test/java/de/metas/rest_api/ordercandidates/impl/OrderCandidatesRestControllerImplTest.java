@@ -47,9 +47,11 @@ import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.BPartnerOrderParamsRepository;
+import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCandRegistry;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.ordercandidate.api.OLCandValidatorService;
+import de.metas.ordercandidate.api.impl.OLCandBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.impl.DefaultOLCandValidator;
 import de.metas.organization.OrgId;
@@ -128,10 +130,17 @@ public class OrderCandidatesRestControllerImplTest
 	@Mocked
 	private PermissionService permissionService;
 
+	private OLCandBL olCandBL;
+
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+
+		olCandBL = new OLCandBL(new BPartnerOrderParamsRepository());
+		Services.registerService(IOLCandBL.class, olCandBL);
 
 		{ // create the master data requested to process the data from our json file
 			testMasterdata = new TestMasterdata();
@@ -154,7 +163,7 @@ public class OrderCandidatesRestControllerImplTest
 
 		orderCandidatesRestControllerImpl = new OrderCandidatesRestControllerImpl(
 				new JsonConverters(),
-				new OLCandRepository(new BPartnerOrderParamsRepository()));
+				new OLCandRepository());
 		orderCandidatesRestControllerImpl.setPermissionServiceFactory(PermissionServiceFactories.singleton(permissionService));
 
 		LogManager.setLoggerLevel(orderCandidatesRestControllerImpl.getClass(), Level.ALL);
@@ -163,12 +172,10 @@ public class OrderCandidatesRestControllerImplTest
 	// NOTE: Shall be called programatically by each test
 	private void startInterceptors()
 	{
-		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
-
 		final OLCandRegistry olCandRegistry = new OLCandRegistry(
 				Optional.empty(),
 				Optional.empty(),
-				Optional.of(ImmutableList.of(new DefaultOLCandValidator())));
+				Optional.of(ImmutableList.of(new DefaultOLCandValidator(olCandBL))));
 		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandRegistry);
 
 		final IModelInterceptorRegistry registry = Services.get(IModelInterceptorRegistry.class);

@@ -21,7 +21,6 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.impex.api.IInputDataSourceDAO;
-import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -57,17 +56,9 @@ public class OLCandRepository
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-	private final BPartnerOrderParamsRepository bPartnerOrderParamsRepository;
-
-	public OLCandRepository(@NonNull final BPartnerOrderParamsRepository bPartnerOrderParamsRepository)
-	{
-		this.bPartnerOrderParamsRepository = bPartnerOrderParamsRepository;
-	}
-
 	public OLCandSource getForProcessor(@NonNull final OLCandProcessorDescriptor processor)
 	{
 		return RelationTypeOLCandSource.builder()
-				.bPartnerOrderParamsRepository(bPartnerOrderParamsRepository)
 				.orderDefaults(processor.getDefaults())
 				.olCandProcessorId(processor.getId())
 				.build();

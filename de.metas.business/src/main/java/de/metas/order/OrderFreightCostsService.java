@@ -1,7 +1,7 @@
 package de.metas.order;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -220,7 +220,7 @@ public class OrderFreightCostsService
 	private ShipperId retrievePartnerShipperId(@NonNull final I_C_Order orderRecord)
 	{
 		final BPartnerId shipBPartnerId = BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID());
-		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(coalesce(
+		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(firstGreaterThanZero(
 				orderRecord.getBill_BPartner_ID(),
 				orderRecord.getC_BPartner_ID()));
 

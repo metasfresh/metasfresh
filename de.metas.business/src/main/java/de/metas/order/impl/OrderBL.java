@@ -106,7 +106,6 @@ public class OrderBL implements IOrderBL
 {
 	private static final transient Logger logger = LogManager.getLogger(OrderBL.class);
 
-	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
@@ -137,6 +136,7 @@ public class OrderBL implements IOrderBL
 			final boolean throwExIfNotFound = !overridePricingSystemAndDontThrowExIfNotFound;
 			if (pricingSysId == null && throwExIfNotFound)
 			{
+				final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 				final String bpartnerName = bpartnerBL.getBPartnerValueAndName(bpartnerId);
 				Check.errorIf(true, "Unable to find pricing system for BPartner {}_{}; SOTrx={}", bpartnerName, soTrx);
 			}
@@ -275,7 +275,9 @@ public class OrderBL implements IOrderBL
 		{
 			// Case: Bill Location is set, we can use it to retrieve the contact for that location
 			retrieveBillContanctRequest.bPartnerLocationId(billToBPLocationId);
+
 		}
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 		final User billContact = bpartnerBL.retrieveBillContactOrNull(retrieveBillContanctRequest.build());
 		if (billContact == null)
 		{
