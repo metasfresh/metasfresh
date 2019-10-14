@@ -317,6 +317,12 @@ class TableItem extends PureComponent {
 
             isEditable = item.widgetType === 'Color' ? false : isEditable;
 
+            const widgetData = this.getWidgetData(
+              item,
+              isEditable,
+              supportFieldEdit
+            );
+
             return (
               <TableCell
                 {...{
@@ -340,6 +346,9 @@ class TableItem extends PureComponent {
                   handleRightClick,
                   keyProperty,
                 }}
+                tdValue={
+                  widgetData ? JSON.stringify(widgetData[0].value) : null
+                }
                 getWidgetData={this.getWidgetData}
                 cellExtended={cellsExtended}
                 key={`${rowId}-${property}`}

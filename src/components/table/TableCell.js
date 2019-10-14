@@ -133,35 +133,20 @@ class TableCell extends PureComponent {
 
   UNSAFE_componentWillReceiveProps(nextProps) {
     const {
-      getWidgetData,
       updateRow,
       readonly,
       rowId,
-      item,
-      isEditable,
-      supportFieldEdit,
+      tdValue,
     } = this.props;
     const {
-      item: nextItem,
-      isEditable: nextIsEditable,
-      supportFieldEdit: nextSupportFieldEdit,
+      tdValue: nextTdValue,
     } = nextProps;
     // We should avoid highlighting when whole row is exchanged (sorting)
     if (rowId !== nextProps.rowId) {
       return;
     }
-    const widgetData = getWidgetData(item, isEditable, supportFieldEdit);
-    const nextWidgetData = getWidgetData(
-      nextItem,
-      nextIsEditable,
-      nextSupportFieldEdit
-    );
 
-    if (
-      !readonly &&
-      JSON.stringify(widgetData[0].value) !==
-        JSON.stringify(nextWidgetData[0].value)
-    ) {
+    if (!readonly && tdValue !== nextTdValue) {
       updateRow();
     }
   }
@@ -347,25 +332,28 @@ class TableCell extends PureComponent {
         {isEdited ? (
           <MasterWidget
             {...item}
+            {...{
+              getWidgetData,
+              viewId,
+              rowId,
+              widgetData,
+              closeTableField,
+              isOpenDatePicker,
+              listenOnKeys,
+              listenOnKeysFalse,
+              listenOnKeysTrue,
+              onClickOutside,
+            }}
             entity={entityEffective}
             dateFormat={isDateField}
             dataId={mainTable ? null : docId}
-            widgetData={widgetData}
             windowType={windowId}
             isMainTable={mainTable}
-            rowId={rowId}
-            viewId={viewId}
             tabId={mainTable ? null : tabId}
             noLabel={true}
             gridAlign={item.gridAlign}
             handleBackdropLock={this.handleBackdropLock}
-            onClickOutside={onClickOutside}
-            listenOnKeys={listenOnKeys}
-            listenOnKeysTrue={listenOnKeysTrue}
-            listenOnKeysFalse={listenOnKeysFalse}
             onChange={mainTable ? onCellChange : null}
-            closeTableField={closeTableField}
-            isOpenDatePicker={isOpenDatePicker}
             ref={c => {
               this.widget = c && c.getWrappedInstance();
             }}
