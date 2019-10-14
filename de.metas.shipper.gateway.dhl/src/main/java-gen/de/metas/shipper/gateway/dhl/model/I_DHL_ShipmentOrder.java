@@ -304,6 +304,29 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_Receiver_CountryISO2Code = "DHL_Receiver_CountryISO2Code";
 
 	/**
+	 * Set DHL_Receiver_CountryISO3Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDHL_Receiver_CountryISO3Code (java.lang.String DHL_Receiver_CountryISO3Code);
+
+	/**
+	 * Get DHL_Receiver_CountryISO3Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDHL_Receiver_CountryISO3Code();
+
+    /** Column definition for DHL_Receiver_CountryISO3Code */
+    public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object> COLUMN_DHL_Receiver_CountryISO3Code = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object>(I_DHL_ShipmentOrder.class, "DHL_Receiver_CountryISO3Code", null);
+    /** Column name DHL_Receiver_CountryISO3Code */
+    public static final String COLUMNNAME_DHL_Receiver_CountryISO3Code = "DHL_Receiver_CountryISO3Code";
+
+	/**
 	 * Set DHL_Receiver_Email.
 	 *
 	 * <br>Type: String
@@ -628,6 +651,29 @@ public interface I_DHL_ShipmentOrder
     public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object> COLUMN_DHL_Shipper_CountryISO2Code = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object>(I_DHL_ShipmentOrder.class, "DHL_Shipper_CountryISO2Code", null);
     /** Column name DHL_Shipper_CountryISO2Code */
     public static final String COLUMNNAME_DHL_Shipper_CountryISO2Code = "DHL_Shipper_CountryISO2Code";
+
+	/**
+	 * Set DHL_Shipper_CountryISO3Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDHL_Shipper_CountryISO3Code (java.lang.String DHL_Shipper_CountryISO3Code);
+
+	/**
+	 * Get DHL_Shipper_CountryISO3Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDHL_Shipper_CountryISO3Code();
+
+    /** Column definition for DHL_Shipper_CountryISO3Code */
+    public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object> COLUMN_DHL_Shipper_CountryISO3Code = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object>(I_DHL_ShipmentOrder.class, "DHL_Shipper_CountryISO3Code", null);
+    /** Column name DHL_Shipper_CountryISO3Code */
+    public static final String COLUMNNAME_DHL_Shipper_CountryISO3Code = "DHL_Shipper_CountryISO3Code";
 
 	/**
 	 * Set DHL_Shipper_Name1.

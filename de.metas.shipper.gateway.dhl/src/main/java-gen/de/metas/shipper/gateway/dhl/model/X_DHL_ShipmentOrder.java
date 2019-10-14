@@ -15,7 +15,7 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 362685523L;
+	private static final long serialVersionUID = -350522583L;
 
     /** Standard Constructor */
     public X_DHL_ShipmentOrder (Properties ctx, int DHL_ShipmentOrder_ID, String trxName)
@@ -213,6 +213,22 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 	public java.lang.String getDHL_Receiver_CountryISO2Code () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DHL_Receiver_CountryISO2Code);
+	}
+
+	/** Set DHL_Receiver_CountryISO3Code.
+		@param DHL_Receiver_CountryISO3Code DHL_Receiver_CountryISO3Code	  */
+	@Override
+	public void setDHL_Receiver_CountryISO3Code (java.lang.String DHL_Receiver_CountryISO3Code)
+	{
+		set_Value (COLUMNNAME_DHL_Receiver_CountryISO3Code, DHL_Receiver_CountryISO3Code);
+	}
+
+	/** Get DHL_Receiver_CountryISO3Code.
+		@return DHL_Receiver_CountryISO3Code	  */
+	@Override
+	public java.lang.String getDHL_Receiver_CountryISO3Code () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DHL_Receiver_CountryISO3Code);
 	}
 
 	/** Set DHL_Receiver_Email.
@@ -461,6 +477,22 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 	public java.lang.String getDHL_Shipper_CountryISO2Code () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DHL_Shipper_CountryISO2Code);
+	}
+
+	/** Set DHL_Shipper_CountryISO3Code.
+		@param DHL_Shipper_CountryISO3Code DHL_Shipper_CountryISO3Code	  */
+	@Override
+	public void setDHL_Shipper_CountryISO3Code (java.lang.String DHL_Shipper_CountryISO3Code)
+	{
+		set_Value (COLUMNNAME_DHL_Shipper_CountryISO3Code, DHL_Shipper_CountryISO3Code);
+	}
+
+	/** Get DHL_Shipper_CountryISO3Code.
+		@return DHL_Shipper_CountryISO3Code	  */
+	@Override
+	public java.lang.String getDHL_Shipper_CountryISO3Code () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DHL_Shipper_CountryISO3Code);
 	}
 
 	/** Set DHL_Shipper_Name1.

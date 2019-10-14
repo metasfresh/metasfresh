@@ -178,6 +178,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 					shipmentOrder.setDHL_Receiver_City(deliveryAddress.getCity());
 					// (2.2.4.2.10)
 					shipmentOrder.setDHL_Receiver_CountryISO2Code(deliveryAddress.getCountry().getAlpha2());
+					shipmentOrder.setDHL_Receiver_CountryISO3Code(deliveryAddress.getCountry().getAlpha3());
 					// (2.2.4.2)
 					//noinspection ConstantConditions
 					shipmentOrder.setDHL_Receiver_Email(deliveryContact != null ? deliveryContact.getEmailAddress() : null);
@@ -199,6 +200,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 					shipmentOrder.setDHL_Shipper_City(pickupAddress.getCity());
 					// (2.2.2.2.8)
 					shipmentOrder.setDHL_Shipper_CountryISO2Code(pickupAddress.getCountry().getAlpha2());
+					shipmentOrder.setDHL_Shipper_CountryISO3Code(pickupAddress.getCountry().getAlpha3());
 				}
 
 				InterfaceWrapperHelper.save(shipmentOrder);
