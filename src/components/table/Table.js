@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 import classnames from 'classnames';
 import currentDevice from 'current-device';
 import counterpart from 'counterpart';
-import hash from 'object-hash';
+import uuid from 'uuid/v4';
 
 import { deleteRequest } from '../../actions/GenericActions';
 import {
@@ -258,7 +258,9 @@ class Table extends Component {
             }
           });
 
-          const updatedState = {};
+          const updatedState = {
+            dataHash: uuid(),
+          };
 
           if (mapCollapsed.length) {
             updatedState.collapsedArrayMap = mapCollapsed;
@@ -283,6 +285,7 @@ class Table extends Component {
 
       this.setState({
         rows: rowsData,
+        dataHash: uuid(),
         pendingInit: !rowData.get(`${tabId}`),
       });
     }
@@ -980,7 +983,13 @@ class Table extends Component {
       supportOpenRecord,
     } = this.props;
 
-    const { selected, rows, collapsedRows, collapsedParentsRows } = this.state;
+    const {
+      selected,
+      rows,
+      collapsedRows,
+      collapsedParentsRows,
+      dataHash,
+    } = this.state;
 
     if (!rows || !rows.length) return null;
 
@@ -1015,7 +1024,7 @@ class Table extends Component {
           supportOpenRecord,
           item,
         }}
-        dataKey={hash(item.fieldsByName)}
+        dataHash={dataHash}
         key={`${i}-${viewId}`}
         collapsed={
           collapsedParentsRows &&

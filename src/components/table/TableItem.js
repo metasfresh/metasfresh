@@ -47,7 +47,7 @@ class TableItem extends PureComponent {
       this.handleCellExtend();
     }
 
-    if (this.props.dataKey !== prevProps.dataKey) {
+    if (this.props.dataHash!== prevProps.dataHash) {
       this.setState({
         editedCells: {},
       });
@@ -534,11 +534,15 @@ TableItem.propTypes = {
   handleSelect: PropTypes.func,
   onDoubleClick: PropTypes.func,
   indentSupported: PropTypes.bool,
+  collapsible: PropTypes.bool,
   collapsed: PropTypes.bool,
   processed: PropTypes.bool,
   notSaved: PropTypes.bool,
   isSelected: PropTypes.bool,
-  dataKey: PropTypes.string.isRequired,
+  odd: PropTypes.bool,
+  caption: PropTypes.string,
+  dataHash: PropTypes.string.isRequired,
+  key: PropTypes.string,
 };
 
 export default connect(
