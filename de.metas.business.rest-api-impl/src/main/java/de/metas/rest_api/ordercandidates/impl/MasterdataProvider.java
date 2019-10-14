@@ -97,7 +97,7 @@ final class MasterdataProvider
 		permissionService.assertCanCreateOrUpdateRecord(orgId, I_C_OLCand.class);
 	}
 
-	public PricingSystemId getPricingSystemIdByValue(final String pricingSystemCode)
+	public PricingSystemId getPricingSystemIdByValue(@Nullable final String pricingSystemCode)
 	{
 		if (Check.isEmpty(pricingSystemCode, true))
 		{

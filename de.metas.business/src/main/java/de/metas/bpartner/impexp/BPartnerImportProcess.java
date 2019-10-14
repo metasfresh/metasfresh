@@ -52,6 +52,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -103,8 +104,8 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
-		final String whereClause = getWhereClause();
-		BPartnerImportTableSqlUpdater.updateBPartnerImportTable(whereClause);
+		final ImportRecordsSelection selection = getImportRecordsSelection();
+		BPartnerImportTableSqlUpdater.updateBPartnerImportTable(selection);
 	}
 
 	@Override

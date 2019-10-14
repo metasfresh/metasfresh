@@ -18,8 +18,8 @@ import org.compiere.model.X_I_DiscountSchema;
 import org.compiere.model.X_M_DiscountSchema;
 
 import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
-import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -50,7 +50,8 @@ public class DiscountSchemaImportProcess extends SimpleImportProcessTemplate<I_I
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
-		MDiscountSchemaImportTableSqlUpdater.updateDiscountSchemaImportTable(getWhereClause());
+		final ImportRecordsSelection selection = getImportRecordsSelection();
+		MDiscountSchemaImportTableSqlUpdater.updateDiscountSchemaImportTable(selection);
 	}
 
 	@Override

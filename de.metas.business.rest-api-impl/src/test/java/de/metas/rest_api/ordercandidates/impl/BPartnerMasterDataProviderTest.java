@@ -203,6 +203,33 @@ public class BPartnerMasterDataProviderTest
 		assertThat(bpartnerContactRecordsAfter).isEmpty();
 	}
 
+	/** Verifies that the masterdata provider will attempt to get a location from the masterdata if none is stecofies in our JSON */
+	@Test
+	public void getCreateBPartnerInfo_Exists_GetFallBackLocation()
+	{
+		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
+		bpartnerRecord.setValue("jsonBPartner.Code");
+		saveRecord(bpartnerRecord);
+
+		final I_C_BPartner_Location bpLocationRecord = newInstance(I_C_BPartner_Location.class);
+		bpLocationRecord.setC_BPartner(bpartnerRecord);
+		bpLocationRecord.setGLN("jsonBPartnerLocation.GLN");
+		saveRecord(bpLocationRecord);
+
+		final SyncAdvise syncAdvise = SyncAdvise.READ_ONLY;
+		final JsonRequestBPartnerLocationAndContact jsonBPartnerInfoToUse = jsonBPartnerInfo.toBuilder()
+				.location(null) // no location provided!
+				.syncAdvise(syncAdvise).build();
+
+		// invoke the method under test
+		final BPartnerInfo result = bpartnerMasterDataProvider.getCreateBPartnerInfo(jsonBPartnerInfoToUse, OrgId.ofRepoId(10));
+
+		assertThat(result.getBpartnerId().getRepoId()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
+		assertThat(result.getContactId()).isNull();
+
+		assertThat(result.getBpartnerLocationId().getRepoId()).isEqualTo(bpLocationRecord.getC_BPartner_Location_ID());
+	}
+
 	@Test
 	public void getCreateBPartnerInfo_Exists_Update()
 	{
