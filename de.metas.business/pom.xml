@@ -84,11 +84,6 @@
 			<artifactId>assertj-core</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>de.metas.jax.rs</groupId>
-			<artifactId>de.metas.jax.rs</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
 
 	</dependencies>
 
