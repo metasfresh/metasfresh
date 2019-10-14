@@ -63,11 +63,13 @@ import org.springframework.ws.client.core.WebServiceTemplate;
 import org.springframework.ws.soap.SoapHeader;
 import org.springframework.ws.soap.SoapMessage;
 import org.springframework.ws.transport.http.HttpComponentsMessageSender;
+import org.springframework.xml.transform.StringResult;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.format.DateTimeFormatter;
@@ -119,10 +121,14 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	@Override
 	public DeliveryOrder completeDeliveryOrder(final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
-		logger.trace("Creating delivery order for {}", deliveryOrder);
+		logger.trace("Creating shipment order request for {}", deliveryOrder);
 		final CreateShipmentOrderRequest dhlRequest = createDHLShipmentOrderRequest(deliveryOrder);
 
-		return null;
+		final CreateShipmentOrderResponse response = (CreateShipmentOrderResponse)doActualRequest(dhlRequest);
+		final DeliveryOrder completedDeliveryOrder = updateDeliveryOrderFromResponse(deliveryOrder, response);
+		logger.trace("Completed deliveryOrder is {}", completedDeliveryOrder);
+
+		return completedDeliveryOrder;
 	}
 
 	@Override
@@ -142,6 +148,39 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	/////////////////////////////////////////////////
 	/////////////////////////////////////////////////
 	/////////////////////////////////////////////////
+
+	private DeliveryOrder updateDeliveryOrderFromResponse(final DeliveryOrder deliveryOrder, final CreateShipmentOrderResponse response)
+	{
+		// todo implement this
+		return deliveryOrder;
+	}
+
+	private Object doActualRequest(final Object request)
+	{
+		logPersist(request);
+		final Object response = webServiceTemplate.marshalSendAndReceive(request, soapHeaderWithAuth);
+		logPersist(response);
+
+		final org.springframework.oxm.Marshaller marshaller = webServiceTemplate.getMarshaller();
+
+		// todo this has to be extracted to a database logger.
+		try
+		{
+			final StringResult result = new StringResult();
+			marshaller.marshal(response, result);
+			System.out.println(result.toString());
+		}
+		catch (IOException ignored)
+		{
+		}
+
+		return response;
+	}
+
+	private void logPersist(final Object object)
+	{
+		// todo persist the full request body!
+	}
 
 	@NonNull
 	private CreateShipmentOrderRequest createDHLShipmentOrderRequest(@NonNull final DeliveryOrder deliveryOrder)
@@ -287,18 +326,6 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		webServiceTemplate.setMarshaller(marshaller);
 		webServiceTemplate.setUnmarshaller(marshaller);
 		return webServiceTemplate;
-	}
-
-	@NonNull
-	private Object doActualRequest(final Object requestBody)
-	{
-		// todo make this beautiful
-
-		// execute the actual request
-		final CreateShipmentOrderResponse createShipmentOrderResponse = (CreateShipmentOrderResponse)webServiceTemplate.marshalSendAndReceive(requestBody, soapHeaderWithAuth);
-
-		return createShipmentOrderResponse;
-
 	}
 
 	private class SoapHeaderWithAuth implements WebServiceMessageCallback
