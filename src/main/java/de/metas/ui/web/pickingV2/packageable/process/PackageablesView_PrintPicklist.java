@@ -65,7 +65,6 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 	@Autowired
 	private ShipmentScheduleLockRepository locksRepo;
 
-
 	final private IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 
 	@Override
@@ -102,7 +101,7 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 		final PackageableRow row = getSingleSelectedRow();
 
 		final ShipmentScheduleLockRequest lockRequest = createLockRequest(row);
-		// th eline needs to remain lokced until the user explcittly unlocks it
+		// the line needs to remain locked until the user explicitly unlocks it
 		locksRepo.lock(lockRequest);
 
 		try
@@ -143,10 +142,13 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 					productsToPickRowsRepository.createPickingCandidates(row);
 				}
 
+				// Throw an explicit error in order to make sure that the user sees that something went wrong
+				// mainly we might got some line that should not be in picking terminal
 				@Override
 				public boolean doCatch(final Throwable e) throws Throwable
 				{
-					throw AdempiereException.wrapIfNeeded(e);
+					throw AdempiereException.wrapIfNeeded(e)
+					.markUserNotified();
 				}
 
 				@Override
