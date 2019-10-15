@@ -121,6 +121,7 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 		}
 		catch (final Exception ex)
 		{
+			// if no exception is caught, then the records remain locked until unlocked by the used who performs the picking
 			locksRepo.unlockNoFail(ShipmentScheduleUnLockRequest.of(lockRequest));
 
 			throw AdempiereException.wrapIfNeeded(ex);
