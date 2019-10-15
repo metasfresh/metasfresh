@@ -1,6 +1,5 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.HuId;
@@ -42,7 +41,6 @@ import lombok.NonNull;
 
 public class CreatePickingCandidatesCommand
 {
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 	private final PickingCandidateRepository pickingCandidateRepository;
@@ -65,12 +63,6 @@ public class CreatePickingCandidatesCommand
 
 	public PickHUResult perform()
 	{
-		return trxManager.callInThreadInheritedTrx(this::performInTrx);
-	}
-
-	private PickHUResult performInTrx()
-	{
-
 		final PickingCandidate pickingCandidate = createPickingCandidate();
 		pickingCandidate.assertDraft();
 
