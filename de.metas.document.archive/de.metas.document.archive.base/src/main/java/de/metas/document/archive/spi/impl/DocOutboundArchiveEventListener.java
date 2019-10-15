@@ -57,7 +57,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	}
 
 	@Override
-	public void onPdfUpdate(@NonNull final I_AD_Archive archive, final I_AD_User user, final String action)
+	public void onPdfUpdate(@Nullable final I_AD_Archive archive, @Nullable final I_AD_User user, final String action)
 	{
 		if (!isLoggableArchive(archive))
 		{
@@ -66,8 +66,10 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 		final I_C_Doc_Outbound_Log_Line docExchangeLine = createLogLine(archive);
 		docExchangeLine.setAction(action);
-		docExchangeLine.setAD_User_ID(user.getAD_User_ID());
-
+		if (user != null)
+		{
+			docExchangeLine.setAD_User_ID(user.getAD_User_ID());
+		}
 		save(docExchangeLine);
 	}
 
@@ -94,7 +96,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docExchangeLine.setEMail_Cc(EMailAddress.toStringOrNull(cc));
 		docExchangeLine.setEMail_Bcc(EMailAddress.toStringOrNull(bcc));
 		docExchangeLine.setStatus(status);
-		if(userMailConfig != null)
+		if (userMailConfig != null)
 		{
 			docExchangeLine.setAD_User_ID(UserId.toRepoId(userMailConfig.getUserId()));
 		}
@@ -130,11 +132,8 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 	/**
 	 * We don't generate logs for archives without table IDs
-	 *
-	 * @param archive
-	 * @return
 	 */
-	private boolean isLoggableArchive(final I_AD_Archive archive)
+	private boolean isLoggableArchive(@Nullable final I_AD_Archive archive)
 	{
 		// task 05334: be robust against archive==null
 		if (archive == null || archive.getAD_Table_ID() <= 0)
