@@ -89,7 +89,7 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 	private PickHURequest  createPickHURequest(final ProductsToPickRow row)
 	{
 		final PickingConfigV2 pickingConfig = getPickingConfig();
-		return productsToPickRowsRepository.createPickHURequest(row, pickingConfig);
+		return productsToPickRowsRepository.createPickHURequest(row, pickingConfig.isPickingReviewRequired());
 	}
 
 }
