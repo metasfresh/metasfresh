@@ -3,10 +3,11 @@ package de.metas.bpartner.service.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_BP_Relation;
 
 import de.metas.bpartner.BPartnerId;
-import lombok.NonNull;
+import de.metas.bpartner.BPartnerLocationId;
+import lombok.Builder;
 
 /*
  * #%L
@@ -30,49 +31,30 @@ import lombok.NonNull;
  * #L%
  */
 
-public class BPLocationBuilder
+@Builder
+public class BPRelation
 {
-	private boolean shipTo;
 
 	private boolean billTo;
 
-	private boolean billToDefault;
-
 	private final BPartnerId bpartnerId;
 
-	public BPLocationBuilder(@NonNull BPartnerId bpartnerId)
+	private final BPartnerLocationId bpLocationId;
+
+	private final BPartnerId relBPartnerId;
+
+	private final BPartnerLocationId relBPLocationId;
+
+	public I_C_BP_Relation createRecord()
 	{
-		this.bpartnerId = bpartnerId;
-	}
+		final I_C_BP_Relation bpRelation = newInstance(I_C_BP_Relation.class);
+		bpRelation.setC_BPartner_ID(bpartnerId.getRepoId());
+		bpRelation.setC_BPartner_Location_ID(bpLocationId.getRepoId());
+		bpRelation.setC_BPartnerRelation_ID(relBPartnerId.getRepoId());
+		bpRelation.setC_BPartnerRelation_Location_ID(relBPLocationId.getRepoId());
+		bpRelation.setIsBillTo(billTo);
+		saveRecord(bpRelation);
 
-	public I_C_BPartner_Location createRecord()
-	{
-		final I_C_BPartner_Location bpLocationRecord = newInstance(I_C_BPartner_Location.class);
-		bpLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
-		bpLocationRecord.setIsShipTo(shipTo);
-		bpLocationRecord.setIsBillTo(billTo);
-		bpLocationRecord.setIsBillToDefault(billToDefault);
-
-		saveRecord(bpLocationRecord);
-
-		return bpLocationRecord;
-	}
-
-	public BPLocationBuilder billTo(final boolean billTo)
-	{
-		this.billTo = billTo;
-		return this;
-	}
-
-	public BPLocationBuilder shipTo(final boolean shipTo)
-	{
-		this.shipTo = shipTo;
-		return this;
-	}
-
-	public BPLocationBuilder billToDefault(final boolean billToDefault)
-	{
-		this.billToDefault = billToDefault;
-		return this;
+		return bpRelation;
 	}
 }

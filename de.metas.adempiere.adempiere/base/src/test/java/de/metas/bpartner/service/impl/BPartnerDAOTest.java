@@ -43,14 +43,14 @@ import de.metas.organization.OrgId;
 
 public class BPartnerDAOTest
 {
-	private BPartnerDAO bpartnersRepo;
+	private BPartnerDAO bpartnerDAO;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		bpartnersRepo = new BPartnerDAO();
+		bpartnerDAO = new BPartnerDAO();
 	}
 
 	@Test
@@ -69,7 +69,7 @@ public class BPartnerDAOTest
 		save(bPartnerRecord2);
 
 		// invoke the method under test
-		final Map<BPartnerId, Integer> result = bpartnersRepo
+		final Map<BPartnerId, Integer> result = bpartnerDAO
 				.retrieveAllDiscountSchemaIdsIndexedByBPartnerId(BPartnerType.VENDOR);
 
 		assertThat(result)
@@ -91,7 +91,7 @@ public class BPartnerDAOTest
 
 	private AbstractComparableAssert<?, BPartnerId> assertRetrieveBPartnerIdByName(final String queryBPName)
 	{
-		final BPartnerId bpartnerId = bpartnersRepo.retrieveBPartnerIdBy(BPartnerQuery.builder()
+		final BPartnerId bpartnerId = bpartnerDAO.retrieveBPartnerIdBy(BPartnerQuery.builder()
 				.bpartnerName(queryBPName)
 				.onlyOrgId(OrgId.ANY)
 				.failIfNotExists(false)
