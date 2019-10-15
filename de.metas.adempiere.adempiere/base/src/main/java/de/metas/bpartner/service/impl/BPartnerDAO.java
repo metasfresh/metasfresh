@@ -1042,10 +1042,10 @@ public class BPartnerDAO implements IBPartnerDAO
 		final I_C_BPartner_Location ownToLocation = queryBuilder
 				.create()
 				.first();
-		if (!(query.isAlsoTryRelation() && query.getRelationBPartnerLocationId() != null) && ownToLocation != null)
+
+		// if not matching location is set and we found already a location, use that one
+		if (query.getRelationBPartnerLocationId() == null && ownToLocation != null)
 		{
-			// !alsoTryRelation => we return whatever we got here (null or not)
-			// ownBillToLocation != null => we return the not-null location we found
 			return createLocationIdOrNull(bpartnerId, ownToLocation);
 		}
 

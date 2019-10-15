@@ -678,7 +678,6 @@ public class OrderBL implements IOrderBL
 		final BPartnerLocationQuery query = BPartnerLocationQuery
 				.builder()
 				.type(Type.BILL_TO)
-				.alsoTryRelation(true)
 				.relationBPartnerLocationId(extractBPartnerLocationOrNull(order))
 				.bpartnerId(bpartnerId)
 				.build();

@@ -131,7 +131,6 @@ public class BPartnerDAO_retrieveBPartnerLocationTests
 		final BPartnerLocationQuery query = BPartnerLocationQuery.builder()
 				.bpartnerId(bpartnerId)
 				.type(Type.BILL_TO)
-				.alsoTryRelation(true)
 				.relationBPartnerLocationId(deliveryLocationId)
 				.bpartnerId(bpartnerId)
 				.build();
@@ -171,7 +170,6 @@ public class BPartnerDAO_retrieveBPartnerLocationTests
 		final BPartnerLocationQuery query = BPartnerLocationQuery.builder()
 				.bpartnerId(bpartnerId)
 				.type(Type.BILL_TO)
-				.alsoTryRelation(true)
 				.relationBPartnerLocationId(deliveryLocationId)
 				.bpartnerId(bpartnerId)
 				.build();

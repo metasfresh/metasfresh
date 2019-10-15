@@ -55,10 +55,6 @@ public class BPRelation
 		bpRelation.setIsBillTo(billTo);
 		saveRecord(bpRelation);
 
-
-
-		System.out.println("C_BPartner_Location_ID = " +bpRelation.getC_BPartnerRelation_Location_ID());
-
 		return bpRelation;
 	}
 }
