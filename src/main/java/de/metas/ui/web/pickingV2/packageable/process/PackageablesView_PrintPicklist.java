@@ -2,7 +2,6 @@ package de.metas.ui.web.pickingV2.packageable.process;
 
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TrxRunnable2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -115,7 +114,7 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 		if (!existsPickingCandidates)
 		{
 
-			Services.get(ITrxManager.class).runInNewTrx(new TrxRunnable2()
+			trxManager.runInNewTrx(new TrxRunnable2()
 			{
 
 				@Override

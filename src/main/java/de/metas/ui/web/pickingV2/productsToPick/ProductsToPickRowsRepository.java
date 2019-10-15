@@ -85,7 +85,7 @@ public class ProductsToPickRowsRepository
 	{
 		final ProductsToPickRowsData productsToPickRowsData = createProductsToPickRowsData(packageableRow);
 		return productsToPickRowsData.getAllRows().stream()
-				.map(productsToPickRow -> pickingCandidateService.createAndSavePickingCandidates(createPickHURequest(productsToPickRow, false)))
+				.map(productsToPickRow -> pickingCandidateService.createAndSavePickingCandidates(createPickHURequest(productsToPickRow, false/*isPickingReviewRequired*/)))
 				.map(pickHUResult -> pickHUResult.getPickingCandidate())
 				.collect(ImmutableList.toImmutableList());
 	}
