@@ -2,6 +2,8 @@ package de.metas.rest_api.invoicecandidates;
 
 import org.springframework.http.ResponseEntity;
 
+import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandCreateRequest;
+import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandCreateResponse;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
@@ -31,12 +33,8 @@ import de.metas.util.rest.MetasfreshRestAPIConstants;
 
 public interface InvoiceCandidatesRestEndpoint
 {
-	String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/sales/invoice/candidates";
+	String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/invoices/createFromCandidates";
 
-	String PATH_BULK = "/bulk";
-
-	ResponseEntity<JsonOLCandCreateBulkResponse> createInvoiceLineCandidate(JsonOLCandCreateRequest request);
-
-	ResponseEntity<JsonOLCandCreateBulkResponse> createInvoiceLineCandidates(JsonOLCandCreateBulkRequest bulkRequest);
+	ResponseEntity<JsonInvoiceCandCreateResponse> createInvoices(JsonInvoiceCandCreateRequest request);
 
 }

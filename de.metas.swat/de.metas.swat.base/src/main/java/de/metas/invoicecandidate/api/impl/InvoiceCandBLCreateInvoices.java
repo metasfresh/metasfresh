@@ -618,7 +618,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 				final List<String> externalIds = candsForIlVO
 						.stream()
-						.map(I_C_Invoice_Candidate::getExternalId)
+						.map(I_C_Invoice_Candidate::getExternalHeaderId)
 						.filter(Predicates.notNull())
 						.collect(ImmutableList.toImmutableList());
 				invoiceLine.setExternalIds(InvoiceUtil.joinExternalIds(externalIds));
