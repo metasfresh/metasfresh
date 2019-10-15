@@ -15,7 +15,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 326501793L;
+	private static final long serialVersionUID = -1384793031L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate (Properties ctx, int C_Invoice_Candidate_ID, String trxName)
@@ -1205,20 +1205,36 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return (java.lang.String)get_Value(COLUMNNAME_ErrorMsg);
 	}
 
-	/** Set External ID.
-		@param ExternalId External ID	  */
+	/** Set Externe Datensatz-Kopf-ID.
+		@param ExternalHeaderId Externe Datensatz-Kopf-ID	  */
 	@Override
-	public void setExternalId (java.lang.String ExternalId)
+	public void setExternalHeaderId (java.lang.String ExternalHeaderId)
 	{
-		set_Value (COLUMNNAME_ExternalId, ExternalId);
+		set_Value (COLUMNNAME_ExternalHeaderId, ExternalHeaderId);
 	}
 
-	/** Get External ID.
-		@return External ID	  */
+	/** Get Externe Datensatz-Kopf-ID.
+		@return Externe Datensatz-Kopf-ID	  */
 	@Override
-	public java.lang.String getExternalId () 
+	public java.lang.String getExternalHeaderId () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ExternalId);
+		return (java.lang.String)get_Value(COLUMNNAME_ExternalHeaderId);
+	}
+
+	/** Set Externe Datensatz-Zeilen-ID.
+		@param ExternalLineId Externe Datensatz-Zeilen-ID	  */
+	@Override
+	public void setExternalLineId (java.lang.String ExternalLineId)
+	{
+		set_Value (COLUMNNAME_ExternalLineId, ExternalLineId);
+	}
+
+	/** Get Externe Datensatz-Zeilen-ID.
+		@return Externe Datensatz-Zeilen-ID	  */
+	@Override
+	public java.lang.String getExternalLineId () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExternalLineId);
 	}
 
 	/** Set First ship location.

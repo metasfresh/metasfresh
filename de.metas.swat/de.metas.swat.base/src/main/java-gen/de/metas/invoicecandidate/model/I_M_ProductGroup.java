@@ -41,7 +41,7 @@ public interface I_M_ProductGroup
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -51,7 +51,7 @@ public interface I_M_ProductGroup
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -118,31 +118,6 @@ public interface I_M_ProductGroup
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Produktgruppe.
-	 * Fasst eine Anzahl von Produkten oder Produktkategorien zu einer Gruppe zusammen.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setM_ProductGroup_ID (int M_ProductGroup_ID);
-
-	/**
-	 * Get Produktgruppe.
-	 * Fasst eine Anzahl von Produkten oder Produktkategorien zu einer Gruppe zusammen.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getM_ProductGroup_ID();
-
-    /** Column definition for M_ProductGroup_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ProductGroup, Object> COLUMN_M_ProductGroup_ID = new org.adempiere.model.ModelColumn<I_M_ProductGroup, Object>(I_M_ProductGroup.class, "M_ProductGroup_ID", null);
-    /** Column name M_ProductGroup_ID */
-    public static final String COLUMNNAME_M_ProductGroup_ID = "M_ProductGroup_ID";
-
-	/**
 	 * Set Stellvertreter-Produkt.
 	 * Produkt, dass bei einer Aggregation unterschiedlicher Produkte als Stellvertreter der aggregierten Produkte ausgewiesen werden kann
 	 *
@@ -166,6 +141,31 @@ public interface I_M_ProductGroup
     public static final org.adempiere.model.ModelColumn<I_M_ProductGroup, org.compiere.model.I_M_Product> COLUMN_M_Product_Proxy_ID = new org.adempiere.model.ModelColumn<I_M_ProductGroup, org.compiere.model.I_M_Product>(I_M_ProductGroup.class, "M_Product_Proxy_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_Proxy_ID */
     public static final String COLUMNNAME_M_Product_Proxy_ID = "M_Product_Proxy_ID";
+
+	/**
+	 * Set Produktgruppe.
+	 * Fasst eine Anzahl von Produkten oder Produktkategorien zu einer Gruppe zusammen.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_ProductGroup_ID (int M_ProductGroup_ID);
+
+	/**
+	 * Get Produktgruppe.
+	 * Fasst eine Anzahl von Produkten oder Produktkategorien zu einer Gruppe zusammen.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_ProductGroup_ID();
+
+    /** Column definition for M_ProductGroup_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_ProductGroup, Object> COLUMN_M_ProductGroup_ID = new org.adempiere.model.ModelColumn<I_M_ProductGroup, Object>(I_M_ProductGroup.class, "M_ProductGroup_ID", null);
+    /** Column name M_ProductGroup_ID */
+    public static final String COLUMNNAME_M_ProductGroup_ID = "M_ProductGroup_ID";
 
 	/**
 	 * Set Name.

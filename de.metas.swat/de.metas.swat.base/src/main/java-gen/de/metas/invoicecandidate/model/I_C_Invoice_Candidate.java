@@ -66,7 +66,7 @@ public interface I_C_Invoice_Candidate
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -76,7 +76,7 @@ public interface I_C_Invoice_Candidate
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1290,27 +1290,50 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_ErrorMsg = "ErrorMsg";
 
 	/**
-	 * Set External ID.
+	 * Set Externe Datensatz-Kopf-ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setExternalId (java.lang.String ExternalId);
+	public void setExternalHeaderId (java.lang.String ExternalHeaderId);
 
 	/**
-	 * Get External ID.
+	 * Get Externe Datensatz-Kopf-ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getExternalId();
+	public java.lang.String getExternalHeaderId();
 
-    /** Column definition for ExternalId */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_ExternalId = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "ExternalId", null);
-    /** Column name ExternalId */
-    public static final String COLUMNNAME_ExternalId = "ExternalId";
+    /** Column definition for ExternalHeaderId */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_ExternalHeaderId = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "ExternalHeaderId", null);
+    /** Column name ExternalHeaderId */
+    public static final String COLUMNNAME_ExternalHeaderId = "ExternalHeaderId";
+
+	/**
+	 * Set Externe Datensatz-Zeilen-ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setExternalLineId (java.lang.String ExternalLineId);
+
+	/**
+	 * Get Externe Datensatz-Zeilen-ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getExternalLineId();
+
+    /** Column definition for ExternalLineId */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_ExternalLineId = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "ExternalLineId", null);
+    /** Column name ExternalLineId */
+    public static final String COLUMNNAME_ExternalLineId = "ExternalLineId";
 
 	/**
 	 * Set First ship location.
@@ -2200,7 +2223,7 @@ public interface I_C_Invoice_Candidate
 	 * Set Preissystem.
 	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2210,7 +2233,7 @@ public interface I_C_Invoice_Candidate
 	 * Get Preissystem.
 	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

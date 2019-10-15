@@ -41,7 +41,7 @@ public interface I_M_ProductGroup_Product
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -51,7 +51,7 @@ public interface I_M_ProductGroup_Product
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -137,14 +137,35 @@ public interface I_M_ProductGroup_Product
 	 */
 	public int getM_Product_Category_ID();
 
-	public org.compiere.model.I_M_Product_Category getM_Product_Category();
-
-	public void setM_Product_Category(org.compiere.model.I_M_Product_Category M_Product_Category);
-
     /** Column definition for M_Product_Category_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ProductGroup_Product, org.compiere.model.I_M_Product_Category> COLUMN_M_Product_Category_ID = new org.adempiere.model.ModelColumn<I_M_ProductGroup_Product, org.compiere.model.I_M_Product_Category>(I_M_ProductGroup_Product.class, "M_Product_Category_ID", org.compiere.model.I_M_Product_Category.class);
     /** Column name M_Product_Category_ID */
     public static final String COLUMNNAME_M_Product_Category_ID = "M_Product_Category_ID";
+
+	/**
+	 * Set Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Product_ID();
+
+    /** Column definition for M_Product_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_ProductGroup_Product, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_M_ProductGroup_Product, org.compiere.model.I_M_Product>(I_M_ProductGroup_Product.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
+    /** Column name M_Product_ID */
+    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Produktgruppe.
@@ -197,31 +218,6 @@ public interface I_M_ProductGroup_Product
     public static final org.adempiere.model.ModelColumn<I_M_ProductGroup_Product, Object> COLUMN_M_ProductGroup_Product_ID = new org.adempiere.model.ModelColumn<I_M_ProductGroup_Product, Object>(I_M_ProductGroup_Product.class, "M_ProductGroup_Product_ID", null);
     /** Column name M_ProductGroup_Product_ID */
     public static final String COLUMNNAME_M_ProductGroup_Product_ID = "M_ProductGroup_Product_ID";
-
-	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_Product_ID (int M_Product_ID);
-
-	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_Product_ID();
-
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ProductGroup_Product, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_M_ProductGroup_Product, org.compiere.model.I_M_Product>(I_M_ProductGroup_Product.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Get Aktualisiert.

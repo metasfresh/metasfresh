@@ -41,7 +41,7 @@ public interface I_C_ILCandHandler
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -51,7 +51,7 @@ public interface I_C_ILCandHandler
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -214,31 +214,6 @@ public interface I_C_ILCandHandler
     public static final String COLUMNNAME_EntityType = "EntityType";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsActive (boolean IsActive);
-
-	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isActive();
-
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_C_ILCandHandler, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_ILCandHandler, Object>(I_C_ILCandHandler.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
-
-	/**
 	 * Set Betreuer ist Benutzer-Editierbar.
 	 * Sagt aus, ob der Berteuer durch den Benutzer eingestelltwerden soll oder nicht
 	 *
@@ -262,6 +237,31 @@ public interface I_C_ILCandHandler
     public static final org.adempiere.model.ModelColumn<I_C_ILCandHandler, Object> COLUMN_Is_AD_User_InCharge_UI_Setting = new org.adempiere.model.ModelColumn<I_C_ILCandHandler, Object>(I_C_ILCandHandler.class, "Is_AD_User_InCharge_UI_Setting", null);
     /** Column name Is_AD_User_InCharge_UI_Setting */
     public static final String COLUMNNAME_Is_AD_User_InCharge_UI_Setting = "Is_AD_User_InCharge_UI_Setting";
+
+	/**
+	 * Set Aktiv.
+	 * Der Eintrag ist im System aktiv
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsActive (boolean IsActive);
+
+	/**
+	 * Get Aktiv.
+	 * Der Eintrag ist im System aktiv
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isActive();
+
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_C_ILCandHandler, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_ILCandHandler, Object>(I_C_ILCandHandler.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Name.
