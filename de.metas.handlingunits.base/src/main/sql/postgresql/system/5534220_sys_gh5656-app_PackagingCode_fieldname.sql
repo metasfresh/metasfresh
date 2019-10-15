@@ -128,3 +128,8 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=589561
 /* DDL */ select AD_Element_Link_Create_Missing_Field(589561)
 ;
 
+-- 2019-10-15T13:58:49.554Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsIdentifier='Y', SeqNo=10,Updated=TO_TIMESTAMP('2019-10-15 15:58:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=569173
+;
+
