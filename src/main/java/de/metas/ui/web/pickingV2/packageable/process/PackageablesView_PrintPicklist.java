@@ -101,9 +101,8 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 	{
 		final PackageableRow row = getSingleSelectedRow();
 
-
-
 		final ShipmentScheduleLockRequest lockRequest = createLockRequest(row);
+		// th eline needs to remain lokced until the user explcittly unlocks it
 		locksRepo.lock(lockRequest);
 
 		try
@@ -134,7 +133,7 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 		final boolean existsPickingCandidates = pickingCandidateService.existsPickingCandidates(row.getShipmentScheduleIds());
 		if (!existsPickingCandidates)
 		{
-
+			// run in a different transaction so that the report can access it
 			trxManager.runInNewTrx(new TrxRunnable2()
 			{
 
