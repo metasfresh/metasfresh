@@ -13,8 +13,8 @@ public enum MeasurementUnit
 	CBMT("MTQ"),
 	PIEC("PCE"),
 	PACK("TU"),
-	COLI("PCE"),
-	DISP("PCE"),
+	//COLI("PCE"),
+	//DISP("PCE"),
 	CART("KRT");
 
 	private final String cuom;

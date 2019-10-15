@@ -21,9 +21,16 @@
  *
  */
 
-package de.metas.edi.esb.pojo.desadv.qualifier;
+package de.metas.edi.esb.pojo.desadv.stepcom.qualifier;
 
-public enum DiscrepencyCode
+public enum QuantityQual
 {
-	BFOL, BCOM, OVSH
+	/** Invoiced quantity */
+	INVO,
+
+	/** Delivered quantity */
+	DELV,
+
+	/** Number of consumer units in traded unit */
+	CUTU
 }

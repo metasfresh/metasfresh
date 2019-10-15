@@ -21,9 +21,21 @@
  *
  */
 
-package de.metas.edi.esb.pojo.desadv.qualifier;
+package de.metas.edi.esb.pojo.desadv.stepcom.qualifier;
 
-public enum ControlQual
+public enum ReferenceQual
 {
-	LINE
+	/** Originator's reference */
+	ORIG,
+
+	/** Order number (buyer) */
+	ORBU,
+
+	/** Order number (seller) */
+	ORSE,
+
+	DADV, ORSP, PUCO, APAI,
+
+	/** Line item reference number */
+	LIRN
 }

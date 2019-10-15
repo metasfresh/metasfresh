@@ -21,9 +21,9 @@
  *
  */
 
-package de.metas.edi.esb.pojo.desadv.qualifier;
+package de.metas.edi.esb.pojo.desadv.stepcom.qualifier;
 
-public enum DateQual
+public enum ControlQual
 {
-	CREA, DELV
+	LINE
 }

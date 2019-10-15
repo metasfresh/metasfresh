@@ -106,9 +106,9 @@ public class EDIFeedbackRoute extends RouteBuilder
 						// Add the extension for the Feedback object so that it opens nicely :)
 						// (the extension is hard-coded, as i didn't see a real reason to keep it in properties --
 						// this can be removed at any time)
-//						.setHeader(Exchange.FILE_NAME, exchangeProperty(Exchange.FILE_NAME).append(".error.xml"))
-//						// If errors occurred, put the feedback in the error directory
-//						.to(EDIFeedbackRoute.EP_EDI_LOCAL_ERROR)
+						.setHeader(Exchange.FILE_NAME, exchangeProperty(Exchange.FILE_NAME).append(".error.xml"))
+						// If errors occurred, put the feedback in the error directory
+						.to(EDIFeedbackRoute.EP_EDI_LOCAL_ERROR)
 
 						// Send the feedback to metasfresh
 						.log(LoggingLevel.INFO, "EDI: Sending error response to metasfresh...")
