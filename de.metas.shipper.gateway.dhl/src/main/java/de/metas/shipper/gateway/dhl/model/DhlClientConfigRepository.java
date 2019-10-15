@@ -35,10 +35,10 @@ public class DhlClientConfigRepository
 
 	public DhlClientConfig getByShipperId(final int shipperId)
 	{
-		return cache.getOrLoad(shipperId, () -> readConfig(shipperId));
+		return cache.getOrLoad(shipperId, () -> retrieveConfig(shipperId));
 	}
 
-	private static DhlClientConfig readConfig(final int shipperId)
+	private static DhlClientConfig retrieveConfig(final int shipperId)
 	{
 		final I_DHL_Shipper_Config configPO = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_DHL_Shipper_Config.class)
