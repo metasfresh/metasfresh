@@ -31,6 +31,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
@@ -295,7 +297,11 @@ public interface IBPartnerDAO extends ISingletonService
 		@Default
 		boolean applyTypeStrictly = true;
 
-		boolean alsoTryRelation;
+		/**
+		 * If set, then return the bPartner relation which has this id as {@code C_BPartner_Location_ID} and if not found, fallback to initial location.
+		 */
+		@Nullable
+		BPartnerLocationId relationBPartnerLocationId;
 	}
 
 	BPGroupId getBPGroupIdByBPartnerId(BPartnerId bpartnerId);
