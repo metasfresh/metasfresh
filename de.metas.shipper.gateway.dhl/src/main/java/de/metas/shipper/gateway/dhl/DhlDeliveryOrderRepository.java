@@ -23,9 +23,10 @@
 package de.metas.shipper.gateway.dhl;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
+import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
+import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
 import de.metas.shipper.gateway.dhl.model.DhlServiceType;
 import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrder;
 import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest;
@@ -54,7 +55,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 @Repository
 public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
@@ -121,18 +121,18 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 
 		final I_DHL_ShipmentOrder firstOrder = ordersPo.get(0);
 
-		final ImmutableMap<Integer, String> packageIdsToSequenceNumber = ordersPo.stream()
-				.collect(ImmutableMap.toImmutableMap(I_DHL_ShipmentOrder::getPackageId, i_dhl_shipmentOrder -> Integer.toString(i_dhl_shipmentOrder.getDHL_ShipmentOrder_ID())));
+		final ImmutableList<DhlCustomDeliveryDataDetail> dhlCustomDeliveryDataDetail = ordersPo.stream()
+				.map(po -> DhlCustomDeliveryDataDetail.builder()
+						.packageId(po.getPackageId())
+						.awb(po.getawb())
+						.sequenceNumber(DhlSequenceNumber.of(po.getDHL_ShipmentOrder_ID()))
+						.pdfLabelData(po.getPdfLabelData())
+						.build())
+				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableMap<String, String> sequenceNumberToAWB = ordersPo.stream()
-				.filter(it -> Objects.nonNull(it.getawb()))
-				.collect(ImmutableMap.toImmutableMap(dhlShipOrder -> Integer.toString(dhlShipOrder.getDHL_ShipmentOrder_ID()), I_DHL_ShipmentOrder::getawb));
-
-		final ImmutableMap<String, byte[]> sequenceNumberToPdfLabel = ordersPo.stream()
-				.filter(it -> Objects.nonNull(it.getPdfLabelData()))
-				.collect(ImmutableMap.toImmutableMap(dhlShipOrder -> Integer.toString(dhlShipOrder.getDHL_ShipmentOrder_ID()), I_DHL_ShipmentOrder::getPdfLabelData));
-
-		final ImmutableSet<Integer> packageIds = packageIdsToSequenceNumber.keySet();
+		final ImmutableSet<Integer> packageIds = dhlCustomDeliveryDataDetail.stream()
+				.map(DhlCustomDeliveryDataDetail::getPackageId)
+				.collect(ImmutableSet.toImmutableSet());
 
 		//noinspection UnnecessaryLocalVariable
 		final DeliveryOrder doFromPO = DeliveryOrder.builder()
@@ -175,11 +175,9 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 				// other
 				.customerReference(firstOrder.getCustomerReference())
 				.serviceType(DhlServiceType.valueOf(firstOrder.getDHL_Product()))
-				.deliveryPositions(constructDeliveryPositions(requestPo, firstOrder, packageIds))
+				.deliveryPositions(constructDeliveryPositions(firstOrder, packageIds))
 				.customDeliveryData(DhlCustomDeliveryData.builder()
-						.packageIdsToSequenceNumber(packageIdsToSequenceNumber)
-						.sequenceNumberToAWB(sequenceNumberToAWB)
-						.sequenceNumberToPdfLabel(sequenceNumberToPdfLabel)
+						.details(dhlCustomDeliveryDataDetail)
 						.build())
 				.build();
 
@@ -196,7 +194,10 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 				.list();
 	}
 
-	private Iterable<? extends DeliveryPosition> constructDeliveryPositions(@NonNull final I_DHL_ShipmentOrderRequest requestPo, @NonNull final I_DHL_ShipmentOrder firstOrder, @NonNull final ImmutableSet<Integer> packageIds)
+	@NonNull
+	private Iterable<? extends DeliveryPosition> constructDeliveryPositions(
+			@NonNull final I_DHL_ShipmentOrder firstOrder,
+			@NonNull final ImmutableSet<Integer> packageIds)
 	{
 		final DeliveryPosition singleDeliveryPosition = DeliveryPosition.builder()
 				.packageDimensions(PackageDimensions.builder()
@@ -338,8 +339,9 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 
 				final I_DHL_ShipmentOrder shipmentOrder = getShipmentOrderByRequestIdAndPackageId(deliveryOrder.getRepoId(), packageIdsAsList.get(i));
 				//noinspection ConstantConditions
-				shipmentOrder.setawb(customDeliveryData.getSequenceNumberToAWB().get(Integer.toString(shipmentOrder.getDHL_ShipmentOrder_ID())));
-				shipmentOrder.setPdfLabelData(customDeliveryData.getSequenceNumberToPdfLabel().get(Integer.toString(shipmentOrder.getDHL_ShipmentOrder_ID())));
+				shipmentOrder.setawb(customDeliveryData.getAwbBySequenceNumber(DhlSequenceNumber.of(shipmentOrder.getDHL_ShipmentOrder_ID())));
+				//noinspection ConstantConditions
+				shipmentOrder.setPdfLabelData(customDeliveryData.getPdfLabelDataBySequenceNumber(DhlSequenceNumber.of(shipmentOrder.getDHL_ShipmentOrder_ID())));
 
 				InterfaceWrapperHelper.save(shipmentOrder);
 			}

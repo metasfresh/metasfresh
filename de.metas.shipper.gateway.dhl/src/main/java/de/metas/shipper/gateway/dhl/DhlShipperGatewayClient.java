@@ -22,13 +22,14 @@
 
 package de.metas.shipper.gateway.dhl;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.dhl.webservice.cisbase.AuthentificationType;
 import de.dhl.webservice.cisbase.CommunicationType;
 import de.dhl.webservice.cisbase.CountryType;
 import de.dhl.webservice.cisbase.NameType;
 import de.dhl.webservice.cisbase.NativeAddressType;
+import de.dhl.webservice.cisbase.ObjectFactory;
 import de.dhl.webservice.cisbase.ReceiverNativeAddressType;
 import de.dhl.webservices.businesscustomershipping._3.CreateShipmentOrderRequest;
 import de.dhl.webservices.businesscustomershipping._3.CreateShipmentOrderResponse;
@@ -43,7 +44,9 @@ import de.dhl.webservices.businesscustomershipping._3.ShipperType;
 import de.dhl.webservices.businesscustomershipping._3.Version;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
+import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlPackageLabelType;
+import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.Address;
@@ -54,10 +57,11 @@ import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,42 +125,53 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	@Override
 	public DeliveryOrder createDeliveryOrder(final DeliveryOrder draftDeliveryOrder) throws ShipperGatewayException
 	{
-		throw new ShipperGatewayException("DRAFT Delivery Orders shall never be created.");
+		throw new ShipperGatewayException("(DRAFT) Delivery Orders shall never be created.");
 	}
 
 	@Override
 	public DeliveryOrder completeDeliveryOrder(final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
-		logger.trace("Creating shipment order request for {}", deliveryOrder);
+		final ILoggable iLoggable = getEpicLogger();
+
+		iLoggable.addLog("Creating shipment order request for {}", deliveryOrder);
 		final CreateShipmentOrderRequest dhlRequest = createDHLShipmentOrderRequest(deliveryOrder);
 
 		final CreateShipmentOrderResponse response = (CreateShipmentOrderResponse)doActualRequest(dhlRequest);
 		final DeliveryOrder completedDeliveryOrder = updateDeliveryOrderFromResponse(deliveryOrder, response);
-		logger.trace("Completed deliveryOrder is {}", completedDeliveryOrder);
+
+		iLoggable.addLog("Completed deliveryOrder is {}", completedDeliveryOrder);
 
 		return completedDeliveryOrder;
+	}
+
+	@NonNull
+	private ILoggable getEpicLogger()
+	{
+		return Loggables.withLogger(logger, Level.TRACE);
 	}
 
 	@Override
 	public DeliveryOrder voidDeliveryOrder(final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
 		//noinspection ConstantConditions
+		// todo
 		return null;
 	}
 
 	@Override
 	public List<PackageLabels> getPackageLabelsList(final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
-		logger.trace("getPackageLabelsList for {}", deliveryOrder);
+		final ILoggable iLoggable = getEpicLogger();
+		iLoggable.addLog("getPackageLabelsList for {}", deliveryOrder);
 
 		final DhlCustomDeliveryData customDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
 
 		//noinspection ConstantConditions
-		final ImmutableList<PackageLabels> packageLabels = customDeliveryData.getSequenceNumberToPdfLabel().values().stream()
+		final ImmutableList<PackageLabels> packageLabels = customDeliveryData.getPdfLabels().stream()
 				.map(DhlShipperGatewayClient::createPackageLabel)
 				.collect(ImmutableList.toImmutableList());
 
-		logger.trace("getPackageLabelsList: labels are {}", packageLabels);
+		iLoggable.addLog("getPackageLabelsList: labels are {}", packageLabels);
 
 		return packageLabels;
 	}
@@ -179,32 +194,36 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 				.build();
 	}
 
+	@NonNull
 	private DeliveryOrder updateDeliveryOrderFromResponse(@NonNull final DeliveryOrder deliveryOrder, @NonNull final CreateShipmentOrderResponse response)
 	{
 		final DhlCustomDeliveryData initialCustomDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
 
-		final ImmutableMap.Builder<String, byte[]> sequenceNumberToPdfLabel = ImmutableMap.builder();
-		final ImmutableMap.Builder<String, String> sequenceNumberToAwb = ImmutableMap.builder();
+		final ImmutableList.Builder<DhlCustomDeliveryDataDetail> updatedCustomDeliveryData = ImmutableList.<DhlCustomDeliveryDataDetail>builder();
 
 		for (final CreationState creationState : response.getCreationState())
 		{
 			final LabelData labelData = creationState.getLabelData();
+			final byte[] pdfData = Base64.getDecoder().decode(labelData.getLabelData());
 
-			final byte[] decoded = Base64.getDecoder().decode(labelData.getLabelData());
-			sequenceNumberToPdfLabel.put(creationState.getSequenceNumber(), decoded);
+			final DhlCustomDeliveryDataDetail detail = initialCustomDeliveryData
+					.getDetailBySequenceNumber(DhlSequenceNumber.of(creationState.getSequenceNumber()))
+					.toBuilder()
+					.pdfLabelData(pdfData)
+					.awb(creationState.getShipmentNumber()) // i hope shipmentNumber is the AWB
+					.build();
 
-			// i hope shipmentNumber is the AWB
-			sequenceNumberToAwb.put(creationState.getSequenceNumber(), creationState.getShipmentNumber());
+			updatedCustomDeliveryData.add(detail);
 		}
 
-		//noinspection ConstantConditions
-		final DhlCustomDeliveryData updatedCustomDeliveryData = initialCustomDeliveryData.toBuilder()
-				.sequenceNumberToAWB(sequenceNumberToAwb.build())
-				.sequenceNumberToPdfLabel(sequenceNumberToPdfLabel.build())
-				.build();
-
-		return deliveryOrder.toBuilder()
-				.customDeliveryData(updatedCustomDeliveryData)
+		// imo this implementation is super ugly, but i have no idea how to make it better, and i've wasted enough time as it is.
+		return deliveryOrder
+				.toBuilder()
+				.customDeliveryData(
+						initialCustomDeliveryData
+								.toBuilder()
+								.details(updatedCustomDeliveryData.build())
+								.build())
 				.build();
 	}
 
@@ -341,13 +360,8 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 				// (2) create the needed shipment order type
 				final ShipmentOrderType shipmentOrderType = objectFactory.createShipmentOrderType();
 				final DhlCustomDeliveryData dhlCustomDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
-				//noinspection ConstantConditions
-				final String packageSequenceNumber = dhlCustomDeliveryData.getPackageIdsToSequenceNumber().get(packageIdsAsList.get(i));
-				if (StringUtils.isBlank(packageSequenceNumber))
-				{
-					throw new AdempiereException("PackageSequenceNumber must not be empty. There is a bug somewhere.");
-				}
-				shipmentOrderType.setSequenceNumber(packageSequenceNumber);
+				final DhlSequenceNumber sequenceNumber = dhlCustomDeliveryData.getSequenceNumberByPackageId(packageIdsAsList.get(i));
+				shipmentOrderType.setSequenceNumber(sequenceNumber.getSequenceNumber());
 				shipmentOrderType.setShipment(shipmentOrderTypeShipment);
 				createShipmentOrderRequest.getShipmentOrder().add(shipmentOrderType);
 			}

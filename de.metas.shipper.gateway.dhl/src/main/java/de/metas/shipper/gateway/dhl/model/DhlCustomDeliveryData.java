@@ -22,16 +22,69 @@
 
 package de.metas.shipper.gateway.dhl.model;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import lombok.Builder;
-import lombok.Value;
+import lombok.NonNull;
 
-@Value
+import javax.annotation.Nullable;
+
 @Builder(toBuilder = true)
 public class DhlCustomDeliveryData implements CustomDeliveryData
 {
-	ImmutableMap<Integer, String> packageIdsToSequenceNumber;
-	ImmutableMap<String, byte[]> sequenceNumberToPdfLabel;
-	ImmutableMap<String, String> sequenceNumberToAWB;
+	@NonNull
+	private final ImmutableList<DhlCustomDeliveryDataDetail> details;
+
+	@NonNull
+	public static DhlCustomDeliveryData cast(@NonNull final CustomDeliveryData customDeliveryData)
+	{
+		return (DhlCustomDeliveryData)customDeliveryData;
+	}
+
+	@NonNull
+	public ImmutableList<byte[]> getPdfLabels()
+	{
+		return details.stream()
+				.map(DhlCustomDeliveryDataDetail::getPdfLabelData)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public DhlSequenceNumber getSequenceNumberByPackageId(int packageId)
+	{
+		return details.stream()
+				.filter(it -> it.getPackageId() == packageId)
+				.findFirst()
+				.get()
+				.getSequenceNumber();
+	}
+
+	@NonNull
+	public DhlCustomDeliveryDataDetail getDetailBySequenceNumber(@NonNull final DhlSequenceNumber sequenceNumber)
+	{
+		return getBySequenceNumber(sequenceNumber);
+	}
+
+	@Nullable
+	public byte[] getPdfLabelDataBySequenceNumber(@NonNull final DhlSequenceNumber sequenceNumber)
+	{
+		return getBySequenceNumber(sequenceNumber).getPdfLabelData();
+	}
+
+	@Nullable
+	public String getAwbBySequenceNumber(@NonNull final DhlSequenceNumber sequenceNumber)
+	{
+		return getBySequenceNumber(sequenceNumber).getAwb();
+	}
+
+	@NonNull
+	private DhlCustomDeliveryDataDetail getBySequenceNumber(@NonNull final DhlSequenceNumber sequenceNumber)
+	{
+		//noinspection OptionalGetWithoutIsPresent
+		return details.stream()
+				.filter(it -> it.getSequenceNumber().equals(sequenceNumber))
+				.findFirst()
+				.get();
+	}
+
 }
