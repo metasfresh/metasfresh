@@ -12,6 +12,11 @@ Here come the actual release notes:
 
 
 # metasfresh 5.123
+## Fixes
+* metasfresh-webui-frontend
+  * [#2370](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2370) Performance imporovement for Grid Views/ Table Views
+
+# metasfresh 5.123
 ## Features
 * metasfresh
   * [#5575](https://github.com/metasfresh/metasfresh/issues/5575) Add `ExternalId` to Product
