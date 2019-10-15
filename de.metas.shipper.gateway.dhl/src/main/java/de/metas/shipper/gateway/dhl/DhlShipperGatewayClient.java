@@ -104,11 +104,11 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	{
 		this.config = config;
 
-		webServiceTemplate = createWebServiceTemplate();
-		soapHeaderWithAuth = new SoapHeaderWithAuth();
-
 		objectFactoryCis = new de.dhl.webservice.cisbase.ObjectFactory();
 		objectFactory = new de.dhl.webservices.businesscustomershipping._3.ObjectFactory();
+
+		webServiceTemplate = createWebServiceTemplate();
+		soapHeaderWithAuth = new SoapHeaderWithAuth(objectFactoryCis, config);
 
 		// we're using DHL SOAP API V3
 		API_VERSION = objectFactory.createVersion();
@@ -401,8 +401,18 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		return webServiceTemplate;
 	}
 
-	private class SoapHeaderWithAuth implements WebServiceMessageCallback
+	private static class SoapHeaderWithAuth implements WebServiceMessageCallback
 	{
+
+		private ObjectFactory objectFactoryCis;
+		private DhlClientConfig config;
+
+		private SoapHeaderWithAuth(final ObjectFactory objectFactoryCis, final DhlClientConfig config)
+		{
+			this.objectFactoryCis = objectFactoryCis;
+			this.config = config;
+		}
+
 		// thx to https://www.devglan.com/spring-mvc/custom-header-in-spring-soap-request
 		// 		for the SoapHeader reference
 		@Override
