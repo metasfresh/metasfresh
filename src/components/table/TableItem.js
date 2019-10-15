@@ -241,7 +241,7 @@ class TableItem extends PureComponent {
     const { editedCells } = this.state;
     const cells = merge({}, fieldsByName, editedCells);
 
-    return item.fields.map(prop => {
+    const widgetData = item.fields.reduce((result, prop) => {
       if (cells) {
         let cellWidget = cells[prop.field] || null;
 
@@ -256,11 +256,19 @@ class TableItem extends PureComponent {
             readonly: false,
           };
         }
-        return cellWidget;
-      }
 
-      return null;
-    });
+        if (cellWidget) {
+          result.push(cellWidget);
+        }
+      }
+      return result;
+    }, []);
+
+    if (widgetData.length) {
+      return widgetData;
+    }
+
+    return [{}];
   };
 
   renderCells = () => {
@@ -346,7 +354,9 @@ class TableItem extends PureComponent {
                   keyProperty,
                 }}
                 tdValue={
-                  widgetData ? JSON.stringify(widgetData[0].value) : null
+                  widgetData[0].value
+                    ? JSON.stringify(widgetData[0].value)
+                    : null
                 }
                 getWidgetData={this.getWidgetData}
                 cellExtended={cellsExtended}
