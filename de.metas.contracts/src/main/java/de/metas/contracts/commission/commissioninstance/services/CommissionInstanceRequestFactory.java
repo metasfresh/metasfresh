@@ -67,10 +67,10 @@ public class CommissionInstanceRequestFactory
 
 	private ImmutableList<CreateInstanceRequest> createRequestFor(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId(icRecord.getC_BPartner_SalesRep_ID());
+		final BPartnerId salesRepBPartnerId = BPartnerId.ofRepoId(icRecord.getC_BPartner_SalesRep_ID());
 
 		final ContractRequest contractRequest = ContractRequest.builder()
-				.bPartnerId(bPartnerId)
+				.bPartnerId(salesRepBPartnerId)
 				.date(TimeUtil.asLocalDate(icRecord.getDateOrdered()))
 				.productId(ProductId.ofRepoId(icRecord.getM_Product_ID()))
 				.build();
@@ -86,7 +86,7 @@ public class CommissionInstanceRequestFactory
 			return ImmutableList.of();
 		}
 
-		final Hierarchy hierarchy = commissionHierarchyFactory.createFor(bPartnerId);
+		final Hierarchy hierarchy = commissionHierarchyFactory.createFor(salesRepBPartnerId);
 
 		final ImmutableList.Builder<CreateInstanceRequest> result = ImmutableList.builder();
 		for (final CommissionConfig config : configs)
