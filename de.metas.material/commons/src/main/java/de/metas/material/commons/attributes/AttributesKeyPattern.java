@@ -4,6 +4,8 @@ import java.util.Collection;
 
 import org.adempiere.mm.attributes.AttributeId;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.event.commons.AttributesKey;
@@ -97,7 +99,27 @@ public final class AttributesKeyPattern
 	@Deprecated
 	public String toString()
 	{
-		return getSqlLikeString();
+		final ToStringHelper builder = MoreObjects.toStringHelper(this)
+				.omitNullValues();
+		
+		if(isAll())
+		{
+			builder.addValue("ALL");
+		}
+		else if(isOther())
+		{
+			builder.addValue("OTHERS");
+		}
+		else if(isNone())
+		{
+			builder.addValue("NONE");
+		}
+		else //
+		{
+			builder.addValue(partPatterns);
+		}
+		
+		return builder.toString();
 	}
 
 	public boolean isAll()

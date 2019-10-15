@@ -15,6 +15,8 @@ import com.jgoodies.common.base.Objects;
 import de.metas.material.event.commons.AttributeKeyPartType;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.AttributesKeyPart;
+import de.metas.util.Check;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -188,7 +190,10 @@ final class AttributesKeyPartPattern implements Comparable<AttributesKeyPartPatt
 		}
 	}
 
+	@Getter(AccessLevel.PACKAGE)
+	@VisibleForTesting
 	private final AttributeKeyPartPatternType type;
+
 	private final int specialCode;
 	private final AttributeValueId attributeValueId;
 	private final AttributeId attributeId;
@@ -208,17 +213,82 @@ final class AttributesKeyPartPattern implements Comparable<AttributesKeyPartPatt
 		this.type = type;
 		this.sqlLikePart = sqlLikePart;
 
-		this.specialCode = specialCode;
-		this.attributeValueId = attributeValueId;
-		this.attributeId = attributeId;
-		this.value = value;
+		if (type == AttributeKeyPartPatternType.AttributeValueId)
+		{
+			Check.assumeNotNull(attributeValueId, "Parameter attributeValueId is not null");
+			this.specialCode = 0;
+			this.attributeValueId = attributeValueId;
+			this.attributeId = null;
+			this.value = null;
+		}
+		else if (type == AttributeKeyPartPatternType.AttributeId)
+		{
+			Check.assumeNotNull(attributeId, "Parameter attributeId is not null");
+			this.specialCode = 0;
+			this.attributeValueId = null;
+			this.attributeId = attributeId;
+			this.value = null;
+		}
+		else if (type == AttributeKeyPartPatternType.AttributeIdAndValue)
+		{
+			Check.assumeNotNull(attributeId, "Parameter attributeId is not null");
+			this.specialCode = 0;
+			this.attributeValueId = null;
+			this.attributeId = attributeId;
+			this.value = value;
+		}
+		else if (type == AttributeKeyPartPatternType.All
+				|| type == AttributeKeyPartPatternType.Other
+				|| type == AttributeKeyPartPatternType.None)
+		{
+			if (specialCode == 0)
+			{
+				throw new AdempiereException("Invalid special code");
+			}
+			this.specialCode = specialCode;
+			this.attributeValueId = null;
+			this.attributeId = null;
+			this.value = null;
+		}
+		else
+		{
+			throw new AdempiereException("Unknow type: " + type);
+		}
 	}
 
 	@Override
 	@Deprecated
 	public String toString()
 	{
-		return sqlLikePart;
+		if (type == AttributeKeyPartPatternType.All)
+		{
+			return "ALL";
+		}
+		else if (type == AttributeKeyPartPatternType.Other)
+		{
+			return "OTHERS";
+		}
+		else if (type == AttributeKeyPartPatternType.None)
+		{
+			return "NONE";
+		}
+		else if (type == AttributeKeyPartPatternType.AttributeValueId)
+		{
+			return "attributeValueId=" + attributeValueId.getRepoId();
+		}
+		else if (type == AttributeKeyPartPatternType.AttributeIdAndValue)
+		{
+			return attributeId + "=" + String.valueOf(value);
+		}
+		else if (type == AttributeKeyPartPatternType.AttributeId)
+		{
+			return attributeId + "=<ANY>";
+		}
+		else
+		{
+			// shall not happen
+			return "unknown";
+		}
 	}
 
 	@Override
