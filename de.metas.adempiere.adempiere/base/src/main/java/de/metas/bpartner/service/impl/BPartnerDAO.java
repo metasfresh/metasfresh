@@ -1043,8 +1043,10 @@ public class BPartnerDAO implements IBPartnerDAO
 				.create()
 				.first();
 
+		// if we do not need to check relation, return location already found or null
 		// if not matching location is set and we found already a location, use that one
-		if (query.getRelationBPartnerLocationId() == null && ownToLocation != null)
+		if ((query.getRelationBPartnerLocationId() == null)
+				|| (query.getRelationBPartnerLocationId() == null && ownToLocation != null))
 		{
 			return createLocationIdOrNull(bpartnerId, ownToLocation);
 		}
@@ -1052,6 +1054,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		final IQueryBuilder<I_C_BP_Relation> bpRelationQueryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BP_Relation.class)
 				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_Location_ID, query.getRelationBPartnerLocationId())
 				.addEqualsFilter(typeFilterColumnName, true)
 				.addOnlyActiveRecordsFilter();
 
@@ -1062,7 +1065,6 @@ public class BPartnerDAO implements IBPartnerDAO
 				.create()
 				.stream()
 				.map(bpRelationRecord -> ofRelationRecord(bpRelationRecord))
-				.filter(bpRelation -> Objects.equals(query.getRelationBPartnerLocationId(), bpRelation.getBplocationId()))
 				.findFirst()
 				.map(bpRelation -> bpRelation.getTargetBPLocationId());
 

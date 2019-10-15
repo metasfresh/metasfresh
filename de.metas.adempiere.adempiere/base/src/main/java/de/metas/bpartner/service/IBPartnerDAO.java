@@ -298,7 +298,7 @@ public interface IBPartnerDAO extends ISingletonService
 		boolean applyTypeStrictly = true;
 
 		/**
-		 * If set, then return the bPartner relation which has this id as {@code C_BPartner_Location_ID} and if found, return that relation's {@code C_BPartnerRelation_Location_ID}.
+		 * If set, then return the bPartner relation which has this id as {@code C_BPartner_Location_ID} and if not found, fallback to initial location.
 		 */
 		@Nullable
 		BPartnerLocationId relationBPartnerLocationId;
