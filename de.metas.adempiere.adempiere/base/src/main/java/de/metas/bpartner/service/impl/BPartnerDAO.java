@@ -1044,9 +1044,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.first();
 
 		// if we do not need to check relation, return location already found or null
-		// if not matching location is set and we found already a location, use that one
-		if ((query.getRelationBPartnerLocationId() == null)
-				|| (query.getRelationBPartnerLocationId() == null && ownToLocation != null))
+		if (query.getRelationBPartnerLocationId() == null)
 		{
 			return createLocationIdOrNull(bpartnerId, ownToLocation);
 		}
