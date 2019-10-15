@@ -13,19 +13,6 @@ import { shouldRenderColumn } from '../../utils/tableHelpers';
 import { WithMobileDoubleTap } from '../WithMobileDoubleTap';
 
 class TableItem extends PureComponent {
-  static getDerivedStateFromProps(props, state) {
-    // Any time the dataKey changes,
-    // Reset edited cells as we have a completely
-    // new dataset
-    if (props.dataKey !== state.dataKey) {
-      return {
-        ...state,
-        editedCells: {},
-      };
-    }
-    return state;
-  }
-
   constructor(props) {
     super(props);
 
@@ -44,7 +31,6 @@ class TableItem extends PureComponent {
 
     this.state = {
       edited: '',
-      dataKey: props.dataKey,
       activeCell: '',
       updatedRow: false,
       listenOnKeys: true,
@@ -59,6 +45,12 @@ class TableItem extends PureComponent {
 
     if (multilineText && this.props.isSelected !== prevProps.isSelected) {
       this.handleCellExtend();
+    }
+
+    if (this.props.dataHash !== prevProps.dataHash) {
+      this.setState({
+        editedCells: {},
+      });
     }
   }
 
@@ -226,10 +218,57 @@ class TableItem extends PureComponent {
     }
   };
 
+  handleClick = e => {
+    const { onClick, item } = this.props;
+
+    onClick(e, item);
+  };
+
+  handleClickOutside = e => {
+    const { changeListenOnTrue } = this.props;
+    this.handleEditProperty(e);
+    changeListenOnTrue();
+  };
+
   handleCellExtend = () => {
     this.setState({
       cellsExtended: !this.state.cellsExtended,
     });
+  };
+
+  getWidgetData = (item, isEditable, supportFieldEdit) => {
+    const { fieldsByName } = this.props;
+    const { editedCells } = this.state;
+    const cells = merge({}, fieldsByName, editedCells);
+
+    const widgetData = item.fields.reduce((result, prop) => {
+      if (cells) {
+        let cellWidget = cells[prop.field] || null;
+
+        if (
+          isEditable ||
+          (supportFieldEdit && typeof cellWidget === 'object')
+        ) {
+          cellWidget = {
+            ...cellWidget,
+            widgetType: item.widgetType,
+            displayed: true,
+            readonly: false,
+          };
+        }
+
+        if (cellWidget) {
+          result.push(cellWidget);
+        }
+      }
+      return result;
+    }, []);
+
+    if (widgetData.length) {
+      return widgetData;
+    }
+
+    return [{}];
   };
 
   renderCells = () => {
@@ -242,7 +281,6 @@ class TableItem extends PureComponent {
       tabId,
       mainTable,
       newRow,
-      changeListenOnTrue,
       tabIndex,
       entity,
       getSizeClass,
@@ -250,6 +288,7 @@ class TableItem extends PureComponent {
       caption,
       colspan,
       viewId,
+      keyProperty,
       isSelected,
     } = this.props;
     const {
@@ -283,27 +322,13 @@ class TableItem extends PureComponent {
             const isEdited = edited === property;
             const extendLongText = multilineText ? multilineTextLines : 0;
 
-            let widgetData = item.fields.map(prop => {
-              if (cells) {
-                let cellWidget = cells[prop.field] || -1;
-
-                if (
-                  isEditable ||
-                  (supportFieldEdit && typeof cellWidget === 'object')
-                ) {
-                  cellWidget = {
-                    ...cellWidget,
-                    widgetType: item.widgetType,
-                    displayed: true,
-                    readonly: false,
-                  };
-                }
-                return cellWidget;
-              }
-              return -1;
-            });
-            // HACK: Color fields should always be readonly
             isEditable = item.widgetType === 'Color' ? false : isEditable;
+
+            const widgetData = this.getWidgetData(
+              item,
+              isEditable,
+              supportFieldEdit
+            );
 
             return (
               <TableCell
@@ -315,7 +340,6 @@ class TableItem extends PureComponent {
                   rowId,
                   tabId,
                   item,
-                  widgetData,
                   tabIndex,
                   listenOnKeys,
                   caption,
@@ -323,38 +347,32 @@ class TableItem extends PureComponent {
                   viewId,
                   extendLongText,
                   property,
+                  isEditable,
+                  supportZoomInto,
+                  supportFieldEdit,
+                  handleRightClick,
+                  keyProperty,
                 }}
+                tdValue={
+                  widgetData[0].value
+                    ? JSON.stringify(widgetData[0].value)
+                    : null
+                }
+                getWidgetData={this.getWidgetData}
                 cellExtended={cellsExtended}
                 key={`${rowId}-${property}`}
                 isRowSelected={isSelected}
                 isEdited={isEdited}
-                handleDoubleClick={e => {
-                  if (isEditable) {
-                    this.handleEditProperty(e, property, true, widgetData[0]);
-                  }
-                }}
-                onClickOutside={e => {
-                  this.handleEditProperty(e);
-                  changeListenOnTrue();
-                }}
+                handleDoubleClick={this.handleEditProperty}
+                onClickOutside={this.handleClickOutside}
                 onCellChange={this.onCellChange}
                 onCellExtend={this.handleCellExtend}
                 updatedRow={updatedRow || newRow}
                 updateRow={this.updateRow}
-                handleKeyDown={e =>
-                  this.handleKeyDown(e, property, widgetData[0])
-                }
+                handleKeyDown={this.handleKeyDown}
                 listenOnKeysTrue={this.listenOnKeysTrue}
                 listenOnKeysFalse={this.listenOnKeysFalse}
-                closeTableField={e => this.closeTableField(e)}
-                handleRightClick={e =>
-                  handleRightClick(
-                    e,
-                    property,
-                    supportZoomInto,
-                    supportFieldEdit
-                  )
-                }
+                closeTableField={this.closeTableField}
               />
             );
           }
@@ -490,7 +508,6 @@ class TableItem extends PureComponent {
     const {
       key,
       isSelected,
-      onClick,
       odd,
       indentSupported,
       indent,
@@ -506,7 +523,7 @@ class TableItem extends PureComponent {
       <WithMobileDoubleTap>
         <tr
           key={key}
-          onClick={onClick}
+          onClick={this.handleClick}
           onDoubleClick={this.handleDoubleClick}
           className={classnames({
             'row-selected': isSelected,
@@ -535,10 +552,15 @@ TableItem.propTypes = {
   handleSelect: PropTypes.func,
   onDoubleClick: PropTypes.func,
   indentSupported: PropTypes.bool,
+  collapsible: PropTypes.bool,
   collapsed: PropTypes.bool,
   processed: PropTypes.bool,
   notSaved: PropTypes.bool,
   isSelected: PropTypes.bool,
+  odd: PropTypes.number,
+  caption: PropTypes.string,
+  dataHash: PropTypes.string.isRequired,
+  key: PropTypes.string,
 };
 
 export default connect(

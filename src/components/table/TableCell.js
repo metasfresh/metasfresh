@@ -132,17 +132,14 @@ class TableCell extends PureComponent {
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
-    const { widgetData, updateRow, readonly, rowId } = this.props;
+    const { updateRow, readonly, rowId, tdValue } = this.props;
+    const { tdValue: nextTdValue } = nextProps;
     // We should avoid highlighting when whole row is exchanged (sorting)
     if (rowId !== nextProps.rowId) {
       return;
     }
 
-    if (
-      !readonly &&
-      JSON.stringify(widgetData[0].value) !==
-        JSON.stringify(nextProps.widgetData[0].value)
-    ) {
+    if (!readonly && tdValue !== nextTdValue) {
       updateRow();
     }
   }
@@ -170,19 +167,67 @@ class TableCell extends PureComponent {
     }
   };
 
+  handleKeyDown = e => {
+    const {
+      handleKeyDown,
+      property,
+      item,
+      getWidgetData,
+      isEditable,
+      supportFieldEdit,
+    } = this.props;
+    const widgetData = getWidgetData(item, isEditable, supportFieldEdit);
+
+    handleKeyDown(e, property, widgetData[0]);
+  };
+
+  handleRightClick = e => {
+    const {
+      handleRightClick,
+      property,
+      supportZoomInto,
+      supportFieldEdit,
+      keyProperty,
+    } = this.props;
+
+    handleRightClick(
+      e,
+      keyProperty,
+      property,
+      !!supportZoomInto,
+      supportFieldEdit
+    );
+  };
+
+  onDoubleClick = e => {
+    const {
+      property,
+      item,
+      getWidgetData,
+      isEditable,
+      supportFieldEdit,
+      handleDoubleClick,
+    } = this.props;
+    const widgetData = getWidgetData(item, isEditable, supportFieldEdit);
+
+    if (isEditable) {
+      handleDoubleClick(e, property, true, widgetData[0]);
+    }
+  };
+
   render() {
     const {
       isEdited,
+      isEditable,
+      supportFieldEdit,
       cellExtended,
       extendLongText,
-      widgetData,
+      getWidgetData,
       item,
       windowId,
       rowId,
       tabId,
       property,
-      handleDoubleClick,
-      handleKeyDown,
       updatedRow,
       tabIndex,
       entity,
@@ -191,7 +236,6 @@ class TableCell extends PureComponent {
       listenOnKeysTrue,
       closeTableField,
       getSizeClass,
-      handleRightClick,
       mainTable,
       onCellChange,
       viewId,
@@ -199,6 +243,7 @@ class TableCell extends PureComponent {
       onClickOutside,
       isGerman,
     } = this.props;
+    const widgetData = getWidgetData(item, isEditable, supportFieldEdit);
 
     const docId = `${this.props.docId}`;
     const { tooltipToggled } = this.state;
@@ -259,9 +304,9 @@ class TableCell extends PureComponent {
       <td
         tabIndex={modalVisible ? -1 : tabIndex}
         ref={c => (this.cell = c)}
-        onDoubleClick={handleDoubleClick}
-        onKeyDown={handleKeyDown}
-        onContextMenu={handleRightClick}
+        onDoubleClick={this.onDoubleClick}
+        onKeyDown={this.handleKeyDown}
+        onContextMenu={this.handleRightClick}
         className={classnames(
           {
             [`text-${item.gridAlign}`]: item.gridAlign,
@@ -280,25 +325,28 @@ class TableCell extends PureComponent {
         {isEdited ? (
           <MasterWidget
             {...item}
+            {...{
+              getWidgetData,
+              viewId,
+              rowId,
+              widgetData,
+              closeTableField,
+              isOpenDatePicker,
+              listenOnKeys,
+              listenOnKeysFalse,
+              listenOnKeysTrue,
+              onClickOutside,
+            }}
             entity={entityEffective}
             dateFormat={isDateField}
             dataId={mainTable ? null : docId}
-            widgetData={widgetData}
             windowType={windowId}
             isMainTable={mainTable}
-            rowId={rowId}
-            viewId={viewId}
             tabId={mainTable ? null : tabId}
             noLabel={true}
             gridAlign={item.gridAlign}
             handleBackdropLock={this.handleBackdropLock}
-            onClickOutside={onClickOutside}
-            listenOnKeys={listenOnKeys}
-            listenOnKeysTrue={listenOnKeysTrue}
-            listenOnKeysFalse={listenOnKeysFalse}
             onChange={mainTable ? onCellChange : null}
-            closeTableField={closeTableField}
-            isOpenDatePicker={isOpenDatePicker}
             ref={c => {
               this.widget = c && c.getWrappedInstance();
             }}
@@ -331,9 +379,11 @@ class TableCell extends PureComponent {
 }
 
 TableCell.propTypes = {
+  isEditable: PropTypes.bool,
   cellExtended: PropTypes.bool,
   extendLongText: PropTypes.number,
   property: PropTypes.string,
+  getWidgetData: PropTypes.func,
   handleRightClick: PropTypes.func,
   handleKeyDown: PropTypes.func,
   handleDoubleClick: PropTypes.func,
