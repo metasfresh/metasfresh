@@ -3,21 +3,14 @@ package de.metas.bpartner.impexp;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.ModelValidationEngine;
-import org.slf4j.Logger;
 
-import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.impexp.BPartnersCache.BPartner;
 import de.metas.impexp.processing.IImportInterceptor;
-import de.metas.logging.LogManager;
-import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
-import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -52,9 +45,7 @@ import lombok.NonNull;
 	}
 
 	// services
-	private static final Logger logger = LogManager.getLogger(BPartnerContactImportHelper.class);
-	private final transient IUserBL userBL = Services.get(IUserBL.class);
-
+	private final IUserBL userBL = Services.get(IUserBL.class);
 	private BPartnerImportProcess process;
 
 	private BPartnerContactImportHelper()
@@ -67,77 +58,79 @@ import lombok.NonNull;
 		return this;
 	}
 
-	public I_AD_User importRecord(final I_I_BPartner importRecord)
+	public void importRecord(@NonNull final BPartnerImportContext context)
 	{
-		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
-		final IUserDAO userDAO = Services.get(IUserDAO.class);
-
-		final I_C_BPartner bpartner = partnerDAO.getByIdInTrx(BPartnerId.ofRepoId(importRecord.getC_BPartner_ID()));
-
-		BPartnerLocationId bpLocIdOrNull = BPartnerLocationId.ofRepoIdOrNull(importRecord.getC_BPartner_ID(), importRecord.getC_BPartner_Location_ID());
-		final I_C_BPartner_Location bpartnerLocation = bpLocIdOrNull == null? null : partnerDAO.getBPartnerLocationById(bpLocIdOrNull);
-
+		final I_I_BPartner importRecord = context.getCurrentImportRecord();
 		final String importContactName = userBL.buildContactName(importRecord.getFirstname(), importRecord.getLastname());
 
-		final UserId userIdOrNull = UserId.ofRepoIdOrNull(importRecord.getAD_User_ID() <= 0 ? -1 : importRecord.getAD_User_ID());
-		I_AD_User user = userIdOrNull == null ? null : userDAO.getById(userIdOrNull);
+		final BPartner bpartner = context.getCurrentBPartner();
 
-		if (user != null)
+		final BPartnerContactId existingContactId = context.getCurrentBPartnerContactIdOrNull();
+		I_AD_User contact = existingContactId != null
+				? bpartner.getContactById(existingContactId).orElse(null)
+				: null;
+
+		//
+		// Existing contact
+		if (contact != null)
 		{
-			if (user.getC_BPartner_ID() <= 0)
+			if (contact.getC_BPartner_ID() <= 0)
 			{
-				user.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+				contact.setC_BPartner_ID(bpartner.getIdOrNull().getRepoId());
 			}
-			else if (user.getC_BPartner_ID() != bpartner.getC_BPartner_ID())
+			else if (contact.getC_BPartner_ID() != bpartner.getIdOrNull().getRepoId())
 			{
 				throw new AdempiereException("BP of User <> BP");
 			}
-			if (importRecord.getC_Greeting_ID() != 0)
-			{
-				user.setC_Greeting_ID(importRecord.getC_Greeting_ID());
-			}
-			if (importRecord.getC_Job_ID() > 0)
-			{
-				user.setC_Job_ID(importRecord.getC_Job_ID());
-			}
-			user.setName(Check.isEmpty(importContactName, true) ? importRecord.getEMail() : importContactName);
-			updateWithAvailableImportRecordFields(importRecord, user);
 
-			if (bpartnerLocation != null)
-			{
-				user.setC_BPartner_Location_ID(bpartnerLocation.getC_BPartner_Location_ID());
-			}
-
-			ModelValidationEngine.get().fireImportValidate(process, importRecord, user, IImportInterceptor.TIMING_AFTER_IMPORT);
-			InterfaceWrapperHelper.save(user);
-		}
-		else 	// New Contact
-		if (!Check.isEmpty(importContactName, true)
-				|| !Check.isEmpty(importRecord.getEMail(), true))
-		{
-			user = Services.get(IBPartnerBL.class).createDraftContact(bpartner);
 			if (importRecord.getC_Greeting_ID() > 0)
 			{
-				user.setC_Greeting_ID(importRecord.getC_Greeting_ID());
+				contact.setC_Greeting_ID(importRecord.getC_Greeting_ID());
 			}
 			if (importRecord.getC_Job_ID() > 0)
 			{
-				user.setC_Job_ID(importRecord.getC_Job_ID());
+				contact.setC_Job_ID(importRecord.getC_Job_ID());
 			}
-			user.setName(Check.isEmpty(importContactName, true) ? importRecord.getEMail() : importContactName);
-			updateWithImportRecordFields(importRecord, user);
-			if (bpartnerLocation != null)
-			{
-				user.setC_BPartner_Location_ID(bpartnerLocation.getC_BPartner_Location_ID());
-			}
-			ModelValidationEngine.get().fireImportValidate(process, importRecord, user, IImportInterceptor.TIMING_AFTER_IMPORT);
-			InterfaceWrapperHelper.save(user);
-			logger.trace("Insert BP Contact - {}", user);
+			contact.setName(Check.isEmpty(importContactName, true) ? importRecord.getEMail() : importContactName);
+			updateWithAvailableImportRecordFields(importRecord, contact);
+		}
+		//
+		// New Contact
+		else if (!Check.isEmpty(importContactName, true)
+				|| !Check.isEmpty(importRecord.getEMail(), true))
+		{
+			contact = InterfaceWrapperHelper.newInstance(I_AD_User.class);
+			contact.setAD_Org_ID(bpartner.getOrgId());
+			contact.setC_BPartner_ID(bpartner.getIdOrNull().getRepoId());
 
-			importRecord.setAD_User_ID(user.getAD_User_ID());
+			if (importRecord.getC_Greeting_ID() > 0)
+			{
+				contact.setC_Greeting_ID(importRecord.getC_Greeting_ID());
+			}
+			if (importRecord.getC_Job_ID() > 0)
+			{
+				contact.setC_Job_ID(importRecord.getC_Job_ID());
+			}
+			contact.setName(Check.isEmpty(importContactName, true) ? importRecord.getEMail() : importContactName);
+
+			updateWithImportRecordFields(importRecord, contact);
 		}
 
-		return user;
+		//
+		//
+		if (contact != null)
+		{
+			final BPartnerLocationId bpLocationId = context.getCurrentBPartnerLocationIdOrNull();
+			if (bpLocationId != null)
+			{
+				contact.setC_BPartner_Location_ID(bpLocationId.getRepoId());
+			}
+
+			ModelValidationEngine.get().fireImportValidate(process, importRecord, contact, IImportInterceptor.TIMING_AFTER_IMPORT);
+
+			final BPartnerContactId contactId = bpartner.addAndSaveContact(contact);
+			context.setCurrentBPartnerContactId(contactId);
+		}
 	}
 
 	/**

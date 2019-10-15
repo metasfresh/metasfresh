@@ -24,7 +24,6 @@ package de.metas.handlingunits.impl;
 
 
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.util.Properties;
@@ -81,7 +80,7 @@ public class HUPickingSlotTest
 		// Create a dynamic slot and assign it to partner
 		final I_M_PickingSlot pickingSlot = InterfaceWrapperHelper.create(ctx, I_M_PickingSlot.class, trxName);
 		pickingSlot.setIsDynamic(true);
-		pickingSlot.setC_BPartner(bpartner);
+		pickingSlot.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		InterfaceWrapperHelper.save(pickingSlot);
 
 		//
@@ -109,11 +108,11 @@ public class HUPickingSlotTest
 		//
 		// Remove just the first HU hu1 (queue is not yet empty)
 		huPickingSlotBL.removeFromPickingSlotQueue(pickingSlot, hu1);
-		assertThat("Queue is not yet empty, so partner shall not yet be released", pickingSlot.getC_BPartner(), is(bpartner));
+		assertThat("Queue is not yet empty, so partner shall not yet be released", pickingSlot.getC_BPartner_ID(), is(bpartner.getC_BPartner_ID()));
 
 		//
 		// Remove the second HU hu2 (queue shall now be empty)
 		huPickingSlotBL.removeFromPickingSlotQueue(pickingSlot, hu2);
-		assertThat("Queue is empty, so partner shall be released", pickingSlot.getC_BPartner(), nullValue());
+		assertThat("Queue is empty, so partner shall be released", pickingSlot.getC_BPartner_ID(), is(-1));
 	}
 }

@@ -2,6 +2,7 @@ package de.metas.location;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.compiere.model.I_C_Location;
 
@@ -40,4 +41,6 @@ public interface ILocationDAO extends ISingletonService
 	CountryId getCountryIdByLocationId(LocationId id);
 
 	LocationId createLocation(LocationCreateRequest request);
+
+	Stream<GeographicalCoordinatesWithLocationId> streamGeoCoordinatesByIds(Set<LocationId> locationIds);
 }

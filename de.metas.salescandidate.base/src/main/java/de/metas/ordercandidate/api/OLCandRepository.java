@@ -7,6 +7,7 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -53,6 +54,8 @@ import lombok.NonNull;
 @Repository
 public class OLCandRepository
 {
+	private IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
 	public OLCandSource getForProcessor(@NonNull OLCandProcessorDescriptor processor)
 	{
 		return RelationTypeOLCandSource.builder()
@@ -83,18 +86,26 @@ public class OLCandRepository
 			olCandPO.setAD_Org_ID(request.getOrgId().getRepoId());
 		}
 		final OrgId orgId = OrgId.ofRepoIdOrAny(olCandPO.getAD_Org_ID());
-		final ZoneId timeZone = Services.get(IOrgDAO.class).getTimeZone(orgId);
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
 		{
 			final BPartnerInfo bpartner = request.getBpartner();
+			final BPartnerLocationId bpartnerLocationId = bpartner.getBpartnerLocationId();
+			if (bpartnerLocationId == null)
+			{
+				throw new AdempiereException("Given OLCandCreateRequest has no BpartnerLocationId")
+						.appendParametersToMessage()
+						.setParameter("OLCandCreateRequest", request);
+			}
+
 			olCandPO.setC_BPartner_ID(BPartnerId.toRepoId(bpartner.getBpartnerId()));
-			olCandPO.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartner.getBpartnerLocationId()));
+			olCandPO.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartnerLocationId));
 			olCandPO.setAD_User_ID(BPartnerContactId.toRepoId(bpartner.getContactId()));
 		}
 
 		if (request.getBillBPartner() != null)
 		{
-			BPartnerInfo bpartner = request.getBillBPartner();
+			final BPartnerInfo bpartner = request.getBillBPartner();
 			olCandPO.setBill_BPartner_ID(BPartnerId.toRepoId(bpartner.getBpartnerId()));
 			olCandPO.setBill_Location_ID(BPartnerLocationId.toRepoId(bpartner.getBpartnerLocationId()));
 			olCandPO.setBill_User_ID(BPartnerContactId.toRepoId(bpartner.getContactId()));

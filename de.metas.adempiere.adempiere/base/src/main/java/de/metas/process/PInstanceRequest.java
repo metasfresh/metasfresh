@@ -1,10 +1,19 @@
-package de.metas.location.geocoding;
+/**
+ *
+ */
+package de.metas.process;
+
+import java.util.List;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
- * metasfresh-pharma
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,18 +22,23 @@ package de.metas.location.geocoding;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import java.util.Optional;
-
-public interface GeoCoordinatesProvider
+/**
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+@Value
+@Builder
+public class PInstanceRequest
 {
-	Optional<GeographicalCoordinates> findBestCoordinates(GeoCoordinatesRequest request);
+	@NonNull AdProcessId processId;
+	List<ProcessInfoParameter> processParams;
 }

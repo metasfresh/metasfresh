@@ -1,14 +1,13 @@
 package de.metas.location.geocoding;
 
-import java.util.List;
 import java.util.Optional;
 
-import org.slf4j.Logger;
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.logging.LogManager;
+import de.metas.location.geocoding.provider.GeocodingProviderFactory;
 import lombok.NonNull;
 
 /*
@@ -34,35 +33,25 @@ import lombok.NonNull;
  */
 
 @Service
-public class GeoCoordinatesService
+public class GeocodingService
 {
-	private static final Logger logger = LogManager.getLogger(GeoCoordinatesService.class);
+	private final GeocodingProviderFactory providersFactory;
 
-	private final ImmutableList<GeoCoordinatesProvider> providers;
-
-	public GeoCoordinatesService(final Optional<List<GeoCoordinatesProvider>> providers)
+	public GeocodingService(
+			@NonNull final GeocodingProviderFactory providersFactory)
 	{
-		this.providers = providers
-				.map(ImmutableList::copyOf)
-				.orElseGet(ImmutableList::of);
-
-		logger.info("Providers: {}", this.providers);
-	}
-
-	private GeoCoordinatesProvider getProviderOrNull()
-	{
-		return providers != null ? providers.get(0) : null;
+		this.providersFactory = providersFactory;
 	}
 
 	public Optional<GeographicalCoordinates> findBestCoordinates(@NonNull final GeoCoordinatesRequest request)
 	{
-		final GeoCoordinatesProvider provider = getProviderOrNull();
-		if (provider == null)
-		{
-			return Optional.empty();
-		}
-
+		final GeocodingProvider provider = getProvider();
 		return provider.findBestCoordinates(request);
 	}
 
+	@NonNull
+	private GeocodingProvider getProvider()
+	{
+		return providersFactory.getProvider().orElseThrow(() -> new AdempiereException("No Provider Selected"));
+	}
 }

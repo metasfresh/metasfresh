@@ -187,10 +187,11 @@ final class ProductMasterDataProvider
 			@NonNull final OrgId orgId)
 	{
 		final String productValue = json.getCode();
+		final String productExternalId = json.getExternalId();
 		final SyncAdvise syncAdvise = json.getSyncAdvise();
 
 		final ProductId existingProductId;
-		if (Check.isEmpty(productValue, true))
+		if (Check.isEmpty(productValue, true) && Check.isEmpty(productExternalId, true))
 		{
 			existingProductId = null;
 		}
@@ -198,6 +199,7 @@ final class ProductMasterDataProvider
 		{
 			final ProductQuery query = ProductQuery.builder()
 					.value(productValue)
+					.externalId(productExternalId)
 					.orgId(orgId)
 					.includeAnyOrg(true)
 					.outOfTrx(syncAdvise.isLoadReadOnly())
@@ -207,7 +209,7 @@ final class ProductMasterDataProvider
 
 		if (existingProductId == null && syncAdvise.getIfNotExists().isFail())
 		{
-			final String msg = StringUtils.formatMessage("Found no existing product; Searched via value={} and orgId in ({}, 0)", productValue, orgId);
+			final String msg = StringUtils.formatMessage("Found no existing product; Searched via (value={} or externalId={}) and orgId in ({}, 0)", productValue, productExternalId, orgId);
 			throw new ProductNotFoundException(msg);
 		}
 

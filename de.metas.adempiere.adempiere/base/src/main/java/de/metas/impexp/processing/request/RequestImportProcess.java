@@ -21,6 +21,8 @@ package de.metas.impexp.processing.request;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -40,8 +42,11 @@ import org.compiere.model.PO;
 import org.compiere.model.X_I_Request;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
+import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.logging.LogManager;
 
 /**
  * Imports {@link I_I_Request} records to {@link I_R_Request}.
@@ -51,6 +56,8 @@ import de.metas.impexp.processing.SimpleImportProcessTemplate;
  */
 public class RequestImportProcess extends SimpleImportProcessTemplate<I_I_Request>
 {
+	private static final Logger log = LogManager.getLogger(RequestImportProcess.class);
+
 
 	@Override
 	public Class<I_I_Request> getImportModelClass()
@@ -79,8 +86,10 @@ public class RequestImportProcess extends SimpleImportProcessTemplate<I_I_Reques
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
+		final ImportRecordsSelection selection = getImportRecordsSelection();
+
 		final String sqlImportWhereClause = COLUMNNAME_I_IsImported + "<>" + DB.TO_BOOLEAN(true)
-				+ "\n " + getWhereClause();
+				+ "\n " + selection.toSqlWhereClause("i");
 		//
 		// Update C_BPartner_ID
 		{
@@ -166,7 +175,7 @@ public class RequestImportProcess extends SimpleImportProcessTemplate<I_I_Reques
 
 	private final void markAsError(final String errorMsg, final String sqlWhereClause)
 	{
-		final String sql = "UPDATE " + I_I_Request.Table_Name
+		final String sql = "UPDATE " + I_I_Request.Table_Name + " i "
 				+ "\n SET " + COLUMNNAME_I_IsImported + "=?, " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||? "
 				+ "\n WHERE " + sqlWhereClause;
 		final Object[] sqlParams = new Object[] { X_I_Request.I_ISIMPORTED_ImportFailed, errorMsg + "; " };

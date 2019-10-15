@@ -6,6 +6,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -43,6 +48,8 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -51,6 +58,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
@@ -62,6 +70,8 @@ import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.X_C_Location;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -76,10 +86,12 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
 import de.metas.bpartner.GLN;
+import de.metas.bpartner.GeographicalCoordinatesWithBPartnerLocationId;
 import de.metas.bpartner.service.BPartnerContactQuery;
 import de.metas.bpartner.service.BPartnerIdNotFoundException;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
@@ -88,6 +100,7 @@ import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
+import de.metas.location.geocoding.GeographicalCoordinates;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -992,23 +1005,40 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public I_C_BPartner_Location retrieveBPartnerLocation(@NonNull final BPartnerLocationQuery query)
 	{
-		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner_Location.class);
+		final BPartnerLocationId bPartnerLocationId = retrieveBPartnerLocationId(query);
+		if (bPartnerLocationId == null)
+		{
+			return null;
+		}
+		return loadOutOfTrx(bPartnerLocationId, I_C_BPartner_Location.class);
+	}
 
-		final ICompositeQueryFilter<I_C_BPartner_Location> filters = queryBuilder.getCompositeFilter();
-		filters.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, query.getBpartnerId());
-		filters.addEqualsFilter(getFilterColumnNameForType(query.getType()), true);
-		filters.addOnlyActiveRecordsFilter();
+	@Override
+	public BPartnerLocationId retrieveBPartnerLocationId(@NonNull final BPartnerLocationQuery query)
+	{
+		final String typeFilterColumnName = getFilterColumnNameForType(query.getType());
+
+		final BPartnerId bpartnerId = query.getBpartnerId();
+
+		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BPartner_Location.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner_Location.COLUMN_C_BPartner_ID, bpartnerId);
+		if (query.isApplyTypeStrictly())
+		{
+			queryBuilder.addEqualsFilter(typeFilterColumnName, true);
+		}
+		else
+		{
+			queryBuilder.orderByDescending(typeFilterColumnName); // "Y" first
+		}
 
 		final String orderByColumnName = getOrderByColumnNameForType(query.getType());
 		if (orderByColumnName != null)
 		{
-			queryBuilder.orderBy()
-					.addColumn(I_C_BPartner_Location.COLUMNNAME_IsBillToDefault, Direction.Descending, Nulls.Last);
+			queryBuilder.orderByDescending(orderByColumnName);
 		}
-
-		queryBuilder.orderBy()
-				.addColumn(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
+		queryBuilder.orderBy(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
 
 		final I_C_BPartner_Location ownToLocation = queryBuilder
 				.create()
@@ -1017,28 +1047,38 @@ public class BPartnerDAO implements IBPartnerDAO
 		{
 			// !alsoTryRelation => we return whatever we got here (null or not)
 			// ownBillToLocation != null => we return the not-null location we found
-			return ownToLocation;
+			return createLocationIdOrNull(bpartnerId, ownToLocation);
 		}
 
 		final IQueryBuilder<I_C_BP_Relation> bpRelationQueryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BP_Relation.class)
-				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, query.getBpartnerId())
-				.addEqualsFilter(getFilterColumnNameForType(query.getType()), true)
+				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.addEqualsFilter(typeFilterColumnName, true)
 				.addOnlyActiveRecordsFilter();
 
 		queryBuilder.orderBy()
 				.addColumn(I_C_BP_Relation.COLUMNNAME_C_BP_Relation_ID);
 
-		final I_C_BP_Relation billtoRelation = bpRelationQueryBuilder
+		final I_C_BP_Relation relation = bpRelationQueryBuilder
 				.create()
 				.firstOnly(I_C_BP_Relation.class); // just added an UC
-
-		if (billtoRelation != null)
+		if (relation != null)
 		{
-			return InterfaceWrapperHelper.create(billtoRelation.getC_BPartnerRelation_Location(), I_C_BPartner_Location.class);
+			return BPartnerLocationId.ofRepoId(query.getBpartnerId(), relation.getC_BPartnerRelation_Location_ID());
 		}
-		return null;
 
+		return createLocationIdOrNull(bpartnerId, ownToLocation);
+	}
+
+	private BPartnerLocationId createLocationIdOrNull(
+			@NonNull final BPartnerId bpartnerId,
+			@Nullable final I_C_BPartner_Location bpLocationRecord)
+	{
+		if (bpLocationRecord == null)
+		{
+			return null;
+		}
+		return BPartnerLocationId.ofRepoId(bpartnerId, bpLocationRecord.getC_BPartner_Location_ID());
 	}
 
 	private String getFilterColumnNameForType(BPartnerLocationQuery.Type type)
@@ -1388,5 +1428,111 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 
 		return Optional.of(BPartnerContactId.ofRepoId(userRecord.getC_BPartner_ID(), userRecord.getAD_User_ID()));
+	}
+
+	@Override
+	public List<GeographicalCoordinatesWithBPartnerLocationId> getGeoCoordinatesByBPartnerIds(@NonNull final Collection<BPartnerId> bpartnerIds)
+	{
+		if (bpartnerIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final List<Object> sqlParams = new ArrayList<>();
+		final String sql = "SELECT "
+				+ " bpl." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID
+				+ ", bpl." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID
+				+ ", l." + I_C_Location.COLUMNNAME_Latitude
+				+ ", l." + I_C_Location.COLUMNNAME_Longitude
+				+ " FROM " + I_C_BPartner.Table_Name + " bp "
+				+ " INNER JOIN " + I_C_BPartner_Location.Table_Name + " bpl ON (bpl.C_BPartner_ID=bp.C_BPartner_ID)"
+				+ " INNER JOIN " + I_C_Location.Table_Name + " l on (l.C_Location_ID=bpl.C_Location_ID)"
+				+ " WHERE " + DB.buildSqlList("bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID, bpartnerIds, sqlParams)
+				+ " AND bpl.IsActive='Y' "
+				+ " AND l." + I_C_Location.COLUMNNAME_GeocodingStatus + "=?";
+		sqlParams.add(X_C_Location.GEOCODINGSTATUS_Resolved);
+
+		return retrieveGeographicalCoordinatesWithBPartnerLocationIds(sql, sqlParams);
+	}
+
+	@Override
+	public List<GeographicalCoordinatesWithBPartnerLocationId> getGeoCoordinatesByBPartnerLocationIds(@NonNull final Collection<Integer> bpartnerLocationRepoIds)
+	{
+		if (bpartnerLocationRepoIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final List<Object> sqlParams = new ArrayList<>();
+		final String sql = "SELECT "
+				+ " bpl." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID
+				+ ", bpl." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID
+				+ ", l." + I_C_Location.COLUMNNAME_Latitude
+				+ ", l." + I_C_Location.COLUMNNAME_Longitude
+				+ " FROM " + I_C_BPartner_Location.Table_Name + " bpl "
+				+ " INNER JOIN " + I_C_Location.Table_Name + " l on l.C_Location_ID=bpl.C_Location_ID"
+				+ " WHERE " + DB.buildSqlList("bpl." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, bpartnerLocationRepoIds, sqlParams)
+				+ " AND l." + I_C_Location.COLUMNNAME_GeocodingStatus + "=?";
+		sqlParams.add(X_C_Location.GEOCODINGSTATUS_Resolved);
+
+		return retrieveGeographicalCoordinatesWithBPartnerLocationIds(sql, sqlParams);
+	}
+
+	private List<GeographicalCoordinatesWithBPartnerLocationId> retrieveGeographicalCoordinatesWithBPartnerLocationIds(final String sql, final List<Object> sqlParams)
+	{
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			DB.setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
+
+			final List<GeographicalCoordinatesWithBPartnerLocationId> result = new ArrayList<>();
+			while (rs.next())
+			{
+				final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(
+						rs.getInt(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID),
+						rs.getInt(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID));
+
+				final BigDecimal latitude = rs.getBigDecimal(I_C_Location.COLUMNNAME_Latitude);
+				final BigDecimal longitude = rs.getBigDecimal(I_C_Location.COLUMNNAME_Longitude);
+				if (latitude == null || longitude == null)
+				{
+					// shall not happen
+					logger.warn("Ignored location for bpartnerLocationId={} because the coordonate is not valid: lat={}, long={}", bpartnerLocationId, latitude, longitude);
+					continue;
+				}
+				final GeographicalCoordinates coordinate = GeographicalCoordinates.builder()
+						.latitude(latitude)
+						.longitude(longitude)
+						.build();
+
+				result.add(GeographicalCoordinatesWithBPartnerLocationId.of(bpartnerLocationId, coordinate));
+			}
+
+			return result;
+		}
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex, sql, sqlParams);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
+	}
+
+	@Override
+	public BPartnerLocationId retrieveCurrentBillLocationOrNull(final BPartnerId partnerId)
+	{
+		final BPartnerLocationQuery query = BPartnerLocationQuery
+				.builder()
+				.type(Type.BILL_TO)
+				.bpartnerId(partnerId)
+				.build();
+		final I_C_BPartner_Location billToLocation = retrieveBPartnerLocation(query);
+
+		return createLocationIdOrNull(partnerId, billToLocation);
 	}
 }

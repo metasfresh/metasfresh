@@ -10,12 +10,12 @@ package org.adempiere.ad.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,7 +48,7 @@ public enum ModelChangeType
 	 * <li>This processing can take place immediately after the actual processing, but also later on (e.g. batch-processing on the server)</li>
 	 * <li>If the model validator's modelChange() method throws an exception or returns a string, an AD_Issue is created</li>
 	 * </ul>
-	 * 
+	 *
 	 * @deprecated see {@link ModelValidator#TYPE_SUBSEQUENT}
 	 */
 	// metas-ts 0176
@@ -100,12 +100,12 @@ public enum ModelChangeType
 	{
 		return this == BEFORE_CHANGE || this == AFTER_CHANGE;
 	}
-	
+
 	public boolean isNewOrChange()
 	{
 		return isNew() || isChange();
 	}
-	
+
 	public boolean isChangeOrDelete()
 	{
 		return isChange() || isDelete();
@@ -133,5 +133,10 @@ public enum ModelChangeType
 				|| this == AFTER_CHANGE_REPLICATION
 				|| this == AFTER_DELETE
 				|| this == SUBSEQUENT;
+	}
+
+	public boolean isBeforeSaveTrx()
+	{
+		return this == BEFORE_SAVE_TRX;
 	}
 }

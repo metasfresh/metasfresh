@@ -131,6 +131,7 @@ final class DataImportCommand
 				.importTableName(validateResult.getImportTableName())
 				.countImportRecordsWithErrors(validateResult.getCountImportRecordsWithErrors().orElse(-1))
 				.targetTableName(validateResult.getTargetTableName())
+				.duration(validateResult.getDuration())
 				.build();
 	}
 
@@ -168,7 +169,6 @@ final class DataImportCommand
 					.completeDocuments(completeDocuments)
 					.setParameters(additionalParameters)
 					.selectedRecords(selectionId)
-					// .setLoggable(loggable)
 					.run();
 		}
 		finally
@@ -198,6 +198,7 @@ final class DataImportCommand
 				.setCtx(Env.getCtx())
 				.setImportTableName(importFormat.getImportTableName())
 				.setImportFromSelectionId(selectionId)
+				.setCompleteDocuments(completeDocuments)
 				.buildAndEnqueue();
 	}
 

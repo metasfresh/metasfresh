@@ -1,0 +1,15 @@
+-- 2019-10-07T15:36:36.023Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AD_Window_ID=540739,Updated=TO_TIMESTAMP('2019-10-07 18:36:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=541418
+;
+
+-- 2019-10-07T15:36:49.605Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET IsInsertRecord='N',Updated=TO_TIMESTAMP('2019-10-07 18:36:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=542062
+;
+
+-- 2019-10-07T15:37:28.330Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET IsDeleteable='N',Updated=TO_TIMESTAMP('2019-10-07 18:37:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=541418
+;
+

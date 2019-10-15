@@ -26,12 +26,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bank.BankRepository;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.SpringContextHolder;
@@ -46,10 +46,13 @@ import org.compiere.model.X_I_BPartner;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPPrintFormat;
 import de.metas.bpartner.service.BPPrintFormatQuery;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerPrintFormatRepository;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -62,6 +65,9 @@ import lombok.NonNull;
  */
 public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPartner>
 {
+	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
 	private final BPartnerImportHelper bpartnerImporter;
 	private final BPartnerLocationImportHelper bpartnerLocationImporter;
 	private final BPartnerContactImportHelper bpartnerContactImporter;
@@ -70,110 +76,70 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 
 	public BPartnerImportProcess()
 	{
+		this(
+				(BPartnerCreditLimitRepository)null,
+				(BankRepository)null);
+	}
+
+	public BPartnerImportProcess(
+			@Nullable BPartnerCreditLimitRepository creditLimitRepo,
+			@Nullable BankRepository bankRepository)
+	{
 		bpartnerImporter = BPartnerImportHelper.newInstance().setProcess(this);
 		bpartnerLocationImporter = BPartnerLocationImportHelper.newInstance().setProcess(this);
 		bpartnerContactImporter = BPartnerContactImportHelper.newInstance().setProcess(this);
-		bpartnerBankAccountImportHelper = BPartnerBankAccountImportHelper.newInstance().setProcess(this);
-		bpartnerCreditLimitImportHelper = BPCreditLimitImportHelper.newInstance();
+
+		final BankRepository bankRepositoryEffective = bankRepository != null ? bankRepository : new BankRepository();
+		bpartnerBankAccountImportHelper = BPartnerBankAccountImportHelper.builder()
+				.bankRepository(bankRepositoryEffective)
+				.build();
+		bpartnerBankAccountImportHelper.setProcess(this);
+
+		final BPartnerCreditLimitRepository creditLimitRepoEffective = creditLimitRepo != null ? creditLimitRepo : new BPartnerCreditLimitRepository();
+		bpartnerCreditLimitImportHelper = BPCreditLimitImportHelper.builder()
+				.creditLimitRepo(creditLimitRepoEffective)
+				.build();
 	}
 
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
-		final String whereClause = getWhereClause();
-		BPartnerImportTableSqlUpdater.updateBPartnerImportTable(whereClause);
-	}
-
-	private static final class BPartnerImportContext
-	{
-		// Remember Previous BP Value BP is only first one, others are contacts.
-		// All contacts share BP location.
-		// bp and bpl declarations before loop, we need them for data.
-		private I_I_BPartner previousImportRecord = null;
-		private List<I_I_BPartner> previousImportRecordsForSameBP = new ArrayList<>();
-
-		public I_I_BPartner getPreviousImportRecord()
-		{
-			return previousImportRecord;
-		}
-
-		public void setPreviousImportRecord(final I_I_BPartner previousImportRecord)
-		{
-			this.previousImportRecord = previousImportRecord;
-		}
-
-		public int getPreviousC_BPartner_ID()
-		{
-			return previousImportRecord == null ? -1 : previousImportRecord.getC_BPartner_ID();
-		}
-
-		public String getPreviousBPValue()
-		{
-			return previousImportRecord == null ? null : previousImportRecord.getBPValue();
-		}
-
-		public String getPreviousGlobalId()
-		{
-			return previousImportRecord == null ? null : previousImportRecord.getGlobalId();
-		}
-
-		public List<I_I_BPartner> getPreviousImportRecordsForSameBP()
-		{
-			return previousImportRecordsForSameBP;
-		}
-
-		public void clearPreviousRecordsForSameBP()
-		{
-			previousImportRecordsForSameBP = new ArrayList<>();
-		}
-
-		public void collectImportRecordForSameBP(final I_I_BPartner importRecord)
-		{
-			previousImportRecordsForSameBP.add(importRecord);
-		}
+		final ImportRecordsSelection selection = getImportRecordsSelection();
+		BPartnerImportTableSqlUpdater.updateBPartnerImportTable(selection);
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_BPartner importRecord, final boolean isInsertOnly)
+	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_BPartner importRecord, final boolean insertOnly)
 	{
-		//
-		// Get previous values
-		BPartnerImportContext context = (BPartnerImportContext)state.getValue();
-		if (context == null)
-		{
-			context = new BPartnerImportContext();
-			state.setValue(context);
-		}
-		final I_I_BPartner previousImportRecord = context.getPreviousImportRecord();
-		final int previousBPartnerId = context.getPreviousC_BPartner_ID();
-		final String previousBPValue = context.getPreviousBPValue();
-		final String previousGlobalId = context.getPreviousGlobalId();
-		context.setPreviousImportRecord(importRecord); // set it early in case this method fails
-
-		final ImportRecordResult bpartnerImportResult;
-
 		// First line to import or this line does NOT have the same BP value
 		// => create a new BPartner or update the existing one
-		final boolean firstImportRecordOrNewBPartner = previousImportRecord == null ||
-				!Objects.equals(importRecord.getBPValue(), previousBPValue) ||
-				!Objects.equals(importRecord.getGlobalId(), previousGlobalId);
-		if (firstImportRecordOrNewBPartner)
+		BPartnerImportContext context = (BPartnerImportContext)state.getValue();
+		final ImportRecordResult bpartnerImportResult;
+		if (context == null || !context.isSameBPartner(importRecord))
 		{
-			// create a new list because we are passing to a new partner
-			context.clearPreviousRecordsForSameBP();
-			bpartnerImportResult = importOrUpdateBPartner(importRecord, isInsertOnly);
-		}
+			context = createNewContext(insertOnly);
+			context.setCurrentImportRecord(importRecord);
+			state.setValue(context);
 
+			bpartnerImportResult = importOrUpdateBPartner(context);
+		}
+		//
 		// Same BPValue like previous line
 		else
 		{
-			if (previousBPartnerId <= 0)
+			final BPartnerId previousBPartnerId = context.getCurrentBPartnerIdOrNull();
+			context.setCurrentImportRecord(importRecord);
+
+			if (previousBPartnerId == null)
 			{
-				bpartnerImportResult = importOrUpdateBPartner(importRecord, isInsertOnly);
+				bpartnerImportResult = importOrUpdateBPartner(context);
 			}
-			else if (importRecord.getC_BPartner_ID() <= 0 || importRecord.getC_BPartner_ID() == previousBPartnerId)
+			else if (importRecord.getC_BPartner_ID() <= 0 || importRecord.getC_BPartner_ID() == previousBPartnerId.getRepoId())
 			{
-				bpartnerImportResult = doNothingAndUsePreviousPartner(importRecord, previousImportRecord);
+				// importRecord not have a C_BPartner_ID or it has the same C_BPartner_ID like the previous line
+				// => reuse previous BPartner
+				importRecord.setC_BPartner_ID(previousBPartnerId.getRepoId());
+				bpartnerImportResult = ImportRecordResult.Nothing;
 			}
 			// Our line has a C_BPartner_ID set but it's not the same like previous one, even though the BPValues are the same
 			// => ERROR
@@ -183,27 +149,48 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 			}
 		}
 
-		bpartnerLocationImporter.importRecord(importRecord, context.getPreviousImportRecordsForSameBP());
-		bpartnerContactImporter.importRecord(importRecord);
-		bpartnerBankAccountImportHelper.importRecord(importRecord);
-		bpartnerCreditLimitImportHelper.importRecord(importRecord);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(importRecord.getC_BPartner_ID());
+		if (bpartnerId != null)
+		{
+			bpartnerLocationImporter.importRecord(context);
+			bpartnerContactImporter.importRecord(context);
+
+			bpartnerBankAccountImportHelper.importRecord(importRecord);
+
+			bpartnerCreditLimitImportHelper.importRecord(BPCreditLimitImportRequest.builder()
+					.bpartnerId(bpartnerId)
+					.insuranceCreditLimit(importRecord.getCreditLimit())
+					.managementCreditLimit(importRecord.getCreditLimit2())
+					.build());
+		}
+
 		createUpdateInterestArea(importRecord);
 		createBPPrintFormatIfNeeded(importRecord);
-
-		context.collectImportRecordForSameBP(importRecord);
 
 		return bpartnerImportResult;
 	}
 
-	private ImportRecordResult importOrUpdateBPartner(final I_I_BPartner importRecord, final boolean isInsertOnly)
+	private BPartnerImportContext createNewContext(final boolean insertOnly)
+	{
+		final BPartnersCache bpartnersCache = BPartnersCache.builder()
+				.bpartnersRepo(bpartnersRepo)
+				.build();
+
+		return BPartnerImportContext.builder()
+				.bpartnersCache(bpartnersCache)
+				.insertOnly(insertOnly)
+				.build();
+	}
+
+	private ImportRecordResult importOrUpdateBPartner(final BPartnerImportContext context)
 	{
 		final ImportRecordResult bpartnerImportResult;
 		// We don't have a previous C_BPartner_ID
 		// => create or update existing BPartner from this line
 
-		final boolean bpartnerExists = importRecord.getC_BPartner_ID() > 0;
+		final boolean bpartnerExists = context.isCurrentBPartnerIdSet();
 
-		if (isInsertOnly && bpartnerExists)
+		if (context.isInsertOnly() && bpartnerExists)
 		{
 			// #4994 do not update existing entries
 			return ImportRecordResult.Nothing;
@@ -211,22 +198,8 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 
 		bpartnerImportResult = bpartnerExists ? ImportRecordResult.Updated : ImportRecordResult.Inserted;
 
-		bpartnerImporter.importRecord(importRecord);
+		bpartnerImporter.importRecord(context);
 		return bpartnerImportResult;
-	}
-
-	/**
-	 * importRecord not have a C_BPartner_ID or it has the same C_BPartner_ID like the previous line
-	 * => reuse previous BPartner
-	 *
-	 * @param importRecord
-	 * @param previousImportRecord
-	 * @return
-	 */
-	private ImportRecordResult doNothingAndUsePreviousPartner(final I_I_BPartner importRecord, final I_I_BPartner previousImportRecord)
-	{
-		importRecord.setC_BPartner_ID(previousImportRecord.getC_BPartner_ID());
-		return ImportRecordResult.Nothing;
 	}
 
 	private final void createUpdateInterestArea(final I_I_BPartner importRecord)
@@ -258,8 +231,6 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 		{
 			return;
 		}
-
-		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 		final int printFormatId = importRecord.getAD_PrintFormat_ID();
 		final int adTableId;
@@ -328,6 +299,7 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 	{
 		// gody: 20070113 - Order so the same values are consecutive.
 		return I_I_BPartner.COLUMNNAME_BPValue
+				+ ", " + I_I_BPartner.COLUMNNAME_GlobalId
 				+ ", " + I_I_BPartner.COLUMNNAME_I_BPartner_ID;
 	}
 

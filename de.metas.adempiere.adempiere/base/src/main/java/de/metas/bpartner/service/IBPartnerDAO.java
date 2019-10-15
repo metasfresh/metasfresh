@@ -44,6 +44,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
 import de.metas.bpartner.GLN;
+import de.metas.bpartner.GeographicalCoordinatesWithBPartnerLocationId;
 import de.metas.email.EMailAddress;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -53,6 +54,7 @@ import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import de.metas.util.rest.ExternalId;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -265,6 +267,8 @@ public interface IBPartnerDAO extends ISingletonService
 
 	ImmutableSet<BPartnerId> retrieveBPartnerIdsBy(BPartnerQuery query);
 
+	BPartnerLocationId retrieveBPartnerLocationId(BPartnerLocationQuery query);
+
 	I_C_BPartner_Location retrieveBPartnerLocation(BPartnerLocationQuery query);
 
 	ImmutableSet<BPartnerId> retrieveAllCustomerIDs();
@@ -284,6 +288,13 @@ public interface IBPartnerDAO extends ISingletonService
 		@NonNull
 		Type type;
 
+		/**
+		 * If {@code false}, then bpartner locations with the given type are preferred, but also a location with another type can be returned.
+		 * {@code true} by default.
+		 */
+		@Default
+		boolean applyTypeStrictly = true;
+
 		boolean alsoTryRelation;
 	}
 
@@ -298,4 +309,10 @@ public interface IBPartnerDAO extends ISingletonService
 	boolean pricingSystemBelongsToCustomerForPriceMutation(PricingSystemId pricingSystemId);
 
 	Optional<BPartnerContactId> getBPartnerContactIdBy(BPartnerContactQuery query);
+
+	List<GeographicalCoordinatesWithBPartnerLocationId> getGeoCoordinatesByBPartnerIds(Collection<BPartnerId> bpartnerIds);
+
+	List<GeographicalCoordinatesWithBPartnerLocationId> getGeoCoordinatesByBPartnerLocationIds(Collection<Integer> bpartnerLocationRepoIds);
+
+	BPartnerLocationId retrieveCurrentBillLocationOrNull(BPartnerId partnerId);
 }

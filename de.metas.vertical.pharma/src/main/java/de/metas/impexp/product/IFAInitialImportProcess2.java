@@ -10,6 +10,7 @@ import org.adempiere.util.lang.IMutable;
 import org.compiere.model.ModelValidationEngine;
 
 import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.impexp.processing.product.MProductImportTableSqlUpdater;
 import de.metas.product.IProductDAO;
@@ -58,9 +59,10 @@ public class IFAInitialImportProcess2 extends SimpleImportProcessTemplate<I_I_Ph
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
-		final String whereClause = getWhereClause();
+		final ImportRecordsSelection selection = getImportRecordsSelection();
+
 		MProductImportTableSqlUpdater.builder()
-				.whereClause(whereClause)
+				.selection(selection)
 				.ctx(getCtx())
 				.tableName(getImportTableName())
 				.valueName(I_I_Pharma_Product.COLUMNNAME_A00PZN)

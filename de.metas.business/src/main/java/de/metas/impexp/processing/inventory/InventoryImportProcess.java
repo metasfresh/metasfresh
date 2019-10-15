@@ -40,6 +40,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.impexp.processing.ImportGroupKey;
 import de.metas.impexp.processing.ImportGroupResult;
 import de.metas.impexp.processing.ImportProcessTemplate;
+import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryId;
 import de.metas.logging.LogManager;
@@ -95,10 +96,11 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
-		final String whereClause = getWhereClause();
-		MInventoryImportTableSqlUpdater.updateInventoryImportTable(whereClause);
+		final ImportRecordsSelection selection = getImportRecordsSelection();
 
-		final int countErrorRecords = MInventoryImportTableSqlUpdater.countRecordsWithErrors(whereClause);
+		MInventoryImportTableSqlUpdater.updateInventoryImportTable(selection);
+
+		final int countErrorRecords = MInventoryImportTableSqlUpdater.countRecordsWithErrors(selection);
 		getResultCollector().setCountImportRecordsWithErrors(countErrorRecords);
 	}
 
