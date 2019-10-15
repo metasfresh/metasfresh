@@ -44,6 +44,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -53,6 +54,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @Repository
 public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
@@ -68,7 +70,9 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	@Override
 	public ITableRecordReference toTableRecordReference(final DeliveryOrder deliveryOrder)
 	{
-		return null;
+		final int deliveryOrderRepoId = deliveryOrder.getRepoId();
+		Check.assume(deliveryOrderRepoId > 0, "deliveryOrderRepoId > 0 for {}", deliveryOrder);
+		return TableRecordReference.of(I_DHL_ShipmentOrderRequest.Table_Name, deliveryOrderRepoId);
 	}
 
 	@Override
@@ -92,7 +96,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	{
 		if (deliveryOrder.getRepoId() >= 1)
 		{
-			toUpdateShipmentOrderRequestPOAfterCompletion(deliveryOrder);
+			toUpdateShipmentOrderRequestPO(deliveryOrder);
 			return deliveryOrder;
 		}
 		else
@@ -113,74 +117,87 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	 */
 	private DeliveryOrder toDeliveryOrderFromPO(final I_DHL_ShipmentOrderRequest requestPo)
 	{
-		final List<I_DHL_ShipmentOrder> ordersPo = Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_DHL_ShipmentOrder.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list();
+		final List<I_DHL_ShipmentOrder> ordersPo = getAllShipmentOrdersForRequest(requestPo.getDHL_ShipmentOrderRequest_ID());
 
-		final I_DHL_ShipmentOrder order = ordersPo.get(0);
-
-		final DeliveryOrder doFromPO = DeliveryOrder.builder()
-				.repoId(requestPo.getDHL_ShipmentOrderRequest_ID())
-				.deliveryAddress(Address.builder()
-						.bpartnerId(order.getC_BPartner_ID())
-						.bpartnerLocationId(order.getC_BPartner_Location_ID())
-						.companyName1(order.getDHL_Receiver_Name1())
-						.companyName2(order.getDHL_Receiver_Name2())
-						.street1(order.getDHL_Receiver_StreetName1())
-						.street2(order.getDHL_Receiver_StreetName2())
-						.houseNo(order.getDHL_Receiver_StreetNumber())
-						.zipCode(order.getDHL_Receiver_ZipCode())
-						.city(order.getDHL_Receiver_City())
-						.country(CountryCode.builder()
-								.alpha2(order.getDHL_Receiver_CountryISO2Code())
-								.alpha3(order.getDHL_Receiver_CountryISO3Code())
-								.build())
-						.build())
-				.deliveryContact(ContactPerson.builder()
-						.simplePhoneNumber(order.getDHL_Receiver_Phone())
-						.emailAddress(order.getDHL_Receiver_Email())
-						.build())
-				.pickupAddress(Address.builder()
-						.companyName1(order.getDHL_Shipper_Name1())
-						.companyName2(order.getDHL_Shipper_Name2())
-						.street1(order.getDHL_Shipper_StreetName1())
-						.street2(order.getDHL_Shipper_StreetName2())
-						.houseNo(order.getDHL_Shipper_StreetNumber())
-						.zipCode(order.getDHL_Shipper_ZipCode())
-						.city(order.getDHL_Shipper_City())
-						.country(CountryCode.builder()
-								.alpha2(order.getDHL_Shipper_CountryISO2Code())
-								.alpha3(order.getDHL_Shipper_CountryISO3Code())
-								.build())
-						.build())
-				.pickupDate(PickupDate.builder()
-						.date(LocalDate.parse(order.getDHL_ShipmentDate(), DateTimeFormatter.ISO_LOCAL_DATE))
-						.build())
-				// other
-				.customerReference(order.getCustomerReference())
-				.serviceType(DhlServiceType.valueOf(order.getDHL_Product()))
-				.deliveryPositions(constructDeliveryPositions(requestPo))
-				.build();
-
-		return doFromPO;
-	}
-
-	private Iterable<? extends DeliveryPosition> constructDeliveryPositions(final I_DHL_ShipmentOrderRequest requestPo)
-	{
-		final List<I_DHL_ShipmentOrder> ordersPo = Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_DHL_ShipmentOrder.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list();
 		final I_DHL_ShipmentOrder firstOrder = ordersPo.get(0);
 
 		final ImmutableMap<Integer, String> packageIdsToSequenceNumber = ordersPo.stream()
 				.collect(ImmutableMap.toImmutableMap(I_DHL_ShipmentOrder::getPackageId, i_dhl_shipmentOrder -> Integer.toString(i_dhl_shipmentOrder.getDHL_ShipmentOrder_ID())));
 
+		final ImmutableMap<String, String> sequenceNumberToAWB = ordersPo.stream()
+				.filter(it -> Objects.nonNull(it.getawb()))
+				.collect(ImmutableMap.toImmutableMap(dhlShipOrder -> Integer.toString(dhlShipOrder.getDHL_ShipmentOrder_ID()), I_DHL_ShipmentOrder::getawb));
+
+		final ImmutableMap<String, byte[]> sequenceNumberToPdfLabel = ordersPo.stream()
+				.filter(it -> Objects.nonNull(it.getPdfLabelData()))
+				.collect(ImmutableMap.toImmutableMap(dhlShipOrder -> Integer.toString(dhlShipOrder.getDHL_ShipmentOrder_ID()), I_DHL_ShipmentOrder::getPdfLabelData));
+
 		final ImmutableSet<Integer> packageIds = packageIdsToSequenceNumber.keySet();
 
+		//noinspection UnnecessaryLocalVariable
+		final DeliveryOrder doFromPO = DeliveryOrder.builder()
+				.repoId(requestPo.getDHL_ShipmentOrderRequest_ID())
+				.deliveryAddress(Address.builder()
+						.bpartnerId(firstOrder.getC_BPartner_ID())
+						.bpartnerLocationId(firstOrder.getC_BPartner_Location_ID())
+						.companyName1(firstOrder.getDHL_Receiver_Name1())
+						.companyName2(firstOrder.getDHL_Receiver_Name2())
+						.street1(firstOrder.getDHL_Receiver_StreetName1())
+						.street2(firstOrder.getDHL_Receiver_StreetName2())
+						.houseNo(firstOrder.getDHL_Receiver_StreetNumber())
+						.zipCode(firstOrder.getDHL_Receiver_ZipCode())
+						.city(firstOrder.getDHL_Receiver_City())
+						.country(CountryCode.builder()
+								.alpha2(firstOrder.getDHL_Receiver_CountryISO2Code())
+								.alpha3(firstOrder.getDHL_Receiver_CountryISO3Code())
+								.build())
+						.build())
+				.deliveryContact(ContactPerson.builder()
+						.simplePhoneNumber(firstOrder.getDHL_Receiver_Phone())
+						.emailAddress(firstOrder.getDHL_Receiver_Email())
+						.build())
+				.pickupAddress(Address.builder()
+						.companyName1(firstOrder.getDHL_Shipper_Name1())
+						.companyName2(firstOrder.getDHL_Shipper_Name2())
+						.street1(firstOrder.getDHL_Shipper_StreetName1())
+						.street2(firstOrder.getDHL_Shipper_StreetName2())
+						.houseNo(firstOrder.getDHL_Shipper_StreetNumber())
+						.zipCode(firstOrder.getDHL_Shipper_ZipCode())
+						.city(firstOrder.getDHL_Shipper_City())
+						.country(CountryCode.builder()
+								.alpha2(firstOrder.getDHL_Shipper_CountryISO2Code())
+								.alpha3(firstOrder.getDHL_Shipper_CountryISO3Code())
+								.build())
+						.build())
+				.pickupDate(PickupDate.builder()
+						.date(LocalDate.parse(firstOrder.getDHL_ShipmentDate(), DateTimeFormatter.ISO_LOCAL_DATE))
+						.build())
+				// other
+				.customerReference(firstOrder.getCustomerReference())
+				.serviceType(DhlServiceType.valueOf(firstOrder.getDHL_Product()))
+				.deliveryPositions(constructDeliveryPositions(requestPo, firstOrder, packageIds))
+				.customDeliveryData(DhlCustomDeliveryData.builder()
+						.packageIdsToSequenceNumber(packageIdsToSequenceNumber)
+						.sequenceNumberToAWB(sequenceNumberToAWB)
+						.sequenceNumberToPdfLabel(sequenceNumberToPdfLabel)
+						.build())
+				.build();
+
+		return doFromPO;
+	}
+
+	private static List<I_DHL_ShipmentOrder> getAllShipmentOrdersForRequest(final int requestId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_DHL_ShipmentOrder.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_DHL_ShipmentOrder.COLUMNNAME_DHL_ShipmentOrderRequest_ID, requestId)
+				.create()
+				.list();
+	}
+
+	private Iterable<? extends DeliveryPosition> constructDeliveryPositions(@NonNull final I_DHL_ShipmentOrderRequest requestPo, @NonNull final I_DHL_ShipmentOrder firstOrder, @NonNull final ImmutableSet<Integer> packageIds)
+	{
 		final DeliveryPosition singleDeliveryPosition = DeliveryPosition.builder()
 				.packageDimensions(PackageDimensions.builder()
 						.widthInCM(firstOrder.getDHL_WidthInCm())
@@ -188,9 +205,6 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 						.heightInCM(firstOrder.getDHL_HeightInCm())
 						.build())
 				.grossWeightKg(firstOrder.getDHL_WeightInKg().intValue())
-				.customDeliveryData(DhlCustomDeliveryData.builder()
-						.packageIdsToSequenceNumber(packageIdsToSequenceNumber)
-						.build())
 				.numberOfPackages(packageIds.size())
 				.packageIds(packageIds)
 				.build();
@@ -211,14 +225,15 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 		final I_DHL_ShipmentOrderRequest shipmentOrderRequest = InterfaceWrapperHelper.newInstance(I_DHL_ShipmentOrderRequest.class);
 		InterfaceWrapperHelper.save(shipmentOrderRequest);
 
-		// maybe this will be removed in the future, but for now it simplifies the PO deserialisation implementation  dramatically, ref: constructDeliveryPositions()
+		// maybe this will be removed in the future, but for now it simplifies the PO deserialisation implementation and other implementation details dramatically, ref: constructDeliveryPositions()
+		// therefore please ignore the for loops over `deliveryOrder.getDeliveryPositions()` as they don't help at all
 		Check.errorIf(deliveryOrder.getDeliveryPositions().size() != 1,
 				"The DHL implementation needs to always create DeliveryOrders with exactly 1 DeliveryPosition; deliveryOrder={}",
 				deliveryOrder);
 
 		//		int totalPackages = 0;
 		//		final int MAX_NUMBER_OF_PACKAGES = 30; // todo this must not be hardcoded; though i'm not sure where i read about this limitation. maybe i'm wrong and there's no limitations in the number of packages sent in 1 order
-		for (final DeliveryPosition deliveryPosition : deliveryOrder.getDeliveryPositions())
+		for (final DeliveryPosition deliveryPosition : deliveryOrder.getDeliveryPositions()) // only a single delivery position should exist
 		{
 			final ImmutableList<Integer> packageIdsAsList = deliveryPosition.getPackageIds().asList();
 			for (int i = 0; i < deliveryPosition.getNumberOfPackages(); i++)
@@ -310,9 +325,35 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 		return shipmentOrderRequest;
 	}
 
-	private void toUpdateShipmentOrderRequestPOAfterCompletion(final DeliveryOrder deliveryOrder)
+	private void toUpdateShipmentOrderRequestPO(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		// todo
+		final I_DHL_ShipmentOrderRequest shipmentOrderRequest = InterfaceWrapperHelper.load(deliveryOrder.getRepoId(), I_DHL_ShipmentOrderRequest.class);
+
+		for (final DeliveryPosition deliveryPosition : deliveryOrder.getDeliveryPositions()) // only a single delivery position should exist
+		{
+			final ImmutableList<Integer> packageIdsAsList = deliveryPosition.getPackageIds().asList();
+			for (int i = 0; i < deliveryPosition.getNumberOfPackages(); i++)
+			{
+				final DhlCustomDeliveryData customDeliveryData = (DhlCustomDeliveryData)deliveryOrder.getCustomDeliveryData();
+
+				final I_DHL_ShipmentOrder shipmentOrder = getShipmentOrderByRequestIdAndPackageId(deliveryOrder.getRepoId(), packageIdsAsList.get(i));
+				//noinspection ConstantConditions
+				shipmentOrder.setawb(customDeliveryData.getSequenceNumberToAWB().get(Integer.toString(shipmentOrder.getDHL_ShipmentOrder_ID())));
+				shipmentOrder.setPdfLabelData(customDeliveryData.getSequenceNumberToPdfLabel().get(Integer.toString(shipmentOrder.getDHL_ShipmentOrder_ID())));
+
+				InterfaceWrapperHelper.save(shipmentOrder);
+			}
+		}
 	}
 
+	private static I_DHL_ShipmentOrder getShipmentOrderByRequestIdAndPackageId(final int requestId, final int packageId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_DHL_ShipmentOrder.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_DHL_ShipmentOrder.COLUMNNAME_DHL_ShipmentOrderRequest_ID, requestId)
+				.addEqualsFilter(I_DHL_ShipmentOrder.COLUMNNAME_PackageId, packageId)
+				.create()
+				.first();
+	}
 }
