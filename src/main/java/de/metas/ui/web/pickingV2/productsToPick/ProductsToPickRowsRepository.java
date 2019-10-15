@@ -12,7 +12,6 @@ import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.PickHURequest;
 import de.metas.handlingunits.reservation.HUReservationService;
-import de.metas.ui.web.pickingV2.config.PickingConfigV2;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import lombok.NonNull;
@@ -72,22 +71,21 @@ public class ProductsToPickRowsRepository
 				.build();
 	}
 
-	public PickHURequest createPickHURequest(@NonNull final ProductsToPickRow row, final @NonNull PickingConfigV2 pickingConfig)
+	public PickHURequest createPickHURequest(@NonNull final ProductsToPickRow row, boolean isPickingReviewRequired)
 	{
 		return PickHURequest.builder()
 				.shipmentScheduleId(row.getShipmentScheduleId())
 				.qtyToPick(row.getQtyEffective())
 				.pickFromHuId(row.getHuId())
-				.autoReview(!pickingConfig.isPickingReviewRequired())
-				.createPickingCandidatesOnly(pickingConfig.isCreatePickingCandidatesOnly())
+				.autoReview(!isPickingReviewRequired)
 				.build();
 	}
 
-	public List<PickingCandidate> pick(@NonNull final PackageableRow packageableRow, final @NonNull PickingConfigV2 pickingConfig)
+	public List<PickingCandidate> createPickingCandidates(@NonNull final PackageableRow packageableRow)
 	{
 		final ProductsToPickRowsData productsToPickRowsData = createProductsToPickRowsData(packageableRow);
 		return productsToPickRowsData.getAllRows().stream()
-				.map(productsToPickRow -> pickingCandidateService.pickHU(createPickHURequest(productsToPickRow, pickingConfig)))
+				.map(productsToPickRow -> pickingCandidateService.createAndSavePickingCandidates(createPickHURequest(productsToPickRow, false)))
 				.map(pickHUResult -> pickHUResult.getPickingCandidate())
 				.collect(ImmutableList.toImmutableList());
 	}

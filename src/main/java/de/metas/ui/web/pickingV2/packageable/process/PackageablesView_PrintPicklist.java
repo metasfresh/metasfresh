@@ -3,6 +3,8 @@ package de.metas.ui.web.pickingV2.packageable.process;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.TrxRunnable2;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Joiner;
@@ -21,7 +23,6 @@ import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.report.jasper.client.JRClient;
-import de.metas.ui.web.pickingV2.config.PickingConfigV2;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRowsRepository;
 import de.metas.util.Services;
@@ -94,7 +95,7 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 	{
 		final PackageableRow row = getSingleSelectedRow();
 
-		pickIfNeeded(row);
+		createPickingCandidatesIfNeeded(row);
 
 		// print
 		final byte[] pickList = printPicklist(row);
@@ -108,19 +109,34 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 		return MSG_OK;
 	}
 
-	private void pickIfNeeded(final PackageableRow row)
+	private void createPickingCandidatesIfNeeded(final PackageableRow row)
 	{
 		final boolean existsPickingCandidates = pickingCandidateService.existsPickingCandidates(row.getShipmentScheduleIds());
 		if (!existsPickingCandidates)
 		{
-			final @NonNull PickingConfigV2 pickingConfig = PickingConfigV2.builder()
-					.createPickingCandidatesOnly(true)
-					.pickingReviewRequired(false)
-					.build();
-			productsToPickRowsRepository.pick(row, pickingConfig);
 
-			// commit in DB so that the report can access it
-			Services.get(ITrxManager.class).commit(getTrxName());
+			Services.get(ITrxManager.class).runInNewTrx(new TrxRunnable2()
+			{
+
+				@Override
+				public void run(final String localTrxName) throws Exception
+				{
+					productsToPickRowsRepository.createPickingCandidates(row);
+				}
+
+				@Override
+				public boolean doCatch(final Throwable e) throws Throwable
+				{
+					throw AdempiereException.wrapIfNeeded(e);
+				}
+
+				@Override
+				public void doFinally()
+				{
+					// nothing
+				}
+
+			});
 		}
 	}
 
