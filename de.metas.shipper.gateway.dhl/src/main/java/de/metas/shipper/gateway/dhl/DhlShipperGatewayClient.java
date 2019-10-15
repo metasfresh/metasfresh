@@ -140,6 +140,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	@Override
 	public DeliveryOrder voidDeliveryOrder(final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
+		//noinspection ConstantConditions
 		return null;
 	}
 
@@ -150,6 +151,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 
 		final DhlCustomDeliveryData customDeliveryData = (DhlCustomDeliveryData)deliveryOrder.getCustomDeliveryData();
 
+		//noinspection ConstantConditions
 		final ImmutableList<PackageLabels> packageLabels = customDeliveryData.getSequenceNumberToPdfLabel().values().stream()
 				.map(DhlShipperGatewayClient::createPackageLabel)
 				.collect(ImmutableList.toImmutableList());
@@ -179,8 +181,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 
 	private DeliveryOrder updateDeliveryOrderFromResponse(@NonNull final DeliveryOrder deliveryOrder, @NonNull final CreateShipmentOrderResponse response)
 	{
-		// here i assume again that there's a single delivery position.
-		final DhlCustomDeliveryData initialDeliveryData = (DhlCustomDeliveryData)deliveryOrder.getDeliveryPositions().get(0).getCustomDeliveryData();
+		final DhlCustomDeliveryData initialCustomDeliveryData = (DhlCustomDeliveryData)deliveryOrder.getCustomDeliveryData();
 
 		final ImmutableMap.Builder<String, byte[]> sequenceNumberToPdfLabel = ImmutableMap.builder();
 		final ImmutableMap.Builder<String, String> sequenceNumberToAwb = ImmutableMap.builder();
@@ -196,16 +197,15 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 			sequenceNumberToAwb.put(creationState.getSequenceNumber(), creationState.getShipmentNumber());
 		}
 
-		final DhlCustomDeliveryData updatedDeliveryData = initialDeliveryData.toBuilder()
+		//noinspection ConstantConditions
+		final DhlCustomDeliveryData updatedCustomDeliveryData = initialCustomDeliveryData.toBuilder()
 				.sequenceNumberToAWB(sequenceNumberToAwb.build())
 				.sequenceNumberToPdfLabel(sequenceNumberToPdfLabel.build())
 				.build();
 
-		final DeliveryOrder updatedDeliveryOrder = deliveryOrder.toBuilder()
-				.customDeliveryData(updatedDeliveryData)
+		return deliveryOrder.toBuilder()
+				.customDeliveryData(updatedCustomDeliveryData)
 				.build();
-
-		return updatedDeliveryOrder;
 	}
 
 	private Object doActualRequest(final Object request)
@@ -229,7 +229,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 			marshaller.marshal(object, result);
 			System.out.println(result.toString());
 		}
-		catch (IOException ignored)
+		catch (final IOException ignored)
 		{
 		}
 
@@ -241,10 +241,12 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	{
 		final CreateShipmentOrderRequest createShipmentOrderRequest = objectFactory.createCreateShipmentOrderRequest();
 		createShipmentOrderRequest.setVersion(API_VERSION);
+		// (3.) base64 encoding for labels in response
 		createShipmentOrderRequest.setLabelResponseType("B64");
+		// (5.) GUI = sort of an "auto" label format
 		createShipmentOrderRequest.setLabelFormat(DhlPackageLabelType.GUI.name());
 
-		for (final DeliveryPosition deliveryPosition : deliveryOrder.getDeliveryPositions())
+		for (final DeliveryPosition deliveryPosition : deliveryOrder.getDeliveryPositions()) // only a single delivery position should exist
 		{
 			final ImmutableList<Integer> packageIdsAsList = deliveryPosition.getPackageIds().asList();
 			for (int i = 0; i < deliveryPosition.getNumberOfPackages(); i++)
@@ -338,7 +340,8 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 
 				// (2) create the needed shipment order type
 				final ShipmentOrderType shipmentOrderType = objectFactory.createShipmentOrderType();
-				final DhlCustomDeliveryData dhlCustomDeliveryData = (DhlCustomDeliveryData)deliveryPosition.getCustomDeliveryData();
+				final DhlCustomDeliveryData dhlCustomDeliveryData = (DhlCustomDeliveryData)deliveryOrder.getCustomDeliveryData();
+				//noinspection ConstantConditions
 				final String packageSequenceNumber = dhlCustomDeliveryData.getPackageIdsToSequenceNumber().get(packageIdsAsList.get(i));
 				if (StringUtils.isBlank(packageSequenceNumber))
 				{
