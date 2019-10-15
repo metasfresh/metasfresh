@@ -10,8 +10,8 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
-import org.compiere.db.Database;
 import org.compiere.model.IQuery;
+import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -63,7 +63,7 @@ import lombok.experimental.UtilityClass;
 			Check.assume(dbQuery instanceof TypedSqlQuery, "If we are not in unit test mode, then our query has to be an sql query; query={}", dbQuery);
 			final TypedSqlQuery<I_MD_Candidate_ATP_QueryResult> sqlDbQuery = (TypedSqlQuery<I_MD_Candidate_ATP_QueryResult>)dbQuery;
 
-			final String dateString = Database.TO_DATE(TimeUtil.asTimestamp(query.getDate()), false);
+			final String dateString = DB.TO_DATE(query.getDate());
 			sqlDbQuery.setSqlFrom("de_metas_material.retrieve_atp_at_date(" + dateString + ")");
 		}
 
