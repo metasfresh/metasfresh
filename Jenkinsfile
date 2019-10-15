@@ -3,7 +3,7 @@
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
-@Library('misc@ghNewNexus')
+@Library('misc')
 import de.metas.jenkins.DockerConf
 import de.metas.jenkins.Misc
 import de.metas.jenkins.MvnConf
@@ -72,7 +72,7 @@ node('agent && linux')
 			'pom.xml', // pomFile
 			MAVEN_SETTINGS, // settingsFile
 			"mvn-${MF_UPSTREAM_BRANCH}", // mvnRepoName
-			'https://nexus.metasfresh.com' // mvnRepoBaseURL
+			'https://repo.metasfresh.com' // mvnRepoBaseURL
 		)
 		echo "mvnConf=${mvnConf}"
 
