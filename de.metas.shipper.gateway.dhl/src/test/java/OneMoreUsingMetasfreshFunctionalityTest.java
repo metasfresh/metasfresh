@@ -82,7 +82,7 @@ class OneMoreUsingMetasfreshFunctionalityTest
 		final DeliveryOrder completedDeliveryOrder = client.completeDeliveryOrder(deserialisedDO);
 		final DeliveryOrder savedCompletedDeliveryOrder = deliveryOrderRepository.save(completedDeliveryOrder);
 
-		final DhlCustomDeliveryData customDeliveryData = (DhlCustomDeliveryData)savedCompletedDeliveryOrder.getCustomDeliveryData();
+		final DhlCustomDeliveryData customDeliveryData = DhlCustomDeliveryData.cast(savedCompletedDeliveryOrder.getCustomDeliveryData());
 
 		//noinspection ConstantConditions
 		assertEquals(5, customDeliveryData.getSequenceNumberToPdfLabel().size());

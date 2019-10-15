@@ -334,7 +334,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 			final ImmutableList<Integer> packageIdsAsList = deliveryPosition.getPackageIds().asList();
 			for (int i = 0; i < deliveryPosition.getNumberOfPackages(); i++)
 			{
-				final DhlCustomDeliveryData customDeliveryData = (DhlCustomDeliveryData)deliveryOrder.getCustomDeliveryData();
+				final DhlCustomDeliveryData customDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
 
 				final I_DHL_ShipmentOrder shipmentOrder = getShipmentOrderByRequestIdAndPackageId(deliveryOrder.getRepoId(), packageIdsAsList.get(i));
 				//noinspection ConstantConditions

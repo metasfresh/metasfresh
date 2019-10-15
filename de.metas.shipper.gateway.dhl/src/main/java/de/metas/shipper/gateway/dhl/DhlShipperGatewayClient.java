@@ -149,7 +149,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	{
 		logger.trace("getPackageLabelsList for {}", deliveryOrder);
 
-		final DhlCustomDeliveryData customDeliveryData = (DhlCustomDeliveryData)deliveryOrder.getCustomDeliveryData();
+		final DhlCustomDeliveryData customDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
 
 		//noinspection ConstantConditions
 		final ImmutableList<PackageLabels> packageLabels = customDeliveryData.getSequenceNumberToPdfLabel().values().stream()
@@ -181,7 +181,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 
 	private DeliveryOrder updateDeliveryOrderFromResponse(@NonNull final DeliveryOrder deliveryOrder, @NonNull final CreateShipmentOrderResponse response)
 	{
-		final DhlCustomDeliveryData initialCustomDeliveryData = (DhlCustomDeliveryData)deliveryOrder.getCustomDeliveryData();
+		final DhlCustomDeliveryData initialCustomDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
 
 		final ImmutableMap.Builder<String, byte[]> sequenceNumberToPdfLabel = ImmutableMap.builder();
 		final ImmutableMap.Builder<String, String> sequenceNumberToAwb = ImmutableMap.builder();
@@ -340,7 +340,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 
 				// (2) create the needed shipment order type
 				final ShipmentOrderType shipmentOrderType = objectFactory.createShipmentOrderType();
-				final DhlCustomDeliveryData dhlCustomDeliveryData = (DhlCustomDeliveryData)deliveryOrder.getCustomDeliveryData();
+				final DhlCustomDeliveryData dhlCustomDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
 				//noinspection ConstantConditions
 				final String packageSequenceNumber = dhlCustomDeliveryData.getPackageIdsToSequenceNumber().get(packageIdsAsList.get(i));
 				if (StringUtils.isBlank(packageSequenceNumber))
