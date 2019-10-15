@@ -89,7 +89,7 @@ public class AttributeSetDescriptionBuilderCommand
 		final IStringExpression descriptionPattern = extractDescriptionPatternOrNull(attribute);
 		if (descriptionPattern == null)
 		{
-			return getAttributeDisaplayValue(attribute);
+			return getAttributeDisplayValue(attribute);
 		}
 		else
 		{
@@ -119,7 +119,7 @@ public class AttributeSetDescriptionBuilderCommand
 				: null;
 	}
 
-	private ITranslatableString getAttributeDisaplayValue(@NonNull final I_M_Attribute attribute)
+	private ITranslatableString getAttributeDisplayValue(@NonNull final I_M_Attribute attribute)
 	{
 		final String attributeKey = attribute.getValue();
 		final String attributeValueType = attribute.getAttributeValueType();
@@ -171,5 +171,4 @@ public class AttributeSetDescriptionBuilderCommand
 			return ASIDescriptionBuilderCommand.formatStringValue(valueStr);
 		}
 	}
-
 }
