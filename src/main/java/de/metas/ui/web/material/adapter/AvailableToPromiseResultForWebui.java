@@ -80,10 +80,10 @@ public class AvailableToPromiseResultForWebui
 
 		@Builder
 		public Group(
-				@NonNull final ProductId productId,
 				@NonNull final Group.Type type,
-				@Nullable final ImmutableAttributeSet attributes,
-				@NonNull final Quantity qty)
+				@NonNull final ProductId productId,
+				@NonNull final Quantity qty,
+				@Nullable final ImmutableAttributeSet attributes)
 		{
 			this.type = type;
 			this.productId = productId;
