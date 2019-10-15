@@ -1,12 +1,16 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.algorithms;
 
+import static de.metas.util.Check.assumeGreaterOrEqualToZero;
+
 import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
 import de.metas.util.lang.Percent;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -35,7 +39,11 @@ import lombok.Value;
 @Value
 public class HierarchyContract implements CommissionContract
 {
+
+	FlatrateTermId id;
 	HierarchyConfig config;
+	Percent commissionPercent;
+	int pointsPrecision;
 
 	public static HierarchyContract cast(@NonNull final CommissionContract contract)
 	{
@@ -50,22 +58,28 @@ public class HierarchyContract implements CommissionContract
 	}
 
 	@JsonCreator
-	public HierarchyContract(@JsonProperty("config") @NonNull final HierarchyConfig config)
+	@Builder
+	public HierarchyContract(
+			@JsonProperty("id") @NonNull final FlatrateTermId id,
+			@JsonProperty("config") @NonNull final HierarchyConfig config,
+			@JsonProperty("percent") @NonNull final Percent commissionPercent,
+			@JsonProperty("pointsPrecision") final int pointsPrecision)
 	{
+		this.id = id;
 		this.config = config;
+		this.commissionPercent = commissionPercent;
+		this.pointsPrecision = assumeGreaterOrEqualToZero(pointsPrecision, "pointsPrecision");
 	}
 
 	/** Note: add "Hierarchy" as method parameters if and when we have a commission type where it makes a difference. */
 	public Percent getCommissionPercent()
 	{
-		return Percent.of("10");
+		return commissionPercent;
 	}
 
 	public int getPointsPrecision()
 	{
-		return 2;
+		return pointsPrecision;
 	}
-
-
 
 }

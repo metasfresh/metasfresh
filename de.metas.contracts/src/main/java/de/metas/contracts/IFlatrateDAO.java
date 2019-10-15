@@ -166,9 +166,6 @@ public interface IFlatrateDAO extends ISingletonService
 
 	/**
 	 * This method calls {@link #retrieveTerms(Properties, int, Timestamp, int, int, int, String)} using the given invoice candidates values as parameters.
-	 *
-	 * @param ic
-	 * @return
 	 */
 	List<I_C_Flatrate_Term> retrieveTerms(I_C_Invoice_Candidate ic);
 

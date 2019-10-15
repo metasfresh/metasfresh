@@ -1,12 +1,19 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.algorithms;
 
+import java.util.Map;
+import java.util.Map.Entry;
 import org.adempiere.exceptions.AdempiereException;
+
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionType;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyContract.HierarchyContractBuilder;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -34,6 +41,10 @@ import lombok.Value;
 @Value
 public class HierarchyConfig implements CommissionConfig
 {
+	boolean subtractLowerLevelCommissionFromBase;
+
+	Map<Beneficiary, HierarchyContract> beneficiary2HierarchyContracts;
+
 	public static HierarchyConfig cast(@NonNull final CommissionConfig config)
 	{
 		if (config instanceof HierarchyConfig)
@@ -46,9 +57,20 @@ public class HierarchyConfig implements CommissionConfig
 				.setParameter("config", config);
 	}
 
-	public boolean isSubtractLowerLevelCommissionFromBase()
+	@Builder
+	private HierarchyConfig(
+			@NonNull final Boolean subtractLowerLevelCommissionFromBase,
+			@Singular @NonNull final Map<Beneficiary, HierarchyContractBuilder> beneficiary2HierarchyContracts)
 	{
-		return true;
+		this.subtractLowerLevelCommissionFromBase = subtractLowerLevelCommissionFromBase;
+
+		final ImmutableMap.Builder<Beneficiary, HierarchyContract> builder = ImmutableMap.<Beneficiary, HierarchyContract> builder();
+		for (final Entry<Beneficiary, HierarchyContractBuilder> entry : beneficiary2HierarchyContracts.entrySet())
+		{
+			final HierarchyContract contract = entry.getValue().config(this).build();
+			builder.put(entry.getKey(), contract);
+		}
+		this.beneficiary2HierarchyContracts = builder.build();
 	}
 
 	@Override
@@ -57,9 +79,9 @@ public class HierarchyConfig implements CommissionConfig
 		return CommissionType.HIERARCHY_COMMISSION;
 	}
 
-	public CommissionContract getContractFor(Beneficiary beneficiary)
+	public CommissionContract getContractFor(@NonNull final Beneficiary beneficiary)
 	{
-		return new HierarchyContract(this);
+		return beneficiary2HierarchyContracts.get(beneficiary);
 	}
 
 }

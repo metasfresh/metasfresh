@@ -1,10 +1,6 @@
-package de.metas.contracts.commission.commissioninstance.services.repos;
+package de.metas.contracts.commission.commissioninstance.services;
 
-import org.springframework.stereotype.Repository;
-
-import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyConfig;
-import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
-import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -28,11 +24,8 @@ import lombok.NonNull;
  * #L%
  */
 
-@Repository
-public class HierarchyConfigRepository
+@UtilityClass
+public class CommissionConstants
 {
-	HierarchyConfig ofRecord(@NonNull final I_C_HierarchyCommissionSettings settingsRecord)
-	{
-		return null;
-	}
+	public static final String TYPE_CONDITIONS_COMMISSION = "Commission";
 }

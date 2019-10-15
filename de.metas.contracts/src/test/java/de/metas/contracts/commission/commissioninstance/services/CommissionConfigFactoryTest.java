@@ -110,7 +110,7 @@ class CommissionConfigFactoryTest
 				.productId(productId)
 				.date(date)
 				.build();
-		final ImmutableList<CommissionConfig> configs = new CommissionConfigFactory().createFor(contractRequest);
+		final ImmutableList<CommissionConfig> configs = new CommissionConfigFactory(new CommissionHierarchyFactory()).createFor(contractRequest);
 
 		assertThat(configs).hasSize(1);
 		final CommissionConfig config = configs.get(0);
