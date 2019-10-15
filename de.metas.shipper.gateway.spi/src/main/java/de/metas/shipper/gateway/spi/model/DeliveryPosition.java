@@ -41,7 +41,6 @@ public class DeliveryPosition
 	String content;
 	PackageDimensions packageDimensions;
 
-	/* optional, can be {@code null} */
 	@Nullable
 	CustomDeliveryData customDeliveryData;
 
