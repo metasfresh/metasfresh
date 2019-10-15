@@ -85,7 +85,6 @@ public class PickHUCommand
 		this.packToId = request.getPackToId();
 		this.qtyToPick = request.getQtyToPick();
 		this.autoReview = request.isAutoReview();
-		this.createPickingCandidatesOnly = request.isCreatePickingCandidatesOnly();
 	}
 
 	public PickHUResult perform()
@@ -104,14 +103,11 @@ public class PickHUCommand
 		final PickingCandidate pickingCandidate = getOrCreatePickingCandidate();
 		pickingCandidate.assertDraft();
 
-		if (!createPickingCandidatesOnly)
+		pickingCandidate.pick(qtyToPick);
+		pickingCandidate.packTo(packToId);
+		if (autoReview)
 		{
-			pickingCandidate.pick(qtyToPick);
-			pickingCandidate.packTo(packToId);
-			if (autoReview)
-			{
-				pickingCandidate.reviewPicking(qtyToPick.toBigDecimal());
-			}
+			pickingCandidate.reviewPicking(qtyToPick.toBigDecimal());
 		}
 
 		pickingCandidateRepository.save(pickingCandidate);
