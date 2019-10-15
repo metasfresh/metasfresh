@@ -155,10 +155,10 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		final ImmutableList<PackageLabels> packageLabels = customDeliveryData.getSequenceNumberToPdfLabel().values().stream()
 				.map(DhlShipperGatewayClient::createPackageLabel)
 				.collect(ImmutableList.toImmutableList());
+
 		logger.trace("getPackageLabelsList: labels are {}", packageLabels);
 
 		return packageLabels;
-
 	}
 
 	/////////////////////////////////////////////////
