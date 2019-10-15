@@ -13,6 +13,9 @@ import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
+import de.metas.inoutcandidate.lock.ShipmentScheduleLockRepository;
+import de.metas.inoutcandidate.lock.ShipmentScheduleLockRequest;
+import de.metas.inoutcandidate.lock.ShipmentScheduleUnLockRequest;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
@@ -59,6 +62,10 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 	@Autowired
 	private PickingCandidateService pickingCandidateService;
 
+	@Autowired
+	private ShipmentScheduleLockRepository locksRepo;
+
+
 	final private IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 
 	@Override
@@ -94,18 +101,32 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 	{
 		final PackageableRow row = getSingleSelectedRow();
 
-		createPickingCandidatesIfNeeded(row);
 
-		// print
-		final byte[] pickList = printPicklist(row);
 
-		// preview
-		getResult().setReportData(
-				pickList,
-				buildFilename(row),
-				OutputType.PDF.getContentType());
+		final ShipmentScheduleLockRequest lockRequest = createLockRequest(row);
+		locksRepo.lock(lockRequest);
 
-		return MSG_OK;
+		try
+		{
+			createPickingCandidatesIfNeeded(row);
+
+			// print
+			final byte[] pickList = printPicklist(row);
+
+			// preview
+			getResult().setReportData(
+					pickList,
+					buildFilename(row),
+					OutputType.PDF.getContentType());
+
+			return MSG_OK;
+		}
+		catch (final Exception ex)
+		{
+			locksRepo.unlockNoFail(ShipmentScheduleUnLockRequest.of(lockRequest));
+
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
 	}
 
 	private void createPickingCandidatesIfNeeded(final PackageableRow row)
