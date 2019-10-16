@@ -1,12 +1,14 @@
 package de.metas.ui.web.window.datatypes;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,14 +39,6 @@ import de.metas.JsonObjectMapperHolder;
 
 public class WindowIdTest
 {
-	private ObjectMapper jsonObjectMapper;
-
-	@Before
-	public void init()
-	{
-		jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
-	}
-
 	@Test
 	public void testEquals()
 	{
@@ -52,40 +46,89 @@ public class WindowIdTest
 				.isEqualTo(WindowId.fromJson("1234"));
 	}
 
-	@Test
-	public void testSerializeDeserialize()
+	@Nested
+	public class Serialization
 	{
-		testSerializeDeserialize(WindowId.of(123));
-		testSerializeDeserialize(WindowId.fromJson("windowId"));
+		private ObjectMapper jsonObjectMapper;
+
+		@BeforeEach
+		public void init()
+		{
+			jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+		}
+
+		@Test
+		public void testSerializeDeserialize()
+		{
+			testSerializeDeserialize(WindowId.of(123));
+			testSerializeDeserialize(WindowId.fromJson("windowId"));
+		}
+
+		private void testSerializeDeserialize(final WindowId windowId)
+		{
+			final WindowId windowIdDeserialized = fromJson(toJson(windowId));
+			assertThat(windowIdDeserialized).isEqualTo(windowId);
+		}
+
+		private String toJson(final WindowId windowId)
+		{
+			try
+			{
+				return jsonObjectMapper.writeValueAsString(windowId);
+			}
+			catch (final JsonProcessingException e)
+			{
+				throw new AdempiereException("Failed serializing " + windowId, e);
+			}
+		}
+
+		private WindowId fromJson(final String json)
+		{
+			try
+			{
+				return jsonObjectMapper.readValue(json, WindowId.class);
+			}
+			catch (final IOException e)
+			{
+				throw new AdempiereException("Failed deserializing:\n" + json, e);
+			}
+		}
 	}
 
-	private void testSerializeDeserialize(final WindowId windowId)
+	@Nested
+	public class toInt
 	{
-		final WindowId windowIdDeserialized = fromJson(toJson(windowId));
-		assertThat(windowIdDeserialized).isEqualTo(windowId);
+		@Test
+		public void parseOK()
+		{
+			assertThat(WindowId.fromJson("123").toInt()).isEqualTo(123);
+		}
+
+		@Test
+		public void parseError()
+		{
+			final WindowId windowId = WindowId.fromJson("123a");
+			assertThatThrownBy(() -> windowId.toInt())
+					.isInstanceOf(AdempiereException.class)
+					.hasMessage("WindowId cannot be converted to int: 123a");
+		}
+
 	}
 
-	private String toJson(final WindowId windowId)
+	@Nested
+	public class toIntOr
 	{
-		try
+		@Test
+		public void parseOK()
 		{
-			return jsonObjectMapper.writeValueAsString(windowId);
+			assertThat(WindowId.fromJson("123").toIntOr(-1)).isEqualTo(123);
 		}
-		catch (final JsonProcessingException e)
-		{
-			throw new AdempiereException("Failed serializing " + windowId, e);
-		}
-	}
 
-	private WindowId fromJson(final String json)
-	{
-		try
+		@Test
+		public void parseError()
 		{
-			return jsonObjectMapper.readValue(json, WindowId.class);
-		}
-		catch (final IOException e)
-		{
-			throw new AdempiereException("Failed deserializing:\n" + json, e);
+			final WindowId windowId = WindowId.fromJson("123a");
+			assertThat(windowId.toIntOr(-1)).isEqualTo(-1);
 		}
 	}
 }

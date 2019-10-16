@@ -2,6 +2,8 @@ package de.metas.ui.web.pickingV2.packageable.process;
 
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.TrxRunnable2;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Joiner;
@@ -11,6 +13,9 @@ import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
+import de.metas.inoutcandidate.lock.ShipmentScheduleLockRepository;
+import de.metas.inoutcandidate.lock.ShipmentScheduleLockRequest;
+import de.metas.inoutcandidate.lock.ShipmentScheduleUnLockRequest;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
@@ -57,6 +62,9 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 	@Autowired
 	private PickingCandidateService pickingCandidateService;
 
+	@Autowired
+	private ShipmentScheduleLockRepository locksRepo;
+
 	final private IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 
 	@Override
@@ -92,26 +100,65 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 	{
 		final PackageableRow row = getSingleSelectedRow();
 
-		pickIfNeeded(row);
+		final ShipmentScheduleLockRequest lockRequest = createLockRequest(row);
+		// the line needs to remain locked until the user explicitly unlocks it
+		locksRepo.lock(lockRequest);
 
-		// print
-		final byte[] pickList = printPicklist(row);
+		try
+		{
+			createPickingCandidatesIfNeeded(row);
 
-		// preview
-		getResult().setReportData(
-				pickList,
-				buildFilename(row),
-				OutputType.PDF.getContentType());
+			// print
+			final byte[] pickList = printPicklist(row);
 
-		return MSG_OK;
+			// preview
+			getResult().setReportData(
+					pickList,
+					buildFilename(row),
+					OutputType.PDF.getContentType());
+
+			return MSG_OK;
+		}
+		catch (final Exception ex)
+		{
+			// if no exception is caught, then the records remain locked until unlocked by the used who performs the picking
+			locksRepo.unlockNoFail(ShipmentScheduleUnLockRequest.of(lockRequest));
+
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
 	}
 
-	private void pickIfNeeded(final PackageableRow row)
+	private void createPickingCandidatesIfNeeded(final PackageableRow row)
 	{
 		final boolean existsPickingCandidates = pickingCandidateService.existsPickingCandidates(row.getShipmentScheduleIds());
 		if (!existsPickingCandidates)
 		{
-			productsToPickRowsRepository.pick(row);
+			// run in a different transaction so that the report can access it
+			trxManager.runInNewTrx(new TrxRunnable2()
+			{
+
+				@Override
+				public void run(final String localTrxName) throws Exception
+				{
+					productsToPickRowsRepository.createPickingCandidates(row);
+				}
+
+				// Throw an explicit error in order to make sure that the user sees that something went wrong
+				// mainly we might got some line that should not be in picking terminal
+				@Override
+				public boolean doCatch(final Throwable e) throws Throwable
+				{
+					throw AdempiereException.wrapIfNeeded(e)
+					.markUserNotified();
+				}
+
+				@Override
+				public void doFinally()
+				{
+					// nothing
+				}
+
+			});
 		}
 	}
 
