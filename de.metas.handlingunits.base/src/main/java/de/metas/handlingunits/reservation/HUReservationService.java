@@ -311,6 +311,7 @@ public class HUReservationService
 		{
 			final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 			final ImmutableAttributeSet attributeSet = attributesRepo.getImmutableAttributeSetById(asiId);
+			// TODO: shall we consider only storage relevant attributes?
 			huQuery.addOnlyWithAttributes(attributeSet);
 			huQuery.allowSqlWhenFilteringAttributes(isAllowSqlWhenFilteringHUAttributes());
 		}
