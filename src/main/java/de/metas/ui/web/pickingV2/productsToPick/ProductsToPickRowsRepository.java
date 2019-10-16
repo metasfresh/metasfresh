@@ -12,6 +12,8 @@ import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.PickHURequest;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.ui.web.pickingV2.config.PickingConfigRepositoryV2;
+import de.metas.ui.web.pickingV2.config.PickingConfigV2;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import lombok.NonNull;
@@ -41,15 +43,18 @@ import lombok.NonNull;
 @Repository
 public class ProductsToPickRowsRepository
 {
+	private final PickingConfigRepositoryV2 pickingConfigRepo;
 	private final IBPartnerBL bpartnersService;
 	private final HUReservationService huReservationService;
 	private final PickingCandidateService pickingCandidateService;
 
 	public ProductsToPickRowsRepository(
+			@NonNull final PickingConfigRepositoryV2 pickingConfigRepo,
 			@NonNull final IBPartnerBL bpartnersService,
 			@NonNull final HUReservationService huReservationService,
 			@NonNull final PickingCandidateService pickingCandidateService)
 	{
+		this.pickingConfigRepo = pickingConfigRepo;
 		this.bpartnersService = bpartnersService;
 		this.huReservationService = huReservationService;
 		this.pickingCandidateService = pickingCandidateService;
@@ -63,11 +68,16 @@ public class ProductsToPickRowsRepository
 
 	private ProductsToPickRowsDataFactory newProductsToPickRowsFactory()
 	{
+		final PickingConfigV2 pickingConfig = pickingConfigRepo.getPickingConfig();
+
 		return ProductsToPickRowsDataFactory.builder()
 				.bpartnersService(bpartnersService)
 				.huReservationService(huReservationService)
 				.pickingCandidateService(pickingCandidateService)
 				.locatorLookup(LookupDataSourceFactory.instance.searchInTableLookup(I_M_Locator.Table_Name))
+				//
+				.considerAttributes(pickingConfig.isConsiderAttributes())
+				//
 				.build();
 	}
 
@@ -85,7 +95,7 @@ public class ProductsToPickRowsRepository
 	{
 		final ProductsToPickRowsData productsToPickRowsData = createProductsToPickRowsData(packageableRow);
 		return productsToPickRowsData.getAllRows().stream()
-				.map(productsToPickRow -> pickingCandidateService.createAndSavePickingCandidates(createPickHURequest(productsToPickRow, false/*isPickingReviewRequired*/)))
+				.map(productsToPickRow -> pickingCandidateService.createAndSavePickingCandidates(createPickHURequest(productsToPickRow, false/* isPickingReviewRequired */)))
 				.map(pickHUResult -> pickHUResult.getPickingCandidate())
 				.collect(ImmutableList.toImmutableList());
 	}
