@@ -136,7 +136,7 @@ public class StepComXMLDesadvBean
 
 		mapAddresses(xmlDesadv, header, supplierGln);
 
-		mapPackaging(xmlDesadv, decimalFormat, header);
+		mapPackaging(xmlDesadv, header, decimalFormat);
 
 		final TRAILR trailr = DESADV_objectFactory.createTRAILR();
 		trailr.setDOCUMENTID(documentId);
@@ -170,8 +170,8 @@ public class StepComXMLDesadvBean
 
 	private void mapPackaging(
 			@NonNull final EDIExpDesadvType xmlDesadv,
-			@NonNull final DecimalFormat decimalFormat,
-			@NonNull final HEADERXlief header)
+			@NonNull final HEADERXlief header,
+			@NonNull final DecimalFormat decimalFormat)
 	{
 		final PACKINXlief packaging = DESADV_objectFactory.createPACKINXlief();
 		packaging.setDOCUMENTID(header.getDOCUMENTID());
@@ -194,7 +194,7 @@ public class StepComXMLDesadvBean
 			final String sscc18Value = Util.removePrecedingZeros(ediExpDesadvLineType.getIPASSCC18());
 			packDetail.setIDENTIFICATIONCODE(sscc18Value);
 
-			mapDetail(decimalFormat, ediExpDesadvLineType, packDetail);
+			mapDetail(packDetail, xmlDesadv, ediExpDesadvLineType, decimalFormat);
 			packaging.getPPACK1().add(packDetail);
 
 			if (packagingCodeLUText == null)
@@ -210,9 +210,10 @@ public class StepComXMLDesadvBean
 	}
 
 	private void mapDetail(
-			final DecimalFormat decimalFormat,
+			@NonNull final PPACK1 packDetail,
+			@NonNull final EDIExpDesadvType xmlDesadv,
 			@NonNull final EDIExpDesadvLineType ediExpDesadvLineType,
-			@NonNull final PPACK1 packDetail)
+			final DecimalFormat decimalFormat)
 	{
 		final String documentId = packDetail.getDOCUMENTID();
 		final DETAILXlief detail = DESADV_objectFactory.createDETAILXlief();
@@ -309,13 +310,19 @@ public class StepComXMLDesadvBean
 			detail.getDQUAN1().add(cuTuQuantity);
 		}
 
-		final DREFE1 detailRef = DESADV_objectFactory.createDREFE1();
-		detailRef.setDOCUMENTID(documentId);
-		detailRef.setLINENUMBER(lineNumber);
-		detailRef.setREFERENCEQUAL(ReferenceQual.LIRN.toString());
-		// line number for now
-		detailRef.setREFERENCELINE(lineNumber);
-		detail.getDREFE1().add(detailRef);
+		final DREFE1 orderHeaderRef = DESADV_objectFactory.createDREFE1();
+		orderHeaderRef.setDOCUMENTID(documentId);
+		orderHeaderRef.setLINENUMBER(lineNumber);
+		orderHeaderRef.setREFERENCEQUAL(ReferenceQual.ORBU.toString());
+		orderHeaderRef.setREFERENCE(xmlDesadv.getPOReference());
+		detail.getDREFE1().add(orderHeaderRef);
+
+		final DREFE1 orderLineRef = DESADV_objectFactory.createDREFE1();
+		orderLineRef.setDOCUMENTID(documentId);
+		orderLineRef.setLINENUMBER(lineNumber);
+		orderLineRef.setREFERENCEQUAL(ReferenceQual.LIRN.toString());
+		orderLineRef.setREFERENCELINE(lineNumber);
+		detail.getDREFE1().add(orderLineRef);
 
 		final BigDecimal quantityDiff = ediExpDesadvLineType.getQtyEntered().subtract(qtyDelivered);
 		if (quantityDiff.signum() != 0)
@@ -386,7 +393,10 @@ public class StepComXMLDesadvBean
 		// transport details HTRSD1 not mapped for now
 	}
 
-	private void mapHeaderReferences(final EDIExpDesadvType xmlDesadv, final String dateFormat, final HEADERXlief header)
+	private void mapHeaderReferences(
+			@NonNull final EDIExpDesadvType xmlDesadv,
+			@NonNull final String dateFormat,
+			@NonNull final HEADERXlief header)
 	{
 		final String buyerReference = xmlDesadv.getPOReference();
 
