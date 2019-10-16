@@ -47,6 +47,7 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.material.event.stock.ResetStockPInstanceId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.Check;
@@ -291,7 +292,7 @@ public class CandidateRepositoryRetrieval
 					.storageAttributesKey(getEffectiveStorageAttributesKey(candidateRecord))
 					.attributeSetInstanceId(candidateRecord.getM_AttributeSetInstance_ID())
 					.transactionId(transactionDetailRecord.getM_Transaction_ID())
-					.resetStockAdPinstanceId(transactionDetailRecord.getAD_PInstance_ResetStock_ID())
+					.resetStockPInstanceId(ResetStockPInstanceId.ofRepoIdOrNull(transactionDetailRecord.getAD_PInstance_ResetStock_ID()))
 					.stockId(transactionDetailRecord.getMD_Stock_ID())
 					.transactionDate(TimeUtil.asInstant(transactionDetailRecord.getTransactionDate()))
 					.complete(true)

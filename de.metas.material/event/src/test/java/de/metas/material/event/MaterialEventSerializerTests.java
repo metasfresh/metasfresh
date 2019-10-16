@@ -61,6 +61,7 @@ import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent.ShipmentScheduleCreatedEventBuilder;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
+import de.metas.material.event.stock.ResetStockPInstanceId;
 import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.material.event.stock.StockChangedEvent.StockChangeDetails;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
@@ -544,7 +545,7 @@ public class MaterialEventSerializerTests
 	{
 		final StockChangeDetails stockChangeDetails = StockChangeDetails
 				.builder()
-				.resetStockAdPinstanceId(10)
+				.resetStockPInstanceId(ResetStockPInstanceId.ofRepoId(10))
 				.transactionId(20)
 				.stockId(30)
 				.build();
