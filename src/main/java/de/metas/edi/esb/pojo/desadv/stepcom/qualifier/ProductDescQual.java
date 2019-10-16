@@ -25,5 +25,9 @@ package de.metas.edi.esb.pojo.desadv.stepcom.qualifier;
 
 public enum ProductDescQual
 {
-	PROD
+	/** product description */
+	PROD,
+
+	/** product price */
+	PRIC
 }

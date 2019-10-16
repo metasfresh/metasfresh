@@ -287,6 +287,16 @@ public class StepComXMLDesadvBean
 			prodDescr.setPRODUCTDESCTEXT(ediExpDesadvLineType.getProductDescription());
 			detail.getDPRDE1().add(prodDescr);
 		}
+		if(ediExpDesadvLineType.getPriceActual() != null)
+		{
+			final DPRDE1 prodDescr = DESADV_objectFactory.createDPRDE1();
+			prodDescr.setDOCUMENTID(documentId);
+			prodDescr.setLINENUMBER(lineNumber);
+			prodDescr.setPRODUCTDESCQUAL(ProductDescQual.PRIC.toString());
+			prodDescr.setPRODUCTDESCTYPE(ProductDescType.CU.toString());
+			prodDescr.setPRODUCTDESCTEXT(formatNumber(ediExpDesadvLineType.getPriceActual(), decimalFormat));
+			detail.getDPRDE1().add(prodDescr);
+		}
 
 		final DQUAN1 cuQuantity = createQuantityDetail(documentId, lineNumber, QuantityQual.DELV);
 		BigDecimal qtyDelivered = ediExpDesadvLineType.getQtyDeliveredInUOM();

@@ -757,6 +757,7 @@
 			<xsd:element maxOccurs="1" minOccurs="0" name="UPC_TU" type="xsd:string" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="M_HU_PackagingCode_LU_Text" type="xsd:string" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="M_HU_PackagingCode_TU_Text" type="xsd:string" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="PriceActual" type="xsd:decimal" />
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="EDI_Exp_DesadvType">
