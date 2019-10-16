@@ -71,7 +71,7 @@ public class ProductsToPickRowsRepository
 				.build();
 	}
 
-	public PickHURequest createPickHURequest(@NonNull final ProductsToPickRow row, final boolean isPickingReviewRequired)
+	public PickHURequest createPickHURequest(@NonNull final ProductsToPickRow row, boolean isPickingReviewRequired)
 	{
 		return PickHURequest.builder()
 				.shipmentScheduleId(row.getShipmentScheduleId())
@@ -81,11 +81,11 @@ public class ProductsToPickRowsRepository
 				.build();
 	}
 
-	public List<PickingCandidate> pick(@NonNull final PackageableRow packageableRow)
+	public List<PickingCandidate> createPickingCandidates(@NonNull final PackageableRow packageableRow)
 	{
 		final ProductsToPickRowsData productsToPickRowsData = createProductsToPickRowsData(packageableRow);
 		return productsToPickRowsData.getAllRows().stream()
-				.map(productsToPickRow -> pickingCandidateService.pickHU(createPickHURequest(productsToPickRow, false)))
+				.map(productsToPickRow -> pickingCandidateService.createAndSavePickingCandidates(createPickHURequest(productsToPickRow, false/*isPickingReviewRequired*/)))
 				.map(pickHUResult -> pickHUResult.getPickingCandidate())
 				.collect(ImmutableList.toImmutableList());
 	}

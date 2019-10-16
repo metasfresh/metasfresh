@@ -2,6 +2,8 @@ package de.metas.ui.web.pickingV2.packageable.process;
 
 import java.util.stream.Stream;
 
+import de.metas.inoutcandidate.lock.ShipmentScheduleLockRequest;
+import de.metas.inoutcandidate.lock.ShipmentScheduleLockType;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
@@ -69,4 +71,14 @@ public abstract class PackageablesViewBasedProcess extends ViewBasedProcessTempl
 		return super.streamSelectedRows()
 				.map(PackageableRow::cast);
 	}
+
+	protected final ShipmentScheduleLockRequest createLockRequest(final PackageableRow row)
+	{
+		return ShipmentScheduleLockRequest.builder()
+				.shipmentScheduleIds(row.getShipmentScheduleIds())
+				.lockType(ShipmentScheduleLockType.PICKING)
+				.lockedBy(getLoggedUserId())
+				.build();
+	}
+
 }
