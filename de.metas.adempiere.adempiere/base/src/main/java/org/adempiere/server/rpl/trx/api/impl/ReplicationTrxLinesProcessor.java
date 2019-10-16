@@ -10,12 +10,12 @@ package org.adempiere.server.rpl.trx.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,8 +37,8 @@ import org.adempiere.server.rpl.trx.api.IReplicationTrxLinesProcessorResult;
 import org.adempiere.server.rpl.trx.spi.IReplicationIssueAware;
 import org.adempiere.server.rpl.trx.spi.IReplicationIssueSolver;
 
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class ReplicationTrxLinesProcessor implements ITrxItemChunkProcessor<I_EXP_ReplicationTrxLine, IReplicationTrxLinesProcessorResult>
 {
@@ -49,9 +49,8 @@ public class ReplicationTrxLinesProcessor implements ITrxItemChunkProcessor<I_EX
 
 	private List<I_EXP_ReplicationTrxLine> currentTrxLines;
 
-	public void setParams(final IReplicationIssueSolverParams params)
+	public void setParams(@NonNull final IReplicationIssueSolverParams params)
 	{
-		Check.assumeNotNull(params, "params not null");
 		this.params = params;
 	}
 
