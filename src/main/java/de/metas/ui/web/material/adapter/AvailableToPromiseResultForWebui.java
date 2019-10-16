@@ -1,25 +1,16 @@
 package de.metas.ui.web.material.adapter;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getModelTranslationMap;
-
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_AttributeValue;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
-import de.metas.material.event.commons.AttributesKey;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
-import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -81,102 +72,25 @@ public class AvailableToPromiseResultForWebui
 			ATTRIBUTE_SET, OTHER_STORAGE_KEYS, ALL_STORAGE_KEYS
 		}
 
-		int productId;
-
+		ProductId productId;
 		Quantity qty;
-
 		Type type;
 
-		ImmutableMap<String, Object> lookupAttributesMap;
-		ITranslatableString storageAttributesString;
-		ITranslatableString uomSymbolStr;
+		ImmutableAttributeSet attributes;
 
 		@Builder
 		public Group(
-				final int productId,
-				@NonNull final Type type,
-				@Nullable final List<I_M_AttributeValue> attributeValues,
-				@NonNull final Quantity qty)
+				@NonNull final Group.Type type,
+				@NonNull final ProductId productId,
+				@NonNull final Quantity qty,
+				@Nullable final ImmutableAttributeSet attributes)
 		{
-			Check.assume(productId > 0, "productId > 0");
 			this.type = type;
 			this.productId = productId;
-
-			if (type == Type.ATTRIBUTE_SET)
-			{
-				Check.errorIf(attributeValues == null,
-						"The given type parameter is {}, therefore the given attribute set may not be null; productId={}; qty={}", type, productId, qty);
-			}
 			this.qty = qty;
-			this.uomSymbolStr = createUomSymbolStr();
-			this.lookupAttributesMap = createLookupAttributesMap(attributeValues);
-			this.storageAttributesString = createStorageAttributesString(attributeValues);
+			this.attributes = CoalesceUtil.coalesce(attributes, ImmutableAttributeSet.EMPTY);
 		}
 
-		private ITranslatableString createUomSymbolStr()
-		{
-			final I_C_UOM uom = qty.getUOM();
-			final ITranslatableString uomSymbolStr = getModelTranslationMap(uom)
-					.getColumnTrl(I_C_UOM.COLUMNNAME_UOMSymbol, uom.getUOMSymbol());
-			return uomSymbolStr;
-		}
-
-		private ImmutableMap<String, Object> createLookupAttributesMap(
-				@Nullable final List<I_M_AttributeValue> attributeValues)
-		{
-			final ImmutableMap.Builder<String, Object> attributeMapBuilder = ImmutableMap.builder();
-			switch (getType())
-			{
-				case ATTRIBUTE_SET:
-					for (final I_M_AttributeValue attributevalue : attributeValues)
-					{
-						attributeMapBuilder.put(Integer.toString(attributevalue.getM_Attribute_ID()), attributevalue.getValue());
-					}
-					break;
-				case OTHER_STORAGE_KEYS:
-					break; // nothing
-				case ALL_STORAGE_KEYS:
-					break; // nothing
-				default:
-					Check.errorIf(true, "Unexpected Group.Type={}; gtroup={}", getType(), this);
-					break;
-			}
-			return attributeMapBuilder.build();
-		}
-
-		private ITranslatableString createStorageAttributesString(
-				@Nullable final List<I_M_AttributeValue> attributeValues)
-		{
-			final IMsgBL msgBL = Services.get(IMsgBL.class);
-
-			final ITranslatableString result;
-			switch (getType())
-			{
-				case ATTRIBUTE_SET:
-					final List<ITranslatableString> singleStrings = new ArrayList<>();
-					for (final I_M_AttributeValue attributeValue : attributeValues)
-					{
-						final ITranslatableString attributeValueStr = getModelTranslationMap(attributeValue)
-								.getColumnTrl(I_M_AttributeValue.COLUMNNAME_Name, attributeValue.getName());
-						singleStrings.add(attributeValueStr);
-					}
-					result = TranslatableStrings.joinList(" ", singleStrings);
-
-					break;
-				case OTHER_STORAGE_KEYS:
-					result = msgBL.getTranslatableMsgText(AttributesKey.MSG_ATTRIBUTES_KEY_OTHER);
-					break;
-				case ALL_STORAGE_KEYS:
-					result = msgBL.getTranslatableMsgText(AttributesKey.MSG_ATTRIBUTES_KEY_ALL);
-					break;
-				default:
-					Check.errorIf(true, "Unexpected type={}; gtroup={}", getType(), this);
-					result = null;
-					break;
-			}
-			return result;
-		}
 	}
-
 
 }

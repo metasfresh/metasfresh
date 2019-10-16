@@ -1,12 +1,14 @@
 package de.metas.ui.web.handlingunits;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
@@ -24,6 +26,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.product.ProductId;
+import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.view.descriptor.ViewRowAttributesLayout;
 import de.metas.ui.web.view.json.JSONViewRowAttributes;
@@ -260,10 +263,22 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		final String attributeValueType = attributesStorage.getAttributeValueType(attribute);
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
 		{
-			return DateTimeConverters.fromJson(jsonValue.toString(), DocumentFieldWidgetType.LocalDate);
-		}
+			final LocalDate localDate = DateTimeConverters.fromObjectToLocalDate(jsonValue.toString());
+			if (localDate == null)
+			{
+				return null;
+			}
 
-		return jsonValue;
+			// convert the LocalDate to ZonedDateTime using session's time zone,
+			// because later on the date is converted to Timestamp using system's default time zone.
+			// And we want to have a valid date for session's timezone.
+			final ZoneId zoneId = UserSession.getTimeZoneOrSystemDefault();
+			return localDate.atStartOfDay(zoneId);
+		}
+		else
+		{
+			return jsonValue;
+		}
 	}
 
 	@Override
@@ -311,12 +326,12 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 
 	public Optional<LocalDate> getBestBeforeDate()
 	{
-		if (!attributesStorage.hasAttribute(HUAttributeConstants.ATTR_BestBeforeDate))
+		if (!attributesStorage.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
 		{
 			return Optional.empty();
 		}
 
-		final LocalDate bestBeforeDate = attributesStorage.getValueAsLocalDate(HUAttributeConstants.ATTR_BestBeforeDate);
+		final LocalDate bestBeforeDate = attributesStorage.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate);
 		return Optional.ofNullable(bestBeforeDate);
 	}
 
@@ -382,12 +397,6 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		public void onAttributeValueDeleted(final IAttributeValueContext attributeValueContext, final IAttributeStorage storage, final IAttributeValue attributeValue)
 		{
 			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public void onAttributeStorageDisposed(final IAttributeStorage storage)
-		{
-			// nothing
 		}
 	}
 }

@@ -60,8 +60,14 @@ public class DocumentReferencesService
 	@Autowired
 	private DocumentCollection documentCollection;
 
-	public List<DocumentReference> getDocumentReferences(final DocumentPath documentPath)
+	public List<DocumentReference> getDocumentReferences(@NonNull final DocumentPath documentPath)
 	{
+		// Document with composed keys does not support references
+		if (documentPath.isComposedKey())
+		{
+			return ImmutableList.of();
+		}
+
 		return documentCollection.forDocumentReadonly(documentPath, document -> {
 
 			if (document.isNew())
@@ -130,7 +136,7 @@ public class DocumentReferencesService
 	}
 
 	private static final DocumentReference createDocumentReference(
-			@NonNull final ZoomInfo zoomInfo, 
+			@NonNull final ZoomInfo zoomInfo,
 			@NonNull final ITranslatableString filterCaption)
 	{
 		return DocumentReference.builder()

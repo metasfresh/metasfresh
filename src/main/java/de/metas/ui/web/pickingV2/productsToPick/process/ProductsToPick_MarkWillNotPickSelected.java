@@ -71,7 +71,7 @@ public class ProductsToPick_MarkWillNotPickSelected extends ProductsToPickViewBa
 	{
 		final RejectPickingResult result = pickingCandidatesService.rejectPicking(RejectPickingRequest.builder()
 				.shipmentScheduleId(row.getShipmentScheduleId())
-				.qtyToReject(row.getQty())
+				.qtyToReject(row.getQtyEffective())
 				.rejectPickingFromHuId(row.getHuId())
 				.existingPickingCandidateId(row.getPickingCandidateId())
 				.build());

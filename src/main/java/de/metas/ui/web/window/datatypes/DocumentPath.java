@@ -400,6 +400,20 @@ public final class DocumentPath
 		return !rowIds.isEmpty();
 	}
 
+	public boolean isComposedKey()
+	{
+		if (detailId == null)
+		{
+			return documentId != null && documentId.isComposedKey();
+		}
+		else
+		{
+			return rowIds != null
+					&& rowIds.isSingleDocumentId()
+					&& rowIds.getSingleDocumentId().isComposedKey();
+		}
+	}
+
 	public DocumentPath createChildPath(final DetailId detailId, final DocumentId rowId)
 	{
 		if (detailId == null)

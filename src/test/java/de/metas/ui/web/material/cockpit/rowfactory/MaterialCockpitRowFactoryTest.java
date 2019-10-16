@@ -12,18 +12,17 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_S_Resource;
@@ -82,13 +81,13 @@ public class MaterialCockpitRowFactoryTest
 	private I_M_Product product;
 	private I_M_Attribute attr1;
 	private I_M_Attribute attr2;
-	private I_M_AttributeValue attr1_value1;
-	private I_M_AttributeValue attr2_value1;
+	private AttributeListValue attr1_value1;
+	private AttributeListValue attr2_value1;
 	private DimensionSpec dimensionSpec;
 	private DimensionSpecGroup dimensionspecGroup_attr1_value1;
 	private DimensionSpecGroup dimensionspecGroup_attr2_value1;
 	private DimensionSpecGroup dimensionspecGroup_empty;
-	private I_M_AttributeValue attr2_value2;
+	private AttributeListValue attr2_value2;
 
 	@Before
 	public void init()
@@ -108,7 +107,7 @@ public class MaterialCockpitRowFactoryTest
 		product.setName("productName");
 		product.setIsStocked(true);
 		product.setC_UOM_ID(uom.getC_UOM_ID());
-		product.setM_Product_Category(productCategory);
+		product.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
 		save(product);
 
 		attr1 = attributesTestHelper.createM_Attribute("test1", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
@@ -135,30 +134,19 @@ public class MaterialCockpitRowFactoryTest
 
 		dimensionspecGroup_attr1_value1 = groups.get(2);
 		assertThat(dimensionspecGroup_attr1_value1.getAttributesKey())
-				.as("dimensionspecGroup_attr1_value1 shall be \"test1_value1\", but is %s", getNameOf(dimensionspecGroup_attr1_value1.getAttributesKey()))
-				.isEqualTo(AttributesKey.ofAttributeValueIds(attr1_value1.getM_AttributeValue_ID()));
+				.as("dimensionspecGroup_attr1_value1 shall be \"test1_value1\", but is %s", dimensionspecGroup_attr1_value1.getAttributesKey())
+				.isEqualTo(AttributesKey.ofAttributeValueIds(attr1_value1.getId()));
 
 		dimensionspecGroup_attr2_value1 = groups.get(3);
-		assertThat(dimensionspecGroup_attr2_value1.getAttributesKey()).isEqualTo(AttributesKey.ofAttributeValueIds(attr2_value1.getM_AttributeValue_ID()));
+		assertThat(dimensionspecGroup_attr2_value1.getAttributesKey()).isEqualTo(AttributesKey.ofAttributeValueIds(attr2_value1.getId()));
 
 		final DimensionSpecGroup dimensionspecGroup_attr2_value2 = groups.get(1);
-		assertThat(dimensionspecGroup_attr2_value2.getAttributesKey()).isEqualTo(AttributesKey.ofAttributeValueIds(attr2_value2.getM_AttributeValue_ID()));
-	}
-
-	private String getNameOf(AttributesKey attributeValueId)
-	{
-		return attributeValueId
-				.getAttributeValueIds()
-				.stream()
-				.map(id -> InterfaceWrapperHelper.load(id, I_M_AttributeValue.class))
-				.map(I_M_AttributeValue::getName)
-				.collect(Collectors.joining("_"));
-
+		assertThat(dimensionspecGroup_attr2_value2.getAttributesKey()).isEqualTo(AttributesKey.ofAttributeValueIds(attr2_value2.getId()));
 	}
 
 	private DimensionSpec createDimensionSpec(
 			final I_M_Attribute attr1,
-			final I_M_AttributeValue attr1_value1,
+			final AttributeListValue attr1_value1,
 			final I_M_Attribute attr2)
 	{
 		final I_DIM_Dimension_Spec dimSpec = newInstance(I_DIM_Dimension_Spec.class);
@@ -168,18 +156,18 @@ public class MaterialCockpitRowFactoryTest
 
 		final I_DIM_Dimension_Spec_Attribute dimSpecAttr1 = newInstance(I_DIM_Dimension_Spec_Attribute.class);
 		dimSpecAttr1.setDIM_Dimension_Spec(dimSpec);
-		dimSpecAttr1.setM_Attribute(attr1);
+		dimSpecAttr1.setM_Attribute_ID(attr1.getM_Attribute_ID());
 		save(dimSpecAttr1);
 
 		final I_DIM_Dimension_Spec_AttributeValue dimSpecAttributeValue = newInstance(I_DIM_Dimension_Spec_AttributeValue.class);
 		dimSpecAttributeValue.setDIM_Dimension_Spec_Attribute(dimSpecAttr1);
-		dimSpecAttributeValue.setM_AttributeValue(attr1_value1);
+		dimSpecAttributeValue.setM_AttributeValue_ID(attr1_value1.getId().getRepoId());
 		save(dimSpecAttributeValue);
 
 		final I_DIM_Dimension_Spec_Attribute dimSpecAttr2 = newInstance(I_DIM_Dimension_Spec_Attribute.class);
 		dimSpecAttr2.setDIM_Dimension_Spec(dimSpec);
 		dimSpecAttr2.setIsIncludeAllAttributeValues(true);
-		dimSpecAttr2.setM_Attribute(attr2);
+		dimSpecAttr2.setM_Attribute_ID(attr2.getM_Attribute_ID());
 		save(dimSpecAttr2);
 
 		return DimensionSpec.ofRecord(dimSpec);
@@ -194,13 +182,14 @@ public class MaterialCockpitRowFactoryTest
 	{
 		final I_M_AttributeSetInstance asi1 = newInstance(I_M_AttributeSetInstance.class);
 		save(asi1);
+		final AttributeSetInstanceId asiId1 = AttributeSetInstanceId.ofRepoId(asi1.getM_AttributeSetInstance_ID());
 
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attr1_value1);
 		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attr2_value1);
 
 		final AttributesKey attributesKeyWithAttr1_and_attr2 = AttributesKeys
-				.createAttributesKeyFromASIAllAttributeValues(asi1.getM_AttributeSetInstance_ID())
+				.createAttributesKeyFromASIAllAttributes(asiId1)
 				.get();
 
 		final I_MD_Cockpit cockpitRecordWithAttributes = newInstance(I_MD_Cockpit.class);

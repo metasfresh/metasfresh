@@ -18,7 +18,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.I_AD_Element;
-import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.X_AD_Process;
@@ -419,23 +418,12 @@ import lombok.NonNull;
 	}
 
 	@Nullable
-	private static String extractClassnameOrNull(final I_AD_Process adProcess)
+	private static String extractClassnameOrNull(@NonNull final I_AD_Process adProcess)
 	{
-		//
-		// First try: Check process classname
 		if (!Check.isEmpty(adProcess.getClassname(), true))
 		{
 			return adProcess.getClassname();
 		}
-
-		//
-		// Second try: form classname (05089)
-		final I_AD_Form form = adProcess.getAD_Form();
-		if (form != null && !Check.isEmpty(form.getClassname(), true))
-		{
-			return form.getClassname();
-		}
-
 		return null;
 	}
 

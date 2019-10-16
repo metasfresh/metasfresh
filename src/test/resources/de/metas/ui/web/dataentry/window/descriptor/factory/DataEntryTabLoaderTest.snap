@@ -1976,8 +1976,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                           "active" : true
                         }
                       },
-                      "cached" : true,
-                      "numericKey" : false
+                      "numericKey" : false,
+                      "cached" : true
                     },
                     "highVolume" : false,
                     "numericKey" : true
@@ -2289,9 +2289,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           "_fieldNamesByCharacteristic" : { },
           "calloutsEnabled" : false,
           "defaultTableCalloutsEnabled" : false,
-          "filterDescriptors" : {
-            "descriptorsByFilterId" : { }
-          },
+          "filterDescriptors" : { },
           "refreshViewOnChangeEvents" : false,
           "adTabId" : {
             "present" : false
@@ -2893,8 +2891,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                           "active" : true
                         }
                       },
-                      "cached" : true,
-                      "numericKey" : false
+                      "numericKey" : false,
+                      "cached" : true
                     },
                     "highVolume" : false,
                     "numericKey" : true
@@ -3206,9 +3204,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           "_fieldNamesByCharacteristic" : { },
           "calloutsEnabled" : false,
           "defaultTableCalloutsEnabled" : false,
-          "filterDescriptors" : {
-            "descriptorsByFilterId" : { }
-          },
+          "filterDescriptors" : { },
           "refreshViewOnChangeEvents" : false,
           "adTabId" : {
             "present" : false
@@ -3232,9 +3228,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
       "_fieldNamesByCharacteristic" : { },
       "calloutsEnabled" : false,
       "defaultTableCalloutsEnabled" : false,
-      "filterDescriptors" : {
-        "descriptorsByFilterId" : { }
-      },
+      "filterDescriptors" : { },
       "refreshViewOnChangeEvents" : false,
       "adTabId" : {
         "present" : false

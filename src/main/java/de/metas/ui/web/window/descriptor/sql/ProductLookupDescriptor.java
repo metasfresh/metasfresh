@@ -1,14 +1,17 @@
 package de.metas.ui.web.window.descriptor.sql;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getModelTranslationMap;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.Date;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -18,9 +21,12 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.mm.attributes.api.impl.AttributeSetDescriptionBuilderCommand;
 import org.adempiere.model.I_M_FreightCost;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupFactory.LanguageInfo;
@@ -29,20 +35,23 @@ import org.compiere.util.CtxNames;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.atp.BPartnerClassifier;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -105,8 +114,6 @@ import lombok.Value;
  */
 public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
 {
-	private static final Logger logger = LogManager.getLogger(ProductLookupDescriptor.class);
-
 	private static final String SYSCONFIG_ATP_QUERY_ENABLED = //
 			"de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ATP.QueryEnabled";
 
@@ -157,7 +164,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 		ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AvailableStockDate, param_AD_Org_ID);
 
-		searchStringMinLength = Services.get(IADTableDAO.class).getTypeaheadMinLength(org.compiere.model.I_M_Product.Table_Name);
+		final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
+		searchStringMinLength = adTablesRepo.getTypeaheadMinLength(org.compiere.model.I_M_Product.Table_Name);
 	}
 
 	@Builder(builderClassName = "BuilderWithoutStockInfo", builderMethodName = "builderWithoutStockInfo")
@@ -176,7 +184,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 		ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AD_Org_ID);
 
-		searchStringMinLength = Services.get(IADTableDAO.class).getTypeaheadMinLength(org.compiere.model.I_M_Product.Table_Name);
+		final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
+		searchStringMinLength = adTablesRepo.getTypeaheadMinLength(org.compiere.model.I_M_Product.Table_Name);
 	}
 
 	@Override
@@ -233,16 +242,21 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 			final LookupValuesList unexplodedLookupValues = LookupValuesList.fromCollection(valuesById.values());
 
-			final Date stockdateOrNull = getEffectiveStockDateOrNull(evalCtx);
+			final ZonedDateTime stockdateOrNull = getEffectiveStockDateOrNull(evalCtx);
 			if (stockdateOrNull == null || availableToPromiseAdapter == null)
 			{
 				return unexplodedLookupValues;
 			}
+
 			final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(param_C_BPartner_ID.getValueAsInteger(evalCtx));
+
+			final String adLanguage = evalCtx.getAD_Language();
+
 			return explodeRecordsWithStockQuantities(
 					unexplodedLookupValues,
 					bpartnerId,
-					stockdateOrNull);
+					stockdateOrNull,
+					adLanguage);
 		}
 		catch (final SQLException ex)
 		{
@@ -275,14 +289,11 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		return filter.trim().length() >= searchMinLength;
 	}
 
-	private Date getEffectiveStockDateOrNull(final LookupDataSourceContext evalCtx)
+	private ZonedDateTime getEffectiveStockDateOrNull(final LookupDataSourceContext evalCtx)
 	{
-		if (param_AvailableStockDate == null)
-		{
-			return null;
-		}
-		final Date stockdateOrNull = param_AvailableStockDate.getValueAsDate(evalCtx);
-		return stockdateOrNull;
+		return param_AvailableStockDate != null
+				? param_AvailableStockDate.getValueAsZonedDateTime(evalCtx)
+				: null;
 	}
 
 	private String buildSql(
@@ -575,7 +586,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private final LookupValuesList explodeRecordsWithStockQuantities(
 			@NonNull final LookupValuesList productLookupValues,
 			@Nullable final BPartnerId bpartnerId,
-			@NonNull final Date dateOrNull)
+			@NonNull final ZonedDateTime dateOrNull,
+			@NonNull final String adLanguage)
 	{
 		if (productLookupValues.isEmpty() || !isAvailableStockQueryActivatedInSysConfig())
 		{
@@ -584,8 +596,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 		final AvailableToPromiseQuery query = AvailableToPromiseQuery.builder()
 				.productIds(productLookupValues.getKeysAsInt())
-				.storageAttributesKeys(availableToPromiseAdapter.getPredefinedStorageAttributeKeys())
-				.date(TimeUtil.asZonedDateTime(dateOrNull))
+				.storageAttributesKeyPatterns(availableToPromiseAdapter.getPredefinedStorageAttributeKeys())
+				.date(dateOrNull)
 				.bpartner(BPartnerClassifier.specificOrNone(bpartnerId))
 				.build();
 		final AvailableToPromiseResultForWebui availableStock = availableToPromiseAdapter.retrieveAvailableStock(query);
@@ -594,7 +606,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		return explodeLookupValuesByAvailableStockGroups(
 				productLookupValues,
 				availableStockGroups,
-				isDisplayATPOnlyIfPositive());
+				isDisplayATPOnlyIfPositive(),
+				adLanguage);
 	}
 
 	private boolean isAvailableStockQueryActivatedInSysConfig()
@@ -613,60 +626,120 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	static LookupValuesList explodeLookupValuesByAvailableStockGroups(
 			@NonNull final LookupValuesList initialLookupValues,
 			@NonNull final List<Group> availableStockGroups,
-			final boolean displayATPOnlyIfPositive)
+			final boolean displayATPOnlyIfPositive,
+			@NonNull final String adLanguage)
 	{
-		final LinkedHashSet<ProductWithATP> productWithATPs = new LinkedHashSet<>();
-		for (final Group availableStockGroup : availableStockGroups)
+		if (initialLookupValues.isEmpty())
 		{
-			final int productId = availableStockGroup.getProductId();
-			final LookupValue productLookupValue = initialLookupValues.getById(productId);
-
-			// avoid NPE, shall not happen
-			if (productLookupValue == null)
-			{
-				logger.warn("No product lookup value found for productId={} in {}. Skipping group: {}", productId, initialLookupValues, availableStockGroup);
-				continue;
-			}
-
-			final ProductWithATP.ProductWithATPBuilder productWithATP = ProductWithATP.builder()
-					.productId(productId)
-					.productDisplayName(productLookupValue.getDisplayNameTrl());
-
-			//
-			// Include ATP:
-			final boolean displayATP = !displayATPOnlyIfPositive || availableStockGroup.getQty().signum() > 0;
-			if (displayATP)
-			{
-				productWithATP
-						.qtyATP(availableStockGroup.getQty())
-						.uomSymbolStr(availableStockGroup.getUomSymbolStr())
-						.attributeMap(availableStockGroup.getLookupAttributesMap())
-						.storageAttributesString(availableStockGroup.getStorageAttributesString());
-			}
-
-			productWithATPs.add(productWithATP.build());
+			return initialLookupValues;
+		}
+		if (availableStockGroups.isEmpty())
+		{
+			return initialLookupValues;
 		}
 
-		if (productWithATPs.isEmpty())
+		final ImmutableListMultimap<ProductId, Group> groupsByProductId = Multimaps.index(availableStockGroups, Group::getProductId);
+		final ArrayList<ProductWithATP> productWithATPs = new ArrayList<>();
+
+		for (final LookupValue productLookupValue : initialLookupValues)
 		{
-			return initialLookupValues; // fallback
+			final ProductId productId = productLookupValue.getIdAs(ProductId::ofRepoId);
+			final ImmutableList<Group> groups = groupsByProductId.get(productId);
+
+			productWithATPs.addAll(createProductWithATPs(productLookupValue, groups, displayATPOnlyIfPositive));
 		}
 
 		return productWithATPs.stream()
-				.map(productWithATP -> createProductLookupValue(productWithATP))
+				.map(productWithATP -> createProductLookupValue(productWithATP, adLanguage))
 				.collect(LookupValuesList.collect());
 	}
 
-	private static IntegerLookupValue createProductLookupValue(final ProductWithATP productWithATP)
+	private static List<ProductWithATP> createProductWithATPs(
+			@NonNull final LookupValue productLookupValue,
+			@NonNull final ImmutableList<Group> atpGroups,
+			final boolean displayATPOnlyIfPositive)
+	{
+		final ArrayList<ProductWithATP> result = new ArrayList<>();
+
+		ProductWithATP productWithATP_ALL = null;
+		ProductWithATP productWithATP_OTHERS = null;
+		for (final Group atpGroup : atpGroups)
+		{
+			final ProductWithATP productWithATP = ProductWithATP.builder()
+					.productId(productLookupValue.getIdAs(ProductId::ofRepoId))
+					.productDisplayName(productLookupValue.getDisplayNameTrl())
+					// .displayQtyAndAttributes(displayATP)
+					.qtyATP(atpGroup.getQty())
+					.attributesType(atpGroup.getType())
+					.attributes(atpGroup.getAttributes())
+					.build();
+
+			result.add(productWithATP);
+
+			if (productWithATP.getAttributesType() == Group.Type.ALL_STORAGE_KEYS)
+			{
+				productWithATP_ALL = productWithATP;
+			}
+			else if (productWithATP.getAttributesType() == Group.Type.OTHER_STORAGE_KEYS)
+			{
+				productWithATP_OTHERS = productWithATP;
+			}
+		}
+
+		//
+		// If OTHERS has the same Qty as ALL, remove OTHERS because it's pointless
+		if (productWithATP_ALL != null
+				&& productWithATP_OTHERS != null
+				&& Objects.equals(productWithATP_OTHERS.getQtyATP(), productWithATP_ALL.getQtyATP()))
+		{
+			result.remove(productWithATP_OTHERS);
+			productWithATP_OTHERS = null;
+		}
+
+		//
+		// Remove non-positive quantities if asked
+		if (displayATPOnlyIfPositive)
+		{
+			result.removeIf(productWithATP -> productWithATP.getQtyATP().signum() <= 0);
+		}
+
+		//
+		// Make sure we have at least one entry for each product
+		if (result.isEmpty())
+		{
+			result.add(ProductWithATP.builder()
+					.productId(productLookupValue.getIdAs(ProductId::ofRepoId))
+					.productDisplayName(productLookupValue.getDisplayNameTrl())
+					.qtyATP(null)
+					.build());
+		}
+
+		return result;
+	}
+
+	private static IntegerLookupValue createProductLookupValue(final ProductWithATP productWithATP, final String adLanguage)
 	{
 		return IntegerLookupValue.builder()
-				.id(productWithATP.getProductId())
-				.displayName(createDisplayName(productWithATP))
-				.attribute(ATTRIBUTE_ASI, productWithATP.getAttributeMap())
+				.id(productWithATP.getProductId().getRepoId())
+				.displayName(createDisplayName(productWithATP, adLanguage))
+				.attribute(ATTRIBUTE_ASI, toValuesByAttributeIdMap(productWithATP.getAttributes()))
 				.build();
 	}
 
-	private static ITranslatableString createDisplayName(final ProductWithATP productWithATP)
+	private static Map<String, Object> toValuesByAttributeIdMap(final ImmutableAttributeSet attributes)
+	{
+		final ImmutableMap.Builder<String, Object> attributeMapBuilder = ImmutableMap.builder();
+		for (final AttributeId attributeId : attributes.getAttributeIds())
+		{
+			final String attributeIdStr = Integer.toString(attributeId.getRepoId());
+			final Object value = attributes.getValue(attributeId);
+			attributeMapBuilder.put(attributeIdStr, value);
+		}
+		return attributeMapBuilder.build();
+
+	}
+
+	private static ITranslatableString createDisplayName(final ProductWithATP productWithATP, final String adLanguage)
 	{
 		final ITranslatableString productDisplayName = productWithATP.getProductDisplayName();
 		final Quantity qtyATP = productWithATP.getQtyATP();
@@ -681,34 +754,78 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		// ATP is available:
 		else
 		{
-			final ITranslatableString qtyValueStr = TranslatableStrings.number(qtyATP.toBigDecimal(), DisplayType.Quantity);
+			final TranslatableStringBuilder builder = TranslatableStrings.builder();
 
-			final ITranslatableString uomSymbolStr = productWithATP.getUomSymbolStr();
-			final ITranslatableString storageAttributeString = productWithATP.getStorageAttributesString();
+			// Product Name
+			builder.append(productDisplayName);
 
-			return TranslatableStrings.join("",
-					productDisplayName,
-					": ", qtyValueStr, " ", uomSymbolStr,
-					" (", storageAttributeString, ")");
+			// ATY Qty:
+			builder.append(": ");
+			builder.append(qtyATP.toBigDecimal(), DisplayType.Quantity)
+					.append(" ")
+					.append(createUomSymbolDisplayString(qtyATP));
+
+			// Attributes
+			final ITranslatableString attributesAsDisplayString = createAttributesDisplayString(
+					productWithATP.getAttributesType(),
+					productWithATP.getAttributes(),
+					adLanguage);
+			if (!TranslatableStrings.isBlank(attributesAsDisplayString))
+			{
+				builder.append(" (").append(attributesAsDisplayString).append(")");
+			}
+
+			//
+			return builder.build();
 		}
+	}
+
+	private static ITranslatableString createAttributesDisplayString(
+			final Group.Type type,
+			final ImmutableAttributeSet attributes,
+			final String adLanguage)
+	{
+		if (type == Group.Type.ALL_STORAGE_KEYS)
+		{
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+			return msgBL.getTranslatableMsgText(AttributesKey.MSG_ATTRIBUTES_KEY_ALL);
+		}
+		else if (type == Group.Type.OTHER_STORAGE_KEYS)
+		{
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+			return msgBL.getTranslatableMsgText(AttributesKey.MSG_ATTRIBUTES_KEY_OTHER);
+		}
+		else // if (type == Group.Type.ATTRIBUTE_SET)
+		{
+			return new AttributeSetDescriptionBuilderCommand(attributes, adLanguage).execute();
+		}
+	}
+
+	private static ITranslatableString createUomSymbolDisplayString(final Quantity qty)
+	{
+		final I_C_UOM uom = qty.getUOM();
+		return getModelTranslationMap(uom)
+				.getColumnTrl(I_C_UOM.COLUMNNAME_UOMSymbol, uom.getUOMSymbol());
 	}
 
 	@Value
 	@Builder
 	private static class ProductWithATP
 	{
-		int productId;
+		@NonNull
+		ProductId productId;
 		@NonNull
 		ITranslatableString productDisplayName;
 
-		//
-		// Available to promise info (ATP)
 		Quantity qtyATP;
-		ITranslatableString uomSymbolStr;
-		ITranslatableString storageAttributesString;
+
 		@NonNull
 		@Default
-		ImmutableMap<String, Object> attributeMap = ImmutableMap.of();
+		private Group.Type attributesType = Group.Type.ALL_STORAGE_KEYS;
+
+		@NonNull
+		@Default
+		ImmutableAttributeSet attributes = ImmutableAttributeSet.EMPTY;
 	}
 
 	private boolean isDisplayATPOnlyIfPositive()

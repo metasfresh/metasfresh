@@ -24,6 +24,7 @@ import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.Services;
 
 /*
@@ -95,13 +96,14 @@ public abstract class WEBUI_M_HU_MoveToAnotherWarehouse_Helper extends HUEditorP
 	}
 
 	@ProcessParamLookupValuesProvider(parameterName = I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, numericKey = true, lookupSource = LookupSource.lookup)
-	public LookupValuesList getAvailableWarehouses()
+	public LookupValuesList getAvailableWarehouses(final LookupDataSourceContext evalCtx)
 	{
 		final List<org.compiere.model.I_M_Warehouse> warehousesToLoad = handlingUnitsDAO.retrieveWarehousesWhichContainNoneOf(streamSelectedHUs(Select.ONLY_TOPLEVEL).collect(ImmutableList.toImmutableList()));
 
 		return warehousesToLoad.stream()
 				.sorted(Comparator.comparing(org.compiere.model.I_M_Warehouse::getName))
 				.map(warehouse -> IntegerLookupValue.of(warehouse.getM_Warehouse_ID(), warehouse.getName()))
+				.filter(evalCtx.getFilterPredicate())
 				.collect(LookupValuesList.collect());
 	}
 

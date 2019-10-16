@@ -34,6 +34,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
+import lombok.ToString;
 
 /*
  * #%L
@@ -57,6 +58,7 @@ import lombok.Singular;
  * #L%
  */
 
+@ToString(of = { "_rowsById", "orderBys" })
 class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickRow>
 {
 	private final PickingCandidateService pickingCandidateService;
@@ -108,7 +110,7 @@ class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickRow>
 			pickingCandidates
 					.forEach(pickingCandidate -> _rowsById.compute(
 							rowIdsByPickingCandidateId.get(pickingCandidate.getId()),
-							(rowId, row) -> row.withUpdatesFromPickingCandidateIfNotNull(pickingCandidate)));
+							(rowId, row) -> row.withUpdatesFromPickingCandidate(pickingCandidate)));
 
 			rowIdsInvalid = false;
 		}
@@ -158,14 +160,20 @@ class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickRow>
 		Check.assumeNotEmpty(fieldChangeRequests, "fieldChangeRequests is not empty");
 		fieldChangeRequests.forEach(JSONDocumentChangedEvent::assertReplaceOperation);
 
-		PickingCandidate pickingCandidate = null;
-		for (JSONDocumentChangedEvent fieldChangeRequest : fieldChangeRequests)
+		ProductsToPickRow changedRow = row;
+		for (final JSONDocumentChangedEvent fieldChangeRequest : fieldChangeRequests)
 		{
 			final String fieldName = fieldChangeRequest.getPath();
-			if (ProductsToPickRow.FIELD_QtyReview.equals(fieldName))
+			if (ProductsToPickRow.FIELD_QtyOverride.equals(fieldName))
+			{
+				final BigDecimal qtyOverride = fieldChangeRequest.getValueAsBigDecimal();
+				changedRow = changedRow.withQtyOverride(qtyOverride);
+			}
+			else if (ProductsToPickRow.FIELD_QtyReview.equals(fieldName))
 			{
 				final BigDecimal qtyReviewed = fieldChangeRequest.getValueAsBigDecimal();
-				pickingCandidate = pickingCandidateService.setQtyReviewed(row.getPickingCandidateId(), qtyReviewed);
+				final PickingCandidate pickingCandidate = pickingCandidateService.setQtyReviewed(row.getPickingCandidateId(), qtyReviewed);
+				changedRow = changedRow.withUpdatesFromPickingCandidate(pickingCandidate);
 			}
 			else
 			{
@@ -173,12 +181,7 @@ class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickRow>
 			}
 		}
 
-		if (pickingCandidate == null)
-		{
-			return row;
-		}
-
-		return row.withUpdatesFromPickingCandidateIfNotNull(pickingCandidate);
+		return changedRow;
 	}
 
 	@Override

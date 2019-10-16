@@ -17,7 +17,6 @@ import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Tab;
-import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -46,10 +45,10 @@ import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository.SqlHUEditorViewRepositoryBuilder;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
-import de.metas.ui.web.view.SqlViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
+import de.metas.ui.web.view.descriptor.SqlViewBindingFactory;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -66,6 +65,7 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -106,7 +106,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 	private final ImmutableMap<String, Boolean> rowAttributesAlwaysReadonlyByReferencingTableName;
 
 	private final transient CCache<Integer, SqlViewBinding> sqlViewBindingCache = CCache.newCache("SqlViewBinding", 1, 0);
-	private final transient CCache<ArrayKey, ViewLayout> layouts = CCache.newLRUCache("HUEditorViewFactory#Layouts", 10, 0);
+	private final transient CCache<ViewLayoutKey, ViewLayout> layouts = CCache.newLRUCache("HUEditorViewFactory#Layouts", 10, 0);
 
 	protected HUEditorViewFactoryTemplate(final List<HUEditorViewCustomizer> viewCustomizers)
 	{
@@ -185,7 +185,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 			final SqlDocumentEntityDataBindingDescriptor huEntityBindings = SqlDocumentEntityDataBindingDescriptor.cast(huEntityDescriptor.getDataBinding());
 			huEntityBindings.getFields()
 					.stream()
-					.map(huField -> SqlViewFactory.createViewFieldBindingBuilder(huField, displayFieldNames).build())
+					.map(huField -> SqlViewBindingFactory.createViewFieldBinding(huField, displayFieldNames))
 					.forEach(sqlViewBinding::field);
 		}
 
@@ -237,14 +237,17 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 	}
 
 	@Override
-	public final ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final ViewProfileId profileId)
+	public final ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final ViewProfileId profileId_NOTUSED)
 	{
-		final ArrayKey key = ArrayKey.of(windowId, viewDataType);
-		return layouts.getOrLoad(key, () -> createHUViewLayout(windowId, viewDataType));
+		final ViewLayoutKey key = ViewLayoutKey.of(windowId, viewDataType);
+		return layouts.getOrLoad(key, this::createHUViewLayout);
 	}
 
-	private final ViewLayout createHUViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
+	private final ViewLayout createHUViewLayout(final ViewLayoutKey key)
 	{
+		final WindowId windowId = key.getWindowId();
+		final JSONViewDataType viewDataType = key.getViewDataType();
+
 		final ViewLayout.Builder viewLayoutBuilder = ViewLayout.builder()
 				.setWindowId(windowId)
 				.setCaption("HU Editor")
@@ -258,7 +261,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 				//
 				.addElementsFromViewRowClass(HUEditorRow.class, viewDataType);
 
-		if (!alwaysUseSameLayout())
+		if (!isAlwaysUseSameLayout())
 		{
 			customizeViewLayout(viewLayoutBuilder, viewDataType);
 		}
@@ -459,9 +462,18 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		}
 	}
 
-	private boolean alwaysUseSameLayout()
+	private boolean isAlwaysUseSameLayout()
 	{
 		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCFG_AlwaysUseSameLayout, false);
 	}
 
+	@Value(staticConstructor = "of")
+	private static class ViewLayoutKey
+	{
+		@NonNull
+		final WindowId windowId;
+
+		@NonNull
+		final JSONViewDataType viewDataType;
+	}
 }

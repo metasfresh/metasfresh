@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.attachments.AttachmentEntry;
 import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.attachments.json.JSONAttachURLRequest;
@@ -72,6 +74,17 @@ public class DocumentAttachmentsRestController
 	private DocumentAttachments getDocumentAttachments(final String windowIdStr, final String documentId)
 	{
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), documentId);
+		return getDocumentAttachments(documentPath);
+	}
+
+	private DocumentAttachments getDocumentAttachments(final DocumentPath documentPath)
+	{
+		if (documentPath.isComposedKey())
+		{
+			throw new AdempiereException("Document does not support attachments")
+					.setParameter("technicalReason", "documents with composed keys are not handled");
+		}
+
 		final TableRecordReference recordRef = documentDescriptorFactory.getTableRecordReference(documentPath);
 
 		return DocumentAttachments.builder()
@@ -118,9 +131,16 @@ public class DocumentAttachmentsRestController
 	{
 		userSession.assertLoggedIn();
 
+		final DocumentPath documentPath = DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), documentId);
+		if (documentPath.isComposedKey())
+		{
+			// document with composed keys does not support attachments
+			return ImmutableList.of();
+		}
+
 		final boolean allowDelete = isAllowDeletingAttachments();
 
-		final List<JSONAttachment> attachments = getDocumentAttachments(windowIdStr, documentId)
+		final List<JSONAttachment> attachments = getDocumentAttachments(documentPath)
 				.toJson();
 		attachments.forEach(attachment -> attachment.setAllowDelete(allowDelete));
 

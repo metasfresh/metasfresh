@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -63,24 +64,24 @@ import lombok.Value;
 @Value
 public final class CreateViewRequest
 {
-	public static final Builder builder(final WindowId windowId)
+	public static Builder builder(final WindowId windowId)
 	{
 		final ViewId viewId = ViewId.random(windowId);
 		return new Builder(viewId, JSONViewDataType.grid);
 	}
 
-	public static final Builder builder(final WindowId windowId, final JSONViewDataType viewType)
+	public static Builder builder(final WindowId windowId, final JSONViewDataType viewType)
 	{
 		final ViewId viewId = ViewId.random(windowId);
 		return new Builder(viewId, viewType);
 	}
 
-	public static final Builder builder(final ViewId viewId, final JSONViewDataType viewType)
+	public static Builder builder(final ViewId viewId, final JSONViewDataType viewType)
 	{
 		return new Builder(viewId, viewType);
 	}
 
-	public static final Builder filterViewBuilder(
+	public static Builder filterViewBuilder(
 			@NonNull final IView view,
 			@NonNull final JSONFilterViewRequest filterViewRequest)
 	{
@@ -99,7 +100,7 @@ public final class CreateViewRequest
 				.addAdditionalRelatedProcessDescriptors(view.getAdditionalRelatedProcessDescriptors());
 	}
 
-	public static final Builder deleteStickyFilterBuilder(
+	public static Builder deleteStickyFilterBuilder(
 			@NonNull final IView view,
 			@NonNull final String stickyFilterIdToDelete)
 	{
@@ -503,10 +504,16 @@ public final class CreateViewRequest
 				if (parameters == null)
 				{
 					parameters = new LinkedHashMap<>();
-					parameters.put(name, value);
 				}
+				parameters.put(name, value);
 			}
 
+			return this;
+		}
+
+		public Builder setParameters(@NonNull final Map<String, Object> parameters)
+		{
+			parameters.forEach(this::setParameter);
 			return this;
 		}
 

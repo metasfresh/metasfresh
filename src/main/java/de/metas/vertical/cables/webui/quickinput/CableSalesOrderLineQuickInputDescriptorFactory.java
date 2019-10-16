@@ -107,18 +107,29 @@ import lombok.NonNull;
 						.setMandatoryLogic(true))
 				.build();
 
-		final QuickInputLayoutDescriptor layout = QuickInputLayoutDescriptor.builder()
-				.element(DocumentLayoutElementDescriptor.builder(
-						entityDescriptor,
+		final QuickInputLayoutDescriptor.Builder quickInputBuilder = QuickInputLayoutDescriptor.builder();
+
+		DocumentLayoutElementDescriptor
+				.builderOrEmpty(entityDescriptor,
 						ICablesOrderLineQuickInput.COLUMNNAME_Plug1_Product_ID,
 						ICablesOrderLineQuickInput.COLUMNNAME_Cable_Product_ID,
 						ICablesOrderLineQuickInput.COLUMNNAME_Plug2_Product_ID)
-						.setWidgetSize(WidgetSize.Large))
-				.element(DocumentLayoutElementDescriptor.builder(entityDescriptor, ICablesOrderLineQuickInput.COLUMNNAME_CableLength)
-						.setWidgetSize(WidgetSize.Small))
-				.element(DocumentLayoutElementDescriptor.builder(entityDescriptor, ICablesOrderLineQuickInput.COLUMNNAME_Qty)
-						.setWidgetSize(WidgetSize.Small))
-				.build();
+				.map(b -> b.setWidgetSize(WidgetSize.Large))
+				.ifPresent(quickInputBuilder::element);
+
+		DocumentLayoutElementDescriptor
+				.builderOrEmpty(entityDescriptor,
+						ICablesOrderLineQuickInput.COLUMNNAME_CableLength)
+				.map(b -> b.setWidgetSize(WidgetSize.Small))
+				.ifPresent(quickInputBuilder::element);
+
+		DocumentLayoutElementDescriptor
+				.builderOrEmpty(entityDescriptor,
+						ICablesOrderLineQuickInput.COLUMNNAME_Qty)
+				.map(b -> b.setWidgetSize(WidgetSize.Small))
+				.ifPresent(quickInputBuilder::element);
+
+		final QuickInputLayoutDescriptor layout = quickInputBuilder.build();
 
 		return QuickInputDescriptor.of(entityDescriptor, layout, CableSalesOrderLineQuickInputProcessor.class);
 	}

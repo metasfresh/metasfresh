@@ -31,9 +31,16 @@ import lombok.experimental.UtilityClass;
 public class QuickInputConstants
 {
 	private static final String SYSCONFIG_EnablePackingInstructionsField = "webui.quickinput.EnablePackingInstructionsField";
+	private static final String SYSCONFIG_EnableBestBeforePolicy = "webui.quickinput.EnableBestBeforePolicy";
 
 	public static boolean isEnablePackingInstructionsField()
 	{
 		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_EnablePackingInstructionsField, true);
 	}
+
+	public static boolean isEnableBestBeforePolicy()
+	{
+		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_EnableBestBeforePolicy, true);
+	}
+
 }

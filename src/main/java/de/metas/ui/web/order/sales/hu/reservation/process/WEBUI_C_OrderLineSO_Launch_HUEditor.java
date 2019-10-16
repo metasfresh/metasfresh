@@ -7,6 +7,7 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.order.OrderLineId;
 import de.metas.process.IProcessPrecondition;
@@ -75,11 +76,8 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only sales orders are allowed");
 		}
 
-		final String docStatus = salesOrder.getDocStatus();
-		final boolean reservationIsPossible = huReservationService
-				.getDocstatusesThatAllowReservation()
-				.contains(docStatus);
-		if (!reservationIsPossible)
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(salesOrder.getDocStatus());
+		if (!huReservationService.isReservationAllowedForDocStatus(docStatus))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("C_Order.DocStatus=" + docStatus);
 		}

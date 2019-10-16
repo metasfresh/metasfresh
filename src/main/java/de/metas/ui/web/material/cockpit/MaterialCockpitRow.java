@@ -13,6 +13,8 @@ import javax.annotation.Nullable;
 
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
 
@@ -22,11 +24,13 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.model.I_M_Product;
 import de.metas.dimension.DimensionSpecGroup;
 import de.metas.i18n.IMsgBL;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowType;
@@ -254,10 +258,14 @@ public class MaterialCockpitRow implements IViewRow
 				MaterialCockpitUtil.WINDOWID_MaterialCockpitView,
 				documentId);
 
-		final I_M_Product productRecord = loadOutOfTrx(productId, I_M_Product.class);
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+
+		final I_M_Product productRecord = productDAO.getById(ProductId.ofRepoId(productId));
+		final I_M_Product_Category productCategoryRecord = productDAO.getProductCategoryById(ProductCategoryId.ofRepoId(productRecord.getM_Product_Category_ID()));
+
 		this.productValue = productRecord.getValue();
 		this.productName = productRecord.getName();
-		this.productCategoryOrSubRowName = productRecord.getM_Product_Category().getName();
+		this.productCategoryOrSubRowName = productCategoryRecord.getName();
 
 		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
 

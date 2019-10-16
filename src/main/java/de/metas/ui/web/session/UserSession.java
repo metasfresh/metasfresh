@@ -103,14 +103,16 @@ public class UserSession
 		return userSession;
 	}
 
-	public static UserSession getCurrentIfMatchingOrNull(final UserId adUserId)
+	public static UserSession getCurrentIfMatchingOrNull(@NonNull final UserId adUserId)
 	{
 		final UserSession userSession = getCurrentOrNull();
 		if (userSession == null)
 		{
 			return null;
 		}
-		if (!UserId.equals(userSession.getLoggedUserId(), adUserId))
+		
+		final UserId loggedUserId = userSession.getLoggedUserIdIfExists().orElse(null);
+		if (!UserId.equals(loggedUserId, adUserId))
 		{
 			return null;
 		}

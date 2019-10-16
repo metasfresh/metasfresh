@@ -239,6 +239,8 @@ public abstract class DocumentId implements Serializable
 
 	public abstract int toInt();
 
+	public abstract boolean isComposedKey();
+
 	public abstract List<Object> toComposedKeyParts();
 
 	public DocumentId toIncludedRowId()
@@ -348,6 +350,12 @@ public abstract class DocumentId implements Serializable
 		}
 
 		@Override
+		public boolean isComposedKey()
+		{
+			return false;
+		}
+
+		@Override
 		public List<Object> toComposedKeyParts()
 		{
 			return ImmutableList.of(idInt);
@@ -402,13 +410,26 @@ public abstract class DocumentId implements Serializable
 		@Override
 		public int toInt()
 		{
-			throw new AdempiereException("String document IDs cannot be converted to int: " + this);
+			if (isComposedKey())
+			{
+				throw new AdempiereException("Composed keys cannot be converted to int: " + this);
+			}
+			else
+			{
+				throw new AdempiereException("String document IDs cannot be converted to int: " + this);
+			}
 		}
 
 		@Override
 		public boolean isNew()
 		{
 			return false;
+		}
+
+		@Override
+		public boolean isComposedKey()
+		{
+			return idStr.indexOf(COMPOSED_KEY_SEPARATOR) >= 0;
 		}
 
 		@Override

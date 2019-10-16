@@ -1,5 +1,14 @@
 package de.metas.location.geocoding.process;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Set;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
+
 /*
  * #%L
  * metasfresh-pharma
@@ -37,41 +46,36 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.document.filter.DocumentFilterParam;
-import de.metas.ui.web.document.filter.provider.locationAreaSearch.LocationAreaSearchDescriptor;
-import de.metas.ui.web.document.filter.provider.locationAreaSearch.LocationAreaSearchDocumentFilterConverter;
-import de.metas.ui.web.document.filter.provider.locationAreaSearch.LocationAreaSearchDocumentFilterDescriptorsProviderFactory;
+import de.metas.ui.web.document.geo_location.GeoLocationDocumentService;
+import de.metas.ui.web.document.geo_location.GeoLocationDocumentQuery;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
-import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.Adempiere;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Location;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 
 public class C_BPartner_Window_AreaSearchProcess extends JavaProcess
 {
-	private final IViewsRepository viewsRepo = Adempiere.getBean(IViewsRepository.class);
-	private final DocumentCollection documentCollection = Adempiere.getBean(DocumentCollection.class);
+	private final IViewsRepository viewsRepo = SpringContextHolder.instance.getBean(IViewsRepository.class);
+	private final DocumentCollection documentCollection = SpringContextHolder.instance.getBean(DocumentCollection.class);
+	private final BPartnerLocationInfoRepository bpartnerLocationInfoRepo = SpringContextHolder.instance.getBean(BPartnerLocationInfoRepository.class);
+	private final GeoLocationDocumentService geoLocationDocumentService = SpringContextHolder.instance.getBean(GeoLocationDocumentService.class);
+	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+	private final ICountryDAO countriesRepo = Services.get(ICountryDAO.class);
+	private final ILocationDAO locationsRepo = Services.get(ILocationDAO.class);
 
 	@Param(parameterName = "Distance", mandatory = true)
-	private BigDecimal distance;
+	private BigDecimal distanceInKm;
 
 	@Param(parameterName = "VisitorsAddress")
 	private boolean visitorsAddress;
 
-	@Override protected String doIt()
+	@Override
+	protected String doIt()
 	{
 		final I_C_Location location = getSelectedLocationOrFirstAvailable();
 
@@ -105,23 +109,24 @@ public class C_BPartner_Window_AreaSearchProcess extends JavaProcess
 	@NonNull
 	private DocumentFilter createAreaSearchFilter(final I_C_Location location)
 	{
-		final ITranslatableString countryName = Services.get(ICountryDAO.class).getCountryNameById(CountryId.ofRepoId(location.getC_Country_ID()));
+		final DocumentEntityDescriptor entityDescriptor = documentCollection.getDocumentEntityDescriptor(getWindowId());
 
-		// this descriptor applies the filter when the view is opened instead of needing to press the search button 1 time
-		final DocumentEntityDescriptor bpartnerEntityDescriptor = documentCollection.getDocumentEntityDescriptor(getWindowId());
-		final LocationAreaSearchDescriptor descriptor = LocationAreaSearchDocumentFilterDescriptorsProviderFactory.getLocationAreaSearchDescriptor(
-				bpartnerEntityDescriptor.getTableName(),
-				bpartnerEntityDescriptor.getFields());
+		final GeoLocationDocumentQuery query = createGeoLocationQuery(location);
+		return geoLocationDocumentService.createDocumentFilter(entityDescriptor, query);
+	}
 
-		return DocumentFilter.builder()
-				.setFilterId(LocationAreaSearchDocumentFilterConverter.FILTER_ID)
-				.addInternalParameter(DocumentFilterParam.ofNameEqualsValue(LocationAreaSearchDocumentFilterConverter.PARAM_LocationAreaSearchDescriptor, Objects.requireNonNull(descriptor)))
-				.addParameter(DocumentFilterParam.ofNameEqualsValue(LocationAreaSearchDocumentFilterConverter.PARAM_Address1, location.getAddress1()))
-				.addParameter(DocumentFilterParam.ofNameEqualsValue(LocationAreaSearchDocumentFilterConverter.PARAM_City, location.getCity()))
-				.addParameter(DocumentFilterParam.ofNameEqualsValue(LocationAreaSearchDocumentFilterConverter.PARAM_Postal, location.getPostal()))
-				.addParameter(DocumentFilterParam.ofNameEqualsValue(LocationAreaSearchDocumentFilterConverter.PARAM_CountryId, LookupValue.IntegerLookupValue.of(location.getC_Country_ID(), countryName, null)))
-				.addParameter(DocumentFilterParam.ofNameEqualsValue(LocationAreaSearchDocumentFilterConverter.PARAM_Distance, distance))
-				.addParameter(DocumentFilterParam.ofNameEqualsValue(LocationAreaSearchDocumentFilterConverter.PARAM_VisitorsAddress, visitorsAddress))
+	private GeoLocationDocumentQuery createGeoLocationQuery(final I_C_Location location)
+	{
+		final CountryId countryId = CountryId.ofRepoId(location.getC_Country_ID());
+		final ITranslatableString countryName = countriesRepo.getCountryNameById(countryId);
+
+		return GeoLocationDocumentQuery.builder()
+				.country(IntegerLookupValue.of(countryId, countryName))
+				.address1(location.getAddress1())
+				.city(location.getCity())
+				.postal(location.getPostal())
+				.distanceInKm(distanceInKm)
+				.visitorsAddress(visitorsAddress)
 				.build();
 	}
 
@@ -131,16 +136,16 @@ public class C_BPartner_Window_AreaSearchProcess extends JavaProcess
 		if (!bpLocationIds.isEmpty())
 		{
 			// retrieve the selected location
-			final LocationId locationId = Adempiere.getBean(BPartnerLocationInfoRepository.class).getByBPartnerLocationId(BPartnerLocationId.ofRepoId(getRecord_ID(), bpLocationIds.iterator().next())).getLocationId();
-			return Services.get(ILocationDAO.class).getById(LocationId.ofRepoId(locationId.getRepoId()));
+			final LocationId locationId = bpartnerLocationInfoRepo.getByBPartnerLocationId(BPartnerLocationId.ofRepoId(getRecord_ID(), bpLocationIds.iterator().next())).getLocationId();
+			return locationsRepo.getById(LocationId.ofRepoId(locationId.getRepoId()));
 		}
 		else
 		{
 			// retrieve the first bpartner location available
-			final List<I_C_BPartner_Location> partnerLocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(BPartnerId.ofRepoId(getRecord_ID()));
+			final List<I_C_BPartner_Location> partnerLocations = bpartnersRepo.retrieveBPartnerLocations(BPartnerId.ofRepoId(getRecord_ID()));
 			if (!partnerLocations.isEmpty())
 			{
-				return Services.get(ILocationDAO.class).getById(LocationId.ofRepoId(partnerLocations.get(0).getC_Location_ID()));
+				return locationsRepo.getById(LocationId.ofRepoId(partnerLocations.get(0).getC_Location_ID()));
 			}
 		}
 

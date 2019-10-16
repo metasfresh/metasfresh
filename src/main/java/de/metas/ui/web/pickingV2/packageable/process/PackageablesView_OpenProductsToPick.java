@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.inoutcandidate.lock.ShipmentScheduleLockRepository;
 import de.metas.inoutcandidate.lock.ShipmentScheduleLockRequest;
-import de.metas.inoutcandidate.lock.ShipmentScheduleLockType;
 import de.metas.inoutcandidate.lock.ShipmentScheduleUnLockRequest;
 import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
 import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
@@ -90,14 +89,5 @@ public class PackageablesView_OpenProductsToPick extends PackageablesViewBasedPr
 
 			throw AdempiereException.wrapIfNeeded(ex);
 		}
-	}
-
-	private ShipmentScheduleLockRequest createLockRequest(final PackageableRow row)
-	{
-		return ShipmentScheduleLockRequest.builder()
-				.shipmentScheduleIds(row.getShipmentScheduleIds())
-				.lockType(ShipmentScheduleLockType.PICKING)
-				.lockedBy(getLoggedUserId())
-				.build();
 	}
 }

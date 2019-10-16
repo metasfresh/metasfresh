@@ -18,15 +18,14 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 public interface IOrderLineQuickInput
 {
@@ -38,7 +37,7 @@ public interface IOrderLineQuickInput
 	//@formatter:off
 	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 	int getM_HU_PI_Item_Product_ID();
-	I_M_HU_PI_Item_Product getM_HU_PI_Item_Product();
+	// I_M_HU_PI_Item_Product getM_HU_PI_Item_Product();
 	// void setM_HU_PI_Item_Product_ID(final int M_HU_PI_Item_Product_ID);
 	void setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product huPIItemProduct);
 	//@formatter:on
@@ -46,5 +45,11 @@ public interface IOrderLineQuickInput
 	//@formatter:off
 	String COLUMNNAME_Qty = "Qty";
 	BigDecimal getQty();
+	//@formatter:on
+
+	//@formatter:off
+	String COLUMNNAME_ShipmentAllocation_BestBefore_Policy = "ShipmentAllocation_BestBefore_Policy";
+	String getShipmentAllocation_BestBefore_Policy();
+	void setShipmentAllocation_BestBefore_Policy(String bestBeforePolicy);
 	//@formatter:on
 }

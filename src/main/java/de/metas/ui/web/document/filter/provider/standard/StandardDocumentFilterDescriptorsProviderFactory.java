@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.element.api.AdTabId;
+import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
@@ -18,6 +19,7 @@ import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.DocumentFieldDefaultFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -25,6 +27,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -48,10 +51,9 @@ import de.metas.util.Services;
  * #L%
  */
 
-public class StandardDocumentFilterDescriptorsProviderFactory
+@Component
+public class StandardDocumentFilterDescriptorsProviderFactory implements DocumentFilterDescriptorsProviderFactory
 {
-	public static final transient StandardDocumentFilterDescriptorsProviderFactory instance = new StandardDocumentFilterDescriptorsProviderFactory();
-
 	private static final String FILTER_ID_Default = "default";
 
 	private static final String FILTER_ID_DefaultDate = "default-date";
@@ -60,17 +62,18 @@ public class StandardDocumentFilterDescriptorsProviderFactory
 	// services
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	private StandardDocumentFilterDescriptorsProviderFactory()
+	public StandardDocumentFilterDescriptorsProviderFactory()
 	{
 	}
 
 	/**
 	 * Creates standard filters, i.e. from document fields which are flagged with {@link Characteristic#AllowFiltering}.
 	 */
+	@Override
 	public DocumentFilterDescriptorsProvider createFiltersProvider(
 			@Nullable final AdTabId adTabId_NOTUSED,
 			@Nullable final String tableName_NOTUSED,
-			final Collection<DocumentFieldDescriptor> fields)
+			@NonNull final Collection<DocumentFieldDescriptor> fields)
 	{
 		final DocumentFilterDescriptor.Builder defaultFilter = DocumentFilterDescriptor.builder()
 				.setFilterId(FILTER_ID_Default)

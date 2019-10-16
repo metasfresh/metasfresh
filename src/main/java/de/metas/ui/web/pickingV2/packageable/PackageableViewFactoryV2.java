@@ -13,6 +13,7 @@ import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.pickingV2.PickingConstantsV2;
 import de.metas.ui.web.pickingV2.packageable.process.PackageablesView_OpenProductsToPick;
+import de.metas.ui.web.pickingV2.packageable.process.PackageablesView_PrintPicklist;
 import de.metas.ui.web.pickingV2.packageable.process.PackageablesView_UnlockAll;
 import de.metas.ui.web.pickingV2.packageable.process.PackageablesView_UnlockFromLoggedUser;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -101,7 +102,8 @@ public class PackageableViewFactoryV2 implements IViewFactory
 		return ImmutableList.of(
 				createProcessDescriptor(PackageablesView_OpenProductsToPick.class),
 				createProcessDescriptor(PackageablesView_UnlockFromLoggedUser.class),
-				createProcessDescriptor(PackageablesView_UnlockAll.class));
+				createProcessDescriptor(PackageablesView_UnlockAll.class),
+				createProcessDescriptor(PackageablesView_PrintPicklist.class));
 	}
 
 	private final RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)

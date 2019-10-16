@@ -116,7 +116,7 @@ public final class HUEditorRow implements IViewRow
 			layouts = {
 					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10),
 					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 10)
-			})
+	})
 	private final String code;
 
 	public static final String FIELDNAME_Locator = I_M_HU.COLUMNNAME_M_Locator_ID;
@@ -124,8 +124,8 @@ public final class HUEditorRow implements IViewRow
 			captionKey = FIELDNAME_Locator, //
 			widgetType = DocumentFieldWidgetType.Text, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 15, //
-					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX, defaultDisplaySysConfig = false)
-			})
+			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX, defaultDisplaySysConfig = false)
+	})
 	private final JSONLookupValue locator;
 
 	public static final String FIELDNAME_Product = I_M_HU.COLUMNNAME_M_Product_ID;
@@ -143,7 +143,7 @@ public final class HUEditorRow implements IViewRow
 			restrictToMediaTypes = { MediaType.SCREEN }, //
 			layouts = {
 					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30)
-			})
+	})
 	private final JSONLookupValue huUnitType;
 
 	public static final String FIELDNAME_PackingInfo = I_M_HU.COLUMNNAME_M_HU_PI_Item_Product_ID;
@@ -151,8 +151,8 @@ public final class HUEditorRow implements IViewRow
 			captionKey = FIELDNAME_PackingInfo, //
 			widgetType = DocumentFieldWidgetType.Text, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40, //
-					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
-			})
+			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
+	})
 	private final String packingInfo;
 
 	public static final String FIELDNAME_QtyCU = "QtyCU";
@@ -161,7 +161,7 @@ public final class HUEditorRow implements IViewRow
 			widgetSize = WidgetSize.Small, sorting = false, layouts = {
 					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50),
 					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
-			})
+	})
 	private final BigDecimal qtyCU;
 
 	public static final String FIELDNAME_UOM = I_M_Product.COLUMNNAME_C_UOM_ID;
@@ -169,8 +169,8 @@ public final class HUEditorRow implements IViewRow
 			captionKey = FIELDNAME_UOM, //
 			widgetType = DocumentFieldWidgetType.Text, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60, //
-					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
-			})
+			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
+	})
 	private final JSONLookupValue uom;
 
 	public static final String FIELDNAME_HUStatus = I_M_HU.COLUMNNAME_HUStatus;
@@ -179,7 +179,7 @@ public final class HUEditorRow implements IViewRow
 			widgetSize = WidgetSize.Small,//
 			sorting = false, layouts = {
 					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70),
-			})
+	})
 	private final JSONLookupValue huStatusDisplay;
 
 	public static final String FIELDNAME_IsReserved = I_M_HU.COLUMNNAME_IsReserved;
@@ -292,7 +292,7 @@ public final class HUEditorRow implements IViewRow
 	{
 		return bpartnerId;
 	}
-	
+
 	@Override
 	public ImmutableSet<String> getFieldNames()
 	{
@@ -388,11 +388,7 @@ public final class HUEditorRow implements IViewRow
 
 	public HUToReport getAsHUToReportOrNull()
 	{
-		if (!isPureHU())
-		{
-			return null;
-		}
-
+		// allow reports for all types ; see task https://github.com/metasfresh/metasfresh/issues/5540
 		return HUEditorRowAsHUToReport.of(this);
 	}
 

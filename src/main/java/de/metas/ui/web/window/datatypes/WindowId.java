@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.datatypes;
 
+import java.util.OptionalInt;
+
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.element.api.AdWindowId;
@@ -76,7 +78,7 @@ public final class WindowId
 	}
 
 	private final String value;
-	private transient int valueInt = -1; // lazy
+	private transient OptionalInt valueInt = null; // lazy
 
 	private WindowId(final String value)
 	{
@@ -87,7 +89,7 @@ public final class WindowId
 	private WindowId(final int valueInt)
 	{
 		Check.assumeGreaterThanZero(valueInt, "valueInt");
-		this.valueInt = valueInt;
+		this.valueInt = OptionalInt.of(valueInt);
 		value = String.valueOf(valueInt);
 	}
 
@@ -106,31 +108,35 @@ public final class WindowId
 
 	public int toInt()
 	{
-		int valueInt = this.valueInt;
-		if (valueInt < 0)
-		{
-			try
-			{
-				valueInt = Integer.parseInt(value);
-				this.valueInt = valueInt;
-			}
-			catch (final NumberFormatException ex)
-			{
-				throw new AdempiereException("WindowId cannot be converted to int: " + this, ex);
-			}
-		}
-		return valueInt;
+		return toOptionalInt()
+				.orElseThrow(() -> new AdempiereException("WindowId cannot be converted to int: " + this));
 	}
 
 	public int toIntOr(final int fallbackValue)
 	{
+		return toOptionalInt()
+				.orElse(fallbackValue);
+	}
+
+	private OptionalInt toOptionalInt()
+	{
+		OptionalInt valueInt = this.valueInt;
+		if (valueInt == null)
+		{
+			valueInt = this.valueInt = parseOptionalInt();
+		}
+		return valueInt;
+	}
+
+	private OptionalInt parseOptionalInt()
+	{
 		try
 		{
-			return toInt();
+			return OptionalInt.of(Integer.parseInt(value));
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
-			return fallbackValue;
+			return OptionalInt.empty();
 		}
 	}
 

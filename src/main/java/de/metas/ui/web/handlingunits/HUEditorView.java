@@ -216,6 +216,11 @@ public class HUEditorView implements IView
 		return additionalRelatedProcessDescriptors;
 	}
 
+	public ImmutableMap<String, Object> getParameters()
+	{
+		return parameters;
+	}
+
 	public boolean getParameterAsBoolean(final String name, final boolean defaultValue)
 	{
 		final Boolean value = (Boolean)parameters.get(name);

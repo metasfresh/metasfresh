@@ -1,4 +1,4 @@
-package de.metas.ui.web.document.filter.provider.locationAreaSearch;
+package de.metas.ui.web.document.geo_location;
 
 import lombok.Builder;
 import lombok.NonNull;
@@ -28,10 +28,11 @@ import lombok.Value;
 
 @Value
 @Builder
-public final class LocationAreaSearchDescriptor
+public final class GeoLocationDocumentDescriptor
 {
 	@NonNull
 	LocationColumnNameType type;
+
 	@NonNull
 	String locationColumnName;
 
