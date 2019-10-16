@@ -2,7 +2,7 @@ package de.metas.handlingunits.expiry;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.Iterator;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
@@ -11,24 +11,14 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_BestBefore_V;
-import de.metas.handlingunits.model.X_M_HU;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -57,43 +47,44 @@ import lombok.NonNull;
 @Repository
 public class HUWithExpiryDatesRepository
 {
-	public Stream<HUWithExpiryDates> getByWarnDateExceeded(@NonNull final LocalDateTime expiredWarnDate)
-	{
-		final Timestamp timestamp = TimeUtil.asTimestamp(expiredWarnDate);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU_BestBefore_V.class)
-				.addCompareFilter(I_M_HU_BestBefore_V.COLUMN_HU_ExpiredWarnDate, Operator.LESS_OR_EQUAL, timestamp, DateTruncQueryFilterModifier.DAY)
+	public Stream<HUWithExpiryDates> streamByWarnDateExceeded(@NonNull final LocalDate today)
+	{
+		final Timestamp todayTS = TimeUtil.asTimestamp(today);
+
+		return queryBL.createQueryBuilder(I_M_HU_BestBefore_V.class)
+				.addCompareFilter(I_M_HU_BestBefore_V.COLUMN_HU_ExpiredWarnDate, Operator.LESS_OR_EQUAL, todayTS, DateTruncQueryFilterModifier.DAY)
 				.addNotEqualsFilter(I_M_HU_BestBefore_V.COLUMN_HU_Expired, HUAttributeConstants.ATTR_Expired_Value_Expired)
 				.orderBy(I_M_HU_BestBefore_V.COLUMN_M_HU_ID)
 				.create()
 				.iterateAndStream()
-				.map(this::ofRecordOrNull);
+				.map(record -> ofRecordOrNull(record));
 	}
 
-	private HUWithExpiryDates ofRecordOrNull(@Nullable final I_M_HU_BestBefore_V record)
+	private static HUWithExpiryDates ofRecordOrNull(@Nullable final I_M_HU_BestBefore_V record)
 	{
 		if (record == null)
 		{
 			return null;
 		}
 
-		return HUWithExpiryDates
-				.builder()
+		return HUWithExpiryDates.builder()
 				.huId(HuId.ofRepoId(record.getM_HU_ID()))
-				.bestBeforeDate(TimeUtil.asLocalDateTime(record.getHU_BestBeforeDate()))
-				.expiryWarnDate(TimeUtil.asLocalDateTime(record.getHU_ExpiredWarnDate()))
+				.bestBeforeDate(TimeUtil.asLocalDate(record.getHU_BestBeforeDate()))
+				.expiryWarnDate(TimeUtil.asLocalDate(record.getHU_ExpiredWarnDate()))
 				.build();
 	}
 
 	public HUWithExpiryDates getByIdIfWarnDateExceededOrNull(
-			@Nullable final HuId huId,
-			@Nullable final LocalDateTime expiryWarnDate)
+			@NonNull final HuId huId,
+			@Nullable final LocalDate expiryWarnDate)
 	{
 		final Timestamp timestamp = TimeUtil.asTimestamp(expiryWarnDate);
 
-		I_M_HU_BestBefore_V recordOrdNull = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU_BestBefore_V.class)
+		final I_M_HU_BestBefore_V recordOrdNull = queryBL.createQueryBuilder(I_M_HU_BestBefore_V.class)
 				.addCompareFilter(I_M_HU_BestBefore_V.COLUMN_HU_ExpiredWarnDate, Operator.LESS_OR_EQUAL, timestamp, DateTruncQueryFilterModifier.DAY)
 				.addNotEqualsFilter(I_M_HU_BestBefore_V.COLUMN_HU_Expired, HUAttributeConstants.ATTR_Expired_Value_Expired)
 				.addEqualsFilter(I_M_HU_BestBefore_V.COLUMN_M_HU_ID, huId)
@@ -103,41 +94,12 @@ public class HUWithExpiryDatesRepository
 		return ofRecordOrNull(recordOrdNull);
 	}
 
-	public ImmutableSet<HuId> getAllWithBestBeforeDate()
+	public Iterator<HuId> getAllWithBestBeforeDate()
 	{
-		final ImmutableList<String> validHuStatuses = ImmutableList.<String> builder()
-				.add(X_M_HU.HUSTATUS_Active)
-				.build();
-
-		return Services.get(IHandlingUnitsDAO.class)
-				.createHUQueryBuilder()
+		return handlingUnitsDAO.createHUQueryBuilder()
 				.addOnlyWithAttributeNotNull(AttributeConstants.ATTR_BestBeforeDate)
-				.addHUStatusesToInclude(validHuStatuses)
-				.createQueryBuilder()
-				.create()
-				.listIds(HuId::ofRepoId);
-	}
-
-	public LocalDate getBestBeforeDate(final HuId huId)
-	{
-		IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final I_M_HU hu = handlingUnitsDAO.getById(huId);
-		final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
-
-		final IHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(ctxAware);
-
-		final IAttributeStorage attributeStorage = getAttributeStorage(huContext, hu);
-
-		final LocalDate bestBeforeDate = attributeStorage.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate);
-
-		return bestBeforeDate;
-
-	}
-
-	private final IAttributeStorage getAttributeStorage(final IHUContext huContext, final I_M_HU hu)
-	{
-		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
-		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
-		return attributeStorage;
+				.addHUStatusesToInclude(huStatusBL.getQtyOnHandStatuses())
+				.createQuery()
+				.iterateIds(HuId::ofRepoId);
 	}
 }

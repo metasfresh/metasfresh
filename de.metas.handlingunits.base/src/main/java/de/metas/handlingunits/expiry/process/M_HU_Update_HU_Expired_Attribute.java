@@ -2,11 +2,13 @@ package de.metas.handlingunits.expiry.process;
 
 import java.time.LocalDate;
 
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
 import de.metas.handlingunits.expiry.HUWithExpiryDatesService;
+import de.metas.handlingunits.expiry.MarkExpiredWhereWarnDateExceededResult;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -32,13 +34,16 @@ import de.metas.process.RunOutOfTrx;
 
 public class M_HU_Update_HU_Expired_Attribute extends JavaProcess
 {
-	private final HUWithExpiryDatesService huWithExpiryDatesService = Adempiere.getBean(HUWithExpiryDatesService.class);
+	private final HUWithExpiryDatesService huWithExpiryDatesService = SpringContextHolder.instance.getBean(HUWithExpiryDatesService.class);
 
 	@Override
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		huWithExpiryDatesService.markExpiredWhereWarnDateExceeded(LocalDate.now().atStartOfDay());
+		final LocalDate today = SystemTime.asLocalDate();
+		final MarkExpiredWhereWarnDateExceededResult result = huWithExpiryDatesService.markExpiredWhereWarnDateExceeded(today);
+		addLog("Result: " + result);
+
 		return MSG_OK;
 	}
 }

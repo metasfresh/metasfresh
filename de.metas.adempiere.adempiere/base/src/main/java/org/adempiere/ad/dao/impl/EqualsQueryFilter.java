@@ -25,11 +25,14 @@ package org.adempiere.ad.dao.impl;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.model.ModelColumn;
 
+import lombok.EqualsAndHashCode;
+
 /**
  * Filter for equals. Also supports {@code NULL} values.
  * 
  * @param <T>
  */
+@EqualsAndHashCode(callSuper = true, doNotUseGetters = true)
 public class EqualsQueryFilter<T> extends CompareQueryFilter<T>
 {
 	public static final <T> EqualsQueryFilter<T> isNull(final String columnName)

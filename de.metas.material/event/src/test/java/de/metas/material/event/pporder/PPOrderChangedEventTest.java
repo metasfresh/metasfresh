@@ -5,8 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.pporder.PPOrderChangedEvent.ChangedPPOrderLineDescriptor;
@@ -41,11 +41,10 @@ public class PPOrderChangedEventTest
 
 	private ChangedPPOrderLineDescriptorBuilder changedPPOrderLineDescriptorBuilder;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
-		changedPPOrderLineDescriptorBuilder = PPOrderChangedEvent
-				.ChangedPPOrderLineDescriptor
+		changedPPOrderLineDescriptorBuilder = PPOrderChangedEvent.ChangedPPOrderLineDescriptor
 				.builder()
 				.productDescriptor(EventTestHelper.createProductDescriptor())
 				.issueOrReceiveDate(SystemTime.asInstant())
@@ -93,7 +92,7 @@ public class PPOrderChangedEventTest
 		assertThat(d.computeOpenQtyDelta()).isEqualTo(FIVE.negate());
 	}
 
-	//oldQtyRequired=-54.000, newQtyRequired=-54.000, oldQtyDelivered=0, newQtyDelivered=0
+	// oldQtyRequired=-54.000, newQtyRequired=-54.000, oldQtyDelivered=0, newQtyDelivered=0
 	@Test
 	public void changedPPOrderLineDescriptor_getOpenQtyDelta_noChange()
 	{

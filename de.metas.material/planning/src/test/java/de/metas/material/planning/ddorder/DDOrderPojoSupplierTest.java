@@ -1,5 +1,8 @@
 package de.metas.material.planning.ddorder;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -24,18 +27,22 @@ package de.metas.material.planning.ddorder;
 
 import java.math.BigDecimal;
 
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.planning.exception.MrpException;
-import mockit.Mocked;
 
 public class DDOrderPojoSupplierTest
 {
-	@Mocked
 	private ModelProductDescriptorExtractor modelProductDescriptorExtractor;
+
+	@BeforeEach
+	public void init()
+	{
+		modelProductDescriptorExtractor = Mockito.mock(ModelProductDescriptorExtractor.class);
+	}
 
 	@Test
 	public void test_calculateQtyToMove_ZeroQty()
@@ -87,14 +94,16 @@ public class DDOrderPojoSupplierTest
 		);
 	}
 
-	@Test(expected = MrpException.class)
+	@Test
 	public void test_calculateQtyToMove_AnyQty_TransferNegative()
 	{
-		test_calculateQtyToMove(
+		assertThatThrownBy(() -> test_calculateQtyToMove(
 				new BigDecimal("99999999999999999"), // qtyToMoveExpected - does not matter
 				new BigDecimal("30.123713812937129"), // qtyToMoveRequested
 				new BigDecimal("-10") // transferPercent
-		);
+		))
+				//
+				.isInstanceOf(MrpException.class);
 	}
 
 	private void test_calculateQtyToMove(
@@ -107,9 +116,8 @@ public class DDOrderPojoSupplierTest
 		final BigDecimal qtyToMoveActual = ddOrderPojoSupplier
 				.calculateQtyToMove(qtyToMoveRequested, transferPercent);
 
-		final String msg = "Invalid QtyToMove for "
-				+ " QtyToMoveRequested=" + qtyToMoveRequested
-				+ ", TransferPercent=" + transferPercent;
-		Assert.assertThat(msg, qtyToMoveActual, Matchers.comparesEqualTo(qtyToMoveExpected));
+		assertThat(qtyToMoveActual)
+				.as("QtyToMove for " + " QtyToMoveRequested=" + qtyToMoveRequested + ", TransferPercent=" + transferPercent)
+				.isEqualByComparingTo(qtyToMoveExpected);
 	}
 }

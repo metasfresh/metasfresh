@@ -6,23 +6,33 @@ CREATE OR REPLACE FUNCTION public.GenerateASIStorageAttributesKey(
     RETURNS text
     LANGUAGE 'sql'
     COST 100
-    STABLE 
+    STABLE
 AS $BODY$
-		SELECT COALESCE(string_agg(sub.M_AttributeValue_ID::VARCHAR, '§&§'), p_NullString)
+		SELECT COALESCE(string_agg(sub.keyPart, '§&§'), p_NullString)
 		FROM (
 			SELECT
-				av.M_AttributeValue_ID
+				(case
+					when a.AttributeValueType = 'S' then a.M_Attribute_ID || '=' || coalesce(ai.Value, '')::varchar
+					when a.AttributeValueType = 'N' then a.M_Attribute_ID || '=' || coalesce(trim(ai.ValueNumber::varchar, '0'), '')
+					when a.AttributeValueType = 'D' then a.M_Attribute_ID || '=' || coalesce(to_char(ai.ValueDate, 'YYYY-MM-DD'), '')::varchar
+					when a.AttributeValueType = 'L' then av.M_AttributeValue_ID::varchar
+					else null
+				end) as keyPart
 			FROM M_AttributeInstance ai
-				INNER JOIN M_AttributeValue av ON av.M_AttributeValue_ID=ai.M_AttributeValue_ID
 				INNER JOIN M_Attribute a ON a.M_Attribute_ID=ai.M_Attribute_ID
+				LEFT OUTER JOIN M_AttributeValue av ON av.M_AttributeValue_ID=ai.M_AttributeValue_ID
 			WHERE ai.M_AttributeSetInstance_ID = p_M_AttributeSetInstance_ID
-				AND av.IsActive='Y'
-				AND a.IsStorageRelevant='Y' -- Match significant attributes only
 				AND a.IsActive='Y'
-			ORDER BY a.M_Attribute_ID
-		) sub;
+				AND a.IsStorageRelevant='Y' -- Match significant attributes only
+				-- AND av.IsActive='Y'
+			ORDER BY
+				av.M_AttributeValue_ID NULLS LAST,
+				a.M_Attribute_ID
+		) sub
+		WHERE sub.keyPart is not null
+		;
 $BODY$;
-COMMENT ON FUNCTION public.generateASIStorageAttributesKey(numeric, text) IS 
+COMMENT ON FUNCTION public.generateASIStorageAttributesKey(numeric, text) IS
 'Creates a string to represent the given M_AttributeSetInstance_ID''s storage relevant attribute values via their M_AttributeValue_IDs.
 Parmeters:
 * p_M_AttributeSetInstance_ID: M_AttributeSetInstance_ID of the ASI to render as StorageAttributesKey. InActive and not-StorageRelevant records are ignored
@@ -40,11 +50,11 @@ CREATE OR REPLACE FUNCTION public.GenerateASIStorageAttributesKey(IN p_M_Attribu
     RETURNS text
     LANGUAGE 'sql'
     COST 100
-    STABLE 
+    STABLE
 AS $BODY$
 		SELECT * FROM GenerateASIStorageAttributesKey(p_M_AttributeSetInstance_ID, '-1002'/*NONE*/);
 $BODY$;
-COMMENT ON FUNCTION public.generateASIStorageAttributesKey(numeric) IS 
+COMMENT ON FUNCTION public.generateASIStorageAttributesKey(numeric) IS
 'Creates a string to represent the given M_AttributeSetInstance_ID''s storage relevant attributes.
 
 Needs to be kept in sync with the java method org.adempiere.mm.attributes.api.AttributesKeys.createAttributesKeyFromASIStorageAttributes(int)';

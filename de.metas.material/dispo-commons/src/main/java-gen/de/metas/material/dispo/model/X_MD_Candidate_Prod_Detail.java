@@ -15,7 +15,7 @@ public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 278160628L;
+	private static final long serialVersionUID = 1583595488L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Prod_Detail (Properties ctx, int MD_Candidate_Prod_Detail_ID, String trxName)
@@ -132,7 +132,7 @@ public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate() throws RuntimeException
+	public de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate()
 	{
 		return get_ValueAsPO(COLUMNNAME_MD_Candidate_ID, de.metas.material.dispo.model.I_MD_Candidate.class);
 	}
@@ -207,7 +207,7 @@ public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Order_BOMLine getPP_Order_BOMLine() throws RuntimeException
+	public org.eevolution.model.I_PP_Order_BOMLine getPP_Order_BOMLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Order_BOMLine_ID, org.eevolution.model.I_PP_Order_BOMLine.class);
 	}
@@ -287,7 +287,7 @@ public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Order getPP_Order() throws RuntimeException
+	public org.eevolution.model.I_PP_Order getPP_Order()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class);
 	}
@@ -321,7 +321,7 @@ public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public org.compiere.model.I_S_Resource getPP_Plant() throws RuntimeException
+	public org.compiere.model.I_S_Resource getPP_Plant()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Plant_ID, org.compiere.model.I_S_Resource.class);
 	}
@@ -355,7 +355,7 @@ public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Product_BOMLine getPP_Product_BOMLine() throws RuntimeException
+	public org.eevolution.model.I_PP_Product_BOMLine getPP_Product_BOMLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Product_BOMLine_ID, org.eevolution.model.I_PP_Product_BOMLine.class);
 	}
@@ -392,7 +392,7 @@ public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Product_Planning getPP_Product_Planning() throws RuntimeException
+	public org.eevolution.model.I_PP_Product_Planning getPP_Product_Planning()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Product_Planning_ID, org.eevolution.model.I_PP_Product_Planning.class);
 	}

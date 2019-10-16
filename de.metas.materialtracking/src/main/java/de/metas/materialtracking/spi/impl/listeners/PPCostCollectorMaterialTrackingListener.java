@@ -27,6 +27,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
 import java.util.List;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -132,7 +133,7 @@ public final class PPCostCollectorMaterialTrackingListener extends MaterialTrack
 				.addEqualsFilter(I_M_Material_Tracking_Ref.COLUMN_M_Material_Tracking_ID, materialTrackingId)
 
 				// PP_Order's M_Material_Tracking_Refs also have their QtyIssued set, but that's just an aggregation of the cost collector's ref's qty.
-				.addEqualsFilter(I_M_Material_Tracking_Ref.COLUMN_AD_Table_ID, costCollectorTableId)
+				.addEqualsFilter(I_M_Material_Tracking_Ref.COLUMNNAME_AD_Table_ID, costCollectorTableId)
 				.create()
 				.aggregate(I_M_Material_Tracking_Ref.COLUMNNAME_QtyIssued, Aggregate.SUM, BigDecimal.class);
 
