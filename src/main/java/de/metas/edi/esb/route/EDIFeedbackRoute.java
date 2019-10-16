@@ -30,6 +30,7 @@ import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.springframework.stereotype.Component;
 
 import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.jaxb.metasfresh.EDIDesadvFeedbackType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIInvoiceFeedbackType;
 import de.metas.edi.esb.processor.feedback.EDIXmlErrorFeedbackProcessor;
@@ -58,6 +59,8 @@ public class EDIFeedbackRoute extends RouteBuilder
 	@Override
 	public void configure()
 	{
+		final String feedbackMessageRoutingKey = Util.resolvePropertyPlaceholders(getContext(), Constants.EP_AMQP_TO_AD_DURABLE_ROUTING_KEY);
+
 		// Catch any exception in feedback, log it, and stop the route from continuing execution.
 		onException(Exception.class)
 				.handled(true)
@@ -112,6 +115,7 @@ public class EDIFeedbackRoute extends RouteBuilder
 
 						// Send the feedback to metasfresh
 						.log(LoggingLevel.INFO, "EDI: Sending error response to metasfresh...")
+						.setHeader("rabbitmq.ROUTING_KEY").simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
 						.to(Constants.EP_AMQP_TO_AD)
 				.end();
 		// @formatter:on
