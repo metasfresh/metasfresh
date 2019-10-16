@@ -46,6 +46,7 @@ import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.material.event.stock.ResetStockPInstanceId;
 import de.metas.product.ResourceId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -610,9 +611,9 @@ public class CandidateRepositoryWriteService
 			{
 				transactionOrPInstanceId.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_M_Transaction_ID, transactionDetail.getTransactionId());
 			}
-			if (transactionDetail.getResetStockAdPinstanceId() > 0)
+			if (transactionDetail.getResetStockPInstanceId() != null)
 			{
-				transactionOrPInstanceId.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_AD_PInstance_ResetStock_ID, transactionDetail.getResetStockAdPinstanceId());
+				transactionOrPInstanceId.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_AD_PInstance_ResetStock_ID, transactionDetail.getResetStockPInstanceId().getRepoId());
 			}
 
 			final I_MD_Candidate_Transaction_Detail existingDetail = //
@@ -627,7 +628,7 @@ public class CandidateRepositoryWriteService
 				detailRecordToUpdate = newInstance(I_MD_Candidate_Transaction_Detail.class, synchedRecord);
 				detailRecordToUpdate.setMD_Candidate(synchedRecord);
 				detailRecordToUpdate.setM_Transaction_ID(transactionDetail.getTransactionId());
-				detailRecordToUpdate.setAD_PInstance_ResetStock_ID(transactionDetail.getResetStockAdPinstanceId());
+				detailRecordToUpdate.setAD_PInstance_ResetStock_ID(ResetStockPInstanceId.toRepoId(transactionDetail.getResetStockPInstanceId()));
 				detailRecordToUpdate.setMD_Stock_ID(transactionDetail.getStockId());
 			}
 			else

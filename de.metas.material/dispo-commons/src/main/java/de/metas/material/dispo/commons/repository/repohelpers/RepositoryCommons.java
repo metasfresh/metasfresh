@@ -398,9 +398,9 @@ public class RepositoryCommons
 			{
 				transactionDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_M_Transaction_ID, transactionDetail.getTransactionId());
 			}
-			if (transactionDetail.getResetStockAdPinstanceId() > 0)
+			if (transactionDetail.getResetStockPInstanceId() != null)
 			{
-				transactionDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_AD_PInstance_ResetStock_ID, transactionDetail.getResetStockAdPinstanceId());
+				transactionDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_AD_PInstance_ResetStock_ID, transactionDetail.getResetStockPInstanceId());
 			}
 
 			if (transactionDetail.getQuantity() != null)

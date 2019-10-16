@@ -1,8 +1,9 @@
 package de.metas.material.cockpit.stock;
 
-import lombok.Value;
-
+import de.metas.material.event.stock.ResetStockPInstanceId;
 import de.metas.util.Check;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -29,21 +30,29 @@ import de.metas.util.Check;
 @Value
 public class StockChangeSourceInfo
 {
-	public static StockChangeSourceInfo ofResetStockAdPinstanceId(int resetStockAdPinstanceId)
+	public static StockChangeSourceInfo ofResetStockPInstanceId(@NonNull final ResetStockPInstanceId resetStockAdPinstanceId)
 	{
 		return new StockChangeSourceInfo(
-				Check.assumeGreaterThanZero(resetStockAdPinstanceId, "resetStockAdPinstanceId"),
+				resetStockAdPinstanceId,
 				-1);
 	}
 
-	public static StockChangeSourceInfo ofTransactionId(int transactionId)
+	public static StockChangeSourceInfo ofTransactionId(final int transactionId)
 	{
 		return new StockChangeSourceInfo(
-				-1,
+				(ResetStockPInstanceId)null,
 				Check.assumeGreaterThanZero(transactionId, "transactionId"));
 	}
 
-	int resetStockAdPinstanceId;
-
+	ResetStockPInstanceId resetStockAdPinstanceId;
 	int transactionId;
+
+	private StockChangeSourceInfo(
+			final ResetStockPInstanceId resetStockAdPinstanceId,
+			final int transactionId)
+	{
+		this.resetStockAdPinstanceId = resetStockAdPinstanceId;
+		this.transactionId = transactionId;
+	}
+
 }
