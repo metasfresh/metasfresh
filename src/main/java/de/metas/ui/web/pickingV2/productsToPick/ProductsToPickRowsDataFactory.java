@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
@@ -101,6 +102,8 @@ class ProductsToPickRowsDataFactory
 	private final Map<HuId, ImmutableAttributeSet> huAttributesCache = new HashMap<>();
 	private final Map<HuId, I_M_HU> husCache = new HashMap<>();
 
+	private final boolean considerAttributes;
+
 	static final String ATTR_LotNumber = LotNumberDateAttributeDAO.ATTR_LotNumber;
 	static final String ATTR_BestBeforeDate = AttributeConstants.ATTR_BestBeforeDate;
 	static final String ATTR_RepackNumber = "RepackNumber"; // TODO use it as constant, see RepackNumberUtils
@@ -115,7 +118,9 @@ class ProductsToPickRowsDataFactory
 			@NonNull final HUReservationService huReservationService,
 			@NonNull final PickingCandidateService pickingCandidateService,
 			//
-			@NonNull final LookupValueByIdSupplier locatorLookup)
+			@NonNull final LookupValueByIdSupplier locatorLookup,
+			//
+			final boolean considerAttributes)
 	{
 		this.bpartnersService = bpartnersService;
 		this.huReservationService = huReservationService;
@@ -125,6 +130,8 @@ class ProductsToPickRowsDataFactory
 
 		final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 		attributesFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
+
+		this.considerAttributes = considerAttributes;
 	}
 
 	public ProductsToPickRowsData create(final PackageableRow packageableRow)
@@ -251,7 +258,7 @@ class ProductsToPickRowsDataFactory
 		final Set<HuId> huIds = huReservationService.prepareHUQuery()
 				.warehouseId(packageable.getWarehouseId())
 				.productId(packageable.getProductId())
-				.asiId(null)
+				.asiId(considerAttributes ? packageable.getAsiId() : null)
 				.reservedToSalesOrderLineIdOrNotReservedAtAll(salesOrderLine)
 				.build()
 				.listIds();
@@ -484,6 +491,8 @@ class ProductsToPickRowsDataFactory
 		@Getter
 		private final ProductId productId;
 		@Getter
+		private final AttributeSetInstanceId asiId;
+		@Getter
 		private final ShipmentScheduleId shipmentScheduleId;
 		@Getter
 		private final Optional<ShipmentAllocationBestBeforePolicy> bestBeforePolicy;
@@ -500,6 +509,7 @@ class ProductsToPickRowsDataFactory
 		{
 			this.customerId = packageable.getCustomerId();
 			this.productId = packageable.getProductId();
+			this.asiId = packageable.getAsiId();
 			this.shipmentScheduleId = packageable.getShipmentScheduleId();
 			this.bestBeforePolicy = packageable.getBestBeforePolicy();
 			this.warehouseId = packageable.getWarehouseId();

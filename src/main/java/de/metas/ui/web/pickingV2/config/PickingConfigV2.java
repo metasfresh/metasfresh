@@ -30,4 +30,5 @@ import lombok.Value;
 public class PickingConfigV2
 {
 	boolean pickingReviewRequired;
+	boolean considerAttributes;
 }
