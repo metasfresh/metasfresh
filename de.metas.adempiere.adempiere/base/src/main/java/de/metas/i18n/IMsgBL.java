@@ -116,9 +116,14 @@ public interface IMsgBL extends ISingletonService
 	 * @param adMessage AD_Message
 	 * @param msgParameters optional AD_Message parameters
 	 * @return AD_Message as translatable string
+	 * @see #translatable(String)
 	 */
 	ITranslatableString getTranslatableMsgText(String adMessage, Object... msgParameters);
 
+	/**
+	 * @see #getTranslatableMsgText(String, Object...)
+	 * @see #translatable(String)
+	 */
 	default ITranslatableString getTranslatableMsgText(final String adMessage, final List<Object> msgParameters)
 	{
 		final Object[] msgParametersArr = msgParameters != null ? msgParameters.toArray() : new Object[] {};
