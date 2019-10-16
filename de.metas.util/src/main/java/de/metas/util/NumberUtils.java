@@ -179,7 +179,7 @@ public final class NumberUtils
 			}
 			catch (final NumberFormatException numberFormatException)
 			{
-				final String errorMsg = "Cannot convert " + value + " (" + value.getClass() + ") to BigDecimal";
+				final String errorMsg = "Cannot convert `" + value + "` (" + value.getClass() + ") to BigDecimal";
 
 				if (failIfUnparsable)
 				{
