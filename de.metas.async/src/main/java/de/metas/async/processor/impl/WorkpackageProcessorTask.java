@@ -1,5 +1,7 @@
 package de.metas.async.processor.impl;
 
+
+
 /*
  * #%L
  * de.metas.async
@@ -49,6 +51,7 @@ import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
+import de.metas.async.AsyncBatchId;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IQueueDAO;
@@ -56,7 +59,6 @@ import de.metas.async.api.IWorkPackageBL;
 import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.api.IWorkpackageProcessorContextFactory;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
-import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -240,8 +242,7 @@ import lombok.NonNull;
 	private final void beforeWorkpackageProcessing()
 	{
 		// If the current workpackage's processor creates a follow-up-workpackage, the asyncBatch and priority will be forwarded.
-		final I_C_Async_Batch asyncBatch = workPackage.getC_Async_Batch();
-		contextFactory.setThreadInheritedAsyncBatch(asyncBatch);
+		contextFactory.setThreadInheritedAsyncBatch(AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID()));
 
 		final String priority = workPackage.getPriority();
 		contextFactory.setThreadInheritedPriority(priority);
