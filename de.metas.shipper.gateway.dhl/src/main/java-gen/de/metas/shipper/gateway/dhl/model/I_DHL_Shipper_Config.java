@@ -185,6 +185,29 @@ public interface I_DHL_Shipper_Config
     public static final String COLUMNNAME_dhl_api_url = "dhl_api_url";
 
 	/**
+	 * Set Dhl_LenghtUOM_ID.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDhl_LenghtUOM_ID (int Dhl_LenghtUOM_ID);
+
+	/**
+	 * Get Dhl_LenghtUOM_ID.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getDhl_LenghtUOM_ID();
+
+    /** Column definition for Dhl_LenghtUOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, org.compiere.model.I_C_UOM> COLUMN_Dhl_LenghtUOM_ID = new org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, org.compiere.model.I_C_UOM>(I_DHL_Shipper_Config.class, "Dhl_LenghtUOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name Dhl_LenghtUOM_ID */
+    public static final String COLUMNNAME_Dhl_LenghtUOM_ID = "Dhl_LenghtUOM_ID";
+
+	/**
 	 * Set DHL Shipper Configuration.
 	 *
 	 * <br>Type: ID
@@ -231,6 +254,35 @@ public interface I_DHL_Shipper_Config
     public static final org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object>(I_DHL_Shipper_Config.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Lieferweg.
+	 * Methode oder Art der Warenlieferung
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Shipper_ID (int M_Shipper_ID);
+
+	/**
+	 * Get Lieferweg.
+	 * Methode oder Art der Warenlieferung
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Shipper_ID();
+
+	public org.compiere.model.I_M_Shipper getM_Shipper();
+
+	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper);
+
+    /** Column definition for M_Shipper_ID */
+    public static final org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, org.compiere.model.I_M_Shipper>(I_DHL_Shipper_Config.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+    /** Column name M_Shipper_ID */
+    public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
 	 * Set Unterschrift.

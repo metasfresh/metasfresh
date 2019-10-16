@@ -23,6 +23,7 @@
 package de.metas.shipper.gateway.dhl.model;
 
 import de.metas.cache.CCache;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -41,9 +42,9 @@ public class DhlClientConfigRepository
 	private static DhlClientConfig retrieveConfig(final int shipperId)
 	{
 		final I_DHL_Shipper_Config configPO = Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_DHL_Shipper_Config.class)
+				.createQueryBuilder(I_DHL_Shipper_Config.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_DHL_Shipper_Config.COLUMNNAME_DHL_Shipper_Config_ID, shipperId)
+				.addEqualsFilter(I_DHL_Shipper_Config.COLUMNNAME_M_Shipper_ID, shipperId)
 				.create()
 				.first();
 		if (configPO == null)
@@ -57,6 +58,7 @@ public class DhlClientConfigRepository
 				.accountNumber(configPO.getAccountNumber())
 				.username(configPO.getUserName())
 				.signature(configPO.getSignature())
+				.lengthUomId(UomId.ofRepoId(configPO.getDhl_LenghtUOM_ID()))
 				.build();
 	}
 }

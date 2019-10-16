@@ -22,6 +22,7 @@
 
 package de.metas.shipper.gateway.dhl.model;
 
+import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
@@ -49,5 +50,8 @@ public class DhlClientConfig
 
 	@NonNull
 	private final String signature;
+
+	@NonNull
+	private final UomId lengthUomId;
 
 }

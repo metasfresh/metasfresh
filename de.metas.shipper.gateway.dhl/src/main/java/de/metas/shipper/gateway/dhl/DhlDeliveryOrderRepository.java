@@ -92,7 +92,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	 * Each different shipper has its own "shipper-PO" with its own relevant data.
 	 */
 	@Override
-	public DeliveryOrder save(final DeliveryOrder deliveryOrder)
+	public DeliveryOrder save(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		if (deliveryOrder.getRepoId() >= 1)
 		{
@@ -106,7 +106,6 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 					.toBuilder()
 					.repoId(orderRequestPO.getDHL_ShipmentOrderRequest_ID())
 					.build();
-
 		}
 	}
 
@@ -176,6 +175,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 				.customerReference(firstOrder.getCustomerReference())
 				.serviceType(DhlServiceType.valueOf(firstOrder.getDHL_Product()))
 				.deliveryPositions(constructDeliveryPositions(firstOrder, packageIds))
+				.shipperId(firstOrder.getM_Shipper_ID())
 				.customDeliveryData(DhlCustomDeliveryData.builder()
 						.details(dhlCustomDeliveryDataDetail)
 						.build())
@@ -257,6 +257,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 					shipmentOrder.setPackageId(packageIdsAsList.get(i));
 					shipmentOrder.setC_BPartner_ID(deliveryAddress.getBpartnerId());
 					shipmentOrder.setC_BPartner_Location_ID(deliveryAddress.getBpartnerLocationId());
+					shipmentOrder.setM_Shipper_ID(deliveryOrder.getShipperId());
 				}
 
 				{
@@ -268,9 +269,12 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 					shipmentOrder.setDHL_ShipmentDate(deliveryOrder.getPickupDate().getDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
 					// (2.2.1.8)
 					final PackageDimensions packageDimensions = deliveryPosition.getPackageDimensions();
-					shipmentOrder.setDHL_HeightInCm(packageDimensions.getHeightInCM());
-					shipmentOrder.setDHL_LengthInCm(packageDimensions.getLengthInCM());
-					shipmentOrder.setDHL_WidthInCm(packageDimensions.getWidthInCM());
+					if (packageDimensions != null)
+					{
+						shipmentOrder.setDHL_HeightInCm(packageDimensions.getHeightInCM());
+						shipmentOrder.setDHL_LengthInCm(packageDimensions.getLengthInCM());
+						shipmentOrder.setDHL_WidthInCm(packageDimensions.getWidthInCM());
+					}
 					shipmentOrder.setDHL_WeightInKg(BigDecimal.valueOf(deliveryPosition.getGrossWeightKg()));
 					// (2.2.1.10)
 					//noinspection ConstantConditions
@@ -328,8 +332,6 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 
 	private void toUpdateShipmentOrderRequestPO(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		final I_DHL_ShipmentOrderRequest shipmentOrderRequest = InterfaceWrapperHelper.load(deliveryOrder.getRepoId(), I_DHL_ShipmentOrderRequest.class);
-
 		for (final DeliveryPosition deliveryPosition : deliveryOrder.getDeliveryPositions()) // only a single delivery position should exist
 		{
 			final ImmutableList<Integer> packageIdsAsList = deliveryPosition.getPackageIds().asList();
