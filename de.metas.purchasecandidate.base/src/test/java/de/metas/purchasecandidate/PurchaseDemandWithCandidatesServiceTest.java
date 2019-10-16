@@ -157,7 +157,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 
 		discountSchemaBreakRecord = newInstance(I_M_DiscountSchemaBreak.class);
 		discountSchemaBreakRecord.setM_DiscountSchema(discountSchemaRecord);
-		discountSchemaBreakRecord.setC_PaymentTerm(paymentTermRecord);
+		discountSchemaBreakRecord.setC_PaymentTerm_ID(paymentTermRecord.getC_PaymentTerm_ID());
 		discountSchemaBreakRecord.setPaymentDiscount(TEN);
 		discountSchemaBreakRecord.setPriceBase(X_M_DiscountSchemaBreak.PRICEBASE_Fixed);
 		discountSchemaBreakRecord.setPriceStdFixed(TEN);

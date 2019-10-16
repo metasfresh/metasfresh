@@ -25,6 +25,7 @@ package de.metas.handlingunits.attribute.storage;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.util.TimeUtil;
@@ -37,6 +38,7 @@ import de.metas.handlingunits.attribute.strategy.impl.CopyHUAttributeTransferStr
 import de.metas.handlingunits.attribute.strategy.impl.NullAggregationStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.NullSplitterStrategy;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
+import de.metas.util.Services;
 
 /**
  * Wraps an {@link I_M_AttributeInstance}
@@ -54,7 +56,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 	{
 		super(
 				attributeStorage,
-				attributeInstance.getM_Attribute());
+				Services.get(IAttributeDAO.class).getAttributeById(attributeInstance.getM_Attribute_ID()));
 
 		this.attributeInstance = attributeInstance;
 	}

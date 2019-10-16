@@ -1,5 +1,7 @@
 package de.metas.material.event.commons;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -45,7 +47,7 @@ public class ProductDescriptor
 {
 	public static final ProductDescriptor completeForProductIdAndEmptyAttribute(final int productId)
 	{
-		return new ProductDescriptor(productId, AttributesKey.NONE, 0);
+		return new ProductDescriptor(productId, AttributesKey.NONE, AttributeSetInstanceId.NONE.getRepoId());
 	}
 
 	public static final ProductDescriptor forProductAndAttributes(
@@ -60,8 +62,7 @@ public class ProductDescriptor
 			final int productId,
 			@NonNull final AttributesKey attributesKey)
 	{
-		final int attributeSetInstanceId = 0;
-		return new ProductDescriptor(productId, attributesKey, attributeSetInstanceId);
+		return new ProductDescriptor(productId, attributesKey, AttributeSetInstanceId.NONE.getRepoId());
 	}
 
 	@Getter

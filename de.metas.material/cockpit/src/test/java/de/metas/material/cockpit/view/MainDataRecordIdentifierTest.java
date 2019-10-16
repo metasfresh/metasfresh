@@ -11,8 +11,8 @@ import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -45,7 +45,7 @@ public class MainDataRecordIdentifierTest
 	private I_MD_Cockpit someUnrelatedcockpitRecord;
 	private ProductDescriptor productDescriptor;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

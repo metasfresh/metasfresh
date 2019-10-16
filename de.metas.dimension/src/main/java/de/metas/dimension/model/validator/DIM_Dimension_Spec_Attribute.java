@@ -30,6 +30,8 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.ModelValidator;
 
@@ -61,14 +63,15 @@ public class DIM_Dimension_Spec_Attribute
 	@CalloutMethod(columnNames = I_DIM_Dimension_Spec_Attribute.COLUMNNAME_M_Attribute_ID)
 	public void setAttributerValueType(final I_DIM_Dimension_Spec_Attribute specAttr)
 	{
-		if(specAttr.getM_Attribute() == null)
+		final AttributeId attributeId = AttributeId.ofRepoIdOrNull(specAttr.getM_Attribute_ID());
+		if(attributeId == null)
 		{
 			specAttr.setAttributeValueType(null);
 		}
 		
 		else
 		{
-			final I_M_Attribute attribute = specAttr.getM_Attribute();
+			final I_M_Attribute attribute = Services.get(IAttributeDAO.class).getAttributeById(attributeId);
 			final String attributeValueType = attribute.getAttributeValueType();
 			
 			specAttr.setAttributeValueType(attributeValueType);

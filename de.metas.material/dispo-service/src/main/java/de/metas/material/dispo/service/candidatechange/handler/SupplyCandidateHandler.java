@@ -46,7 +46,6 @@ import lombok.NonNull;
 public class SupplyCandidateHandler implements CandidateHandler
 {
 	private final CandidateRepositoryWriteService candidateRepositoryWriteService;
-
 	private final StockCandidateService stockCandidateService;
 
 	public SupplyCandidateHandler(
@@ -63,7 +62,8 @@ public class SupplyCandidateHandler implements CandidateHandler
 		return ImmutableList.of(
 				CandidateType.SUPPLY,
 				CandidateType.UNRELATED_INCREASE,
-				CandidateType.INVENTORY_UP);
+				CandidateType.INVENTORY_UP,
+				CandidateType.ATTRIBUTES_CHANGED_TO);
 	}
 
 	/**
@@ -99,8 +99,8 @@ public class SupplyCandidateHandler implements CandidateHandler
 				.getCandidate();
 
 		final SaveResult deltaToApplyToLaterStockCandiates = SaveResult.builder()
-				//.candidate(stockCandidate.getCandidate())
-				//.previousQty(stockCandidate.getPreviousQty())
+				// .candidate(stockCandidate.getCandidate())
+				// .previousQty(stockCandidate.getPreviousQty())
 				.candidate(savedCandidate)
 				.previousQty(candidateSaveResult.getPreviousQty())
 				.previousTime(candidateSaveResult.getPreviousTime())

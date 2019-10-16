@@ -2,13 +2,13 @@ package de.metas.modelvalidator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_M_Attribute;
 
@@ -29,7 +29,7 @@ public class M_AttributeInstance
 	}
 
 	/**
-	 * In case {@link I_M_AttributeInstance#COLUMNNAME_Value} column changed and we deal with an List attribute, search and set corresponding {@link I_M_AttributeValue}
+	 * In case {@link I_M_AttributeInstance#COLUMNNAME_Value} column changed and we deal with an List attribute, search and set corresponding attribute value record
 	 *
 	 * @param ai
 	 */
@@ -52,7 +52,7 @@ public class M_AttributeInstance
 		//
 		// Search for M_AttributeValue and set M_Attribute.M_AttributeValue_ID
 		final String value = ai.getValue();
-		final I_M_AttributeValue attributeValue = attributesRepo.retrieveAttributeValueOrNull(attribute, value);
-		ai.setM_AttributeValue(attributeValue);
+		final AttributeListValue attributeValue = attributesRepo.retrieveAttributeValueOrNull(attribute, value);
+		ai.setM_AttributeValue_ID(attributeValue != null ? attributeValue.getId().getRepoId() : -1);
 	}
 }

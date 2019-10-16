@@ -6,12 +6,15 @@ import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
+import lombok.EqualsAndHashCode;
+
 /**
  * Date TRUNC modifier
  * 
  * @author tsa
  * 
  */
+@EqualsAndHashCode
 public final class DateTruncQueryFilterModifier implements IQueryFilterModifier
 {
 	public static final DateTruncQueryFilterModifier DAY = new DateTruncQueryFilterModifier(TimeUtil.TRUNC_DAY);
@@ -25,7 +28,7 @@ public final class DateTruncQueryFilterModifier implements IQueryFilterModifier
 	 * @param trunc see {@link TimeUtil}#TRUNC_* constants
 	 * @return modifier instance
 	 */
-	public static final DateTruncQueryFilterModifier forTruncString(final String trunc)
+	public static DateTruncQueryFilterModifier forTruncString(final String trunc)
 	{
 		if (TimeUtil.TRUNC_DAY.equals(trunc))
 		{
@@ -58,7 +61,6 @@ public final class DateTruncQueryFilterModifier implements IQueryFilterModifier
 	 */
 	protected DateTruncQueryFilterModifier(final String trunc)
 	{
-		super();
 		this.trunc = trunc;
 		if (trunc == null)
 		{

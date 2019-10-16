@@ -1,4 +1,6 @@
-package org.adempiere.mm.attributes;
+package de.metas.handlingunits;
+
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -9,9 +11,9 @@ import lombok.Value;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,29 +32,24 @@ import lombok.Value;
  */
 
 @Value
-public class AttributeValueId implements RepoIdAware
+public class HuPackingInstructionsAttributeId implements RepoIdAware
 {
-	int repoId;
-
 	@JsonCreator
-	public static AttributeValueId ofRepoId(final int repoId)
+	public static HuPackingInstructionsAttributeId ofRepoId(final int repoId)
 	{
-		return new AttributeValueId(repoId);
+		return new HuPackingInstructionsAttributeId(repoId);
 	}
 
-	public static AttributeValueId ofRepoIdOrNull(final int repoId)
+	public static HuPackingInstructionsAttributeId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	public static int toRepoId(final AttributeValueId attributeValueId)
-	{
-		return attributeValueId != null ? attributeValueId.getRepoId() : -1;
-	}
+	int repoId;
 
-	private AttributeValueId(final int repoId)
+	private HuPackingInstructionsAttributeId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "M_HU_PI_Attribute_ID");
 	}
 
 	@Override
@@ -60,5 +57,15 @@ public class AttributeValueId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static int toRepoId(final HuPackingInstructionsAttributeId id)
+	{
+		return id != null ? id.getRepoId() : -1;
+	}
+
+	public static boolean equals(final HuPackingInstructionsAttributeId o1, final HuPackingInstructionsAttributeId o2)
+	{
+		return Objects.equals(o1, o2);
 	}
 }

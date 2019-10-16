@@ -13,15 +13,14 @@ package org.adempiere.ad.dao.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Date;
 import java.util.List;
@@ -33,10 +32,13 @@ import org.adempiere.model.ModelColumn;
 import org.compiere.util.TimeUtil;
 
 import de.metas.util.Check;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 
 /**
  * Column Value Modifier which adds hours (from specified SQL Column) to the main column value.
  */
+@EqualsAndHashCode
 public final class AddHoursQueryFilterModifier implements IQueryFilterModifier
 {
 	private static final String SQL_FUNC_AddHours = "addHours";
@@ -49,17 +51,12 @@ public final class AddHoursQueryFilterModifier implements IQueryFilterModifier
 	 */
 	public AddHoursQueryFilterModifier(final String hoursColumnName)
 	{
-		super();
-
 		Check.assumeNotEmpty(hoursColumnName, "hoursColumnName not empty");
 		this.hoursColumnSql = hoursColumnName;
 	}
 
-	public AddHoursQueryFilterModifier(final ModelColumn<?, ?> hoursColumn)
+	public AddHoursQueryFilterModifier(@NonNull final ModelColumn<?, ?> hoursColumn)
 	{
-		super();
-
-		Check.assumeNotNull(hoursColumn, "hoursColumn not null");
 		this.hoursColumnSql = hoursColumn.getColumnName();
 	}
 
@@ -107,7 +104,7 @@ public final class AddHoursQueryFilterModifier implements IQueryFilterModifier
 		}
 	}
 
-	private final int getHours(final Object model)
+	private int getHours(final Object model)
 	{
 		final Optional<Number> hours = InterfaceWrapperHelper.getValue(model, hoursColumnSql);
 		if (!hours.isPresent())

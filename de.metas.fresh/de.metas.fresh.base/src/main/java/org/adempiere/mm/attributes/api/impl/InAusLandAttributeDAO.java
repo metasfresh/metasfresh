@@ -26,11 +26,11 @@ package org.adempiere.mm.attributes.api.impl;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IInAusLandAttributeDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.util.Env;
 
 import de.metas.util.Services;
@@ -51,7 +51,7 @@ public class InAusLandAttributeDAO implements IInAusLandAttributeDAO
 	}
 
 	@Override
-	public I_M_AttributeValue retrieveInAusLandAttributeValue(final Properties ctx, final String inAusLand)
+	public AttributeListValue retrieveInAusLandAttributeValue(final Properties ctx, final String inAusLand)
 	{
 		
 		final I_M_Attribute inAusLandAttribute = retrieveInAusLandAttribute(ctx);
@@ -60,9 +60,7 @@ public class InAusLandAttributeDAO implements IInAusLandAttributeDAO
 			return null;
 		}
 
-		final I_M_AttributeValue attributeValue = Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(inAusLandAttribute, inAusLand);
-		
-		return attributeValue;
+		return Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(inAusLandAttribute, inAusLand);
 		
 	}
 	

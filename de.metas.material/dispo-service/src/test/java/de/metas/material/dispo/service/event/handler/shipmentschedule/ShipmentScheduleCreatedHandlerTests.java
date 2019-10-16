@@ -13,10 +13,10 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableList;
 
@@ -37,7 +37,6 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import lombok.NonNull;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -61,26 +60,19 @@ import mockit.Mocked;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class ShipmentScheduleCreatedHandlerTests
 {
 	private static final int shipmentScheduleId = 76;
 
 	private static final int orderLineId = 86;
 
-	/** Watches the current tests and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
 	private static final WarehouseId toWarehouseId = WarehouseId.ofRepoId(30);
 
-	@Mocked
-	private PostMaterialEventService postMaterialEventService;
-
 	private ShipmentScheduleCreatedHandler shipmentScheduleCreatedHandler;
-
 	private AvailableToPromiseRepository atpRepository;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -89,7 +81,9 @@ public class ShipmentScheduleCreatedHandlerTests
 
 		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService();
 
-		atpRepository = new AvailableToPromiseRepository();
+		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
+
+		atpRepository = Mockito.spy(AvailableToPromiseRepository.class);
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
 				new DemandCandiateHandler(

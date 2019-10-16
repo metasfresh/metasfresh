@@ -10,9 +10,10 @@ import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+import org.mockito.Mockito;
+
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo.Operator;
@@ -22,7 +23,6 @@ import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
-import mockit.Expectations;
 
 /*
  * #%L
@@ -127,14 +127,11 @@ public class RepositoryTestHelper
 			@NonNull final MaterialDescriptor materialDescriptor,
 			@NonNull final String quantity)
 	{
-		// @formatter:off
-		new Expectations(CandidateRepositoryRetrieval.class)
-		{{
-			final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.forDescriptorAndAllPossibleBPartnerIds(materialDescriptor);
-			availableToPromiseRepository.retrieveAvailableStockQtySum(query);
-			minTimes = 0;
-			result = new BigDecimal(quantity);
-		}}; // @formatter:on
+		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.forDescriptorAndAllPossibleBPartnerIds(materialDescriptor);
+
+		Mockito.doReturn(new BigDecimal(quantity))
+				.when(availableToPromiseRepository)
+				.retrieveAvailableStockQtySum(query);
 	}
 
 }
