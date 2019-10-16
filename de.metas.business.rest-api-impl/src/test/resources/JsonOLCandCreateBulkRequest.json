@@ -6,7 +6,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -39,7 +39,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -95,7 +95,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -128,7 +128,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -184,7 +184,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -217,7 +217,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -273,7 +273,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -306,7 +306,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -362,7 +362,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -395,7 +395,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -451,7 +451,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -484,7 +484,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -540,7 +540,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -573,7 +573,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -629,7 +629,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -662,7 +662,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -718,7 +718,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -751,7 +751,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -807,7 +807,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -840,7 +840,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -896,7 +896,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -929,7 +929,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -985,7 +985,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -1018,7 +1018,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -1074,7 +1074,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -1107,7 +1107,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -1163,7 +1163,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -1196,7 +1196,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -1252,7 +1252,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -1285,7 +1285,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -1341,7 +1341,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -1374,7 +1374,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -1430,7 +1430,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -1463,7 +1463,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -1519,7 +1519,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -1552,7 +1552,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -1608,7 +1608,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -1641,7 +1641,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -1697,7 +1697,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -1730,7 +1730,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },
@@ -1786,7 +1786,7 @@
       "bpartner" : {
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
-          "code" : null,
+          "code" : "Biller AG",
           "name" : "Biller AG",
           "companyName" : "Biller AG"
         },
@@ -1819,7 +1819,7 @@
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "code" : null,
+        "code" : "Krankenkasse AG",
         "name" : "Krankenkasse AG",
         "companyName" : null
       },

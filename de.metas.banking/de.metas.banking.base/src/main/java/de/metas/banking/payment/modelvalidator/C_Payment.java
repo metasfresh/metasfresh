@@ -18,15 +18,14 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
@@ -36,12 +35,15 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
 
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.ICashStatementBL;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Services;
 
 /**
@@ -65,22 +67,19 @@ public class C_Payment
 		super();
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }
-			, ifColumnsChanged = { I_C_Payment.COLUMNNAME_C_Currency_ID, I_C_Payment.COLUMNNAME_C_ConversionType_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Payment.COLUMNNAME_C_Currency_ID, I_C_Payment.COLUMNNAME_C_ConversionType_ID })
 	public void onCurrencyChange(final I_C_Payment payment)
 	{
 		Services.get(IPaymentBL.class).onCurrencyChange(payment);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }
-			, ifColumnsChanged = I_C_Payment.COLUMNNAME_IsOverUnderPayment)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Payment.COLUMNNAME_IsOverUnderPayment)
 	public void onIsOverUnderPaymentChange(final I_C_Payment payment)
 	{
 		Services.get(IPaymentBL.class).onIsOverUnderPaymentChange(payment, true);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }
-			, ifColumnsChanged = I_C_Payment.COLUMNNAME_PayAmt)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Payment.COLUMNNAME_PayAmt)
 	public void onPayAmtChange(final I_C_Payment payment)
 	{
 		Services.get(IPaymentBL.class).onPayAmtChange(payment, true);
@@ -129,6 +128,20 @@ public class C_Payment
 		}
 
 		Services.get(ICashStatementBL.class).createCashStatementLine(payment);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Payment.COLUMNNAME_DateTrx })
+	public void onDateChange(final I_C_Payment payment)
+	{
+		final I_C_Invoice invoice = payment.getC_Invoice();
+		if (invoice == null)
+		{
+			return;
+		}
+		else
+		{
+			Services.get(IPaymentDAO.class).updateDiscountAndPayment(payment, invoice.getC_Invoice_ID(), invoice.getC_DocType());
+		}
 	}
 
 }

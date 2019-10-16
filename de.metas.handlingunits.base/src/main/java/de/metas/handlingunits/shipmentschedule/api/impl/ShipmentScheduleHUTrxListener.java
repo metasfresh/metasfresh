@@ -15,7 +15,6 @@ import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.product.ProductIds;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
@@ -80,7 +79,7 @@ public final class ShipmentScheduleHUTrxListener implements IHUTrxListener
 		// * negative means qty was un-allocated(removed) from VHU
 		final Quantity qtyPicked = Quantity.of(trxLine.getQty(), IHUTrxBL.extractUOMOrNull(trxLine));
 
-		final StockQtyAndUOMQty stockQtyAndUomQty = CatchWeightHelper.extractQtys(huContext, ProductIds.ofRecord(trxLine), qtyPicked, vhu);
+		final StockQtyAndUOMQty stockQtyAndUomQty = CatchWeightHelper.extractQtys(huContext, ProductId.ofRepoId(trxLine.getM_Product_ID()), qtyPicked, vhu);
 
 		//
 		// Link VHU to shipment schedule

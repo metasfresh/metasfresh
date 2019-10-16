@@ -1,10 +1,13 @@
 package de.metas.ordercandidate.api;
 
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -19,6 +22,8 @@ import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -49,6 +54,8 @@ import lombok.NonNull;
 @Repository
 public class OLCandRepository
 {
+	private IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
 	public OLCandSource getForProcessor(@NonNull OLCandProcessorDescriptor processor)
 	{
 		return RelationTypeOLCandSource.builder()
@@ -78,17 +85,27 @@ public class OLCandRepository
 		{
 			olCandPO.setAD_Org_ID(request.getOrgId().getRepoId());
 		}
+		final OrgId orgId = OrgId.ofRepoIdOrAny(olCandPO.getAD_Org_ID());
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
 		{
 			final BPartnerInfo bpartner = request.getBpartner();
+			final BPartnerLocationId bpartnerLocationId = bpartner.getBpartnerLocationId();
+			if (bpartnerLocationId == null)
+			{
+				throw new AdempiereException("Given OLCandCreateRequest has no BpartnerLocationId")
+						.appendParametersToMessage()
+						.setParameter("OLCandCreateRequest", request);
+			}
+
 			olCandPO.setC_BPartner_ID(BPartnerId.toRepoId(bpartner.getBpartnerId()));
-			olCandPO.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartner.getBpartnerLocationId()));
+			olCandPO.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartnerLocationId));
 			olCandPO.setAD_User_ID(BPartnerContactId.toRepoId(bpartner.getContactId()));
 		}
 
 		if (request.getBillBPartner() != null)
 		{
-			BPartnerInfo bpartner = request.getBillBPartner();
+			final BPartnerInfo bpartner = request.getBillBPartner();
 			olCandPO.setBill_BPartner_ID(BPartnerId.toRepoId(bpartner.getBpartnerId()));
 			olCandPO.setBill_Location_ID(BPartnerLocationId.toRepoId(bpartner.getBpartnerLocationId()));
 			olCandPO.setBill_User_ID(BPartnerContactId.toRepoId(bpartner.getContactId()));
@@ -117,7 +134,9 @@ public class OLCandRepository
 
 		olCandPO.setDateCandidate(SystemTime.asDayTimestamp());
 		olCandPO.setDateOrdered(TimeUtil.asTimestamp(request.getDateOrdered()));
-		olCandPO.setDatePromised(TimeUtil.asTimestamp(request.getDateRequired()));
+		olCandPO.setDatePromised(TimeUtil.asTimestamp(request.getDateRequired()
+				.atTime(LocalTime.MAX)
+				.atZone(timeZone)));
 
 		olCandPO.setPresetDateInvoiced(TimeUtil.asTimestamp(request.getPresetDateInvoiced()));
 		olCandPO.setC_DocTypeInvoice_ID(DocTypeId.toRepoId(request.getDocTypeInvoiceId()));

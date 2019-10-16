@@ -37,11 +37,11 @@ public interface IStringExpression extends IExpression<String>
 	 * @param expressionStr
 	 * @return compiled expression
 	 */
-	public static IStringExpression compile(final String expressionStr)
+	static IStringExpression compile(final String expressionStr)
 	{
 		return StringExpressionCompiler.instance.compile(expressionStr);
 	}
-	
+
 	/**
 	 * Compiles given string expression
 	 * 
@@ -52,7 +52,7 @@ public interface IStringExpression extends IExpression<String>
 	 * @param expressionStr The expression to be compiled
 	 * @return compiled expression or <code>defaultExpression</code>
 	 */
-	public static IStringExpression compileOrDefault(final String expressionStr, IStringExpression defaultExpression)
+	static IStringExpression compileOrDefault(final String expressionStr, IStringExpression defaultExpression)
 	{
 		return StringExpressionCompiler.instance.compileOrDefault(expressionStr, defaultExpression);
 	}
@@ -62,7 +62,7 @@ public interface IStringExpression extends IExpression<String>
 	 * 
 	 * @return composer
 	 */
-	public static CompositeStringExpression.Builder composer()
+	static CompositeStringExpression.Builder composer()
 	{
 		return CompositeStringExpression.builder();
 	}
@@ -70,7 +70,7 @@ public interface IStringExpression extends IExpression<String>
 	/**
 	 * Returns a {@code Collector} that concatenates the input string expressions, separated by the specified delimiter, in encounter order.
 	 */
-	public static Collector<IStringExpression, ?, IStringExpression> collectJoining(final String delimiter)
+	static Collector<IStringExpression, ?, IStringExpression> collectJoining(final String delimiter)
 	{
 		final Supplier<List<IStringExpression>> supplier = ArrayList::new;
 		final BiConsumer<List<IStringExpression>, IStringExpression> accumulator = (list, item) -> list.add(item);
@@ -96,7 +96,7 @@ public interface IStringExpression extends IExpression<String>
 	{
 		return String.class;
 	}
-		
+
 	default boolean requiresParameter(final String parameterName)
 	{
 		return getParameterNames().contains(parameterName);
@@ -148,9 +148,12 @@ public interface IStringExpression extends IExpression<String>
 				.replace("\r", "")
 				.replace("\n", "");
 	}
-	
+
 	default CompositeStringExpression.Builder toComposer()
 	{
 		return composer().append(this);
 	}
+
+	@Override
+	String evaluate(final Evaluatee ctx, final OnVariableNotFound onVariableNotFound) throws ExpressionEvaluationException;
 }

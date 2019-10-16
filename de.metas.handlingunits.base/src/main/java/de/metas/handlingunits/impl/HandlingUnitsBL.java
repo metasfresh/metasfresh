@@ -75,7 +75,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public List<I_M_HU> getByIds(@NonNull final Set<HuId> huIds)
+	public List<I_M_HU> getByIds(@NonNull final Collection<HuId> huIds)
 	{
 		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 		return handlingUnitsRepo.getByIds(huIds);

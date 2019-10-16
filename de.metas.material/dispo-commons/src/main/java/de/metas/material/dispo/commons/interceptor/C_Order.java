@@ -7,6 +7,10 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
+import de.metas.material.event.ModelProductDescriptorExtractor;
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -30,6 +34,18 @@ import org.springframework.stereotype.Component;
 @Component
 public class C_Order
 {
+	private final OrderAvailableToPromiseTool orderAvailableToPromiseTool;
+
+	public C_Order(
+			@NonNull final AvailableToPromiseRepository stockRepository,
+			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
+	{
+		orderAvailableToPromiseTool = OrderAvailableToPromiseTool.builder()
+				.stockRepository(stockRepository)
+				.productDescriptorFactory(productDescriptorFactory)
+				.build();
+	}
+
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
 	public void updateQtyAvailableToPromise(final I_C_Order orderRecord)
 	{
@@ -37,7 +53,7 @@ public class C_Order
 		{
 			return; // as of now, ATP values are only of interest for the sales side
 		}
-		OrderAvailableToPromiseTool.updateOrderLineRecords(orderRecord);
+		orderAvailableToPromiseTool.updateOrderLineRecords(orderRecord);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
@@ -47,7 +63,7 @@ public class C_Order
 		{
 			return; // as of now, ATP values are only of interest for the sales side
 		}
-		OrderAvailableToPromiseTool.resetQtyAvailableToPromise(orderRecord);
+		orderAvailableToPromiseTool.resetQtyAvailableToPromise(orderRecord);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = { I_C_Order.COLUMNNAME_PreparationDate })
@@ -57,6 +73,6 @@ public class C_Order
 		{
 			return; // as of now, ATP values are only of interest for the sales side
 		}
-		OrderAvailableToPromiseTool.updateOrderLineRecords(orderRecord);
+		orderAvailableToPromiseTool.updateOrderLineRecords(orderRecord);
 	}
 }

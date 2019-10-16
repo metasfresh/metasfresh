@@ -25,10 +25,9 @@ import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
@@ -77,17 +76,14 @@ import de.metas.util.time.SystemTime;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class CandiateRepositoryRetrievalTests
 {
-	/** Watches the current tests and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
 	private RepositoryTestHelper repositoryTestHelper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

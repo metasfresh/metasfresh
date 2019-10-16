@@ -853,7 +853,7 @@ public class CalloutOrder extends CalloutEngine
 
 		//
 		// Charge: reset
-		orderLine.setC_Charge(null);
+		orderLine.setC_Charge_ID(-1);
 
 		//
 		// UOMs: reset them to avoid UOM conversion errors between previous UOM and current product's UOMs (see FRESH-936 #69)
@@ -895,7 +895,7 @@ public class CalloutOrder extends CalloutEngine
 		// No Product defined
 		if (orderLine.getM_Product_ID() > 0)
 		{
-			orderLine.setC_Charge(null);
+			orderLine.setC_Charge_ID(-1);
 			throw new AdempiereException("ChargeExclusively");
 		}
 		orderLine.setM_AttributeSetInstance(null);

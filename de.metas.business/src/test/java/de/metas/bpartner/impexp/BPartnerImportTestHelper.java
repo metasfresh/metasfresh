@@ -8,6 +8,12 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_I_BPartner;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Services;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -50,7 +56,9 @@ import lombok.experimental.UtilityClass;
 
 	public static void assertBPartnerImported(final I_I_BPartner ibpartner)
 	{
-		final I_C_BPartner bpartner = ibpartner.getC_BPartner();
+		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
+		final I_C_BPartner bpartner = partnerDAO.getById(BPartnerId.ofRepoId(ibpartner.getC_BPartner_ID()));
 		assertThat(bpartner).isNotNull();
 		assertThat(bpartner.getValue()).isNotNull();
 		assertThat(bpartner.getName()).isNotNull();
@@ -60,7 +68,10 @@ import lombok.experimental.UtilityClass;
 
 	public static void assertLocationImported(final I_I_BPartner ibpartner)
 	{
-		final I_C_BPartner_Location bplocation = ibpartner.getC_BPartner_Location();
+
+		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
+		final I_C_BPartner_Location bplocation = partnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(ibpartner.getC_BPartner_ID(), ibpartner.getC_BPartner_Location_ID()));
 		assertThat(bplocation).isNotNull();
 		assertThat(bplocation.getC_Location_ID()).isGreaterThan(0);
 		assertThat(bplocation.isBillToDefault()).isEqualTo(ibpartner.isBillToDefault());
@@ -86,7 +97,9 @@ import lombok.experimental.UtilityClass;
 
 	public static void assertContactImported(final I_I_BPartner ibpartner)
 	{
-		final I_AD_User user = ibpartner.getAD_User();
+		final IUserDAO userDAO = Services.get(IUserDAO.class);
+
+		final I_AD_User user = userDAO.getById(UserId.ofRepoIdOrNull(ibpartner.getAD_User_ID()));
 		assertThat(user).isNotNull();
 		assertThat(user.getLastname()).isEqualTo(ibpartner.getLastname());
 		assertThat(user.getFirstname()).isEqualTo(ibpartner.getFirstname());

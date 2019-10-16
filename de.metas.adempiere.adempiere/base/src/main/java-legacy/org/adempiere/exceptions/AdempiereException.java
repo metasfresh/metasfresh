@@ -168,6 +168,19 @@ public class AdempiereException extends RuntimeException
 			return cause;
 		}
 
+		if (cause instanceof NullPointerException)
+		{
+			return cause;
+		}
+		if (cause instanceof IllegalArgumentException)
+		{
+			return cause;
+		}
+		if (cause instanceof IllegalStateException)
+		{
+			return cause;
+		}
+
 		if (throwable instanceof InvocationTargetException)
 		{
 			return cause;

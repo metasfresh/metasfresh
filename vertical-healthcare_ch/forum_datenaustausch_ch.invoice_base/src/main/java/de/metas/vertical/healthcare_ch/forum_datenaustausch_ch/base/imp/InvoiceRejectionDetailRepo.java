@@ -1,5 +1,6 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice_Rejection_Detail;
 import org.springframework.stereotype.Repository;
@@ -63,7 +64,16 @@ public class InvoiceRejectionDetailRepo
 		rejectionDetail.setResponsiblePerson(response.getResponsiblePerson());
 		rejectionDetail.setPhone(response.getPhone());
 		rejectionDetail.setEMail(response.getEmail());
-		rejectionDetail.setStatus(Status.toStringOrNull(response.getStatus()));
+
+		final Status status = response.getStatus();
+		if (status == null)
+		{
+			throw new AdempiereException("The given response has no status. Probably support for this type of response is not implemented yet")
+					.appendParametersToMessage()
+					.setParameter("response", response);
+		}
+		rejectionDetail.setStatus(status.name());
+
 		rejectionDetail.setAD_Org_ID(response.getBillerOrg());
 
 		return rejectionDetail;

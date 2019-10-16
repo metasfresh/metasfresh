@@ -19,10 +19,10 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableList;
 
@@ -47,7 +47,6 @@ import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
 import lombok.NonNull;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -71,12 +70,9 @@ import mockit.Mocked;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class DDOrderAdvisedHandlerTests
 {
-	/** Watches the current tests and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
 	public static final Instant t0 = NOW;
 
 	private static final Instant t1 = t0.plus(10, ChronoUnit.MINUTES);
@@ -109,21 +105,18 @@ public class DDOrderAdvisedHandlerTests
 
 	private DDOrderAdvisedHandler ddOrderAdvisedHandler;
 
-	@Mocked
-	private PostMaterialEventService postMaterialEventService;
-
-	private AvailableToPromiseRepository availableToPromiseRepository;
-
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
 		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
 		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService();
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
-		availableToPromiseRepository = new AvailableToPromiseRepository();
+		final AvailableToPromiseRepository availableToPromiseRepository = new AvailableToPromiseRepository();
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepository,
 				candidateRepositoryCommands);
@@ -219,7 +212,7 @@ public class DDOrderAdvisedHandlerTests
 
 		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
 		assertThat(demandRecord.getDateProjected()).isEqualTo(TimeUtil.asTimestamp(t1));
-		//assertThat(demandRecord.getMD_Candidate_Parent_ID()).isEqualTo(supplyRecord.getMD_Candidate_ID()); // demandRecord shall have supplyRecord as its parent
+		// assertThat(demandRecord.getMD_Candidate_Parent_ID()).isEqualTo(supplyRecord.getMD_Candidate_ID()); // demandRecord shall have supplyRecord as its parent
 		assertThat(demandRecord.getM_Warehouse_ID()).isEqualTo(fromWarehouseId.getRepoId());
 		assertThat(demandRecord.getQty()).isEqualByComparingTo(BigDecimal.TEN);
 
@@ -252,7 +245,6 @@ public class DDOrderAdvisedHandlerTests
 	{
 		perform_twoAdvisedEvents(ddOrderAdvisedHandler);
 	}
-
 
 	/**
 	 * I moved this into a static method because i want to use the code to set the stage for other tests.
@@ -328,7 +320,7 @@ public class DDOrderAdvisedHandlerTests
 
 		assertThat(DispoTestUtils.filter(CandidateType.DEMAND, t1)).hasSize(1);
 		final I_MD_Candidate t1Demand = DispoTestUtils.filter(CandidateType.DEMAND, t1).get(0);
-		//assertThat(t1Demand.getMD_Candidate_Parent_ID()).isEqualTo(t2Supply.getMD_Candidate_ID()); // t1Demand => t2Supply
+		// assertThat(t1Demand.getMD_Candidate_Parent_ID()).isEqualTo(t2Supply.getMD_Candidate_ID()); // t1Demand => t2Supply
 		assertThat(t1Demand.getMD_Candidate_GroupId()).isEqualTo(t2Supply.getMD_Candidate_GroupId()); // t2Demand and t3Suppy belong to the same group
 		assertThat(t1Demand.getQty()).isEqualByComparingTo(BigDecimal.TEN);
 

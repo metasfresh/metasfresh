@@ -77,7 +77,7 @@ final class ProductPriceMasterDataProvider
 			}
 		}
 
-		final CountryId countryId = bpartnersRepo.retrieveBPartnerLocationCountryId(bpartnerAndLocationId);
+		final CountryId countryId = bpartnersRepo.retrieveBPartnerLocationCountryIdInTrx(bpartnerAndLocationId);
 
 		final PriceListsCollection priceLists = priceListsRepo.retrievePriceListsCollectionByPricingSystemId(pricingSystemId);
 		final I_M_PriceList priceList = priceLists.getPriceList(countryId, soTrx).orElse(null);

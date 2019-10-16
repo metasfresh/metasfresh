@@ -1,27 +1,11 @@
 package de.metas.handlingunits.expiry;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IMutableHUContext;
-import de.metas.handlingunits.attribute.HUAttributeConstants;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.logging.LogManager;
-import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -50,9 +34,8 @@ import lombok.NonNull;
 @Service
 public class HUWithExpiryDatesService
 {
-
-	private static final Logger logger = LogManager.getLogger(HUWithExpiryDatesService.class);
-
+	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final HUWithExpiryDatesRepository huWithExpiryDatesRepository;
 
 	public HUWithExpiryDatesService(@NonNull final HUWithExpiryDatesRepository huWithExpiryDatesRepository)
@@ -60,63 +43,26 @@ public class HUWithExpiryDatesService
 		this.huWithExpiryDatesRepository = huWithExpiryDatesRepository;
 	}
 
-	public void markExpiredWhereWarnDateExceeded(@NonNull final LocalDateTime expiredWarnDate)
+	public MarkExpiredWhereWarnDateExceededResult markExpiredWhereWarnDateExceeded(@NonNull final LocalDate today)
 	{
-		huWithExpiryDatesRepository.getByWarnDateExceeded(expiredWarnDate)
-				.map(HUWithExpiryDates::getHuId)
-				.forEach(this::markExpiredInOwnTrx);
+		return MarkExpiredWhereWarnDateExceededCommand.builder()
+				.huWithExpiryDatesRepository(huWithExpiryDatesRepository)
+				.handlingUnitsBL(handlingUnitsBL)
+				.huTrxBL(huTrxBL)
+				//
+				.today(today)
+				//
+				.execute();
 	}
 
-	private void markExpiredInOwnTrx(@NonNull final HuId huId)
+	public UpdateMonthsUntilExpiryResult updateMonthsUntilExpiry(@NonNull final LocalDate today)
 	{
-		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-		huTrxBL.process(huContext -> {
-			try
-			{
-				markExpiredUsingHuContext(huId, huContext);
-				Loggables.addLog("Successfully processed M_HU_ID={}", huId);
-			}
-			catch (final AdempiereException ex)
-			{
-				Loggables.addLog("!!! Failed processing M_HU_ID={}: {} !!!", huId, ex.getLocalizedMessage());
-				logger.warn("Failed processing M_HU_ID={}. Skipped", huId, ex);
-			}
-		});
-	}
-
-	public void markExpiredIfWarnDateExceeded(@NonNull final HuId huId)
-	{
-		final LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
-		final HUWithExpiryDates huWithExpiryDates = huWithExpiryDatesRepository.getByIdIfWarnDateExceededOrNull(huId, startOfToday);
-		if (huWithExpiryDates == null)
-		{
-			return;
-		}
-
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext(Env.getCtx());
-		markExpiredUsingHuContext(huId, huContext);
-	}
-
-	private void markExpiredUsingHuContext(
-			@NonNull final HuId huId,
-			@NonNull final IHUContext huContext)
-	{
-		final I_M_HU hu = load(huId, I_M_HU.class);
-
-		final IAttributeStorage huAttributes = huContext
-				.getHUAttributeStorageFactory()
-				.getAttributeStorage(hu);
-
-		huAttributes.setSaveOnChange(true);
-
-		final I_M_Attribute huExpiredAttribute = retrieveHU_Expired_Attribute();
-		huAttributes.setValue(huExpiredAttribute, HUAttributeConstants.ATTR_Expired_Value_Expired);
-	}
-
-	private I_M_Attribute retrieveHU_Expired_Attribute()
-	{
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		return attributeDAO.retrieveAttributeByValue(HUAttributeConstants.ATTR_Expired); // this is cached
+		return UpdateMonthsUntilExpiryCommand.builder()
+				.huWithExpiryDatesRepository(huWithExpiryDatesRepository)
+				.handlingUnitsBL(handlingUnitsBL)
+				//
+				.today(today)
+				//
+				.execute();
 	}
 }

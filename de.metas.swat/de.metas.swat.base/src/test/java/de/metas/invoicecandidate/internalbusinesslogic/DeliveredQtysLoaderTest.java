@@ -24,9 +24,8 @@ import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
-import de.metas.product.ProductIds;
 import de.metas.uom.CreateUOMConversionRequest;
-import de.metas.uom.UomIds;
+import de.metas.uom.UomId;
 import de.metas.uom.impl.UOMTestHelper;
 
 /*
@@ -89,9 +88,9 @@ class DeliveredQtysLoaderTest
 				.soTrx(SOTrx.SALES)
 				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.invoiceCandidateId(InvoiceCandidateIds.ofRecord(icRecord))
-				.icUomId(UomIds.ofRecord(icUomRecord))
-				.productId(ProductIds.ofRecord(productRecord))
-				.stockUomId(UomIds.ofRecord(stockUomRecord))
+				.icUomId(UomId.ofRepoId(icUomRecord.getC_UOM_ID()))
+				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
+				.stockUomId(UomId.ofRepoId(stockUomRecord.getC_UOM_ID()))
 				.deliveryQualityDiscount(Optional.empty())
 				.negateQtys(false)
 				.build()
@@ -102,14 +101,14 @@ class DeliveredQtysLoaderTest
 				.contains(tuple(TEN, FOUR_HUNDRET, FOUR_HUNDRET_TWENTY, null),
 						tuple(FIVE, TWO_HUNDRET, ONE_HUNDRET_NINETY, null));
 
-		assertThat(result.getShipmentData().getQtyInStockUom().getUomId()).isEqualTo(UomIds.ofRecord(stockUomRecord));
+		assertThat(result.getShipmentData().getQtyInStockUom().getUomId()).isEqualTo(UomId.ofRepoId(stockUomRecord.getC_UOM_ID()));
 		assertThat(result.getShipmentData().getQtyInStockUom().toBigDecimal()).isEqualByComparingTo("15");
 
-		assertThat(result.getShipmentData().getQtyNominal().getUomId()).isEqualTo(UomIds.ofRecord(icUomRecord));
+		assertThat(result.getShipmentData().getQtyNominal().getUomId()).isEqualTo(UomId.ofRepoId(icUomRecord.getC_UOM_ID()));
 		assertThat(result.getShipmentData().getQtyNominal().toBigDecimal()).isEqualByComparingTo("60");
 
 		assertThat(result.getShipmentData().getQtyCatch()).isNotNull();
-		assertThat(result.getShipmentData().getQtyCatch().getUomId()).isEqualTo(UomIds.ofRecord(icUomRecord));
+		assertThat(result.getShipmentData().getQtyCatch().getUomId()).isEqualTo(UomId.ofRepoId(icUomRecord.getC_UOM_ID()));
 		assertThat(result.getShipmentData().getQtyCatch().toBigDecimal()).isEqualByComparingTo("61"); // 42 + 19
 	}
 
@@ -129,8 +128,8 @@ class DeliveredQtysLoaderTest
 				.invoiceCandidateId(InvoiceCandidateIds.ofRecord(icRecord))
 				.soTrx(SOTrx.SALES)
 				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
-				.icUomId(UomIds.ofRecord(icUomRecord))
-				.stockUomId(UomIds.ofRecord(stockUomRecord))
+				.icUomId(UomId.ofRepoId(icUomRecord.getC_UOM_ID()))
+				.stockUomId(UomId.ofRepoId(stockUomRecord.getC_UOM_ID()))
 				.deliveryQualityDiscount(Optional.empty())
 				.negateQtys(false)
 				.build();
@@ -142,14 +141,14 @@ class DeliveredQtysLoaderTest
 				.contains(tuple(TEN, FOUR_HUNDRET, null, null),
 						tuple(FIVE, TWO_HUNDRET, ONE_HUNDRET_NINETY, null));
 
-		assertThat(result.getShipmentData().getQtyInStockUom().getUomId()).isEqualTo(UomIds.ofRecord(stockUomRecord));
+		assertThat(result.getShipmentData().getQtyInStockUom().getUomId()).isEqualTo(UomId.ofRepoId(stockUomRecord.getC_UOM_ID()));
 		assertThat(result.getShipmentData().getQtyInStockUom().toBigDecimal()).isEqualByComparingTo("15");
 
-		assertThat(result.getShipmentData().getQtyNominal().getUomId()).isEqualTo(UomIds.ofRecord(icUomRecord));
+		assertThat(result.getShipmentData().getQtyNominal().getUomId()).isEqualTo(UomId.ofRepoId(icUomRecord.getC_UOM_ID()));
 		assertThat(result.getShipmentData().getQtyNominal().toBigDecimal()).isEqualByComparingTo("60"); // 40 + 20
 
 		assertThat(result.getShipmentData().getQtyCatch()).isNotNull();
-		assertThat(result.getShipmentData().getQtyCatch().getUomId()).isEqualTo(UomIds.ofRecord(icUomRecord));
+		assertThat(result.getShipmentData().getQtyCatch().getUomId()).isEqualTo(UomId.ofRepoId(icUomRecord.getC_UOM_ID()));
 		assertThat(result.getShipmentData().getQtyCatch().toBigDecimal()).isEqualByComparingTo("19"); // null + 19
 	}
 
@@ -171,8 +170,8 @@ class DeliveredQtysLoaderTest
 				.invoiceCandidateId(InvoiceCandidateIds.ofRecord(icRecord))
 				.soTrx(SOTrx.SALES)
 				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
-				.icUomId(UomIds.ofRecord(icUomRecord))
-				.stockUomId(UomIds.ofRecord(stockUomRecord))
+				.icUomId(UomId.ofRepoId(icUomRecord.getC_UOM_ID()))
+				.stockUomId(UomId.ofRepoId(stockUomRecord.getC_UOM_ID()))
 				.deliveryQualityDiscount(Optional.empty())
 				.negateQtys(false)
 				.build();
@@ -184,10 +183,10 @@ class DeliveredQtysLoaderTest
 				.contains(tuple(TEN, FOUR_HUNDRET, null, null),
 						tuple(FIVE, TWO_HUNDRET, null, null));
 
-		assertThat(result.getShipmentData().getQtyInStockUom().getUomId()).isEqualTo(UomIds.ofRecord(stockUomRecord));
+		assertThat(result.getShipmentData().getQtyInStockUom().getUomId()).isEqualTo(UomId.ofRepoId(stockUomRecord.getC_UOM_ID()));
 		assertThat(result.getShipmentData().getQtyInStockUom().toBigDecimal()).isEqualByComparingTo("15");
 
-		assertThat(result.getShipmentData().getQtyNominal().getUomId()).isEqualTo(UomIds.ofRecord(icUomRecord));
+		assertThat(result.getShipmentData().getQtyNominal().getUomId()).isEqualTo(UomId.ofRepoId(icUomRecord.getC_UOM_ID()));
 		assertThat(result.getShipmentData().getQtyNominal().toBigDecimal()).isEqualByComparingTo("60"); // 40 + 20
 
 		assertThat(result.getShipmentData().getQtyCatch()).isNull();
@@ -206,9 +205,9 @@ class DeliveredQtysLoaderTest
 		final DeliveredDataLoader deliveredQtysLoader = DeliveredDataLoader.builder()
 				.invoiceCandidateId(InvoiceCandidateIds.ofRecord(icRecord))
 				.soTrx(SOTrx.SALES)
-				.productId(ProductIds.ofRecord(productRecord))
-				.icUomId(UomIds.ofRecord(icUomRecord))
-				.stockUomId(UomIds.ofRecord(stockUomRecord))
+				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
+				.icUomId(UomId.ofRepoId(icUomRecord.getC_UOM_ID()))
+				.stockUomId(UomId.ofRepoId(stockUomRecord.getC_UOM_ID()))
 				.deliveryQualityDiscount(Optional.empty())
 				.negateQtys(false)
 				.build();
@@ -220,14 +219,14 @@ class DeliveredQtysLoaderTest
 				.contains(tuple(TEN, FOUR_HUNDRET, null, FOUR_HUNDRET_TWENTY),
 						tuple(FIVE, TWO_HUNDRET, ONE_HUNDRET_NINETY, null));
 
-		assertThat(result.getShipmentData().getQtyInStockUom().getUomId()).isEqualTo(UomIds.ofRecord(stockUomRecord));
+		assertThat(result.getShipmentData().getQtyInStockUom().getUomId()).isEqualTo(UomId.ofRepoId(stockUomRecord.getC_UOM_ID()));
 		assertThat(result.getShipmentData().getQtyInStockUom().toBigDecimal()).isEqualByComparingTo("15");
 
-		assertThat(result.getShipmentData().getQtyNominal().getUomId()).isEqualTo(UomIds.ofRecord(icUomRecord));
+		assertThat(result.getShipmentData().getQtyNominal().getUomId()).isEqualTo(UomId.ofRepoId(icUomRecord.getC_UOM_ID()));
 		assertThat(result.getShipmentData().getQtyNominal().toBigDecimal()).isEqualByComparingTo("62"); // the override-qty we set for icIol1 also overrides the nomimal qty
 
 		assertThat(result.getShipmentData().getQtyCatch()).isNotNull();
-		assertThat(result.getShipmentData().getQtyCatch().getUomId()).isEqualTo(UomIds.ofRecord(icUomRecord));
+		assertThat(result.getShipmentData().getQtyCatch().getUomId()).isEqualTo(UomId.ofRepoId(icUomRecord.getC_UOM_ID()));
 		assertThat(result.getShipmentData().getQtyCatch().toBigDecimal()).isEqualByComparingTo("61"); // 42 + 19
 	}
 
@@ -244,9 +243,9 @@ class DeliveredQtysLoaderTest
 		final DeliveredDataLoader deliveredQtysLoader = DeliveredDataLoader.builder()
 				.invoiceCandidateId(InvoiceCandidateIds.ofRecord(icRecord))
 				.soTrx(SOTrx.SALES)
-				.productId(ProductIds.ofRecord(productRecord))
-				.icUomId(UomIds.ofRecord(icUomRecord))
-				.stockUomId(UomIds.ofRecord(stockUomRecord))
+				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
+				.icUomId(UomId.ofRepoId(icUomRecord.getC_UOM_ID()))
+				.stockUomId(UomId.ofRepoId(stockUomRecord.getC_UOM_ID()))
 				.deliveryQualityDiscount(Optional.empty())
 				.negateQtys(true)
 				.build();
@@ -258,14 +257,14 @@ class DeliveredQtysLoaderTest
 				.contains(tuple(TEN.negate(), FOUR_HUNDRET.negate(), null, FOUR_HUNDRET_TWENTY.negate()),
 						tuple(FIVE.negate(), TWO_HUNDRET.negate(), ONE_HUNDRET_NINETY.negate(), null));
 
-		assertThat(result.getShipmentData().getQtyInStockUom().getUomId()).isEqualTo(UomIds.ofRecord(stockUomRecord));
+		assertThat(result.getShipmentData().getQtyInStockUom().getUomId()).isEqualTo(UomId.ofRepoId(stockUomRecord.getC_UOM_ID()));
 		assertThat(result.getShipmentData().getQtyInStockUom().toBigDecimal()).isEqualByComparingTo("-15");
 
-		assertThat(result.getShipmentData().getQtyNominal().getUomId()).isEqualTo(UomIds.ofRecord(icUomRecord));
+		assertThat(result.getShipmentData().getQtyNominal().getUomId()).isEqualTo(UomId.ofRepoId(icUomRecord.getC_UOM_ID()));
 		assertThat(result.getShipmentData().getQtyNominal().toBigDecimal()).isEqualByComparingTo("-62"); // the override-qty we set for icIol1 also overrides the nomimal qty
 
 		assertThat(result.getShipmentData().getQtyCatch()).isNotNull();
-		assertThat(result.getShipmentData().getQtyCatch().getUomId()).isEqualTo(UomIds.ofRecord(icUomRecord));
+		assertThat(result.getShipmentData().getQtyCatch().getUomId()).isEqualTo(UomId.ofRepoId(icUomRecord.getC_UOM_ID()));
 		assertThat(result.getShipmentData().getQtyCatch().toBigDecimal()).isEqualByComparingTo("-61"); // 42 + 19
 	}
 
@@ -302,9 +301,9 @@ class DeliveredQtysLoaderTest
 		saveRecord(shipmentUomRecord);
 
 		uomConversionHelper.createUOMConversion(CreateUOMConversionRequest.builder()
-				.fromUomId(UomIds.ofRecord(icUomRecord))
-				.toUomId(UomIds.ofRecord(shipmentUomRecord))
-				.productId(ProductIds.ofRecord(productRecord))
+				.fromUomId(UomId.ofRepoId(icUomRecord.getC_UOM_ID()))
+				.toUomId(UomId.ofRepoId(shipmentUomRecord.getC_UOM_ID()))
+				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.fromToMultiplier(TEN)
 				.toFromMultiplier(new BigDecimal("0.1"))
 				.build());

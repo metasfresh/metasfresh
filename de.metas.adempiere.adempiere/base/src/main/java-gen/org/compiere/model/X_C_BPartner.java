@@ -15,7 +15,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -365132164L;
+	private static final long serialVersionUID = -1389553180L;
 
     /** Standard Constructor */
     public X_C_BPartner (Properties ctx, int C_BPartner_ID, String trxName)
@@ -372,18 +372,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class);
-	}
-
-	@Override
-	public void setC_PaymentTerm(org.compiere.model.I_C_PaymentTerm C_PaymentTerm)
-	{
-		set_ValueFromPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class, C_PaymentTerm);
 	}
 
 	/** Set Zahlungsbedingung.
@@ -978,19 +966,19 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	/** Set Global ID.
-		@param globalid Global ID	  */
+		@param GlobalId Global ID	  */
 	@Override
-	public void setglobalid (java.lang.String globalid)
+	public void setGlobalId (java.lang.String GlobalId)
 	{
-		set_Value (COLUMNNAME_globalid, globalid);
+		set_Value (COLUMNNAME_GlobalId, GlobalId);
 	}
 
 	/** Get Global ID.
 		@return Global ID	  */
 	@Override
-	public java.lang.String getglobalid () 
+	public java.lang.String getGlobalId () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_globalid);
+		return (java.lang.String)get_Value(COLUMNNAME_GlobalId);
 	}
 
 	@Override
@@ -1109,16 +1097,19 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return false;
 	}
 
-	/** Set Preise mutieren.
-		@param IsAllowPriceMutation Preise mutieren	  */
+	/** Set PLV von Basis.
+		@param IsAllowPriceMutation 
+		Von Basis derivierte PLV erlauben 
+	  */
 	@Override
 	public void setIsAllowPriceMutation (boolean IsAllowPriceMutation)
 	{
 		set_Value (COLUMNNAME_IsAllowPriceMutation, Boolean.valueOf(IsAllowPriceMutation));
 	}
 
-	/** Get Preise mutieren.
-		@return Preise mutieren	  */
+	/** Get PLV von Basis.
+		@return Von Basis derivierte PLV erlauben 
+	  */
 	@Override
 	public boolean isAllowPriceMutation () 
 	{
@@ -2123,18 +2114,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_PaymentTerm getPO_PaymentTerm()
-	{
-		return get_ValueAsPO(COLUMNNAME_PO_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class);
-	}
-
-	@Override
-	public void setPO_PaymentTerm(org.compiere.model.I_C_PaymentTerm PO_PaymentTerm)
-	{
-		set_ValueFromPO(COLUMNNAME_PO_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class, PO_PaymentTerm);
-	}
-
 	/** Set Zahlungskondition.
 		@param PO_PaymentTerm_ID 
 		Payment rules for a purchase order
@@ -2628,6 +2607,32 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * ShipmentAllocation_BestBefore_Policy AD_Reference_ID=541043
+	 * Reference name: ShipmentAllocation_BestBefore_Policy
+	 */
+	public static final int SHIPMENTALLOCATION_BESTBEFORE_POLICY_AD_Reference_ID=541043;
+	/** Newest_First = N */
+	public static final String SHIPMENTALLOCATION_BESTBEFORE_POLICY_Newest_First = "N";
+	/** Expiring_First = E */
+	public static final String SHIPMENTALLOCATION_BESTBEFORE_POLICY_Expiring_First = "E";
+	/** Set Zuordnung Mindesthaltbarkeit.
+		@param ShipmentAllocation_BestBefore_Policy Zuordnung Mindesthaltbarkeit	  */
+	@Override
+	public void setShipmentAllocation_BestBefore_Policy (java.lang.String ShipmentAllocation_BestBefore_Policy)
+	{
+
+		set_Value (COLUMNNAME_ShipmentAllocation_BestBefore_Policy, ShipmentAllocation_BestBefore_Policy);
+	}
+
+	/** Get Zuordnung Mindesthaltbarkeit.
+		@return Zuordnung Mindesthaltbarkeit	  */
+	@Override
+	public java.lang.String getShipmentAllocation_BestBefore_Policy () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ShipmentAllocation_BestBefore_Policy);
 	}
 
 	/** Set Short Description.

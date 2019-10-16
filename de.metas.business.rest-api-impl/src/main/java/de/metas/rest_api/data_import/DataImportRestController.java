@@ -17,10 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import de.metas.Profiles;
-import de.metas.impexp.DataImportConfig;
 import de.metas.impexp.DataImportRequest;
 import de.metas.impexp.DataImportResult;
 import de.metas.impexp.DataImportService;
+import de.metas.impexp.config.DataImportConfig;
 import de.metas.logging.LogManager;
 import de.metas.util.rest.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
@@ -62,14 +62,14 @@ public class DataImportRestController
 		this.dataImportService = dataImportService;
 	}
 
-	@ApiOperation("Uploads a text file. This endpoint is oftentimes simpler for clients of this API than to upload a multipart file via the other endpoint.")
+	@ApiOperation("Uploads a text file. Using this endpoint is technically simpler for clients of this API than to upload a multipart file via the other endpoint.")
 	@PostMapping("/text")
 	public ResponseEntity<JsonDataImportResponseWrapper> importFile(
 			@ApiParam("Data Import internal name (i.e. `C_DataImport.InternalName`)") //
 			@RequestParam("dataImportConfig") @NonNull final String dataImportConfigInternalName,
 
-			@ApiParam("Try complete documents in case it applies") //
-			@RequestParam(name = "completeDocuments", required = false, defaultValue = "false") final boolean completeDocuments,
+			@ApiParam("Try to complete documents if it applies to the given import") //
+			@RequestParam(name = "completeDocuments", required = false, defaultValue = "true") final boolean completeDocuments,
 
 			@ApiParam("The text file you are importing") //
 			@RequestBody @NonNull final String content)
@@ -83,8 +83,8 @@ public class DataImportRestController
 			@ApiParam("Data Import internal name (i.e. `C_DataImport.InternalName`)") //
 			@RequestParam("dataImportConfig") @NonNull final String dataImportConfigInternalName,
 
-			@ApiParam("Try complete documents in case it applies") //
-			@RequestParam(name = "completeDocuments", required = false, defaultValue = "false") final boolean completeDocuments,
+			@ApiParam("Try to complete documents if it applies to the given import") //
+			@RequestParam(name = "completeDocuments", required = false, defaultValue = "true") final boolean completeDocuments,
 
 			@ApiParam("The text file you are importing") //
 			@RequestParam("file") @NonNull final MultipartFile file)

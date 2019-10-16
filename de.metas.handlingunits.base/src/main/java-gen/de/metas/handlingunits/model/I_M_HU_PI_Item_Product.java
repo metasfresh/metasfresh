@@ -41,7 +41,7 @@ public interface I_M_HU_PI_Item_Product
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -51,7 +51,7 @@ public interface I_M_HU_PI_Item_Product
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -88,31 +88,6 @@ public interface I_M_HU_PI_Item_Product
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, org.compiere.model.I_C_UOM>(I_M_HU_PI_Item_Product.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -143,6 +118,31 @@ public interface I_M_HU_PI_Item_Product
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, org.compiere.model.I_C_UOM>(I_M_HU_PI_Item_Product.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Set Beschreibung.
 	 *
 	 * <br>Type: String
@@ -164,6 +164,52 @@ public interface I_M_HU_PI_Item_Product
     public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "Description", null);
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set TU-EAN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setEAN_TU (java.lang.String EAN_TU);
+
+	/**
+	 * Get TU-EAN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getEAN_TU();
+
+    /** Column definition for EAN_TU */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_EAN_TU = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "EAN_TU", null);
+    /** Column name EAN_TU */
+    public static final String COLUMNNAME_EAN_TU = "EAN_TU";
+
+	/**
+	 * Set GTIN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setGTIN (java.lang.String GTIN);
+
+	/**
+	 * Get GTIN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getGTIN();
+
+    /** Column definition for GTIN */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_GTIN = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "GTIN", null);
+    /** Column name GTIN */
+    public static final String COLUMNNAME_GTIN = "GTIN";
 
 	/**
 	 * Set Aktiv.
@@ -360,29 +406,27 @@ public interface I_M_HU_PI_Item_Product
     public static final String COLUMNNAME_Qty = "Qty";
 
 	/**
-	 * Set UPC/EAN.
-	 * Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
+	 * Set TU-UPC.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setUPC (java.lang.String UPC);
+	public void setUPC_TU (java.lang.String UPC_TU);
 
 	/**
-	 * Get UPC/EAN.
-	 * Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
+	 * Get TU-UPC.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getUPC();
+	public java.lang.String getUPC_TU();
 
-    /** Column definition for UPC */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_UPC = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "UPC", null);
-    /** Column name UPC */
-    public static final String COLUMNNAME_UPC = "UPC";
+    /** Column definition for UPC_TU */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_UPC_TU = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "UPC_TU", null);
+    /** Column name UPC_TU */
+    public static final String COLUMNNAME_UPC_TU = "UPC_TU";
 
 	/**
 	 * Get Aktualisiert.

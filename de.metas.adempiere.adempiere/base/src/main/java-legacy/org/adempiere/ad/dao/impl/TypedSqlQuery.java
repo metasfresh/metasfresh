@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -1298,22 +1299,25 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	public String toString()
 	{
+		final StringBuilder selectClause = new StringBuilder("SELECT *");
+		final StringBuilder fromClause = null;
+		final boolean useOrderByClause = true;
+		String sql = buildSQL(
+				selectClause,
+				fromClause,
+				useOrderByClause);
+
+		final List<Object> sqlParams = getParametersEffective();
+		if (!sqlParams.isEmpty())
+		{
+			final String sqlParamsAsString = sqlParams.stream()
+					.map(DB::TO_SQL)
+					.collect(Collectors.joining(", "));
+			sql += "\n -- " + sqlParamsAsString;
+		}
+
 		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("tableName", tableName)
-				.add("whereClause", whereClause)
-				.add("SqlFrom", this.sqlFrom)
-				.add("postQueryFilter", postQueryFilter)
-				.add("unions", unions != null && !unions.isEmpty() ? unions : null)
-				.add("parameters", parameters != null && !parameters.isEmpty() ? parameters : null)
-				.add("limit", limit > 0 ? limit : null)
-				.add("offset", offset > 0 ? offset : null)
-				.add("trxName", trxName)
-				.add("requiredAccess", requiredAccess)
-				.add("onlyActiveRecords", onlyActiveRecords ? Boolean.TRUE : null)
-				.add("onlySelectionId", onlySelectionId)
-				.add("notInSelectionId", notInSelectionId)
-				.add("options", options != null && !options.isEmpty() ? options : null)
+				.addValue(sql)
 				.toString();
 	}
 

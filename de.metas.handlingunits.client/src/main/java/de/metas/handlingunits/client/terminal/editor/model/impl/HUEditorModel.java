@@ -1241,7 +1241,7 @@ public class HUEditorModel implements IDisposable
 	{
 		for (final HUKey huKey : getSelectedHUKeys())
 		{
-			final IQualityInspectionSchedulable qualityInspectionAware = huKey.asQualityInspectionSchedulable().orNull();
+			final IQualityInspectionSchedulable qualityInspectionAware = huKey.asQualityInspectionSchedulable().orElse(null);
 			if (qualityInspectionAware == null)
 			{
 				// skip because it's not supported

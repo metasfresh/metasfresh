@@ -13,19 +13,19 @@ package de.metas.edi.process;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
 
-import de.metas.adempiere.form.IClientUI;
+import org.adempiere.exceptions.AdempiereException;
+
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.process.export.IExport;
@@ -43,6 +43,9 @@ public class EDIExport extends JavaProcess
 {
 	private int recordId = -1;
 
+	// Services
+	private final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
+
 	@Override
 	protected void prepare()
 	{
@@ -52,23 +55,22 @@ public class EDIExport extends JavaProcess
 	@Override
 	protected String doIt()
 	{
-		//
-		// Services
-		final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
 
-		final IExport<? extends I_EDI_Document> export = ediDocumentBL.createExport(getCtx(), getAD_Client_ID(), getTable_ID(), recordId, get_TrxName());
-		final List<Exception> feedback = export.createExport();
+		final IExport<? extends I_EDI_Document> export = ediDocumentBL.createExport(
+				getCtx(),
+				getClientID(),
+				getTable_ID(),
+				recordId,
+				get_TrxName());
+		final List<Exception> feedback = export.doExport();
 		if (feedback == null || feedback.isEmpty())
 		{
-			return "OK";
+			return MSG_OK;
 		}
 
-		final int windowNo = getProcessInfo().getWindowNo();
 		final String errorTitle = buildAndTrlTitle(export.getTableIdentifier(), export.getDocument());
 		final String errorMessage = ediDocumentBL.buildFeedback(feedback);
-		Services.get(IClientUI.class).warn(windowNo, errorTitle, errorMessage);
-
-		return "Error";
+		throw new AdempiereException(errorTitle + "\n" + errorMessage).markAsUserValidationError();
 	}
 
 	private String buildAndTrlTitle(final String tableNameIdentifier, final I_EDI_Document document)

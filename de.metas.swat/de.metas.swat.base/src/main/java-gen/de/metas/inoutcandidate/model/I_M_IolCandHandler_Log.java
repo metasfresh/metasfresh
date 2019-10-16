@@ -41,7 +41,7 @@ public interface I_M_IolCandHandler_Log
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -51,7 +51,7 @@ public interface I_M_IolCandHandler_Log
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -81,10 +81,6 @@ public interface I_M_IolCandHandler_Log
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Table_ID();
-
-	public org.compiere.model.I_AD_Table getAD_Table();
-
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
 
     /** Column definition for AD_Table_ID */
     public static final org.adempiere.model.ModelColumn<I_M_IolCandHandler_Log, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<I_M_IolCandHandler_Log, org.compiere.model.I_AD_Table>(I_M_IolCandHandler_Log.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);

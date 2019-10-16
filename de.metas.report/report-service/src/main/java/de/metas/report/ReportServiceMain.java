@@ -48,17 +48,19 @@ import de.metas.util.StringUtils;
 
 @SpringBootApplication(scanBasePackages = { "de.metas" })
 @ServletComponentScan(value = { "de.metas.adempiere.report.jasper.servlet" })
-@Profile(Profiles.PROFILE_ReportService)
+@Profile(ReportServiceMain.PROFILE_JasperService_Standalone)
 public class ReportServiceMain
 {
 	@Autowired
 	private ApplicationContext applicationContext;
 
+	static final String PROFILE_JasperService_Standalone = Profiles.PROFILE_PrintService + "-standalone";
+
 	/**
 	 * By default, we run in headless mode. But using this system property, we can also run with headless=false.
 	 * The only known use of that is that metasfresh can open the initial license & connection dialog to store the initial properties file.
 	 */
-	public static final String SYSTEM_PROPERTY_HEADLESS = "app-server-run-headless";
+	static final String SYSTEM_PROPERTY_HEADLESS = "app-server-run-headless";
 
 	public static void main(final String[] args)
 	{
@@ -71,7 +73,7 @@ public class ReportServiceMain
 			new SpringApplicationBuilder(ReportServiceMain.class)
 					.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
 					.web(true)
-					.profiles(Profiles.PROFILE_ReportService)
+					.profiles(Profiles.PROFILE_PrintService, PROFILE_JasperService_Standalone)
 					.beanNameGenerator(new MetasfreshBeanNameGenerator())
 					.run(args);
 		}

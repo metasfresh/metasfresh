@@ -1,8 +1,8 @@
 package de.metas.handlingunits.materialtracking;
 
-import org.adempiere.util.lang.IContextAware;
+import java.util.Optional;
 
-import com.google.common.base.Optional;
+import org.adempiere.util.lang.IContextAware;
 
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
@@ -19,12 +19,12 @@ import de.metas.util.ISingletonService;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,7 +42,7 @@ public interface IHUMaterialTrackingBL extends ISingletonService
 
 	/**
 	 * Wraps given {@link IAttributeStorage} to {@link IQualityInspectionSchedulable} if supported.
-	 * 
+	 *
 	 * @param context
 	 * @param attributeStorage
 	 * @return optional {@link IQualityInspectionSchedulable}.
@@ -51,7 +51,7 @@ public interface IHUMaterialTrackingBL extends ISingletonService
 
 	/**
 	 * Iterates the HU-tree of the given HU and sets <code>M_HU_MAterial_Tracking_ID</code> attribute to the given value.
-	 * 
+	 *
 	 * @param hu
 	 * @param materialTracking
 	 * @param onlyHUStatus may be <code>null</code> or empty. Otherwise, only HUs with the given status are updated. However, all HUs are iterated.

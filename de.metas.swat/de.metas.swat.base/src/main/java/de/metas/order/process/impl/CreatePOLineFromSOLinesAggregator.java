@@ -117,7 +117,6 @@ public class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_O
 
 		final I_C_OrderLine purchaseOrderLine = orderLineBL.createOrderLine(purchaseOrder);
 
-		salesOrderLine.getC_Charge();
 		purchaseOrderLine.setC_Charge_ID(salesOrderLine.getC_Charge_ID());
 
 		final ProductId productId = ProductId.ofRepoIdOrNull(salesOrderLine.getM_Product_ID());

@@ -18,9 +18,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import de.metas.rest_api.SyncAdvise;
-import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkRequest;
-import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
+import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
+import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.util.JSONObjectMapper;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RequestType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.JaxbUtil;

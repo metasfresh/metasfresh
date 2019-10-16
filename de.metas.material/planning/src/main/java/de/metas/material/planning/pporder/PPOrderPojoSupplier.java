@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Product;
@@ -175,16 +176,15 @@ public class PPOrderPojoSupplier
 	 */
 	private ProductDescriptor createPPOrderProductDescriptor(final IMaterialPlanningContext mrpContext)
 	{
-		final int asiId = mrpContext.getM_AttributeSetInstance_ID();
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(mrpContext.getM_AttributeSetInstance_ID());
 		final AttributesKey attributesKey = AttributesKeys
 				.createAttributesKeyFromASIStorageAttributes(asiId)
 				.orElse(AttributesKey.NONE);
 
-		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(
+		return ProductDescriptor.forProductAndAttributes(
 				mrpContext.getM_Product_ID(),
 				attributesKey,
-				asiId);
-		return productDescriptor;
+				asiId.getRepoId());
 	}
 
 	private int calculateDurationDays(

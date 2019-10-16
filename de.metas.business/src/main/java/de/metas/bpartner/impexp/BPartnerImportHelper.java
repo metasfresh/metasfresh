@@ -1,14 +1,14 @@
 package de.metas.bpartner.impexp;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.ModelValidationEngine;
 
+import de.metas.bpartner.impexp.BPartnersCache.BPartner;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -51,100 +51,122 @@ import de.metas.util.Check;
 		return this;
 	}
 
-	public I_C_BPartner importRecord(final I_I_BPartner importRecord)
+	public void importRecord(final BPartnerImportContext context)
 	{
-		final I_C_BPartner bpartner;
+		final BPartnersCache cache = context.getBpartnersCache();
+
+		final BPartner bpartner;
 		final boolean insertMode;
-		if (importRecord.getC_BPartner_ID() <= 0)	// Insert new BPartner
+		if (!context.isCurrentBPartnerIdSet())	// Insert new BPartner
 		{
 			insertMode = true;
-			bpartner = createNewBPartner(importRecord);
+			final I_C_BPartner bpartnerRecord = createNewBPartnerNoSave(context.getCurrentImportRecord());
+			bpartner = cache.newBPartner(bpartnerRecord);
 		}
 		else
 		// Update existing BPartner
 		{
 			insertMode = false;
-			bpartner = updateExistingBPartner(importRecord);
+			bpartner = context.getCurrentBPartner();
+			updateExistingBPartnerNoSave(bpartner.getRecord(), context.getCurrentImportRecord());
 		}
 
+		//
+		updateBPartnerOnInsertOrUpdate(bpartner.getRecord(), context.getCurrentImportRecord(), insertMode);
+
+		//
+		// Update after INSERT/UPDATE
+
+		ModelValidationEngine.get().fireImportValidate(process, context.getCurrentImportRecord(), bpartner.getRecord(), IImportInterceptor.TIMING_AFTER_IMPORT);
+
+		bpartner.save();
+
+		context.setCurrentBPartnerId(bpartner.getIdOrNull());
+	}
+
+	// TODO: figure it out why this code is not part of the updateExistingBPartner
+	private static void updateBPartnerOnInsertOrUpdate(final I_C_BPartner bpartnerRecord, final I_I_BPartner importRecord, final boolean insertMode)
+	{
 		//
 		// CompanyName
 		final String companyName = importRecord.getCompanyname();
 		if (!Check.isEmpty(companyName, true))
 		{
-			bpartner.setIsCompany(true);
-			bpartner.setCompanyName(companyName.trim());
-			bpartner.setName(companyName.trim());
+			bpartnerRecord.setIsCompany(true);
+			bpartnerRecord.setCompanyName(companyName.trim());
+			bpartnerRecord.setName(companyName.trim());
 		}
 		else if (insertMode)
 		{
-			bpartner.setIsCompany(false);
-			bpartner.setCompanyName(null);
+			bpartnerRecord.setIsCompany(false);
+			bpartnerRecord.setCompanyName(null);
 		}
 
 		//
 		// Type (Vendor, Customer, Employee)
-		setTypeOfBPartner(importRecord, bpartner);
+		setTypeOfBPartner(importRecord, bpartnerRecord);
 
 		final String url = importRecord.getURL();
 
 		if (!Check.isEmpty(url))
 		{
-			bpartner.setURL(url);
+			bpartnerRecord.setURL(url);
 		}
 
 		final String url3 = importRecord.getURL3();
 
-		if(!Check.isEmpty(url3))
+		if (!Check.isEmpty(url3))
 		{
-			bpartner.setURL3(url3);
+			bpartnerRecord.setURL3(url3);
 		}
-
-		ModelValidationEngine.get().fireImportValidate(process, importRecord, bpartner, IImportInterceptor.TIMING_AFTER_IMPORT);
-		save(bpartner);
-		importRecord.setC_BPartner(bpartner);
-
-		return bpartner;
 	}
 
-	private I_C_BPartner createNewBPartner(final I_I_BPartner importRecord)
+	private I_C_BPartner createNewBPartnerNoSave(final I_I_BPartner from)
 	{
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
 
-		bpartner.setExternalId(importRecord.getC_BPartner_ExternalId());
-		bpartner.setAD_Org_ID(importRecord.getAD_Org_ID());
+		bpartner.setExternalId(from.getC_BPartner_ExternalId());
+		bpartner.setAD_Org_ID(from.getAD_Org_ID());
 		//
-		bpartner.setValue(extractBPValue(importRecord));
-		bpartner.setName(extractBPName(importRecord));
-		bpartner.setName2(importRecord.getName2());
-		bpartner.setName3(importRecord.getName3());
-		bpartner.setDescription(importRecord.getDescription());
-		bpartner.setShortDescription(importRecord.getShortDescription());
-		bpartner.setDUNS(importRecord.getDUNS());
-		bpartner.setVATaxID(importRecord.getTaxID());
-		bpartner.setC_InvoiceSchedule_ID(importRecord.getC_InvoiceSchedule_ID());
-		bpartner.setPaymentRule(importRecord.getPaymentRule());
-		bpartner.setPaymentRulePO(importRecord.getPaymentRulePO());
-		bpartner.setPO_PaymentTerm_ID(importRecord.getPO_PaymentTerm_ID());
-		bpartner.setC_PaymentTerm_ID(importRecord.getC_PaymentTerm_ID());
-		bpartner.setNAICS(importRecord.getNAICS());
-		bpartner.setC_BP_Group_ID(importRecord.getC_BP_Group_ID());
-		bpartner.setAD_Language(importRecord.getAD_Language());
-		bpartner.setIsSEPASigned(importRecord.isSEPASigned());
-		bpartner.setIsActive(importRecord.isActiveStatus());
-		bpartner.setDebtorId(importRecord.getDebtorId());
-		bpartner.setCreditorId(importRecord.getCreditorId());
-		bpartner.setMemo(importRecord.getC_BPartner_Memo());
-		bpartner.setDeliveryViaRule(importRecord.getDeliveryViaRule());
-		bpartner.setM_Shipper_ID(importRecord.getM_Shipper_ID());
-		bpartner.setVendorCategory(importRecord.getVendorCategory());
-		bpartner.setCustomerNoAtVendor(importRecord.getCustomerNoAtVendor());
-		bpartner.setQualification(importRecord.getQualification());
-		bpartner.setM_PricingSystem_ID(importRecord.getM_PricingSystem_ID());
-		bpartner.setPO_PricingSystem_ID(importRecord.getPO_PricingSystem_ID());
-		bpartner.setMemo_Delivery(importRecord.getMemo_Delivery());
-		bpartner.setMemo_Invoicing(importRecord.getMemo_Invoicing());
-		bpartner.setglobalid(importRecord.getGlobalID());
+		bpartner.setValue(extractBPValue(from));
+		bpartner.setName(extractBPName(from));
+		bpartner.setName2(from.getName2());
+		bpartner.setName3(from.getName3());
+		bpartner.setDescription(from.getDescription());
+		bpartner.setShortDescription(from.getShortDescription());
+		bpartner.setDUNS(from.getDUNS());
+		bpartner.setVATaxID(from.getTaxID());
+		bpartner.setC_InvoiceSchedule_ID(from.getC_InvoiceSchedule_ID());
+		bpartner.setPaymentRule(from.getPaymentRule());
+		bpartner.setPaymentRulePO(from.getPaymentRulePO());
+		bpartner.setPO_PaymentTerm_ID(from.getPO_PaymentTerm_ID());
+		bpartner.setC_PaymentTerm_ID(from.getC_PaymentTerm_ID());
+		bpartner.setNAICS(from.getNAICS());
+		bpartner.setC_BP_Group_ID(from.getC_BP_Group_ID());
+		bpartner.setAD_Language(from.getAD_Language());
+		bpartner.setIsSEPASigned(from.isSEPASigned());
+		bpartner.setIsActive(from.isActiveStatus());
+
+		if (from.getDebtorId() > 0)
+		{
+			bpartner.setDebtorId(from.getDebtorId());
+		}
+		if (from.getCreditorId() > 0)
+		{
+			bpartner.setCreditorId(from.getCreditorId());
+		}
+
+		bpartner.setMemo(from.getC_BPartner_Memo());
+		bpartner.setDeliveryViaRule(from.getDeliveryViaRule());
+		bpartner.setM_Shipper_ID(from.getM_Shipper_ID());
+		bpartner.setVendorCategory(from.getVendorCategory());
+		bpartner.setCustomerNoAtVendor(from.getCustomerNoAtVendor());
+		bpartner.setQualification(from.getQualification());
+		bpartner.setM_PricingSystem_ID(from.getM_PricingSystem_ID());
+		bpartner.setPO_PricingSystem_ID(from.getPO_PricingSystem_ID());
+		bpartner.setMemo_Delivery(from.getMemo_Delivery());
+		bpartner.setMemo_Invoicing(from.getMemo_Invoicing());
+		bpartner.setGlobalId(from.getGlobalId());
 
 		return bpartner;
 	}
@@ -171,136 +193,133 @@ import de.metas.util.Check;
 		return Check.isEmpty(bpValue, true) ? importRecord.getEMail() : bpValue;
 	}
 
-	private I_C_BPartner updateExistingBPartner(final I_I_BPartner importRecord)
+	private static void updateExistingBPartnerNoSave(
+			@NonNull final I_C_BPartner bpartner,
+			@NonNull final I_I_BPartner from)
 	{
-		final I_C_BPartner bpartner;
-		bpartner = importRecord.getC_BPartner();
-
-		final String partnerExternalId = importRecord.getC_BPartner_ExternalId();
+		final String partnerExternalId = from.getC_BPartner_ExternalId();
 		if (partnerExternalId != null)
 		{
 			bpartner.setExternalId(partnerExternalId);
 		}
-		if (importRecord.getName() != null)
+		if (from.getName() != null)
 		{
-			bpartner.setName(importRecord.getName());
+			bpartner.setName(from.getName());
 		}
-		if (importRecord.getName2() != null)
+		if (from.getName2() != null)
 		{
-			bpartner.setName2(importRecord.getName2());
+			bpartner.setName2(from.getName2());
 		}
-		if (importRecord.getName3() != null)
+		if (from.getName3() != null)
 		{
-			bpartner.setName3(importRecord.getName3());
+			bpartner.setName3(from.getName3());
 		}
-		if (importRecord.getDUNS() != null)
+		if (from.getDUNS() != null)
 		{
-			bpartner.setDUNS(importRecord.getDUNS());
+			bpartner.setDUNS(from.getDUNS());
 		}
-		if (importRecord.getTaxID() != null)
+		if (from.getTaxID() != null)
 		{
-			bpartner.setVATaxID(importRecord.getTaxID());
+			bpartner.setVATaxID(from.getTaxID());
 		}
-		if (importRecord.getNAICS() != null)
+		if (from.getNAICS() != null)
 		{
-			bpartner.setNAICS(importRecord.getNAICS());
+			bpartner.setNAICS(from.getNAICS());
 		}
-		if (importRecord.getDescription() != null)
+		if (from.getDescription() != null)
 		{
-			bpartner.setDescription(importRecord.getDescription());
+			bpartner.setDescription(from.getDescription());
 		}
-		if (importRecord.getShortDescription() != null)
+		if (from.getShortDescription() != null)
 		{
-			bpartner.setShortDescription(importRecord.getShortDescription());
+			bpartner.setShortDescription(from.getShortDescription());
 		}
-		if (importRecord.getC_BP_Group_ID() != 0)
+		if (from.getC_BP_Group_ID() != 0)
 		{
-			bpartner.setC_BP_Group_ID(importRecord.getC_BP_Group_ID());
+			bpartner.setC_BP_Group_ID(from.getC_BP_Group_ID());
 		}
-		if (importRecord.getAD_Language() != null)
+		if (from.getAD_Language() != null)
 		{
-			bpartner.setAD_Language(importRecord.getAD_Language());
+			bpartner.setAD_Language(from.getAD_Language());
 		}
-		if (importRecord.getC_InvoiceSchedule_ID() > 0)
+		if (from.getC_InvoiceSchedule_ID() > 0)
 		{
-			bpartner.setC_InvoiceSchedule_ID(importRecord.getC_InvoiceSchedule_ID());
+			bpartner.setC_InvoiceSchedule_ID(from.getC_InvoiceSchedule_ID());
 		}
-		if (importRecord.getPaymentRule() != null)
+		if (from.getPaymentRule() != null)
 		{
-			bpartner.setPaymentRule(importRecord.getPaymentRule());
+			bpartner.setPaymentRule(from.getPaymentRule());
 		}
-		if (importRecord.getPO_PaymentTerm_ID() > 0)
+		if (from.getPO_PaymentTerm_ID() > 0)
 		{
-			bpartner.setPO_PaymentTerm_ID(importRecord.getPO_PaymentTerm_ID());
-		}
-
-		if (importRecord.getC_PaymentTerm_ID() > 0)
-		{
-			bpartner.setC_PaymentTerm_ID(importRecord.getC_PaymentTerm_ID());
+			bpartner.setPO_PaymentTerm_ID(from.getPO_PaymentTerm_ID());
 		}
 
-		if (importRecord.getPaymentRulePO() != null)
+		if (from.getC_PaymentTerm_ID() > 0)
 		{
-			bpartner.setPaymentRulePO(importRecord.getPaymentRulePO());
-		}
-		if (importRecord.getVendorCategory() != null)
-		{
-			bpartner.setVendorCategory(importRecord.getVendorCategory());
-		}
-		if (importRecord.getCustomerNoAtVendor() != null)
-		{
-			bpartner.setCustomerNoAtVendor(importRecord.getCustomerNoAtVendor());
-		}
-		if (importRecord.getQualification() != null)
-		{
-			bpartner.setQualification(importRecord.getQualification());
+			bpartner.setC_PaymentTerm_ID(from.getC_PaymentTerm_ID());
 		}
 
-		bpartner.setIsSEPASigned(importRecord.isSEPASigned());
-		bpartner.setIsActive(importRecord.isActiveStatus());
-		bpartner.setDebtorId(importRecord.getDebtorId());
-		bpartner.setCreditorId(importRecord.getCreditorId());
-		if (importRecord.getC_BPartner_Memo() != null)
+		if (from.getPaymentRulePO() != null)
 		{
-			bpartner.setMemo(importRecord.getC_BPartner_Memo());
+			bpartner.setPaymentRulePO(from.getPaymentRulePO());
+		}
+		if (from.getVendorCategory() != null)
+		{
+			bpartner.setVendorCategory(from.getVendorCategory());
+		}
+		if (from.getCustomerNoAtVendor() != null)
+		{
+			bpartner.setCustomerNoAtVendor(from.getCustomerNoAtVendor());
+		}
+		if (from.getQualification() != null)
+		{
+			bpartner.setQualification(from.getQualification());
 		}
 
-		if (!Check.isEmpty(importRecord.getDeliveryViaRule(), true))
+		bpartner.setIsSEPASigned(from.isSEPASigned());
+		bpartner.setIsActive(from.isActiveStatus());
+		bpartner.setDebtorId(from.getDebtorId());
+		bpartner.setCreditorId(from.getCreditorId());
+		if (from.getC_BPartner_Memo() != null)
 		{
-			bpartner.setDeliveryViaRule(importRecord.getDeliveryViaRule());
-		}
-		if (importRecord.getM_Shipper_ID() > 0)
-		{
-			bpartner.setM_Shipper_ID(importRecord.getM_Shipper_ID());
-		}
-		if (importRecord.getM_PricingSystem_ID() > 0)
-		{
-			bpartner.setM_PricingSystem_ID(importRecord.getM_PricingSystem_ID());
-		}
-		if (importRecord.getPO_PricingSystem_ID() > 0)
-		{
-			bpartner.setPO_PricingSystem_ID(importRecord.getPO_PricingSystem_ID());
+			bpartner.setMemo(from.getC_BPartner_Memo());
 		}
 
-		final String memoInvoicing = importRecord.getMemo_Invoicing();
+		if (!Check.isEmpty(from.getDeliveryViaRule(), true))
+		{
+			bpartner.setDeliveryViaRule(from.getDeliveryViaRule());
+		}
+		if (from.getM_Shipper_ID() > 0)
+		{
+			bpartner.setM_Shipper_ID(from.getM_Shipper_ID());
+		}
+		if (from.getM_PricingSystem_ID() > 0)
+		{
+			bpartner.setM_PricingSystem_ID(from.getM_PricingSystem_ID());
+		}
+		if (from.getPO_PricingSystem_ID() > 0)
+		{
+			bpartner.setPO_PricingSystem_ID(from.getPO_PricingSystem_ID());
+		}
+
+		final String memoInvoicing = from.getMemo_Invoicing();
 		if (!Check.isEmpty(memoInvoicing))
 		{
 			bpartner.setMemo_Invoicing(memoInvoicing);
 		}
 
-		final String memoDelivery = importRecord.getMemo_Delivery();
+		final String memoDelivery = from.getMemo_Delivery();
 		if (!Check.isEmpty(memoDelivery))
 		{
 			bpartner.setMemo_Delivery(memoDelivery);
 		}
 
-		final String globalId = importRecord.getGlobalID();
+		final String globalId = from.getGlobalId();
 		if (!Check.isEmpty(globalId))
 		{
-			bpartner.setglobalid(globalId);
+			bpartner.setGlobalId(globalId);
 		}
-
-		return bpartner;
 	}
 
 	/**

@@ -1,12 +1,13 @@
 package de.metas.acct.impexp;
 
-import static de.metas.impexp.processing.ImportProcessTemplate.COLUMNNAME_I_ErrorMsg;
-import static de.metas.impexp.processing.ImportProcessTemplate.COLUMNNAME_I_IsImported;
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -45,14 +46,14 @@ public class AccountImportTableSqlUpdater
 {
 	private static final transient Logger logger = LogManager.getLogger(AccountImportTableSqlUpdater.class);
 
-	public void updateAccountImportTable(@NonNull final String whereClause)
+	public void updateAccountImportTable(@NonNull final ImportRecordsSelection selection)
 	{
-		dbUpdateElement(whereClause);
-		dbUpdateParentElementValue(whereClause);
-		dbUpdateErrorMessages(whereClause);
+		dbUpdateElement(selection);
+		dbUpdateParentElementValue(selection);
+		dbUpdateErrorMessages(selection);
 	}
 
-	private void dbUpdateElement(final String whereClause)
+	private void dbUpdateElement(final ImportRecordsSelection selection)
 	{
 		StringBuilder sql;
 		int no;
@@ -61,12 +62,13 @@ public class AccountImportTableSqlUpdater
 				.append("AND e.AD_Client_ID IN (0, i.AD_Client_ID) ")
 				.append("AND e.AD_Org_ID IN (0, i.AD_Org_ID) ) ")
 				.append("WHERE ElementName IS NOT NULL AND C_Element_ID IS NULL")
-				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
+				.append(selection.toSqlWhereClause("i"));
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_None);
 		logger.debug("Set Element Default={} ",  no);
 	}
 
-	public void dbUpdateParentElementValue(final String whereClause)
+	public void dbUpdateParentElementValue(final ImportRecordsSelection selection)
 	{
 		StringBuilder sql;
 		int no;
@@ -75,7 +77,7 @@ public class AccountImportTableSqlUpdater
 				.append("FROM C_ElementValue ev WHERE i.C_Element_ID=ev.C_Element_ID ")
 				.append("AND i.ParentValue=ev.Value AND i.AD_Client_ID=ev.AD_Client_ID ) ")
 				.append("WHERE ParentElementValue_ID IS NULL ")
-				.append(whereClause);
+				.append(selection.toSqlWhereClause("i"));
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_None);
 		logger.debug("Found Parent ElementValue={}",  no);
 	}
@@ -89,13 +91,13 @@ public class AccountImportTableSqlUpdater
 				.append(" and parentelementvalue_id is not null " );
 		no = DB.executeUpdateEx(sql.toString(), new Object[] {treeId}, ITrx.TRXNAME_None);
 		logger.debug("Updated Parent ElementValue=" + no);
-		
+
 		sql = new StringBuilder("update AD_TreeNode set  seqno = c_elementvalue_id ")
 				.append(" from i_elementvalue ev where ev.C_ElementValue_ID = node_ID and ad_tree_ID = ? " )
 				.append(" and ev.IsSummary='Y' " );
 		no = DB.executeUpdateEx(sql.toString(), new Object[] {treeId}, ITrx.TRXNAME_None);
 		logger.debug("Updated Parent Seqno={}",  no);
-			
+
 	}
 
 	public void dbUpdateTreeElementValue(final String whereClause)
@@ -114,7 +116,7 @@ public class AccountImportTableSqlUpdater
 		logger.debug("Found Parent ElementValue=" + no);
 	}
 
-	private void dbUpdateErrorMessages(final String whereClause)
+	private void dbUpdateErrorMessages(final ImportRecordsSelection selection)
 	{
 
 		StringBuilder sql;
@@ -123,14 +125,14 @@ public class AccountImportTableSqlUpdater
 				.append("SET I_ErrorMsg=I_ErrorMsg||'Info=ParentNotFound, ' ")
 				.append("WHERE ParentElementValue_ID IS NULL AND ParentValue IS NOT NULL ")
 				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y' ")
-				.append(whereClause);
+				.append(selection.toSqlWhereClause());
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_None);
 		logger.info("Not Found Parent ElementValue=" + no);
 
 		sql = new StringBuilder("UPDATE I_ElementValue "
 				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Value is mandatory, ' "
 				+ "WHERE Value IS NULL "
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(selection.toSqlWhereClause());
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_None);
 		logger.info("Value is mandatory={}", no);
 	}

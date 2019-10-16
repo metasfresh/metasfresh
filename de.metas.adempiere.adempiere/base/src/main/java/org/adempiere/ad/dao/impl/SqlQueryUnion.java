@@ -1,34 +1,21 @@
 package org.adempiere.ad.dao.impl;
 
-import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.IQuery;
 
 import lombok.NonNull;
+import lombok.Value;
 
-public class SqlQueryUnion<T>
+@Value
+public final class SqlQueryUnion<T>
 {
-	private final IQuery<T> query;
 	private final boolean distinct;
+	private final IQuery<T> query;
 
-	protected SqlQueryUnion(@NonNull final IQuery<T> query, final boolean distinct)
+	protected SqlQueryUnion(
+			@NonNull final IQuery<T> query,
+			final boolean distinct)
 	{
 		this.query = query;
 		this.distinct = distinct;
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
-	}
-
-	public IQuery<T> getQuery()
-	{
-		return query;
-	}
-
-	public boolean isDistinct()
-	{
-		return distinct;
 	}
 }

@@ -259,9 +259,9 @@ public class HUIssueTestHelper extends HUTestHelper
 			pmIFCO.setC_UOM_Weight_ID(uomEach.getC_UOM_ID());
 			InterfaceWrapperHelper.save(pmIFCO);
 
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_CountryMadeIn)
 					.setM_HU_PI(huDefIFCO));
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_FragileSticker)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_FragileSticker)
 					.setM_HU_PI(huDefIFCO));
 		}
 
@@ -274,9 +274,9 @@ public class HUIssueTestHelper extends HUTestHelper
 			pmPalet.setC_UOM_Weight_ID(uomEach.getC_UOM_ID());
 			InterfaceWrapperHelper.save(pmPalet);
 
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_CountryMadeIn)
 					.setM_HU_PI(huDefPalet));
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_FragileSticker)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_FragileSticker)
 					.setM_HU_PI(huDefPalet));
 		}
 

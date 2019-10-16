@@ -45,7 +45,6 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.product.ProductId;
-import de.metas.product.ProductIds;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
@@ -141,7 +140,7 @@ public class M_InOutLine
 	{
 		final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 
-		final ProductId productId = ProductIds.ofRecord(inOutLine);
+		final ProductId productId = ProductId.ofRepoId(inOutLine.getM_Product_ID());
 		final UomId catchUomId = UomId.ofRepoIdOrNull(inOutLine.getCatch_UOM_ID());
 		final StockQtyAndUOMQty qtyPickedSum = computeQtyPickedSum(productId, catchUomId, allocs);
 

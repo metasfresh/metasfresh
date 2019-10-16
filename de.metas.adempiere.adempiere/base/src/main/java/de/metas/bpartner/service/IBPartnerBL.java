@@ -38,6 +38,7 @@ import com.google.common.base.Predicates;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -213,4 +214,6 @@ public interface IBPartnerBL extends ISingletonService
 	CountryId getBPartnerLocationCountryId(BPartnerLocationId bpLocationId);
 
 	DeliveryViaRule getDeliveryViaRuleOrNull(BPartnerId bpartnerId, SOTrx soTrx);
+
+	ShipmentAllocationBestBeforePolicy getBestBeforePolicy(BPartnerId bpartnerId);
 }

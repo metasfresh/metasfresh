@@ -14,7 +14,7 @@ public class X_M_Shipment_Constraint extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 43850295L;
+	private static final long serialVersionUID = -1650651757L;
 
     /** Standard Constructor */
     public X_M_Shipment_Constraint (Properties ctx, int M_Shipment_Constraint_ID, String trxName)
@@ -190,18 +190,6 @@ public class X_M_Shipment_Constraint extends org.compiere.model.PO implements I_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_AD_Table getSourceDoc_Table()
-	{
-		return get_ValueAsPO(COLUMNNAME_SourceDoc_Table_ID, org.compiere.model.I_AD_Table.class);
-	}
-
-	@Override
-	public void setSourceDoc_Table(org.compiere.model.I_AD_Table SourceDoc_Table)
-	{
-		set_ValueFromPO(COLUMNNAME_SourceDoc_Table_ID, org.compiere.model.I_AD_Table.class, SourceDoc_Table);
 	}
 
 	/** Set Source document (table).

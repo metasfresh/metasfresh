@@ -39,6 +39,7 @@ import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_AD_Sequence_No;
@@ -57,6 +58,7 @@ import de.metas.document.sequenceno.CustomSequenceNoProvider;
 import de.metas.javaclasses.IJavaClassBL;
 import de.metas.javaclasses.JavaClassId;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -204,7 +206,8 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 		final DocTypeSequenceMap.Builder docTypeSequenceMapBuilder = DocTypeSequenceMap.builder();
 
 		final I_C_DocType docType = InterfaceWrapperHelper.create(ctx, docTypeId, I_C_DocType.class, ITrx.TRXNAME_None);
-		docTypeSequenceMapBuilder.setDefaultDocNoSequence_ID(docType.getDocNoSequence_ID());
+		final DocSequenceId docNoSequenceId = DocSequenceId.ofRepoIdOrNull(docType.getDocNoSequence_ID());
+		docTypeSequenceMapBuilder.defaultDocNoSequenceId(docNoSequenceId);
 
 		final List<I_C_DocType_Sequence> docTypeSequenceDefs = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_DocType_Sequence.class, ctx, ITrx.TRXNAME_None)
@@ -215,9 +218,9 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 
 		for (final I_C_DocType_Sequence docTypeSequenceDef : docTypeSequenceDefs)
 		{
-			final int adClientId = docTypeSequenceDef.getAD_Client_ID();
-			final int adOrgId = docTypeSequenceDef.getAD_Org_ID();
-			final int docSequenceId = docTypeSequenceDef.getDocNoSequence_ID();
+			final ClientId adClientId = ClientId.ofRepoId(docTypeSequenceDef.getAD_Client_ID());
+			final OrgId adOrgId = OrgId.ofRepoId(docTypeSequenceDef.getAD_Org_ID());
+			final DocSequenceId docSequenceId = DocSequenceId.ofRepoId(docTypeSequenceDef.getDocNoSequence_ID());
 			docTypeSequenceMapBuilder.addDocSequenceId(adClientId, adOrgId, docSequenceId);
 		}
 

@@ -84,7 +84,7 @@ public class StockDataUpdateRequestHandler
 		}
 
 		final I_MD_Stock newDataRecord = newInstance(I_MD_Stock.class);
-		InterfaceWrapperHelper.setValue(newDataRecord, I_MD_Stock.COLUMNNAME_AD_Client_ID, identifier.getClientId());
+		InterfaceWrapperHelper.setValue(newDataRecord, I_MD_Stock.COLUMNNAME_AD_Client_ID, identifier.getClientId().getRepoId());
 
 		newDataRecord.setAD_Org_ID(identifier.getOrgId().getRepoId());
 		newDataRecord.setM_Product_ID(identifier.getProductDescriptor().getProductId());
@@ -141,7 +141,7 @@ public class StockDataUpdateRequestHandler
 		final StockChangeDetails details = StockChangeDetails
 				.builder()
 				.transactionId(stockChangeSourceInfo.getTransactionId())
-				.resetStockAdPinstanceId(stockChangeSourceInfo.getResetStockAdPinstanceId())
+				.resetStockPInstanceId(stockChangeSourceInfo.getResetStockAdPinstanceId())
 				.stockId(dataRecord.getMD_Stock_ID())
 				.build();
 

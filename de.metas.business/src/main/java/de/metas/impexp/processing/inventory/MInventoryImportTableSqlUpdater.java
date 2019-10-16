@@ -15,6 +15,7 @@ import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
@@ -55,18 +56,18 @@ final class MInventoryImportTableSqlUpdater
 {
 	private static final transient Logger logger = LogManager.getLogger(MInventoryImportTableSqlUpdater.class);
 
-	public void updateInventoryImportTable(@NonNull final String whereClause)
+	public void updateInventoryImportTable(@NonNull final ImportRecordsSelection selection)
 	{
-		dbUpdateLocatorDimensions(whereClause);
-		dbUpdateWarehouse(whereClause);
-		dbUpdateCreateLocators(whereClause);
-		dbUpdateProducts(whereClause);
-		dbUpdateSubProducer(whereClause);
+		dbUpdateLocatorDimensions(selection);
+		dbUpdateWarehouse(selection);
+		dbUpdateCreateLocators(selection);
+		dbUpdateProducts(selection);
+		dbUpdateSubProducer(selection);
 
-		dbUpdateErrorMessages(whereClause);
+		dbUpdateErrorMessages(selection);
 	}
 
-	private void dbUpdateLocatorDimensions(@NonNull final String whereClause)
+	private void dbUpdateLocatorDimensions(@NonNull final ImportRecordsSelection selection)
 	{
 		final StringBuilder sql = new StringBuilder("UPDATE I_Inventory i "
 				+ "SET WarehouseValue = COALESCE(i.WarehouseValue, dimensions.warehouseValue), "
@@ -86,18 +87,18 @@ final class MInventoryImportTableSqlUpdater
 				+ "	       JOIN extractLocatorDimensions(inv.WarehouseLocatorIdentifier) as d on 1=1"
 				+ "     ) AS dimensions "
 				+ "WHERE I_IsImported<>'Y' AND dimensions.dimensions_I_Inventory_ID = i.I_Inventory_ID ")
-						.append(whereClause);
+				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
-	private void dbUpdateWarehouse(@NonNull final String whereClause)
+	private void dbUpdateWarehouse(@NonNull final ImportRecordsSelection selection)
 	{
 		// Try to set M_Warehouse_ID based on warehouse value
 		StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
 				.append("SET M_Warehouse_ID=(SELECT M_Warehouse_ID FROM M_Warehouse w WHERE i.WarehouseValue=w.Value) ")
 				.append("WHERE M_Warehouse_ID IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
-				.append(whereClause);
+				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		// Try to set M_Warehouse_ID based on locator value
@@ -105,17 +106,17 @@ final class MInventoryImportTableSqlUpdater
 				.append("SET M_Warehouse_ID=(SELECT M_Warehouse_ID FROM M_Locator l WHERE i.locatorvalue=l.Value) ")
 				.append("WHERE M_Warehouse_ID IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
-				.append(whereClause);
+				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
-	private void dbUpdateCreateLocators(@NonNull final String whereClause)
+	private void dbUpdateCreateLocators(@NonNull final ImportRecordsSelection selection)
 	{
-		dbUpdateLocators(whereClause);
+		dbUpdateLocators(selection);
 		dbCreateLocators();
 	}
 
-	private void dbUpdateLocators(@NonNull final String whereClause)
+	private void dbUpdateLocators(@NonNull final ImportRecordsSelection selection)
 	{
 		// supplement missing M_Locator_ID from LocatorValue, M_Warehouse_ID and AD_Client_ID
 		StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
@@ -123,7 +124,7 @@ final class MInventoryImportTableSqlUpdater
 				.append("WHERE i.LocatorValue=l.Value AND i.M_Warehouse_ID = l.M_Warehouse_ID AND i.AD_Client_ID=l.AD_Client_ID) ")
 				.append("WHERE M_Locator_ID IS NULL AND LocatorValue IS NOT NULL ")
 				.append("AND I_IsImported<>'Y' ")
-				.append(whereClause);
+				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		// supplement missing M_Locator_ID from standard warehouse locator
@@ -132,7 +133,7 @@ final class MInventoryImportTableSqlUpdater
 				.append("WHERE l.IsDefault='Y' AND i.M_Warehouse_ID = l.M_Warehouse_ID AND i.AD_Client_ID=l.AD_Client_ID) ")
 				.append("WHERE M_Locator_ID IS NULL AND LocatorValue IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
-				.append(whereClause);
+				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		// update M_Locator.DateLastInventory
@@ -198,35 +199,41 @@ final class MInventoryImportTableSqlUpdater
 				.build());
 	}
 
-	private void dbUpdateProducts(@NonNull final String sqlImportTableWhereClause)
+	private void dbUpdateProducts(@NonNull final ImportRecordsSelection selection)
 	{
 		// Match by product value
 		dbUpdateProducts(
-				sqlImportTableWhereClause,
+				selection,
 				"i.ProductValue LIKE 'val-%'",
-				"p.Value = substr(i.ProductValue, 5)");
+				"p.Value = substr(i.ProductValue, 5)"/* use substr to get ProductValue without the "val-" */);
+
+		// Match by product value
+		dbUpdateProducts(
+				selection,
+				"i.ProductValue LIKE 'ext-%'",
+				"p.ExternalId = substr(i.ProductValue, 5)" /* use substr to get ProductValue without the "ext-" */);
 
 		// Match by M_Product_ID
 		dbUpdateProducts(
-				sqlImportTableWhereClause,
+				selection,
 				"i.ProductValue ~ E'^\\\\d+$'",
 				"p.M_Product_ID = i.ProductValue::numeric");
 
 		// Match by UPC
 		dbUpdateProducts(
-				sqlImportTableWhereClause,
+				selection,
 				"i.UPC IS NOT NULL",
 				"p.UPC = i.UPC");
 
 		// Fallback/backwards compatibility: Match by product value, without using the 'val-' prefix
 		dbUpdateProducts(
-				sqlImportTableWhereClause,
+				selection,
 				"i.ProductValue IS NOT NULL",
 				"p.Value = i.ProductValue");
 	}
 
 	private static int dbUpdateProducts(
-			@NonNull final String importTableWhereClause,
+			@NonNull final ImportRecordsSelection selection,
 			@NonNull final String importValueFormatMatcher,
 			@NonNull final String importValueMatchCondition)
 	{
@@ -242,32 +249,32 @@ final class MInventoryImportTableSqlUpdater
 				+ " I_IsImported<>'Y'"
 				+ " AND M_Product_ID IS NULL"
 				+ " AND i.ProductValue IS NOT NULL"
-				+ " AND (" + importValueFormatMatcher + ")"
-				+ " " + importTableWhereClause;
+				+ " AND (" + importValueFormatMatcher + ") "
+				+ selection.toSqlWhereClause("i");
 
 		return DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
 	}
 
-	private void dbUpdateSubProducer(@NonNull final String whereClause)
+	private void dbUpdateSubProducer(@NonNull final ImportRecordsSelection selection)
 	{
 		// Set M_Warehouse_ID
 		final StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
 				.append("SET SubProducer_BPartner_ID=(SELECT C_BPartner_ID FROM C_BPartner bp WHERE i.SubProducerBPartner_Value=bp.value) ")
 				.append("WHERE SubProducer_BPartner_ID IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
-				.append(whereClause);
+				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
-	public int countRecordsWithErrors(@NonNull final String whereClause)
+	public int countRecordsWithErrors(@NonNull final ImportRecordsSelection selection)
 	{
 		final String sql = "SELECT COUNT(1) FROM I_Inventory "
-				+ " WHERE I_IsImported='E'"
-				+ " " + whereClause;
+				+ " WHERE I_IsImported='E' "
+				+ selection.toSqlWhereClause();
 		return DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql);
 	}
 
-	private void dbUpdateErrorMessages(@NonNull final String whereClause)
+	private void dbUpdateErrorMessages(@NonNull final ImportRecordsSelection selection)
 	{
 		//
 		// No Organization
@@ -276,7 +283,7 @@ final class MInventoryImportTableSqlUpdater
 					+ " SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Organization, ' "
 					+ " WHERE (AD_Org_ID IS NULL OR AD_Org_ID=" + OrgId.ANY.getRepoId() + ")"
 					+ " AND I_IsImported<>'Y' "
-					+ " " + whereClause;
+					+ selection.toSqlWhereClause();
 			final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
 			if (no != 0)
 			{
@@ -291,7 +298,7 @@ final class MInventoryImportTableSqlUpdater
 					.append(" SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Locator, ' ")
 					.append(" WHERE M_Locator_ID IS NULL ")
 					.append(" AND I_IsImported<>'Y' ")
-					.append(whereClause);
+					.append(selection.toSqlWhereClause());
 			final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 			if (no != 0)
 			{
@@ -306,7 +313,7 @@ final class MInventoryImportTableSqlUpdater
 					.append(" SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Warehouse, ' ")
 					.append(" WHERE M_Warehouse_ID IS NULL ")
 					.append(" AND I_IsImported<>'Y' ")
-					.append(whereClause);
+					.append(selection.toSqlWhereClause());
 			final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 			if (no != 0)
 			{
@@ -321,7 +328,7 @@ final class MInventoryImportTableSqlUpdater
 					.append(" SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Product, ' ")
 					.append(" WHERE M_Product_ID IS NULL ")
 					.append(" AND I_IsImported<>'Y' ")
-					.append(whereClause);
+					.append(selection.toSqlWhereClause());
 			final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 			if (no != 0)
 			{
@@ -335,7 +342,7 @@ final class MInventoryImportTableSqlUpdater
 					.append(" SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No qtycount, ' ")
 					.append(" WHERE qtycount IS NULL ")
 					.append(" AND I_IsImported<>'Y' ")
-					.append(whereClause);
+					.append(selection.toSqlWhereClause());
 			final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 			if (no != 0)
 			{

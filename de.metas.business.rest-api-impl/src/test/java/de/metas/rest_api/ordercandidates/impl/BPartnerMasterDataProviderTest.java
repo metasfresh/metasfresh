@@ -34,7 +34,10 @@ import de.metas.rest_api.SyncAdvise.IfNotExists;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
-import de.metas.rest_api.ordercandidates.JsonBPartnerInfo;
+import de.metas.rest_api.bpartner.response.JsonResponseBPartner;
+import de.metas.rest_api.bpartner.response.JsonResponseContact;
+import de.metas.rest_api.bpartner.response.JsonResponseLocation;
+import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.rest_api.utils.PermissionService;
 import mockit.Mocked;
 
@@ -70,7 +73,7 @@ public class BPartnerMasterDataProviderTest
 
 	private JsonRequestBPartner jsonBPartner;
 
-	private JsonBPartnerInfo jsonBPartnerInfo;
+	private JsonRequestBPartnerLocationAndContact jsonBPartnerInfo;
 
 	private JsonRequestLocation jsonBPartnerLocation;
 
@@ -103,7 +106,7 @@ public class BPartnerMasterDataProviderTest
 				.email("jsonBPartnerContact.Email")
 				.build();
 
-		jsonBPartnerInfo = JsonBPartnerInfo.builder()
+		jsonBPartnerInfo = JsonRequestBPartnerLocationAndContact.builder()
 				.bpartner(jsonBPartner)
 				.location(jsonBPartnerLocation)
 				.contact(jsonBPartnerContact)
@@ -114,7 +117,7 @@ public class BPartnerMasterDataProviderTest
 	public void getCreateBPartnerInfo_NotExists_Fail()
 	{
 		final SyncAdvise syncAdvise = SyncAdvise.builder().ifNotExists(IfNotExists.FAIL).build();
-		final JsonBPartnerInfo jsonBPartnerInfoToUse = jsonBPartnerInfo.toBuilder().syncAdvise(syncAdvise).build();
+		final JsonRequestBPartnerLocationAndContact jsonBPartnerInfoToUse = jsonBPartnerInfo.toBuilder().syncAdvise(syncAdvise).build();
 
 		assertThatThrownBy(() -> bpartnerMasterDataProvider.getCreateBPartnerInfo(jsonBPartnerInfoToUse, OrgId.ofRepoId(10)))
 				.isInstanceOf(BPartnerIdNotFoundException.class)
@@ -126,7 +129,7 @@ public class BPartnerMasterDataProviderTest
 	public void getCreateBPartnerInfo_NotExists_Create()
 	{
 		final SyncAdvise syncAdvise = SyncAdvise.builder().ifNotExists(IfNotExists.CREATE).build();
-		final JsonBPartnerInfo jsonBPartnerInfoToUse = jsonBPartnerInfo.toBuilder().syncAdvise(syncAdvise).build();
+		final JsonRequestBPartnerLocationAndContact jsonBPartnerInfoToUse = jsonBPartnerInfo.toBuilder().syncAdvise(syncAdvise).build();
 
 		// invoke the method under test
 		bpartnerMasterDataProvider.getCreateBPartnerInfo(jsonBPartnerInfoToUse, OrgId.ofRepoId(10));
@@ -177,7 +180,7 @@ public class BPartnerMasterDataProviderTest
 		saveRecord(bpLocationRecord);
 
 		final SyncAdvise syncAdvise = SyncAdvise.builder().ifExists(IfExists.DONT_UPDATE).build();
-		final JsonBPartnerInfo jsonBPartnerInfoToUse = jsonBPartnerInfo.toBuilder().syncAdvise(syncAdvise).build();
+		final JsonRequestBPartnerLocationAndContact jsonBPartnerInfoToUse = jsonBPartnerInfo.toBuilder().syncAdvise(syncAdvise).build();
 
 		// invoke the method under test
 		final BPartnerInfo result = bpartnerMasterDataProvider.getCreateBPartnerInfo(jsonBPartnerInfoToUse, OrgId.ofRepoId(10));
@@ -198,6 +201,33 @@ public class BPartnerMasterDataProviderTest
 				.get()
 				.getRecords(I_AD_User.class, u -> u.getAD_User_ID() > 0/* exclude the system user */);
 		assertThat(bpartnerContactRecordsAfter).isEmpty();
+	}
+
+	/** Verifies that the masterdata provider will attempt to get a location from the masterdata if none is stecofies in our JSON */
+	@Test
+	public void getCreateBPartnerInfo_Exists_GetFallBackLocation()
+	{
+		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
+		bpartnerRecord.setValue("jsonBPartner.Code");
+		saveRecord(bpartnerRecord);
+
+		final I_C_BPartner_Location bpLocationRecord = newInstance(I_C_BPartner_Location.class);
+		bpLocationRecord.setC_BPartner(bpartnerRecord);
+		bpLocationRecord.setGLN("jsonBPartnerLocation.GLN");
+		saveRecord(bpLocationRecord);
+
+		final SyncAdvise syncAdvise = SyncAdvise.READ_ONLY;
+		final JsonRequestBPartnerLocationAndContact jsonBPartnerInfoToUse = jsonBPartnerInfo.toBuilder()
+				.location(null) // no location provided!
+				.syncAdvise(syncAdvise).build();
+
+		// invoke the method under test
+		final BPartnerInfo result = bpartnerMasterDataProvider.getCreateBPartnerInfo(jsonBPartnerInfoToUse, OrgId.ofRepoId(10));
+
+		assertThat(result.getBpartnerId().getRepoId()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
+		assertThat(result.getContactId()).isNull();
+
+		assertThat(result.getBpartnerLocationId().getRepoId()).isEqualTo(bpLocationRecord.getC_BPartner_Location_ID());
 	}
 
 	@Test
@@ -221,7 +251,7 @@ public class BPartnerMasterDataProviderTest
 		saveRecord(bpLocationRecord);
 
 		final SyncAdvise syncAdvise = SyncAdvise.builder().ifExists(IfExists.UPDATE_MERGE).build();
-		final JsonBPartnerInfo jsonBPartnerInfoToUse = jsonBPartnerInfo.toBuilder().syncAdvise(syncAdvise).build();
+		final JsonRequestBPartnerLocationAndContact jsonBPartnerInfoToUse = jsonBPartnerInfo.toBuilder().syncAdvise(syncAdvise).build();
 
 		// invoke the method under test
 		final BPartnerInfo result = bpartnerMasterDataProvider.getCreateBPartnerInfo(jsonBPartnerInfoToUse, OrgId.ofRepoId(10));
@@ -264,7 +294,7 @@ public class BPartnerMasterDataProviderTest
 		saveRecord(bPartnerRecord);
 
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(bPartnerRecord.getC_BPartner_ID());
-		final JsonRequestBPartner result = bpartnerMasterDataProvider.getJsonBPartnerById(bPartnerId);
+		final JsonResponseBPartner result = bpartnerMasterDataProvider.getJsonBPartnerById(bPartnerId);
 
 		assertThat(result.getName()).isEqualTo("Name");
 		assertThat(result.getCode()).isEqualTo("Value");
@@ -300,7 +330,7 @@ public class BPartnerMasterDataProviderTest
 		saveRecord(bPartnerLocationRecord);
 
 		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerRecord.getC_BPartner_ID(), bPartnerLocationRecord.getC_BPartner_Location_ID());
-		final JsonRequestLocation result = bpartnerMasterDataProvider.getJsonBPartnerLocationById(bPartnerLocationId);
+		final JsonResponseLocation result = bpartnerMasterDataProvider.getJsonBPartnerLocationById(bPartnerLocationId);
 
 		assertThat(result.getAddress1()).isEqualTo("Address1");
 		assertThat(result.getAddress2()).isEqualTo("Address2");
@@ -327,7 +357,7 @@ public class BPartnerMasterDataProviderTest
 		saveRecord(userRecord);
 
 		final BPartnerContactId bPartnerContactId = BPartnerContactId.ofRepoId(bPartnerRecord.getC_BPartner_ID(), userRecord.getAD_User_ID());
-		final JsonRequestContact result = bpartnerMasterDataProvider.getJsonBPartnerContactById(bPartnerContactId);
+		final JsonResponseContact result = bpartnerMasterDataProvider.getJsonBPartnerContactById(bPartnerContactId);
 
 		assertThat(result.getEmail()).isEqualTo("EMail");
 		assertThat(result.getExternalId().getValue()).isEqualTo("ExternalId");

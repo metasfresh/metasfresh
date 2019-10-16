@@ -1,13 +1,14 @@
 package de.metas.globalid.impexp;
 
-import static de.metas.impexp.processing.ImportProcessTemplate.COLUMNNAME_I_ErrorMsg;
-import static de.metas.impexp.processing.ImportProcessTemplate.COLUMNNAME_I_IsImported;
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_I_BPartner_GlobalID;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
@@ -46,31 +47,31 @@ public class BPartnerGlobalIDImportTableSqlUpdater
 {
 	private static final transient Logger logger = LogManager.getLogger(BPartnerGlobalIDImportTableSqlUpdater.class);
 
-	public void updateBPartnerGlobalIDImortTable(@NonNull final String whereClause)
+	public void updateBPartnerGlobalIDImortTable(@NonNull final ImportRecordsSelection selection)
 	{
-		dbUpdateCbPartnerIdsFromGlobalID(whereClause);
+		dbUpdateCbPartnerIdsFromGlobalID(selection);
 
-		dbUpdateErrorMessages(whereClause);
+		dbUpdateErrorMessages(selection);
 	}
 
-	private void dbUpdateCbPartnerIdsFromGlobalID(final String whereClause)
+	private void dbUpdateCbPartnerIdsFromGlobalID(final ImportRecordsSelection selection)
 	{
 		StringBuilder sql;
 		int no;
 		sql = new StringBuilder("UPDATE " + I_I_BPartner_GlobalID.Table_Name + " i ")
 				.append("SET C_BPartner_ID=(SELECT C_BPartner_ID FROM C_BPartner p ")
-				.append("WHERE i." + I_I_BPartner_GlobalID.COLUMNNAME_globalid)
-				.append("=p." + I_C_BPartner.COLUMNNAME_globalid)
+				.append("WHERE i." + I_I_BPartner_GlobalID.COLUMNNAME_GlobalId)
+				.append("=p." + I_C_BPartner.COLUMNNAME_GlobalId)
 				.append(" AND p.AD_Client_ID=i.AD_Client_ID ")
 				.append(" AND p.IsActive='Y') ")
-				.append("WHERE C_BPartner_ID IS NULL AND " + I_I_BPartner_GlobalID.COLUMNNAME_globalid + " IS NOT NULL")
+				.append("WHERE C_BPartner_ID IS NULL AND " + I_I_BPartner_GlobalID.COLUMNNAME_GlobalId + " IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
-				.append(whereClause);
+				.append(selection.toSqlWhereClause("i"));
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Found BPartner={}", no);
 	}
 
-	private void dbUpdateErrorMessages(final String whereClause)
+	private void dbUpdateErrorMessages(final ImportRecordsSelection selection)
 	{
 
 		StringBuilder sql;
@@ -79,7 +80,7 @@ public class BPartnerGlobalIDImportTableSqlUpdater
 				.append(" SET " + COLUMNNAME_I_IsImported + "='N', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Partner is mandatory, ' ")
 				.append("WHERE " + I_I_BPartner_GlobalID.COLUMNNAME_C_BPartner_ID + " IS NULL ")
 				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-				.append(whereClause);
+				.append(selection.toSqlWhereClause());
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Value is mandatory={}", no);
 	}

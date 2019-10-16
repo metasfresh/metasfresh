@@ -1,5 +1,7 @@
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -53,10 +55,8 @@
 			<artifactId>spring-boot-starter-amqp</artifactId>
 		</dependency>
 
-		<!-- 
-		there are exclusions to avoid dependency version convergence issues
-		(i.e. to satisfy the enforcer plugin)
-		-->
+		<!-- there are exclusions to avoid dependency version convergence issues 
+			(i.e. to satisfy the enforcer plugin) -->
 		<dependency>
 			<groupId>de.codecentric</groupId>
 			<artifactId>spring-boot-admin-starter-client</artifactId>
@@ -123,12 +123,9 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 
-		<!--
-			Lombok
-			See https://github.com/metasfresh/metasfresh/issues/1125
-			NOTE: if you don't need fancy things like @SneakyThrows then scope 'provided' it's totally fine
-			Also note that the version is managed by spring-boot.
-		 -->
+		<!-- Lombok See https://github.com/metasfresh/metasfresh/issues/1125 NOTE: 
+			if you don't need fancy things like @SneakyThrows then scope 'provided' it's 
+			totally fine Also note that the version is managed by spring-boot. -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -153,6 +150,12 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.mockito</groupId>
+					<artifactId>mockito-core</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -168,6 +171,12 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>${mockito.version}</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -184,16 +193,16 @@
 							<goal>repackage</goal>
 						</goals>
 						<configuration>
-							<!-- we *also* need the normal main jar to be used in app
-							so don't replace the normal jar, but create the executable jar with this classifier -->
+							<!-- we *also* need the normal main jar to be used in app so don't 
+								replace the normal jar, but create the executable jar with this classifier -->
 							<classifier>standalone</classifier>
 
 							<executable>true</executable>
 							<mainClass>${start-class}</mainClass>
-							
+
 							<!-- this also provides the super-jar to the successive docker build 
-								Note that the ${docker.build.directory} property  is set by the prepare-docker profile 
-								that is activated by the presence of the scr/main/docker folder -->
+								Note that the ${docker.build.directory} property is set by the prepare-docker 
+								profile that is activated by the presence of the scr/main/docker folder -->
 							<outputDirectory>${docker.build.directory}</outputDirectory>
 						</configuration>
 					</execution>
@@ -224,7 +233,8 @@
 							<goal>enforce</goal>
 						</goals>
 						<configuration>
-							<message>material-dispo shall be lightweigt, so it's bad enough we have base in here..</message>
+							<message>material-dispo shall be lightweigt, so it's bad enough
+								we have base in here..</message>
 							<rules>
 								<bannedDependencies>
 									<excludes>

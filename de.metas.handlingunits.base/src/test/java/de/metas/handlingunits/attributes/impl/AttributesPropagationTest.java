@@ -82,16 +82,16 @@ public class AttributesPropagationTest extends AbstractHUTest
 			helper.createHU_PI_Item_PackingMaterial(huDefBag, pmBag);
 
 			// value will not be propagated
-			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_FragileSticker)
+			helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_FragileSticker)
 					.setM_HU_PI(huDefBag)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation));
 			// value will be inherited
-			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
+			helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_CountryMadeIn)
 					.setM_HU_PI(huDefBag)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown)
 					.setSplitterStrategyClass(CopyAttributeSplitterStrategy.class));
 			// value will be pulled up to parents using *sum* aggregation strategy
-			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_Volume)
+			helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_Volume)
 					.setM_HU_PI(huDefBag)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp)
 					.setAggregationStrategyClass(SumAggregationStrategy.class));
@@ -104,16 +104,16 @@ public class AttributesPropagationTest extends AbstractHUTest
 			helper.assignProduct(piTU_Item_IFCO, pTomatoId, BigDecimal.TEN, uomEach);
 
 			// value will not be propagated
-			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_FragileSticker)
+			helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_FragileSticker)
 					.setM_HU_PI(huDefIFCO)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation));
 			// value will be inherited
-			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
+			helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_CountryMadeIn)
 					.setM_HU_PI(huDefIFCO)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown)
 					.setSplitterStrategyClass(CopyAttributeSplitterStrategy.class));
 			// value will be pulled up to parents using *sum* aggregation strategy
-			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_Volume)
+			helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_Volume)
 					.setM_HU_PI(huDefIFCO)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp)
 					.setAggregationStrategyClass(SumAggregationStrategy.class));
@@ -125,16 +125,16 @@ public class AttributesPropagationTest extends AbstractHUTest
 			helper.createHU_PI_Item_PackingMaterial(huDefPalet, pmPallets);
 
 			// value will not be propagated
-			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_FragileSticker)
+			helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_FragileSticker)
 					.setM_HU_PI(huDefPalet)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation));
 			// value will be inherited
-			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
+			helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_CountryMadeIn)
 					.setM_HU_PI(huDefPalet)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown)
 					.setSplitterStrategyClass(CopyAttributeSplitterStrategy.class));
 			// value will be pulled up to parents using *sum* aggregation strategy
-			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_Volume)
+			helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_Volume)
 					.setM_HU_PI(huDefPalet)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp)
 					.setAggregationStrategyClass(SumAggregationStrategy.class));
@@ -269,7 +269,7 @@ public class AttributesPropagationTest extends AbstractHUTest
 				X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40,
 				true // isInstanceAttribute
 				);
-		helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_InvalidPropagation)
+		helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_InvalidPropagation)
 				.setM_HU_PI(huDefPalet)
 				.setPropagationType("Invalid propagation type"));
 
@@ -292,7 +292,7 @@ public class AttributesPropagationTest extends AbstractHUTest
 				X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40,
 				true // instance attribute
 				);
-		helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CopyValueNoParent)
+		helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_CopyValueNoParent)
 				.setM_HU_PI(huDefPalet)
 				.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown)
 				.setSplitterStrategyClass(CopyAttributeSplitterStrategy.class));

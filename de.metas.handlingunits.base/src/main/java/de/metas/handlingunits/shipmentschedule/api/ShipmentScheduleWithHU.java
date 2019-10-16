@@ -1,6 +1,5 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -80,7 +79,6 @@ import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
-import de.metas.product.ProductIds;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -189,7 +187,7 @@ public class ShipmentScheduleWithHU
 		this.shipmentScheduleQtyPicked = allocRecord;
 		this.shipmentSchedule = create(allocRecord.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
 
-		final ProductId productId = ProductIds.ofRecord(shipmentSchedule);
+		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
 		final UomId catchUomIdOrNull = UomId.ofRepoIdOrNull(allocRecord.getCatch_UOM_ID());
 
 		final StockQtyAndUOMQty stockQtyAndCatchQty = StockQtyAndUOMQtys.create(
@@ -420,7 +418,7 @@ public class ShipmentScheduleWithHU
 			final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 
 			final StockQtyAndUOMQty stockQtyAndCatchQty = StockQtyAndUOMQty.builder()
-					.productId(ProductIds.ofRecord(shipmentSchedule))
+					.productId(ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()))
 					.stockQty(pickedQty)
 					.uomQty(catchQty.orElse(null))
 					.build();

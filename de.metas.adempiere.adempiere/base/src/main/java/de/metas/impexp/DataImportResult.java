@@ -1,5 +1,8 @@
 package de.metas.impexp;
 
+import java.time.Duration;
+
+import de.metas.impexp.config.DataImportConfigId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -49,4 +52,6 @@ public class DataImportResult
 	//
 	// Target table
 	String targetTableName;
+
+	Duration duration;
 }

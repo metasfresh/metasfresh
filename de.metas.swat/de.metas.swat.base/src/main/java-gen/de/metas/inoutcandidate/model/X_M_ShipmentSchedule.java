@@ -15,7 +15,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 514692118L;
+	private static final long serialVersionUID = 1254799178L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (Properties ctx, int M_ShipmentSchedule_ID, String trxName)
@@ -57,18 +57,6 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_AD_Table getAD_Table()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
-	}
-
-	@Override
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
-	}
 
 	/** Set DB-Tabelle.
 		@param AD_Table_ID 
@@ -222,26 +210,26 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		return (java.lang.String)get_Value(COLUMNNAME_BPartnerAddress_Override);
 	}
 
-	/** Set Catch Einheit.
-		@param Catch_UOM_ID 
-		Aus dem Produktstamm übenommene Catch Weight Einheit.
+	/** Set Standort abw..
+		@param C_BP_Location_Override_ID 
+		Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	  */
 	@Override
-	public void setCatch_UOM_ID (int Catch_UOM_ID)
+	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID)
 	{
-		if (Catch_UOM_ID < 1) 
-			set_Value (COLUMNNAME_Catch_UOM_ID, null);
+		if (C_BP_Location_Override_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_Location_Override_ID, null);
 		else 
-			set_Value (COLUMNNAME_Catch_UOM_ID, Integer.valueOf(Catch_UOM_ID));
+			set_Value (COLUMNNAME_C_BP_Location_Override_ID, Integer.valueOf(C_BP_Location_Override_ID));
 	}
 
-	/** Get Catch Einheit.
-		@return Aus dem Produktstamm übenommene Catch Weight Einheit.
+	/** Get Standort abw..
+		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	  */
 	@Override
-	public int getCatch_UOM_ID () 
+	public int getC_BP_Location_Override_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Catch_UOM_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Location_Override_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -339,31 +327,6 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public int getC_BPartner_Vendor_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Vendor_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Standort abw..
-		@param C_BP_Location_Override_ID 
-		Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID)
-	{
-		if (C_BP_Location_Override_ID < 1) 
-			set_Value (COLUMNNAME_C_BP_Location_Override_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BP_Location_Override_ID, Integer.valueOf(C_BP_Location_Override_ID));
-	}
-
-	/** Get Standort abw..
-		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public int getC_BP_Location_Override_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Location_Override_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -505,6 +468,31 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public int getC_UOM_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Catch Einheit.
+		@param Catch_UOM_ID 
+		Aus dem Produktstamm übenommene Catch Weight Einheit.
+	  */
+	@Override
+	public void setCatch_UOM_ID (int Catch_UOM_ID)
+	{
+		if (Catch_UOM_ID < 1) 
+			set_Value (COLUMNNAME_Catch_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Catch_UOM_ID, Integer.valueOf(Catch_UOM_ID));
+	}
+
+	/** Get Catch Einheit.
+		@return Aus dem Produktstamm übenommene Catch Weight Einheit.
+	  */
+	@Override
+	public int getCatch_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Catch_UOM_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -1518,16 +1506,16 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		return bd;
 	}
 
-	/** Set Auf Packzettel.
-		@param QtyPickList Auf Packzettel	  */
+	/** Set Auf Packzettel (Lagereinheit).
+		@param QtyPickList Auf Packzettel (Lagereinheit)	  */
 	@Override
 	public void setQtyPickList (java.math.BigDecimal QtyPickList)
 	{
 		set_Value (COLUMNNAME_QtyPickList, QtyPickList);
 	}
 
-	/** Get Auf Packzettel.
-		@return Auf Packzettel	  */
+	/** Get Auf Packzettel (Lagereinheit).
+		@return Auf Packzettel (Lagereinheit)	  */
 	@Override
 	public java.math.BigDecimal getQtyPickList () 
 	{
@@ -1578,25 +1566,6 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		return bd;
 	}
 
-	/** Set Abw. Catch Weight Menge.
-		@param QtyToDeliverCatch_Override Abw. Catch Weight Menge	  */
-	@Override
-	public void setQtyToDeliverCatch_Override (java.math.BigDecimal QtyToDeliverCatch_Override)
-	{
-		set_Value (COLUMNNAME_QtyToDeliverCatch_Override, QtyToDeliverCatch_Override);
-	}
-
-	/** Get Abw. Catch Weight Menge.
-		@return Abw. Catch Weight Menge	  */
-	@Override
-	public java.math.BigDecimal getQtyToDeliverCatch_Override () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToDeliverCatch_Override);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
 	/** Set Liefermenge abw..
 		@param QtyToDeliver_Override 
 		Menge, die abweichend von der ursprünglichen Vorgabe ausgeliefert wird
@@ -1641,6 +1610,25 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		return bd;
 	}
 
+	/** Set Abw. Catch Weight Menge.
+		@param QtyToDeliverCatch_Override Abw. Catch Weight Menge	  */
+	@Override
+	public void setQtyToDeliverCatch_Override (java.math.BigDecimal QtyToDeliverCatch_Override)
+	{
+		set_Value (COLUMNNAME_QtyToDeliverCatch_Override, QtyToDeliverCatch_Override);
+	}
+
+	/** Get Abw. Catch Weight Menge.
+		@return Abw. Catch Weight Menge	  */
+	@Override
+	public java.math.BigDecimal getQtyToDeliverCatch_Override () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToDeliverCatch_Override);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** Set Datensatz-ID.
 		@param Record_ID 
 		Direct internal record ID
@@ -1664,6 +1652,32 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * ShipmentAllocation_BestBefore_Policy AD_Reference_ID=541043
+	 * Reference name: ShipmentAllocation_BestBefore_Policy
+	 */
+	public static final int SHIPMENTALLOCATION_BESTBEFORE_POLICY_AD_Reference_ID=541043;
+	/** Newest_First = N */
+	public static final String SHIPMENTALLOCATION_BESTBEFORE_POLICY_Newest_First = "N";
+	/** Expiring_First = E */
+	public static final String SHIPMENTALLOCATION_BESTBEFORE_POLICY_Expiring_First = "E";
+	/** Set Zuordnung Mindesthaltbarkeit.
+		@param ShipmentAllocation_BestBefore_Policy Zuordnung Mindesthaltbarkeit	  */
+	@Override
+	public void setShipmentAllocation_BestBefore_Policy (java.lang.String ShipmentAllocation_BestBefore_Policy)
+	{
+
+		set_Value (COLUMNNAME_ShipmentAllocation_BestBefore_Policy, ShipmentAllocation_BestBefore_Policy);
+	}
+
+	/** Get Zuordnung Mindesthaltbarkeit.
+		@return Zuordnung Mindesthaltbarkeit	  */
+	@Override
+	public java.lang.String getShipmentAllocation_BestBefore_Policy () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ShipmentAllocation_BestBefore_Policy);
 	}
 
 	/** Set Positionssumme.

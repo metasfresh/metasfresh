@@ -140,7 +140,7 @@ public class HUAttributeStorage_generateInitialAttributes_Integration_Test exten
 
 			createAttributeValues(attribute, attributeValueGeneratorClass);
 
-			final I_M_HU_PI_Attribute piAttribute = helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attribute)
+			final I_M_HU_PI_Attribute piAttribute = helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attribute)
 					.setM_HU_PI(huPI)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation));
 			piAttribute.setIsReadOnly(false);

@@ -282,7 +282,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		// Default attributes
 		{
 			// this is already done in HUTestHelper.setupNoPIAttributes(); if we do it again, we violate the uniqueness assumption for M_HU_PI_Attributes
-			// createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
+			// createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_CountryMadeIn)
 			// .setM_HU_PI(huDefNone));
 
 			//
@@ -290,7 +290,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 			for (int i = 1; i <= 10; i++)
 			{
 				final I_M_Attribute attr_Text = new AttributesTestHelper().createM_Attribute("Text" + i, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
-				createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_Text)
+				createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_Text)
 						.setM_HU_PI(huDefNone));
 			}
 		}
@@ -307,9 +307,9 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 			pmIFCO.setC_UOM_Weight_ID(uomEach.getC_UOM_ID());
 			InterfaceWrapperHelper.save(pmIFCO);
 
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_CountryMadeIn)
 					.setM_HU_PI(huDefIFCO));
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_FragileSticker)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_FragileSticker)
 					.setM_HU_PI(huDefIFCO));
 			// this.createAttribute(huDefIFCO, attr_Weight,
 			// X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp,
@@ -324,9 +324,9 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 
 			createHU_PI_Item_PackingMaterial(huDefIFCO2, pmIFCO);
 
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_CountryMadeIn)
 					.setM_HU_PI(huDefIFCO2));
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_FragileSticker)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_FragileSticker)
 					.setM_HU_PI(huDefIFCO2));
 			// this.createAttribute(huDefIFCO2, attr_Weight,
 			// X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp,
@@ -342,9 +342,9 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 			pmPalet.setC_UOM_Weight_ID(uomEach.getC_UOM_ID());
 			InterfaceWrapperHelper.save(pmPalet);
 
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_CountryMadeIn)
 					.setM_HU_PI(huDefPalet));
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_FragileSticker)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_FragileSticker)
 					.setM_HU_PI(huDefPalet));
 			// this.createAttribute(huDefPalet, attr_Weight,
 			// X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp,
@@ -356,11 +356,11 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 			createHU_PI_Item_IncludedHU(huDefPalet2, huDefIFCO2, new BigDecimal("10"));
 			createHU_PI_Item_PackingMaterial(huDefPalet2, pmPalet);
 
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_CountryMadeIn)
 					.setM_HU_PI(huDefPalet2));
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_FragileSticker)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_FragileSticker)
 					.setM_HU_PI(huDefPalet2));
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_Volume)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_Volume)
 					.setM_HU_PI(huDefPalet2)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp)
 					.setAggregationStrategyClass(SumAggregationStrategy.class));
@@ -439,7 +439,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		{
 			final I_M_AttributeInstance ai = InterfaceWrapperHelper.newInstance(I_M_AttributeInstance.class, asi);
 			ai.setM_AttributeSetInstance(asi);
-			ai.setM_Attribute(attr_CountryMadeIn);
+			ai.setM_Attribute_ID(attr_CountryMadeIn.getM_Attribute_ID());
 			ai.setValue("RO");
 			ai.setValueNumber(null);
 			InterfaceWrapperHelper.save(ai);

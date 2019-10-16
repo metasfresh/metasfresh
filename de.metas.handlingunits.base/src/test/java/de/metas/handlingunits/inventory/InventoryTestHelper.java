@@ -3,11 +3,11 @@ package de.metas.handlingunits.inventory;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
 
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
@@ -52,13 +52,13 @@ public class InventoryTestHelper
 		final AttributesTestHelper attributesTestHelper = new AttributesTestHelper();
 
 		final I_M_Attribute a1 = createStorageRelevantAttribute(attributesTestHelper, "a1");
-		final I_M_AttributeValue av1 = createAttributeValue(attributesTestHelper, a1, "av1", AV1_ID);
+		final AttributeListValue av1 = createAttributeValue(attributesTestHelper, a1, "av1", AV1_ID);
 
 		final I_M_Attribute a2 = createStorageRelevantAttribute(attributesTestHelper, "a2");
-		final I_M_AttributeValue av2 = createAttributeValue(attributesTestHelper, a2, "av2", AV2_ID);
+		final AttributeListValue av2 = createAttributeValue(attributesTestHelper, a2, "av2", AV2_ID);
 
 		final I_M_Attribute a3 = createStorageRelevantAttribute(attributesTestHelper, "a3");
-		final I_M_AttributeValue av3 = createAttributeValue(attributesTestHelper, a3, "av3", AV3_ID);
+		final AttributeListValue av3 = createAttributeValue(attributesTestHelper, a3, "av3", AV3_ID);
 
 		final I_M_AttributeSetInstance asi = newInstance(I_M_AttributeSetInstance.class);
 		saveRecord(asi);
@@ -94,14 +94,13 @@ public class InventoryTestHelper
 		return attribute;
 	}
 
-	private static I_M_AttributeValue createAttributeValue(
+	private static AttributeListValue createAttributeValue(
 			@NonNull final AttributesTestHelper attributesTestHelper,
 			@NonNull final I_M_Attribute attributeRecord,
 			String valueName,
 			int valueRepoId)
 	{
-		final I_M_AttributeValue attributeValueRecord = attributesTestHelper.createM_AttributeValue(attributeRecord, valueRepoId, valueName);
-		return attributeValueRecord;
+		return attributesTestHelper.createM_AttributeValue(attributeRecord, valueRepoId, valueName);
 	}
 
 	public static DocTypeId createDocType(@NonNull final DocBaseAndSubType docBaseAndSubType)

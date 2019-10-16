@@ -15,11 +15,11 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.material.commons.attributes.AttributesKeyPattern;
+import de.metas.material.commons.attributes.AttributesKeyPatterns;
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.util.Services;
@@ -70,14 +70,15 @@ public class AvailableToPromiseRepository
 	@NonNull
 	public AvailableToPromiseResult retrieveAvailableStock(@NonNull final AvailableToPromiseMultiQuery multiQuery)
 	{
-		final AvailableToPromiseResult result = multiQuery.isAddToPredefinedBuckets()
-				? AvailableToPromiseResult.createEmptyWithPredefinedBuckets(multiQuery)
-				: AvailableToPromiseResult.createEmpty();
+		final boolean addToPredefinedBuckets = multiQuery.isAddToPredefinedBuckets();
+		final AvailableToPromiseResultBuilder result = addToPredefinedBuckets
+				? AvailableToPromiseResultBuilder.createEmptyWithPredefinedBuckets(multiQuery)
+				: AvailableToPromiseResultBuilder.createEmpty();
 
 		final IQuery<I_MD_Candidate_ATP_QueryResult> dbQuery = createDBQueryForMaterialQueryOrNull(multiQuery);
 		if (dbQuery == null)
 		{
-			return result;
+			return result.build();
 		}
 
 		final Function<I_MD_Candidate_ATP_QueryResult, Boolean> compareByWhetherRecordHasBPartnerId = record -> record.getC_BPartner_Customer_ID() > 0;
@@ -102,7 +103,7 @@ public class AvailableToPromiseRepository
 
 		for (final AddToResultGroupRequest request : requests)
 		{
-			if (multiQuery.isAddToPredefinedBuckets())
+			if (addToPredefinedBuckets)
 			{
 				result.addQtyToAllMatchingGroups(request);
 			}
@@ -111,7 +112,8 @@ public class AvailableToPromiseRepository
 				result.addToNewGroupIfFeasible(request);
 			}
 		}
-		return result;
+
+		return result.build();
 	}
 
 	public AvailableToPromiseResult retrieveAvailableStock(@NonNull AvailableToPromiseQuery query)
@@ -122,14 +124,10 @@ public class AvailableToPromiseRepository
 	private IQuery<I_MD_Candidate_ATP_QueryResult> createDBQueryForMaterialQueryOrNull(
 			@NonNull final AvailableToPromiseMultiQuery multiQuery)
 	{
-		final Function<AvailableToPromiseQuery, IQuery<I_MD_Candidate_ATP_QueryResult>> createDbQueryForSingleStockQuery = //
-				stockQuery -> AvailableToPromiseSqlHelper
-						.createDBQueryForStockQuery(stockQuery);
-
 		return multiQuery.getQueries()
 				.stream()
 				.filter(Predicates.notNull())
-				.map(createDbQueryForSingleStockQuery)
+				.map(AvailableToPromiseSqlHelper::createDBQueryForStockQuery)
 				.reduce(IQuery.unionDistict())
 				.orElse(null);
 	}
@@ -150,7 +148,7 @@ public class AvailableToPromiseRepository
 				.build();
 	}
 
-	public Set<AttributesKey> getPredefinedStorageAttributeKeys()
+	public Set<AttributesKeyPattern> getPredefinedStorageAttributeKeys()
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final int clientId = Env.getAD_Client_ID(Env.getCtx());
@@ -161,29 +159,7 @@ public class AvailableToPromiseRepository
 				AttributesKey.ALL.getAsString(),
 				clientId, orgId);
 
-		return Splitter.on(",")
-				.trimResults()
-				.omitEmptyStrings()
-				.splitToList(storageAttributesKeys)
-				.stream()
-				.map(attributesKeyStr -> toAttributesKey(attributesKeyStr))
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	private static AttributesKey toAttributesKey(final String storageAttributesKey)
-	{
-		if ("<ALL_STORAGE_ATTRIBUTES_KEYS>".equals(storageAttributesKey))
-		{
-			return AttributesKey.ALL;
-		}
-		else if ("<OTHER_STORAGE_ATTRIBUTES_KEYS>".equals(storageAttributesKey))
-		{
-			return AttributesKey.OTHER;
-		}
-		else
-		{
-			return AttributesKey.ofString(storageAttributesKey);
-		}
+		return AttributesKeyPatterns.parseCommaSeparatedString(storageAttributesKeys);
 	}
 
 	@Value

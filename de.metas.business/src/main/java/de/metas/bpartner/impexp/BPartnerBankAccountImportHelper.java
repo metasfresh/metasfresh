@@ -1,18 +1,19 @@
 package de.metas.bpartner.impexp;
 
+import org.adempiere.bank.BankId;
 import org.adempiere.bank.BankRepository;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
 import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Bank;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.ModelValidationEngine;
 
 import de.metas.currency.ICurrencyBL;
 import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.invoice_gateway.spi.model.BPartnerId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -38,16 +39,15 @@ import de.metas.util.Services;
 
 /* package */ class BPartnerBankAccountImportHelper
 {
-	public static BPartnerBankAccountImportHelper newInstance()
-	{
-		return new BPartnerBankAccountImportHelper();
-	}
-
-
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final BankRepository bankRepository;
 	private BPartnerImportProcess process;
 
-	private BPartnerBankAccountImportHelper()
+	@Builder
+	private BPartnerBankAccountImportHelper(
+			@NonNull final BankRepository bankRepository)
 	{
+		this.bankRepository = bankRepository;
 	}
 
 	public BPartnerBankAccountImportHelper setProcess(final BPartnerImportProcess process)
@@ -58,7 +58,7 @@ import de.metas.util.Services;
 
 	public I_C_BP_BankAccount importRecord(final I_I_BPartner importRecord)
 	{
-		final I_C_BPartner bpartner = importRecord.getC_BPartner();
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(importRecord.getC_BPartner_ID());
 
 		I_C_BP_BankAccount bankAccount = importRecord.getC_BP_BankAccount();
 		if (bankAccount != null)
@@ -69,15 +69,15 @@ import de.metas.util.Services;
 		}
 		else if (!Check.isEmpty(importRecord.getSwiftCode(), true) && !Check.isEmpty(importRecord.getIBAN(), true))
 		{
-			bankAccount = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class, bpartner);
-			bankAccount.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+			bankAccount = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class);
+			bankAccount.setC_BPartner_ID(bpartnerId.getRepoId());
 			bankAccount.setIBAN(importRecord.getIBAN());
 			bankAccount.setA_Name(importRecord.getSwiftCode());
-			bankAccount.setC_Currency_ID(Services.get(ICurrencyBL.class).getBaseCurrency(process.getCtx()).getId().getRepoId());
-			final I_C_Bank bank = Adempiere.getBean(BankRepository.class).findBankBySwiftCode(importRecord.getSwiftCode());
-			if (bank != null)
+			bankAccount.setC_Currency_ID(currencyBL.getBaseCurrency(process.getCtx()).getId().getRepoId());
+			final BankId bankId = bankRepository.getBankIdBySwiftCode(importRecord.getSwiftCode()).orElse(null);
+			if (bankId != null)
 			{
-				bankAccount.setC_Bank(bank);
+				bankAccount.setC_Bank_ID(bankId.getRepoId());
 			}
 
 			ModelValidationEngine.get().fireImportValidate(process, importRecord, bankAccount, IImportInterceptor.TIMING_AFTER_IMPORT);

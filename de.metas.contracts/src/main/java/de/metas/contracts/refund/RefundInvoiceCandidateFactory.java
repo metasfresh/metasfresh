@@ -51,7 +51,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
-import de.metas.product.ProductIds;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
@@ -304,7 +304,7 @@ public class RefundInvoiceCandidateFactory
 				priceActual,
 				CurrencyId.ofRepoId(refundRecord.getC_Currency_ID()));
 
-		final I_C_UOM productUom = productBL.getStockUOM(ProductIds.ofRecord(refundRecord));
+		final I_C_UOM productUom = productBL.getStockUOM(ProductId.ofRepoId(refundRecord.getM_Product_ID()));
 
 		final RefundInvoiceCandidate invoiceCandidate = RefundInvoiceCandidate
 				.builder()

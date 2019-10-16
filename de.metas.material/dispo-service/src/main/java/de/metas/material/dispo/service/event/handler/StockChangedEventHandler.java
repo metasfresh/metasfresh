@@ -242,7 +242,7 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 				.attributeSetInstanceId(productDescriptor.getAttributeSetInstanceId())
 				.complete(true)
 				.quantity(event.getQtyOnHand().subtract(event.getQtyOnHandOld()))
-				.resetStockAdPinstanceId(stockChangeDetails.getResetStockAdPinstanceId())
+				.resetStockPInstanceId(stockChangeDetails.getResetStockPInstanceId())
 				.stockId(stockChangeDetails.getStockId())
 				.storageAttributesKey(productDescriptor.getStorageAttributesKey())
 				.transactionId(stockChangeDetails.getTransactionId())

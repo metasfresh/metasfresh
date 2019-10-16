@@ -3,8 +3,8 @@ package de.metas.material.event.eventbus;
 import org.springframework.stereotype.Service;
 
 import de.metas.event.Event;
-import de.metas.event.SimpleObjectSerializer;
 import de.metas.material.event.MaterialEvent;
+import de.metas.util.JSONObjectMapper;
 import lombok.NonNull;
 
 /*
@@ -40,24 +40,26 @@ public class MaterialEventConverter
 {
 	private static final String PROPERTY_MATERIAL_EVENT = "MaterialEvent";
 
+	private final JSONObjectMapper<MaterialEvent> jsonObjectMapper;
+
+	public MaterialEventConverter()
+	{
+		jsonObjectMapper = JSONObjectMapper.forClass(MaterialEvent.class);
+	}
+
 	public MaterialEvent toMaterialEvent(@NonNull final Event metasfreshEvent)
 	{
-		final String lightWeigthEventStr = metasfreshEvent.getProperty(PROPERTY_MATERIAL_EVENT);
+		final String materialEventStr = metasfreshEvent.getProperty(PROPERTY_MATERIAL_EVENT);
 
-		final MaterialEvent lightWeightEvent = SimpleObjectSerializer.get()
-				.deserialize(lightWeigthEventStr, MaterialEvent.class);
-		return lightWeightEvent;
+		return jsonObjectMapper.readValue(materialEventStr);
 	}
 
 	/**
 	 * Note: the returned metasfresh event shall be logged.
-	 *
-	 * @param event
-	 * @return
 	 */
-	public Event fromMaterialEvent(@NonNull final MaterialEvent event)
+	public Event fromMaterialEvent(@NonNull final MaterialEvent materialEvent)
 	{
-		final String eventStr = SimpleObjectSerializer.get().serialize(event);
+		final String eventStr = jsonObjectMapper.writeValueAsString(materialEvent);
 
 		return Event.builder()
 				.putProperty(PROPERTY_MATERIAL_EVENT, eventStr)

@@ -144,7 +144,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 		productRecord.setValue("product.Value");
 		productRecord.setName("product.Name");
 		productRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
-		productRecord.setM_Product_Category(productCategory);
+		productRecord.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
 		saveRecord(productRecord);
 
 		final I_M_DiscountSchema discountSchemaRecord = newInstance(I_M_DiscountSchema.class);
@@ -157,7 +157,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 
 		discountSchemaBreakRecord = newInstance(I_M_DiscountSchemaBreak.class);
 		discountSchemaBreakRecord.setM_DiscountSchema(discountSchemaRecord);
-		discountSchemaBreakRecord.setC_PaymentTerm(paymentTermRecord);
+		discountSchemaBreakRecord.setC_PaymentTerm_ID(paymentTermRecord.getC_PaymentTerm_ID());
 		discountSchemaBreakRecord.setPaymentDiscount(TEN);
 		discountSchemaBreakRecord.setPriceBase(X_M_DiscountSchemaBreak.PRICEBASE_Fixed);
 		discountSchemaBreakRecord.setPriceStdFixed(TEN);

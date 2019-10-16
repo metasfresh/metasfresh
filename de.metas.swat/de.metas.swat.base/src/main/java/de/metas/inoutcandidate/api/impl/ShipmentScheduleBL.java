@@ -80,6 +80,7 @@ import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.document.engine.DocStatus;
@@ -113,7 +114,6 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.product.ProductIds;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.storage.IStorageEngine;
@@ -342,9 +342,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 				if (isDropShip)
 				{
-					// if there is bpp that is dropship and has a C_BPartner_Vendor_ID, set it in the schedule
-					final org.compiere.model.I_C_BPartner bpVendor = bpp.getC_BPartner_Vendor(); // the customer's vendor for the given product
-					sched.setC_BPartner_Vendor_ID(bpVendor.getC_BPartner_ID());
+					// if there is bpp that is dropship and has a C_BPartner_Vendor_ID,
+					// set the customer's vendor for the given product in the schedule
+					sched.setC_BPartner_Vendor_ID(bpp.getC_BPartner_Vendor_ID());
 				}
 
 				// set the dropship flag in shipment schedule as it is in the bpp
@@ -760,9 +760,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		}
 		else
 		{
-			// see if there is an existing shipment for this order
-			final OrderId orderId = scheduleSourceDoc.getRecordRef().getIdAssumingTableName(I_C_Order.Table_Name, OrderId::ofRepoId);
-			candidate = candidates.getInOutForOrderId(orderId, warehouseId, bpartnerAddress);
+			// see if there is an existing shipment for this order (or flatrate term)
+			candidate = candidates.getInOutForRecordRef(scheduleSourceDoc.getRecordRef(), warehouseId, bpartnerAddress);
 		}
 
 		if (candidate == null)
@@ -802,7 +801,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
 
-		final Optional<UomId> catchUOMId = productBL.getCatchUOMId(ProductIds.ofRecord(sched));
+		final Optional<UomId> catchUOMId = productBL.getCatchUOMId(ProductId.ofRepoId(sched.getM_Product_ID()));
 		final Integer catchUomRepoId = catchUOMId.map(UomId::getRepoId).orElse(0);
 
 		sched.setCatch_UOM_ID(catchUomRepoId);
@@ -1128,10 +1127,15 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
+	public I_M_ShipmentSchedule getById(@NonNull final ShipmentScheduleId id)
+	{
+		return Services.get(IShipmentSchedulePA.class).getById(id);
+	}
+
+	@Override
 	public Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIdsOutOfTrx(final Set<ShipmentScheduleId> ids)
 	{
 		return Services.get(IShipmentSchedulePA.class).getByIdsOutOfTrx(ids);
-
 	}
 
 	@Override
@@ -1153,6 +1157,21 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		return TimeUtil.asZonedDateTime(shipmentScheduleEffectiveBL.getPreparationDate(schedule));
+	}
+
+	@Override
+	public ShipmentAllocationBestBeforePolicy getBestBeforePolicy(@NonNull final ShipmentScheduleId id)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = getById(id);
+		final Optional<ShipmentAllocationBestBeforePolicy> bestBeforePolicy = ShipmentAllocationBestBeforePolicy.optionalOfNullableCode(shipmentSchedule.getShipmentAllocation_BestBefore_Policy());
+		if (bestBeforePolicy.isPresent())
+		{
+			return bestBeforePolicy.get();
+		}
+
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		final BPartnerId bpartnerId = getBPartnerId(shipmentSchedule);
+		return bpartnerBL.getBestBeforePolicy(bpartnerId);
 	}
 
 	@Override

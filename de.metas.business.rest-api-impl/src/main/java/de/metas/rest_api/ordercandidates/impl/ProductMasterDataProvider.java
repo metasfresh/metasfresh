@@ -1,11 +1,9 @@
 package de.metas.rest_api.ordercandidates.impl;
 
-import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Nullable;
@@ -22,7 +20,7 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
-import de.metas.rest_api.ordercandidates.JsonProductInfo;
+import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
 import de.metas.rest_api.utils.PermissionService;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -58,16 +56,6 @@ import lombok.experimental.Wither;
 
 final class ProductMasterDataProvider
 {
-	public static ProductMasterDataProvider of(
-			@Nullable final Properties ctx,
-			@Nullable final PermissionService permissionService)
-	{
-		return new ProductMasterDataProvider(
-				coalesceSuppliers(
-						() -> permissionService,
-						() -> PermissionService.of(ctx)));
-	}
-
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IProductBL productsBL = Services.get(IProductBL.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
@@ -199,10 +187,11 @@ final class ProductMasterDataProvider
 			@NonNull final OrgId orgId)
 	{
 		final String productValue = json.getCode();
+		final String productExternalId = json.getExternalId();
 		final SyncAdvise syncAdvise = json.getSyncAdvise();
 
 		final ProductId existingProductId;
-		if (Check.isEmpty(productValue, true))
+		if (Check.isEmpty(productValue, true) && Check.isEmpty(productExternalId, true))
 		{
 			existingProductId = null;
 		}
@@ -210,6 +199,7 @@ final class ProductMasterDataProvider
 		{
 			final ProductQuery query = ProductQuery.builder()
 					.value(productValue)
+					.externalId(productExternalId)
 					.orgId(orgId)
 					.includeAnyOrg(true)
 					.outOfTrx(syncAdvise.isLoadReadOnly())
@@ -219,7 +209,7 @@ final class ProductMasterDataProvider
 
 		if (existingProductId == null && syncAdvise.getIfNotExists().isFail())
 		{
-			final String msg = StringUtils.formatMessage("Found no existing product; Searched via value={} and orgId in ({}, 0)", productValue, orgId);
+			final String msg = StringUtils.formatMessage("Found no existing product; Searched via (value={} or externalId={}) and orgId in ({}, 0)", productValue, productExternalId, orgId);
 			throw new ProductNotFoundException(msg);
 		}
 

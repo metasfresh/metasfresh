@@ -58,8 +58,11 @@ import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 @SpringBootApplication( //
 		scanBasePackages = { "de.metas", "org.adempiere" }  //
 )
+@Profile(Application.PROFILE_MaterialDispo_Standalone)
 public class Application
 {
+	static final String PROFILE_MaterialDispo_Standalone = Profiles.PROFILE_MaterialDispo + "-standalone";
+
 	@Autowired
 	private ApplicationContext applicationContext;
 
@@ -78,7 +81,7 @@ public class Application
 			new SpringApplicationBuilder(Application.class)
 					.headless(true)
 					.web(true)
-					.profiles(Profiles.PROFILE_MaterialDispo)
+					.profiles(Profiles.PROFILE_MaterialDispo, PROFILE_MaterialDispo_Standalone)
 					.beanNameGenerator(new MetasfreshBeanNameGenerator())
 					.run(args);
 		}

@@ -91,7 +91,7 @@ public interface I_C_BPartner
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -101,7 +101,7 @@ public interface I_C_BPartner
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -372,10 +372,6 @@ public interface I_C_BPartner
 	 * <br>Virtual Column: false
 	 */
 	public int getC_PaymentTerm_ID();
-
-	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm();
-
-	public void setC_PaymentTerm(org.compiere.model.I_C_PaymentTerm C_PaymentTerm);
 
     /** Column definition for C_PaymentTerm_ID */
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_C_PaymentTerm> COLUMN_C_PaymentTerm_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_C_PaymentTerm>(I_C_BPartner.class, "C_PaymentTerm_ID", org.compiere.model.I_C_PaymentTerm.class);
@@ -1051,7 +1047,7 @@ public interface I_C_BPartner
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setglobalid (java.lang.String globalid);
+	public void setGlobalId (java.lang.String GlobalId);
 
 	/**
 	 * Get Global ID.
@@ -1060,12 +1056,12 @@ public interface I_C_BPartner
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getglobalid();
+	public java.lang.String getGlobalId();
 
-    /** Column definition for globalid */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_globalid = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "globalid", null);
-    /** Column name globalid */
-    public static final String COLUMNNAME_globalid = "globalid";
+    /** Column definition for GlobalId */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_GlobalId = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "GlobalId", null);
+    /** Column name GlobalId */
+    public static final String COLUMNNAME_GlobalId = "GlobalId";
 
 	/**
 	 * Set Druckformat Rechnung.
@@ -1193,7 +1189,8 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_IsAllowActionPrice = "IsAllowActionPrice";
 
 	/**
-	 * Set Preise mutieren.
+	 * Set PLV von Basis.
+	 * Von Basis derivierte PLV erlauben
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1202,7 +1199,8 @@ public interface I_C_BPartner
 	public void setIsAllowPriceMutation (boolean IsAllowPriceMutation);
 
 	/**
-	 * Get Preise mutieren.
+	 * Get PLV von Basis.
+	 * Von Basis derivierte PLV erlauben
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1780,7 +1778,7 @@ public interface I_C_BPartner
 	 * Set Preissystem.
 	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1790,7 +1788,7 @@ public interface I_C_BPartner
 	 * Get Preissystem.
 	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2225,10 +2223,6 @@ public interface I_C_BPartner
 	 */
 	public int getPO_PaymentTerm_ID();
 
-	public org.compiere.model.I_C_PaymentTerm getPO_PaymentTerm();
-
-	public void setPO_PaymentTerm(org.compiere.model.I_C_PaymentTerm PO_PaymentTerm);
-
     /** Column definition for PO_PaymentTerm_ID */
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_C_PaymentTerm> COLUMN_PO_PaymentTerm_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_C_PaymentTerm>(I_C_BPartner.class, "PO_PaymentTerm_ID", org.compiere.model.I_C_PaymentTerm.class);
     /** Column name PO_PaymentTerm_ID */
@@ -2262,7 +2256,7 @@ public interface I_C_BPartner
 	/**
 	 * Set Einkaufspreissystem.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2271,7 +2265,7 @@ public interface I_C_BPartner
 	/**
 	 * Get Einkaufspreissystem.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2765,6 +2759,29 @@ public interface I_C_BPartner
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_ShelfLifeMinPct = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "ShelfLifeMinPct", null);
     /** Column name ShelfLifeMinPct */
     public static final String COLUMNNAME_ShelfLifeMinPct = "ShelfLifeMinPct";
+
+	/**
+	 * Set Zuordnung Mindesthaltbarkeit.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setShipmentAllocation_BestBefore_Policy (java.lang.String ShipmentAllocation_BestBefore_Policy);
+
+	/**
+	 * Get Zuordnung Mindesthaltbarkeit.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getShipmentAllocation_BestBefore_Policy();
+
+    /** Column definition for ShipmentAllocation_BestBefore_Policy */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_ShipmentAllocation_BestBefore_Policy = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "ShipmentAllocation_BestBefore_Policy", null);
+    /** Column name ShipmentAllocation_BestBefore_Policy */
+    public static final String COLUMNNAME_ShipmentAllocation_BestBefore_Policy = "ShipmentAllocation_BestBefore_Policy";
 
 	/**
 	 * Set Short Description.

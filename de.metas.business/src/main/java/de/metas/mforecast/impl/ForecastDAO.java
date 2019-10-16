@@ -13,42 +13,39 @@ package de.metas.mforecast.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
-import org.adempiere.ad.dao.impl.EqualsQueryFilter;
-import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 
 import de.metas.mforecast.IForecastDAO;
+import de.metas.util.Check;
 import de.metas.util.Services;
 
 public class ForecastDAO implements IForecastDAO
-
 {
-	@Override
-	public List<I_M_ForecastLine> retrieveLines(final I_M_Forecast forecast)
-	{
-		final IQueryBuilder<I_M_ForecastLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_ForecastLine.class, forecast)
-				.filter(new EqualsQueryFilter<I_M_ForecastLine>(I_M_ForecastLine.COLUMNNAME_M_Forecast_ID, forecast.getM_Forecast_ID()))
-				.filterByClientId()
-				.filter(ActiveRecordQueryFilter.getInstance(I_M_ForecastLine.class));
-		queryBuilder.orderBy()
-				.addColumn(I_M_ForecastLine.COLUMNNAME_M_ForecastLine_ID);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		return queryBuilder.create()
-				.list(I_M_ForecastLine.class);
+	@Override
+	public List<I_M_ForecastLine> retrieveLinesByForecastId(final int forecastId)
+	{
+		Check.assumeGreaterThanZero(forecastId, "forecastId");
+
+		return queryBL.createQueryBuilder(I_M_ForecastLine.class)
+				.addEqualsFilter(I_M_ForecastLine.COLUMNNAME_M_Forecast_ID, forecastId)
+				.filter(ActiveRecordQueryFilter.getInstance(I_M_ForecastLine.class))
+				.orderBy(I_M_ForecastLine.COLUMNNAME_M_ForecastLine_ID)
+				.create()
+				.list();
 	}
 }

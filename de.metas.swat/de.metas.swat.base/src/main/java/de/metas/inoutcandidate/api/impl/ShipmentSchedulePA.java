@@ -22,6 +22,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -97,7 +98,12 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public <T extends I_M_ShipmentSchedule> T getById(@NonNull final ShipmentScheduleId id, @NonNull final Class<T> modelClass)
 	{
-		return load(id, modelClass);
+		final T shipmentSchedule = load(id, modelClass);
+		if (shipmentSchedule == null)
+		{
+			throw new AdempiereException("@NotFound@ @M_ShipmentSchedule_ID@: " + id);
+		}
+		return shipmentSchedule;
 	}
 
 	@Override

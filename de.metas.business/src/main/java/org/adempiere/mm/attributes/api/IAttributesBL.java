@@ -13,25 +13,24 @@ package org.adempiere.mm.attributes.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.MathContext;
 import java.util.Date;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.product.ProductId;
@@ -39,6 +38,8 @@ import de.metas.util.ISingletonService;
 
 public interface IAttributesBL extends ISingletonService
 {
+	I_M_Attribute getAttributeById(AttributeId attributeId);
+
 	AttributeAction getAttributeAction(Properties ctx);
 
 	IAttributeValueGenerator getAttributeValueGenerator(org.compiere.model.I_M_Attribute attributeParam);
@@ -69,8 +70,6 @@ public interface IAttributesBL extends ISingletonService
 	 */
 	I_M_Attribute getAttributeOrNull(ProductId productId, AttributeId attributeId);
 
-	boolean isSameTrx(I_M_AttributeValue attributeValue, boolean isSOTrx);
-
 	/**
 	 * @param attribute
 	 * @return math context of this attribute or DEFAULT_MATHCONTEXT if the attribute's UOM is null
@@ -87,4 +86,10 @@ public interface IAttributesBL extends ISingletonService
 	 * @return best-before date or <code>null</code> if it does not apply
 	 */
 	Date calculateBestBeforeDate(Properties ctx, ProductId productId, BPartnerId vendorBPartnerId, Date dateReceipt);
+
+	int getNumberDisplayType(I_M_Attribute attribute);
+
+	boolean isStorageRelevant(final AttributeId attributeId);
+	
+	AttributeListValue retrieveAttributeValueOrNull(AttributeId attributeId, String value);
 }

@@ -68,7 +68,7 @@ public class HUPIAttributesDAO_isTemplateAttribute_Test extends AbstractHUTest
 
 	private I_M_HU_PI_Attribute linkAttributeToPI(final I_M_HU_PI pi, final boolean isActive)
 	{
-		final I_M_HU_PI_Attribute piAttribute = helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attribute)
+		final I_M_HU_PI_Attribute piAttribute = helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attribute)
 				.setM_HU_PI(pi)
 				.setInstanceAttribute(true));
 

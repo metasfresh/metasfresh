@@ -1,25 +1,30 @@
 package org.adempiere.mm.attributes.api;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet.Builder;
+import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
+import org.compiere.model.X_M_Attribute;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
+import de.metas.material.event.commons.AttributeKeyPartType;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.AttributesKeyPart;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -49,28 +54,61 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class AttributesKeys
 {
+	//@formatter:off
+	private static IAttributeDAO attributesRepo() { return Services.get(IAttributeDAO.class); }
+	private static IAttributeSetInstanceBL asiService() { return Services.get(IAttributeSetInstanceBL.class); }
+	//@formatter:on
 
 	/**
-	 * @return see {@link #createAttributesKeyFromASIAllAttributeValues(int)} for why we return an {@link Optional}.
+	 * @return see {@link #createAttributesKeyFromASIAllAttributes(int)} for why we return an {@link Optional}.
 	 */
-	public static Optional<AttributesKey> createAttributesKeyFromAttributeSet(
-			@NonNull final IAttributeSet attributeSet)
+	public static Optional<AttributesKey> createAttributesKeyFromAttributeSet(@NonNull final IAttributeSet attributeSet)
 	{
-		final int[] attributeValueIds = attributeSet.getAttributes().stream()
-				.sorted(Comparator.comparing(I_M_Attribute::getM_Attribute_ID))
-				.map(attribute -> Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(
-						attribute,
-						attributeSet.getValueAsString(attribute)))
-				.filter(Predicates.notNull())
-				.mapToInt(I_M_AttributeValue::getM_AttributeValue_ID)
-				.toArray();
-
-		if (attributeValueIds.length == 0)
+		final Collection<I_M_Attribute> attributes = attributeSet.getAttributes();
+		if (attributes.isEmpty())
 		{
 			return Optional.empty();
 		}
 
-		return Optional.of(AttributesKey.ofAttributeValueIds(attributeValueIds));
+		final ImmutableSet<AttributesKeyPart> parts = attributes.stream()
+				.map(attribute -> createAttributesKeyPart(attributeSet, attribute))
+				.collect(ImmutableSet.toImmutableSet());
+
+		return Optional.of(AttributesKey.ofParts(parts));
+	}
+
+	private static AttributesKeyPart createAttributesKeyPart(final IAttributeSet attributeSet, final I_M_Attribute attribute)
+	{
+		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
+		final String attributeKey = attribute.getValue();
+		final String attributeValueType = attribute.getAttributeValueType();
+		if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
+		{
+			final String valueStr = attributeSet.getValueAsString(attributeKey);
+			return AttributesKeyPart.ofStringAttribute(attributeId, valueStr);
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
+		{
+			final BigDecimal valueBD = attributeSet.getValueAsBigDecimal(attributeKey);
+			return AttributesKeyPart.ofNumberAttribute(attributeId, valueBD);
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
+		{
+			final LocalDate valueDate = attributeSet.getValueAsLocalDate(attributeKey);
+			return AttributesKeyPart.ofDateAttribute(attributeId, valueDate);
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
+		{
+			final AttributeValueId attributeValueId = attributeSet.getAttributeValueIdOrNull(attributeKey);
+			return AttributesKeyPart.ofAttributeValueId(attributeValueId);
+		}
+		else
+		{
+			throw new AdempiereException("Unknown attribute type: " + attributeValueType)
+					.appendParametersToMessage()
+					.setParameter("attributeSet", attributeSet)
+					.setParameter("attribute", attribute);
+		}
 	}
 
 	/**
@@ -78,66 +116,85 @@ public final class AttributesKeys
 	 *         In that case it's up to the caller to interpret the empty result.<br>
 	 *         That can for example be done using using {@link Optional#orElse(Object)} with {@link AttributesKey#NONE}.
 	 */
-	public static Optional<AttributesKey> createAttributesKeyFromASIAllAttributeValues(final int attributeSetInstanceId)
+	public static Optional<AttributesKey> createAttributesKeyFromASIAllAttributes(@NonNull final AttributeSetInstanceId attributeSetInstanceId)
 	{
-		return createAttributesKeyWithFilter(
-				attributeSetInstanceId,
-				ai -> true);
-	}
-
-	public static Optional<AttributesKey> createAttributesKeyFromASIStorageAttributes(final AttributeSetInstanceId attributeSetInstanceId)
-	{
-		if (AttributeSetInstanceId.isRegular(attributeSetInstanceId))
-		{
-			return createAttributesKeyWithFilter(
-					attributeSetInstanceId.getRepoId(),
-					ai -> ai.getM_Attribute().isStorageRelevant());
-		}
-		else
-		{
-			return Optional.empty();
-		}
+		return createAttributesKeyFromASI(attributeSetInstanceId, Predicates.alwaysTrue());
 	}
 
 	/**
-	 * Similar to {@link #createAttributesKeyFromASIAllAttributeValues(int)}, but only attributes flagged as "storage relevant" are considered.
+	 * Similar to {@link #createAttributesKeyFromASIAllAttributes(int)}, but only attributes flagged as "storage relevant" are considered.
 	 * <p>
 	 * Please make sure the output of this method is in sync with the DB function @{code GenerateASIStorageAttributesKey}.
-	 *
-	 * @return see {@link #createAttributesKeyFromASIAllAttributeValues(int)}
 	 */
-	public static Optional<AttributesKey> createAttributesKeyFromASIStorageAttributes(final int attributeSetInstanceId)
+	public static Optional<AttributesKey> createAttributesKeyFromASIStorageAttributes(@NonNull final AttributeSetInstanceId attributeSetInstanceId)
 	{
-		return createAttributesKeyWithFilter(
-				attributeSetInstanceId,
-				ai -> ai.getM_Attribute().isStorageRelevant());
+		if (attributeSetInstanceId.isNone())
+		{
+			return Optional.empty();
+		}
+
+		return createAttributesKeyFromASI(attributeSetInstanceId, asiService()::isStorageRelevant);
 	}
 
-	private static Optional<AttributesKey> createAttributesKeyWithFilter(
-			final int attributeSetInstanceId,
+	private static Optional<AttributesKey> createAttributesKeyFromASI(
+			@NonNull final AttributeSetInstanceId attributeSetInstanceId,
 			@NonNull final Predicate<? super I_M_AttributeInstance> additionalFilter)
 	{
-		if (attributeSetInstanceId == AttributeConstants.M_AttributeSetInstance_ID_None)
+		if (attributeSetInstanceId.isNone())
 		{
 			return Optional.empty();
 		}
 
-		final I_M_AttributeSetInstance attributeSetInstance = load(attributeSetInstanceId, I_M_AttributeSetInstance.class);
-
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		final int[] attributeValueIds = attributeDAO.retrieveAttributeInstances(attributeSetInstance).stream()
-				.filter(ai -> ai.getM_AttributeValue_ID() > 0)
+		final ImmutableSet<AttributesKeyPart> parts = attributesRepo().retrieveAttributeInstances(attributeSetInstanceId)
+				.stream()
 				.filter(additionalFilter)
-				// no point in sorting; AttributesKey.ofAttributeValueIds(..) does its own sorting.
-				.mapToInt(I_M_AttributeInstance::getM_AttributeValue_ID)
-				.toArray();
+				.map(ai -> createAttributesKeyPart(ai))
+				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
 
-		if (attributeValueIds.length == 0)
+		if (parts.isEmpty())
 		{
 			return Optional.empty();
 		}
 
-		return Optional.of(AttributesKey.ofAttributeValueIds(attributeValueIds));
+		return Optional.of(AttributesKey.ofParts(parts));
+	}
+
+	private static AttributesKeyPart createAttributesKeyPart(final I_M_AttributeInstance ai)
+	{
+		final AttributeId attributeId = AttributeId.ofRepoId(ai.getM_Attribute_ID());
+		final I_M_Attribute attribute = attributesRepo().getAttributeById(attributeId);
+		final String attributeValueType = attribute.getAttributeValueType();
+		if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
+		{
+			final String valueStr = ai.getValue();
+			return AttributesKeyPart.ofStringAttribute(attributeId, valueStr);
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
+		{
+			final boolean isNull = InterfaceWrapperHelper.isNull(ai, I_M_AttributeInstance.COLUMNNAME_ValueNumber);
+			final BigDecimal valueBD = isNull ? null : ai.getValueNumber();
+			return AttributesKeyPart.ofNumberAttribute(attributeId, valueBD);
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
+		{
+			final LocalDate valueDate = TimeUtil.asLocalDate(ai.getValueDate());
+			return AttributesKeyPart.ofDateAttribute(attributeId, valueDate);
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
+		{
+			final AttributeValueId attributeValueId = AttributeValueId.ofRepoIdOrNull(ai.getM_AttributeValue_ID());
+			return attributeValueId != null
+					? AttributesKeyPart.ofAttributeValueId(attributeValueId)
+					: null;
+		}
+		else
+		{
+			throw new AdempiereException("Unknown attribute type: " + attributeValueType)
+					.appendParametersToMessage()
+					.setParameter("attributeInstance", ai)
+					.setParameter("attribute", attribute);
+		}
 	}
 
 	public AttributeSetInstanceId createAttributeSetInstanceFromAttributesKey(@NonNull final AttributesKey attributesKey)
@@ -147,37 +204,46 @@ public final class AttributesKeys
 			return AttributeSetInstanceId.NONE;
 		}
 
-		final IAttributeSet attributeSet = createAttributeSetFromStorageAttributesKey(attributesKey);
-
-		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASIFromAttributeSet(attributeSet);
-
+		final ImmutableAttributeSet attributeSet = toImmutableAttributeSet(attributesKey);
+		final I_M_AttributeSetInstance asi = asiService().createASIFromAttributeSet(attributeSet);
 		return AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 	}
 
-	public IAttributeSet createAttributeSetFromStorageAttributesKey(@NonNull final AttributesKey attributesKey)
+	public static ImmutableAttributeSet toImmutableAttributeSet(@NonNull final AttributesKey attributesKey)
 	{
-		final Builder builder = ImmutableAttributeSet.builder();
-		for (final I_M_AttributeValue attributeValueRecord : extractAttributeSetFromStorageAttributesKey(attributesKey))
+		try
 		{
-			builder.attributeValue(attributeValueRecord);
-		}
-		return builder.build();
-	}
+			final ImmutableAttributeSet.Builder builder = ImmutableAttributeSet.builder();
+			final HashSet<AttributeValueId> attributeValueIds = new HashSet<>();
 
-	private List<I_M_AttributeValue> extractAttributeSetFromStorageAttributesKey(@NonNull final AttributesKey attributesKey)
-	{
-		final Collection<Integer> attributeValueIds = attributesKey.getAttributeValueIds();
-		if (attributeValueIds.isEmpty())
+			for (final AttributesKeyPart part : attributesKey.getParts())
+			{
+				if (part.getType() == AttributeKeyPartType.AttributeIdAndValue)
+				{
+					final AttributeId attributeId = part.getAttributeId();
+					final Object value = part.getValue();
+					final AttributeValueId attributeValueId = null;
+
+					builder.attributeValue(attributeId, value, attributeValueId);
+				}
+				else if (part.getType() == AttributeKeyPartType.AttributeValueId)
+				{
+					attributeValueIds.add(part.getAttributeValueId());
+				}
+			}
+
+			for (final AttributeListValue attributeValueRecord : attributesRepo().retrieveAttributeValuesByIds(attributeValueIds))
+			{
+				builder.attributeValue(attributeValueRecord);
+			}
+
+			return builder.build();
+		}
+		catch (final RuntimeException ex)
 		{
-			return ImmutableList.of();
+			throw AdempiereException.wrapIfNeeded(ex)
+					.appendParametersToMessage()
+					.setParameter("attributesKey", attributesKey);
 		}
-
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_AttributeValue.class)
-				.addInArrayFilter(I_M_AttributeValue.COLUMN_M_AttributeValue_ID, attributeValueIds)
-				.orderBy(I_M_AttributeValue.COLUMN_M_AttributeValue_ID)
-				.create()
-				.list(I_M_AttributeValue.class);
 	}
 }

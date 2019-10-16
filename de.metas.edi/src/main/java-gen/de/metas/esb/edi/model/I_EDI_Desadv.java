@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.esb.edi.model;
 
 
@@ -48,8 +32,6 @@ public interface I_EDI_Desadv
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_AD_Client>(I_EDI_Desadv.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -59,7 +41,7 @@ public interface I_EDI_Desadv
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -69,15 +51,11 @@ public interface I_EDI_Desadv
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_AD_Org>(I_EDI_Desadv.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
@@ -104,10 +82,6 @@ public interface I_EDI_Desadv
 	 */
 	public int getBill_Location_ID();
 
-	public org.compiere.model.I_C_BPartner_Location getBill_Location();
-
-	public void setBill_Location(org.compiere.model.I_C_BPartner_Location Bill_Location);
-
     /** Column definition for Bill_Location_ID */
     public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_BPartner_Location> COLUMN_Bill_Location_ID = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_BPartner_Location>(I_EDI_Desadv.class, "Bill_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name Bill_Location_ID */
@@ -132,10 +106,6 @@ public interface I_EDI_Desadv
 	 * <br>Virtual Column: false
 	 */
 	public int getC_BPartner_ID();
-
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
 
     /** Column definition for C_BPartner_ID */
     public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_BPartner>(I_EDI_Desadv.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
@@ -162,10 +132,6 @@ public interface I_EDI_Desadv
 	 */
 	public int getC_BPartner_Location_ID();
 
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location();
-
-	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location);
-
     /** Column definition for C_BPartner_Location_ID */
     public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_BPartner_Location>(I_EDI_Desadv.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name C_BPartner_Location_ID */
@@ -190,10 +156,6 @@ public interface I_EDI_Desadv
 	 * <br>Virtual Column: false
 	 */
 	public int getC_Currency_ID();
-
-	public org.compiere.model.I_C_Currency getC_Currency();
-
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
 
     /** Column definition for C_Currency_ID */
     public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_Currency>(I_EDI_Desadv.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
@@ -256,7 +218,7 @@ public interface I_EDI_Desadv
     public static final String COLUMNNAME_DateOrdered = "DateOrdered";
 
 	/**
-	 * Set Document No.
+	 * Set Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -266,7 +228,7 @@ public interface I_EDI_Desadv
 	public void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Document No.
+	 * Get Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -331,8 +293,10 @@ public interface I_EDI_Desadv
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setEDI_DESADV_SumPercentage (java.math.BigDecimal EDI_DESADV_SumPercentage);
 
 	/**
@@ -340,8 +304,10 @@ public interface I_EDI_Desadv
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.math.BigDecimal getEDI_DESADV_SumPercentage();
 
     /** Column definition for EDI_DESADV_SumPercentage */
@@ -413,10 +379,6 @@ public interface I_EDI_Desadv
 	 */
 	public int getHandOver_Location_ID();
 
-	public org.compiere.model.I_C_BPartner_Location getHandOver_Location();
-
-	public void setHandOver_Location(org.compiere.model.I_C_BPartner_Location HandOver_Location);
-
     /** Column definition for HandOver_Location_ID */
     public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_BPartner_Location> COLUMN_HandOver_Location_ID = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_BPartner_Location>(I_EDI_Desadv.class, "HandOver_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name HandOver_Location_ID */
@@ -448,7 +410,7 @@ public interface I_EDI_Desadv
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Bewegungs-Datum.
+	 * Set Bewegungsdatum.
 	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
 	 * <br>Type: Date
@@ -458,7 +420,7 @@ public interface I_EDI_Desadv
 	public void setMovementDate (java.sql.Timestamp MovementDate);
 
 	/**
-	 * Get Bewegungs-Datum.
+	 * Get Bewegungsdatum.
 	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
 	 * <br>Type: Date
@@ -574,4 +536,29 @@ public interface I_EDI_Desadv
     public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_AD_User>(I_EDI_Desadv.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set UserFlag.
+	 * Can be used to flag records and thus make them selectable from the UI via advanced search.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setUserFlag (java.lang.String UserFlag);
+
+	/**
+	 * Get UserFlag.
+	 * Can be used to flag records and thus make them selectable from the UI via advanced search.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getUserFlag();
+
+    /** Column definition for UserFlag */
+    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_UserFlag = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "UserFlag", null);
+    /** Column name UserFlag */
+    public static final String COLUMNNAME_UserFlag = "UserFlag";
 }

@@ -85,33 +85,9 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
     "inventoryType": "PHYSICAL",
     "lines": [
       {
-        "id": 100014,
+        "id": 100013,
         "orgId": 5,
         "asiId": 100010,
-        "productId": 40,
-        "storageAttributesKey": "10§&§11§&§12",
-        "locatorId": "100002_100003",
-        "huAggregationType": "SINGLE_HU",
-        "inventoryType": "PHYSICAL",
-        "inventoryLineHUs": [
-          {
-            "huId": 300,
-            "inventoryType": "PHYSICAL",
-            "qtyBook": {
-              "qty": "2",
-              "uomId": 100001
-            },
-            "qtyCount": {
-              "qty": "2",
-              "uomId": 100001
-            }
-          }
-        ]
-      },
-      {
-        "id": 100018,
-        "orgId": 5,
-        "asiId": 100015,
         "productId": 40,
         "storageAttributesKey": "10§&§11",
         "locatorId": "100002_100003",
@@ -133,9 +109,9 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         ]
       },
       {
-        "id": 100022,
+        "id": 100017,
         "orgId": 5,
-        "asiId": 100019,
+        "asiId": 100014,
         "productId": 40,
         "storageAttributesKey": "10§&§11",
         "locatorId": "100002_100003",
@@ -151,6 +127,30 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
             },
             "qtyCount": {
               "qty": "1",
+              "uomId": 100001
+            }
+          }
+        ]
+      },
+      {
+        "id": 100022,
+        "orgId": 5,
+        "asiId": 100018,
+        "productId": 40,
+        "storageAttributesKey": "10§&§11§&§12",
+        "locatorId": "100002_100003",
+        "huAggregationType": "SINGLE_HU",
+        "inventoryType": "PHYSICAL",
+        "inventoryLineHUs": [
+          {
+            "huId": 300,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": "2",
+              "uomId": 100001
+            },
+            "qtyCount": {
+              "qty": "2",
               "uomId": 100001
             }
           }

@@ -17,6 +17,7 @@ import de.metas.material.cockpit.stock.StockDataUpdateRequest;
 import de.metas.material.cockpit.stock.StockDataUpdateRequestHandler;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.stock.ResetStockPInstanceId;
 import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
@@ -58,12 +59,11 @@ import lombok.NonNull;
 public class MD_Stock_Update_From_M_HUs extends JavaProcess
 {
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-
 	private final StockDataUpdateRequestHandler dataUpdateRequestHandler = SpringContextHolder.instance.getBean(StockDataUpdateRequestHandler.class);
 
 	@Override
 	@RunOutOfTrx
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 		final List<I_MD_Stock_From_HUs_V> huBasedDataRecords = retrieveHuData();
 
@@ -89,7 +89,8 @@ public class MD_Stock_Update_From_M_HUs extends JavaProcess
 	private void createAndHandleDataUpdateRequests(
 			@NonNull final List<I_MD_Stock_From_HUs_V> huBasedDataRecords)
 	{
-		final StockChangeSourceInfo info = StockChangeSourceInfo.ofResetStockAdPinstanceId(getProcessInfo().getPinstanceId().getRepoId());
+		final ResetStockPInstanceId resetStockPInstanceId = ResetStockPInstanceId.ofPInstanceId(getProcessInfo().getPinstanceId());
+		final StockChangeSourceInfo info = StockChangeSourceInfo.ofResetStockPInstanceId(resetStockPInstanceId);
 
 		for (final I_MD_Stock_From_HUs_V huBasedDataRecord : huBasedDataRecords)
 		{

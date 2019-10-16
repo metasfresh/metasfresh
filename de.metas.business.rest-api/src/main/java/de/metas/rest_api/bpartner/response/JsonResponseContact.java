@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.changelog.JsonChangeInfo;
@@ -58,7 +59,7 @@ public class JsonResponseContact
 	public static final String SHIP_TO_DEFAULT = "shipToDefault";
 	public static final String BILL_TO_DEFAULT = "billToDefault";
 	public static final String SALES_DEFAULT = "salesDefault";
-	public static final String SALES = "salesDefault";
+	public static final String SALES = "sales";
 	public static final String PURCHASE_DEFAULT = "purchaseDefault";
 	public static final String PURCHASE = "purchase";
 	public static final String SUBJECT_MATTER = "subjectMatter";

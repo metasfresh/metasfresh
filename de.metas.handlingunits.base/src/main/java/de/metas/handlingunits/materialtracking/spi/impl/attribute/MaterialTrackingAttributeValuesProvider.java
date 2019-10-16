@@ -11,6 +11,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.compiere.model.I_M_Attribute;
@@ -321,9 +322,9 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 	}
 
 	@Override
-	public int getM_AttributeValue_ID(final Object valueKey)
+	public AttributeValueId getAttributeValueIdOrNull(final Object valueKey)
 	{
-		return -1;
+		return null;
 	}
 
 	/** @return {@code null}. */

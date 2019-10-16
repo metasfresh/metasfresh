@@ -64,12 +64,12 @@ public class HUShipmentProcess_AttributesAggregation_NoTemplateAttribute_Test
 
 
 		template_huPIAttribute = null;
-		tu_huPIAttribute = helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attribute)
+		tu_huPIAttribute = helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attribute)
 				.setM_HU_PI(piTU)
 				.setUseInASI(true)
 				.setTransferStrategyClass(CopyHUAttributeTransferStrategy.class) // does not matter
 		);
-		lu_huPIAttribute = helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attribute)
+		lu_huPIAttribute = helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attribute)
 				.setM_HU_PI(piLU)
 				.setUseInASI(true)
 				.setTransferStrategyClass(CopyHUAttributeTransferStrategy.class) // does not matter

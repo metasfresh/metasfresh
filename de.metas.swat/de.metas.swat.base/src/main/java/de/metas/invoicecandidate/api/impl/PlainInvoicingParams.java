@@ -28,6 +28,7 @@ import java.time.LocalDate;
 import javax.annotation.Nullable;
 
 import de.metas.invoicecandidate.api.IInvoicingParams;
+import lombok.Getter;
 import lombok.ToString;
 
 @ToString
@@ -51,6 +52,9 @@ public class PlainInvoicingParams implements IInvoicingParams
 	private boolean poReferenceSet = false;
 
 	private BigDecimal check_NetAmtToInvoice = null;
+
+	@Getter
+	private boolean updateLocationAndContactForInvoice = false;
 
 	private final IInvoicingParams defaults;
 

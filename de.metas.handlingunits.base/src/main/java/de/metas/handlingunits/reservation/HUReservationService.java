@@ -25,10 +25,11 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.document.engine.IDocument;
+import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
@@ -78,13 +79,20 @@ import lombok.Setter;
 @Service
 public class HUReservationService
 {
-	/** In unit test mode, we need to use {@link HUTransformService#newInstance(de.metas.handlingunits.IMutableHUContext)} to get a new instance. */
-	@Setter
-	private Supplier<HUTransformService> huTransformServiceSupplier = () -> HUTransformService.newInstance();
-
 	private final HUReservationRepository huReservationRepository;
 
+	@VisibleForTesting
+	@Setter
+	@NonNull
+	private Supplier<HUTransformService> huTransformServiceSupplier = HUTransformService::newInstance;
+
 	private static final String SYSCONFIG_AllowSqlWhenFilteringHUAttributes = "de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService.AllowSqlWhenFilteringHUAttributes";
+
+	private final ImmutableSet<DocStatus> docStatusesThatAllowReservation = ImmutableSet.of(
+			DocStatus.Drafted,
+			DocStatus.InProgress,
+			DocStatus.WaitingPayment,
+			DocStatus.Completed);
 
 	public HUReservationService(@NonNull final HUReservationRepository huReservationRepository)
 	{
@@ -170,13 +178,9 @@ public class HUReservationService
 		huReservationRepository.deleteReservationsByVhuIds(vhuIds);
 	}
 
-	public ImmutableSet<String> getDocstatusesThatAllowReservation()
+	public boolean isReservationAllowedForDocStatus(@NonNull final DocStatus docStatus)
 	{
-		return ImmutableSet.of(
-				IDocument.STATUS_Drafted,
-				IDocument.STATUS_InProgress,
-				IDocument.STATUS_WaitingPayment,
-				IDocument.STATUS_Completed);
+		return docStatusesThatAllowReservation.contains(docStatus);
 	}
 
 	public boolean isVhuIdReservedToSalesOrderLineId(@NonNull final HuId vhuId, @NonNull final OrderLineId salesOrderLineId)
@@ -307,6 +311,7 @@ public class HUReservationService
 		{
 			final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 			final ImmutableAttributeSet attributeSet = attributesRepo.getImmutableAttributeSetById(asiId);
+			// TODO: shall we consider only storage relevant attributes?
 			huQuery.addOnlyWithAttributes(attributeSet);
 			huQuery.allowSqlWhenFilteringAttributes(isAllowSqlWhenFilteringHUAttributes());
 		}

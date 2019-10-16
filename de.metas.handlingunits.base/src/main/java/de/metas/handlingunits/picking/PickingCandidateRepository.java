@@ -217,9 +217,9 @@ public class PickingCandidateRepository
 				.addOnlyActiveRecordsFilter();
 
 		queryBuilder.addCompositeQueryFilter()
-				.setJoinOr()
-				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_PickFrom_HU_ID, huIds)
-				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, huIds); // pack HUs
+		.setJoinOr()
+		.addInArrayFilter(I_M_Picking_Candidate.COLUMN_PickFrom_HU_ID, huIds)
+		.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, huIds); // pack HUs
 
 		return queryBuilder;
 	}
@@ -297,6 +297,23 @@ public class PickingCandidateRepository
 
 	}
 
+
+	public boolean existsPickingCandidates(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return false;
+		}
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleIds)
+				.create()
+				.match();
+
+	}
+
 	public boolean hasNotClosedCandidatesForPickingSlot(final PickingSlotId pickingSlotId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -313,12 +330,12 @@ public class PickingCandidateRepository
 		Check.assumeNotEmpty(huIds, "huIds is not empty");
 
 		retrievePickingCandidatesByHUIdsQuery(huIds)
-				.create()
-				.update(record -> {
-					markAsInactiveNoSave(record);
-					return IQueryUpdater.MODEL_UPDATED;
+		.create()
+		.update(record -> {
+			markAsInactiveNoSave(record);
+			return IQueryUpdater.MODEL_UPDATED;
 
-				});
+		});
 	}
 
 	private void markAsInactiveNoSave(I_M_Picking_Candidate record)
@@ -362,9 +379,9 @@ public class PickingCandidateRepository
 			final IHUPickingSlotDAO huPickingSlotsRepo = Services.get(IHUPickingSlotDAO.class);
 			final Set<PickingSlotId> rackSystemPickingSlotIds = huPickingSlotsRepo.retrieveAllPickingSlotIdsWhichAreRackSystems();
 			queryBuilder.addCompositeQueryFilter()
-					.setJoinOr()
-					.addNotEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, PickingCandidateStatus.Closed.getCode())
-					.addNotInArrayFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, rackSystemPickingSlotIds);
+			.setJoinOr()
+			.addNotEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, PickingCandidateStatus.Closed.getCode())
+			.addNotInArrayFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, rackSystemPickingSlotIds);
 		}
 
 		//
@@ -394,15 +411,15 @@ public class PickingCandidateRepository
 
 			// PickFrom HU
 			queryBuilder.addCompositeQueryFilter()
-					.setJoinOr()
-					.addEqualsFilter(I_M_Picking_Candidate.COLUMN_PickFrom_HU_ID, null)
-					.addInSubQueryFilter(I_M_Picking_Candidate.COLUMN_PickFrom_HU_ID, I_M_HU.COLUMN_M_HU_ID, husQuery);
+			.setJoinOr()
+			.addEqualsFilter(I_M_Picking_Candidate.COLUMN_PickFrom_HU_ID, null)
+			.addInSubQueryFilter(I_M_Picking_Candidate.COLUMN_PickFrom_HU_ID, I_M_HU.COLUMN_M_HU_ID, husQuery);
 
 			// Picked HU
 			queryBuilder.addCompositeQueryFilter()
-					.setJoinOr()
-					.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, null)
-					.addInSubQueryFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, I_M_HU.COLUMN_M_HU_ID, husQuery);
+			.setJoinOr()
+			.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, null)
+			.addInSubQueryFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, I_M_HU.COLUMN_M_HU_ID, husQuery);
 		}
 
 		//

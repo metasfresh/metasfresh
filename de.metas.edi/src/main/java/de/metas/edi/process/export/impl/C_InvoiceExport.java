@@ -10,24 +10,24 @@ package de.metas.edi.process.export.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.api.ValidationState;
@@ -43,13 +43,13 @@ public class C_InvoiceExport extends AbstractEdiDocExtensionExport<I_C_Invoice>
 	 */
 	private static final String CST_INVOICE_EXP_FORMAT = "EDI_cctop_invoic_v";
 
-	public C_InvoiceExport(final I_C_Invoice invoice, final String tableIdentifier, final int clientId)
+	public C_InvoiceExport(final I_C_Invoice invoice, final String tableIdentifier, final ClientId clientId)
 	{
 		super(invoice, tableIdentifier, clientId);
 	}
 
 	@Override
-	public List<Exception> createExport()
+	public List<Exception> doExport()
 	{
 		final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
 

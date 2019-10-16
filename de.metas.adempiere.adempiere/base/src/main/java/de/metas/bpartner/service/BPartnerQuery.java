@@ -1,6 +1,5 @@
 package de.metas.bpartner.service;
 
-import static de.metas.util.Check.isEmpty;
 import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.util.Set;
@@ -14,6 +13,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.GLN;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.rest.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -61,7 +61,7 @@ public class BPartnerQuery
 	boolean outOfTrx;
 	boolean failIfNotExists;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private BPartnerQuery(
 			@Nullable final BPartnerId bPartnerId,
 			@Nullable final ExternalId externalId,
@@ -91,13 +91,30 @@ public class BPartnerQuery
 
 	private void validate()
 	{
-		if (bPartnerId == null
-				&& isEmpty(bpartnerValue, true)
-				&& isEmpty(bpartnerName, true)
-				&& externalId == null
-				&& isEmpty(glns))
+		if (isEmpty())
 		{
 			throw new AdempiereException("At least one of the given bpartnerValue, bpartnerName, glns or externalId needs to be non-empty: " + this);
+		}
+	}
+
+	public boolean isEmpty()
+	{
+		return bPartnerId == null
+				&& Check.isEmpty(bpartnerValue, true)
+				&& Check.isEmpty(bpartnerName, true)
+				&& externalId == null
+				&& Check.isEmpty(glns);
+	}
+
+	public BPartnerQuery withNoGLNs()
+	{
+		if (glns.isEmpty())
+		{
+			return this;
+		}
+		else
+		{
+			return toBuilder().clearGlns().build();
 		}
 	}
 }

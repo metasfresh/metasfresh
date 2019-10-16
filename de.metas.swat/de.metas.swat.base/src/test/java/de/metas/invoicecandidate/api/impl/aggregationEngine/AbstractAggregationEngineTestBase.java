@@ -48,6 +48,8 @@ import org.junit.rules.TestWatcher;
 
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.AbstractICTestSupport;
@@ -61,15 +63,17 @@ import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
 import de.metas.logging.LogManager;
-import de.metas.money.CurrencyIds;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSupport
 {
+
 	protected I_C_ILCandHandler manualHandler;
 
 	@Rule
@@ -91,6 +95,8 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 		// registerModelInterceptors(); doesn't work well with the legacy tests. Only register then in AbstractNewAggregationEngineTests
 
 		LogManager.setLevel(Level.DEBUG);
+
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 	}
 
 	protected final List<IInvoiceLineRW> getInvoiceLines(final IInvoiceHeader invoice)
@@ -270,7 +276,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 		// this commented-out check is synchronized with ICHeaderAggregationKeyValueHandler
 		// assertEquals(messagePrefix + " - Invalid Bill_User_ID", fromIC.getBill_User_ID(), invoice.getBill_User_ID());
 
-		assertEquals(messagePrefix + " - Invalid C_Currency_ID", CurrencyIds.ofRecord(fromIC), invoice.getCurrencyId());
+		assertEquals(messagePrefix + " - Invalid C_Currency_ID", CurrencyId.ofRepoId(fromIC.getC_Currency_ID()), invoice.getCurrencyId());
 		if (invoiceReferencesOrder)
 		{
 			assertEquals(messagePrefix + " - Invalid C_Order_ID", fromIC.getC_Order_ID(), invoice.getC_Order_ID());

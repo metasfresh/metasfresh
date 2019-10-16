@@ -13,6 +13,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
@@ -213,8 +215,8 @@ public class ADProcessDAO implements IADProcessDAO
 	@Cached(cacheName = I_AD_Table_Process.Table_Name + "#RelatedProcessDescriptors")
 	public ImmutableList<RelatedProcessDescriptor> retrieveRelatedProcessDescriptors(
 			final int adTableId,
-			final AdWindowId adWindowId,
-			final AdTabId adTabId)
+			@Nullable final AdWindowId adWindowId,
+			@Nullable final AdTabId adTabId)
 	{
 		final RelatedProcessDescriptorKey key = RelatedProcessDescriptorKey.of(adTableId, adWindowId, adTabId);
 
@@ -537,7 +539,7 @@ public class ADProcessDAO implements IADProcessDAO
 					ANY);
 		}
 
-		public static final RelatedProcessDescriptorKey of(final int adTableId, final AdWindowId adWindowId, final AdTabId adTabId)
+		public static final RelatedProcessDescriptorKey of(final int adTableId, @Nullable final AdWindowId adWindowId, @Nullable final AdTabId adTabId)
 		{
 			if (adTableId <= 0 && adWindowId == null && adTabId == null)
 			{

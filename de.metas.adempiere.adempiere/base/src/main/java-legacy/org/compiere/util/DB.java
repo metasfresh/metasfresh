@@ -1998,6 +1998,11 @@ public final class DB
 			throw new DBException("Unknown parameter type: " + param + " (" + param.getClass() + ")");
 		}
 	}
+	
+	public static String TO_DATE(@NonNull final ZonedDateTime zdt)
+	{
+		return Database.TO_DATE(zdt);
+	}
 
 	/**
 	 * Create SQL TO Date String from Timestamp

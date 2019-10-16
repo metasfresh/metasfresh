@@ -17,11 +17,13 @@ import java.util.List;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.material.commons.attributes.AttributesKeyPattern;
+import de.metas.material.commons.attributes.AttributesKeyPatterns;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery.AvailableToPromiseMultiQueryBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
@@ -53,21 +55,16 @@ import de.metas.material.event.commons.ProductDescriptor;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class AvailableToPromiseRepositoryTest
 {
 	private static final BPartnerId BPARTNER_ID_1 = BPartnerId.ofRepoId(10);
 	private static final BPartnerId BPARTNER_ID_2 = BPartnerId.ofRepoId(20);
 	private static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1, 2);
 
-	public static final BigDecimal TWENTY = new BigDecimal("20");
-	public static final BigDecimal THIRTY = new BigDecimal("30");
-
 	private AvailableToPromiseRepository availableToPromiseRepository;
 
-	@Rule
-	public AdempiereTestWatcher adempiereTestWatcher = new AdempiereTestWatcher();
-
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -93,7 +90,7 @@ public class AvailableToPromiseRepositoryTest
 
 		final BigDecimal result = availableToPromiseRepository.retrieveAvailableStockQtySum(query);
 
-		assertThat(result).isEqualByComparingTo(TWENTY);
+		assertThat(result).isEqualByComparingTo("20");
 	}
 
 	/**
@@ -113,7 +110,7 @@ public class AvailableToPromiseRepositoryTest
 
 		final BigDecimal result = availableToPromiseRepository.retrieveAvailableStockQtySum(query);
 
-		assertThat(result).isEqualByComparingTo(TWENTY);
+		assertThat(result).isEqualByComparingTo("20");
 	}
 
 	/**
@@ -184,7 +181,7 @@ public class AvailableToPromiseRepositoryTest
 		final AvailableToPromiseQuery query1 = AvailableToPromiseQuery
 				.builder()
 				.productId(PRODUCT_ID)
-				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
+				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(STORAGE_ATTRIBUTES_KEY))
 				.bpartner(BPartnerClassifier.specific(BPARTNER_ID_1))
 				.build();
 		multiQueryBuilder.query(query1);
@@ -192,7 +189,7 @@ public class AvailableToPromiseRepositoryTest
 		final AvailableToPromiseQuery query2 = AvailableToPromiseQuery
 				.builder()
 				.productId(PRODUCT_ID)
-				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
+				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(STORAGE_ATTRIBUTES_KEY))
 				.bpartner(BPartnerClassifier.specific(BPARTNER_ID_2))
 				.build();
 		multiQueryBuilder.query(query2);
@@ -212,7 +209,7 @@ public class AvailableToPromiseRepositoryTest
 		assertThat(resultGroups)
 				.filteredOn(group -> group.getBpartner().equals(BPartnerClassifier.specific(BPARTNER_ID_1)))
 				.hasSize(1)
-				.allSatisfy(group -> assertThat(group.getQty()).isEqualByComparingTo(TWENTY));
+				.allSatisfy(group -> assertThat(group.getQty()).isEqualByComparingTo("20"));
 
 		assertThat(resultGroups)
 				.filteredOn(group -> group.getBpartner().equals(BPartnerClassifier.specific(BPARTNER_ID_2)))
@@ -228,7 +225,7 @@ public class AvailableToPromiseRepositoryTest
 
 		final AvailableToPromiseResult result = availableToPromiseRepository.retrieveAvailableStock(multiQuery);
 		assertThat(result.getResultGroups()).hasSize(1); // there is just one predefined bucket
-		assertThat(result.getResultGroups().get(0).getQty()).isEqualByComparingTo(THIRTY);
+		assertThat(result.getResultGroups().get(0).getQty()).isEqualByComparingTo("30");
 	}
 
 	/**
@@ -255,7 +252,7 @@ public class AvailableToPromiseRepositoryTest
 		final AvailableToPromiseQuery query = AvailableToPromiseQuery.builder()
 				.bpartner(BPartnerClassifier.specific(BPARTNER_ID_1)) // shall not matter since all 3 records are not assigned to a particular customer
 				.productId(PRODUCT_ID)
-				.storageAttributesKey(AttributesKey.ALL)
+				.storageAttributesKeyPattern(AttributesKeyPattern.ALL)
 				.build();
 
 		final AvailableToPromiseMultiQuery multiQuery = AvailableToPromiseMultiQuery.builder()
@@ -264,7 +261,7 @@ public class AvailableToPromiseRepositoryTest
 				.build();
 
 		final BigDecimal resultQtySum = availableToPromiseRepository.retrieveAvailableStockQtySum(multiQuery);
-		assertThat(resultQtySum).isEqualByComparingTo(THIRTY);
+		assertThat(resultQtySum).isEqualByComparingTo("30");
 
 		return multiQuery;
 	}

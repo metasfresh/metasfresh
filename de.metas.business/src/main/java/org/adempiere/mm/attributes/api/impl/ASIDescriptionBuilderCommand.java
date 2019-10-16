@@ -2,6 +2,7 @@ package org.adempiere.mm.attributes.api.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Date;
 
 import javax.annotation.Nullable;
@@ -10,21 +11,17 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Evaluatee2;
-
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
@@ -59,10 +56,11 @@ import lombok.NonNull;
 
 final class ASIDescriptionBuilderCommand
 {
+	private final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 
-	private static final String SEPARATOR = "_";
+	static final String SEPARATOR = "_";
 
 	private final I_M_AttributeSetInstance asi;
 	private final String adLanguage;
@@ -143,11 +141,16 @@ final class ASIDescriptionBuilderCommand
 		}
 		else
 		{
-			final AttributeInstanceEvaluatee ctx = AttributeInstanceEvaluatee.builder()
+			final Object value = getInstanceAttributeValue(ai);
+			final AttributeValueId attributeValueId = AttributeValueId.ofRepoIdOrNull(ai.getM_AttributeValue_ID());
+
+			final AttributeDescriptionPatternEvalCtx ctx = AttributeDescriptionPatternEvalCtx.builder()
 					.attributesRepo(attributesRepo)
+					.attributesBL(attributesBL)
 					.uomsRepo(uomsRepo)
 					.attribute(attribute)
-					.attributeInstance(ai)
+					.attributeValue(value)
+					.attributeValueId(attributeValueId)
 					.adLanguage(adLanguage)
 					.verboseDescription(verboseDescription)
 					.build();
@@ -165,6 +168,35 @@ final class ASIDescriptionBuilderCommand
 		}
 
 		return StringExpressionCompiler.instance.compileOrDefault(descriptionPatternStr, null);
+	}
+
+	private Object getInstanceAttributeValue(@NonNull final I_M_AttributeInstance ai)
+	{
+		final AttributeId attributeId = AttributeId.ofRepoId(ai.getM_Attribute_ID());
+		final I_M_Attribute attribute = attributesRepo.getAttributeById(attributeId);
+
+		final String attributeValueType = attribute.getAttributeValueType();
+		if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
+		{
+			return ai.getValue();
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
+		{
+			final boolean isNull = InterfaceWrapperHelper.isNull(ai, I_M_AttributeInstance.COLUMNNAME_ValueNumber);
+			return isNull ? null : ai.getValueNumber();
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
+		{
+			return ai.getValueDate();
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
+		{
+			return ai.getValue();
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	private ITranslatableString getInstanceAttributeValueAsString(@NonNull final I_M_AttributeInstance ai)
@@ -188,7 +220,8 @@ final class ASIDescriptionBuilderCommand
 			}
 			else
 			{
-				return formatNumber(valueBD);
+				final int displayType = attributesBL.getNumberDisplayType(attribute);
+				return formatNumber(valueBD, displayType);
 			}
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
@@ -206,10 +239,10 @@ final class ASIDescriptionBuilderCommand
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
 		{
 			final AttributeValueId attributeValueId = AttributeValueId.ofRepoIdOrNull(ai.getM_AttributeValue_ID());
-			final I_M_AttributeValue attributeValue = attributeValueId != null ? attributesRepo.retrieveAttributeValueOrNull(attribute, attributeValueId) : null;
+			final AttributeListValue attributeValue = attributeValueId != null ? attributesRepo.retrieveAttributeValueOrNull(attribute, attributeValueId) : null;
 			if (attributeValue != null)
 			{
-				return formatStringValue(attributeValue.getName());
+				return attributeValue.getNameTrl();
 			}
 			else
 			{
@@ -223,7 +256,7 @@ final class ASIDescriptionBuilderCommand
 		}
 	}
 
-	private static ITranslatableString formatStringValue(@Nullable final String valueStr)
+	static ITranslatableString formatStringValue(@Nullable final String valueStr)
 	{
 		if (Check.isEmpty(valueStr, true))
 		{
@@ -235,7 +268,7 @@ final class ASIDescriptionBuilderCommand
 		}
 	}
 
-	private static ITranslatableString formatNumber(@Nullable final BigDecimal valueBD)
+	static ITranslatableString formatNumber(@Nullable final BigDecimal valueBD, final int displayType)
 	{
 		if (valueBD == null)
 		{
@@ -243,20 +276,22 @@ final class ASIDescriptionBuilderCommand
 		}
 		else
 		{
-			return TranslatableStrings.number(valueBD, DisplayType.Number);
+			return TranslatableStrings.number(valueBD, displayType);
 		}
 	}
 
-	private static ITranslatableString formatDateValue(@Nullable final java.util.Date valueDate)
+	static ITranslatableString formatDateValue(@Nullable final java.util.Date valueDate)
 	{
-		if (valueDate == null)
-		{
-			return TranslatableStrings.anyLanguage("-");
-		}
-		else
-		{
-			return TranslatableStrings.date(valueDate);
-		}
+		return valueDate != null
+				? TranslatableStrings.date(valueDate)
+				: TranslatableStrings.anyLanguage("-");
+	}
+
+	static ITranslatableString formatDateValue(@Nullable final LocalDate valueDate)
+	{
+		return valueDate != null
+				? TranslatableStrings.date(valueDate)
+				: TranslatableStrings.anyLanguage("-");
 	}
 
 	private void appendSeparator(final TranslatableStringBuilder description)
@@ -347,153 +382,6 @@ final class ASIDescriptionBuilderCommand
 			_attributeSet = attributesRepo.getAttributeSetById(attributeSetId);
 		}
 		return _attributeSet;
-
-	}
-
-	private static final class AttributeInstanceEvaluatee implements Evaluatee2
-	{
-		private static final String VAR_Label = "Label";
-		private static final String VAR_Value = "Value";
-		private static final String VAR_UOM = "UOM";
-		private static final ImmutableSet<String> VARS = ImmutableSet.<String> of(
-				VAR_Label,
-				VAR_Value,
-				VAR_UOM);
-
-		private final IAttributeDAO attributesRepo;
-		private final IUOMDAO uomsRepo;
-
-		private final I_M_Attribute attribute;
-		private final I_M_AttributeInstance attributeInstance;
-		private final String adLanguage;
-		private final boolean verboseDescription;
-
-		@lombok.Builder
-		private AttributeInstanceEvaluatee(
-				@NonNull final IAttributeDAO attributesRepo,
-				@NonNull final IUOMDAO uomsRepo,
-				//
-				@NonNull final I_M_Attribute attribute,
-				@NonNull final I_M_AttributeInstance attributeInstance,
-				@NonNull final String adLanguage,
-				final boolean verboseDescription)
-		{
-			this.attributesRepo = attributesRepo;
-			this.uomsRepo = uomsRepo;
-			//
-			this.attribute = attribute;
-			this.attributeInstance = attributeInstance;
-			this.adLanguage = adLanguage;
-			this.verboseDescription = verboseDescription;
-		}
-
-		@Override
-		public String get_ValueAsString(final String variableName)
-		{
-			if (VAR_Label.equals(variableName))
-			{
-				return getAttributeLabel();
-			}
-			else if (VAR_Value.equals(variableName))
-			{
-				final ITranslatableString valueTrl = getAttributeInstanceValue();
-				return valueTrl != null ? valueTrl.translate(adLanguage) : null;
-			}
-			else if (VAR_UOM.equals(variableName))
-			{
-				return getAttributeUOM();
-			}
-			else
-			{
-				return null;
-			}
-		}
-
-		@Override
-		public boolean has_Variable(final String variableName)
-		{
-			return VARS.contains(variableName);
-		}
-
-		@Override
-		public String get_ValueOldAsString(final String variableName)
-		{
-			return get_ValueAsString(variableName);
-		}
-
-		private String getAttributeLabel()
-		{
-			return attribute.getName();
-		}
-
-		private String getAttributeUOM()
-		{
-			final int uomId = attribute.getC_UOM_ID();
-			if (uomId <= 0)
-			{
-				return null;
-			}
-
-			final I_C_UOM uom = uomsRepo.getById(uomId);
-			if (uom == null)
-			{
-				return null;
-			}
-
-			return uom.getUOMSymbol();
-		}
-
-		private ITranslatableString getAttributeInstanceValue()
-		{
-			final String attributeValueType = attribute.getAttributeValueType();
-			if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
-			{
-				return formatStringValue(attributeInstance.getValue());
-			}
-			else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
-			{
-				final boolean isNull = InterfaceWrapperHelper.isNull(attributeInstance, I_M_AttributeInstance.COLUMNNAME_ValueNumber);
-				final BigDecimal valueBD = isNull ? null : attributeInstance.getValueNumber();
-				if (valueBD == null && !verboseDescription)
-				{
-					return null;
-				}
-				else
-				{
-					return formatNumber(valueBD);
-				}
-			}
-			else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
-			{
-				final Date valueDate = attributeInstance.getValueDate();
-				if (valueDate == null && !verboseDescription)
-				{
-					return null;
-				}
-				else
-				{
-					return formatDateValue(valueDate);
-				}
-			}
-			else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
-			{
-				final AttributeValueId attributeValueId = AttributeValueId.ofRepoIdOrNull(attributeInstance.getM_AttributeValue_ID());
-				final I_M_AttributeValue attributeValue = attributeValueId != null ? attributesRepo.retrieveAttributeValueOrNull(attribute, attributeValueId) : null;
-				if (attributeValue != null)
-				{
-					return formatStringValue(attributeValue.getName());
-				}
-				else
-				{
-					return formatStringValue(attributeInstance.getValue());
-				}
-			}
-			else
-			{
-				// Unknown attributeValueType
-				return formatStringValue(attributeInstance.getValue());
-			}
-		}
 
 	}
 }

@@ -47,6 +47,7 @@ import com.google.common.base.Strings;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerAware;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -77,7 +78,7 @@ public class BPartnerBL implements IBPartnerBL
 	{
 		this.userRepository = userRepository;
 	}
-	
+
 	public I_C_BPartner getById(@NonNull final BPartnerId bpartnerId)
 	{
 		return Services.get(IBPartnerDAO.class).getById(bpartnerId);
@@ -626,12 +627,12 @@ public class BPartnerBL implements IBPartnerBL
 	public DeliveryViaRule getDeliveryViaRuleOrNull(@NonNull final BPartnerId bpartnerId, SOTrx soTrx)
 	{
 		final I_C_BPartner bp = getById(bpartnerId);
-		
+
 		if (soTrx.isSales())
 		{
 			return DeliveryViaRule.ofNullableCode(bp.getDeliveryViaRule());
 		}
-		else if(soTrx.isPurchase())
+		else if (soTrx.isPurchase())
 		{
 			return DeliveryViaRule.ofNullableCode(bp.getPO_DeliveryViaRule());
 		}
@@ -640,5 +641,13 @@ public class BPartnerBL implements IBPartnerBL
 			// shall not happen
 			return null;
 		}
+	}
+
+	@Override
+	public ShipmentAllocationBestBeforePolicy getBestBeforePolicy(@NonNull final BPartnerId bpartnerId)
+	{
+		final I_C_BPartner bpartner = getById(bpartnerId);
+		final ShipmentAllocationBestBeforePolicy bestBeforePolicy = ShipmentAllocationBestBeforePolicy.ofNullableCode(bpartner.getShipmentAllocation_BestBefore_Policy());
+		return bestBeforePolicy != null ? bestBeforePolicy : ShipmentAllocationBestBeforePolicy.Expiring_First;
 	}
 }

@@ -25,12 +25,12 @@ package org.adempiere.mm.attributes.countryattribute.impl;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.countryattribute.ICountryAttributeDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.util.Env;
 
 import de.metas.util.Check;
@@ -42,7 +42,7 @@ public class CountryAttributeDAO implements ICountryAttributeDAO
 	public static final String SYSCONFIG_CountryAttribute = "de.metas.swat.CountryAttribute";
 
 	@Override
-	public I_M_AttributeValue retrieveAttributeValue(final Properties ctx, @NonNull final I_C_Country country, final boolean includeInactive)
+	public AttributeListValue retrieveAttributeValue(final Properties ctx, @NonNull final I_C_Country country, final boolean includeInactive)
 	{
 		final String countryValue = country.getCountryCode();
 		if (Check.isEmpty(countryValue, true))
@@ -58,7 +58,7 @@ public class CountryAttributeDAO implements ICountryAttributeDAO
 
 		//
 		// First try: search by CountryCode
-		final I_M_AttributeValue attributeValueByCode = Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(countryAttribute, countryValue, includeInactive);
+		final AttributeListValue attributeValueByCode = Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(countryAttribute, countryValue, includeInactive);
 		if (attributeValueByCode != null)
 		{
 			return attributeValueByCode;
@@ -67,7 +67,7 @@ public class CountryAttributeDAO implements ICountryAttributeDAO
 		//
 		// Second try: Search by country name
 		final String countryName = country.getName();
-		final I_M_AttributeValue attributeValueByName = Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(countryAttribute, countryName, includeInactive);
+		final AttributeListValue attributeValueByName = Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(countryAttribute, countryName, includeInactive);
 		if (attributeValueByName != null)
 		{
 			return attributeValueByName;

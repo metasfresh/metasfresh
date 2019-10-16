@@ -175,6 +175,11 @@ public class AD_Tab_CreateFields extends JavaProcess
 			field.setIsDisplayed(false);
 			field.setIsDisplayedGrid(false);
 		}
+		
+		if("AD_Client_ID".equals(adColumn.getColumnName()))
+		{
+			field.setIsReadOnly(true);
+		}
 
 		InterfaceWrapperHelper.save(field);
 		return field;

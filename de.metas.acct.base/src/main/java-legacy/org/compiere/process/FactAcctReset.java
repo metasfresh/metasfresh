@@ -224,7 +224,7 @@ public class FactAcctReset extends JavaProcess
 				+ "','" + X_C_DocType.DOCBASETYPE_PurchaseOrder + "')";
 		else if (AD_Table_ID == MProjectIssue.Table_ID)
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_ProjectIssue + "'";
-		else if (AD_Table_ID == I_C_BankStatement.Table_ID)
+		else if (AD_Table_ID == getTableId(I_C_BankStatement.class))
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_BankStatement + "'";
 		else if (AD_Table_ID == MCash.Table_ID)
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_CashJournal + "'";

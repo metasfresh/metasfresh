@@ -26,6 +26,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -33,7 +34,6 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -41,10 +41,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.MAttributeSet;
 import org.compiere.model.MProductCategory;
 import org.compiere.model.X_C_UOM;
@@ -52,12 +52,12 @@ import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.cache.CCache;
-import de.metas.cache.CCache.CacheMapType;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.IProductCostingBL;
 import de.metas.logging.LogManager;
@@ -67,6 +67,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UOMPrecision;
@@ -79,17 +80,31 @@ public final class ProductBL implements IProductBL
 {
 	private static final Logger logger = LogManager.getLogger(ProductBL.class);
 
+	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
+	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IClientDAO clientDAO = Services.get(IClientDAO.class);
+	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+
+	@Override
+	public I_M_Product getById(@NonNull final ProductId productId)
+	{
+		return productsRepo.getById(productId);
+	}
+
 	@Override
 	public UOMPrecision getUOMPrecision(final I_M_Product product)
 	{
 		final UomId uomId = UomId.ofRepoId(product.getC_UOM_ID());
-		return Services.get(IUOMDAO.class).getStandardPrecision(uomId);
+		return uomsRepo.getStandardPrecision(uomId);
 	}
 
 	@Override
 	public UOMPrecision getUOMPrecision(@NonNull final ProductId productId)
 	{
-		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		final I_M_Product product = getById(productId);
 		return getUOMPrecision(product);
 	}
 
@@ -100,7 +115,7 @@ public final class ProductBL implements IProductBL
 		String policy = pc.getMMPolicy();
 		if (policy == null || policy.length() == 0)
 		{
-			policy = Services.get(IClientDAO.class).retriveClient(Env.getCtx()).getMMPolicy();
+			policy = clientDAO.retriveClient(Env.getCtx()).getMMPolicy();
 		}
 		return policy;
 	}
@@ -116,7 +131,7 @@ public final class ProductBL implements IProductBL
 	@Override
 	public I_C_UOM getStockUOM(@NonNull final I_M_Product product)
 	{
-		return Services.get(IUOMDAO.class).getById(product.getC_UOM_ID());
+		return uomsRepo.getById(product.getC_UOM_ID());
 	}
 
 	@Override
@@ -137,7 +152,7 @@ public final class ProductBL implements IProductBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
 
 		// FIXME: we hardcoded the UOM for M_Product.Weight to Kilogram
-		return Services.get(IUOMDAO.class).retrieveByX12DE355(ctx, IUOMDAO.X12DE355_Kilogram);
+		return uomsRepo.retrieveByX12DE355(ctx, IUOMDAO.X12DE355_Kilogram);
 	}
 
 	@Override
@@ -153,7 +168,6 @@ public final class ProductBL implements IProductBL
 
 		//
 		// Calculate the rate to convert from stocking UOM to "uomTo"
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(product.getM_Product_ID());
 		final BigDecimal stocking2uomToRate = uomConversionBL.convertQty(uomConversionCtx, BigDecimal.ONE, stockingUom, uomTo);
 
@@ -189,7 +203,7 @@ public final class ProductBL implements IProductBL
 	@Override
 	public boolean isItem(@NonNull final ProductId productId)
 	{
-		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		final I_M_Product product = getById(productId);
 		return isItem(product);
 	}
 
@@ -222,14 +236,14 @@ public final class ProductBL implements IProductBL
 		}
 
 		// NOTE: we rely on table cache config
-		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		final I_M_Product product = getById(productId);
 		return isStocked(product);
 	}
 
 	@Override
 	public boolean isDiverse(@NonNull final ProductId productId)
 	{
-		return Services.get(IProductDAO.class)
+		return productsRepo
 				.getById(productId, de.metas.adempiere.model.I_M_Product.class)
 				.isDiverse();
 	}
@@ -242,20 +256,24 @@ public final class ProductBL implements IProductBL
 		{
 			return AttributeSetId.ofRepoId(attributeSetId);
 		}
-		if (product.getM_Product_Category_ID() <= 0) // guard against NPE which might happen in unit tests
+
+		final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoIdOrNull(product.getM_Product_Category_ID());
+		if (productCategoryId == null) // guard against NPE which might happen in unit tests
 		{
 			return AttributeSetId.NONE;
 		}
 
-		attributeSetId = product.getM_Product_Category().getM_AttributeSet_ID();
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+
+		final I_M_Product_Category productCategoryRecord = productDAO.getProductCategoryById(productCategoryId);
+		attributeSetId = productCategoryRecord.getM_AttributeSet_ID();
 		return attributeSetId > 0 ? AttributeSetId.ofRepoId(attributeSetId) : AttributeSetId.NONE;
 	}
 
 	@Override
 	public AttributeSetId getAttributeSetId(@NonNull final ProductId productId)
 	{
-		final IProductDAO productsRepo = Services.get(IProductDAO.class);
-		final I_M_Product product = productsRepo.getById(productId);
+		final I_M_Product product = getById(productId);
 		return getAttributeSetId(product);
 	}
 
@@ -268,7 +286,7 @@ public final class ProductBL implements IProductBL
 			return null;
 		}
 
-		return Services.get(IAttributeDAO.class).getAttributeSetById(attributeSetId);
+		return attributesRepo.getAttributeSetById(attributeSetId);
 	}
 
 	@Override
@@ -305,8 +323,6 @@ public final class ProductBL implements IProductBL
 	@Override
 	public boolean isASIMandatory(@NonNull final I_M_Product product, final boolean isSOTrx)
 	{
-		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
-		final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 
 		final ClientId adClientId = ClientId.ofRepoId(product.getAD_Client_ID());
 		final OrgId adOrgId = OrgId.ofRepoId(product.getAD_Org_ID());
@@ -357,7 +373,7 @@ public final class ProductBL implements IProductBL
 	@Override
 	public boolean isASIMandatory(@NonNull final ProductId productId, final boolean isSOTrx)
 	{
-		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		final I_M_Product product = getById(productId);
 		return isASIMandatory(product, isSOTrx);
 	}
 
@@ -376,7 +392,7 @@ public final class ProductBL implements IProductBL
 			return false;
 		}
 
-		final ProductCategoryId productCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(productId);
+		final ProductCategoryId productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
 		return Objects.equals(productCategoryId, expectedProductCategoryId);
 	}
 
@@ -388,7 +404,7 @@ public final class ProductBL implements IProductBL
 			return "-";
 		}
 
-		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		final I_M_Product product = getById(productId);
 		if (product == null)
 		{
 			return "<" + productId + ">";
@@ -399,7 +415,7 @@ public final class ProductBL implements IProductBL
 	@Override
 	public String getProductValue(@NonNull final ProductId productId)
 	{
-		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		final I_M_Product product = getById(productId);
 		if (product == null)
 		{
 			return "<" + productId + ">";
@@ -415,8 +431,6 @@ public final class ProductBL implements IProductBL
 			return ImmutableMap.of();
 		}
 
-		final IProductDAO productsRepo = Services.get(IProductDAO.class);
-
 		return productsRepo.getByIds(productIds)
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
@@ -427,7 +441,7 @@ public final class ProductBL implements IProductBL
 	@Override
 	public String getProductName(@NonNull final ProductId productId)
 	{
-		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		final I_M_Product product = getById(productId);
 		if (product == null)
 		{
 			return "<" + productId + ">";
@@ -438,41 +452,36 @@ public final class ProductBL implements IProductBL
 	@Override
 	public boolean isFreightCostProduct(@NonNull final ProductId productId)
 	{
-		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		final I_M_Product product = getById(productId);
 
 		final String productType = product.getProductType();
 
 		return X_M_Product.PRODUCTTYPE_FreightCost.equals(productType);
 	}
 
-	private final CCache<ProductId, Optional<UomId>> catchUomCache = CCache
-			.<ProductId, Optional<UomId>> builder()
-			.tableName(I_C_UOM_Conversion.Table_Name)
-			.cacheMapType(CacheMapType.LRU)
-			.initialCapacity(500)
-			.build();
-
 	@Override
 	public Optional<UomId> getCatchUOMId(@NonNull final ProductId productId)
 	{
-		return catchUomCache.getOrLoad(productId, this::getCatchUOMId0);
-	}
+		final IUOMConversionDAO uomConversionsRepo = Services.get(IUOMConversionDAO.class);
+		final ImmutableSet<UomId> catchUomIds = uomConversionsRepo.getProductConversions(productId)
+				.getCatchUomIds();
 
-	public Optional<UomId> getCatchUOMId0(@NonNull final ProductId productId)
-	{
-		final I_C_UOM catchUomRecord = Services.get(IQueryBL.class).createQueryBuilder(I_C_UOM_Conversion.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_UOM_Conversion.COLUMN_M_Product_ID, productId)
-				.addEqualsFilter(I_C_UOM_Conversion.COLUMN_IsCatchUOMForProduct, true)
-				.andCollect(I_C_UOM_Conversion.COLUMN_C_UOM_To_ID)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_UOM.COLUMNNAME_UOMType, X_C_UOM.UOMTYPE_Weigth)
-				.create()
-				.firstOnly(I_C_UOM.class); // we have a unique constraint
-		if (catchUomRecord == null)
+		final List<I_C_UOM> catchUOMs = uomsRepo.getByIds(catchUomIds);
+
+		final ImmutableList<UomId> catchWeightUomIds = catchUOMs.stream()
+				.filter(uom -> uom.isActive())
+				.filter(uom -> X_C_UOM.UOMTYPE_Weigth.equals(uom.getUOMType()))
+				.map(uom -> UomId.ofRepoId(uom.getC_UOM_ID()))
+				.sorted()
+				.collect(ImmutableList.toImmutableList());
+		
+		if(catchWeightUomIds.isEmpty())
 		{
 			return Optional.empty();
 		}
-		return Optional.of(UomId.ofRepoId(catchUomRecord.getC_UOM_ID()));
+		else
+		{
+			return Optional.of(catchWeightUomIds.get(0));
+		}
 	}
 }

@@ -43,6 +43,7 @@ import org.adempiere.mm.attributes.listeners.adr.OrderLineAllocADRModelAttribute
 import org.adempiere.mm.attributes.listeners.adr.OrderLineLotNumberModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.age.AgeModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.expiry.OrderLineExpiryModelAttributeSetInstanceListener;
+import org.adempiere.mm.attributes.listeners.expiry.OrderLineMonthsUntilExpiryModelASIListener;
 import org.adempiere.mm.attributes.listeners.inAusLand.InOutInAusLandModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.inAusLand.InOutLineInAusLandModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.inAusLand.InvoiceInAusLandModelAttributeSetInstanceListener;
@@ -104,6 +105,8 @@ public class Main extends AbstractModuleInterceptor
 
 		modelAttributeSetInstanceListenerService.registerListener(new OrderLineExpiryModelAttributeSetInstanceListener());
 
+		modelAttributeSetInstanceListenerService.registerListener(new OrderLineMonthsUntilExpiryModelASIListener());
+
 		modelAttributeSetInstanceListenerService.registerListener(new AgeModelAttributeSetInstanceListener());
 
 		PickingTerminal.setPickingTerminalPanelClass(SwingPickingTerminalPanel.class);
@@ -126,7 +129,6 @@ public class Main extends AbstractModuleInterceptor
 	{
 		//
 		// add model validators
-		engine.addModelValidator(new C_OLCand(), client);
 		engine.addModelValidator(new C_Order(), client);
 		engine.addModelValidator(new C_Invoice_Candidate(), client);
 		engine.addModelValidator(new de.metas.fresh.freshQtyOnHand.model.validator.Fresh_QtyOnHand(), client);
