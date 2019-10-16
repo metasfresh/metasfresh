@@ -368,6 +368,7 @@
 
 .table-flex-wrapper-row {
     flex-direction: row;
+    flex: initial;
 }
 
 .row-bordered-bottom td {
