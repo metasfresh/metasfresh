@@ -14,7 +14,7 @@ public class X_DIM_Dimension_Spec extends org.compiere.model.PO implements I_DIM
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2072828496L;
+	private static final long serialVersionUID = -2004951464L;
 
     /** Standard Constructor */
     public X_DIM_Dimension_Spec (Properties ctx, int DIM_Dimension_Spec_ID, String trxName)
@@ -84,7 +84,7 @@ public class X_DIM_Dimension_Spec extends org.compiere.model.PO implements I_DIM
 	}
 
 	@Override
-	public de.metas.dimension.model.I_DIM_Dimension_Type getDIM_Dimension_Type() throws RuntimeException
+	public de.metas.dimension.model.I_DIM_Dimension_Type getDIM_Dimension_Type()
 	{
 		return get_ValueAsPO(COLUMNNAME_DIM_Dimension_Type_ID, de.metas.dimension.model.I_DIM_Dimension_Type.class);
 	}
@@ -204,9 +204,7 @@ public class X_DIM_Dimension_Spec extends org.compiere.model.PO implements I_DIM
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -214,8 +212,7 @@ public class X_DIM_Dimension_Spec extends org.compiere.model.PO implements I_DIM
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{

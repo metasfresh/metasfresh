@@ -15,7 +15,7 @@ public class X_MD_Candidate_Purchase_Detail extends org.compiere.model.PO implem
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1791956323L;
+	private static final long serialVersionUID = 681925329L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Purchase_Detail (Properties ctx, int MD_Candidate_Purchase_Detail_ID, String trxName)
@@ -44,18 +44,6 @@ public class X_MD_Candidate_Purchase_Detail extends org.compiere.model.PO implem
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner_Vendor() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_Vendor_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner_Vendor(org.compiere.model.I_C_BPartner C_BPartner_Vendor)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_Vendor_ID, org.compiere.model.I_C_BPartner.class, C_BPartner_Vendor);
-	}
-
 	/** Set C_BPartner_Vendor_ID.
 		@param C_BPartner_Vendor_ID C_BPartner_Vendor_ID	  */
 	@Override
@@ -79,7 +67,7 @@ public class X_MD_Candidate_Purchase_Detail extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public org.compiere.model.I_C_OrderLine getC_OrderLinePO() throws RuntimeException
+	public org.compiere.model.I_C_OrderLine getC_OrderLinePO()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_OrderLinePO_ID, org.compiere.model.I_C_OrderLine.class);
 	}
@@ -160,8 +148,30 @@ public class X_MD_Candidate_Purchase_Detail extends org.compiere.model.PO implem
 		return false;
 	}
 
+	/** Set Wareneingangsdisposition.
+		@param M_ReceiptSchedule_ID Wareneingangsdisposition	  */
 	@Override
-	public de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate() throws RuntimeException
+	public void setM_ReceiptSchedule_ID (int M_ReceiptSchedule_ID)
+	{
+		if (M_ReceiptSchedule_ID < 1) 
+			set_Value (COLUMNNAME_M_ReceiptSchedule_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_ReceiptSchedule_ID, Integer.valueOf(M_ReceiptSchedule_ID));
+	}
+
+	/** Get Wareneingangsdisposition.
+		@return Wareneingangsdisposition	  */
+	@Override
+	public int getM_ReceiptSchedule_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_ReceiptSchedule_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate()
 	{
 		return get_ValueAsPO(COLUMNNAME_MD_Candidate_ID, de.metas.material.dispo.model.I_MD_Candidate.class);
 	}
@@ -216,28 +226,6 @@ public class X_MD_Candidate_Purchase_Detail extends org.compiere.model.PO implem
 		return ii.intValue();
 	}
 
-	/** Set Wareneingangsdisposition.
-		@param M_ReceiptSchedule_ID Wareneingangsdisposition	  */
-	@Override
-	public void setM_ReceiptSchedule_ID (int M_ReceiptSchedule_ID)
-	{
-		if (M_ReceiptSchedule_ID < 1) 
-			set_Value (COLUMNNAME_M_ReceiptSchedule_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_ReceiptSchedule_ID, Integer.valueOf(M_ReceiptSchedule_ID));
-	}
-
-	/** Get Wareneingangsdisposition.
-		@return Wareneingangsdisposition	  */
-	@Override
-	public int getM_ReceiptSchedule_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_ReceiptSchedule_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set Geplante Menge.
 		@param PlannedQty Geplante Menge	  */
 	@Override
@@ -258,7 +246,7 @@ public class X_MD_Candidate_Purchase_Detail extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Product_Planning getPP_Product_Planning() throws RuntimeException
+	public org.eevolution.model.I_PP_Product_Planning getPP_Product_Planning()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Product_Planning_ID, org.eevolution.model.I_PP_Product_Planning.class);
 	}

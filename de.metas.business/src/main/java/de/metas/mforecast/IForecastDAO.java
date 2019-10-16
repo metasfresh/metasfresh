@@ -13,26 +13,22 @@ package de.metas.mforecast;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
 
-import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 
 import de.metas.util.ISingletonService;
 
 public interface IForecastDAO extends ISingletonService
 {
-
-	List<I_M_ForecastLine> retrieveLines(I_M_Forecast forecast);
-
+	List<I_M_ForecastLine> retrieveLinesByForecastId(int forecastId);
 }

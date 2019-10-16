@@ -31,6 +31,7 @@ import java.util.Properties;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
@@ -47,6 +48,8 @@ import org.eevolution.model.I_PP_Product_Planning;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.material.commons.attributes.AttributesKeyPatterns;
+import de.metas.material.commons.attributes.AttributesKeyQueryHelper;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IResourceDAO;
@@ -60,6 +63,9 @@ import lombok.NonNull;
 
 public class ProductPlanningDAO implements IProductPlanningDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IResourceDAO resourcesRepo = Services.get(IResourceDAO.class);
+
 	@Override
 	public I_PP_Product_Planning getById(final int ppProductPlanningId)
 	{
@@ -97,7 +103,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			final ResourceId plantId = ResourceId.ofRepoIdOrNull(warehouse.getPP_Plant_ID());
 			if (plantId != null)
 			{
-				return Services.get(IResourceDAO.class).getById(plantId);
+				return resourcesRepo.getById(plantId);
 			}
 		}
 
@@ -134,7 +140,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			}
 			else
 			{
-				return Services.get(IResourceDAO.class).getById(plantIds.get(0));
+				return resourcesRepo.getById(plantIds.get(0));
 			}
 		}
 	}
@@ -146,8 +152,6 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			final ProductId productId,
 			final AttributeSetInstanceId attributeSetInstanceId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final IQueryBuilder<I_PP_Product_Planning> queryBuilder = queryBL
 				.createQueryBuilder(I_PP_Product_Planning.class)
 				.addOnlyActiveRecordsFilter();
@@ -183,26 +187,29 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.endOrderBy();
 	}
 
-	private static ICompositeQueryFilter<I_PP_Product_Planning> createAttributesFilter(final AttributeSetInstanceId attributeSetInstanceId)
+	private ICompositeQueryFilter<I_PP_Product_Planning> createAttributesFilter(final AttributeSetInstanceId attributeSetInstanceId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(attributeSetInstanceId)
-				.orElse(AttributesKey.ALL);
-
 		final ICompositeQueryFilter<I_PP_Product_Planning> matchingAsiFilter = queryBL
 				.createCompositeQueryFilter(I_PP_Product_Planning.class)
 				.setJoinAnd()
 				.addEqualsFilter(I_PP_Product_Planning.COLUMN_IsAttributeDependant, true)
-				.addStringLikeFilter(I_PP_Product_Planning.COLUMN_StorageAttributesKey, attributesKey.getSqlLikeString(), false);
+				.addFilter(createStorageAttributeKeyFilter(attributeSetInstanceId));
 
-		final ICompositeQueryFilter<I_PP_Product_Planning> attributesFilter = queryBL
-				.createCompositeQueryFilter(I_PP_Product_Planning.class)
+		return queryBL.createCompositeQueryFilter(I_PP_Product_Planning.class)
 				.setJoinOr()
 				.addEqualsFilter(I_PP_Product_Planning.COLUMN_IsAttributeDependant, false)
 				.addFilter(matchingAsiFilter);
+	}
 
-		return attributesFilter;
+	private static IQueryFilter<I_PP_Product_Planning> createStorageAttributeKeyFilter(final AttributeSetInstanceId attributeSetInstanceId)
+	{
+		final AttributesKey attributesKey = AttributesKeys
+				.createAttributesKeyFromASIStorageAttributes(attributeSetInstanceId)
+				.orElse(AttributesKey.ALL);
+
+		return AttributesKeyQueryHelper
+				.createFor(I_PP_Product_Planning.COLUMN_StorageAttributesKey)
+				.createFilter(AttributesKeyPatterns.ofAttributeKey(attributesKey));
 	}
 
 	@Override
@@ -227,9 +234,6 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	@Cached(cacheName = I_M_Warehouse.Table_Name + "#by#AD_Org_ID#PP_Plant_ID")
 	List<I_M_Warehouse> retrieveWarehousesForPlant(@CacheCtx final Properties ctx, final int adOrgId, final int ppPlantId)
 	{
-		// services
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		// Retrieve warehouses which which are directly assigned to Org and Plant
 		return queryBL.createQueryBuilder(I_M_Warehouse.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
@@ -251,7 +255,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			@NonNull final ProductId productId,
 			@NonNull final ProductBOMId bomId)
 	{
-		final List<I_PP_Product_Planning> productPlanningRecords = Services.get(IQueryBL.class)
+		final List<I_PP_Product_Planning> productPlanningRecords = queryBL
 				.createQueryBuilder(I_PP_Product_Planning.class)
 				.addEqualsFilter(I_PP_Product_Planning.COLUMN_M_Product_ID, productId)
 				.addEqualsFilter(I_PP_Product_Planning.COLUMN_PP_Product_BOM_ID, null)

@@ -47,4 +47,6 @@ public class CreateUOMConversionRequest
 	BigDecimal fromToMultiplier;
 	@NonNull
 	BigDecimal toFromMultiplier;
+	
+	boolean catchUOMForProduct;
 }

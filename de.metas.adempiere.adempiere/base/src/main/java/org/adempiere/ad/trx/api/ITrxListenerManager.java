@@ -45,7 +45,7 @@ public interface ITrxListenerManager
 		 */
 		AFTER_CLOSE(40);
 
-		private final int seqNo;
+		private int seqNo;
 
 		private TrxEventTiming(final int seqNo)
 		{
@@ -186,6 +186,13 @@ public interface ITrxListenerManager
 	void registerListener(RegisterListenerRequest listener);
 
 	boolean canRegisterOnTiming(TrxEventTiming timing);
+
+	default void runAfterCommit(@NonNull final Runnable runnable)
+	{
+		newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.invokeMethodJustOnce(true)
+				.registerHandlingMethod(trx -> runnable.run());
+	}
 
 	/**
 	 * This method shall only be called by the framework.

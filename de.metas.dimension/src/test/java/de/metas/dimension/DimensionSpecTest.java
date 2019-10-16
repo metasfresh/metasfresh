@@ -7,10 +7,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,6 +18,7 @@ import org.junit.Test;
 import de.metas.dimension.model.I_DIM_Dimension_Spec;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_Attribute;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_AttributeValue;
+import de.metas.material.event.commons.AttributesKeyPart;
 
 /*
  * #%L
@@ -43,9 +44,9 @@ import de.metas.dimension.model.I_DIM_Dimension_Spec_AttributeValue;
 
 public class DimensionSpecTest
 {
-	private I_M_AttributeValue attr1_value1;
-	private I_M_AttributeValue attr2_value1;
-	private I_M_AttributeValue attr2_value2;
+	private AttributeListValue attr1_value1;
+	private AttributeListValue attr2_value1;
+	private AttributeListValue attr2_value2;
 	private I_M_Attribute attr1;
 	private I_M_Attribute attr2;
 
@@ -81,16 +82,16 @@ public class DimensionSpecTest
 		// attr1 has two values, but just one of them is "explicitly" added to dimSpecAttr1 which has isIncludeAllAttributeValues=false
 		assertThat(groups.get(1).isEmptyGroup()).isFalse();
 		assertThat(groups.get(1).getGroupName().getDefaultValue()).isEqualTo("Name_test1_value1");
-		assertThat(groups.get(1).getAttributesKey().getAttributeValueIds()).containsExactly(attr1_value1.getM_AttributeValue_ID());
+		assertThat(groups.get(1).getAttributesKey().getParts()).containsExactly(AttributesKeyPart.ofAttributeValueId(attr1_value1.getId()));
 
 		// attr2 has two values, and dimSpecAttr2 has isIncludeAllAttributeValues=true and isValueAggregate=false
 		assertThat(groups.get(2).isEmptyGroup()).isFalse();
 		assertThat(groups.get(2).getGroupName().getDefaultValue()).isEqualTo("Name_test2_value1");
-		assertThat(groups.get(2).getAttributesKey().getAttributeValueIds()).containsExactly(attr2_value1.getM_AttributeValue_ID());
+		assertThat(groups.get(2).getAttributesKey().getParts()).containsExactly(AttributesKeyPart.ofAttributeValueId(attr2_value1.getId()));
 
 		assertThat(groups.get(3).isEmptyGroup()).isFalse();
 		assertThat(groups.get(3).getGroupName().getDefaultValue()).isEqualTo("Name_test2_value2");
-		assertThat(groups.get(3).getAttributesKey().getAttributeValueIds()).containsExactly(attr2_value2.getM_AttributeValue_ID());
+		assertThat(groups.get(3).getAttributesKey().getParts()).containsExactly(AttributesKeyPart.ofAttributeValueId(attr2_value2.getId()));
 	}
 
 	private I_DIM_Dimension_Spec createDimensionSpecRecord_with_two_dimSpecAttrs_one_with_isIncludeAllAttributeValue()
@@ -102,19 +103,19 @@ public class DimensionSpecTest
 
 		final I_DIM_Dimension_Spec_Attribute dimSpecAttr1 = newInstance(I_DIM_Dimension_Spec_Attribute.class);
 		dimSpecAttr1.setDIM_Dimension_Spec(dimSpec);
-		dimSpecAttr1.setM_Attribute(attr1);
+		dimSpecAttr1.setM_Attribute_ID(attr1.getM_Attribute_ID());
 		save(dimSpecAttr1);
 
 		final I_DIM_Dimension_Spec_AttributeValue dimSpecAttributeValue = newInstance(I_DIM_Dimension_Spec_AttributeValue.class);
 		dimSpecAttributeValue.setDIM_Dimension_Spec_Attribute(dimSpecAttr1);
-		dimSpecAttributeValue.setM_AttributeValue(attr1_value1);
+		dimSpecAttributeValue.setM_AttributeValue_ID(attr1_value1.getId().getRepoId());
 		save(dimSpecAttributeValue);
 
 		final I_DIM_Dimension_Spec_Attribute dimSpecAttr2 = newInstance(I_DIM_Dimension_Spec_Attribute.class);
 		dimSpecAttr2.setDIM_Dimension_Spec(dimSpec);
 		dimSpecAttr2.setIsIncludeAllAttributeValues(true);
 		dimSpecAttr2.setIsValueAggregate(false);
-		dimSpecAttr2.setM_Attribute(attr2);
+		dimSpecAttr2.setM_Attribute_ID(attr2.getM_Attribute_ID());
 		save(dimSpecAttr2);
 
 		return dimSpec;
@@ -139,17 +140,16 @@ public class DimensionSpecTest
 		assertThat(groups.get(1).getGroupName().getDefaultValue()).isEqualTo("Name_test1_value1");
 		assertThat(groups.get(1).getAttributeId()).contains(
 				AttributeId.ofRepoId(attr1.getM_Attribute_ID()));
-		assertThat(groups.get(1).getAttributesKey().getAttributeValueIds()).containsExactly(
-				attr1_value1.getM_AttributeValue_ID());
+		assertThat(groups.get(1).getAttributesKey().getParts()).containsExactly(AttributesKeyPart.ofAttributeValueId(attr1_value1.getId()));
 
 		// attr2 has two values, and dimSpecAttr2 which has isIncludeAllAttributeValues=true
 		assertThat(groups.get(2).isEmptyGroup()).isFalse();
 		assertThat(groups.get(2).getGroupName().getDefaultValue()).isEqualTo("dimSpecAttr2_ValueAggregateName");
 		assertThat(groups.get(2).getAttributeId()).contains(
 				AttributeId.ofRepoId(attr2.getM_Attribute_ID()));
-		assertThat(groups.get(2).getAttributesKey().getAttributeValueIds()).containsOnly(
-				attr2_value1.getM_AttributeValue_ID(),
-				attr2_value2.getM_AttributeValue_ID());
+		assertThat(groups.get(2).getAttributesKey().getParts()).containsOnly(
+				AttributesKeyPart.ofAttributeValueId(attr2_value1.getId()),
+				AttributesKeyPart.ofAttributeValueId(attr2_value2.getId()));
 	}
 
 	private I_DIM_Dimension_Spec createDimensionSpecRecord_with_two_dimSpecAttrs_one_with_aggregate_group_name()
@@ -161,12 +161,12 @@ public class DimensionSpecTest
 
 		final I_DIM_Dimension_Spec_Attribute dimSpecAttr1 = newInstance(I_DIM_Dimension_Spec_Attribute.class);
 		dimSpecAttr1.setDIM_Dimension_Spec(dimSpec);
-		dimSpecAttr1.setM_Attribute(attr1);
+		dimSpecAttr1.setM_Attribute_ID(attr1.getM_Attribute_ID());
 		save(dimSpecAttr1);
 
 		final I_DIM_Dimension_Spec_AttributeValue dimSpecAttributeValue = newInstance(I_DIM_Dimension_Spec_AttributeValue.class);
 		dimSpecAttributeValue.setDIM_Dimension_Spec_Attribute(dimSpecAttr1);
-		dimSpecAttributeValue.setM_AttributeValue(attr1_value1);
+		dimSpecAttributeValue.setM_AttributeValue_ID(attr1_value1.getId().getRepoId());
 		save(dimSpecAttributeValue);
 
 		final I_DIM_Dimension_Spec_Attribute dimSpecAttr2 = newInstance(I_DIM_Dimension_Spec_Attribute.class);
@@ -174,7 +174,7 @@ public class DimensionSpecTest
 		dimSpecAttr2.setIsIncludeAllAttributeValues(true);
 		dimSpecAttr2.setIsValueAggregate(true);
 		dimSpecAttr2.setValueAggregateName("dimSpecAttr2_ValueAggregateName");
-		dimSpecAttr2.setM_Attribute(attr2);
+		dimSpecAttr2.setM_Attribute_ID(attr2.getM_Attribute_ID());
 		save(dimSpecAttr2);
 
 		return dimSpec;

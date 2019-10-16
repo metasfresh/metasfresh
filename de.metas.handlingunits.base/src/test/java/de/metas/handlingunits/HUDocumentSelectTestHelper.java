@@ -439,7 +439,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		{
 			final I_M_AttributeInstance ai = InterfaceWrapperHelper.newInstance(I_M_AttributeInstance.class, asi);
 			ai.setM_AttributeSetInstance(asi);
-			ai.setM_Attribute(attr_CountryMadeIn);
+			ai.setM_Attribute_ID(attr_CountryMadeIn.getM_Attribute_ID());
 			ai.setValue("RO");
 			ai.setValueNumber(null);
 			InterfaceWrapperHelper.save(ai);

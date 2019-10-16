@@ -1,13 +1,12 @@
 package org.adempiere.mm.attributes;
 
-import org.adempiere.exceptions.AdempiereException;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -33,51 +32,27 @@ import lombok.Value;
  */
 
 @Value
-public class AttributeId implements RepoIdAware
+public class AttributeValueId implements RepoIdAware
 {
 	int repoId;
 
 	@JsonCreator
-	public static AttributeId ofRepoId(final int repoId)
+	public static AttributeValueId ofRepoId(final int repoId)
 	{
-		return new AttributeId(repoId);
+		return new AttributeValueId(repoId);
 	}
 
-	public static AttributeId ofRepoIdObj(@NonNull final Object repoIdObj)
-	{
-		if (repoIdObj instanceof AttributeId)
-		{
-			return (AttributeId)repoIdObj;
-		}
-		else if (repoIdObj instanceof Integer)
-		{
-			return ofRepoId((int)repoIdObj);
-		}
-		else
-		{
-			try
-			{
-				final int repoId = Integer.parseInt(repoIdObj.toString());
-				return ofRepoId(repoId);
-			}
-			catch (final Exception ex)
-			{
-				throw new AdempiereException("Failed converting '" + repoIdObj + "' (" + repoIdObj.getClass() + ") to " + AttributeId.class, ex);
-			}
-		}
-	}
-
-	public static AttributeId ofRepoIdOrNull(final int repoId)
+	public static AttributeValueId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	public static int toRepoId(final AttributeId attributeId)
+	public static int toRepoId(final AttributeValueId attributeValueId)
 	{
-		return attributeId != null ? attributeId.getRepoId() : -1;
+		return attributeValueId != null ? attributeValueId.getRepoId() : -1;
 	}
 
-	private AttributeId(final int repoId)
+	private AttributeValueId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}
@@ -87,5 +62,10 @@ public class AttributeId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static boolean equals(final AttributeValueId id1, final AttributeValueId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

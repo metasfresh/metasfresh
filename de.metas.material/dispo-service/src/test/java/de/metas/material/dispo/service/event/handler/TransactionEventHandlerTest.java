@@ -10,7 +10,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableList;
 
@@ -24,7 +25,6 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -50,24 +50,21 @@ import mockit.Mocked;
 
 public class TransactionEventHandlerTest
 {
-
-	private static final BigDecimal TWENTY_THREE = new BigDecimal("23");
-
-	@Mocked
-	private PostMaterialEventService postMaterialEventService;
-
 	@Test
 	public void createOneOrTwoCandidatesWithChangedTransactionDetailAndQuantity()
 	{
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of());
 		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
 
-		final TransactionEventHandler transactionEventHandler = new TransactionEventHandler(candidateChangeHandler, candidateRepository, postMaterialEventService);
+		final TransactionEventHandler transactionEventHandler = new TransactionEventHandler(
+				candidateChangeHandler,
+				candidateRepository,
+				Mockito.mock(PostMaterialEventService.class));
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
-				.quantity(TWENTY_THREE)
+				.quantity(new BigDecimal("23"))
 				.date(AFTER_NOW)
 				.build();
 
@@ -81,7 +78,7 @@ public class TransactionEventHandlerTest
 				.build();
 
 		final TransactionDetail transactionDetail = TransactionDetail.builder()
-				.quantity(TWENTY_THREE)
+				.quantity(new BigDecimal("23"))
 				.storageAttributesKey(AttributesKey.ofAttributeValueIds(10))
 				.attributeSetInstanceId(20)
 				.transactionId(30)
@@ -99,6 +96,6 @@ public class TransactionEventHandlerTest
 
 		assertThat(result.get(0).getId()).isEqualTo(CandidateId.NULL);
 		assertThat(result.get(0).getParentId()).isEqualTo(CandidateId.NULL);
-		assertThat(result.get(0).getQuantity()).isEqualByComparingTo(TWENTY_THREE);
+		assertThat(result.get(0).getQuantity()).isEqualByComparingTo("23");
 	}
 }

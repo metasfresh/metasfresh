@@ -96,7 +96,7 @@ public class HUKeysByBarcodeCollectorTest
 	{
 		final I_DIM_Dimension_Spec_Attribute dim_att = InterfaceWrapperHelper.newInstance(I_DIM_Dimension_Spec_Attribute.class, contextProvider);
 
-		dim_att.setM_Attribute(attr);
+		dim_att.setM_Attribute_ID(attr.getM_Attribute_ID());
 		dim_att.setDIM_Dimension_Spec(dim);
 
 		InterfaceWrapperHelper.save(dim_att);

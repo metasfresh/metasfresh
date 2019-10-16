@@ -2709,7 +2709,7 @@ public abstract class PO
 		final int recordId = get_ID();
 		final int adTableId = p_info.getAD_Table_ID();
 		final int adOrgId = getAD_Org_ID();
-		final int adUserId = Env.getAD_User_ID(getCtx());
+		final UserId loggedUserId = Env.getLoggedUserIdIfExists(getCtx()).orElse(UserId.SYSTEM);
 
 		//
 		// Iterate all columns
@@ -2798,7 +2798,7 @@ public abstract class PO
 					.setOldValue(valueOld)
 					.setNewValue(valueNew)
 					.setEventType(changeLogType)
-					.setAD_User_ID(adUserId)
+					.setAD_User_ID(loggedUserId.getRepoId())
 					.build();
 
 			if (changeLogRecords == null)
@@ -3309,9 +3309,9 @@ public abstract class PO
 				// If no changes set UpdatedBy explicitly to ensure commit of lob
 				if (!changes && !updatedBy)
 				{
-					final int AD_User_ID = Env.getAD_User_ID(getCtx());
-					set_ValueNoCheck("UpdatedBy", AD_User_ID);
-					sql.append("UpdatedBy=").append(AD_User_ID);
+					final UserId loggedUserId = Env.getLoggedUserIdIfExists(getCtx()).orElse(UserId.SYSTEM);
+					set_ValueNoCheck("UpdatedBy", loggedUserId.getRepoId());
+					sql.append("UpdatedBy=").append(loggedUserId.getRepoId());
 					changes = true;
 					updatedBy = true;
 				}
@@ -3432,9 +3432,9 @@ public abstract class PO
 			}
 			if (!updatedBy) 	// UpdatedBy not explicitly set
 			{
-				final int AD_User_ID = Env.getAD_User_ID(getCtx());
-				set_ValueNoCheck("UpdatedBy", AD_User_ID);
-				sql.append(",UpdatedBy=").append(AD_User_ID);
+				final UserId loggedUserId = Env.getLoggedUserIdIfExists(getCtx()).orElse(UserId.SYSTEM);
+				set_ValueNoCheck("UpdatedBy", loggedUserId.getRepoId());
+				sql.append(",UpdatedBy=").append(loggedUserId.getRepoId());
 			}
 			sql.append(" WHERE ").append(where);
 			/**

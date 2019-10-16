@@ -1,5 +1,7 @@
 package de.metas.material.event;
 
+import java.util.Collection;
+
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.slf4j.Logger;
@@ -68,4 +70,10 @@ public class PostMaterialEventService
 		materialEventService.postEvent(event);
 		logger.info("Posted MaterialEvent={}", event);
 	}
+	
+	public void postEventsNow(@NonNull final Collection<? extends MaterialEvent> events)
+	{
+		events.forEach(this::postEventNow);
+	}
+
 }

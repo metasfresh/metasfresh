@@ -117,8 +117,8 @@ public class DeliveredDataLoader
 
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
 
-		final ArrayList<ShippedQtyItem> deliveredQtyItemsWithCatch = new ArrayList<ShippedQtyItem>();
-		final ArrayList<ShippedQtyItem> deliveredQtyItemsWithoutCatch = new ArrayList<ShippedQtyItem>();
+		final ArrayList<ShippedQtyItem> deliveredQtyItemsWithCatch = new ArrayList<>();
+		final ArrayList<ShippedQtyItem> deliveredQtyItemsWithoutCatch = new ArrayList<>();
 		for (final ShippedQtyItem shippedQtyItem : shippedQtyItems)
 		{
 			qtyInStockUom = Quantitys.add(conversionCtx,
@@ -169,7 +169,7 @@ public class DeliveredDataLoader
 			final StockQtyAndUOMQty qtys = StockQtyAndUOMQtys
 					.create(
 							iciol.getQtyDelivered(), productId,
-							iciol.getQtyDeliveredInUOM_Nominal(), UomId.ofRepoId(iciol.getC_UOM_ID()))
+							iciol.getQtyDeliveredInUOM_Nominal(), UomId.ofRepoIdOrNull(iciol.getC_UOM_ID()))
 					.negateIf(negateQtys);
 
 			qtysTotal = StockQtyAndUOMQtys.add(qtysTotal, qtys);

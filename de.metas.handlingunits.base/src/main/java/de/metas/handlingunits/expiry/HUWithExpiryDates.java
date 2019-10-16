@@ -1,9 +1,10 @@
 package de.metas.handlingunits.expiry;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import de.metas.handlingunits.HuId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -32,9 +33,10 @@ import lombok.Value;
 @Value
 public class HUWithExpiryDates
 {
+	@NonNull
 	HuId huId;
 
-	LocalDateTime bestBeforeDate;
+	LocalDate bestBeforeDate;
 
-	LocalDateTime expiryWarnDate;
+	LocalDate expiryWarnDate;
 }

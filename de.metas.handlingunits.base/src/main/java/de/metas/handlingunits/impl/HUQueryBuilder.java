@@ -512,7 +512,7 @@ import lombok.NonNull;
 		if (_excludeHUsOnPickingSlot)
 		{
 			final IQueryFilter<I_M_HU> husOnPickingSlotFilter = huPickingSlotDAO.createHUOnPickingSlotQueryFilter(getContextProvider());
-			final IQueryFilter<I_M_HU> husNotOnPickingSlotFilter = new NotQueryFilter<>(husOnPickingSlotFilter);
+			final IQueryFilter<I_M_HU> husNotOnPickingSlotFilter = NotQueryFilter.of(husOnPickingSlotFilter);
 			filters.addFilter(husNotOnPickingSlotFilter);
 		}
 
@@ -754,6 +754,7 @@ import lombok.NonNull;
 		return addOnlyWithProductId(productId);
 	}
 
+	@Override
 	public IHUQueryBuilder addOnlyWithProductId(final ProductId productId)
 	{
 		_onlyWithProductIds.add(productId);

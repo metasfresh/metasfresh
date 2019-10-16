@@ -13,15 +13,14 @@ package org.adempiere.ad.dao.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -30,7 +29,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.compiere.util.DB;
 
 import de.metas.util.Check;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode
 public class LpadQueryFilterModifier implements IQueryFilterModifier
 {
 	private final int size;
@@ -38,8 +39,6 @@ public class LpadQueryFilterModifier implements IQueryFilterModifier
 
 	public LpadQueryFilterModifier(final int size, final String padStr)
 	{
-		super();
-
 		Check.assume(size > 0, "size > 0");
 		this.size = size;
 

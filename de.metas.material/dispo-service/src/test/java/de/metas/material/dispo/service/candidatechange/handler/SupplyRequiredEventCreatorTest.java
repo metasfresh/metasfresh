@@ -6,7 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -49,7 +49,7 @@ public class SupplyRequiredEventCreatorTest
 				.id(CandidateId.ofRepoId(10))
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
-				//.status(CandidateStatus.doc_closed)
+				// .status(CandidateStatus.doc_closed)
 				.groupId(MaterialDispoGroupId.ofInt(40))
 				.seqNo(50)
 				.materialDescriptor(MaterialDescriptor.builder()
