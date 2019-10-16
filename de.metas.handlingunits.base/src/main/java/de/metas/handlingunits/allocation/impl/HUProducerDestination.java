@@ -1,5 +1,7 @@
 package de.metas.handlingunits.allocation.impl;
 
+import org.compiere.util.Util.ArrayKey;
+
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -45,9 +47,11 @@ public class HUProducerDestination extends AbstractProducerDestination
 				.setMaxHUsToCreate(1); // we want one VHU
 	}
 
-	private final I_M_HU_PI huPI;
+	private static final ArrayKey SHARED_CurrentHUKey = ArrayKey.of(0);
 
-	protected IAllocationStrategyFactory allocationStrategyFactory = Services.get(IAllocationStrategyFactory.class);
+	private final IAllocationStrategyFactory allocationStrategyFactory = Services.get(IAllocationStrategyFactory.class);
+
+	private final I_M_HU_PI huPI;
 
 	/**
 	 * Maximum number of HUs allowed to be created
@@ -72,6 +76,15 @@ public class HUProducerDestination extends AbstractProducerDestination
 		final IAllocationStrategy allocationStrategy = allocationStrategyFactory.getAllocationStrategy(hu);
 		final IAllocationResult result = allocationStrategy.execute(hu, request);
 		return result;
+	}
+
+	@Override
+	protected ArrayKey extractCurrentHUKey(final IAllocationRequest request)
+	{
+		// NOTE: in case of maxHUsToCreate == 1 try to load all products in one HU
+		return maxHUsToCreate == 1
+				? SHARED_CurrentHUKey
+				: super.extractCurrentHUKey(request);
 	}
 
 	@Override
