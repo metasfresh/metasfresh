@@ -15,7 +15,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1551971923L;
+	private static final long serialVersionUID = 1278266102L;
 
     /** Standard Constructor */
     public X_EDI_DesadvLine (Properties ctx, int EDI_DesadvLine_ID, String trxName)
@@ -407,6 +407,28 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Einzelpreis.
+		@param PriceActual 
+		Effektiver Preis
+	  */
+	@Override
+	public void setPriceActual (java.math.BigDecimal PriceActual)
+	{
+		set_Value (COLUMNNAME_PriceActual, PriceActual);
+	}
+
+	/** Get Einzelpreis.
+		@return Effektiver Preis
+	  */
+	@Override
+	public java.math.BigDecimal getPriceActual () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceActual);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Produktbeschreibung.

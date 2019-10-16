@@ -144,6 +144,8 @@ public class DesadvBL implements IDesadvBL
 		newDesadvLine.setQtyDeliveredInUOM(BigDecimal.ZERO);
 		newDesadvLine.setC_UOM_ID(orderLine.getC_UOM_ID());
 
+		newDesadvLine.setPriceActual(orderLine.getPriceActual());
+
 		final BigDecimal orderLineItemCapacity = orderLine.getQtyItemCapacity();
 		final BigDecimal lineItemCapacity;
 		if (orderLineItemCapacity.signum() <= 0)
