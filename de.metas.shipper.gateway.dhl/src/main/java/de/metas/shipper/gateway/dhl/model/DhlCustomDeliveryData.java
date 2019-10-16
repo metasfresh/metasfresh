@@ -28,6 +28,7 @@ import lombok.Builder;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Builder(toBuilder = true)
 public class DhlCustomDeliveryData implements CustomDeliveryData
@@ -42,10 +43,11 @@ public class DhlCustomDeliveryData implements CustomDeliveryData
 	}
 
 	@NonNull
-	public ImmutableList<byte[]> getPdfLabels()
+	public ImmutableList<byte[]> getPdfLabelList()
 	{
 		return details.stream()
 				.map(DhlCustomDeliveryDataDetail::getPdfLabelData)
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 

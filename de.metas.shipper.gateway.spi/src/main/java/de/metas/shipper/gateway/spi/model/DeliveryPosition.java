@@ -39,6 +39,8 @@ public class DeliveryPosition
 	int numberOfPackages;
 	int grossWeightKg;
 	String content;
+
+	@Nullable
 	PackageDimensions packageDimensions;
 
 	@Nullable
