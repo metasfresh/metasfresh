@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.invoicecandidate.api;
 
@@ -16,6 +16,7 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
@@ -92,7 +93,7 @@ public class VoidAndRecreateInvoiceBuilder
 
 	/**
 	 * Set the list of invoices the needs to be recompute
-	 * 
+	 *
 	 * @param invoices
 	 */
 	public VoidAndRecreateInvoiceBuilder setInvoices(List<I_C_Invoice> invoices)
@@ -118,7 +119,7 @@ public class VoidAndRecreateInvoiceBuilder
 
 	/**
 	 * THis param is used in order to know when a warning message can be triggered
-	 * 
+	 *
 	 * @param canWarnUser
 	 */
 	public VoidAndRecreateInvoiceBuilder setCanWarnUser(boolean canWarnUser)
@@ -163,7 +164,7 @@ public class VoidAndRecreateInvoiceBuilder
 		queueWorkpackage.setC_Async_Batch(asyncBatch);
 		Services.get(IQueueDAO.class).save(queueWorkpackage);
 
-		queue.enqueueElement(queueWorkpackage, invoice);
+		queue.enqueueElement(queueWorkpackage, TableRecordReference.of(invoice));
 		queue.markReadyForProcessing(queueWorkpackage);
 	}
 
@@ -179,9 +180,9 @@ public class VoidAndRecreateInvoiceBuilder
 		asyncBatch.setName("Void and recreate invoices");
 		asyncBatch.setC_Async_Batch_Type(asyncBatchType);
 		queueDAO.save(asyncBatch);
-		// is very importing the order; first enque and then set the batch
+		// the is very important order; first enqueue and then set the batch
 		// otherwise, will be counted also the workpackage for the batch
-		asyncBatchBL.enqueueAsyncBatch(asyncBatch);
+		asyncBatchBL.enqueueAsyncBatch(AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID()));
 
 		final StringBuilder builder = new StringBuilder();
 

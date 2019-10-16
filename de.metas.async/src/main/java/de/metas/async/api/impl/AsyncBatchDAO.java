@@ -1,7 +1,9 @@
 /**
- * 
+ *
  */
 package de.metas.async.api.impl;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,12 +18,12 @@ import java.util.List;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,19 +38,24 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.Query;
 
+import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 import de.metas.util.Services;
+import lombok.NonNull;
 
-/**
- * @author cg
- *
- */
 public class AsyncBatchDAO implements IAsyncBatchDAO
 {
+
+	@Override
+	public I_C_Async_Batch retrieveAsyncBatchRecord(@NonNull final AsyncBatchId asyncBatchId)
+	{
+		return loadOutOfTrx(asyncBatchId, I_C_Async_Batch.class);
+	}
+
 	@Override
 	public I_C_Async_Batch_Type retrieveAsyncBatchType(final Properties ctx, final String internalName)
 	{
@@ -128,5 +135,4 @@ public class AsyncBatchDAO implements IAsyncBatchDAO
 				.setParameters(params)
 				.firstOnly(I_C_Queue_WorkPackage_Notified.class);
 	}
-
 }
