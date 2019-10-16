@@ -61,7 +61,7 @@ class HUsToPickViewFilters
 	private static final String PARAM_Barcode = "Barcode";
 
 	private static final String HU_IDS_FilterId = "HU_IDS_Filter";
-	private static final String PARAM_ConsiderAttributes = "de.metas.ui.web.picking.HUsToPickViewFilters.ConsiderAttributes";
+	private static final String PARAM_ConsiderAttributes = "IsConsiderAttributes";
 
 	static final String PARAM_CurrentShipmentScheduleId = "CurrentShipmentScheduleId";
 	static final String PARAM_BestBeforePolicy = "BestBeforePolicy";
@@ -126,7 +126,7 @@ class HUsToPickViewFilters
 				.setFrequentUsed(true)
 				.addParameter(DocumentFilterParamDescriptor.builder()
 						.setFieldName(PARAM_ConsiderAttributes)
-						.setDisplayName(Services.get(IMsgBL.class).getTranslatableMsgText(PARAM_ConsiderAttributes))
+						.setDisplayName(Services.get(IMsgBL.class).translatable(PARAM_ConsiderAttributes))
 						.setMandatory(false)
 						.setDefaultValue(true)
 						.setWidgetType(DocumentFieldWidgetType.YesNo))
