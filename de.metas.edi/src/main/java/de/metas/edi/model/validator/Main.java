@@ -45,27 +45,13 @@ public class Main implements ModelValidator
 	{
 		adClientId = client == null ? -1 : client.getAD_Client_ID();
 
-		engine.addModelValidator(new C_Invoice(), client);
-		engine.addModelValidator(new C_BPartner(), client);
-		engine.addModelValidator(C_Order.INSTANCE, client);
-		engine.addModelValidator(C_OrderLine.INSTANCE, client);
-		engine.addModelValidator(new C_OLCand(), client);
-
-		engine.addModelValidator(EDI_Desadv.INSTANCE, client);
-		engine.addModelValidator(new M_InOut(), client);
-		engine.addModelValidator(M_InOutLine.INSTANCE, client);
-
-		engine.addModelValidator(new C_Invoice_Candidate(), client);
-
 		// task 08926
 		// invoice candidate listener
-
 		final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
 		invoiceCandidateListeners.addListener(EdiInvoiceCandidateListener.instance);
 
 		// task 08926
 		// invoice copy handler
-
 		Services.get(ICopyHandlerBL.class).registerCopyHandler(
 				org.compiere.model.I_C_Invoice.class,
 				new IQueryFilter<ImmutablePair<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_Invoice>>()

@@ -1,7 +1,6 @@
 package de.metas.edi.model.validator;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 
 /*
  * #%L
@@ -26,15 +25,18 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
-import de.metas.document.archive.api.IDocOutboundDAO;
+import de.metas.edi.api.EDIDocOutBoundLogService;
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.api.ValidationState;
 import de.metas.edi.model.I_C_Doc_Outbound_Log;
@@ -42,10 +44,19 @@ import de.metas.edi.model.I_C_Invoice;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 @Interceptor(I_C_Invoice.class)
+@Component
 public class C_Invoice
 {
+	private final EDIDocOutBoundLogService ediDocOutBoundLogService;
+
+	private C_Invoice(@NonNull final EDIDocOutBoundLogService ediDocOutBoundLogService)
+	{
+		this.ediDocOutBoundLogService = ediDocOutBoundLogService;
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void updateEdiStatus(final I_C_Invoice document)
 	{
@@ -72,15 +83,10 @@ public class C_Invoice
 			ifColumnsChanged = I_C_Invoice.COLUMNNAME_EDI_ExportStatus)
 	public void updateDocOutBoundLog(final I_C_Invoice invoiceRecord)
 	{
-		final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
-		final TableRecordReference invoiceReference = TableRecordReference.of(invoiceRecord);
+		final TableRecordReference recordReference = TableRecordReference.of(invoiceRecord);
 
-		final I_C_Doc_Outbound_Log logRecord = create(docOutboundDAO.retrieveLog(invoiceReference), I_C_Doc_Outbound_Log.class);
-		if (logRecord != null)
-		{
-			logRecord.setEDI_ExportStatus(invoiceRecord.getEDI_ExportStatus());
-			saveRecord(logRecord);
-		}
+		final Optional<I_C_Doc_Outbound_Log> updatedDocOutboundLog = ediDocOutBoundLogService.setEdiExportStatusFromInvoiceRecord(recordReference);
+		updatedDocOutboundLog.ifPresent(InterfaceWrapperHelper::saveRecord);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)

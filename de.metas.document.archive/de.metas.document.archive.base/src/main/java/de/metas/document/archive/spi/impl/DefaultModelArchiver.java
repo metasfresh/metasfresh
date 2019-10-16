@@ -41,6 +41,7 @@ import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -214,7 +215,7 @@ public class DefaultModelArchiver
 	}
 
 	// NOTE: private is ok since we are setting the record from the factory method
-	private DefaultModelArchiver setRecord(final Object record)
+	private DefaultModelArchiver setRecord(@NonNull final Object record)
 	{
 		assertNotProcessed();
 		_record = record;

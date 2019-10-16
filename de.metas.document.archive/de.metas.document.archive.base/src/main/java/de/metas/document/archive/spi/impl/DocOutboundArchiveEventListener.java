@@ -186,7 +186,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	 * @param archiveRecord
 	 * @return {@link I_C_Doc_Outbound_Log}
 	 */
-	private I_C_Doc_Outbound_Log createLog(final I_AD_Archive archiveRecord)
+	private I_C_Doc_Outbound_Log createLog(@NonNull final I_AD_Archive archiveRecord)
 	{
 		// Services
 		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
