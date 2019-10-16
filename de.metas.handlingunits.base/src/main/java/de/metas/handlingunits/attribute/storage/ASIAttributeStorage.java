@@ -12,10 +12,10 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.handlingunits.IMutableHUTransactionAttribute;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.impl.AbstractAttributeStorage;
 import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
+import de.metas.handlingunits.hutransaction.MutableHUTransactionAttribute;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -98,7 +98,7 @@ public class ASIAttributeStorage extends AbstractAttributeStorage
 	}
 
 	@Override
-	public void updateHUTrxAttribute(final IMutableHUTransactionAttribute huTrxAttribute, final IAttributeValue fromAttributeValue)
+	public void updateHUTrxAttribute(final MutableHUTransactionAttribute huTrxAttribute, final IAttributeValue fromAttributeValue)
 	{
 		huTrxAttribute.setReferencedObject(asi);
 	}

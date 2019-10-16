@@ -1,7 +1,5 @@
 package org.adempiere.ad.dao;
 
-import javax.annotation.concurrent.Immutable;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -29,6 +27,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.concurrent.Immutable;
+
+import lombok.EqualsAndHashCode;
+
 /**
  * Constant {@link IQueryFilter} implementation (with {@link ISqlQueryFilter} support).
  *
@@ -39,13 +41,14 @@ import java.util.Properties;
  * @param <T> model type
  */
 @Immutable
+@EqualsAndHashCode
 public final class ConstantQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
 	private static final ConstantQueryFilter<Object> TRUE = new ConstantQueryFilter<>(true);
 	private static final ConstantQueryFilter<Object> FALSE = new ConstantQueryFilter<>(false);
 
 	@SuppressWarnings("unchecked")
-	public static final <T> ConstantQueryFilter<T> of(final boolean value)
+	public static <T> ConstantQueryFilter<T> of(final boolean value)
 	{
 		return (ConstantQueryFilter<T>)(value ? TRUE : FALSE);
 	}

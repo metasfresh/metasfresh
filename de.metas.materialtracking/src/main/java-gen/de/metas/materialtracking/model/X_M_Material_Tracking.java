@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.materialtracking.model;
 
@@ -21,460 +5,380 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.compiere.util.Env;
-
-/**
- * Generated Model for M_Material_Tracking
- * 
- * @author Adempiere (generated)
+/** Generated Model for M_Material_Tracking
+ *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public class X_M_Material_Tracking extends org.compiere.model.PO implements I_M_Material_Tracking, org.compiere.model.I_Persistent
+public class X_M_Material_Tracking extends org.compiere.model.PO implements I_M_Material_Tracking, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1114458830L;
+	private static final long serialVersionUID = 576142807L;
 
-	/** Standard Constructor */
-	public X_M_Material_Tracking(Properties ctx, int M_Material_Tracking_ID, String trxName)
-	{
-		super(ctx, M_Material_Tracking_ID, trxName);
-		/**
-		 * if (M_Material_Tracking_ID == 0)
-		 * {
-		 * setC_BPartner_ID (0);
-		 * setLot (null);
-		 * setM_Material_Tracking_ID (0);
-		 * setM_Product_ID (0);
-		 * setProcessed (false);
-		 * // N
-		 * setQtyIssued (Env.ZERO);
-		 * // 0
-		 * setQtyReceived (Env.ZERO);
-		 * // 0
-		 * setValidFrom (new Timestamp( System.currentTimeMillis() ));
-		 * }
-		 */
-	}
+    /** Standard Constructor */
+    public X_M_Material_Tracking (Properties ctx, int M_Material_Tracking_ID, String trxName)
+    {
+      super (ctx, M_Material_Tracking_ID, trxName);
+      /** if (M_Material_Tracking_ID == 0)
+        {
+			setC_BPartner_ID (0);
+			setLot (null);
+			setM_Material_Tracking_ID (0);
+			setM_Product_ID (0);
+			setProcessed (false); // N
+			setQtyIssued (BigDecimal.ZERO); // 0
+			setQtyReceived (BigDecimal.ZERO); // 0
+			setValidFrom (new Timestamp( System.currentTimeMillis() ));
+        } */
+    }
 
-	/** Load Constructor */
-	public X_M_Material_Tracking(Properties ctx, ResultSet rs, String trxName)
-	{
-		super(ctx, rs, trxName);
-	}
+    /** Load Constructor */
+    public X_M_Material_Tracking (Properties ctx, ResultSet rs, String trxName)
+    {
+      super (ctx, rs, trxName);
+    }
 
-	/** Load Meta Data */
+
+    /** Load Meta Data */
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
+    {
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
+      return poi;
+    }
+
+	/** Set Parzelle.
+		@param C_Allotment_ID Parzelle	  */
 	@Override
-	protected org.compiere.model.POInfo initPO(Properties ctx)
+	public void setC_Allotment_ID (int C_Allotment_ID)
 	{
-		org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo(ctx, Table_Name, get_TrxName());
-		return poi;
+		if (C_Allotment_ID < 1) 
+			set_Value (COLUMNNAME_C_Allotment_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Allotment_ID, Integer.valueOf(C_Allotment_ID));
 	}
 
+	/** Get Parzelle.
+		@return Parzelle	  */
 	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	public int getC_Allotment_ID () 
 	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
-	/**
-	 * Set Geschäftspartner.
-	 * 
-	 * @param C_BPartner_ID
-	 *            Bezeichnet einen Geschäftspartner
-	 */
-	@Override
-	public void setC_BPartner_ID(int C_BPartner_ID)
-	{
-		if (C_BPartner_ID < 1)
-			set_Value(COLUMNNAME_C_BPartner_ID, null);
-		else
-			set_Value(COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
-	}
-
-	/**
-	 * Get Geschäftspartner.
-	 * 
-	 * @return Bezeichnet einen Geschäftspartner
-	 */
-	@Override
-	public int getC_BPartner_ID()
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Allotment_ID);
 		if (ii == null)
-			return 0;
+			 return 0;
 		return ii.intValue();
 	}
 
-	/**
-	 * Set Beschreibung.
-	 * 
-	 * @param Description Beschreibung
-	 */
+	/** Set Geschäftspartner.
+		@param C_BPartner_ID 
+		Bezeichnet einen Geschäftspartner
+	  */
 	@Override
-	public void setDescription(java.lang.String Description)
+	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
-		set_Value(COLUMNNAME_Description, Description);
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
 	}
 
-	/**
-	 * Get Beschreibung.
-	 * 
-	 * @return Beschreibung
-	 */
+	/** Get Geschäftspartner.
+		@return Bezeichnet einen Geschäftspartner
+	  */
 	@Override
-	public java.lang.String getDescription()
+	public int getC_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Pauschale - Vertragsperiode.
+		@param C_Flatrate_Term_ID Pauschale - Vertragsperiode	  */
+	@Override
+	public void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID)
+	{
+		if (C_Flatrate_Term_ID < 1) 
+			set_Value (COLUMNNAME_C_Flatrate_Term_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Flatrate_Term_ID, Integer.valueOf(C_Flatrate_Term_ID));
+	}
+
+	/** Get Pauschale - Vertragsperiode.
+		@return Pauschale - Vertragsperiode	  */
+	@Override
+	public int getC_Flatrate_Term_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Term_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
+	@Override
+	public void setDescription (java.lang.String Description)
+	{
+		set_Value (COLUMNNAME_Description, Description);
+	}
+
+	/** Get Beschreibung.
+		@return Beschreibung	  */
+	@Override
+	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/**
-	 * Set Los-Nr..
-	 * 
-	 * @param Lot
-	 *            Los-Nummer (alphanumerisch)
-	 */
+	/** Set Los-Nr..
+		@param Lot 
+		Los-Nummer (alphanumerisch)
+	  */
 	@Override
-	public void setLot(java.lang.String Lot)
+	public void setLot (java.lang.String Lot)
 	{
-		set_Value(COLUMNNAME_Lot, Lot);
+		set_Value (COLUMNNAME_Lot, Lot);
 	}
 
-	/**
-	 * Get Los-Nr..
-	 * 
-	 * @return Los-Nummer (alphanumerisch)
-	 */
+	/** Get Los-Nr..
+		@return Los-Nummer (alphanumerisch)
+	  */
 	@Override
-	public java.lang.String getLot()
+	public java.lang.String getLot () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Lot);
 	}
 
+	/** Set Merkmals-Wert.
+		@param M_AttributeValue_ID 
+		Product Attribute Value
+	  */
 	@Override
-	public org.compiere.model.I_M_AttributeValue getM_AttributeValue() throws RuntimeException
+	public void setM_AttributeValue_ID (int M_AttributeValue_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_M_AttributeValue_ID, org.compiere.model.I_M_AttributeValue.class);
+		if (M_AttributeValue_ID < 1) 
+			set_Value (COLUMNNAME_M_AttributeValue_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_AttributeValue_ID, Integer.valueOf(M_AttributeValue_ID));
 	}
 
+	/** Get Merkmals-Wert.
+		@return Product Attribute Value
+	  */
 	@Override
-	public void setM_AttributeValue(org.compiere.model.I_M_AttributeValue M_AttributeValue)
-	{
-		set_ValueFromPO(COLUMNNAME_M_AttributeValue_ID, org.compiere.model.I_M_AttributeValue.class, M_AttributeValue);
-	}
-
-	/**
-	 * Set Merkmals-Wert.
-	 * 
-	 * @param M_AttributeValue_ID
-	 *            Product Attribute Value
-	 */
-	@Override
-	public void setM_AttributeValue_ID(int M_AttributeValue_ID)
-	{
-		if (M_AttributeValue_ID < 1)
-			set_Value(COLUMNNAME_M_AttributeValue_ID, null);
-		else
-			set_Value(COLUMNNAME_M_AttributeValue_ID, Integer.valueOf(M_AttributeValue_ID));
-	}
-
-	/**
-	 * Get Merkmals-Wert.
-	 * 
-	 * @return Product Attribute Value
-	 */
-	@Override
-	public int getM_AttributeValue_ID()
+	public int getM_AttributeValue_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeValue_ID);
 		if (ii == null)
-			return 0;
+			 return 0;
 		return ii.intValue();
 	}
 
-	/**
-	 * Set Material-Vorgang-ID.
-	 * 
-	 * @param M_Material_Tracking_ID Material-Vorgang-ID
-	 */
+	/** Set Material-Vorgang-ID.
+		@param M_Material_Tracking_ID Material-Vorgang-ID	  */
 	@Override
-	public void setM_Material_Tracking_ID(int M_Material_Tracking_ID)
+	public void setM_Material_Tracking_ID (int M_Material_Tracking_ID)
 	{
-		if (M_Material_Tracking_ID < 1)
-			set_ValueNoCheck(COLUMNNAME_M_Material_Tracking_ID, null);
-		else
-			set_ValueNoCheck(COLUMNNAME_M_Material_Tracking_ID, Integer.valueOf(M_Material_Tracking_ID));
+		if (M_Material_Tracking_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Material_Tracking_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Material_Tracking_ID, Integer.valueOf(M_Material_Tracking_ID));
 	}
 
-	/**
-	 * Get Material-Vorgang-ID.
-	 * 
-	 * @return Material-Vorgang-ID
-	 */
+	/** Get Material-Vorgang-ID.
+		@return Material-Vorgang-ID	  */
 	@Override
-	public int getM_Material_Tracking_ID()
+	public int getM_Material_Tracking_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Material_Tracking_ID);
 		if (ii == null)
-			return 0;
+			 return 0;
 		return ii.intValue();
 	}
 
+	/** Set Produkt.
+		@param M_Product_ID 
+		Produkt, Leistung, Artikel
+	  */
 	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	public void setM_Product_ID (int M_Product_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+		if (M_Product_ID < 1) 
+			set_Value (COLUMNNAME_M_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
 	}
 
+	/** Get Produkt.
+		@return Produkt, Leistung, Artikel
+	  */
 	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
-	}
-
-	/**
-	 * Set Produkt.
-	 * 
-	 * @param M_Product_ID
-	 *            Produkt, Leistung, Artikel
-	 */
-	@Override
-	public void setM_Product_ID(int M_Product_ID)
-	{
-		if (M_Product_ID < 1)
-			set_Value(COLUMNNAME_M_Product_ID, null);
-		else
-			set_Value(COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
-	}
-
-	/**
-	 * Get Produkt.
-	 * 
-	 * @return Produkt, Leistung, Artikel
-	 */
-	@Override
-	public int getM_Product_ID()
+	public int getM_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
 		if (ii == null)
-			return 0;
+			 return 0;
 		return ii.intValue();
 	}
 
-	/**
-	 * Set Verarbeitet.
-	 * 
-	 * @param Processed
-	 *            Checkbox sagt aus, ob der Beleg verarbeitet wurde.
-	 */
+	/** Set Verarbeitet.
+		@param Processed 
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+	  */
 	@Override
-	public void setProcessed(boolean Processed)
+	public void setProcessed (boolean Processed)
 	{
-		set_Value(COLUMNNAME_Processed, Boolean.valueOf(Processed));
+		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
 	}
 
-	/**
-	 * Get Verarbeitet.
-	 * 
-	 * @return Checkbox sagt aus, ob der Beleg verarbeitet wurde.
-	 */
+	/** Get Verarbeitet.
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+	  */
 	@Override
-	public boolean isProcessed()
+	public boolean isProcessed () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null)
+		if (oo != null) 
 		{
-			if (oo instanceof Boolean)
-				return ((Boolean)oo).booleanValue();
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
-	/**
-	 * Set Qty Issued.
-	 * 
-	 * @param QtyIssued Qty Issued
-	 */
+	/** Set Ausgelagerte Menge.
+		@param QtyIssued Ausgelagerte Menge	  */
 	@Override
-	public void setQtyIssued(java.math.BigDecimal QtyIssued)
+	public void setQtyIssued (java.math.BigDecimal QtyIssued)
 	{
-		set_Value(COLUMNNAME_QtyIssued, QtyIssued);
+		set_Value (COLUMNNAME_QtyIssued, QtyIssued);
 	}
 
-	/**
-	 * Get Qty Issued.
-	 * 
-	 * @return Qty Issued
-	 */
+	/** Get Ausgelagerte Menge.
+		@return Ausgelagerte Menge	  */
 	@Override
-	public java.math.BigDecimal getQtyIssued()
+	public java.math.BigDecimal getQtyIssued () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyIssued);
 		if (bd == null)
-			return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/**
-	 * Set Empfangene Menge.
-	 * 
-	 * @param QtyReceived
-	 *            Empfangene Menge
-	 */
+	/** Set Empfangene Menge.
+		@param QtyReceived 
+		Empfangene Menge
+	  */
 	@Override
-	public void setQtyReceived(java.math.BigDecimal QtyReceived)
+	public void setQtyReceived (java.math.BigDecimal QtyReceived)
 	{
-		set_Value(COLUMNNAME_QtyReceived, QtyReceived);
+		set_Value (COLUMNNAME_QtyReceived, QtyReceived);
 	}
 
-	/**
-	 * Get Empfangene Menge.
-	 * 
-	 * @return Empfangene Menge
-	 */
+	/** Get Empfangene Menge.
+		@return Empfangene Menge
+	  */
 	@Override
-	public java.math.BigDecimal getQtyReceived()
+	public java.math.BigDecimal getQtyReceived () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyReceived);
 		if (bd == null)
-			return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
+	/** Set Aussendienst.
+		@param SalesRep_ID Aussendienst	  */
 	@Override
-	public org.compiere.model.I_AD_User getSalesRep() throws RuntimeException
+	public void setSalesRep_ID (int SalesRep_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class);
+		if (SalesRep_ID < 1) 
+			set_Value (COLUMNNAME_SalesRep_ID, null);
+		else 
+			set_Value (COLUMNNAME_SalesRep_ID, Integer.valueOf(SalesRep_ID));
 	}
 
+	/** Get Aussendienst.
+		@return Aussendienst	  */
 	@Override
-	public void setSalesRep(org.compiere.model.I_AD_User SalesRep)
-	{
-		set_ValueFromPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class, SalesRep);
-	}
-
-	/**
-	 * Set Sales Representative.
-	 * 
-	 * @param SalesRep_ID
-	 *            Sales Representative or Company Agent
-	 */
-	@Override
-	public void setSalesRep_ID(int SalesRep_ID)
-	{
-		if (SalesRep_ID < 1)
-			set_Value(COLUMNNAME_SalesRep_ID, null);
-		else
-			set_Value(COLUMNNAME_SalesRep_ID, Integer.valueOf(SalesRep_ID));
-	}
-
-	/**
-	 * Get Sales Representative.
-	 * 
-	 * @return Sales Representative or Company Agent
-	 */
-	@Override
-	public int getSalesRep_ID()
+	public int getSalesRep_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_SalesRep_ID);
 		if (ii == null)
-			return 0;
+			 return 0;
 		return ii.intValue();
 	}
 
-	/**
-	 * Set Gültig ab.
-	 * 
-	 * @param ValidFrom
-	 *            Gültig ab inklusiv (erster Tag)
+	/** 
+	 * Season AD_Reference_ID=540588
+	 * Reference name: Season
 	 */
+	public static final int SEASON_AD_Reference_ID=540588;
+	/** Winter = 4 */
+	public static final String SEASON_Winter = "4";
+	/** Spring = 1 */
+	public static final String SEASON_Spring = "1";
+	/** Summer = 2 */
+	public static final String SEASON_Summer = "2";
+	/** Autumn = 3 */
+	public static final String SEASON_Autumn = "3";
+	/** Set Jahreszeit.
+		@param Season Jahreszeit	  */
 	@Override
-	public void setValidFrom(java.sql.Timestamp ValidFrom)
+	public void setSeason (java.lang.String Season)
 	{
-		set_Value(COLUMNNAME_ValidFrom, ValidFrom);
+
+		set_Value (COLUMNNAME_Season, Season);
 	}
 
-	/**
-	 * Get Gültig ab.
-	 * 
-	 * @return Gültig ab inklusiv (erster Tag)
-	 */
+	/** Get Jahreszeit.
+		@return Jahreszeit	  */
 	@Override
-	public java.sql.Timestamp getValidFrom()
+	public java.lang.String getSeason () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Season);
+	}
+
+	/** Set Gültig ab.
+		@param ValidFrom 
+		Gültig ab inklusiv (erster Tag)
+	  */
+	@Override
+	public void setValidFrom (java.sql.Timestamp ValidFrom)
+	{
+		set_Value (COLUMNNAME_ValidFrom, ValidFrom);
+	}
+
+	/** Get Gültig ab.
+		@return Gültig ab inklusiv (erster Tag)
+	  */
+	@Override
+	public java.sql.Timestamp getValidFrom () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_ValidFrom);
 	}
 
-	/**
-	 * Set Gültig bis.
-	 * 
-	 * @param ValidTo
-	 *            Gültig bis inklusiv (letzter Tag)
-	 */
+	/** Set Gültig bis.
+		@param ValidTo 
+		Gültig bis inklusiv (letzter Tag)
+	  */
 	@Override
-	public void setValidTo(java.sql.Timestamp ValidTo)
+	public void setValidTo (java.sql.Timestamp ValidTo)
 	{
-		set_Value(COLUMNNAME_ValidTo, ValidTo);
+		set_Value (COLUMNNAME_ValidTo, ValidTo);
 	}
 
-	/**
-	 * Get Gültig bis.
-	 * 
-	 * @return Gültig bis inklusiv (letzter Tag)
-	 */
+	/** Get Gültig bis.
+		@return Gültig bis inklusiv (letzter Tag)
+	  */
 	@Override
-	public java.sql.Timestamp getValidTo()
+	public java.sql.Timestamp getValidTo () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_ValidTo);
 	}
-
-	@Override
-	public de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Term_ID, de.metas.contracts.model.I_C_Flatrate_Term.class);
-	}
-
-	@Override
-	public void setC_Flatrate_Term(de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Flatrate_Term_ID, de.metas.contracts.model.I_C_Flatrate_Term.class, C_Flatrate_Term);
-	}
-
-	/**
-	 * Set Pauschale - Vertragsperiode.
-	 * 
-	 * @param C_Flatrate_Term_ID Pauschale - Vertragsperiode
-	 */
-	@Override
-	public void setC_Flatrate_Term_ID(int C_Flatrate_Term_ID)
-	{
-		if (C_Flatrate_Term_ID < 1)
-			set_Value(COLUMNNAME_C_Flatrate_Term_ID, null);
-		else
-			set_Value(COLUMNNAME_C_Flatrate_Term_ID, Integer.valueOf(C_Flatrate_Term_ID));
-	}
-
-	/**
-	 * Get Pauschale - Vertragsperiode.
-	 * 
-	 * @return Pauschale - Vertragsperiode
-	 */
-	@Override
-	public int getC_Flatrate_Term_ID()
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Term_ID);
-		if (ii == null)
-			return 0;
-		return ii.intValue();
-	}
-
 }

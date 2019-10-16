@@ -500,7 +500,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 			schemaBreak.setPricingSystemSurchargeAmt(BigDecimal.ZERO);
 
 			schemaBreak.setPriceStdFixed(null);
-			schemaBreak.setC_Currency(null);
+			schemaBreak.setC_Currency_ID(-1);
 		}
 		else if (priceType == PriceSpecificationType.BASE_PRICING_SYSTEM)
 		{

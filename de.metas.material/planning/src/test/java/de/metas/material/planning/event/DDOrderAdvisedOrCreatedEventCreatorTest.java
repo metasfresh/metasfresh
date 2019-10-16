@@ -2,32 +2,36 @@ package de.metas.material.planning.event;
 
 import static de.metas.material.event.EventTestHelper.createSupplyRequiredDescriptorWithProductId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
-import org.junit.Before;
-import org.junit.Test;
+import org.eevolution.model.I_PP_Product_Planning;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.IMaterialPlanningContext;
-import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.ddorder.DDOrderAdvisedEventCreator;
 import de.metas.material.planning.ddorder.DDOrderDemandMatcher;
 import de.metas.material.planning.ddorder.DDOrderPojoSupplier;
-import mockit.Expectations;
-import mockit.Mocked;
+import de.metas.organization.OrgId;
 
 /*
  * #%L
@@ -53,53 +57,40 @@ import mockit.Mocked;
 
 public class DDOrderAdvisedOrCreatedEventCreatorTest
 {
-
-	@Mocked
 	DDOrderDemandMatcher ddOrderDemandMatcher;
-
-	@Mocked
 	DDOrderPojoSupplier ddOrderPojoSupplier;
-
-	@Mocked
-	IMutableMRPContext mrpContext;
-
-	@Mocked
-	DDOrder ddOrder;
-
-	@Mocked
-	DDOrderLine ddOrderLine;
 
 	private I_M_Product product;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
-		save(uom);
+		saveRecord(uom);
 
 		product = newInstance(I_M_Product.class);
 		product.setC_UOM_ID(uom.getC_UOM_ID());
-		save(product);
+		saveRecord(product);
+
+		ddOrderDemandMatcher = Mockito.mock(DDOrderDemandMatcher.class);
+		ddOrderPojoSupplier = Mockito.mock(DDOrderPojoSupplier.class);
 	}
 
 	@Test
 	public void createProductionAdvisedEvents_returns_same_supplyRequiredDescriptor()
 	{
-		final I_DD_NetworkDistributionLine networkDistributionLine = newInstance(I_DD_NetworkDistributionLine.class);
-		networkDistributionLine.setM_WarehouseSource_ID(1);
-		networkDistributionLine.setM_Warehouse_ID(2);
-		save(networkDistributionLine);
+		final IMutableMRPContext mrpContext = Mockito.mock(IMutableMRPContext.class);
+		Mockito.when(mrpContext.getProductPlanning())
+				.thenReturn(newInstance(I_PP_Product_Planning.class));
 
-		// @formatter:off
-		new Expectations()
-		{{
-			ddOrderDemandMatcher.matches((IMaterialPlanningContext)any); result = true;
-			ddOrderPojoSupplier.supplyPojos((IMaterialRequest)any); result = ddOrder;
-			ddOrder.getLines(); result = ImmutableList.of(ddOrderLine);
-			ddOrderLine.getNetworkDistributionLineId(); result = networkDistributionLine.getDD_NetworkDistributionLine_ID();
-		}};	// @formatter:on
+		Mockito.when(ddOrderDemandMatcher.matches(Mockito.any(IMaterialPlanningContext.class)))
+				.thenReturn(true);
+
+		Mockito.when(ddOrderPojoSupplier.supplyPojos(Mockito.any()))
+				.thenReturn(ImmutableList.of(createDummyDDOrder()));
+
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptorWithProductId(product.getM_Product_ID());
 
 		final DDOrderAdvisedEventCreator productionAdvisedEventCreator = new DDOrderAdvisedEventCreator(ddOrderDemandMatcher, ddOrderPojoSupplier);
@@ -107,6 +98,24 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 
 		assertThat(events).hasSize(1);
 		assertThat(events.get(0).getSupplyRequiredDescriptor()).isSameAs(supplyRequiredDescriptor);
+	}
+
+	private DDOrder createDummyDDOrder()
+	{
+		final I_DD_NetworkDistributionLine networkDistributionLine = newInstance(I_DD_NetworkDistributionLine.class);
+		networkDistributionLine.setM_WarehouseSource_ID(1);
+		networkDistributionLine.setM_Warehouse_ID(2);
+		saveRecord(networkDistributionLine);
+
+		return DDOrder.builder()
+				.orgId(OrgId.ofRepoId(1))
+				.datePromised(Instant.now())
+				.line(DDOrderLine.builder()
+						.productDescriptor(ProductDescriptor.forProductAndAttributes(1, AttributesKey.ofString("1")))
+						.qty(new BigDecimal("100"))
+						.networkDistributionLineId(networkDistributionLine.getDD_NetworkDistributionLine_ID())
+						.build())
+				.build();
 	}
 
 }

@@ -13,11 +13,11 @@ package de.metas.materialtracking;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -27,10 +27,10 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_Period;
-import org.compiere.model.I_M_AttributeValue;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -64,7 +64,7 @@ public interface IMaterialTrackingDAO extends ISingletonService
 
 	I_M_Material_Tracking_Ref retrieveMaterialTrackingRefFor(Object model, MaterialTrackingId materialTrackingId);
 
-	/** Convenience method that assumes there is at most one material tracking ref for the given model*/
+	/** Convenience method that assumes there is at most one material tracking ref for the given model */
 	I_M_Material_Tracking_Ref retrieveSingleMaterialTrackingRefForModel(Object model);
 
 	/**
@@ -88,7 +88,7 @@ public interface IMaterialTrackingDAO extends ISingletonService
 	 */
 	List<de.metas.materialtracking.model.I_M_Material_Tracking> retrieveMaterialTrackingsForModel(Object model);
 
-	/** Convenience method that assumes there is at most one material tracking for the given model*/
+	/** Convenience method that assumes there is at most one material tracking for the given model */
 	de.metas.materialtracking.model.I_M_Material_Tracking retrieveSingleMaterialTrackingForModel(Object model);
 
 	/**
@@ -102,12 +102,9 @@ public interface IMaterialTrackingDAO extends ISingletonService
 	<T> List<I_M_Material_Tracking> retrieveMaterialTrackingForModels(IQueryBuilder<T> modelsQuery);
 
 	/**
-	 *
-	 * @param attributeValue
 	 * @return material tracking or null if <code>attributeValue</code> is null
-	 * @throws AdempiereException if material tracking was not found
 	 */
-	I_M_Material_Tracking retrieveMaterialTrackingByAttributeValue(I_M_AttributeValue attributeValue);
+	I_M_Material_Tracking retrieveMaterialTrackingByAttributeValue(AttributeValueId attributeValueId);
 
 	/**
 	 * Retrieves references of given type, order by their chronological order.

@@ -19,6 +19,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -39,6 +40,8 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -309,7 +312,10 @@ import lombok.NonNull;
 					.create()
 					.iterate(I_M_InOutLine.class);
 
-			final InOutLineAsVendorReceipt vendorReceipt = new InOutLineAsVendorReceipt(_materialTracking.getM_Product());
+			final ProductId productId = ProductId.ofRepoId(_materialTracking.getM_Product_ID());
+			final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+			
+			final InOutLineAsVendorReceipt vendorReceipt = new InOutLineAsVendorReceipt(product);
 			vendorReceipt.setPlv(plv);
 
 			while (inOutLines.hasNext())

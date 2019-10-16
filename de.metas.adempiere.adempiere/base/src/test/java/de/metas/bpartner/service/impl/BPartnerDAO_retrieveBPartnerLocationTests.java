@@ -97,6 +97,103 @@ public class BPartnerDAO_retrieveBPartnerLocationTests
 		assertThat(bpartnerLocationId.getRepoId()).isEqualTo(shipLocationRecord1.getC_BPartner_Location_ID());
 	}
 
+
+
+	/** verifies if there is a matching location in relation and returns that one , if found */
+	@Test
+	void billTo_withBPRelation()
+	{
+		final BPartnerId bpartnerId = createBPartnerWithName("BPartner 1");
+
+		final BPLocationBuilder builder = new BPLocationBuilder(bpartnerId)
+				.billTo(false)
+				.shipTo(true);
+
+		final I_C_BPartner_Location  deliveryLocationRecord = builder.createRecord();
+		final BPartnerLocationId deliveryLocationId = BPartnerLocationId.ofRepoId(bpartnerId, deliveryLocationRecord.getC_BPartner_Location_ID());
+
+		final I_C_BPartner_Location billLocationRecord1 = builder
+				.billTo(true)
+				.shipTo(false)
+				.createRecord();
+		final BPartnerLocationId billLocationRecord1Id = BPartnerLocationId.ofRepoId(bpartnerId, billLocationRecord1.getC_BPartner_Location_ID());
+
+		// create a default billto address
+		builder
+		.billTo(true)
+		.billToDefault(true)
+		.shipTo(false)
+		.createRecord();
+
+		// create BPRelation
+		createBillBPRelation(deliveryLocationId, billLocationRecord1Id);
+
+		final BPartnerLocationQuery query = BPartnerLocationQuery.builder()
+				.bpartnerId(bpartnerId)
+				.type(Type.BILL_TO)
+				.relationBPartnerLocationId(deliveryLocationId)
+				.bpartnerId(bpartnerId)
+				.build();
+
+
+		final BPartnerLocationId bpartnerLocationId = bpartnerDAO.retrieveBPartnerLocationId(query);
+		assertThat(bpartnerLocationId).isNotNull();
+		assertThat(bpartnerLocationId.getRepoId()).isEqualTo(billLocationRecord1.getC_BPartner_Location_ID());
+	}
+
+
+	@Test
+	void billTo_withoutBPRelation()
+	{
+		final BPartnerId bpartnerId = createBPartnerWithName("BPartner 1");
+
+		final BPLocationBuilder builder = new BPLocationBuilder(bpartnerId)
+				.billTo(false)
+				.shipTo(true);
+
+		final I_C_BPartner_Location  deliveryLocationRecord = builder.createRecord();
+		final BPartnerLocationId deliveryLocationId = BPartnerLocationId.ofRepoId(bpartnerId, deliveryLocationRecord.getC_BPartner_Location_ID());
+
+		final I_C_BPartner_Location billLocationRecord1 = builder
+				.billTo(true)
+				.shipTo(false)
+				.createRecord();
+		BPartnerLocationId.ofRepoId(bpartnerId, billLocationRecord1.getC_BPartner_Location_ID());
+
+		// create a default billto address
+		final I_C_BPartner_Location billLocationRecord2 = builder
+				.billTo(true)
+				.billToDefault(true)
+				.shipTo(false)
+				.createRecord();
+
+		final BPartnerLocationQuery query = BPartnerLocationQuery.builder()
+				.bpartnerId(bpartnerId)
+				.type(Type.BILL_TO)
+				.relationBPartnerLocationId(deliveryLocationId)
+				.bpartnerId(bpartnerId)
+				.build();
+
+
+		final BPartnerLocationId bpartnerLocationId = bpartnerDAO.retrieveBPartnerLocationId(query);
+		assertThat(bpartnerLocationId).isNotNull();
+		assertThat(bpartnerLocationId.getRepoId()).isNotEqualTo(billLocationRecord1.getC_BPartner_Location_ID());
+		assertThat(bpartnerLocationId.getRepoId()).isEqualTo(billLocationRecord2.getC_BPartner_Location_ID());
+	}
+
+
+	private void createBillBPRelation(final BPartnerLocationId deliveryLocationId, final BPartnerLocationId billLocationRecord1Id)
+	{
+		BPRelation.builder().billTo(true)
+		.bpartnerId(deliveryLocationId.getBpartnerId())
+		.bpLocationId(deliveryLocationId)
+		.relBPartnerId(billLocationRecord1Id.getBpartnerId())
+		.relBPLocationId(billLocationRecord1Id)
+		.build()
+		.createRecord();
+	}
+
+
 	private BPartnerId createBPartnerWithName(final String name)
 	{
 		final I_C_BPartner record = newInstance(I_C_BPartner.class);

@@ -36,17 +36,17 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_Test;
 import org.compiere.util.TimeUtil;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.util.time.SystemTime;
 
 public class CompareQueryFilterTest
 {
 	private Properties ctx;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -77,16 +77,13 @@ public class CompareQueryFilterTest
 
 	private void assertSql(final CompareQueryFilter<Object> filter, final String expectedSql, final List<Object> expectedSqlParams)
 	{
-		final String sql = filter.getSql();
-		final List<Object> sqlParams = filter.getSqlParams(ctx);
-		Assert.assertEquals("Invalid SQL for \"" + filter + "\"",
-				expectedSql, // expected
-				sql // actual
-		);
-		Assert.assertEquals("Invalid SQL params for \"" + filter + "\"",
-				expectedSqlParams, // expected
-				sqlParams // actual
-		);
+		assertThat(filter.getSql())
+				.as("sql for " + filter)
+				.isEqualTo(expectedSql);
+
+		assertThat(filter.getSqlParams(ctx))
+				.as("sqlParams for " + filter)
+				.isEqualTo(expectedSqlParams);
 	}
 
 	@Test
@@ -125,7 +122,7 @@ public class CompareQueryFilterTest
 				TimeUtil.asDate(dateRef),
 				TimeUtil.asTimestamp(dateRef),
 				TimeUtil.asLocalDateTime(dateRef),
-				TimeUtil.asZonedDateTime(dateRef),
+				TimeUtil.asZonedDateTime(dateRef, SystemTime.zoneId()),
 				TimeUtil.asInstant(dateRef)
 		};
 
@@ -218,5 +215,16 @@ public class CompareQueryFilterTest
 		final I_Test model = newInstance(I_Test.class);
 		model.setProcessed(true);
 		assertThat(processedIsFalse.accept(model)).isTrue();
+	}
+
+	@Test
+	public void test_equals()
+	{
+		final CompareQueryFilter<I_Test> filter1 = new CompareQueryFilter<>(I_Test.COLUMNNAME_Processed, Operator.EQUAL, true);
+		final CompareQueryFilter<I_Test> filter2 = new CompareQueryFilter<>(I_Test.COLUMNNAME_Processed, Operator.EQUAL, true);
+		assertThat(filter1).isEqualTo(filter2);
+
+		filter1.getSql(); // trigget sql build
+		assertThat(filter1).isEqualTo(filter2);
 	}
 }

@@ -11,8 +11,8 @@ import java.util.List;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 
@@ -56,10 +56,11 @@ import lombok.NonNull;
 
 public class ReceiptsScheduleCreatedHandlerTest
 {
-	public static final int RECEIPT_SCHEDULE_ID = 70;
+	static final int RECEIPT_SCHEDULE_ID = 70;
+
 	private ReceiptsScheduleCreatedHandler receiptsScheduleCreatedHandler;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -78,7 +79,6 @@ public class ReceiptsScheduleCreatedHandlerTest
 	{
 		handleEvent_ReceiptScheduleCreatedEvent_performTest(receiptsScheduleCreatedHandler);
 	}
-
 
 	public static void handleEvent_ReceiptScheduleCreatedEvent_performTest(
 			@NonNull final ReceiptsScheduleCreatedHandler receiptsScheduleCreatedHandler)

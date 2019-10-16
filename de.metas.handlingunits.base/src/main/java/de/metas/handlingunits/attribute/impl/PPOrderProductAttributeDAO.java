@@ -142,7 +142,7 @@ public class PPOrderProductAttributeDAO implements IPPOrderProductAttributeDAO
 				final I_PP_Order_ProductAttribute ppOrderAttributeNew = InterfaceWrapperHelper.newInstance(I_PP_Order_ProductAttribute.class);
 				ppOrderAttributeNew.setAD_Org_ID(ppOrder.getAD_Org_ID());
 				ppOrderAttributeNew.setPP_Order(ppOrder);
-				ppOrderAttributeNew.setM_Attribute(attribute);
+				ppOrderAttributeNew.setM_Attribute_ID(attribute.getM_Attribute_ID());
 				ppOrderAttributeNew.setM_HU_ID(huAttribute.getM_HU_ID()); // provenance HU
 				return ppOrderAttributeNew;
 			});

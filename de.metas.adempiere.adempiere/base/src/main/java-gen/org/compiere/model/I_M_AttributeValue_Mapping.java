@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
 
@@ -32,7 +16,7 @@ public interface I_M_AttributeValue_Mapping
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
@@ -48,10 +32,6 @@ public interface I_M_AttributeValue_Mapping
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client() throws RuntimeException;
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_AttributeValue_Mapping, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_AttributeValue_Mapping, org.compiere.model.I_AD_Client>(I_M_AttributeValue_Mapping.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -59,7 +39,7 @@ public interface I_M_AttributeValue_Mapping
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -69,18 +49,12 @@ public interface I_M_AttributeValue_Mapping
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org() throws RuntimeException;
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_AttributeValue_Mapping, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_AttributeValue_Mapping, org.compiere.model.I_AD_Org>(I_M_AttributeValue_Mapping.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -109,8 +83,6 @@ public interface I_M_AttributeValue_Mapping
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_M_AttributeValue_Mapping, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_AttributeValue_Mapping, org.compiere.model.I_AD_User>(I_M_AttributeValue_Mapping.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -182,12 +154,6 @@ public interface I_M_AttributeValue_Mapping
 	 */
 	public int getM_AttributeValue_ID();
 
-	public org.compiere.model.I_M_AttributeValue getM_AttributeValue() throws RuntimeException;
-
-	public void setM_AttributeValue(org.compiere.model.I_M_AttributeValue M_AttributeValue);
-
-    /** Column definition for M_AttributeValue_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_AttributeValue_Mapping, org.compiere.model.I_M_AttributeValue> COLUMN_M_AttributeValue_ID = new org.adempiere.model.ModelColumn<I_M_AttributeValue_Mapping, org.compiere.model.I_M_AttributeValue>(I_M_AttributeValue_Mapping.class, "M_AttributeValue_ID", org.compiere.model.I_M_AttributeValue.class);
     /** Column name M_AttributeValue_ID */
     public static final String COLUMNNAME_M_AttributeValue_ID = "M_AttributeValue_ID";
 
@@ -234,12 +200,6 @@ public interface I_M_AttributeValue_Mapping
 	 */
 	public int getM_AttributeValue_To_ID();
 
-	public org.compiere.model.I_M_AttributeValue getM_AttributeValue_To() throws RuntimeException;
-
-	public void setM_AttributeValue_To(org.compiere.model.I_M_AttributeValue M_AttributeValue_To);
-
-    /** Column definition for M_AttributeValue_To_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_AttributeValue_Mapping, org.compiere.model.I_M_AttributeValue> COLUMN_M_AttributeValue_To_ID = new org.adempiere.model.ModelColumn<I_M_AttributeValue_Mapping, org.compiere.model.I_M_AttributeValue>(I_M_AttributeValue_Mapping.class, "M_AttributeValue_To_ID", org.compiere.model.I_M_AttributeValue.class);
     /** Column name M_AttributeValue_To_ID */
     public static final String COLUMNNAME_M_AttributeValue_To_ID = "M_AttributeValue_To_ID";
 
@@ -268,8 +228,6 @@ public interface I_M_AttributeValue_Mapping
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_M_AttributeValue_Mapping, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_M_AttributeValue_Mapping, org.compiere.model.I_AD_User>(I_M_AttributeValue_Mapping.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

@@ -1,6 +1,8 @@
 package de.metas.material.dispo.commons.repository.atp;
 
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -26,11 +28,11 @@ import org.junit.Test;
 
 public class AvailableToPromiseQueryTest
 {
-
-	@Test(expected = RuntimeException.class)
+	@Test
 	public void builder_throw_ex_if_not_complete()
 	{
-		AvailableToPromiseQuery.builder().build();
+		assertThatThrownBy(() -> AvailableToPromiseQuery.builder().build())
+				.isInstanceOf(RuntimeException.class)
+				.hasMessageContaining("productIds is not empty");
 	}
-
 }

@@ -68,6 +68,7 @@ public class PickHUCommand
 	private final Quantity qtyToPick;
 	private final HuPackingInstructionsId packToId;
 	private final boolean autoReview;
+	boolean createPickingCandidatesOnly;
 
 	private I_M_ShipmentSchedule _shipmentSchedule; // lazy
 

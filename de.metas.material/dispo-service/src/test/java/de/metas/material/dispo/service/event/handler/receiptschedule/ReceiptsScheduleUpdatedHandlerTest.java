@@ -12,8 +12,8 @@ import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 
@@ -55,11 +55,10 @@ import de.metas.util.collections.CollectionUtils;
 
 public class ReceiptsScheduleUpdatedHandlerTest
 {
-	private static final BigDecimal ELEVEN = new BigDecimal("11");
 	private ReceiptsScheduleCreatedHandler receiptsScheduleCreatedHandler;
 	private ReceiptsScheduleUpdatedHandler receiptsScheduleUpdatedHandler;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -81,14 +80,16 @@ public class ReceiptsScheduleUpdatedHandlerTest
 		ReceiptsScheduleCreatedHandlerTest.handleEvent_ReceiptScheduleCreatedEvent_performTest(receiptsScheduleCreatedHandler);
 		assertThat(CollectionUtils.singleElement(DispoTestUtils.filter(CandidateType.SUPPLY)).getDateProjected()).isEqualTo(TimeUtil.asTimestamp(NOW)); // guard
 
-		final MaterialDescriptor eventMaterialDescriptor = createMaterialDescriptor().withDate(BEFORE_NOW).withQuantity(ELEVEN);
+		final MaterialDescriptor eventMaterialDescriptor = createMaterialDescriptor()
+				.withDate(BEFORE_NOW)
+				.withQuantity(new BigDecimal("11"));
 
 		final ReceiptScheduleUpdatedEvent receiptScheduleUpdatedEvent = ReceiptScheduleUpdatedEvent
 				.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
 				.materialDescriptor(eventMaterialDescriptor)
 				.receiptScheduleId(ReceiptsScheduleCreatedHandlerTest.RECEIPT_SCHEDULE_ID)
-				.reservedQuantity(ELEVEN)
+				.reservedQuantity(new BigDecimal("11"))
 				.reservedQuantityDelta(ONE)
 				.orderedQuantityDelta(ONE)
 				.build()
@@ -100,7 +101,7 @@ public class ReceiptsScheduleUpdatedHandlerTest
 		assertThat(supplyCandidates).hasSize(1);
 		final I_MD_Candidate supplyCandidate = supplyCandidates.get(0);
 		assertThat(supplyCandidate.getDateProjected()).isEqualTo(TimeUtil.asTimestamp(BEFORE_NOW));
-		assertThat(supplyCandidate.getQty()).isEqualByComparingTo(ELEVEN);
+		assertThat(supplyCandidate.getQty()).isEqualByComparingTo("11");
 	}
 
 }

@@ -37,9 +37,6 @@ import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -48,6 +45,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
+
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.impl.PlainCurrencyBL;
@@ -166,58 +164,6 @@ public class AbstractTestSupport
 
 		return priceListVersion;
 
-	}
-
-	protected I_M_AttributeSetInstance attributeSetInstance(final int id)
-	{
-		final POJOLookupMap db = POJOLookupMap.get();
-		I_M_AttributeSetInstance attributeSetInstance = db.getFirstOnly(I_M_AttributeSetInstance.class, pojo -> Objects.equals(pojo.getM_AttributeSetInstance_ID(), id));
-
-		if (attributeSetInstance == null)
-		{
-			attributeSetInstance = db.newInstance(Env.getCtx(), I_M_AttributeSetInstance.class);
-			attributeSetInstance.setM_AttributeSetInstance_ID(id);
-			InterfaceWrapperHelper.save(attributeSetInstance);
-		}
-
-		return attributeSetInstance;
-	}
-
-	protected I_M_AttributeInstance attributeInstance(final int setId, final String value)
-	{
-		final POJOLookupMap db = POJOLookupMap.get();
-		I_M_AttributeInstance attributeInstance = db.getFirstOnly(I_M_AttributeInstance.class, pojo -> Objects.equals(pojo.getM_AttributeValue().getValue(), value) && Objects.equals(pojo.getM_AttributeSetInstance_ID(), setId));
-
-		if (attributeInstance == null)
-		{
-			attributeInstance = db.newInstance(Env.getCtx(), I_M_AttributeInstance.class);
-			attributeInstance.setM_AttributeSetInstance_ID(setId);
-			attributeInstance.setValue(value);
-			InterfaceWrapperHelper.save(attributeInstance);
-		}
-
-		return attributeInstance;
-	}
-
-	/**
-	 * Get/Create {@link I_M_AttributeValue} which has given <code>value</code>.
-	 *
-	 * @param value
-	 * @return
-	 */
-	protected I_M_AttributeValue attributeValue(final String value)
-	{
-		final POJOLookupMap db = POJOLookupMap.get();
-		I_M_AttributeValue attributeValue = db.getFirstOnly(I_M_AttributeValue.class, pojo -> Objects.equals(pojo.getValue(), value));
-
-		if (attributeValue == null)
-		{
-			attributeValue = db.newInstance(Env.getCtx(), I_M_AttributeValue.class);
-			attributeValue.setValue(value);
-			InterfaceWrapperHelper.save(attributeValue);
-		}
-
-		return attributeValue;
 	}
 
 	protected I_C_DocType docType(final String baseType, final String subType)

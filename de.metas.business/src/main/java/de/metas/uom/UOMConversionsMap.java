@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.NoUOMConversionException;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 import de.metas.product.ProductId;
@@ -109,6 +110,20 @@ public class UOMConversionsMap
 	public boolean isEmpty()
 	{
 		return rates.isEmpty();
+	}
+
+	public ImmutableSet<UomId> getCatchUomIds()
+	{
+		if (rates.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		
+		return rates.values()
+				.stream()
+				.filter(UOMConversionRate::isCatchUOMForProduct)
+				.map(UOMConversionRate::getToUomId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private static FromAndToUomIds toFromAndToUomIds(final UOMConversionRate conversion)

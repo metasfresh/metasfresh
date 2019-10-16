@@ -25,6 +25,8 @@ package de.metas.util;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import javax.annotation.Nullable;
+
 import de.metas.util.lang.RepoIdAware;
 
 /**
@@ -134,7 +136,23 @@ public final class NumberUtils
 	 *         <li><code>defaultValue</code> if value is <code>null</code> or it's string representation cannot be converted to BigDecimal.
 	 *         </ul>
 	 */
-	public static BigDecimal asBigDecimal(final Object value, final BigDecimal defaultValue)
+	public static BigDecimal asBigDecimal(@Nullable final Object value, @Nullable final BigDecimal defaultValue)
+	{
+		final boolean failIfUnparsable = false;
+		return asBigDecimal(value, defaultValue, failIfUnparsable);
+	}
+
+	public static BigDecimal asBigDecimal(@Nullable final Object value)
+	{
+		final BigDecimal defaultValue = null;
+		final boolean failIfUnparsable = true;
+		return asBigDecimal(value, defaultValue, failIfUnparsable);
+	}
+
+	private static BigDecimal asBigDecimal(
+			@Nullable final Object value,
+			@Nullable final BigDecimal defaultValue,
+			final boolean failIfUnparsable)
 	{
 		if (value == null)
 		{
@@ -159,12 +177,22 @@ public final class NumberUtils
 			{
 				return new BigDecimal(valueStr);
 			}
-			catch (final NumberFormatException e)
+			catch (final NumberFormatException numberFormatException)
 			{
-				System.err.println("Cannot convert " + value + " to BigDecimal.");
-				e.printStackTrace();
+				final String errorMsg = "Cannot convert " + value + " (" + value.getClass() + ") to BigDecimal";
 
-				return defaultValue;
+				if (failIfUnparsable)
+				{
+					final RuntimeException ex = Check.mkEx(errorMsg);
+					ex.initCause(numberFormatException);
+					throw ex;
+				}
+				else
+				{
+					System.err.println(errorMsg + ". Returning defaultValue=" + defaultValue);
+					numberFormatException.printStackTrace();
+					return defaultValue;
+				}
 			}
 		}
 	}
