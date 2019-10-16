@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.GuavaCollectors;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 
 /*
@@ -60,7 +61,7 @@ public final class LookupValuesList implements Iterable<LookupValue>
 	 *
 	 * @param debugProperties optional debug properties, <code>null</code> is also OK.
 	 */
-	public static final Collector<LookupValue, ?, LookupValuesList> collect()
+	public static Collector<LookupValue, ?, LookupValuesList> collect()
 	{
 		final Map<String, String> debugProperties = null;
 		return collect(debugProperties);
@@ -71,7 +72,7 @@ public final class LookupValuesList implements Iterable<LookupValue>
 	 *
 	 * @param debugProperties optional debug properties, <code>null</code> is also OK.
 	 */
-	public static final Collector<LookupValue, ?, LookupValuesList> collect(final Map<String, String> debugProperties)
+	public static Collector<LookupValue, ?, LookupValuesList> collect(final Map<String, String> debugProperties)
 	{
 		final Supplier<ImmutableListMultimap.Builder<Object, LookupValue>> supplier = ImmutableListMultimap.Builder::new;
 		final BiConsumer<ImmutableListMultimap.Builder<Object, LookupValue>, LookupValue> accumulator = (builder, item) -> builder.put(item.getId(), item);
@@ -80,7 +81,7 @@ public final class LookupValuesList implements Iterable<LookupValue>
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
-	public static final LookupValuesList fromNullable(final LookupValue lookupValue)
+	public static LookupValuesList fromNullable(final LookupValue lookupValue)
 	{
 		if (lookupValue == null)
 		{
@@ -92,7 +93,7 @@ public final class LookupValuesList implements Iterable<LookupValue>
 		return new LookupValuesList(valuesById, debugProperties);
 	}
 
-	public static final LookupValuesList fromCollection(final Collection<? extends LookupValue> lookupValues)
+	public static LookupValuesList fromCollection(final Collection<? extends LookupValue> lookupValues)
 	{
 		if (lookupValues.isEmpty())
 		{
@@ -104,7 +105,7 @@ public final class LookupValuesList implements Iterable<LookupValue>
 		return new LookupValuesList(valuesById, debugProperties);
 	}
 
-	private static final LookupValuesList build(final ImmutableListMultimap.Builder<Object, LookupValue> valuesByIdBuilder, final Map<String, String> debugProperties)
+	private static LookupValuesList build(final ImmutableListMultimap.Builder<Object, LookupValue> valuesByIdBuilder, final Map<String, String> debugProperties)
 	{
 		final ImmutableListMultimap<Object, LookupValue> valuesById = valuesByIdBuilder.build();
 		if (valuesById.isEmpty() && (debugProperties == null || debugProperties.isEmpty()))
@@ -211,7 +212,7 @@ public final class LookupValuesList implements Iterable<LookupValue>
 	{
 		return getValues().stream();
 	}
-	
+
 	@Override
 	public Iterator<LookupValue> iterator()
 	{
@@ -233,7 +234,7 @@ public final class LookupValuesList implements Iterable<LookupValue>
 	 */
 	public boolean containsId(final Object id)
 	{
-		return valuesById.containsKey(id);
+		return valuesById.containsKey(normalizeId(id));
 	}
 
 	/**
@@ -242,11 +243,27 @@ public final class LookupValuesList implements Iterable<LookupValue>
 	 */
 	public LookupValue getById(final Object id)
 	{
-		final ImmutableList<LookupValue> values = valuesById.get(id);
+		final ImmutableList<LookupValue> values = valuesById.get(normalizeId(id));
 		return values.isEmpty() ? null : values.get(0);
 	}
 
-	public final <T> T transform(final Function<LookupValuesList, T> transformation)
+	private static Object normalizeId(final Object id)
+	{
+		if (id == null)
+		{
+			return null;
+		}
+		else if (id instanceof RepoIdAware)
+		{
+			return ((RepoIdAware)id).getRepoId();
+		}
+		else
+		{
+			return id;
+		}
+	}
+
+	public <T> T transform(final Function<LookupValuesList, T> transformation)
 	{
 		return transformation.apply(this);
 	}

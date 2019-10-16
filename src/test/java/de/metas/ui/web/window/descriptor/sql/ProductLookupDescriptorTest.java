@@ -6,20 +6,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_AttributeValue;
+import org.compiere.model.I_M_Attribute;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group;
 import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group.Type;
-import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.util.Services;
 import lombok.Value;
 
 /*
@@ -46,11 +52,8 @@ import lombok.Value;
 
 public class ProductLookupDescriptorTest
 {
+	private final String adLanguage = "en_US";
 	private I_C_UOM uom;
-
-	private I_M_AttributeValue attributeValue1;
-	private I_M_AttributeValue attributeValue2;
-	private I_M_AttributeValue attributeValue3;
 
 	@Before
 	public void init()
@@ -58,9 +61,6 @@ public class ProductLookupDescriptorTest
 		AdempiereTestHelper.get().init();
 
 		uom = createUOM("uom1");
-		attributeValue1 = createAttributeValue("attributeValue1");
-		attributeValue2 = createAttributeValue("attributeValue2");
-		attributeValue3 = createAttributeValue("attributeValue3");
 	}
 
 	private I_C_UOM createUOM(final String uomSymbol)
@@ -72,31 +72,45 @@ public class ProductLookupDescriptorTest
 		return uom;
 	}
 
-	private I_M_AttributeValue createAttributeValue(final String value)
+	private AttributeId createAttribute(final String attributeKey)
 	{
-		final I_M_AttributeValue av = newInstanceOutOfTrx(I_M_AttributeValue.class);
-		av.setName(value);
-		av.setValue(value);
-		saveRecord(av);
-		return av;
+		final I_M_Attribute attribute = newInstanceOutOfTrx(I_M_Attribute.class);
+		attribute.setValue(attributeKey);
+		attribute.setName(attributeKey + "-name");
+		saveRecord(attribute);
+		return AttributeId.ofRepoId(attribute.getM_Attribute_ID());
 	}
 
-	private List<IdAndDisplayName> toIdAndDisplayNamesList(LookupValuesList list)
+	private AttributeListValue createAttributeValue(final AttributeId attributeId, final String attributeValue)
+	{
+		return Services.get(IAttributeDAO.class).createAttributeValue(AttributeListValueCreateRequest.builder()
+				.attributeId(attributeId)
+				.value(attributeValue)
+				.name(attributeValue)
+				.build());
+	}
+
+	private static List<IdAndDisplayName> toIdAndDisplayNamesList(final LookupValuesList list)
 	{
 		return list.getValues()
 				.stream()
-				.map(this::toIdAndDisplayName)
+				.map(lookupValue -> IdAndDisplayName.of(lookupValue.getIdAsInt(), lookupValue.getDisplayName()))
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private IdAndDisplayName toIdAndDisplayName(final LookupValue lookupValue)
+	public static ImmutableAttributeSet toAttributeSet(final AttributeListValue attributeValue)
 	{
-		return IdAndDisplayName.of(lookupValue.getIdAsInt(), lookupValue.getDisplayName());
+		return ImmutableAttributeSet.builder()
+				.attributeValues(attributeValue)
+				.build();
 	}
 
 	@Test
 	public void explodeLookupValuesByAvailableStockGroups_standardScenario()
 	{
+		final AttributeId attributeId = createAttribute("attribute");
+		final AttributeListValue attributeValue1 = createAttributeValue(attributeId, "attributeValue1");
+
 		final LookupValuesList initialLookupValues = LookupValuesList.fromCollection(ImmutableList.of(
 				IntegerLookupValue.of(1, "Product1"),
 				IntegerLookupValue.of(2, "Product2"),
@@ -105,27 +119,27 @@ public class ProductLookupDescriptorTest
 
 		final List<Group> availableStockGroups = ImmutableList.of(
 				Group.builder()
-						.productId(1)
+						.productId(ProductId.ofRepoId(1))
 						.type(Type.ATTRIBUTE_SET)
-						.attributeValues(ImmutableList.of(attributeValue1))
+						.attributes(toAttributeSet(attributeValue1))
 						.qty(Quantity.of(100, uom))
 						.build(),
 				Group.builder()
-						.productId(2)
+						.productId(ProductId.ofRepoId(2))
 						.type(Type.ATTRIBUTE_SET)
-						.attributeValues(ImmutableList.of(attributeValue1))
+						.attributes(toAttributeSet(attributeValue1))
 						.qty(Quantity.of(0, uom))
 						.build(),
 				Group.builder()
-						.productId(3)
+						.productId(ProductId.ofRepoId(3))
 						.type(Type.ATTRIBUTE_SET)
-						.attributeValues(ImmutableList.of(attributeValue1))
+						.attributes(toAttributeSet(attributeValue1))
 						.qty(Quantity.of(1, uom))
 						.build(),
 				Group.builder()
-						.productId(4)
+						.productId(ProductId.ofRepoId(4))
 						.type(Type.ATTRIBUTE_SET)
-						.attributeValues(ImmutableList.of(attributeValue1))
+						.attributes(toAttributeSet(attributeValue1))
 						.qty(Quantity.of(-30, uom))
 						.build());
 
@@ -135,7 +149,8 @@ public class ProductLookupDescriptorTest
 			final LookupValuesList result = ProductLookupDescriptor.explodeLookupValuesByAvailableStockGroups(
 					initialLookupValues,
 					availableStockGroups,
-					/* displayATPOnlyIfPositive */true);
+					/* displayATPOnlyIfPositive */true,
+					adLanguage);
 
 			assertThat(toIdAndDisplayNamesList(result))
 					.containsExactly(
@@ -151,7 +166,8 @@ public class ProductLookupDescriptorTest
 			final LookupValuesList result = ProductLookupDescriptor.explodeLookupValuesByAvailableStockGroups(
 					initialLookupValues,
 					availableStockGroups,
-					/* displayATPOnlyIfPositive */false);
+					/* displayATPOnlyIfPositive */false,
+					adLanguage);
 
 			assertThat(toIdAndDisplayNamesList(result))
 					.containsExactly(
@@ -165,26 +181,31 @@ public class ProductLookupDescriptorTest
 	@Test
 	public void explodeLookupValuesByAvailableStockGroups_multipleNegativeATPsForSameProduct()
 	{
+		final AttributeId attributeId = createAttribute("attribute");
+		final AttributeListValue attributeValue1 = createAttributeValue(attributeId, "attributeValue1");
+		final AttributeListValue attributeValue2 = createAttributeValue(attributeId, "attributeValue2");
+		final AttributeListValue attributeValue3 = createAttributeValue(attributeId, "attributeValue3");
+
 		final LookupValuesList initialLookupValues = LookupValuesList.fromCollection(ImmutableList.of(
 				IntegerLookupValue.of(1, "Product1")));
 
 		final List<Group> availableStockGroups = ImmutableList.of(
 				Group.builder()
-						.productId(1)
+						.productId(ProductId.ofRepoId(1))
 						.type(Type.ATTRIBUTE_SET)
-						.attributeValues(ImmutableList.of(attributeValue1))
+						.attributes(toAttributeSet(attributeValue1))
 						.qty(Quantity.of(-1, uom))
 						.build(),
 				Group.builder()
-						.productId(1)
+						.productId(ProductId.ofRepoId(1))
 						.type(Type.ATTRIBUTE_SET)
-						.attributeValues(ImmutableList.of(attributeValue2))
+						.attributes(toAttributeSet(attributeValue2))
 						.qty(Quantity.of(-2, uom))
 						.build(),
 				Group.builder()
-						.productId(1)
+						.productId(ProductId.ofRepoId(1))
 						.type(Type.ATTRIBUTE_SET)
-						.attributeValues(ImmutableList.of(attributeValue3))
+						.attributes(toAttributeSet(attributeValue3))
 						.qty(Quantity.of(-3, uom))
 						.build());
 
@@ -194,7 +215,8 @@ public class ProductLookupDescriptorTest
 			final LookupValuesList result = ProductLookupDescriptor.explodeLookupValuesByAvailableStockGroups(
 					initialLookupValues,
 					availableStockGroups,
-					/* displayATPOnlyIfPositive */true);
+					/* displayATPOnlyIfPositive */true,
+					adLanguage);
 
 			assertThat(toIdAndDisplayNamesList(result))
 					.containsExactly(IdAndDisplayName.of(1, "Product1"));
@@ -206,7 +228,8 @@ public class ProductLookupDescriptorTest
 			final LookupValuesList result = ProductLookupDescriptor.explodeLookupValuesByAvailableStockGroups(
 					initialLookupValues,
 					availableStockGroups,
-					/* displayATPOnlyIfPositive */false);
+					/* displayATPOnlyIfPositive */false,
+					adLanguage);
 
 			assertThat(toIdAndDisplayNamesList(result))
 					.containsExactly(
