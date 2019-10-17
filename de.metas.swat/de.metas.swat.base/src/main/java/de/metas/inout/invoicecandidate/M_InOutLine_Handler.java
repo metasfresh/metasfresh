@@ -46,7 +46,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
@@ -60,6 +59,7 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.engine.DocStatus;
@@ -89,6 +89,7 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.ImmutableMapEntry;
@@ -767,9 +768,13 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			final I_C_BPartner_Location billBPLocation = bPartnerDAO.retrieveBillToLocation(ctx, inOut.getC_BPartner_ID(), alsoTryBilltoRelation, ITrx.TRXNAME_None);
 			billBPLocationId = BPartnerLocationId.ofRepoId(billBPLocation.getC_BPartner_ID(), billBPLocation.getC_BPartner_Location_ID());
 
-			final I_AD_User billBPContact = bPartnerBL.retrieveBillContact(ctx, billBPLocationId.getBpartnerId().getRepoId(), ITrx.TRXNAME_None);
+			final User billBPContact = bPartnerBL
+					.retrieveContactOrNull(RetrieveContactRequest.builder()
+							.bpartnerId(billBPLocationId.getBpartnerId())
+							.bPartnerLocationId(billBPLocationId)
+							.build());
 			billBPContactId = billBPContact != null
-					? BPartnerContactId.ofRepoIdOrNull(billBPContact.getC_BPartner_ID(), billBPContact.getAD_User_ID())
+					? BPartnerContactId.of(billBPLocationId.getBpartnerId(), billBPContact.getId())
 					: null;
 		}
 
@@ -777,7 +782,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		// Bill_User_ID isn't mandatory in C_Order, and isn't considered a must in OLHandler either
 		// Check.assumeNotNull(billBPContactId, "billBPContact not null");
 
-		//
 		// Set BPartner / Location / Contact
 		ic.setBill_BPartner_ID(billBPLocationId.getBpartnerId().getRepoId());
 		ic.setBill_Location_ID(billBPLocationId.getRepoId());

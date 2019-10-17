@@ -14,7 +14,7 @@ import de.metas.util.ISingletonService;
 
 public interface IPPCostCollectorBL extends ISingletonService
 {
-	I_PP_Cost_Collector getById(int costCollectorId);
+	I_PP_Cost_Collector getById(PPCostCollectorId costCollectorId);
 
 	Quantity getMovementQty(I_PP_Cost_Collector cc);
 

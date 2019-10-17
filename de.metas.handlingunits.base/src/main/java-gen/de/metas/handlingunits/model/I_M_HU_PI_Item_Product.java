@@ -16,9 +16,9 @@ public interface I_M_HU_PI_Item_Product
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 7 - System - Client - Org
+    /** AccessLevel = 3 - Client - Org
      */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(7);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
     /** Load Meta Data */
 
@@ -283,6 +283,35 @@ public interface I_M_HU_PI_Item_Product
     public static final String COLUMNNAME_IsInfiniteCapacity = "IsInfiniteCapacity";
 
 	/**
+	 * Set LU Fallback-Verpackungscode.
+	 * Wird benutzt wenn die Ausgabe eines LU Verpackungscodes erforderlich ist, aber in metasfresh keine HU erfasst wurde.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_HU_PackagingCode_LU_Fallback_ID (int M_HU_PackagingCode_LU_Fallback_ID);
+
+	/**
+	 * Get LU Fallback-Verpackungscode.
+	 * Wird benutzt wenn die Ausgabe eines LU Verpackungscodes erforderlich ist, aber in metasfresh keine HU erfasst wurde.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_HU_PackagingCode_LU_Fallback_ID();
+
+	public de.metas.handlingunits.model.I_M_HU_PackagingCode getM_HU_PackagingCode_LU_Fallback();
+
+	public void setM_HU_PackagingCode_LU_Fallback(de.metas.handlingunits.model.I_M_HU_PackagingCode M_HU_PackagingCode_LU_Fallback);
+
+    /** Column definition for M_HU_PackagingCode_LU_Fallback_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, de.metas.handlingunits.model.I_M_HU_PackagingCode> COLUMN_M_HU_PackagingCode_LU_Fallback_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, de.metas.handlingunits.model.I_M_HU_PackagingCode>(I_M_HU_PI_Item_Product.class, "M_HU_PackagingCode_LU_Fallback_ID", de.metas.handlingunits.model.I_M_HU_PackagingCode.class);
+    /** Column name M_HU_PackagingCode_LU_Fallback_ID */
+    public static final String COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID = "M_HU_PackagingCode_LU_Fallback_ID";
+
+	/**
 	 * Set Packvorschrift Position.
 	 *
 	 * <br>Type: TableDir
@@ -406,27 +435,29 @@ public interface I_M_HU_PI_Item_Product
     public static final String COLUMNNAME_Qty = "Qty";
 
 	/**
-	 * Set TU-UPC.
+	 * Set UPC.
+	 * Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setUPC_TU (java.lang.String UPC_TU);
+	public void setUPC (java.lang.String UPC);
 
 	/**
-	 * Get TU-UPC.
+	 * Get UPC.
+	 * Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getUPC_TU();
+	public java.lang.String getUPC();
 
-    /** Column definition for UPC_TU */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_UPC_TU = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "UPC_TU", null);
-    /** Column name UPC_TU */
-    public static final String COLUMNNAME_UPC_TU = "UPC_TU";
+    /** Column definition for UPC */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_UPC = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "UPC", null);
+    /** Column name UPC */
+    public static final String COLUMNNAME_UPC = "UPC";
 
 	/**
 	 * Get Aktualisiert.

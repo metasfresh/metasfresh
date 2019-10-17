@@ -547,13 +547,13 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public PricingSystemId retrievePricingSystemId(@NonNull final BPartnerId bpartnerId, final SOTrx soTrx)
+	public PricingSystemId retrievePricingSystemIdOrNull(@NonNull final BPartnerId bpartnerId, final SOTrx soTrx)
 	{
 		return retrievePricingSystemIdOrNull(bpartnerId, soTrx, ITrx.TRXNAME_None);
 	}
 
 	@Override
-	public PricingSystemId retrievePricingSystemIdInTrx(@NonNull final BPartnerId bpartnerId, final SOTrx soTrx)
+	public PricingSystemId retrievePricingSystemIdOrNullInTrx(@NonNull final BPartnerId bpartnerId, final SOTrx soTrx)
 	{
 		return retrievePricingSystemIdOrNull(bpartnerId, soTrx, ITrx.TRXNAME_ThreadInherited);
 	}
@@ -583,9 +583,7 @@ public class BPartnerDAO implements IBPartnerDAO
 			throw new AdempiereException("No BPartner found for " + bpartnerId);
 		}
 
-		// metas: The method always retrieved SO-PricingSys. This caused errors in PO-Documents.
 		final Integer bpPricingSysId;
-
 		if (soTrx.isSales())
 		{
 			bpPricingSysId = bPartner.getM_PricingSystem_ID();
@@ -594,7 +592,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		{
 			bpPricingSysId = bPartner.getPO_PricingSystem_ID();
 		}
-		// metas: end
+
 		if (bpPricingSysId != null && bpPricingSysId > 0)
 		{
 			logger.debug("Got M_PricingSystem_ID={} from bPartner={}", bpPricingSysId, bPartner);

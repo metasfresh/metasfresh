@@ -41,7 +41,7 @@ public interface I_M_HU_Trace
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -51,7 +51,7 @@ public interface I_M_HU_Trace
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -506,7 +506,8 @@ public interface I_M_HU_Trace
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set CU Handling Unit (VHU).
+	 * Set CU.
+	 * Customer Unit
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -515,7 +516,8 @@ public interface I_M_HU_Trace
 	public void setVHU_ID (int VHU_ID);
 
 	/**
-	 * Get CU Handling Unit (VHU).
+	 * Get CU.
+	 * Customer Unit
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true

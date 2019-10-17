@@ -5,6 +5,7 @@ import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Voided;
 import static de.metas.contracts.model.X_C_Flatrate_Term.DOCSTATUS_Completed;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -88,12 +89,18 @@ import lombok.NonNull;
 
 public class FlatrateDAO implements IFlatrateDAO
 {
-
 	private static final String MSP_DATA_ENTRY_ERROR_INVOICE_CAND_PROCESSED_3P = "DataEntry_Error_InvoiceCand_Processed";
 	private static final Logger logger = LogManager.getLogger(FlatrateDAO.class);
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@Override
+	public I_C_Flatrate_Term getById(final int flatrateTermId)
+	{
+		Check.assumeGreaterThanZero(flatrateTermId, "flatrateTermId");
+		return load(flatrateTermId, I_C_Flatrate_Term.class);
+	}
 
 	@Override
 	public List<I_C_Flatrate_Term> retrieveTerms(final I_C_Invoice_Candidate ic)

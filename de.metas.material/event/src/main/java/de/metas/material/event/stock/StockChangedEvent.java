@@ -98,20 +98,18 @@ public class StockChangedEvent implements MaterialEvent
 	@Value
 	public static class StockChangeDetails
 	{
-		int resetStockAdPinstanceId;
-
+		ResetStockPInstanceId resetStockPInstanceId;
 		int transactionId;
-
 		int stockId;
 
 		@JsonCreator
 		@Builder
 		public StockChangeDetails(
-				@JsonProperty("resetStockAdPinstanceId") final int resetStockAdPinstanceId,
+				@JsonProperty("resetStockPInstanceId") final ResetStockPInstanceId resetStockPInstanceId,
 				@JsonProperty("transactionId") final int transactionId,
 				@JsonProperty("stockId") final int stockId)
 		{
-			this.resetStockAdPinstanceId = resetStockAdPinstanceId;
+			this.resetStockPInstanceId = resetStockPInstanceId;
 			this.transactionId = transactionId;
 			this.stockId = stockId;
 		}

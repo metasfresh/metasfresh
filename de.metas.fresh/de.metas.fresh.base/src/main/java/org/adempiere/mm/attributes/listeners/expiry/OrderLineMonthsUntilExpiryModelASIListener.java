@@ -52,7 +52,7 @@ public class OrderLineMonthsUntilExpiryModelASIListener implements IModelAttribu
 	}
 
 	@Override
-	public void modelChanged(Object model)
+	public void modelChanged(final Object model)
 	{
 		attributeSetInstanceBL.updateASIAttributeFromModel(AttributeConstants.ATTR_MonthsUntilExpiry, model);
 	}

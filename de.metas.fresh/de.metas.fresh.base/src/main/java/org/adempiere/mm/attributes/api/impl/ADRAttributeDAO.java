@@ -13,30 +13,30 @@ package org.adempiere.mm.attributes.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.IADRAttributeBL;
 import org.adempiere.mm.attributes.api.IADRAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.util.Env;
 
 import de.metas.fresh.model.I_C_BPartner;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class ADRAttributeDAO implements IADRAttributeDAO
 {
@@ -51,7 +51,7 @@ public class ADRAttributeDAO implements IADRAttributeDAO
 						-1, // defaultValue
 						adClientId,
 						adOrgId);
-		
+
 		return AttributeId.ofRepoIdOrNull(adrAttributeId);
 	}
 
@@ -84,10 +84,8 @@ public class ADRAttributeDAO implements IADRAttributeDAO
 	}
 
 	@Override
-	public I_M_AttributeValue retrieveADRAttributeValue(final Properties ctx, final I_C_BPartner partner, boolean isSOTrx)
+	public AttributeListValue retrieveADRAttributeValue(final Properties ctx, @NonNull final I_C_BPartner partner, boolean isSOTrx)
 	{
-		Check.assumeNotNull(partner, "partner not null");
-
 		final String adrRegionValue = Services.get(IADRAttributeBL.class).getADRForBPartner(partner, isSOTrx);
 		if (Check.isEmpty(adrRegionValue, true))
 		{
@@ -100,8 +98,7 @@ public class ADRAttributeDAO implements IADRAttributeDAO
 			return null;
 		}
 
-		I_M_AttributeValue attributeValue = Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(adrAttribute, adrRegionValue);
-		return attributeValue;
+		return Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(adrAttribute, adrRegionValue);
 	}
 
 }

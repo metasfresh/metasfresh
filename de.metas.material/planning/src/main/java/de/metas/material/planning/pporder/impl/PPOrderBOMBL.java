@@ -36,6 +36,7 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -234,7 +235,8 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 
 		final I_PP_Product_BOMLine bomLine = bomsRepo.getBOMLineById(ppOrderBOMLine.getProductBomLineId());
-		final I_PP_Product_BOM bom = bomsRepo.getById(bomLine.getPP_Product_BOM_ID());
+		final ProductBOMId bomId = ProductBOMId.ofRepoId(bomLine.getPP_Product_BOM_ID());
+		final I_PP_Product_BOM bom = bomsRepo.getById(bomId);
 
 		return PPOrderBomLineAware.builder()
 				.bomProductId(ProductId.ofRepoId(bom.getM_Product_ID()))

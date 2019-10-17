@@ -45,12 +45,12 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.invoicecandidate.internalbusinesslogic.InvoiceRule;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.InvoiceRule;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.ordercandidate.spi.IOLCandListener;
@@ -146,43 +146,35 @@ class OLCandOrderFactory
 		final I_C_Order order = newInstance(I_C_Order.class);
 		order.setDocStatus(DocStatus.Drafted.getCode());
 		order.setDocAction(X_C_Order.DOCACTION_Complete);
-
-		// use the values from 'processor
-		order.setDeliveryRule(DeliveryRule.toCodeOrNull(orderDefaults.getDeliveryRule()));
-		order.setDeliveryViaRule(DeliveryViaRule.toCodeOrNull(orderDefaults.getDeliveryViaRule()));
-		order.setM_Shipper_ID(ShipperId.toRepoId(orderDefaults.getShipperId()));
-
-		order.setFreightCostRule(FreightCostRule.toCodeOrNull(orderDefaults.getFreightCostRule()));
-		order.setPaymentRule(PaymentRule.toCodeOrNull(orderDefaults.getPaymentRule()));
-		order.setC_PaymentTerm_ID(PaymentTermId.toRepoId(orderDefaults.getPaymentTermId()));
-
-		order.setInvoiceRule(InvoiceRule.toCodeOrNull(orderDefaults.getInvoiceRule()));
+	
+		//
+		// use values from orderDefaults when the order candidate doesn't have such values
 		order.setC_DocTypeTarget_ID(DocTypeId.toRepoId(orderDefaults.getDocTypeTargetId()));
 		order.setM_Warehouse_ID(WarehouseId.toRepoId(orderDefaults.getWarehouseId()));
-
+	
 		// use the values from 'olCand'
 		order.setAD_Org_ID(candidateOfGroup.getAD_Org_ID());
-
+	
 		final BPartnerInfo bpartner = candidateOfGroup.getBPartnerInfo();
 		order.setC_BPartner_ID(BPartnerId.toRepoId(bpartner.getBpartnerId()));
 		order.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartner.getBpartnerLocationId()));
 		order.setAD_User_ID(BPartnerContactId.toRepoId(bpartner.getContactId()));
-
+	
 		// if the olc has no value set, we are not falling back here!
 		final BPartnerInfo billBPartner = candidateOfGroup.getBillBPartnerInfo();
 		order.setBill_BPartner_ID(BPartnerId.toRepoId(billBPartner.getBpartnerId()));
 		order.setBill_Location_ID(BPartnerLocationId.toRepoId(billBPartner.getBpartnerLocationId()));
 		order.setBill_User_ID(BPartnerContactId.toRepoId(billBPartner.getContactId()));
-
+	
 		final Timestamp dateDoc = TimeUtil.asTimestamp(candidateOfGroup.getDateDoc());
 		order.setDateOrdered(dateDoc);
 		order.setDateAcct(dateDoc);
-
+	
 		// task 06269 (see KurzBeschreibung)
 		// note that C_Order.DatePromised is propagated to C_OrderLine.DatePromised in MOrder.afterSave() and MOrderLine.setOrder()
 		// also note that for now we set datepromised only in the header, so different DatePromised values result in differnt orders, and all ol have the same datepromised
 		order.setDatePromised(TimeUtil.asTimestamp(candidateOfGroup.getDatePromised()));
-
+	
 		// if the olc has no value set, we are not falling back here!
 		// 05617
 		final BPartnerInfo dropShipBPartner = candidateOfGroup.getDropShipBPartnerInfo();
@@ -190,26 +182,32 @@ class OLCandOrderFactory
 		order.setDropShip_Location_ID(BPartnerLocationId.toRepoId(dropShipBPartner.getBpartnerLocationId()));
 		final boolean isDropShip = dropShipBPartner != null || dropShipBPartner.getBpartnerLocationId() != null;
 		order.setIsDropShip(isDropShip);
-
+	
 		final BPartnerInfo handOverBPartner = candidateOfGroup.getHandOverBPartnerInfo();
 		order.setHandOver_Partner_ID(BPartnerId.toRepoId(handOverBPartner.getBpartnerId()));
 		order.setHandOver_Location_ID(BPartnerLocationId.toRepoId(handOverBPartner.getBpartnerLocationId()));
 		order.setIsUseHandOver_Location(handOverBPartner.getBpartnerLocationId() != null);
-
+	
 		if (candidateOfGroup.getC_Currency_ID() > 0)
 		{
 			order.setC_Currency_ID(candidateOfGroup.getC_Currency_ID());
 		}
-
+	
 		order.setPOReference(candidateOfGroup.getPOReference());
-
-		// pricing-system is not mandatory in 'processor', so we set it either from the processor *or* from the bpartner or BP-GRoup
+	
+		order.setDeliveryRule(DeliveryRule.toCodeOrNull(candidateOfGroup.getDeliveryRule()));
+		order.setDeliveryViaRule(DeliveryViaRule.toCodeOrNull(candidateOfGroup.getDeliveryViaRule()));
+		order.setFreightCostRule(FreightCostRule.toCodeOrNull(candidateOfGroup.getFreightCostRule()));
+		order.setInvoiceRule(InvoiceRule.toCodeOrNull(candidateOfGroup.getInvoiceRule()));
+		order.setPaymentRule(PaymentRule.toCodeOrNull(candidateOfGroup.getPaymentRule()));
+		order.setC_PaymentTerm_ID(PaymentTermId.toRepoId(candidateOfGroup.getPaymentTermId()));
 		order.setM_PricingSystem_ID(PricingSystemId.toRepoId(candidateOfGroup.getPricingSystemId()));
-
+		order.setM_Shipper_ID(ShipperId.toRepoId(candidateOfGroup.getShipperId()));
+	
 		// task 08926: set the data source; this shall trigger IsEdiEnabled to be set to true, if the data source is "EDI"
 		final de.metas.order.model.I_C_Order orderWithDataSource = InterfaceWrapperHelper.create(order, de.metas.order.model.I_C_Order.class);
 		orderWithDataSource.setAD_InputDataSource_ID(candidateOfGroup.getAD_InputDataSource_ID());
-
+	
 		save(order);
 		return order;
 	}
@@ -349,7 +347,7 @@ class OLCandOrderFactory
 		candidates.add(candidate);
 	}
 
-	private I_C_OrderLine newOrderLine(final OLCand candToProcess)
+	private I_C_OrderLine newOrderLine(@NonNull final OLCand candToProcess)
 	{
 		if (order == null)
 		{

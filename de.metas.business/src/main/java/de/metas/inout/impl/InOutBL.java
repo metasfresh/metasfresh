@@ -182,7 +182,7 @@ public class InOutBL implements IInOutBL
 			return priceListsRepo.getPricingSystemById(pricingSystemId);
 		}
 
-		final PricingSystemId pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(BPartnerId.ofRepoId(inOut.getC_BPartner_ID()), soTrx);
+		final PricingSystemId pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemIdOrNull(BPartnerId.ofRepoId(inOut.getC_BPartner_ID()), soTrx);
 		if (pricingSystemId == null)
 		{
 			return null;

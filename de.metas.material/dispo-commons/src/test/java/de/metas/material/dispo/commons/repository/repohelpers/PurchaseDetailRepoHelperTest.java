@@ -4,8 +4,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.model.I_MD_Candidate_Purchase_Detail;
@@ -34,7 +34,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Purchase_Detail;
 
 public class PurchaseDetailRepoHelperTest
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

@@ -47,6 +47,8 @@ import de.metas.util.ISingletonService;
 
 public interface IFlatrateDAO extends ISingletonService
 {
+	I_C_Flatrate_Term getById(final int flatrateTermId);
+
 	List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(I_C_Flatrate_DataEntry dataEntry);
 
 	/**

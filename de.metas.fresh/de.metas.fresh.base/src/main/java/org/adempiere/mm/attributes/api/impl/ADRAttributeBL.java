@@ -28,20 +28,23 @@ import java.util.Properties;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeListValueTrxRestriction;
 import org.adempiere.mm.attributes.api.AttributeAction;
+import org.adempiere.mm.attributes.api.AttributeListValueChangeRequest;
 import org.adempiere.mm.attributes.api.IADRAttributeBL;
 import org.adempiere.mm.attributes.api.IADRAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.api.IBPartnerAware;
 import org.adempiere.mm.attributes.exceptions.AttributeRestrictedException;
 import org.adempiere.mm.attributes.exceptions.NoAttributeGeneratorException;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.fresh.model.I_C_BPartner;
+import de.metas.lang.SOTrx;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -59,7 +62,7 @@ public class ADRAttributeBL implements IADRAttributeBL
 	}
 
 	@Override
-	public I_M_AttributeValue getCreateAttributeValue(final IContextAware context, final IBPartnerAware bpartnerAware)
+	public AttributeListValue getCreateAttributeValue(final IContextAware context, final IBPartnerAware bpartnerAware)
 	{
 		final Properties ctx = context.getCtx();
 		final I_C_BPartner partner = bpartnerAware.getC_BPartner();
@@ -69,9 +72,9 @@ public class ADRAttributeBL implements IADRAttributeBL
 	}
 
 	@Override
-	public I_M_AttributeValue getCreateAttributeValue(final Properties ctx, final I_C_BPartner partner, final boolean isSOTrx, final String trxName)
+	public AttributeListValue getCreateAttributeValue(final Properties ctx, final I_C_BPartner partner, final boolean isSOTrx, final String trxName)
 	{
-		final I_M_AttributeValue attributeValue = Services.get(IADRAttributeDAO.class).retrieveADRAttributeValue(ctx, partner, isSOTrx);
+		final AttributeListValue attributeValue = Services.get(IADRAttributeDAO.class).retrieveADRAttributeValue(ctx, partner, isSOTrx);
 
 		final AttributeAction attributeAction = Services.get(IAttributesBL.class).getAttributeAction(ctx);
 		if (attributeValue == null)
@@ -115,23 +118,31 @@ public class ADRAttributeBL implements IADRAttributeBL
 			{
 				throw new AdempiereException("@NotSupported@ AttributeAction " + attributeAction);
 			}
+			
+			return attributeValue;
 		}
 		else
 		{
-			if (!Services.get(IAttributesBL.class).isSameTrx(attributeValue, isSOTrx))
+			final SOTrx soTrx = SOTrx.ofBoolean(isSOTrx);
+			if(!attributeValue.isMatchingSOTrx(soTrx))
 			{
 				if (attributeAction == AttributeAction.Error)
 				{
-					throw new AttributeRestrictedException(ctx, isSOTrx, attributeValue, partner.getValue());
+					throw new AttributeRestrictedException(ctx, soTrx, attributeValue, partner.getValue());
 				}
 
 				// We have an attribute value, but it is marked for a different transaction. Change type to "null", to make it available for both.
-				attributeValue.setAvailableTrx(null);
-				InterfaceWrapperHelper.save(attributeValue);
+				final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+				return attributesRepo.changeAttributeValue(AttributeListValueChangeRequest.builder()
+						.id(attributeValue.getId())
+						.availableForTrx(AttributeListValueTrxRestriction.ANY_TRANSACTION)
+						.build());
+			}
+			else
+			{
+				return attributeValue;
 			}
 		}
-
-		return attributeValue;
 	}
 
 	private boolean isBPartnerRequiresADR(final I_C_BPartner partner, final boolean isSOTrx)

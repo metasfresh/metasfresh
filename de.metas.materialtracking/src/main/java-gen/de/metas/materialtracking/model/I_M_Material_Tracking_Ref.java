@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.materialtracking.model;
 
 
@@ -48,10 +32,6 @@ public interface I_M_Material_Tracking_Ref
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, org.compiere.model.I_AD_Client>(I_M_Material_Tracking_Ref.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -59,7 +39,7 @@ public interface I_M_Material_Tracking_Ref
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -69,18 +49,12 @@ public interface I_M_Material_Tracking_Ref
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, org.compiere.model.I_AD_Org>(I_M_Material_Tracking_Ref.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -104,12 +78,6 @@ public interface I_M_Material_Tracking_Ref
 	 */
 	public int getAD_Table_ID();
 
-	public org.compiere.model.I_AD_Table getAD_Table();
-
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
-
-    /** Column definition for AD_Table_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, org.compiere.model.I_AD_Table>(I_M_Material_Tracking_Ref.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
     /** Column name AD_Table_ID */
     public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
@@ -138,54 +106,31 @@ public interface I_M_Material_Tracking_Ref
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, org.compiere.model.I_AD_User>(I_M_Material_Tracking_Ref.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Lieferdatum.
-	 * Datum, zu dem die Ware geliefert wurde
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public void setDateDelivered (java.sql.Timestamp DateDelivered);
-
-	/**
-	 * Get Lieferdatum.
-	 * Datum, zu dem die Ware geliefert wurde
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public java.sql.Timestamp getDateDelivered();
-
-    /** Column definition for DateDelivered */
-    public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, Object> COLUMN_DateDelivered = new org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, Object>(I_M_Material_Tracking_Ref.class, "DateDelivered", null);
-    /** Column name DateDelivered */
-    public static final String COLUMNNAME_DateDelivered = "DateDelivered";
-
-	/**
-	 * Set Beleg Nr..
+	 * Set Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Beleg Nr..
+	 * Get Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.lang.String getDocumentNo();
 
     /** Column definition for DocumentNo */
@@ -259,12 +204,12 @@ public interface I_M_Material_Tracking_Ref
 	 */
 	public int getM_Material_Tracking_ID();
 
-	public I_M_Material_Tracking getM_Material_Tracking();
+	public de.metas.materialtracking.model.I_M_Material_Tracking getM_Material_Tracking();
 
-	public void setM_Material_Tracking(I_M_Material_Tracking M_Material_Tracking);
+	public void setM_Material_Tracking(de.metas.materialtracking.model.I_M_Material_Tracking M_Material_Tracking);
 
     /** Column definition for M_Material_Tracking_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, I_M_Material_Tracking> COLUMN_M_Material_Tracking_ID = new org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, I_M_Material_Tracking>(I_M_Material_Tracking_Ref.class, "M_Material_Tracking_ID", I_M_Material_Tracking.class);
+    public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, de.metas.materialtracking.model.I_M_Material_Tracking> COLUMN_M_Material_Tracking_ID = new org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, de.metas.materialtracking.model.I_M_Material_Tracking>(I_M_Material_Tracking_Ref.class, "M_Material_Tracking_ID", de.metas.materialtracking.model.I_M_Material_Tracking.class);
     /** Column name M_Material_Tracking_ID */
     public static final String COLUMNNAME_M_Material_Tracking_ID = "M_Material_Tracking_ID";
 
@@ -292,7 +237,36 @@ public interface I_M_Material_Tracking_Ref
     public static final String COLUMNNAME_M_Material_Tracking_Ref_ID = "M_Material_Tracking_Ref_ID";
 
 	/**
-	 * Set Qty Issued.
+	 * Set Bewegungsdatum.
+	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setMovementDate (java.sql.Timestamp MovementDate);
+
+	/**
+	 * Get Bewegungsdatum.
+	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public java.sql.Timestamp getMovementDate();
+
+    /** Column definition for MovementDate */
+    public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, Object> COLUMN_MovementDate = new org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, Object>(I_M_Material_Tracking_Ref.class, "MovementDate", null);
+    /** Column name MovementDate */
+    public static final String COLUMNNAME_MovementDate = "MovementDate";
+
+	/**
+	 * Set Ausgelagerte Menge.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -301,7 +275,7 @@ public interface I_M_Material_Tracking_Ref
 	public void setQtyIssued (java.math.BigDecimal QtyIssued);
 
 	/**
-	 * Get Qty Issued.
+	 * Get Ausgelagerte Menge.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -313,6 +287,31 @@ public interface I_M_Material_Tracking_Ref
     public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, Object> COLUMN_QtyIssued = new org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, Object>(I_M_Material_Tracking_Ref.class, "QtyIssued", null);
     /** Column name QtyIssued */
     public static final String COLUMNNAME_QtyIssued = "QtyIssued";
+
+	/**
+	 * Set Empfangene Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setQtyReceived (java.math.BigDecimal QtyReceived);
+
+	/**
+	 * Get Empfangene Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public java.math.BigDecimal getQtyReceived();
+
+    /** Column definition for QtyReceived */
+    public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, Object> COLUMN_QtyReceived = new org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, Object>(I_M_Material_Tracking_Ref.class, "QtyReceived", null);
+    /** Column name QtyReceived */
+    public static final String COLUMNNAME_QtyReceived = "QtyReceived";
 
 	/**
 	 * Set Datensatz-ID.
@@ -364,8 +363,6 @@ public interface I_M_Material_Tracking_Ref
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_M_Material_Tracking_Ref, org.compiere.model.I_AD_User>(I_M_Material_Tracking_Ref.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

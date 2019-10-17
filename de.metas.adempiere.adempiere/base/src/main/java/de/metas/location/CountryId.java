@@ -37,6 +37,8 @@ import lombok.Value;
 @Value
 public class CountryId implements RepoIdAware
 {
+	public static final CountryId SWITZERLAND = new CountryId(107);
+
 	@JsonCreator
 	public static CountryId ofRepoId(final int repoId)
 	{

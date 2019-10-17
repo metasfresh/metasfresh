@@ -31,6 +31,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.callout.M_Attribute;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -112,37 +113,37 @@ public class AttributesTestHelper
 		return attribute;
 	}
 
-	public I_M_AttributeValue createM_AttributeValue(
+	public AttributeListValue createM_AttributeValue(
 			@NonNull final I_M_Attribute attribute,
 			@Nullable final String value)
 	{
 		return createM_AttributeValue(attribute, null, value);
 	}
 
-	public I_M_AttributeValue createM_AttributeValue(
+	public AttributeListValue createM_AttributeValue(
 			@NonNull final I_M_Attribute attribute,
 			@Nullable final Integer valueRepoId,
 			@Nullable final String value)
 	{
-		final I_M_AttributeValue attributeValue = InterfaceWrapperHelper.newInstance(I_M_AttributeValue.class, context);
-		attributeValue.setM_Attribute(attribute);
-		attributeValue.setValue(value);
-		attributeValue.setName("Name_" + value);
+		final I_M_AttributeValue record = InterfaceWrapperHelper.newInstance(I_M_AttributeValue.class, context);
+		record.setM_Attribute(attribute);
+		record.setValue(value);
+		record.setName("Name_" + value);
 		if (valueRepoId != null)
 		{
-			attributeValue.setM_AttributeValue_ID(valueRepoId);
+			record.setM_AttributeValue_ID(valueRepoId);
 		}
-		save(attributeValue);
-		return attributeValue;
+		save(record);
+		return AttributeDAO.toAttributeListValue(record);
 	}
 
 	public I_M_AttributeValue_Mapping createM_AttributeValue_Mapping(
-			final I_M_AttributeValue attributeValue,
-			final I_M_AttributeValue attributeValueTo)
+			final AttributeListValue attributeValue,
+			final AttributeListValue attributeValueTo)
 	{
 		final I_M_AttributeValue_Mapping attributeValueMapping = InterfaceWrapperHelper.newInstance(I_M_AttributeValue_Mapping.class, context);
-		attributeValueMapping.setM_AttributeValue(attributeValue);
-		attributeValueMapping.setM_AttributeValue_To(attributeValueTo);
+		attributeValueMapping.setM_AttributeValue_ID(attributeValue.getId().getRepoId());
+		attributeValueMapping.setM_AttributeValue_To_ID(attributeValueTo.getId().getRepoId());
 		save(attributeValueMapping);
 		return attributeValueMapping;
 	}

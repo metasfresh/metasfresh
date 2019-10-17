@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.pricing.attributebased;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_ProductPrice_Attribute
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_M_ProductPrice_Attribute extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1987047169L;
+	private static final long serialVersionUID = 1464992206L;
 
     /** Standard Constructor */
     public X_M_ProductPrice_Attribute (Properties ctx, int M_ProductPrice_Attribute_ID, String trxName)
@@ -40,12 +23,10 @@ public class X_M_ProductPrice_Attribute extends org.compiere.model.PO implements
       super (ctx, M_ProductPrice_Attribute_ID, trxName);
       /** if (M_ProductPrice_Attribute_ID == 0)
         {
-			setIsDefault (false);
-// N
+			setIsDefault (false); // N
 			setM_ProductPrice_Attribute_ID (0);
 			setM_ProductPrice_ID (0);
-			setSeqNo (0);
-// @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM M_ProductPrice_Attribute WHERE M_ProductPrice_ID=@M_ProductPrice_ID@
+			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM M_ProductPrice_Attribute WHERE M_ProductPrice_ID=@M_ProductPrice_ID@
         } */
     }
 
@@ -121,6 +102,28 @@ public class X_M_ProductPrice_Attribute extends org.compiere.model.PO implements
 		return false;
 	}
 
+	/** Set Unbestimmte Kapazität.
+		@param IsInfiniteCapacity Unbestimmte Kapazität	  */
+	@Override
+	public void setIsInfiniteCapacity (boolean IsInfiniteCapacity)
+	{
+		throw new IllegalArgumentException ("IsInfiniteCapacity is virtual column");	}
+
+	/** Get Unbestimmte Kapazität.
+		@return Unbestimmte Kapazität	  */
+	@Override
+	public boolean isInfiniteCapacity () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsInfiniteCapacity);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Attribute price.
 		@param M_ProductPrice_Attribute_ID Attribute price	  */
 	@Override
@@ -144,7 +147,7 @@ public class X_M_ProductPrice_Attribute extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public org.compiere.model.I_M_ProductPrice getM_ProductPrice() throws RuntimeException
+	public org.compiere.model.I_M_ProductPrice getM_ProductPrice()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_ProductPrice_ID, org.compiere.model.I_M_ProductPrice.class);
 	}
@@ -195,7 +198,7 @@ public class X_M_ProductPrice_Attribute extends org.compiere.model.PO implements
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceLimit);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -217,14 +220,12 @@ public class X_M_ProductPrice_Attribute extends org.compiere.model.PO implements
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceList);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
 	/** Set Standardpreis.
-		@param PriceStd 
-		Standardpreis
-	  */
+		@param PriceStd Standardpreis	  */
 	@Override
 	public void setPriceStd (java.math.BigDecimal PriceStd)
 	{
@@ -232,14 +233,13 @@ public class X_M_ProductPrice_Attribute extends org.compiere.model.PO implements
 	}
 
 	/** Get Standardpreis.
-		@return Standardpreis
-	  */
+		@return Standardpreis	  */
 	@Override
 	public java.math.BigDecimal getPriceStd () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceStd);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

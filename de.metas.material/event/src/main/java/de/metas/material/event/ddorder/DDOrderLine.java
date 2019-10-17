@@ -68,6 +68,8 @@ public class DDOrderLine
 			@JsonProperty("networkDistributionLineId") final int networkDistributionLineId,
 			@JsonProperty("ddOrderLineId") final int ddOrderLineId)
 	{
+		Preconditions.checkArgument(durationDays >= 0, "The Given parameter durationDays=%s needs to be > 0", "durationDays");
+		
 		this.salesOrderLineId = salesOrderLineId;
 
 		this.productDescriptor = productDescriptor;
@@ -75,7 +77,6 @@ public class DDOrderLine
 
 		this.qty = qty;
 
-		Preconditions.checkArgument(durationDays >= 0, "The Given parameter durationDays=%s needs to be > 0", "durationDays");
 		this.durationDays = durationDays;
 
 		this.networkDistributionLineId = networkDistributionLineId; // can be <= 0 if the DD_Order was created "manually"

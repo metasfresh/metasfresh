@@ -15,7 +15,7 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -948179725L;
+	private static final long serialVersionUID = 190025053L;
 
     /** Standard Constructor */
     public X_M_HU_Assignment (Properties ctx, int M_HU_Assignment_ID, String trxName)
@@ -45,18 +45,6 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_AD_Table getAD_Table()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
-	}
-
-	@Override
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
-	}
 
 	/** Set DB-Tabelle.
 		@param AD_Table_ID 
@@ -177,9 +165,9 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
 		set_ValueFromPO(COLUMNNAME_M_LU_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_LU_HU);
 	}
 
-	/** Set Handling Unit (LU).
+	/** Set LU.
 		@param M_LU_HU_ID 
-		Handling Unit (Loading Unit)
+		Loading Unit
 	  */
 	@Override
 	public void setM_LU_HU_ID (int M_LU_HU_ID)
@@ -190,8 +178,8 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
 			set_Value (COLUMNNAME_M_LU_HU_ID, Integer.valueOf(M_LU_HU_ID));
 	}
 
-	/** Get Handling Unit (LU).
-		@return Handling Unit (Loading Unit)
+	/** Get LU.
+		@return Loading Unit
 	  */
 	@Override
 	public int getM_LU_HU_ID () 
@@ -214,9 +202,9 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
 		set_ValueFromPO(COLUMNNAME_M_TU_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_TU_HU);
 	}
 
-	/** Set Handling Unit (TU).
+	/** Set TU.
 		@param M_TU_HU_ID 
-		Handling Unit of type Tranding Unit
+		Trading Unit
 	  */
 	@Override
 	public void setM_TU_HU_ID (int M_TU_HU_ID)
@@ -227,8 +215,8 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
 			set_Value (COLUMNNAME_M_TU_HU_ID, Integer.valueOf(M_TU_HU_ID));
 	}
 
-	/** Get Handling Unit (TU).
-		@return Handling Unit of type Tranding Unit
+	/** Get TU.
+		@return Trading Unit
 	  */
 	@Override
 	public int getM_TU_HU_ID () 
@@ -313,8 +301,10 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
 		set_ValueFromPO(COLUMNNAME_VHU_ID, de.metas.handlingunits.model.I_M_HU.class, VHU);
 	}
 
-	/** Set CU Handling Unit (VHU).
-		@param VHU_ID CU Handling Unit (VHU)	  */
+	/** Set CU.
+		@param VHU_ID 
+		Customer Unit
+	  */
 	@Override
 	public void setVHU_ID (int VHU_ID)
 	{
@@ -324,8 +314,9 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
 			set_Value (COLUMNNAME_VHU_ID, Integer.valueOf(VHU_ID));
 	}
 
-	/** Get CU Handling Unit (VHU).
-		@return CU Handling Unit (VHU)	  */
+	/** Get CU.
+		@return Customer Unit
+	  */
 	@Override
 	public int getVHU_ID () 
 	{

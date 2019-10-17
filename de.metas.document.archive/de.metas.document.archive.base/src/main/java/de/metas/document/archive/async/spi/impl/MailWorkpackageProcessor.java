@@ -8,14 +8,17 @@ import java.util.StringJoiner;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_DocType;
@@ -47,6 +50,7 @@ import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlate;
 import de.metas.letter.BoilerPlateId;
 import de.metas.letter.BoilerPlateRepository;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
 import de.metas.process.ProcessExecutor;
@@ -70,14 +74,17 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	//
 	// Services
 	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+	private final transient IClientDAO clientsDAO = Services.get(IClientDAO.class);
+	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
 	private final transient IArchiveBL archiveBL = Services.get(IArchiveBL.class);
-	private final transient IClientDAO clientsRepo = Services.get(IClientDAO.class);
+	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final transient IADTableDAO tableDAO=Services.get(IADTableDAO.class);
 
-	private final transient MailService mailService = Adempiere.getBean(MailService.class);
-	private final transient BoilerPlateRepository boilerPlateRepository = Adempiere.getBean(BoilerPlateRepository.class);
-	private final transient DocOutBoundRecipientRepository docOutBoundRecipientRepository = Adempiere.getBean(DocOutBoundRecipientRepository.class);
+	private final transient MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
+	private final transient BoilerPlateRepository boilerPlateRepository = SpringContextHolder.instance.getBean(BoilerPlateRepository.class);
+	private final transient DocOutBoundRecipientRepository docOutBoundRecipientRepository = SpringContextHolder.instance.getBean(DocOutBoundRecipientRepository.class);
 
 	private static final int DEFAULT_SkipTimeoutOnConnectionError = 1000 * 60 * 5; // 5min
 
@@ -149,7 +156,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 				: ProcessExecutor.getCurrentProcessIdOrNull();
 
 		final ClientId adClientId = ClientId.ofRepoId(docOutboundLogRecord.getAD_Client_ID());
-		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(adClientId);
+		final ClientEMailConfig tenantEmailConfig = clientsDAO.getEMailConfigById(adClientId);
 		final DocBaseAndSubType docBaseAndSubType = extractDocBaseAndSubType(docOutboundLogRecord);
 		final Mailbox mailbox = mailService.findMailBox(
 				tenantEmailConfig,
@@ -230,18 +237,21 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 		if (docOutboundLogRecord.getAD_Org_ID() > 0)
 		{
-			fileNameParts.add(docOutboundLogRecord.getAD_Org().getName());
+			final I_AD_Org orgRecord = orgDAO.getById(docOutboundLogRecord.getAD_Org_ID());
+			fileNameParts.add(orgRecord.getName());
 		}
 
 		if (docOutboundLogRecord.getC_DocType_ID() > 0)
 		{
-			final I_C_DocType docType = InterfaceWrapperHelper.translate(docOutboundLogRecord.getC_DocType(), I_C_DocType.class);
-			fileNameParts.add(docType.getName());
+			final I_C_DocType docTypeRecord = docTypeDAO.getById(docOutboundLogRecord.getC_DocType_ID());
+			final I_C_DocType docTypeRecordTrl = InterfaceWrapperHelper.translate(docTypeRecord, I_C_DocType.class);
+			fileNameParts.add(docTypeRecordTrl.getName());
 		}
 		else
 		{
-			final I_AD_Table table = InterfaceWrapperHelper.translate(docOutboundLogRecord.getAD_Table(), I_AD_Table.class);
-			fileNameParts.add(table.getName());
+			final I_AD_Table tableRecord = tableDAO.retrieveTable(AdTableId.ofRepoId(docOutboundLogRecord.getAD_Table_ID()));
+			final I_AD_Table tableRecordTrl = InterfaceWrapperHelper.translate(tableRecord, I_AD_Table.class);
+			fileNameParts.add(tableRecordTrl.getName());
 		}
 
 		if (!isEmpty(docOutboundLogRecord.getDocumentNo(), true))
@@ -274,10 +284,10 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 		if (docOutboundLogRecord.getC_DocType_ID() > 0)
 		{
-			final I_C_DocType docType = docOutboundLogRecord.getC_DocType();
-			if (docType.getAD_BoilerPlate_ID() > 0)
+			final I_C_DocType docTypeRecord = docTypeDAO.getById(docOutboundLogRecord.getC_DocType_ID());
+			if (docTypeRecord.getAD_BoilerPlate_ID() > 0)
 			{
-				final BoilerPlateId boilerPlateId = BoilerPlateId.ofRepoId(docType.getAD_BoilerPlate_ID());
+				final BoilerPlateId boilerPlateId = BoilerPlateId.ofRepoId(docTypeRecord.getAD_BoilerPlate_ID());
 				final BoilerPlate boilerPlate = boilerPlateRepository.getByBoilerPlateId(boilerPlateId, language);
 
 				Loggables.addLog("createEmailParams - Using the boilerPlate with boilerPlateId={} of the C_Doc_Outbound_Log's C_DocType", boilerPlateId);

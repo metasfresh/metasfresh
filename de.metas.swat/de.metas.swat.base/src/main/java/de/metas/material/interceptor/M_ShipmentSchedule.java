@@ -8,7 +8,6 @@ import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 
@@ -40,10 +39,19 @@ import lombok.NonNull;
 @Interceptor(I_M_ShipmentSchedule.class)
 public class M_ShipmentSchedule
 {
-	static final M_ShipmentSchedule INSTANCE = new M_ShipmentSchedule();
+	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+	private final PostMaterialEventService postMaterialEventService;
+	private final ShipmentScheduleReferencedLineFactory referencedLineFactory;
+	private final ModelProductDescriptorExtractor productDescriptorFactory;
 
-	private M_ShipmentSchedule()
+	public M_ShipmentSchedule(
+			@NonNull final PostMaterialEventService postMaterialEventService,
+			@NonNull final ShipmentScheduleReferencedLineFactory referencedLineFactory,
+			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
 	{
+		this.postMaterialEventService = postMaterialEventService;
+		this.referencedLineFactory = referencedLineFactory;
+		this.productDescriptorFactory = productDescriptorFactory;
 	}
 
 	@ModelChange(timings = {
@@ -75,7 +83,6 @@ public class M_ShipmentSchedule
 			return;
 		}
 
-		final PostMaterialEventService postMaterialEventService = Adempiere.getBean(PostMaterialEventService.class);
 		postMaterialEventService.postEventAfterNextCommit(event);
 	}
 
@@ -105,8 +112,6 @@ public class M_ShipmentSchedule
 		final MaterialDescriptor materialDescriptor = //
 				createOrdereMaterialDescriptor(shipmentSchedule);
 
-		final ShipmentScheduleReferencedLineFactory referencedLineFactory = //
-				Adempiere.getBean(ShipmentScheduleReferencedLineFactory.class);
 		final DocumentLineDescriptor documentLineDescriptor = //
 				referencedLineFactory.createFor(shipmentSchedule)
 						.getDocumentLineDescriptor();
@@ -130,7 +135,6 @@ public class M_ShipmentSchedule
 
 		final I_M_ShipmentSchedule oldShipmentSchedule = InterfaceWrapperHelper.createOld(shipmentSchedule, I_M_ShipmentSchedule.class);
 
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final BigDecimal oldOrderedQuantity = shipmentScheduleEffectiveBL.computeQtyOrdered(oldShipmentSchedule);
 
 		final BigDecimal orderedQuantityDelta = materialDescriptor
@@ -166,29 +170,18 @@ public class M_ShipmentSchedule
 		return event;
 	}
 
-	private MaterialDescriptor createOrdereMaterialDescriptor(
-			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	private MaterialDescriptor createOrdereMaterialDescriptor(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = //
-				Services.get(IShipmentScheduleEffectiveBL.class);
-		final BigDecimal orderedQuantity = //
-				shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule);
+		final BigDecimal orderedQuantity = shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule);
+		final Timestamp preparationDate = shipmentScheduleEffectiveBL.getPreparationDate(shipmentSchedule);
+		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(shipmentSchedule);
 
-		final Timestamp preparationDate = //
-				shipmentScheduleEffectiveBL.getPreparationDate(shipmentSchedule);
-
-		final ModelProductDescriptorExtractor productDescriptorFactory = //
-				Adempiere.getBean(ModelProductDescriptorExtractor.class);
-		final ProductDescriptor productDescriptor = //
-				productDescriptorFactory.createProductDescriptor(shipmentSchedule);
-
-		final MaterialDescriptor orderedMaterial = MaterialDescriptor.builder()
+		return MaterialDescriptor.builder()
 				.date(TimeUtil.asInstant(preparationDate))
 				.productDescriptor(productDescriptor)
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
 				.customerId(shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule))
 				.quantity(orderedQuantity)
 				.build();
-		return orderedMaterial;
 	}
 }

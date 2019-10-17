@@ -139,7 +139,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(commissionShareRecord.getC_BPartner_SalesRep_ID());
 
-		final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemId(bPartnerId, SOTrx.PURCHASE);
+		final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemIdOrNull(bPartnerId, SOTrx.PURCHASE);
 		final BPartnerLocationId commissionToLocationId = bPartnerDAO.getCommissionToDefaultLocationIdByBpartnerId(bPartnerId);
 		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, commissionToLocationId, SOTrx.PURCHASE);
 

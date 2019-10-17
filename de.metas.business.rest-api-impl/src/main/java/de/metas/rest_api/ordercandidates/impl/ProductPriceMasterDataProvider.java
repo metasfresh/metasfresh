@@ -69,7 +69,7 @@ final class ProductPriceMasterDataProvider
 		else
 		{
 			// we need to retrieve within the current trx, because maybe the BPartner itself was also only just created
-			pricingSystemId = bpartnersRepo.retrievePricingSystemIdInTrx(bpartnerId, soTrx);
+			pricingSystemId = bpartnersRepo.retrievePricingSystemIdOrNullInTrx(bpartnerId, soTrx);
 			if (pricingSystemId == null)
 			{
 				throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@")

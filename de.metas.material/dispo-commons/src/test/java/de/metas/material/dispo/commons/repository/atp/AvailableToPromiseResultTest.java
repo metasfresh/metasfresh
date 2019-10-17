@@ -1,29 +1,26 @@
 package de.metas.material.dispo.commons.repository.atp;
 
-import static de.metas.material.event.EventTestHelper.BEFORE_NOW;
-import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
-import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.List;
 
-import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.material.commons.attributes.AttributesKeyMatcher;
+import de.metas.material.commons.attributes.AttributesKeyPattern;
+import de.metas.material.commons.attributes.AttributesKeyPatterns;
+import de.metas.material.commons.attributes.ExcludeAttributesKeyMatcher;
 import de.metas.material.dispo.commons.repository.atp.AddToResultGroupRequest.AddToResultGroupRequestBuilder;
-import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.util.collections.CollectionUtils;
 
 /*
  * #%L
@@ -49,205 +46,522 @@ import de.metas.util.collections.CollectionUtils;
 
 public class AvailableToPromiseResultTest
 {
-	private static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1, 2);
-	private static final AttributesKey STORAGE_ATTRIBUTES_KEY_OTHER = AttributesKey.ofAttributeValueIds(1, 2, 3);
+	private static final String delim = AttributesKey.ATTRIBUTES_KEY_DELIMITER;
+	private static final ZonedDateTime NOW = ZonedDateTime.now();
 
-	private static final Instant NOW = Instant.now();
-
-	@Before
-	public void init()
+	private static AttributesKeyPattern pattern(final String attributesKeyString)
 	{
-		AdempiereTestHelper.get().init();
+		return AttributesKeyPatterns.ofAttributeKey(AttributesKey.ofString(attributesKeyString));
 	}
 
-	private I_MD_Candidate_ATP_QueryResult createStockRecord(WarehouseId warehouseId)
+	private static AttributesKeyMatcher matcher(final String attributesKeyString)
 	{
-		final I_MD_Candidate_ATP_QueryResult viewRecord = newInstance(I_MD_Candidate_ATP_QueryResult.class);
-		viewRecord.setM_Product_ID(PRODUCT_ID);
-		viewRecord.setM_Warehouse_ID(warehouseId.getRepoId());
-		viewRecord.setDateProjected(TimeUtil.asTimestamp(BEFORE_NOW));
-		viewRecord.setStorageAttributesKey(STORAGE_ATTRIBUTES_KEY.getAsString());
-		viewRecord.setQty(BigDecimal.TEN);
-		viewRecord.setSeqNo(1);
-		save(viewRecord);
-
-		return viewRecord;
+		return AttributesKeyPatterns.matching(AttributesKey.ofString(attributesKeyString));
 	}
 
-	@Test
-	public void createEmptyResultForQuery()
+	@Nested
+	public static class bucket_isMatching
 	{
-		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery
-				.of(AvailableToPromiseQuery.builder()
-						.productId(20)
-						.productId(10)
-						.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
-						.storageAttributesKey(STORAGE_ATTRIBUTES_KEY_OTHER)
-						.date(TimeUtil.asZonedDateTime(NOW))
-						.build());
+		@Test
+		public void single_storageAttributesKey()
+		{
+			final AvailableToPromiseResultBucket bucket = AvailableToPromiseResultBucket.builder()
+					.product(ProductClassifier.specific(100001))
+					.warehouse(WarehouseClassifier.specific(WarehouseId.ofRepoId(100)))
+					.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
+					.storageAttributesKeyMatcher(AttributesKeyPatterns.matching(AttributesKey.ofString("1")))
+					.build();
 
-		final List<AvailableToPromiseResultGroup> emptyResults = AvailableToPromiseResult.createEmptyWithPredefinedBuckets(query).getResultGroups();
+			final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
+					.productId(100001)
+					.warehouseId(WarehouseId.ofRepoId(100))
+					.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
+					.qty(BigDecimal.ONE)
+					.seqNo(1)
+					.date(NOW.toInstant());
 
-		assertThat(emptyResults).hasSize(4);
+			assertThat(bucket.isMatching(requestBuilder.storageAttributesKey(AttributesKey.ofString("1")).build())).isTrue();
+			assertThat(bucket.isMatching(requestBuilder.storageAttributesKey(AttributesKey.ofString("11")).build())).isFalse();
 
-		final AvailableToPromiseResultGroup firstResult = emptyResults.get(0);
-		assertThat(firstResult.getProductId()).isEqualTo(20);
-		assertThat(firstResult.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY);
-		assertThat(firstResult.getQty()).isEqualByComparingTo("0");
+			assertThat(bucket.isMatching(requestBuilder.storageAttributesKey(AttributesKey.ofString("1" + delim + "2")).build()))
+					.as("Should match because the AvailableToPromiseResultGroup's storageAttributesKey <%s> is included in the given storageAttributesKeyToMatch <%s>",
+							bucket.getStorageAttributesKeyMatcher(),
+							AttributesKey.ofString("1" + delim + "2"))
+					.isTrue();
+		}
 
-		final AvailableToPromiseResultGroup secondResult = emptyResults.get(1);
-		assertThat(secondResult.getProductId()).isEqualTo(20);
-		assertThat(secondResult.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY_OTHER);
-		assertThat(secondResult.getQty()).isEqualByComparingTo("0");
+		@Test
+		public void two_storageAttributesKeys()
+		{
+			final AvailableToPromiseResultBucket bucket = AvailableToPromiseResultBucket.builder()
+					.product(ProductClassifier.specific(100001))
+					.warehouse(WarehouseClassifier.specific(WarehouseId.ofRepoId(100)))
+					.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
+					.storageAttributesKeyMatcher(AttributesKeyPatterns.matching(AttributesKey.ofString("1" + delim + "3")))
+					.build();
 
-		final AvailableToPromiseResultGroup thirdResult = emptyResults.get(2);
-		assertThat(thirdResult.getProductId()).isEqualTo(10);
-		assertThat(thirdResult.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY);
-		assertThat(thirdResult.getQty()).isEqualByComparingTo("0");
+			final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
+					.productId(100001)
+					.warehouseId(WarehouseId.ofRepoId(100))
+					.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
+					.qty(BigDecimal.ONE)
+					.seqNo(1)
+					.date(NOW.toInstant());
 
-		final AvailableToPromiseResultGroup fourthResult = emptyResults.get(3);
-		assertThat(fourthResult.getProductId()).isEqualTo(10);
-		assertThat(fourthResult.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY_OTHER);
-		assertThat(fourthResult.getQty()).isEqualByComparingTo("0");
+			assertThat(bucket.isMatching(requestBuilder.storageAttributesKey(AttributesKey.ofString("1" + delim + "3")).build())).isTrue();
+			assertThat(bucket.isMatching(requestBuilder.storageAttributesKey(AttributesKey.ofString("1")).build())).isFalse();
+
+			assertThat(bucket.isMatching(requestBuilder.storageAttributesKey(AttributesKey.ofString("10" + delim + "1" + delim + "3")).build())).isTrue();
+
+			final AttributesKey keyWithOtherElementInTheMiddle = AttributesKey.ofString("1" + delim + "2" + delim + "3");
+			assertThat(bucket.isMatching(requestBuilder.storageAttributesKey(keyWithOtherElementInTheMiddle).build()))
+					.as("Shall match because the elements of the AvailableToPromiseResultGroup's storageAttributesKey <%s> contain every element of the given storageAttributesKeyToMatch <%s>",
+							bucket.getStorageAttributesKeyMatcher(),
+							keyWithOtherElementInTheMiddle)
+					.isTrue();
+		}
 	}
 
-	@Test
-	public void createEmptyResultForQuery_NoStrorageAttributesKey()
+	@Nested
+	public static class createEmptyWithPredefinedBuckets
 	{
-		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.of(AvailableToPromiseQuery.builder()
-				.productId(10)
-				.date(TimeUtil.asZonedDateTime(NOW))
-				.build());
+		@Test
+		public void with_2products_2attributeKeys()
+		{
+			final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery
+					.of(AvailableToPromiseQuery.builder()
+							.productId(20)
+							.productId(10)
+							.storageAttributesKeyPattern(pattern("1" + delim + "2"))
+							.storageAttributesKeyPattern(pattern("1" + delim + "2" + delim + "3"))
+							.date(NOW)
+							.build());
 
-		final List<AvailableToPromiseResultGroup> emptyResults = AvailableToPromiseResult.createEmptyWithPredefinedBuckets(query).getResultGroups();
+			final AvailableToPromiseResultBuilder resultBuilder = AvailableToPromiseResultBuilder.createEmptyWithPredefinedBuckets(query);
 
-		assertThat(emptyResults).hasSize(1);
+			//
+			// Check buckets
+			final List<AvailableToPromiseResultBucket> emptyBuckets = resultBuilder.getBuckets();
+			assertThat(emptyBuckets).hasSize(4);
+			/* bucket 1 */ {
+				final AvailableToPromiseResultBucket bucket = emptyBuckets.get(0);
+				assertThat(bucket.getProduct().getProductId()).isEqualTo(20);
+				assertThat(bucket.getStorageAttributesKeyMatcher()).isEqualTo(matcher("1" + delim + "2"));
+				assertThat(bucket.isZeroQty()).isTrue();
+			}
+			/* bucket 2 */ {
+				final AvailableToPromiseResultBucket bucket = emptyBuckets.get(1);
+				assertThat(bucket.getProduct().getProductId()).isEqualTo(20);
+				assertThat(bucket.getStorageAttributesKeyMatcher()).isEqualTo(matcher("1" + delim + "2" + delim + "3"));
+				assertThat(bucket.isZeroQty()).isTrue();
+			}
+			/* bucket 3 */ {
+				final AvailableToPromiseResultBucket bucket = emptyBuckets.get(2);
+				assertThat(bucket.getProduct().getProductId()).isEqualTo(10);
+				assertThat(bucket.getStorageAttributesKeyMatcher()).isEqualTo(matcher("1" + delim + "2"));
+				assertThat(bucket.isZeroQty()).isTrue();
+			}
+			/* bucket 4 */ {
+				final AvailableToPromiseResultBucket bucket = emptyBuckets.get(3);
+				assertThat(bucket.getProduct().getProductId()).isEqualTo(10);
+				assertThat(bucket.getStorageAttributesKeyMatcher()).isEqualTo(matcher("1" + delim + "2" + delim + "3"));
+				assertThat(bucket.isZeroQty()).isTrue();
+			}
 
-		final AvailableToPromiseResultGroup firstResult = emptyResults.get(0);
-		assertThat(firstResult.getProductId()).isEqualTo(10);
-		assertThat(firstResult.getStorageAttributesKey()).isSameAs(AttributesKey.ALL);
-		assertThat(firstResult.getQty()).isEqualByComparingTo("0");
+			//
+			// Check auto-generated empty groups
+			final ImmutableList<AvailableToPromiseResultGroup> emptyGroups = resultBuilder.build().getResultGroups();
+			assertThat(emptyGroups).hasSize(4);
+			/* group 1 */ {
+				final AvailableToPromiseResultGroup group = emptyGroups.get(0);
+				assertThat(group.getProductId()).isEqualTo(20);
+				assertThat(group.getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("1" + delim + "2"));
+				assertThat(group.getQty()).isZero();
+			}
+			/* group 2 */ {
+				final AvailableToPromiseResultGroup group = emptyGroups.get(1);
+				assertThat(group.getProductId()).isEqualTo(20);
+				assertThat(group.getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("1" + delim + "2" + delim + "3"));
+				assertThat(group.getQty()).isZero();
+			}
+			/* group 3 */ {
+				final AvailableToPromiseResultGroup group = emptyGroups.get(2);
+				assertThat(group.getProductId()).isEqualTo(10);
+				assertThat(group.getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("1" + delim + "2"));
+				assertThat(group.getQty()).isZero();
+			}
+			/* group 4 */ {
+				final AvailableToPromiseResultGroup group = emptyGroups.get(3);
+				assertThat(group.getProductId()).isEqualTo(10);
+				assertThat(group.getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("1" + delim + "2" + delim + "3"));
+				assertThat(group.getQty()).isZero();
+			}
+		}
 
+		@Test
+		public void without_attributeKeys()
+		{
+			final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.of(AvailableToPromiseQuery.builder()
+					.productId(10)
+					.date(NOW)
+					.build());
+
+			final AvailableToPromiseResultBuilder resultBuilder = AvailableToPromiseResultBuilder.createEmptyWithPredefinedBuckets(query);
+			final List<AvailableToPromiseResultBucket> emptyBuckets = resultBuilder.getBuckets();
+			assertThat(emptyBuckets).hasSize(1);
+			{
+				final AvailableToPromiseResultBucket bucket = emptyBuckets.get(0);
+				assertThat(bucket.getProduct().getProductId()).isEqualTo(10);
+				assertThat(bucket.getStorageAttributesKeyMatcher()).isSameAs(AttributesKeyPatterns.matchingAll());
+				assertThat(bucket.isZeroQty()).isTrue();
+			}
+
+			//
+			// Check auto-generated empty groups
+			final ImmutableList<AvailableToPromiseResultGroup> emptyGroups = resultBuilder.build().getResultGroups();
+			assertThat(emptyGroups).hasSize(1);
+			{
+				final AvailableToPromiseResultGroup group = emptyGroups.get(0);
+				assertThat(group.getProductId()).isEqualTo(10);
+				assertThat(group.getStorageAttributesKey()).isSameAs(AttributesKey.ALL);
+				assertThat(group.getQty()).isZero();
+			}
+		}
+
+		@Test
+		public void with_ALL_attributeWildcard_OTHERS()
+		{
+			final AttributeId attributeId = AttributeId.ofRepoId(111);
+
+			final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery
+					.of(AvailableToPromiseQuery.builder()
+							.productId(10)
+							.storageAttributesKeyPattern(AttributesKeyPattern.ALL)
+							.storageAttributesKeyPattern(AttributesKeyPattern.attributeId(attributeId))
+							.storageAttributesKeyPattern(AttributesKeyPattern.OTHER)
+							.date(NOW)
+							.build());
+
+			final AvailableToPromiseResultBuilder resultBuilder = AvailableToPromiseResultBuilder.createEmptyWithPredefinedBuckets(query);
+
+			//
+			// Check buckets
+			final List<AvailableToPromiseResultBucket> emptyBuckets = resultBuilder.getBuckets();
+			assertThat(emptyBuckets).hasSize(3);
+			/* bucket 1 */ {
+				final AvailableToPromiseResultBucket bucket = emptyBuckets.get(0);
+				assertThat(bucket.getStorageAttributesKeyMatcher()).isSameAs(AttributesKeyPatterns.matchingAll());
+				assertThat(bucket.isZeroQty()).isTrue();
+			}
+			/* bucket 2 */ {
+				final AvailableToPromiseResultBucket bucket = emptyBuckets.get(1);
+				assertThat(bucket.getStorageAttributesKeyMatcher()).isEqualTo(AttributesKeyPatterns.matching(AttributesKeyPattern.attributeId(attributeId)));
+				assertThat(bucket.isZeroQty()).isTrue();
+			}
+			/* bucket 3 */ {
+				final AvailableToPromiseResultBucket bucket = emptyBuckets.get(2);
+				assertThat(bucket.getProduct().getProductId()).isEqualTo(10);
+				assertThat(bucket.getStorageAttributesKeyMatcher()).isInstanceOf(ExcludeAttributesKeyMatcher.class);
+				assertThat(bucket.isZeroQty()).isTrue();
+			}
+
+			//
+			// Check auto-generated empty groups
+			final ImmutableList<AvailableToPromiseResultGroup> emptyGroups = resultBuilder.build().getResultGroups();
+			assertThat(emptyGroups).hasSize(2);
+			// NOTE: we expect no group from bucket2 because it was a wildcard matching attribute which cannot generate an empty group
+			/* group 1 (from bucket1) */ {
+				final AvailableToPromiseResultGroup group = emptyGroups.get(0);
+				assertThat(group.getStorageAttributesKey()).isSameAs(AttributesKey.ALL);
+				assertThat(group.getQty()).isZero();
+			}
+			/* group 2 (from bucket3) */ {
+				final AvailableToPromiseResultGroup group = emptyGroups.get(1);
+				assertThat(group.getStorageAttributesKey()).isSameAs(AttributesKey.OTHER);
+				assertThat(group.getQty()).isZero();
+			}
+		}
 	}
 
-	@Test
-	public void addQtyToMatchedGroups()
+	@Nested
+	public static class createEmpty
 	{
-		final AvailableToPromiseResultGroup emptyResult1 = AvailableToPromiseResultGroup.builder()
-				.productId(PRODUCT_ID)
-				.storageAttributesKey(AttributesKey.ofAttributeValueIds(1))
-				.warehouseId(WarehouseId.ofRepoId(100))
-				.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
-				.build();
-		final AvailableToPromiseResultGroup emptyResult2 = AvailableToPromiseResultGroup.builder()
-				.productId(PRODUCT_ID)
-				.storageAttributesKey(AttributesKey.ofAttributeValueIds(2))
-				.warehouseId(WarehouseId.ofRepoId(100))
-				.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
-				.build();
-		final AvailableToPromiseResult stockResult = new AvailableToPromiseResult(ImmutableList.of(emptyResult1, emptyResult2));
+		@Test
+		public void afterCall_expectOneBucket_NoAutoGeneratedGroups()
+		{
+			final AvailableToPromiseResultBuilder resultBuilder = AvailableToPromiseResultBuilder.createEmpty();
+			final List<AvailableToPromiseResultBucket> emptyBuckets = resultBuilder.getBuckets();
+			assertThat(emptyBuckets).hasSize(1);
+			/* bucket 1 - accepting everything */ {
+				final AvailableToPromiseResultBucket bucket = emptyBuckets.get(0);
+				assertThat(bucket.getWarehouse()).isSameAs(WarehouseClassifier.any());
+				assertThat(bucket.getProduct()).isSameAs(ProductClassifier.any());
+				assertThat(bucket.getBpartner()).isSameAs(BPartnerClassifier.any());
+				assertThat(bucket.getStorageAttributesKeyMatcher()).isSameAs(AttributesKeyPatterns.matchingAll());
+				assertThat(bucket.isZeroQty()).isTrue();
+			}
 
-		final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
-				.productId(PRODUCT_ID)
-				.warehouseId(WarehouseId.ofRepoId(100))
-				.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
-				.qty(BigDecimal.ONE)
-				.seqNo(1)
-				.date(NOW);
-
-		stockResult.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1, 2)).build());
-		stockResult.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1, 2)).build());
-		stockResult.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(2)).build());
-
-		final List<AvailableToPromiseResultGroup> resultGroups = stockResult.getResultGroups();
-		assertThat(resultGroups).hasSize(2);
-
-		assertThat(resultGroups.get(0).getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(resultGroups.get(0).getStorageAttributesKey()).isEqualTo(AttributesKey.ofAttributeValueIds(1));
-		assertThat(resultGroups.get(0).getQty()).isEqualByComparingTo("2");
-
-		assertThat(resultGroups.get(1).getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(resultGroups.get(1).getStorageAttributesKey()).isEqualTo(AttributesKey.ofAttributeValueIds(2));
-		assertThat(resultGroups.get(1).getQty()).isEqualByComparingTo("3");
+			//
+			// Make sure no auto-generated groups
+			final ImmutableList<AvailableToPromiseResultGroup> emptyGroups = resultBuilder.build().getResultGroups();
+			assertThat(emptyGroups).isEmpty();
+		}
 	}
 
-	@Test
-	public void ResultGroup_matches_with_single_storageAttributesKey()
+	@Nested
+	public static class addQtyToAllMatchingGroups
 	{
-		final AvailableToPromiseResultGroup group = AvailableToPromiseResultGroup.builder()
-				.productId(PRODUCT_ID)
-				.warehouseId(WarehouseId.ofRepoId(100))
-				.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
-				.storageAttributesKey(AttributesKey.ofAttributeValueIds(1))
-				.build();
+		@Test
+		public void one_bucket_ok()
+		{
+			final AttributesKey attributesKey = AttributesKey.ofString("1" + delim + "2");
 
-		final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
-				.productId(PRODUCT_ID)
-				.warehouseId(WarehouseId.ofRepoId(100))
-				.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
-				.qty(BigDecimal.ONE)
-				.seqNo(1)
-				.date(NOW);
+			final AvailableToPromiseResultBuilder result = new AvailableToPromiseResultBuilder(ImmutableList.of(
+					AvailableToPromiseResultBucket.builder()
+							.bpartner(BPartnerClassifier.any())
+							.product(ProductClassifier.specific(100001))
+							.storageAttributesKeyMatcher(AttributesKeyPatterns.matching(attributesKey))
+							.build()));
 
-		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1)).build())).isTrue();
-		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(11)).build())).isFalse();
+			result.addQtyToAllMatchingGroups(AddToResultGroupRequest.builder()
+					.bpartner(BPartnerClassifier.any())
+					.warehouseId(WarehouseId.ofRepoId(1))
+					.productId(100001)
+					.storageAttributesKey(attributesKey)
+					.qty(new BigDecimal("10"))
+					.date(NOW.toInstant())
+					.seqNo(1)
+					.build());
 
-		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(STORAGE_ATTRIBUTES_KEY).build()))
-				.as("Should match because the AvailableToPromiseResultGroup's storageAttributesKey <%s> is included in the given storageAttributesKeyToMatch <%s>",
-						group.getStorageAttributesKey(),
-						STORAGE_ATTRIBUTES_KEY)
-				.isTrue();
+			final ImmutableList<AvailableToPromiseResultGroup> groups = result.build().getResultGroups();
+			assertThat(groups).hasSize(1);
+
+			final AvailableToPromiseResultGroup group = groups.get(0);
+			assertThat(group.getProductId()).isEqualTo(100001);
+			assertThat(group.getQty()).isEqualByComparingTo("10");
+			assertThat(group.getStorageAttributesKey()).isEqualTo(attributesKey);
+		}
+
+		@Test
+		public void one_bucket_not_matching()
+		{
+			final AvailableToPromiseResultBuilder result = new AvailableToPromiseResultBuilder(ImmutableList.of(
+					AvailableToPromiseResultBucket.builder()
+							.product(ProductClassifier.specific(100001))
+							.storageAttributesKeyMatcher(AttributesKeyPatterns.matching(AttributesKey.ofString("1" + delim + "2")))
+							.build()));
+
+			final AddToResultGroupRequest request = AddToResultGroupRequest.builder()
+					.bpartner(BPartnerClassifier.any())
+					.warehouseId(WarehouseId.ofRepoId(1))
+					.productId(100001)
+					.storageAttributesKey(AttributesKey.ofString("1" + delim + "3"))
+					.qty(new BigDecimal("10"))
+					.date(NOW.toInstant())
+					.seqNo(1)
+					.build();
+
+			assertThatThrownBy(() -> result.addQtyToAllMatchingGroups(request))
+					.hasMessageStartingWith("No matching group found for ");
+		}
+
+		@Test
+		public void two_buckets()
+		{
+			final AvailableToPromiseResultBuilder resultBuilder;
+			{
+				final AvailableToPromiseResultBucket emptyBucket1 = AvailableToPromiseResultBucket.builder()
+						.product(ProductClassifier.specific(100001))
+						.storageAttributesKeyMatcher(AttributesKeyPatterns.matching(AttributesKey.ofString("1")))
+						.warehouse(WarehouseClassifier.specific(WarehouseId.ofRepoId(100)))
+						.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
+						.build();
+
+				final AvailableToPromiseResultBucket emptyBucket2 = AvailableToPromiseResultBucket.builder()
+						.product(ProductClassifier.specific(100001))
+						.storageAttributesKeyMatcher(AttributesKeyPatterns.matching(AttributesKey.ofString("2")))
+						.warehouse(WarehouseClassifier.specific(WarehouseId.ofRepoId(100)))
+						.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
+						.build();
+
+				resultBuilder = new AvailableToPromiseResultBuilder(ImmutableList.of(emptyBucket1, emptyBucket2));
+			}
+
+			final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
+					.productId(100001)
+					.warehouseId(WarehouseId.ofRepoId(100))
+					.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
+					.qty(BigDecimal.ONE)
+					.seqNo(1)
+					.date(NOW.toInstant());
+
+			resultBuilder.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofString("1" + delim + "2")).build());
+			resultBuilder.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofString("1" + delim + "2")).build());
+			resultBuilder.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofString("2")).build());
+
+			final List<AvailableToPromiseResultGroup> groups = resultBuilder.build().getResultGroups();
+			assertThat(groups).hasSize(2);
+
+			assertThat(groups.get(0).getProductId()).isEqualTo(100001);
+			assertThat(groups.get(0).getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("1"));
+			assertThat(groups.get(0).getQty()).isEqualByComparingTo("2");
+
+			assertThat(groups.get(1).getProductId()).isEqualTo(100001);
+			assertThat(groups.get(1).getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("2"));
+			assertThat(groups.get(1).getQty()).isEqualByComparingTo("3");
+		}
+
+		@Test
+		public void all_attributeWildcard_others_buckets()
+		{
+			final AvailableToPromiseResultBuilder result = AvailableToPromiseResultBuilder
+					.createEmptyWithPredefinedBuckets(AvailableToPromiseMultiQuery
+							.of(AvailableToPromiseQuery.builder()
+									.productId(10)
+									.storageAttributesKeyPattern(AttributesKeyPattern.ALL)
+									.storageAttributesKeyPattern(AttributesKeyPattern.attributeId(AttributeId.ofRepoId(111)))
+									.storageAttributesKeyPattern(AttributesKeyPattern.OTHER)
+									.date(NOW)
+									.build()));
+
+			final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
+					.bpartner(BPartnerClassifier.any())
+					.warehouseId(WarehouseId.ofRepoId(1))
+					.productId(10)
+					// .storageAttributesKey(attributesKey)
+					// .qty(qty)
+					.date(NOW.minusMinutes(10).toInstant())
+					.seqNo(1);
+
+			result.addQtyToAllMatchingGroups(requestBuilder
+					.qty(new BigDecimal("100"))
+					.storageAttributesKey(AttributesKey.ofString("111=1"))
+					.build());
+			result.addQtyToAllMatchingGroups(requestBuilder
+					.qty(new BigDecimal("50"))
+					.storageAttributesKey(AttributesKey.ofString("111=2"))
+					.build());
+			result.addQtyToAllMatchingGroups(requestBuilder
+					.qty(new BigDecimal("30"))
+					.storageAttributesKey(AttributesKey.ofString("111=3"))
+					.build());
+			result.addQtyToAllMatchingGroups(requestBuilder
+					.qty(new BigDecimal("10"))
+					.storageAttributesKey(AttributesKey.ofString("222=1"))
+					.build());
+
+			final ImmutableList<AvailableToPromiseResultGroup> groups = result.build().getResultGroups();
+			assertThat(groups).hasSize(5);
+
+			/* group 1 */ {
+				final AvailableToPromiseResultGroup group = groups.get(0);
+				assertThat(group.getStorageAttributesKey()).isSameAs(AttributesKey.ALL);
+				assertThat(group.getQty()).isEqualByComparingTo("190");
+			}
+			/* group 2 */ {
+				final AvailableToPromiseResultGroup group = groups.get(1);
+				assertThat(group.getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("111=1"));
+				assertThat(group.getQty()).isEqualByComparingTo("100");
+			}
+			/* group 3 */ {
+				final AvailableToPromiseResultGroup group = groups.get(2);
+				assertThat(group.getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("111=2"));
+				assertThat(group.getQty()).isEqualByComparingTo("50");
+			}
+			/* group 4 */ {
+				final AvailableToPromiseResultGroup group = groups.get(3);
+				assertThat(group.getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("111=3"));
+				assertThat(group.getQty()).isEqualByComparingTo("30");
+			}
+			/* group 5 */ {
+				final AvailableToPromiseResultGroup group = groups.get(4);
+				assertThat(group.getStorageAttributesKey()).isSameAs(AttributesKey.OTHER);
+				assertThat(group.getQty()).isEqualByComparingTo("10");
+			}
+		}
 	}
 
-	@Test
-	public void isMatchting_with_two_storageAttributesKeys()
+	@Nested
+	public static class addToNewGroupIfFeasible
 	{
-		final AvailableToPromiseResultGroup group = AvailableToPromiseResultGroup.builder()
-				.productId(PRODUCT_ID)
-				.warehouseId(WarehouseId.ofRepoId(100))
-				.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
-				.storageAttributesKey(AttributesKey.ofAttributeValueIds(1, 3))
-				.build();
+		@Test
+		public void addOneTime_expect_OneGroup()
+		{
+			final AvailableToPromiseResultBuilder result = AvailableToPromiseResultBuilder.createEmpty();
 
-		final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
-				.productId(PRODUCT_ID)
-				.warehouseId(WarehouseId.ofRepoId(100))
-				.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
-				.qty(BigDecimal.ONE)
-				.seqNo(1)
-				.date(NOW);
+			final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
+					.bpartner(BPartnerClassifier.any())
+					.warehouseId(WarehouseId.ofRepoId(1))
+					.productId(10)
+					.date(NOW.minusMinutes(10).toInstant())
+					.seqNo(1);
 
-		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1, 3)).build())).isTrue();
-		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1)).build())).isFalse();
+			result.addToNewGroupIfFeasible(requestBuilder
+					.qty(new BigDecimal("100"))
+					.storageAttributesKey(AttributesKey.ofString("111=1"))
+					.build());
 
-		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(10, 1, 3)).build())).isTrue();
+			final ImmutableList<AvailableToPromiseResultGroup> groups = result.build().getResultGroups();
+			assertThat(groups).hasSize(1);
+			/* group 1 */ {
+				final AvailableToPromiseResultGroup group = groups.get(0);
+				assertThat(group.getBpartner()).isSameAs(BPartnerClassifier.any());
+				assertThat(group.getWarehouse()).isEqualTo(WarehouseClassifier.specific(WarehouseId.ofRepoId(1)));
+				assertThat(group.getProductId()).isEqualTo(10);
+				assertThat(group.getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("111=1"));
+				assertThat(group.getQty()).isEqualByComparingTo("100");
+			}
+		}
 
-		final AttributesKey keyWithOtherElementInTheMiddle = AttributesKey.ofAttributeValueIds(1, 2, 3);
-		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(keyWithOtherElementInTheMiddle).build()))
-				.as("Shall match because the elements of the AvailableToPromiseResultGroup's storageAttributesKey <%s> contain every element of the given storageAttributesKeyToMatch <%s>",
-						group.getStorageAttributesKey(), keyWithOtherElementInTheMiddle)
-				.isTrue();
+		@Test
+		public void addThreeTimes_expect_TwoGroups()
+		{
+			final AvailableToPromiseResultBuilder result = AvailableToPromiseResultBuilder.createEmpty();
+
+			final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
+					.bpartner(BPartnerClassifier.any())
+					.warehouseId(WarehouseId.ofRepoId(1))
+					.productId(10)
+					.date(NOW.minusMinutes(10).toInstant())
+					.seqNo(1);
+
+			result.addToNewGroupIfFeasible(requestBuilder
+					.qty(new BigDecimal("100"))
+					.storageAttributesKey(AttributesKey.ofString("111=1"))
+					.build());
+			result.addToNewGroupIfFeasible(requestBuilder
+					.qty(new BigDecimal("40"))
+					.storageAttributesKey(AttributesKey.ofString("111=2"))
+					.build());
+			result.addToNewGroupIfFeasible(requestBuilder
+					.qty(new BigDecimal("1"))
+					.storageAttributesKey(AttributesKey.ofString("111=1"))
+					.build());
+
+			{
+				final ImmutableList<AvailableToPromiseResultGroup> groups = result.build().getResultGroups();
+				assertThat(groups).hasSize(2);
+
+				/* group 1 */ {
+					final AvailableToPromiseResultGroup group = groups.get(0);
+					assertThat(group.getBpartner()).isSameAs(BPartnerClassifier.any());
+					assertThat(group.getWarehouse()).isEqualTo(WarehouseClassifier.specific(WarehouseId.ofRepoId(1)));
+					assertThat(group.getProductId()).isEqualTo(10);
+					assertThat(group.getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("111=1"));
+					assertThat(group.getQty()).isEqualByComparingTo("101");
+				}
+
+				/* group 2 */ {
+					final AvailableToPromiseResultGroup group = groups.get(1);
+					assertThat(group.getBpartner()).isSameAs(BPartnerClassifier.any());
+					assertThat(group.getWarehouse()).isEqualTo(WarehouseClassifier.specific(WarehouseId.ofRepoId(1)));
+					assertThat(group.getProductId()).isEqualTo(10);
+					assertThat(group.getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("111=2"));
+					assertThat(group.getQty()).isEqualByComparingTo("40");
+				}
+
+			}
+		}
+
 	}
-
-	@Test
-	public void addQtyToAllMatchingGroups()
-	{
-		final I_MD_Candidate_ATP_QueryResult stockRecord = createStockRecord(WAREHOUSE_ID);
-
-		final AvailableToPromiseResult result = new AvailableToPromiseResult(ImmutableList.of(
-				AvailableToPromiseResultGroup.builder()
-						.productId(PRODUCT_ID)
-						.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
-						.bpartner(BPartnerClassifier.any())
-						.build()));
-
-		final AddToResultGroupRequest resultAddRequest = AvailableToPromiseRepository.createAddToResultGroupRequest(stockRecord);
-		result.addQtyToAllMatchingGroups(resultAddRequest);
-
-		final AvailableToPromiseResultGroup singleElement = CollectionUtils.singleElement(result.getResultGroups());
-		assertThat(singleElement.getProductId()).isEqualTo(stockRecord.getM_Product_ID());
-		assertThat(singleElement.getQty()).isEqualByComparingTo(stockRecord.getQty());
-		assertThat(singleElement.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY);
-	}
-
 }

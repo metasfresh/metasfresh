@@ -24,17 +24,22 @@ package de.metas.ordercandidate.api;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Properties;
-
 import org.compiere.model.PO;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
-import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.freighcost.FreightCostRule;
+import de.metas.order.BPartnerOrderParams;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
+import de.metas.order.InvoiceRule;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandCreator;
+import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
+import de.metas.shipping.ShipperId;
 import de.metas.util.ISingletonService;
 
 /**
@@ -47,8 +52,6 @@ public interface IOLCandBL extends ISingletonService
 
 	/**
 	 * Creates and updates orders.
-	 *
-	 * @param processor
 	 */
 	void process(OLCandProcessorDescriptor processor);
 
@@ -72,21 +75,32 @@ public interface IOLCandBL extends ISingletonService
 	 */
 	IPricingResult computePriceActual(I_C_OLCand olCand, BigDecimal qtyOverride, PricingSystemId pricingSystemIdOverride, LocalDate date);
 
-	/**
-	 * Returning the pricing system to use for the given {@code olCand}.
-	 * <ul>
-	 * <li>if C_OLCand.M_PricingSystem_ID > 0, then we return that</li>
-	 * <li>else, if the processor has a pricing system set, then we return that</li>
-	 * <li>else, if the C_OLCand has a bill partner set, then we return that partner's (or her C_BP_Group's) pricing system</li>
-	 * <li>else we return the C_OLCand's C_BPartner's (or her C_BP_Group's) pricing system</li>
-	 * </ul>
-	 *
-	 * @param olCand
-	 * @param orderDefaults
-	 * @return
-	 * @see IBPartnerDAO#retrievePricingSystemId(Properties, int, boolean, String)
-	 */
-	PricingSystemId getPricingSystemId(I_C_OLCand olCand, OLCandOrderDefaults orderDefaults);
-
 	AttachmentEntry addAttachment(OLCandQuery olCandQuery, AttachmentEntryCreateRequest attachmentEntryCreateRequest);
+
+	DeliveryRule getDeliveryRule(I_C_OLCand record, BPartnerOrderParams bPartnerOrderParams, OLCandOrderDefaults orderDefaults);
+
+	DeliveryViaRule getDeliveryViaRule(I_C_OLCand record, BPartnerOrderParams bPartnerOrderParams, OLCandOrderDefaults orderDefaults);
+
+	FreightCostRule getFreightCostRule(BPartnerOrderParams params, OLCandOrderDefaults orderDefaults);
+
+	InvoiceRule getInvoiceRule(BPartnerOrderParams params, OLCandOrderDefaults orderDefaults);
+
+	PaymentRule getPaymentRule(BPartnerOrderParams params, OLCandOrderDefaults orderDefaults);
+
+	PaymentTermId getPaymentTermId(BPartnerOrderParams params, OLCandOrderDefaults orderDefaults);
+
+	/**
+	 * Return the pricing system to use for the given {@code olCand}.
+	 * <ul>
+	 * <li>if C_OLCand.M_PricingSystem_ID > 0, then return that</li>
+	 * <li>else return the bPartnerOrderParams's pricing system</li>
+	 * <li>else, if the processor has a pricing system set, then return that</li>
+	 * </ul>
+	 */
+	PricingSystemId getPricingSystemId(I_C_OLCand olCand, BPartnerOrderParams bPartnerOrderParams, OLCandOrderDefaults orderDefaults);
+
+	ShipperId getShipperId(BPartnerOrderParams bPartnerOrderParams, OLCandOrderDefaults orderDefaults);
+
+	BPartnerOrderParams getBPartnerOrderParams(I_C_OLCand olCandRecord);
+
 }

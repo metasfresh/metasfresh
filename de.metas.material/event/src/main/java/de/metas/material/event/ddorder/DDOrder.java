@@ -37,7 +37,6 @@ import lombok.Value;
  * #L%
  */
 @Value
-@Builder
 final public class DDOrder
 {
 
@@ -73,13 +72,14 @@ final public class DDOrder
 	MaterialDispoGroupId materialDispoGroupId;
 
 	@JsonCreator
-	public DDOrder(
+	@Builder
+	private DDOrder(
 			@JsonProperty("orgId") @NonNull final OrgId orgId,
 			@JsonProperty("plantId") final int plantId,
 			@JsonProperty("productPlanningId") final int productPlanningId,
 			@JsonProperty("datePromised") @NonNull final Instant datePromised,
 			@JsonProperty("shipperId") final int shipperId,
-			@JsonProperty("lines") final List<DDOrderLine> lines,
+			@JsonProperty("lines") @Singular final List<DDOrderLine> lines,
 			@JsonProperty("ddOrderId") final int ddOrderId,
 			@JsonProperty("docStatus") final String docStatus,
 			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId)

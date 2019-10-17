@@ -32,8 +32,6 @@ public interface I_EDI_Desadv
 	 */
 	public int getAD_Client_ID();
 
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_AD_Client>(I_EDI_Desadv.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -57,8 +55,6 @@ public interface I_EDI_Desadv
 	 */
 	public int getAD_Org_ID();
 
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_AD_Org>(I_EDI_Desadv.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -82,8 +78,6 @@ public interface I_EDI_Desadv
 	 */
 	public int getBill_Location_ID();
 
-    /** Column definition for Bill_Location_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_BPartner_Location> COLUMN_Bill_Location_ID = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_BPartner_Location>(I_EDI_Desadv.class, "Bill_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name Bill_Location_ID */
     public static final String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
 
@@ -107,8 +101,6 @@ public interface I_EDI_Desadv
 	 */
 	public int getC_BPartner_ID();
 
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_BPartner>(I_EDI_Desadv.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
@@ -132,8 +124,6 @@ public interface I_EDI_Desadv
 	 */
 	public int getC_BPartner_Location_ID();
 
-    /** Column definition for C_BPartner_Location_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_BPartner_Location>(I_EDI_Desadv.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name C_BPartner_Location_ID */
     public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
@@ -157,8 +147,6 @@ public interface I_EDI_Desadv
 	 */
 	public int getC_Currency_ID();
 
-    /** Column definition for C_Currency_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_Currency>(I_EDI_Desadv.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
     /** Column name C_Currency_ID */
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
@@ -187,8 +175,6 @@ public interface I_EDI_Desadv
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_AD_User>(I_EDI_Desadv.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -341,8 +327,8 @@ public interface I_EDI_Desadv
 	/**
 	 * Set EDI Status Exportieren.
 	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: true
+	 * <br>Type: List
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setEDI_ExportStatus (java.lang.String EDI_ExportStatus);
@@ -350,8 +336,8 @@ public interface I_EDI_Desadv
 	/**
 	 * Get EDI Status Exportieren.
 	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: true
+	 * <br>Type: List
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getEDI_ExportStatus();
@@ -379,8 +365,6 @@ public interface I_EDI_Desadv
 	 */
 	public int getHandOver_Location_ID();
 
-    /** Column definition for HandOver_Location_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_BPartner_Location> COLUMN_HandOver_Location_ID = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_C_BPartner_Location>(I_EDI_Desadv.class, "HandOver_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name HandOver_Location_ID */
     public static final String COLUMNNAME_HandOver_Location_ID = "HandOver_Location_ID";
 
@@ -532,8 +516,6 @@ public interface I_EDI_Desadv
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_EDI_Desadv, org.compiere.model.I_AD_User>(I_EDI_Desadv.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
