@@ -2,9 +2,14 @@ package de.metas.rest_api.invoicecandidates.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import org.adempiere.util.api.IParams;
-import org.compiere.model.I_AD_Process;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_PInstance;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
@@ -14,21 +19,23 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.Profiles;
-import de.metas.adempiere.report.jasper.OutputType;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.IInvoicingParams;
-import de.metas.invoicecandidate.api.impl.InvoicingParams;
-import de.metas.invoicecandidate.process.C_Invoice_Candidate_EnqueueSelectionForInvoicing;
+import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
+import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
-import de.metas.process.ProcessExecutionResult;
-import de.metas.process.ProcessExecutor;
-import de.metas.process.ProcessInfo;
-import de.metas.process.ProcessInfoParameter;
+import de.metas.process.PInstanceRequest;
 import de.metas.rest_api.invoicecandidates.InvoiceCandidatesRestEndpoint;
 import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandCreateRequest;
+import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidates;
 import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandCreateResponse;
+import de.metas.security.permissions.Access;
+import de.metas.util.Services;
+import de.metas.util.rest.ExternalId;
 import lombok.NonNull;
 
 /*
@@ -61,66 +68,74 @@ public class InvoiceCandidatesRestControllerImpl implements InvoiceCandidatesRes
 
 	private static final Logger logger = LogManager.getLogger(InvoiceCandidatesRestControllerImpl.class);
 
-	private IInvoicingParams invoicingParams;
-
+	final private IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
+	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	@PostMapping
 	@Override
 	public ResponseEntity<JsonInvoiceCandCreateResponse> createInvoices(@RequestBody @NonNull final JsonInvoiceCandCreateRequest request)
 	{
-		final ProcessExecutionResult result = ProcessExecutor.builder(createProcessInfo(request))
-				// .switchContextWhenRunning() // NOTE: not needed, context was already switched in caller method
-				.executeSync()
-				.getResult();
-		final boolean ok = !result.isError();
+		PInstanceId pInstanceId = getPInstanceId();
+		createAndExecuteICQueryBuilder(request.getJsonInvoices(), pInstanceId);
 
-//		
-//		try
-//		{
-//
-//			final ITrxManager trxManager = Services.get(ITrxManager.class);
-//
-//			final JsonInvoiceCandCreateResponse response = trxManager.callInNewTrx(() -> createInvoiceCandidates());
-//
-//			//
-//			return new ResponseEntity<>(response, HttpStatus.CREATED);
-//		}
-//		catch (final Exception ex)
-//		{
-//
-//			final String adLanguage = Env.getADLanguageOrBaseLanguage();
-//			return ResponseEntity.badRequest()
-//					.body(JsonInvoiceCandCreateResponse.error(JsonErrors.ofThrowable(ex, adLanguage)));
-//		}
-
+		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
+				.setContext(Env.getCtx())
+				.setInvoicingParams(createInvoicingParams(request))
+				.setFailIfNothingEnqueued(true)
+				.enqueueSelection(pInstanceId);
 		return null;
 	}
+
 	@PostMapping(PATH_TEST)
 	@Override
-	public void receiveRequest() {
+	public void receiveRequest()
+	{
 		System.out.println("Test 1234");
 	}
-	
-	private static final ProcessInfo createProcessInfo(final JsonInvoiceCandCreateRequest request)
-	{
-		ProcessInfo pi = ProcessInfo.builder()
-				.setAD_Process_ID(AdProcessId.ofRepoId(540304))
-				.setPInstanceId(PInstanceId.ofRepoId(0))//we need to create in DB an "AD_PInstance" record and AD_PInstance_Para, and then use the ID from there
-				.setInvokedByScheduler(false)
-				.setWhereClause("C_Invoice_Candidate.C_Invoice_Candidate_ID IN (1000003,1000002))")//ids from JsonInvoiceCandCreateRequest
-				.setJRDesiredOutputType(OutputType.PDF)
-				.addParameters(createProcessInfoParameters(request))
-				.build();
 
-		return pi;
+	private void createAndExecuteICQueryBuilder(List<JsonInvoiceCandidates> jsonInvoices, PInstanceId pInstanceId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, true)
+				.setJoinOr();
+		List<String> ids = new ArrayList<>();
+		jsonInvoices.stream().forEach(p -> ids.addAll(p.getExternalLineId().stream().map(e -> e.getValue()).collect(Collectors.toList())));
+
+		for (final JsonInvoiceCandidates cand : jsonInvoices)
+		{
+			final ICompositeQueryFilter<I_C_Invoice_Candidate> invoiceCandiatesFilter = queryBL
+					.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
+					.addOnlyActiveRecordsFilter()
+					.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMN_ExternalLineId, ids)
+					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_ExternalHeaderId, cand.getExternalHeaderId());
+
+			queryBuilder.filter(invoiceCandiatesFilter);
+		}
+
+		queryBuilder
+				.create()
+				.setRequiredAccess(Access.READ)
+				.createSelection(pInstanceId);
 	}
 
-	private static List<ProcessInfoParameter> createProcessInfoParameters(JsonInvoiceCandCreateRequest request)
+	private InvoicingParamsObject createInvoicingParams(JsonInvoiceCandCreateRequest request)
 	{
-		List<ProcessInfoParameter> params = new ArrayList<ProcessInfoParameter>();
-		//the params needed for the process should be taken from the request and they need to be saved in the db -> X_AD_PROCESS_PARA
-		return params;
+		InvoicingParamsObject invoicingParams = new InvoicingParamsObject();
+		invoicingParams.setCheck_NetAmtToInvoice(request.getCheck_NetAmtToInvoice());
+		invoicingParams.setDateAcct(request.getDateAcct());
+		invoicingParams.setDateInvoiced(request.getDateInvoiced());
+		invoicingParams.setIgnoreInvoiceSchedule(request.getIgnoreInvoiceSchedule());
+		invoicingParams.setOnlyApprovedForInvoicing(request.getOnlyApprovedForInvoicing());
+		invoicingParams.setPOReference(request.getPoReference());
+		invoicingParams.setSupplementMissingPaymentTermIds(request.getSupplementMissingPaymentTermIds());
+		invoicingParams.setUpdateLocationAndContactForInvoice(request.getUpdateLocationAndContactForInvoice());
+		return invoicingParams;
 	}
-	
-	
+
+	private PInstanceId getPInstanceId()
+	{
+		return adPInstanceDAO.createSelectionId();
+	}
 }
