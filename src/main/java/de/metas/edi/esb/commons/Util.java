@@ -27,8 +27,7 @@ import org.apache.camel.Message;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.component.properties.PropertiesComponent;
 import org.apache.camel.impl.DefaultMessage;
-
-
+import org.springframework.lang.Nullable;
 
 /*
  * #%L
@@ -518,30 +517,23 @@ public final class Util
 	/**
 	 * Format number using decimal format.
 	 *
-	 * @param n
-	 * @param decimalFormat
-	 * @return formatted number, if not null, 0 otherwise
+	 * @return formatted number if not null, {@code "0"} otherwise
 	 */
-	public static String formatNumber(final Number n, final DecimalFormat decimalFormat)
+	public static String formatNumber(@Nullable final Number n, @NonNull final DecimalFormat decimalFormat)
 	{
-		final String result;
 		if (n == null)
 		{
-			result = "0";
-		}
-		else
-		{
-			try
-			{
-				result = decimalFormat.format(n);
-			}
-			catch (final Exception e)
-			{
-				throw new RuntimeCamelException("Exception occured while formatting number " + n, e);
-			}
+			return "0";
 		}
 
-		return result;
+		try
+		{
+			return decimalFormat.format(n);
+		}
+		catch (final Exception e)
+		{
+			throw new RuntimeCamelException("Exception occured while formatting number " + n, e);
+		}
 	}
 
 	/**
