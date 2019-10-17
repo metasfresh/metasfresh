@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.stock.ResetStockPInstanceId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Value;
@@ -42,7 +43,7 @@ public class TransactionDetail
 				-1 /* attributeSetInstanceId */,
 				transactionId,
 				-1 /* stockId */,
-				-1 /* resetStockAdPinstanceId */,
+				(ResetStockPInstanceId)null /* resetStockAdPinstanceId */,
 				null, /* transactionDate */
 				false /* complete */);
 	}
@@ -59,9 +60,9 @@ public class TransactionDetail
 
 	/**
 	 * If there was no inventory, but MD_Stock had to be reset from M_HU_Storage.
-	 * Also used in queries if > 0.
+	 * Also used in queries if set.
 	 */
-	int resetStockAdPinstanceId;
+	ResetStockPInstanceId resetStockPInstanceId;
 
 	AttributesKey storageAttributesKey;
 
@@ -79,26 +80,26 @@ public class TransactionDetail
 			final int attributeSetInstanceId,
 			final int transactionId,
 			final int stockId,
-			final int resetStockAdPinstanceId,
+			final ResetStockPInstanceId resetStockPInstanceId,
 			final Instant transactionDate,
 			final boolean complete)
 	{
 		this.complete = complete;
 
-		Check.assume(transactionId > 0 || resetStockAdPinstanceId > 0,
-				"From the given parameters transactionId={} and resetStockAdPinstanceId={}, at least one needs to be > 0", transactionId, resetStockAdPinstanceId);
+		Check.assume(transactionId > 0 || resetStockPInstanceId != null,
+				"From the given parameters transactionId={} and resetStockPInstanceId={}, at least one needs to be set", transactionId, resetStockPInstanceId);
 		this.transactionId = transactionId;
 
-		Check.assume(!complete || quantity != null, "The given parameter quantity may not be null because complete=true; transactionId={}; resetStockAdPinstanceId={}", transactionId, resetStockAdPinstanceId);
+		Check.assume(!complete || quantity != null, "The given parameter quantity may not be null because complete=true; transactionId={}; resetStockAdPinstanceId={}", transactionId, resetStockPInstanceId);
 		this.quantity = quantity;
 
-		Check.assume(!complete || transactionDate != null, "The given parameter transactionDate may not be null because complete=true; transactionId={}; resetStockAdPinstanceId={}", transactionId, resetStockAdPinstanceId);
+		Check.assume(!complete || transactionDate != null, "The given parameter transactionDate may not be null because complete=true; transactionId={}; resetStockAdPinstanceId={}", transactionId, resetStockPInstanceId);
 		this.transactionDate = transactionDate;
 
 		this.storageAttributesKey = storageAttributesKey;
 		this.attributeSetInstanceId = attributeSetInstanceId;
 
 		this.stockId = stockId;
-		this.resetStockAdPinstanceId = resetStockAdPinstanceId;
+		this.resetStockPInstanceId = resetStockPInstanceId;
 	}
 }

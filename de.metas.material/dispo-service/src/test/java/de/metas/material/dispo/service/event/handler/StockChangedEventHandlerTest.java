@@ -25,6 +25,7 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.stock.ResetStockPInstanceId;
 import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.material.event.stock.StockChangedEvent.StockChangeDetails;
 
@@ -140,7 +141,7 @@ public class StockChangedEventHandlerTest
 				.qtyOnHandOld(ZERO)
 				.stockChangeDetails(StockChangeDetails.builder()
 						.stockId(30)
-						.resetStockAdPinstanceId(40)
+						.resetStockPInstanceId(ResetStockPInstanceId.ofRepoId(40))
 						.transactionId(50)
 						.build())
 				.warehouseId(WAREHOUSE_ID)
@@ -156,7 +157,7 @@ public class StockChangedEventHandlerTest
 		assertThat(candidate.getOrgId().getRepoId()).isEqualTo(20);
 		assertThat(candidate.getTransactionDetails()).hasSize(1);
 		assertThat(candidate.getTransactionDetails().get(0).getStockId()).isEqualTo(30);
-		assertThat(candidate.getTransactionDetails().get(0).getResetStockAdPinstanceId()).isEqualTo(40);
+		assertThat(candidate.getTransactionDetails().get(0).getResetStockPInstanceId().getRepoId()).isEqualTo(40);
 		assertThat(candidate.getTransactionDetails().get(0).getTransactionId()).isEqualTo(50);
 	}
 }

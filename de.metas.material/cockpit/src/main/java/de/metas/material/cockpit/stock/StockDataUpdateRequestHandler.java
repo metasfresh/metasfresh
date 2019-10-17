@@ -141,7 +141,7 @@ public class StockDataUpdateRequestHandler
 		final StockChangeDetails details = StockChangeDetails
 				.builder()
 				.transactionId(stockChangeSourceInfo.getTransactionId())
-				.resetStockAdPinstanceId(stockChangeSourceInfo.getResetStockAdPinstanceId())
+				.resetStockPInstanceId(stockChangeSourceInfo.getResetStockAdPinstanceId())
 				.stockId(dataRecord.getMD_Stock_ID())
 				.build();
 
