@@ -73,12 +73,12 @@ public class DocOutboundDAO implements IDocOutboundDAO
 			{
 				if (currentConfig.getAD_Client_ID() == adClientId)
 				{
-					thowExceptionIfNotNull(config, tableId, adClientId, currentConfig);
+					throwExceptionIfNotNull(config, tableId, adClientId, currentConfig);
 					config = currentConfig;
 				}
 				else if (currentConfig.getAD_Client_ID() == 0) // system
 				{
-					thowExceptionIfNotNull(configSys, tableId, adClientId, currentConfig);
+					throwExceptionIfNotNull(configSys, tableId, adClientId, currentConfig);
 					configSys = currentConfig;
 				}
 			}
@@ -86,7 +86,7 @@ public class DocOutboundDAO implements IDocOutboundDAO
 		return coalesce(config, configSys);
 	}
 
-	private void thowExceptionIfNotNull(
+	private void throwExceptionIfNotNull(
 			@Nullable final I_C_Doc_Outbound_Config alreadyFoundConfig,
 			final int tableId,
 			final int adClientId,

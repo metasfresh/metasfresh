@@ -163,8 +163,6 @@ public interface IBPartnerBL extends ISingletonService
 
 	UserId getSalesRepIdOrNull(BPartnerId bpartnerId);
 
-	// ShipperId getShipperIdOrNull(final BPartnerId bpartnerId);
-
 	@Value
 	@Builder
 	public static class RetrieveBillContactRequest

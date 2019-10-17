@@ -108,7 +108,11 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	}
 
 	@Override
-	public void onPrintOut(final I_AD_Archive archive, final I_AD_User user, final String printerName, final int copies, final String status)
+	public void onPrintOut(final I_AD_Archive archive,
+			@Nullable final I_AD_User user,
+			final String printerName,
+			final int copies,
+			final String status)
 	{
 		// task 05334: only assume existing archive if the status is "success"
 		if (IArchiveEventManager.STATUS_Success.equals(status))
@@ -123,8 +127,12 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		final I_C_Doc_Outbound_Log_Line docExchangeLine = createLogLine(archive);
 
 		docExchangeLine.setAction(X_C_Doc_Outbound_Log_Line.ACTION_Print);
+
 		// create stuff
-		docExchangeLine.setAD_User_ID(user.getAD_User_ID());
+		if (user != null)
+		{
+			docExchangeLine.setAD_User_ID(user.getAD_User_ID());
+		}
 		docExchangeLine.setStatus(status);
 
 		save(docExchangeLine);

@@ -33,6 +33,10 @@ import lombok.Value;
  * #L%
  */
 
+/**
+ * Holds bpartner related parameters that are required for an oder.
+ * Note that e.g. the delivery rule might be related to the order's drop ship partner, while the pricing system id might be related to the order's bill partner.
+ */
 @Value
 @Builder
 public class BPartnerOrderParams
