@@ -1,5 +1,6 @@
 import currentDevice from 'current-device';
 import PropTypes from 'prop-types';
+import uuid from 'uuid/v4';
 
 const propTypes = {
   // from @connect
@@ -33,6 +34,7 @@ export function constructorFn(props) {
       supportZoomInto: false,
       supportFieldEdit: false,
     },
+    dataHash: uuid(),
     promptOpen: false,
     isBatchEntry: false,
     rows: [],
