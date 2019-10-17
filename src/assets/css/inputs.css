@@ -67,7 +67,7 @@ input {
         }       
     }
 
-    .zoom-into:hover {
+    &.zoom-into:hover, .zoom-into:hover {
         text-decoration: underline;
         cursor: pointer;
     }
