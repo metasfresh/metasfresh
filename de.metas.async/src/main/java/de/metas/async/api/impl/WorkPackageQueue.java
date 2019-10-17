@@ -39,11 +39,13 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.async.AsyncBatchId;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IQueueDAO;
@@ -107,20 +109,18 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	/**
 	 * {@link I_C_Async_Batch} to be used when enquing new workpackages
 	 */
-	private I_C_Async_Batch asyncBatchForNewWorkpackages;
+	private AsyncBatchId asyncBatchForNewWorkpackages;
 
 	private boolean asyncBatchForNewWorkpackagesSet = false;
 
 	private final ReentrantLock mainLock = new ReentrantLock();
 
-	private WorkPackageQueue(final Properties ctx,
-			final List<Integer> packageProcessorIds,
+	private WorkPackageQueue(@NonNull final Properties ctx,
+			@NonNull final List<Integer> packageProcessorIds,
 			final String enquingPackageProcessorInternalName,
 			final String priorityFrom,
 			final boolean forEnqueing)
 	{
-		Check.assumeNotNull(ctx, "ctx is not null");
-		Check.assumeNotNull(packageProcessorIds, "packageProcessorIds not null");
 		Check.assume(!packageProcessorIds.isEmpty(), "packageProcessorIds not empty");
 		// Check.assume(retryTimeoutMillis >= 0, "retryTimeoutMillis={} >= 0", retryTimeoutMillis);
 
@@ -470,12 +470,11 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		//
 
 		// C_Async_Batch_ID - get it from context if available
-		// set olny if is not new workpackage; the first new one is allways for the the async batch itself and we do want to track it
+		// set only if is not new workpackage; the first new one is always for the the async batch itself and we do want to track it
 		if (!asyncBatchForNewWorkpackagesSet)
 		{
-			final I_C_Async_Batch asyncBatch = getAsyncBatchIdForNewWorkpackage();
-			final int asyncBatchId = asyncBatch == null ? -1 : asyncBatch.getC_Async_Batch_ID();
-			workPackage.setC_Async_Batch_ID(asyncBatchId);
+			final AsyncBatchId asyncBatchId = getAsyncBatchIdForNewWorkpackage();
+			workPackage.setC_Async_Batch_ID(AsyncBatchId.toRepoId(asyncBatchId));
 		}
 
 		// increase enqueued counter
@@ -571,20 +570,18 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	}
 
 	@Override
-	public I_C_Queue_Element enqueueElement(final I_C_Queue_WorkPackage workPackage, final Object model)
+	public I_C_Queue_Element enqueueElement(
+			@NonNull final I_C_Queue_WorkPackage workPackage,
+			@NonNull final TableRecordReference modelReference)
 	{
-		Check.assumeNotNull(model, "model not null");
-		final int adTableId = InterfaceWrapperHelper.getModelTableId(model);
-		final int recordId = InterfaceWrapperHelper.getId(model);
-		return enqueueElement(workPackage, adTableId, recordId);
+		return enqueueElement(workPackage, modelReference.getAD_Table_ID(), modelReference.getRecord_ID());
 	}
 
 	@Override
-	public void enqueueElements(final I_C_Queue_WorkPackage workPackage, final Iterable<?> models)
+	public void enqueueElements(final I_C_Queue_WorkPackage workPackage, @NonNull final Iterable<TableRecordReference> models)
 	{
-		Check.assumeNotNull(models, "models not null");
 		boolean empty = true;
-		for (final Object model : models)
+		for (final TableRecordReference model : models)
 		{
 			enqueueElement(workPackage, model);
 			empty = false;
@@ -607,7 +604,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 			workPackage.setC_Async_Batch(asyncBatch);
 		}
 
-		final I_C_Queue_Element element = enqueueElement(workPackage, model);
+		final I_C_Queue_Element element = enqueueElement(workPackage, TableRecordReference.of(model));
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(model);
 		markReadyForProcessingAfterTrxCommit(workPackage, trxName); // 04265
@@ -820,17 +817,17 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	}
 
 	@Override
-	public WorkPackageQueue setAsyncBatchForNewWorkpackages(final I_C_Async_Batch asyncBatch)
+	public WorkPackageQueue setAsyncBatchIdForNewWorkpackages(final AsyncBatchId asyncBatchId)
 	{
-		asyncBatchForNewWorkpackages = asyncBatch;
+		asyncBatchForNewWorkpackages = asyncBatchId;
 		asyncBatchForNewWorkpackagesSet = true;
 
 		// set also in thread
-		contextFactory.setThreadInheritedAsyncBatch(asyncBatch);
+		contextFactory.setThreadInheritedAsyncBatch(asyncBatchId);
 		return this;
 	}
 
-	private I_C_Async_Batch getAsyncBatchIdForNewWorkpackage()
+	private AsyncBatchId getAsyncBatchIdForNewWorkpackage()
 	{
 		//
 		// Use the preconfigured C_Async_Batch (if any)
@@ -841,15 +838,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 		//
 		// Use the one from thread context (if any)
-		final int inheritedAsyncBatchId = contextFactory.getThreadInheritedAsyncBatchId();
-		if (inheritedAsyncBatchId > 0)
-		{
-			return contextFactory.getThreadInheritedAsyncBatch();
-		}
-
-		//
-		// No C_Async_Batch_ID available => return null
-		return null;
+		return contextFactory.getThreadInheritedAsyncBatchId();
 	}
 
 	/**
